@@ -443,41 +443,50 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
                 if (EntryIsFresh(cachedResponseHeaders, age, verifyAgainstRequest: true))
                 {
-                    var response = _httpContext.Response;
-                    // Copy the cached status code and response headers
-                    response.StatusCode = cachedResponse.StatusCode;
-                    foreach (var header in cachedResponse.Headers)
+                    // Check conditional request rules
+                    if (ConditionalRequestSatisfied(cachedResponseHeaders))
                     {
-                        response.Headers.Add(header);
-                    }
-
-                    response.Headers[HeaderNames.Age] = age.TotalSeconds.ToString("F0", CultureInfo.InvariantCulture);
-
-                    if (_responseType == ResponseType.HeadersOnly)
-                    {
-                        responseServed = true;
-                    }
-                    else if (_responseType == ResponseType.FullReponse)
-                    {
-                        // Copy the cached response body
-                        var body = cachedResponse.Body;
-
-                        // Add a content-length if required
-                        if (response.ContentLength == null && string.IsNullOrEmpty(response.Headers[HeaderNames.TransferEncoding]))
-                        {
-                            response.ContentLength = body.Length;
-                        }
-
-                        if (body.Length > 0)
-                        {
-                            await response.Body.WriteAsync(body, 0, body.Length);
-                        }
-
+                        _httpContext.Response.StatusCode = StatusCodes.Status304NotModified;
                         responseServed = true;
                     }
                     else
                     {
-                        throw new InvalidOperationException($"{nameof(_responseType)} not specified or is unrecognized.");
+                        var response = _httpContext.Response;
+                        // Copy the cached status code and response headers
+                        response.StatusCode = cachedResponse.StatusCode;
+                        foreach (var header in cachedResponse.Headers)
+                        {
+                            response.Headers.Add(header);
+                        }
+
+                        response.Headers[HeaderNames.Age] = age.TotalSeconds.ToString("F0", CultureInfo.InvariantCulture);
+
+                        if (_responseType == ResponseType.HeadersOnly)
+                        {
+                            responseServed = true;
+                        }
+                        else if (_responseType == ResponseType.FullReponse)
+                        {
+                            // Copy the cached response body
+                            var body = cachedResponse.Body;
+
+                            // Add a content-length if required
+                            if (response.ContentLength == null && string.IsNullOrEmpty(response.Headers[HeaderNames.TransferEncoding]))
+                            {
+                                response.ContentLength = body.Length;
+                            }
+
+                            if (body.Length > 0)
+                            {
+                                await response.Body.WriteAsync(body, 0, body.Length);
+                            }
+
+                            responseServed = true;
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException($"{nameof(_responseType)} not specified or is unrecognized.");
+                        }
                     }
                 }
                 else
@@ -489,11 +498,40 @@ namespace Microsoft.AspNetCore.ResponseCaching
             if (!responseServed && RequestCacheControl.OnlyIfCached)
             {
                 _httpContext.Response.StatusCode = StatusCodes.Status504GatewayTimeout;
-
                 responseServed = true;
             }
 
             return responseServed;
+        }
+
+        internal bool ConditionalRequestSatisfied(ResponseHeaders cachedResponseHeaders)
+        {
+            var ifNoneMatchHeader = RequestHeaders.IfNoneMatch;
+
+            if (ifNoneMatchHeader != null)
+            {
+                if (ifNoneMatchHeader.Count == 1 && ifNoneMatchHeader[0].Equals(EntityTagHeaderValue.Any))
+                {
+                    return true;
+                }
+
+                if (cachedResponseHeaders.ETag != null)
+                {
+                    foreach (var tag in ifNoneMatchHeader)
+                    {
+                        if (cachedResponseHeaders.ETag.Compare(tag, useStrongComparison: true))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            else if ((cachedResponseHeaders.LastModified ?? cachedResponseHeaders.Date) <= RequestHeaders.IfUnmodifiedSince)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         internal void FinalizeCachingHeaders()

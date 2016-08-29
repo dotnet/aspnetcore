@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -690,6 +691,140 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var context = CreateTestContext(httpContext);
 
             Assert.True(context.EntryIsFresh(httpContext.Response.GetTypedHeaders(), TimeSpan.FromSeconds(3), verifyAgainstRequest: false));
+        }
+
+        [Fact]
+        public void ConditionalRequestSatisfied_NotConditionalRequest_Fails()
+        {
+            var context = CreateTestContext(new DefaultHttpContext());
+            var cachedHeaders = new ResponseHeaders(new HeaderDictionary());
+
+            Assert.False(context.ConditionalRequestSatisfied(cachedHeaders));
+        }
+
+        [Fact]
+        public void ConditionalRequestSatisfied_IfUnmodifiedSince_FallsbackToDateHeader()
+        {
+            var utcNow = DateTimeOffset.UtcNow;
+            var cachedHeaders = new ResponseHeaders(new HeaderDictionary());
+            var httpContext = new DefaultHttpContext();
+            var context = CreateTestContext(httpContext);
+
+            httpContext.Request.GetTypedHeaders().IfUnmodifiedSince = utcNow;
+
+            // Verify modifications in the past succeeds
+            cachedHeaders.Date = utcNow - TimeSpan.FromSeconds(10);
+            Assert.True(context.ConditionalRequestSatisfied(cachedHeaders));
+
+            // Verify modifications at present succeeds
+            cachedHeaders.Date = utcNow;
+            Assert.True(context.ConditionalRequestSatisfied(cachedHeaders));
+
+            // Verify modifications in the future fails
+            cachedHeaders.Date = utcNow + TimeSpan.FromSeconds(10);
+            Assert.False(context.ConditionalRequestSatisfied(cachedHeaders));
+        }
+
+        [Fact]
+        public void ConditionalRequestSatisfied_IfUnmodifiedSince_LastModifiedOverridesDateHeader()
+        {
+            var utcNow = DateTimeOffset.UtcNow;
+            var cachedHeaders = new ResponseHeaders(new HeaderDictionary());
+            var httpContext = new DefaultHttpContext();
+            var context = CreateTestContext(httpContext);
+
+            httpContext.Request.GetTypedHeaders().IfUnmodifiedSince = utcNow;
+
+            // Verify modifications in the past succeeds
+            cachedHeaders.Date = utcNow + TimeSpan.FromSeconds(10);
+            cachedHeaders.LastModified = utcNow - TimeSpan.FromSeconds(10);
+            Assert.True(context.ConditionalRequestSatisfied(cachedHeaders));
+
+            // Verify modifications at present
+            cachedHeaders.Date = utcNow + TimeSpan.FromSeconds(10);
+            cachedHeaders.LastModified = utcNow;
+            Assert.True(context.ConditionalRequestSatisfied(cachedHeaders));
+
+            // Verify modifications in the future fails
+            cachedHeaders.Date = utcNow - TimeSpan.FromSeconds(10);
+            cachedHeaders.LastModified = utcNow + TimeSpan.FromSeconds(10);
+            Assert.False(context.ConditionalRequestSatisfied(cachedHeaders));
+        }
+
+        [Fact]
+        public void ConditionalRequestSatisfied_IfNoneMatch_Overrides_IfUnmodifiedSince_ToPass()
+        {
+            var utcNow = DateTimeOffset.UtcNow;
+            var cachedHeaders = new ResponseHeaders(new HeaderDictionary());
+            var httpContext = new DefaultHttpContext();
+            var requestHeaders = httpContext.Request.GetTypedHeaders();
+            var context = CreateTestContext(httpContext);
+
+            // This would fail the IfUnmodifiedSince checks
+            requestHeaders.IfUnmodifiedSince = utcNow;
+            cachedHeaders.LastModified = utcNow + TimeSpan.FromSeconds(10);
+
+            requestHeaders.IfNoneMatch = new List<EntityTagHeaderValue>(new[] { EntityTagHeaderValue.Any });
+            Assert.True(context.ConditionalRequestSatisfied(cachedHeaders));
+        }
+
+        [Fact]
+        public void ConditionalRequestSatisfied_IfNoneMatch_Overrides_IfUnmodifiedSince_ToFail()
+        {
+            var utcNow = DateTimeOffset.UtcNow;
+            var cachedHeaders = new ResponseHeaders(new HeaderDictionary());
+            var httpContext = new DefaultHttpContext();
+            var requestHeaders = httpContext.Request.GetTypedHeaders();
+            var context = CreateTestContext(httpContext);
+
+            // This would pass the IfUnmodifiedSince checks
+            requestHeaders.IfUnmodifiedSince = utcNow;
+            cachedHeaders.LastModified = utcNow - TimeSpan.FromSeconds(10);
+
+            requestHeaders.IfNoneMatch = new List<EntityTagHeaderValue>(new[] { new EntityTagHeaderValue("\"E1\"") });
+            Assert.False(context.ConditionalRequestSatisfied(cachedHeaders));
+        }
+
+        [Fact]
+        public void ConditionalRequestSatisfied_IfNoneMatch_AnyWithoutETagInResponse_Passes()
+        {
+            var cachedHeaders = new ResponseHeaders(new HeaderDictionary());
+            var httpContext = new DefaultHttpContext();
+            var context = CreateTestContext(httpContext);
+
+            httpContext.Request.GetTypedHeaders().IfNoneMatch = new List<EntityTagHeaderValue>(new[] { new EntityTagHeaderValue("\"E1\"") });
+
+            Assert.False(context.ConditionalRequestSatisfied(cachedHeaders));
+        }
+
+        [Fact]
+        public void ConditionalRequestSatisfied_IfNoneMatch_ExplicitWithMatch_Passes()
+        {
+            var cachedHeaders = new ResponseHeaders(new HeaderDictionary())
+            {
+                ETag = new EntityTagHeaderValue("\"E1\"")
+            };
+            var httpContext = new DefaultHttpContext();
+            var context = CreateTestContext(httpContext);
+
+            httpContext.Request.GetTypedHeaders().IfNoneMatch = new List<EntityTagHeaderValue>(new[] { new EntityTagHeaderValue("\"E1\"") });
+
+            Assert.True(context.ConditionalRequestSatisfied(cachedHeaders));
+        }
+
+        [Fact]
+        public void ConditionalRequestSatisfied_IfNoneMatch_ExplicitWithoutMatch_Fails()
+        {
+            var cachedHeaders = new ResponseHeaders(new HeaderDictionary())
+            {
+                ETag = new EntityTagHeaderValue("\"E2\"")
+            };
+            var httpContext = new DefaultHttpContext();
+            var context = CreateTestContext(httpContext);
+
+            httpContext.Request.GetTypedHeaders().IfNoneMatch = new List<EntityTagHeaderValue>(new[] { new EntityTagHeaderValue("\"E1\"") });
+
+            Assert.False(context.ConditionalRequestSatisfied(cachedHeaders));
         }
 
         private static ResponseCachingContext CreateTestContext(HttpContext httpContext)

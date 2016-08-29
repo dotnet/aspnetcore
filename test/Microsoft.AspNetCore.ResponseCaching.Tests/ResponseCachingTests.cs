@@ -636,6 +636,122 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             Assert.NotEqual(await initialResponse.Content.ReadAsStringAsync(), await subsequentResponse.Content.ReadAsStringAsync());
         }
 
+        [Fact]
+        public async void Serves304_IfIfModifiedSince_Satisfied()
+        {
+            var builder = CreateBuilderWithResponseCaching(async (context) =>
+            {
+                var uniqueId = Guid.NewGuid().ToString();
+                var headers = context.Response.GetTypedHeaders();
+                headers.CacheControl = new CacheControlHeaderValue()
+                {
+                    Public = true,
+                    MaxAge = TimeSpan.FromSeconds(10)
+                };
+                headers.Date = DateTimeOffset.UtcNow;
+                headers.Headers["X-Value"] = uniqueId;
+                await context.Response.WriteAsync(uniqueId);
+            });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var initialResponse = await client.GetAsync("");
+                client.DefaultRequestHeaders.IfUnmodifiedSince = DateTimeOffset.MaxValue;
+                var subsequentResponse = await client.GetAsync("");
+
+                initialResponse.EnsureSuccessStatusCode();
+                Assert.Equal(System.Net.HttpStatusCode.NotModified, subsequentResponse.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async void ServesCachedContent_IfIfModifiedSince_NotSatisfied()
+        {
+            var builder = CreateBuilderWithResponseCaching(async (context) =>
+            {
+                var uniqueId = Guid.NewGuid().ToString();
+                var headers = context.Response.GetTypedHeaders();
+                headers.CacheControl = new CacheControlHeaderValue()
+                {
+                    Public = true,
+                    MaxAge = TimeSpan.FromSeconds(10)
+                };
+                headers.Date = DateTimeOffset.UtcNow;
+                headers.Headers["X-Value"] = uniqueId;
+                await context.Response.WriteAsync(uniqueId);
+            });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var initialResponse = await client.GetAsync("");
+                client.DefaultRequestHeaders.IfUnmodifiedSince = DateTimeOffset.MinValue;
+                var subsequentResponse = await client.GetAsync("");
+
+                await AssertResponseCachedAsync(initialResponse, subsequentResponse);
+            }
+        }
+
+        [Fact]
+        public async void Serves304_IfIfNoneMatch_Satisfied()
+        {
+            var builder = CreateBuilderWithResponseCaching(async (context) =>
+            {
+                var uniqueId = Guid.NewGuid().ToString();
+                var headers = context.Response.GetTypedHeaders();
+                headers.CacheControl = new CacheControlHeaderValue()
+                {
+                    Public = true,
+                    MaxAge = TimeSpan.FromSeconds(10)
+                };
+                headers.Date = DateTimeOffset.UtcNow;
+                headers.Headers["X-Value"] = uniqueId;
+                headers.ETag = new EntityTagHeaderValue("\"E1\"");
+                await context.Response.WriteAsync(uniqueId);
+            });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var initialResponse = await client.GetAsync("");
+                client.DefaultRequestHeaders.IfNoneMatch.Add(new System.Net.Http.Headers.EntityTagHeaderValue("\"E1\""));
+                var subsequentResponse = await client.GetAsync("");
+
+                initialResponse.EnsureSuccessStatusCode();
+                Assert.Equal(System.Net.HttpStatusCode.NotModified, subsequentResponse.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async void ServesCachedContent_IfIfNoneMatch_NotSatisfied()
+        {
+            var builder = CreateBuilderWithResponseCaching(async (context) =>
+            {
+                var uniqueId = Guid.NewGuid().ToString();
+                var headers = context.Response.GetTypedHeaders();
+                headers.CacheControl = new CacheControlHeaderValue()
+                {
+                    Public = true,
+                    MaxAge = TimeSpan.FromSeconds(10)
+                };
+                headers.Date = DateTimeOffset.UtcNow;
+                headers.Headers["X-Value"] = uniqueId;
+                headers.ETag = new EntityTagHeaderValue("\"E1\"");
+                await context.Response.WriteAsync(uniqueId);
+            });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var initialResponse = await client.GetAsync("");
+                client.DefaultRequestHeaders.IfNoneMatch.Add(new System.Net.Http.Headers.EntityTagHeaderValue("\"E2\""));
+                var subsequentResponse = await client.GetAsync("");
+
+                await AssertResponseCachedAsync(initialResponse, subsequentResponse);
+            }
+        }
+
         private static IWebHostBuilder CreateBuilderWithResponseCaching(RequestDelegate requestDelegate) =>
             CreateBuilderWithResponseCaching(app => { }, requestDelegate);
 
