@@ -6,7 +6,7 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>0fc7ce11-dc10-499e-8b91-8d9cadaefbeb</ProjectGuid>
+    <ProjectGuid>7be58880-36ad-4cd5-9e16-2a5afea790ef</ProjectGuid>
     <RootNamespace>RazorPageGenerator</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
