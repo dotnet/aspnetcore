@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             if (blockToReturn != null)
             {
-                ThreadPool.QueueUserWorkItem(_returnBlocks, blockToReturn);
+                _threadPool.UnsafeRun(_returnBlocks, blockToReturn);
             }
         }
 
@@ -542,8 +542,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private class WriteContext
         {
-            private static WaitCallback _returnWrittenBlocks = (state) => ReturnWrittenBlocks((MemoryPoolBlock)state);
-            private static WaitCallback _completeWrite = (state) => ((WriteContext)state).CompleteOnThreadPool();
+            private static readonly WaitCallback _returnWrittenBlocks = (state) => ReturnWrittenBlocks((MemoryPoolBlock)state);
+            private static readonly WaitCallback _completeWrite = (state) => ((WriteContext)state).CompleteOnThreadPool();
 
             private SocketOutput Self;
             private UvWriteReq _writeReq;
@@ -658,7 +658,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
                 else
                 {
-                    ThreadPool.QueueUserWorkItem(_completeWrite, this);
+                    Self._threadPool.UnsafeRun(_completeWrite, this);
                 }
             }
 
@@ -697,7 +697,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
                 block.Next = null;
 
-                ThreadPool.QueueUserWorkItem(_returnWrittenBlocks, _lockedStart.Block);
+                Self._threadPool.UnsafeRun(_returnWrittenBlocks, _lockedStart.Block);
             }
 
             private static void ReturnWrittenBlocks(MemoryPoolBlock block)

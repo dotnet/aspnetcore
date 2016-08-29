@@ -63,6 +63,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             ThreadPool.QueueUserWorkItem(_runAction, action);
         }
 
+        public void UnsafeRun(WaitCallback action, object state)
+        {
+            ThreadPool.QueueUserWorkItem(action, state);
+        }
+
         public void Complete(TaskCompletionSource<object> tcs)
         {
             ThreadPool.QueueUserWorkItem(_completeTcs, tcs);
