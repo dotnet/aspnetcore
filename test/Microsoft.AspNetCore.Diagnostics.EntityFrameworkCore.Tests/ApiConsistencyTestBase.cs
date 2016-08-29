@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.RazorViews;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 

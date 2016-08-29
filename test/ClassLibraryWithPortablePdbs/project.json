@@ -1,0 +1,13 @@
+{
+  "version": "1.1.0-*",
+  "buildOptions": {
+    "debugType": "portable",
+    "keyFile": "../../tools/Key.snk"
+  },
+  "dependencies": {
+    "System.Runtime": "4.1.0-*"
+  },
+  "frameworks": {
+    "netstandard1.0": {}
+  }
+}

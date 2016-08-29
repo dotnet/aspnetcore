@@ -2,8 +2,8 @@
 @using System.Globalization
 @using System.Linq
 @using Microsoft.AspNetCore.Diagnostics.Elm
-@using Microsoft.AspNetCore.Diagnostics.Elm.RazorViews
-@using Microsoft.Extensions.RazorViews
+@using Microsoft.AspNetCore.Diagnostics.Elm.Views
+@using Microsoft.AspNetCore.DiagnosticsViewPage.Views
 @using Microsoft.Extensions.Logging
 
 @functions
@@ -82,7 +82,7 @@
     }
 }
 @{
-    Response.ContentType = "text/html; charset=utf-8";
+    Response.ContentType = "text/html";
 }
 <!DOCTYPE html>
 <html>
@@ -91,7 +91,7 @@
     <title>ASP.NET Core Logs</title>
     <script src="http://ajax.aspnetcdn.com/ajax/jquery/jquery-2.1.1.min.js"></script>
     <style>
-        <%$ include: Shared.css %> <%$ include: DetailsPage.css %>
+        <%$ include: Shared.css % > <%$ include: DetailsPage.css % >
     </style>
 </head>
 <body>

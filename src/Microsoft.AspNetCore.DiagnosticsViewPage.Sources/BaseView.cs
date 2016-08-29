@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.DiagnosticsViewPage.Views
     /// <summary>
     /// Infrastructure
     /// </summary>
+    [Obsolete("This type is for internal use only and will be removed in a future version.")]
     public abstract class BaseView
     {
         /// <summary>

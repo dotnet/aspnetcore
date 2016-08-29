@@ -43,7 +43,7 @@ using Microsoft.Extensions.Logging
 #line hidden
     ;
     using System.Threading.Tasks;
-
+    [Obsolete("This type is for internal use only and will be removed in a future version.")]
     public class DetailsPage : Microsoft.AspNetCore.DiagnosticsViewPage.Views.BaseView
     {
 #line 10 "DetailsPage.cshtml"
