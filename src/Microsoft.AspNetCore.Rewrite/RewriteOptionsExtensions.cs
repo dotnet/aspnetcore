@@ -42,11 +42,11 @@ namespace Microsoft.AspNetCore.Rewrite
         /// </summary>
         /// <param name="options">The Rewrite options.</param>
         /// <param name="regex">The regex string to compare with.</param>
-        /// <param name="urlPattern">If the regex matches, what to replace HttpContext with.</param>
+        /// <param name="replacement">If the regex matches, what to replace HttpContext with.</param>
         /// <returns>The Rewrite options.</returns>
-        public static RewriteOptions Rewrite(this RewriteOptions options, string regex, string urlPattern)
+        public static RewriteOptions Rewrite(this RewriteOptions options, string regex, string replacement)
         {
-            return Rewrite(options, regex, urlPattern, stopProcessing: false);
+            return Rewrite(options, regex, replacement, stopProcessing: false);
         }
 
         /// <summary>
@@ -54,17 +54,12 @@ namespace Microsoft.AspNetCore.Rewrite
         /// </summary>
         /// <param name="options">The Rewrite options.</param>
         /// <param name="regex">The regex string to compare with.</param>
-        /// <param name="urlPattern">If the regex matches, what to replace the uri with.</param>
+        /// <param name="replacement">If the regex matches, what to replace the uri with.</param>
         /// <param name="stopProcessing">If the regex matches, conditionally stop processing other rules.</param>
         /// <returns>The Rewrite options.</returns>
-        public static RewriteOptions Rewrite(this RewriteOptions options, string regex, string urlPattern, bool stopProcessing)
+        public static RewriteOptions Rewrite(this RewriteOptions options, string regex, string replacement, bool stopProcessing)
         {
-            var builder = new UrlRewriteRuleBuilder();
-            var pattern = new InputParser().ParseInputString(urlPattern);
-
-            builder.AddUrlMatch(regex);
-            builder.AddUrlAction(pattern, actionType: ActionType.Rewrite, stopProcessing: stopProcessing);
-            options.Rules.Add(builder.Build());
+            options.Rules.Add(new RewriteRule(regex, replacement, stopProcessing));
             return options;
         }
 
@@ -73,11 +68,11 @@ namespace Microsoft.AspNetCore.Rewrite
         /// </summary>
         /// <param name="options">The Rewrite options.</param>
         /// <param name="regex">The regex string to compare with.</param>
-        /// <param name="urlPattern">If the regex matches, what to replace the uri with.</param>
+        /// <param name="replacement">If the regex matches, what to replace the uri with.</param>
         /// <returns>The Rewrite options.</returns>
-        public static RewriteOptions Redirect(this RewriteOptions options, string regex, string urlPattern)
+        public static RewriteOptions Redirect(this RewriteOptions options, string regex, string replacement)
         {
-            return Redirect(options, regex, urlPattern, statusCode: 302);
+            return Redirect(options, regex, replacement, statusCode: 302);
         }
 
         /// <summary>
@@ -85,21 +80,19 @@ namespace Microsoft.AspNetCore.Rewrite
         /// </summary>
         /// <param name="options">The Rewrite options.</param>
         /// <param name="regex">The regex string to compare with.</param>
-        /// <param name="urlPattern">If the regex matches, what to replace the uri with.</param>
+        /// <param name="replacement">If the regex matches, what to replace the uri with.</param>
         /// <param name="statusCode">The status code to add to the response.</param>
         /// <returns>The Rewrite options.</returns>
-        public static RewriteOptions Redirect(this RewriteOptions options, string regex, string urlPattern, int statusCode)
+        public static RewriteOptions Redirect(this RewriteOptions options, string regex, string replacement, int statusCode)
         {
-            var builder = new UrlRewriteRuleBuilder();
-            var pattern = new InputParser().ParseInputString(urlPattern);
-
-            builder.AddUrlMatch(regex);
-            builder.AddUrlAction(pattern, actionType: ActionType.Redirect, stopProcessing: false);
-            options.Rules.Add(builder.Build());
+            options.Rules.Add(new RedirectRule(regex, replacement, statusCode));
             return options;
         }
 
-        // TODO 301 overload
+        public static RewriteOptions RedirectToHttpsPermanent(this RewriteOptions options)
+        {
+            return RedirectToHttps(options, statusCode: 301, sslPort: null);
+        }
 
         /// <summary>
         /// Redirect a request to https if the incoming request is http

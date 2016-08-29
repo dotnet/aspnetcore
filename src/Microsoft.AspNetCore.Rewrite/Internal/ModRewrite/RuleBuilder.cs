@@ -210,13 +210,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                     {
                         throw new FormatException(Resources.FormatError_InputParserInvalidInteger(statusCode, -1));
                     }
-                    _action = new ModRewriteRedirectAction(res, pattern, queryStringAppend, queryStringDelete, escapeBackReference);
+                    _action = new RedirectAction(res, pattern, queryStringAppend, queryStringDelete, escapeBackReference);
                 }
                 else
                 {
                     var last = flags.HasFlag(FlagType.End) || flags.HasFlag(FlagType.Last);
                     var termination = last ? RuleTermination.StopRules : RuleTermination.Continue;
-                    _action = new ModRewriteRewriteAction(termination, pattern, queryStringAppend, queryStringDelete, escapeBackReference);
+                    _action = new RewriteAction(termination, pattern, queryStringAppend, queryStringDelete, escapeBackReference);
                 }
             }
         }

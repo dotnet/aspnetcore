@@ -27,7 +27,7 @@ namespace RewriteSample
             // TODO make this startup do something useful.
 
             app.UseRewriter(new RewriteOptions()
-                .Rewrite(@"foo/(\d+)", "foo?id={R:1}") 
+                .Rewrite(@"foo/(\d+)", "foo?id=$1") 
                 .ImportFromUrlRewrite(hostingEnv, "UrlRewrite.xml")
                 .ImportFromModRewrite(hostingEnv, "Rewrite.txt"));
 

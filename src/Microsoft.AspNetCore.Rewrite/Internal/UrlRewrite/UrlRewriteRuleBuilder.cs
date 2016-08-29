@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Rewrite.Internal.ModRewrite;
 using Microsoft.AspNetCore.Rewrite.Internal.UrlActions;
 using Microsoft.AspNetCore.Rewrite.Internal.UrlMatches;
 
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                     break;
                 case ActionType.Rewrite:
                     _action = new RewriteAction(stopProcessing ? RuleTermination.StopRules : RuleTermination.Continue,
-                        url, clearQuery: !appendQueryString);
+                        url, appendQueryString);
                     break;
                 case ActionType.Redirect:
                     _action = new RedirectAction(statusCode, url, appendQueryString);

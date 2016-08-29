@@ -11,24 +11,48 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
     {
         private readonly string ForwardSlash = "/";
         public RuleTermination Result { get; }
-        public bool ClearQuery { get; }
+        public bool QueryStringAppend { get; }
+        public bool QueryStringDelete { get; }
+        public bool EscapeBackReferences { get; }
 
-        public RewriteAction(RuleTermination result, Pattern pattern, bool clearQuery)
+        public RewriteAction(
+            RuleTermination result,
+            Pattern pattern,
+            bool queryStringAppend,
+            bool queryStringDelete,
+            bool escapeBackReferences)
         {
             Result = result;
             Url = pattern;
-            ClearQuery = clearQuery;
+            QueryStringAppend = queryStringAppend;
+            QueryStringDelete = queryStringDelete;
+            EscapeBackReferences = escapeBackReferences;
+        }
+
+        public RewriteAction(
+            RuleTermination result,
+            Pattern pattern,
+            bool queryStringAppend):
+            this (result, 
+                pattern,
+                queryStringAppend,
+                queryStringDelete: false,
+                escapeBackReferences: false)
+        {
+            
         }
 
         public override void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
             var pattern = Url.Evaluate(context, ruleMatch, condMatch);
-
-            if (ClearQuery)
+            var request = context.HttpContext.Request;
+            if (EscapeBackReferences)
             {
-                context.HttpContext.Request.QueryString = QueryString.Empty;
+                // because escapebackreferences will be encapsulated by the pattern, just escape the pattern
+                pattern = Uri.EscapeDataString(pattern);
             }
 
+            // TODO PERF, substrings, object creation, etc.
             if (pattern.IndexOf("://", StringComparison.Ordinal) >= 0)
             {
                 string scheme;
@@ -38,10 +62,25 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
                 FragmentString fragment;
                 UriHelper.FromAbsolute(pattern, out scheme, out host, out path, out query, out fragment);
 
-                context.HttpContext.Request.Scheme = scheme;
-                context.HttpContext.Request.Host = host;
-                context.HttpContext.Request.Path = path;
-                context.HttpContext.Request.QueryString = query.Add(context.HttpContext.Request.QueryString);
+                if (query.HasValue)
+                {
+                    if (QueryStringAppend)
+                    {
+                        request.QueryString = request.QueryString.Add(query);
+                    }
+                    else
+                    {
+                        request.QueryString = query;
+                    }
+                }
+                else if (QueryStringDelete)
+                {
+                    request.QueryString = QueryString.Empty;
+                }
+
+                request.Scheme = scheme;
+                request.Host = host;
+                request.Path = path;
             }
             else
             {
@@ -51,25 +90,39 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
                     var path = pattern.Substring(0, split);
                     if (path.StartsWith(ForwardSlash))
                     {
-                        context.HttpContext.Request.Path = PathString.FromUriComponent(path);
+                        request.Path = PathString.FromUriComponent(path);
                     }
                     else
                     {
-                        context.HttpContext.Request.Path = PathString.FromUriComponent(ForwardSlash + path);
+                        request.Path = PathString.FromUriComponent(ForwardSlash + path);
                     }
-                    context.HttpContext.Request.QueryString = context.HttpContext.Request.QueryString.Add(
-                        QueryString.FromUriComponent(
-                            pattern.Substring(split)));
+
+                    if (QueryStringAppend)
+                    {
+                        request.QueryString = request.QueryString.Add(
+                            QueryString.FromUriComponent(
+                                pattern.Substring(split)));
+                    }
+                    else
+                    {
+                        request.QueryString = QueryString.FromUriComponent(
+                            pattern.Substring(split));
+                    }
                 }
                 else
                 {
                     if (pattern.StartsWith(ForwardSlash))
                     {
-                        context.HttpContext.Request.Path = PathString.FromUriComponent(pattern);
+                        request.Path = PathString.FromUriComponent(pattern);
                     }
                     else
                     {
-                        context.HttpContext.Request.Path = PathString.FromUriComponent(ForwardSlash + pattern);
+                        request.Path = PathString.FromUriComponent(ForwardSlash + pattern);
+                    }
+
+                    if (QueryStringDelete)
+                    {
+                        request.QueryString = QueryString.Empty;
                     }
                 }
             }

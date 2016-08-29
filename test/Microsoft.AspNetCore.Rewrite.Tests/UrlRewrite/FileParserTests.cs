@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Rewrite.Internal;
+using Microsoft.AspNetCore.Rewrite.Internal.ModRewrite;
 using Microsoft.AspNetCore.Rewrite.Internal.UrlActions;
 using Microsoft.AspNetCore.Rewrite.Internal.UrlMatches;
 using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite;
@@ -146,7 +147,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             )
         {
             return new UrlRewriteRule(name, new RegexMatch(new Regex("^OFF$"), false), conditions,
-                new RewriteAction(RuleTermination.Continue, new InputParser().ParseInputString(url), clearQuery: false));
+                new RewriteAction(RuleTermination.Continue, new InputParser().ParseInputString(url), queryStringAppend: false));
         }
 
         // TODO make rules comparable?
