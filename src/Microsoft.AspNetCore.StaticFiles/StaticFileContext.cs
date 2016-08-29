@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -345,24 +346,29 @@ namespace Microsoft.AspNetCore.StaticFiles
         public async Task SendAsync()
         {
             ApplyResponseHeaders(Constants.Status200Ok);
-
             string physicalPath = _fileInfo.PhysicalPath;
             var sendFile = _context.Features.Get<IHttpSendFileFeature>();
             if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
             {
-                await sendFile.SendFileAsync(physicalPath, 0, _length, _context.RequestAborted);
+                // We don't need to directly cancel this, if the client disconnects it will fail silently.
+                await sendFile.SendFileAsync(physicalPath, 0, _length, CancellationToken.None);
                 return;
             }
 
-            Stream readStream = _fileInfo.CreateReadStream();
             try
             {
-                // Larger StreamCopyBufferSize is required because in case of FileStream readStream isn't going to be buffering
-                await StreamCopyOperation.CopyToAsync(readStream, _response.Body, _length, StreamCopyBufferSize, _context.RequestAborted);
+                using (var readStream = _fileInfo.CreateReadStream())
+                {
+                    // Larger StreamCopyBufferSize is required because in case of FileStream readStream isn't going to be buffering
+                    await StreamCopyOperation.CopyToAsync(readStream, _response.Body, _length, StreamCopyBufferSize, _context.RequestAborted);
+                }
             }
-            finally
+            catch (OperationCanceledException ex)
             {
-                readStream.Dispose();
+                _logger.LogWriteCancelled(ex);
+                // Don't throw this exception, it's most likely caused by the client disconnecting.
+                // However, if it was cancelled for any other reason we need to prevent empty responses.
+                _context.Abort();
             }
         }
 
@@ -400,20 +406,26 @@ namespace Microsoft.AspNetCore.StaticFiles
             if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
             {
                 _logger.LogSendingFileRange(_response.Headers[HeaderNames.ContentRange], physicalPath);
-                await sendFile.SendFileAsync(physicalPath, start, length, _context.RequestAborted);
+                // We don't need to directly cancel this, if the client disconnects it will fail silently.
+                await sendFile.SendFileAsync(physicalPath, start, length, CancellationToken.None);
                 return;
             }
 
-            Stream readStream = _fileInfo.CreateReadStream();
             try
             {
-                readStream.Seek(start, SeekOrigin.Begin); // TODO: What if !CanSeek?
-                _logger.LogCopyingFileRange(_response.Headers[HeaderNames.ContentRange], SubPath);
-                await StreamCopyOperation.CopyToAsync(readStream, _response.Body, length, _context.RequestAborted);
+                using (var readStream = _fileInfo.CreateReadStream())
+                {
+                    readStream.Seek(start, SeekOrigin.Begin); // TODO: What if !CanSeek?
+                    _logger.LogCopyingFileRange(_response.Headers[HeaderNames.ContentRange], SubPath);
+                    await StreamCopyOperation.CopyToAsync(readStream, _response.Body, length, _context.RequestAborted);
+                }
             }
-            finally
+            catch (OperationCanceledException ex)
             {
-                readStream.Dispose();
+                _logger.LogWriteCancelled(ex);
+                // Don't throw this exception, it's most likely caused by the client disconnecting.
+                // However, if it was cancelled for any other reason we need to prevent empty responses.
+                _context.Abort();
             }
         }
 

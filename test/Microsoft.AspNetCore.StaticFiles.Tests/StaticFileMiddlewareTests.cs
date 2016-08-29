@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
+        [Fact]
         public async Task FoundFile_LastModifiedTrimsSeconds()
         {
             using (var fileProvider = new PhysicalFileProvider(Directory.GetCurrentDirectory()))
