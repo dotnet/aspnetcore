@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
             Action = action;
         }
 
-        public override RuleResult ApplyRule(RewriteContext context)
+        public override void ApplyRule(RewriteContext context)
         {
             // Due to the path string always having a leading slash,
             // remove it from the path before regex comparison
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
             if (!initMatchResults.Success)
             {
                 context.Logger?.UrlRewriteDidNotMatchRule(Name);
-                return RuleResult.Continue;
+                return;
             }
 
             MatchResults condMatchRes = null;
@@ -53,13 +53,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
                 if (!condMatchRes.Success)
                 {
                     context.Logger?.UrlRewriteDidNotMatchRule(Name);
-                    return RuleResult.Continue;
+                    return;
                 }
             }
 
             context.Logger?.UrlRewriteMatchedRule(Name);
             // at this point we know the rule passed, evaluate the replacement.
-            return Action.ApplyAction(context, initMatchResults, condMatchRes);
+            Action.ApplyAction(context, initMatchResults, condMatchRes);
         }
     }
 }

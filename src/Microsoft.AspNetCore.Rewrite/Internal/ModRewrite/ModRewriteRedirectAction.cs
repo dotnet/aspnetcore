@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             EscapeBackReferences = escapeBackReferences;
         }
 
-        public override RuleResult ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
+        public override void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
             var pattern = Url.Evaluate(context, ruleMatch, condMatch);
             if (EscapeBackReferences)
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                     context.HttpContext.Response.Headers[HeaderNames.Location] = pattern + context.HttpContext.Request.QueryString;
                 }
             }
-            return RuleResult.ResponseComplete;
+            context.Result = RuleTermination.ResponseComplete;
         }
     }
 }

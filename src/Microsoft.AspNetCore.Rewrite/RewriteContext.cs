@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Rewrite
         public HttpContext HttpContext { get; set; }
         public IFileProvider StaticFileProvider { get; set; }
         public ILogger Logger { get; set; }
+        public RuleTermination Result { get; set; }
         // PERF: share the same string builder per request
         internal StringBuilder Builder { get; set; } = new StringBuilder(64);
     }

@@ -5,16 +5,16 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
 {
     public class VoidAction : UrlAction
     {
-        private readonly RuleResult _results;
+        public RuleTermination Result { get; }
 
-        public VoidAction(RuleResult results)
+        public VoidAction(RuleTermination result)
         {
-            _results = results;
+            Result = result;
         }
         // Explicitly say that nothing happens
-        public override RuleResult ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
+        public override void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
-            return _results;
+            context.Result = Result;
         }
     }
 }

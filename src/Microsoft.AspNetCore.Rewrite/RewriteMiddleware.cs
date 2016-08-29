@@ -65,30 +65,31 @@ namespace Microsoft.AspNetCore.Rewrite
             {
                 throw new ArgumentNullException(nameof(context));
             }
-            var urlContext = new RewriteContext {
+            var rewriteContext = new RewriteContext {
                 HttpContext = context,
                 StaticFileProvider = _fileProvider,
-                Logger = _logger
+                Logger = _logger,
+                Result = RuleTermination.Continue
             };
 
             foreach (var rule in _options.Rules)
             {
-                var result = rule.ApplyRule(urlContext);
-                switch (result.Result)
+                rule.ApplyRule(rewriteContext);
+                switch (rewriteContext.Result)
                 {
                     case RuleTermination.Continue:
                         _logger.RewriteMiddlewareRequestContinueResults();
                         break;
                     case RuleTermination.ResponseComplete:
                         _logger.RewriteMiddlewareRequestResponseComplete(
-                            urlContext.HttpContext.Response.Headers[HeaderNames.Location],
-                            urlContext.HttpContext.Response.StatusCode);
+                            context.Response.Headers[HeaderNames.Location],
+                            context.Response.StatusCode);
                         return CompletedTask;
                     case RuleTermination.StopRules:
                         _logger.RewriteMiddlewareRequestStopRules();
                         return _next(context);
                     default:
-                        throw new ArgumentOutOfRangeException($"Invalid rule termination {result}");
+                        throw new ArgumentOutOfRangeException($"Invalid rule termination {rewriteContext.Result}");
                 }
             }
             return _next(context);

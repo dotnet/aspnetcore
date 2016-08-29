@@ -7,10 +7,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
 {
     public class ForbiddenAction : UrlAction
     {
-        public override RuleResult ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
+        public override void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
             context.HttpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
-            return RuleResult.ResponseComplete;
+            context.Result = RuleTermination.ResponseComplete;
         }
     }
 }

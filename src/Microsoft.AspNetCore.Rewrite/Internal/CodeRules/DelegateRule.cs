@@ -7,12 +7,12 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
 {
     public class DelegateRule : Rule
     {
-        private readonly Func<RewriteContext, RuleResult> _onApplyRule;
+        private readonly Action<RewriteContext> _onApplyRule;
 
-        public DelegateRule(Func<RewriteContext, RuleResult> onApplyRule)
+        public DelegateRule(Action<RewriteContext> onApplyRule)
         {
             _onApplyRule = onApplyRule;
         }
-        public override RuleResult ApplyRule(RewriteContext context) => _onApplyRule(context);
+        public override void ApplyRule(RewriteContext context) => _onApplyRule(context);
     }
 }

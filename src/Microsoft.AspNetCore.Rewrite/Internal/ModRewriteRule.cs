@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
             PreActions = preActions;
         }
 
-        public override RuleResult ApplyRule(RewriteContext context)
+        public override void ApplyRule(RewriteContext context)
         {
             // 1. Figure out which section of the string to match for the initial rule.
             var initMatchRes = InitialMatch.Evaluate(context.HttpContext.Request.Path, context);
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
             if (!initMatchRes.Success)
             {
                 context.Logger?.ModRewriteDidNotMatchRule();
-                return RuleResult.Continue;
+                return;
             }
 
             MatchResults condMatchRes = null;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
                 if (!condMatchRes.Success)
                 {
                     context.Logger?.ModRewriteDidNotMatchRule();
-                    return RuleResult.Continue;
+                    return;
                 }
             }
 
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
                 preAction.ApplyAction(context.HttpContext, initMatchRes, condMatchRes);
             }
 
-            return Action.ApplyAction(context, initMatchRes, condMatchRes);
+            Action.ApplyAction(context, initMatchRes, condMatchRes);
         }
     }
 }

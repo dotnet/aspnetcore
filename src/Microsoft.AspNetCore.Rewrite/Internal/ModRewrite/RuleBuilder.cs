@@ -215,8 +215,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                 else
                 {
                     var last = flags.HasFlag(FlagType.End) || flags.HasFlag(FlagType.Last);
-                    var redirect = last ? RuleResult.StopRules : RuleResult.Continue;
-                    _action = new ModRewriteRewriteAction(redirect, pattern, queryStringAppend, queryStringDelete, escapeBackReference);
+                    var termination = last ? RuleTermination.StopRules : RuleTermination.Continue;
+                    _action = new ModRewriteRewriteAction(termination, pattern, queryStringAppend, queryStringDelete, escapeBackReference);
                 }
             }
         }

@@ -10,13 +10,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
     public class ModRewriteRewriteAction : UrlAction
     {
         private readonly string ForwardSlash = "/";
-        public RuleResult Result { get; }
+        public RuleTermination Result { get; }
         public bool QueryStringAppend { get; }
         public bool QueryStringDelete { get; }
         public bool EscapeBackReferences { get; }
 
         public ModRewriteRewriteAction(
-            RuleResult result,
+            RuleTermination result,
             Pattern pattern,
             bool queryStringAppend,
             bool queryStringDelete,
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             EscapeBackReferences = escapeBackReferences;
         }
 
-        public override RuleResult ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
+        public override void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
             var pattern = Url.Evaluate(context, ruleMatch, condMatch);
 
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                     }
                 }
             }
-            return Result;
+            context.Result = Result;
         }
     }
 }

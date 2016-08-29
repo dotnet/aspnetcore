@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
             AppendQueryString = appendQueryString;
         }
 
-        public override RuleResult ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
+        public override void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
             var pattern = Url.Evaluate(context, ruleMatch, condMatch);
             context.HttpContext.Response.StatusCode = StatusCode;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
             {
                 context.HttpContext.Response.Headers[HeaderNames.Location] = pattern;
             }
-            return RuleResult.ResponseComplete;
+            context.Result = RuleTermination.ResponseComplete;
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <param name="options">The Rewrite options.</param>
         /// <param name="applyRule">A Func that checks and applies the rule.</param>
         /// <returns></returns>
-        public static RewriteOptions Add(this RewriteOptions options, Func<RewriteContext, RuleResult> applyRule)
+        public static RewriteOptions Add(this RewriteOptions options, Action<RewriteContext> applyRule)
         {
             options.Rules.Add(new DelegateRule(applyRule));
             return options;

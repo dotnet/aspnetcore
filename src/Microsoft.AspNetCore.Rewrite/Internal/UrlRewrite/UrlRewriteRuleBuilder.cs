@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             switch (actionType)
             {
                 case ActionType.None:
-                    _action = new VoidAction(stopProcessing ? RuleResult.StopRules : RuleResult.Continue);
+                    _action = new VoidAction(stopProcessing ? RuleTermination.StopRules : RuleTermination.Continue);
                     break;
                 case ActionType.Rewrite:
                     _action = new RewriteAction(stopProcessing ? RuleTermination.StopRules : RuleTermination.Continue,

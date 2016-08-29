@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
             ClearQuery = clearQuery;
         }
 
-        public override RuleResult ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
+        public override void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
             var pattern = Url.Evaluate(context, ruleMatch, condMatch);
 
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
                     }
                 }
             }
-            return new RuleResult { Result = Result };
+            context.Result = Result;
         }
     }
 }

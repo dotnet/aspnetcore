@@ -4,9 +4,10 @@
 namespace Microsoft.AspNetCore.Rewrite
 {
     // make this public and doc comements
+    // caller must set the context.Results field appropriately in rule.
     public abstract class Rule
     {
-        public abstract RuleResult ApplyRule(RewriteContext context);
+        public abstract void ApplyRule(RewriteContext context);
     }
 }
 
