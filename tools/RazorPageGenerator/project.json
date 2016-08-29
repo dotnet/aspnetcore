@@ -1,6 +1,6 @@
 {
   "version": "1.1.0-*",
-  "description": "Builds Razor pages for views in a project",
+  "description": "Builds Razor pages for views in a project. For internal use only.",
   "buildOptions": {
     "warningsAsErrors": true,
     "emitEntryPoint": true,
