@@ -130,7 +130,7 @@
     <value>The supplied route name '{0}' is ambiguous and matched more than one route.</value>
   </data>
   <data name="DefaultHandler_MustBeSet" xml:space="preserve">
-    <value>A default handler must be set on the RouteCollection.</value>
+    <value>A default handler must be set on the {0}.</value>
   </data>
   <data name="DefaultInlineConstraintResolver_AmbiguousCtors" xml:space="preserve">
     <value>The constructor to use for activating the constraint type '{0}' is ambiguous. Multiple constructors were found with the following number of parameters: {1}.</value>

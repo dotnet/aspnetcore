@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             if (routeBuilder.DefaultHandler == null)
             {
-                throw new RouteCreationException(Resources.DefaultHandler_MustBeSet);
+                throw new RouteCreationException(Resources.FormatDefaultHandler_MustBeSet(nameof(IRouteBuilder)));
             }
 
             var inlineConstraintResolver = routeBuilder

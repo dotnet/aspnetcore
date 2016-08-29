@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// A default handler must be set on the RouteCollection.
+        /// A default handler must be set on the {0}.
         /// </summary>
         internal static string DefaultHandler_MustBeSet
         {
@@ -83,11 +83,11 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// A default handler must be set on the RouteCollection.
+        /// A default handler must be set on the {0}.
         /// </summary>
-        internal static string FormatDefaultHandler_MustBeSet()
+        internal static string FormatDefaultHandler_MustBeSet(object p0)
         {
-            return GetString("DefaultHandler_MustBeSet");
+            return string.Format(CultureInfo.CurrentCulture, GetString("DefaultHandler_MustBeSet"), p0);
         }
 
         /// <summary>
