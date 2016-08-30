@@ -69,15 +69,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var request = context.RouteContext.HttpContext.Request;
             var method = request.Method;
-            if (request.Headers.ContainsKey(OriginHeader))
+
+            // Perf: Check http method before accessing the Headers collection.
+            if (string.Equals(method, PreflightHttpMethod, StringComparison.OrdinalIgnoreCase) &&
+                request.Headers.ContainsKey(OriginHeader))
             {
                 // Update the http method if it is preflight request.
                 var accessControlRequestMethod = request.Headers[AccessControlRequestMethod];
-                if (string.Equals(
-                        request.Method,
-                        PreflightHttpMethod,
-                        StringComparison.OrdinalIgnoreCase) &&
-                    !StringValues.IsNullOrEmpty(accessControlRequestMethod))
+                if (!StringValues.IsNullOrEmpty(accessControlRequestMethod))
                 {
                     method = accessControlRequestMethod;
                 }
