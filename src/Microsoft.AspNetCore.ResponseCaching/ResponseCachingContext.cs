@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     builder.Append(KeyDelimiter)
                         .Append('Q');
 
-                    if (varyBy.Params.Count == 1 && string.Equals(varyBy.Params[0], "*"))
+                    if (varyBy.Params.Count == 1 && string.Equals(varyBy.Params[0], "*", StringComparison.Ordinal))
                     {
                         // Vary by all available query params
                         foreach (var query in _httpContext.Request.Query.OrderBy(q => q.Key, StringComparer.OrdinalIgnoreCase))

@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         // Serialization Format
         // Format version (int)
-        // Type (string)
+        // Type (char: 'R' for CachedResponse, 'V' for CachedVaryBy)
         // Type-dependent data (see CachedResponse and CachedVaryBy)
         public static object Read(BinaryReader reader)
         {
@@ -51,14 +51,14 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 return null;
             }
 
-            var type = reader.ReadString();
+            var type = reader.ReadChar();
 
-            if (string.Equals(nameof(CachedResponse), type))
+            if (type == 'R')
             {
                 var cachedResponse = ReadCachedResponse(reader);
                 return cachedResponse;
             }
-            else if (string.Equals(nameof(CachedVaryBy), type))
+            else if (type == 'V')
             {
                 var cachedResponse = ReadCachedVaryBy(reader);
                 return cachedResponse;
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         // See serialization format above
         private static void WriteCachedResponse(BinaryWriter writer, CachedResponse entry)
         {
-            writer.Write(nameof(CachedResponse));
+            writer.Write('R');
             writer.Write(entry.Created.UtcTicks);
             writer.Write(entry.StatusCode);
             writer.Write(entry.Headers.Count);
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         // See serialization format above
         private static void WriteCachedVaryBy(BinaryWriter writer, CachedVaryBy entry)
         {
-            writer.Write(nameof(CachedVaryBy));
+            writer.Write('V');
 
             writer.Write(entry.Headers.Count);
             foreach (var header in entry.Headers)
