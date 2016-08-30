@@ -325,7 +325,8 @@
         <ItemGroup>
             <FileExclusions Include="$(PoliCheckPath)**\net451\Microsoft.EntityFrameworkCore.Specification.Tests.dll;
                                      $(PoliCheckPath)**\netstandard1.3\Microsoft.EntityFrameworkCore.Specification.Tests.dll;
-                                     $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\Northwind\NorthwindData.cs">
+                                     $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\Northwind\NorthwindData.cs;
+                                     $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\DatabindingTestBase.cs">
                 <Justification>Northwind database contains too many violations to track them individually.</Justification>
             </FileExclusions>
             <FileExclusions Include="$(PoliCheckPath)**\Content\bootstrap.css;
