@@ -3,10 +3,9 @@
 
 using System;
 using System.Diagnostics;
-using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Chunks.Generators;
 using Microsoft.AspNetCore.Razor.Editor;
-using Microsoft.AspNetCore.Razor.Parser.Internal;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Tokenizer.Internal;
 
@@ -41,12 +40,19 @@ namespace Microsoft.AspNetCore.Razor.Parser
         protected override SyntaxTreeNode RewriteBlock(BlockBuilder parent, Block block)
         {
             // Collect the content of this node
-            var content = string.Concat(block.Children.Cast<Span>().Select(s => s.Content));
+            var builder = new StringBuilder();
+            for (var i = 0; i < block.Children.Count; i++)
+            {
+                var childSpan = (Span)block.Children[i];
+                builder.Append(childSpan.Content);
+            }
 
             // Create a new span containing this content
             var span = new SpanBuilder();
             span.EditHandler = new SpanEditHandler(HtmlTokenizer.Tokenize);
-            FillSpan(span, block.Children.Cast<Span>().First().Start, content);
+            Debug.Assert(block.Children.Count > 0);
+            var start = ((Span)block.Children[0]).Start;
+            FillSpan(span, start, builder.ToString());
             return span.Build();
         }
 

@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.AspNetCore.Razor.Text;
 
@@ -13,7 +13,21 @@ namespace Microsoft.AspNetCore.Razor.Tokenizer.Symbols
     {
         public static LocationTagged<string> GetContent(this SpanBuilder span)
         {
-            return GetContent(span, e => e);
+            var symbols = span.Symbols;
+            if (symbols.Count > 0)
+            {
+                var text = new StringBuilder();
+                for (var i = 0; i < symbols.Count; i++)
+                {
+                    text.Append(symbols[i].Content);
+                }
+
+                return new LocationTagged<string>(text.ToString(), span.Start + symbols[0].Start);
+            }
+            else
+            {
+                return new LocationTagged<string>(string.Empty, span.Start);
+            }
         }
 
         public static LocationTagged<string> GetContent(this SpanBuilder span, Func<IEnumerable<ISymbol>, IEnumerable<ISymbol>> filter)
@@ -23,14 +37,21 @@ namespace Microsoft.AspNetCore.Razor.Tokenizer.Symbols
 
         public static LocationTagged<string> GetContent(this IEnumerable<ISymbol> symbols, SourceLocation spanStart)
         {
-            if (symbols.Any())
+            StringBuilder builder = null;
+            var location = spanStart;
+
+            foreach (var symbol in symbols)
             {
-                return new LocationTagged<string>(string.Concat(symbols.Select(s => s.Content)), spanStart + symbols.First().Start);
+                if (builder == null)
+                {
+                    builder = new StringBuilder();
+                    location += symbol.Start;
+                }
+
+                builder.Append(symbol.Content);
             }
-            else
-            {
-                return new LocationTagged<string>(string.Empty, spanStart);
-            }
+
+            return new LocationTagged<string>(builder?.ToString() ?? string.Empty, location);
         }
 
         public static LocationTagged<string> GetContent(this ISymbol symbol)

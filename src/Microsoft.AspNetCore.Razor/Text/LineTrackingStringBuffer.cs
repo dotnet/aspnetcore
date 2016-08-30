@@ -33,16 +33,23 @@ namespace Microsoft.AspNetCore.Razor.Text
 
         public void Append(string content)
         {
-            for (int i = 0; i < content.Length; i++)
+            var previousIndex = 0;
+            for (var i = 0; i < content.Length; i++)
             {
-                AppendCore(content[i]);
-
                 // \r on it's own: Start a new line, otherwise wait for \n
                 // Other Newline: Start a new line
-                if ((content[i] == '\r' && (i + 1 == content.Length || content[i + 1] != '\n')) || (content[i] != '\r' && ParserHelpers.IsNewLine(content[i])))
+                if ((content[i] == '\r' && (i + 1 == content.Length || content[i + 1] != '\n')) ||
+                    (content[i] != '\r' && ParserHelpers.IsNewLine(content[i])))
                 {
+                    AppendCore(content, previousIndex, i - previousIndex + 1);
+                    previousIndex = i + 1;
                     PushNewLine();
                 }
+            }
+
+            if (previousIndex < content.Length)
+            {
+                AppendCore(content, previousIndex, content.Length - previousIndex);
             }
         }
 
@@ -61,6 +68,12 @@ namespace Microsoft.AspNetCore.Razor.Text
         {
             _endLine = new TextLine(_endLine.End, _endLine.Index + 1);
             _lines.Add(_endLine);
+        }
+
+        private void AppendCore(string content, int index, int length)
+        {
+            Debug.Assert(_lines.Count > 0);
+            _lines[_lines.Count - 1].Content.Append(content, index, length);
         }
 
         private void AppendCore(char chr)

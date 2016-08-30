@@ -597,12 +597,14 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
         private static bool IsPartialTag(Block tagBlock)
         {
             // No need to validate the tag end because in order to be a tag block it must start with '<'.
-            var tagEnd = tagBlock.Children.Last() as Span;
+            var tagEnd = tagBlock.Children[tagBlock.Children.Count - 1] as Span;
 
             // If our tag end is not a markup span it means it's some sort of code SyntaxTreeNode (not a valid format)
             if (tagEnd != null && tagEnd.Kind == SpanKind.Markup)
             {
-                var endSymbol = tagEnd.Symbols.LastOrDefault() as HtmlSymbol;
+                var endSymbol = tagEnd.Symbols.Count > 0 ?
+                    tagEnd.Symbols[tagEnd.Symbols.Count - 1] as HtmlSymbol :
+                    null;
 
                 if (endSymbol != null && endSymbol.Type == HtmlSymbolType.CloseAngle)
                 {
@@ -661,8 +663,8 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
 
         private bool IsPotentialTagHelper(string tagName, Block childBlock)
         {
-            var child = childBlock.Children.FirstOrDefault();
-            Debug.Assert(child != null);
+            Debug.Assert(childBlock.Children.Count > 0);
+            var child = childBlock.Children[0];
 
             var childSpan = (Span)child;
 
@@ -752,7 +754,18 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers.Internal
             }
 
             var childSpan = (Span)child;
-            var textSymbol = childSpan.Symbols.FirstHtmlSymbolAs(HtmlSymbolType.WhiteSpace | HtmlSymbolType.Text);
+            HtmlSymbol textSymbol = null;
+            for (var i = 0; i < childSpan.Symbols.Count; i++)
+            {
+                var symbol = childSpan.Symbols[i] as HtmlSymbol;
+
+                if (symbol != null &&
+                    (symbol.Type & (HtmlSymbolType.WhiteSpace | HtmlSymbolType.Text)) == symbol.Type)
+                {
+                    textSymbol = symbol;
+                    break;
+                }
+            }
 
             if (textSymbol == null)
             {

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Razor.Parser.TagHelpers;
 
 namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
 {
@@ -77,29 +76,34 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
                 descriptors = matchingDescriptors.Concat(descriptors);
             }
 
-            var applicableDescriptors = ApplyRequiredAttributes(descriptors, attributes);
-            applicableDescriptors = ApplyParentTagFilter(applicableDescriptors, parentTagName);
+            var applicableDescriptors = new List<TagHelperDescriptor>();
+            foreach (var descriptor in descriptors)
+            {
+                if (HasRequiredAttributes(descriptor, attributes) &&
+                    HasRequiredParentTag(descriptor, parentTagName))
+                {
+                    applicableDescriptors.Add(descriptor);
+                }
+            }
 
-            return applicableDescriptors.ToArray();
+            return applicableDescriptors;
         }
 
-        private IEnumerable<TagHelperDescriptor> ApplyParentTagFilter(
-            IEnumerable<TagHelperDescriptor> descriptors,
+        private bool HasRequiredParentTag(
+            TagHelperDescriptor descriptor,
             string parentTagName)
         {
-            return descriptors.Where(descriptor =>
-                descriptor.RequiredParent == null ||
-                string.Equals(parentTagName, descriptor.RequiredParent, StringComparison.OrdinalIgnoreCase));
+            return descriptor.RequiredParent == null ||
+                string.Equals(parentTagName, descriptor.RequiredParent, StringComparison.OrdinalIgnoreCase);
         }
 
-        private IEnumerable<TagHelperDescriptor> ApplyRequiredAttributes(
-            IEnumerable<TagHelperDescriptor> descriptors,
+        private bool HasRequiredAttributes(
+            TagHelperDescriptor descriptor,
             IEnumerable<KeyValuePair<string, string>> attributes)
         {
-            return descriptors.Where(
-                descriptor => descriptor.RequiredAttributes.All(
-                    requiredAttribute => attributes.Any(
-                        attribute => requiredAttribute.IsMatch(attribute.Key, attribute.Value))));
+            return descriptor.RequiredAttributes.All(
+                requiredAttribute => attributes.Any(
+                    attribute => requiredAttribute.IsMatch(attribute.Key, attribute.Value)));
         }
 
         private void Register(TagHelperDescriptor descriptor)

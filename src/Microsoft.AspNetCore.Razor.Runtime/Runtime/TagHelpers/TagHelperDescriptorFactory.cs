@@ -190,21 +190,21 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 
             foreach (var name in allowedChildren)
             {
-                var valid = TryValidateName(
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    var whitespaceError = Resources.FormatTagHelperDescriptorFactory_InvalidRestrictChildrenAttributeNameNullWhitespace(
+                        nameof(RestrictChildrenAttribute),
+                        tagHelperName);
+                    errorSink.OnError(SourceLocation.Zero, whitespaceError, length: 0);
+                }
+                else if (TryValidateName(
                     name,
-                    whitespaceError:
-                        Resources.FormatTagHelperDescriptorFactory_InvalidRestrictChildrenAttributeNameNullWhitespace(
-                            nameof(RestrictChildrenAttribute),
-                            tagHelperName),
-                    characterErrorBuilder: (invalidCharacter) =>
-                        Resources.FormatTagHelperDescriptorFactory_InvalidRestrictChildrenAttributeName(
-                            nameof(RestrictChildrenAttribute),
-                            name,
-                            tagHelperName,
-                            invalidCharacter),
-                    errorSink: errorSink);
-
-                if (valid)
+                    invalidCharacter => Resources.FormatTagHelperDescriptorFactory_InvalidRestrictChildrenAttributeName(
+                        nameof(RestrictChildrenAttribute),
+                        name,
+                        tagHelperName,
+                        invalidCharacter),
+                    errorSink))
                 {
                     validAllowedChildren.Add(name);
                 }
@@ -281,17 +281,29 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         /// </summary>
         internal static bool ValidateParentTagName(string parentTag, ErrorSink errorSink)
         {
-            return parentTag == null ||
-                TryValidateName(
+            if (parentTag == null)
+            {
+                return true;
+            }
+            else if (string.IsNullOrWhiteSpace(parentTag))
+            {
+                var error = Resources.FormatHtmlTargetElementAttribute_NameCannotBeNullOrWhitespace(
+                    Resources.TagHelperDescriptorFactory_ParentTag);
+                errorSink.OnError(SourceLocation.Zero, error, length: 0);
+                return false;
+            }
+            else if (!TryValidateName(
+                parentTag,
+                invalidCharacter => Resources.FormatHtmlTargetElementAttribute_InvalidName(
+                    Resources.TagHelperDescriptorFactory_ParentTag.ToLower(),
                     parentTag,
-                    Resources.FormatHtmlTargetElementAttribute_NameCannotBeNullOrWhitespace(
-                        Resources.TagHelperDescriptorFactory_ParentTag),
-                    characterErrorBuilder: (invalidCharacter) =>
-                        Resources.FormatHtmlTargetElementAttribute_InvalidName(
-                            Resources.TagHelperDescriptorFactory_ParentTag.ToLower(),
-                            parentTag,
-                            invalidCharacter),
-                    errorSink: errorSink);
+                    invalidCharacter),
+                errorSink))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private static bool TryGetRequiredAttributeDescriptors(
@@ -320,45 +332,42 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 Resources.TagHelperDescriptorFactory_Attribute :
                 Resources.TagHelperDescriptorFactory_Tag;
 
-            var validName = TryValidateName(
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                var error = Resources.FormatHtmlTargetElementAttribute_NameCannotBeNullOrWhitespace(targetName);
+                errorSink.OnError(SourceLocation.Zero, error, length: 0);
+                return false;
+            }
+            else if (!TryValidateName(
                 name,
-                whitespaceError: Resources.FormatHtmlTargetElementAttribute_NameCannotBeNullOrWhitespace(targetName),
-                characterErrorBuilder: (invalidCharacter) =>
-                    Resources.FormatHtmlTargetElementAttribute_InvalidName(
-                        targetName.ToLower(),
-                        name,
-                        invalidCharacter),
-                errorSink: errorSink);
+                invalidCharacter => Resources.FormatHtmlTargetElementAttribute_InvalidName(
+                    targetName.ToLower(),
+                    name,
+                    invalidCharacter),
+                errorSink))
+            {
+                return false;
+            }
 
-            return validName;
+            return true;
         }
 
         private static bool TryValidateName(
             string name,
-            string whitespaceError,
             Func<char, string> characterErrorBuilder,
             ErrorSink errorSink)
         {
             var validName = true;
 
-            if (string.IsNullOrWhiteSpace(name))
+            foreach (var character in name)
             {
-                errorSink.OnError(SourceLocation.Zero, whitespaceError, length: 0);
-
-                validName = false;
-            }
-            else
-            {
-                foreach (var character in name)
+                if (char.IsWhiteSpace(character) ||
+                    InvalidNonWhitespaceNameCharacters.Contains(character))
                 {
-                    if (char.IsWhiteSpace(character) ||
-                        InvalidNonWhitespaceNameCharacters.Contains(character))
-                    {
-                        var error = characterErrorBuilder(character);
-                        errorSink.OnError(SourceLocation.Zero, error, length: 0);
+                    var error = characterErrorBuilder(character);
+                    errorSink.OnError(SourceLocation.Zero, error, length: 0);
 
-                        validName = false;
-                    }
+                    validName = false;
                 }
             }
 
@@ -696,7 +705,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             return property.GetIndexParameters().Length == 0 &&
                 property.GetMethod != null &&
                 property.GetMethod.IsPublic &&
-                property.GetCustomAttribute<HtmlAttributeNotBoundAttribute>(inherit: false) == null;
+                !property.IsDefined(typeof(HtmlAttributeNotBoundAttribute), inherit: false);
         }
 
         /// <summary>
