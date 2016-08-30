@@ -34,7 +34,15 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{0EF2ACDF-012F-4472-A13A-4272419E2903}"
 	ProjectSection(SolutionItems) = preProject
+		test\shared\DummyApplication.cs = test\shared\DummyApplication.cs
 		test\shared\HttpClientSlim.cs = test\shared\HttpClientSlim.cs
+		test\shared\LifetimeNotImplemented.cs = test\shared\LifetimeNotImplemented.cs
+		test\shared\MockSystemClock.cs = test\shared\MockSystemClock.cs
+		test\shared\TestApplicationErrorLogger.cs = test\shared\TestApplicationErrorLogger.cs
+		test\shared\TestConnection.cs = test\shared\TestConnection.cs
+		test\shared\TestKestrelTrace.cs = test\shared\TestKestrelTrace.cs
+		test\shared\TestServer.cs = test\shared\TestServer.cs
+		test\shared\TestServiceContext.cs = test\shared\TestServiceContext.cs
 	EndProjectSection
 EndProject
 Global

@@ -8,9 +8,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Filter;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 
-namespace Microsoft.AspNetCore.Server.KestrelTests
+namespace Microsoft.AspNetCore.Testing
 {
     public class TestServiceContext : ServiceContext
     {

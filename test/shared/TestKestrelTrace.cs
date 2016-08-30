@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.KestrelTests
+namespace Microsoft.AspNetCore.Testing
 {
     public class TestKestrelTrace : KestrelTrace
     {

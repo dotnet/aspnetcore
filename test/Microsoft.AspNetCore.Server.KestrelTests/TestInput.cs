@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {

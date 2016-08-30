@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 
-namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
+namespace Microsoft.AspNetCore.Testing
 {
     public class MockSystemClock : ISystemClock
     {

@@ -36,6 +36,7 @@
         "../shared/**/*.cs"
       ]
     },
+    "keyFile": "../../tools/Key.snk",
     "copyToOutput": {
       "include": "TestResources/testCert.pfx"
     }

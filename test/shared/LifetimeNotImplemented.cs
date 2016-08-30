@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Microsoft.AspNetCore.Server.KestrelTests
+namespace Microsoft.AspNetCore.Testing
 {
     public class LifetimeNotImplemented : IApplicationLifetime
     {
