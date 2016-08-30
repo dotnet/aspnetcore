@@ -100,6 +100,97 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
+        public void Compare_WithNull_ReturnsFalse()
+        {
+            Assert.False(EntityTagHeaderValue.Any.Compare(null, useStrongComparison: true));
+            Assert.False(EntityTagHeaderValue.Any.Compare(null, useStrongComparison: false));
+        }
+
+        public static TheoryData<EntityTagHeaderValue, EntityTagHeaderValue> NotEquivalentUnderStrongComparison
+        {
+            get
+            {
+                return new TheoryData<EntityTagHeaderValue, EntityTagHeaderValue>
+                {
+                    { new EntityTagHeaderValue("\"tag\""), new EntityTagHeaderValue("\"TAG\"") },
+                    { new EntityTagHeaderValue("\"tag\"", true), new EntityTagHeaderValue("\"tag\"", true) },
+                    { new EntityTagHeaderValue("\"tag\""), new EntityTagHeaderValue("\"tag\"", true) },
+                    { new EntityTagHeaderValue("\"tag\""), new EntityTagHeaderValue("\"tag1\"") },
+                    { new EntityTagHeaderValue("\"tag\""), EntityTagHeaderValue.Any },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NotEquivalentUnderStrongComparison))]
+        public void CompareUsingStrongComparison_NonEquivalentPairs_ReturnFalse(EntityTagHeaderValue left, EntityTagHeaderValue right)
+        {
+            Assert.False(left.Compare(right, useStrongComparison: true));
+            Assert.False(right.Compare(left, useStrongComparison: true));
+        }
+
+        public static TheoryData<EntityTagHeaderValue, EntityTagHeaderValue> EquivalentUnderStrongComparison
+        {
+            get
+            {
+                return new TheoryData<EntityTagHeaderValue, EntityTagHeaderValue>
+                {
+                    { new EntityTagHeaderValue("\"tag\""), new EntityTagHeaderValue("\"tag\"") },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(EquivalentUnderStrongComparison))]
+        public void CompareUsingStrongComparison_EquivalentPairs_ReturnTrue(EntityTagHeaderValue left, EntityTagHeaderValue right)
+        {
+            Assert.True(left.Compare(right, useStrongComparison: true));
+            Assert.True(right.Compare(left, useStrongComparison: true));
+        }
+
+        public static TheoryData<EntityTagHeaderValue, EntityTagHeaderValue> NotEquivalentUnderWeakComparison
+        {
+            get
+            {
+                return new TheoryData<EntityTagHeaderValue, EntityTagHeaderValue>
+                {
+                    { new EntityTagHeaderValue("\"tag\""), new EntityTagHeaderValue("\"TAG\"") },
+                    { new EntityTagHeaderValue("\"tag\""), new EntityTagHeaderValue("\"tag1\"") },
+                    { new EntityTagHeaderValue("\"tag\""), EntityTagHeaderValue.Any },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NotEquivalentUnderWeakComparison))]
+        public void CompareUsingWeakComparison_NonEquivalentPairs_ReturnFalse(EntityTagHeaderValue left, EntityTagHeaderValue right)
+        {
+            Assert.False(left.Compare(right, useStrongComparison: false));
+            Assert.False(right.Compare(left, useStrongComparison: false));
+        }
+
+        public static TheoryData<EntityTagHeaderValue, EntityTagHeaderValue> EquivalentUnderWeakComparison
+        {
+            get
+            {
+                return new TheoryData<EntityTagHeaderValue, EntityTagHeaderValue>
+                {
+                    { new EntityTagHeaderValue("\"tag\""), new EntityTagHeaderValue("\"tag\"") },
+                    { new EntityTagHeaderValue("\"tag\"", true), new EntityTagHeaderValue("\"tag\"", true) },
+                    { new EntityTagHeaderValue("\"tag\""), new EntityTagHeaderValue("\"tag\"", true) },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(EquivalentUnderWeakComparison))]
+        public void CompareUsingWeakComparison_EquivalentPairs_ReturnTrue(EntityTagHeaderValue left, EntityTagHeaderValue right)
+        {
+            Assert.True(left.Compare(right, useStrongComparison: false));
+            Assert.True(right.Compare(left, useStrongComparison: false));
+        }
+
+        [Fact]
         public void Parse_SetOfValidValueStrings_ParsedCorrectly()
         {
             CheckValidParse("\"tag\"", new EntityTagHeaderValue("\"tag\""));

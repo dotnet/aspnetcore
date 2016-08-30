@@ -93,6 +93,15 @@ namespace Microsoft.Net.Http.Headers
             return _tag;
         }
 
+        /// <summary>
+        /// Check against another <see cref="EntityTagHeaderValue"/> for equality.
+        /// This equality check should not be used to determine if two values match under the RFC specifications (https://tools.ietf.org/html/rfc7232#section-2.3.2).
+        /// </summary>
+        /// <param name="obj">The other value to check against for equality.</param>
+        /// <returns>
+        /// <c>true</c> if the strength and tag of the two values match,
+        /// <c>false</c> if the other value is null, is not an <see cref="EntityTagHeaderValue"/>, or if there is a mismatch of strength or tag between the two values.
+        /// </returns>
         public override bool Equals(object obj)
         {
             var other = obj as EntityTagHeaderValue;
@@ -103,13 +112,39 @@ namespace Microsoft.Net.Http.Headers
             }
 
             // Since the tag is a quoted-string we treat it case-sensitive.
-            return ((_isWeak == other._isWeak) && (string.CompareOrdinal(_tag, other._tag) == 0));
+            return _isWeak == other._isWeak && string.Equals(_tag, other._tag, StringComparison.Ordinal);
         }
 
         public override int GetHashCode()
         {
             // Since the tag is a quoted-string we treat it case-sensitive.
             return _tag.GetHashCode() ^ _isWeak.GetHashCode();
+        }
+
+        /// <summary>
+        /// Compares against another <see cref="EntityTagHeaderValue"/> to see if they match under the RFC specifications (https://tools.ietf.org/html/rfc7232#section-2.3.2).
+        /// </summary>
+        /// <param name="other">The other <see cref="EntityTagHeaderValue"/> to compare against.</param>
+        /// <param name="useStrongComparison"><c>true</c> to use a strong comparison, <c>false</c> to use a weak comparison</param>
+        /// <returns>
+        /// <c>true</c> if the <see cref="EntityTagHeaderValue"/> match for the given comparison type,
+        /// <c>false</c> if the other value is null or the comparison failed.
+        /// </returns>
+        public bool Compare(EntityTagHeaderValue other, bool useStrongComparison)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (useStrongComparison)
+            {
+                return !IsWeak && !other.IsWeak && string.Equals(Tag, other.Tag, StringComparison.Ordinal);
+            }
+            else
+            {
+                return string.Equals(Tag, other.Tag, StringComparison.Ordinal);
+            }
         }
 
         public static EntityTagHeaderValue Parse(string input)
