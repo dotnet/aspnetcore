@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 _ifMatchState = PreconditionState.PreconditionFailed;
                 foreach (var etag in ifMatch)
                 {
-                    if (etag.Equals(EntityTagHeaderValue.Any) || etag.Equals(_etag))
+                    if (etag.Equals(EntityTagHeaderValue.Any) || etag.Compare(_etag, useStrongComparison: true))
                     {
                         _ifMatchState = PreconditionState.ShouldProcess;
                         break;
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 _ifNoneMatchState = PreconditionState.ShouldProcess;
                 foreach (var etag in ifNoneMatch)
                 {
-                    if (etag.Equals(EntityTagHeaderValue.Any) || etag.Equals(_etag))
+                    if (etag.Equals(EntityTagHeaderValue.Any) || etag.Compare(_etag, useStrongComparison: true))
                     {
                         _ifNoneMatchState = PreconditionState.NotModified;
                         break;
@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                         ignoreRangeHeader = true;
                     }
                 }
-                else if (ifRangeHeader.EntityTag != null && !_etag.Equals(ifRangeHeader.EntityTag))
+                else if (ifRangeHeader.EntityTag != null && !ifRangeHeader.EntityTag.Compare(_etag, useStrongComparison: true))
                 {
                     ignoreRangeHeader = true;
                 }
