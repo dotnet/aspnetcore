@@ -19,13 +19,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
     /// </summary>
     public class KestrelThread
     {
+        private static readonly Action<object, object> _postCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
+        private static readonly Action<object, object> _postAsyncCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
+
         // maximum times the work queues swapped and are processed in a single pass
         // as completing a task may immediately have write data to put on the network
         // otherwise it needs to wait till the next pass of the libuv loop
-        private const int _maxLoops = 8;
-
-        private static readonly Action<object, object> _postCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
-        private static readonly Action<object, object> _postAsyncCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
+        private readonly int _maxLoops = 8;
 
         private readonly KestrelEngine _engine;
         private readonly IApplicationLifetime _appLifetime;
@@ -67,6 +67,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             Memory = new MemoryPool();
             WriteReqPool = new WriteReqPool(this, _log);
             ConnectionManager = new ConnectionManager(this, _threadPool);
+        }
+
+        // For testing
+        internal KestrelThread(KestrelEngine engine, int maxLoops)
+            : this(engine)
+        {
+            _maxLoops = maxLoops;
         }
 
         public UvLoopHandle Loop { get { return _loop; } }

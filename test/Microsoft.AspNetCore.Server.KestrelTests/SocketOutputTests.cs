@@ -26,9 +26,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var mockLibuv = new MockLibuv();
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
-                kestrelEngine.Start(count: 1);
+                var kestrelThread = new KestrelThread(kestrelEngine, maxLoops: 1);
+                kestrelEngine.Threads.Add(kestrelThread);
+                await kestrelThread.StartAsync();
 
-                var kestrelThread = kestrelEngine.Threads[0];
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
@@ -70,9 +71,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
-                kestrelEngine.Start(count: 1);
+                var kestrelThread = new KestrelThread(kestrelEngine, maxLoops: 1);
+                kestrelEngine.Threads.Add(kestrelThread);
+                await kestrelThread.StartAsync();
 
-                var kestrelThread = kestrelEngine.Threads[0];
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
@@ -141,9 +143,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
-                kestrelEngine.Start(count: 1);
+                var kestrelThread = new KestrelThread(kestrelEngine, maxLoops: 1);
+                kestrelEngine.Threads.Add(kestrelThread);
+                await kestrelThread.StartAsync();
 
-                var kestrelThread = kestrelEngine.Threads[0];
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
@@ -223,9 +226,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
-                kestrelEngine.Start(count: 1);
+                var kestrelThread = new KestrelThread(kestrelEngine, maxLoops: 1);
+                kestrelEngine.Threads.Add(kestrelThread);
+                await kestrelThread.StartAsync();
 
-                var kestrelThread = kestrelEngine.Threads[0];
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
@@ -339,9 +343,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
-                kestrelEngine.Start(count: 1);
+                var kestrelThread = new KestrelThread(kestrelEngine, maxLoops: 1);
+                kestrelEngine.Threads.Add(kestrelThread);
+                await kestrelThread.StartAsync();
 
-                var kestrelThread = kestrelEngine.Threads[0];
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
@@ -431,9 +436,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
-                kestrelEngine.Start(count: 1);
+                var kestrelThread = new KestrelThread(kestrelEngine, maxLoops: 1);
+                kestrelEngine.Threads.Add(kestrelThread);
+                await kestrelThread.StartAsync();
 
-                var kestrelThread = kestrelEngine.Threads[0];
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
@@ -509,9 +515,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
-                kestrelEngine.Start(count: 1);
+                var kestrelThread = new KestrelThread(kestrelEngine, maxLoops: 1);
+                kestrelEngine.Threads.Add(kestrelThread);
+                await kestrelThread.StartAsync();
 
-                var kestrelThread = kestrelEngine.Threads[0];
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
@@ -560,9 +567,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
-                kestrelEngine.Start(count: 1);
+                var kestrelThread = new KestrelThread(kestrelEngine, maxLoops: 1);
+                kestrelEngine.Threads.Add(kestrelThread);
+                await kestrelThread.StartAsync();
 
-                var kestrelThread = kestrelEngine.Threads[0];
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
@@ -630,9 +638,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
-                kestrelEngine.Start(count: 1);
+                var kestrelThread = new KestrelThread(kestrelEngine, maxLoops: 1);
+                kestrelEngine.Threads.Add(kestrelThread);
+                await kestrelThread.StartAsync();
 
-                var kestrelThread = kestrelEngine.Threads[0];
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();
@@ -675,9 +684,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
-                kestrelEngine.Start(count: 1);
+                var kestrelThread = new KestrelThread(kestrelEngine, maxLoops: 1);
+                kestrelEngine.Threads.Add(kestrelThread);
+                await kestrelThread.StartAsync();
 
-                var kestrelThread = kestrelEngine.Threads[0];
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new SynchronousThreadPool();

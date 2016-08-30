@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
         private readonly object _postLock = new object();
         private TaskCompletionSource<object> _onPostTcs = new TaskCompletionSource<object>();
         private bool _completedOnPostTcs;
+        private bool _sendCalled;
 
         private bool _stopLoop;
         private readonly ManualResetEventSlim _loopWh = new ManualResetEventSlim();
@@ -47,6 +48,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 
                     PostCount++;
 
+                    _sendCalled = true;
                     _loopWh.Set();
                 }
 
@@ -67,23 +69,29 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
                 {
                     _loopWh.Wait();
                     KestrelThreadBlocker.Wait();
-                    TaskCompletionSource<object> onPostTcs;
+                    TaskCompletionSource<object> onPostTcs = null;
 
                     lock (_postLock)
                     {
+                        _sendCalled = false;
                         _loopWh.Reset();
                         _onPost(_postHandle.InternalGetHandle());
 
-                        // Ensure any subsequent calls to uv_async_send
-                        // create a new _onPostTcs to be completed.
-                        onPostTcs = _onPostTcs;
-                        _completedOnPostTcs = true;
+                        // Allow the loop to be run again before completing
+                        // _onPostTcs given a nested uv_async_send call.
+                        if (!_sendCalled)
+                        {
+                            // Ensure any subsequent calls to uv_async_send
+                            // create a new _onPostTcs to be completed.
+                            _completedOnPostTcs = true;
+                            onPostTcs = _onPostTcs;
+                        }
                     }
 
                     // Calling TrySetResult outside the lock to avoid deadlock
                     // when the code attempts to call uv_async_send after awaiting
                     // OnPostTask.
-                    onPostTcs.TrySetResult(null);
+                    onPostTcs?.TrySetResult(null);
                 }
 
                 return 0;
