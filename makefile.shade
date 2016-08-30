@@ -1,11 +1,53 @@
+use namespace="System.Diagnostics"
+use namespace="System.IO"
+
 var VERSION='0.1'
 var FULL_VERSION='0.1'
 var AUTHORS='Microsoft'
-var kestrelSrcDir='${Path.Combine(Directory.GetCurrentDirectory(), "src/Microsoft.AspNetCore.Server.Kestrel")}'
 
 use-standard-lifecycle
 k-standard-goals
 custom-goals
 
-#initialize if='Directory.Exists("src")'
-  exec program='dotnet' commandline='run -p ../../tools/Microsoft.AspNetCore.Server.Kestrel.GeneratedCode Internal/Http/FrameHeaders.Generated.cs Internal/Http/Frame.Generated.cs' workingdir='${kestrelSrcDir}'
+#initialize
+  @{
+    if (Directory.Exists("src"))
+    {
+      Exec("dotnet",
+        commandline: "run -p ../../tools/Microsoft.AspNetCore.Server.Kestrel.GeneratedCode Internal/Http/FrameHeaders.Generated.cs Internal/Http/Frame.Generated.cs",
+        workingdir: Path.Combine(Directory.GetCurrentDirectory(), "src/Microsoft.AspNetCore.Server.Kestrel"));
+    }
+
+    if (IsOSX())
+    {
+      var noParallelTestProjects = Environment.GetEnvironmentVariable("NO_PARALLEL_TEST_PROJECTS") ?? string.Empty;
+      noParallelTestProjects += ",Microsoft.AspNetCore.Server.Kestrel.FunctionalTests";
+      Environment.SetEnvironmentVariable("NO_PARALLEL_TEST_PROJECTS", noParallelTestProjects);
+    }
+  }
+
+functions @{
+  bool IsOSX()
+  {
+    if (!IsLinux)
+    {
+      return false;
+    }
+
+    var processStartInfo = new ProcessStartInfo
+    {
+      FileName = "uname",
+      RedirectStandardOutput = true,
+      UseShellExecute = false
+    };
+    var output = string.Empty;
+
+    using (var process = Process.Start(processStartInfo))
+    {
+      output = process.StandardOutput.ReadToEnd();
+      process.WaitForExit();
+    }
+
+    return output.StartsWith("Darwin");
+  }
+}
