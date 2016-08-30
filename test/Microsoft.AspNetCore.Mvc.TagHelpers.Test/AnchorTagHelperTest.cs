@@ -57,9 +57,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 .Setup(mock => mock.Action(It.IsAny<UrlActionContext>())).Returns("home/index");
 
             var htmlGenerator = new TestableHtmlGenerator(metadataProvider, urlHelper.Object);
-            var viewContext = TestableHtmlGenerator.GetViewContext(model: null,
-                                                                   htmlGenerator: htmlGenerator,
-                                                                   metadataProvider: metadataProvider);
+            var viewContext = TestableHtmlGenerator.GetViewContext(
+                model: null,
+                htmlGenerator: htmlGenerator,
+                metadataProvider: metadataProvider);
             var anchorTagHelper = new AnchorTagHelper(htmlGenerator)
             {
                 Action = "index",

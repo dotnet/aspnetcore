@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     Protocol != null ||
                     Host != null ||
                     Fragment != null ||
-                    RouteValues.Count != 0)
+                    (_routeValues != null && _routeValues.Count > 0))
                 {
                     // User specified an href and one of the bound attributes; can't determine the href attribute.
                     throw new InvalidOperationException(
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         routeValues = new RouteValueDictionary();
                     }
 
-                    // Unconditionally replace any value from asp-route-area. 
+                    // Unconditionally replace any value from asp-route-area.
                     routeValues["area"] = Area;
                 }
 

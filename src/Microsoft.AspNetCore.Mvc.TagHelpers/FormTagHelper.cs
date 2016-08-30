@@ -145,7 +145,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // If "action" is already set, it means the user is attempting to use a normal <form>.
             if (output.Attributes.ContainsName(HtmlActionAttributeName))
             {
-                if (Action != null || Controller != null || Area != null || Route != null || RouteValues.Count != 0)
+                if (Action != null ||
+                    Controller != null ||
+                    Area != null ||
+                    Route != null ||
+                    (_routeValues != null && _routeValues.Count > 0))
                 {
                     // User also specified bound attributes we cannot use.
                     throw new InvalidOperationException(

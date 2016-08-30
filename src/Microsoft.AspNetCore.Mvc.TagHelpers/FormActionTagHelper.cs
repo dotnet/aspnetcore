@@ -12,7 +12,8 @@ using Microsoft.AspNetCore.Routing;
 namespace Microsoft.AspNetCore.Mvc.TagHelpers
 {
     /// <summary>
-    /// <see cref="ITagHelper"/> implementation targeting &lt;button&gt; elements.
+    /// <see cref="ITagHelper"/> implementation targeting &lt;button&gt; elements and &lt;input&gt; elements with
+    /// their <c>type</c> attribute set to <c>image</c> or <c>submit</c>.
     /// </summary>
     [HtmlTargetElement("button", Attributes = ActionAttributeName)]
     [HtmlTargetElement("button", Attributes = ControllerAttributeName)]
@@ -20,22 +21,51 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     [HtmlTargetElement("button", Attributes = RouteAttributeName)]
     [HtmlTargetElement("button", Attributes = RouteValuesDictionaryName)]
     [HtmlTargetElement("button", Attributes = RouteValuesPrefix + "*")]
-    public class ButtonTagHelper : TagHelper
+    [HtmlTargetElement("input", Attributes = ImageActionAttributeSelector, TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("input", Attributes = ImageControllerAttributeSelector, TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("input", Attributes = ImageAreaAttributeSelector, TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("input", Attributes = ImageRouteAttributeSelector, TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("input", Attributes = ImageRouteValuesDictionarySelector, TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("input", Attributes = ImageRouteValuesSelector, TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("input", Attributes = SubmitActionAttributeSelector, TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("input", Attributes = SubmitControllerAttributeSelector, TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("input", Attributes = SubmitAreaAttributeSelector, TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("input", Attributes = SubmitRouteAttributeSelector, TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("input", Attributes = SubmitRouteValuesDictionarySelector, TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("input", Attributes = SubmitRouteValuesSelector, TagStructure = TagStructure.WithoutEndTag)]
+    public class FormActionTagHelper : TagHelper
     {
         private const string ActionAttributeName = "asp-action";
-        private const string ControllerAttributeName = "asp-controller";
         private const string AreaAttributeName = "asp-area";
+        private const string ControllerAttributeName = "asp-controller";
         private const string RouteAttributeName = "asp-route";
         private const string RouteValuesDictionaryName = "asp-all-route-data";
         private const string RouteValuesPrefix = "asp-route-";
         private const string FormAction = "formaction";
+
+        private const string ImageTypeSelector = "[type=image], ";
+        private const string ImageActionAttributeSelector = ImageTypeSelector + ActionAttributeName;
+        private const string ImageAreaAttributeSelector = ImageTypeSelector + AreaAttributeName;
+        private const string ImageControllerAttributeSelector = ImageTypeSelector + ControllerAttributeName;
+        private const string ImageRouteAttributeSelector = ImageTypeSelector + RouteAttributeName;
+        private const string ImageRouteValuesDictionarySelector = ImageTypeSelector + RouteValuesDictionaryName;
+        private const string ImageRouteValuesSelector = ImageTypeSelector + RouteValuesPrefix + "*";
+
+        private const string SubmitTypeSelector = "[type=submit], ";
+        private const string SubmitActionAttributeSelector = SubmitTypeSelector + ActionAttributeName;
+        private const string SubmitAreaAttributeSelector = SubmitTypeSelector + AreaAttributeName;
+        private const string SubmitControllerAttributeSelector = SubmitTypeSelector + ControllerAttributeName;
+        private const string SubmitRouteAttributeSelector = SubmitTypeSelector + RouteAttributeName;
+        private const string SubmitRouteValuesDictionarySelector = SubmitTypeSelector + RouteValuesDictionaryName;
+        private const string SubmitRouteValuesSelector = SubmitTypeSelector + RouteValuesPrefix + "*";
+
         private IDictionary<string, string> _routeValues;
 
         /// <summary>
-        /// Creates a new <see cref="ButtonTagHelper"/>.
+        /// Creates a new <see cref="FormActionTagHelper"/>.
         /// </summary>
         /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
-        public ButtonTagHelper(IUrlHelperFactory urlHelperFactory)
+        public FormActionTagHelper(IUrlHelperFactory urlHelperFactory)
         {
             UrlHelperFactory = urlHelperFactory;
         }
@@ -120,15 +150,20 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 throw new ArgumentNullException(nameof(output));
             }
 
-            // If "formaction" is already set, it means the user is attempting to use a normal button.
+            // If "formaction" is already set, it means the user is attempting to use a normal button or input element.
             if (output.Attributes.ContainsName(FormAction))
             {
-                if (Action != null || Controller != null || Area != null || Route != null || RouteValues.Count != 0)
+                if (Action != null ||
+                    Controller != null ||
+                    Area != null ||
+                    Route != null ||
+                    (_routeValues != null && _routeValues.Count > 0))
                 {
-                    // User specified a formaction and one of the bound attributes; can't determine the formaction attribute.
+                    // User specified a formaction and one of the bound attributes; can't override that formaction
+                    // attribute.
                     throw new InvalidOperationException(
-                        Resources.FormatButtonTagHelper_CannotOverrideFormAction(
-                            "<button>",
+                        Resources.FormatFormActionTagHelper_CannotOverrideFormAction(
+                            output.TagName,
                             ActionAttributeName,
                             ControllerAttributeName,
                             AreaAttributeName,
@@ -152,7 +187,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         routeValues = new RouteValueDictionary();
                     }
 
-                    // Unconditionally replace any value from asp-route-area. 
+                    // Unconditionally replace any value from asp-route-area.
                     routeValues["area"] = Area;
                 }
 
@@ -166,8 +201,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 {
                     // Route and Action or Controller were specified. Can't determine the formaction attribute.
                     throw new InvalidOperationException(
-                        Resources.FormatButtonTagHelper_CannotDetermineFormActionRouteActionOrControllerSpecified(
-                            "<button>",
+                        Resources.FormatFormActionTagHelper_CannotDetermineFormActionRouteActionOrControllerSpecified(
+                            output.TagName,
                             RouteAttributeName,
                             ActionAttributeName,
                             ControllerAttributeName,
