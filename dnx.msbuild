@@ -233,7 +233,8 @@
                 <term>DT</term>
                 <Justification>abbreviation for DateTime</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\WelcomePage.cs">
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\WelcomePage.Designer.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\Obsolete\WelcomePage.cs">
                 <term>FE</term>
                 <Justification>Text appears in base64 encoded string of an image.</Justification>
             </SrcExclusions>
