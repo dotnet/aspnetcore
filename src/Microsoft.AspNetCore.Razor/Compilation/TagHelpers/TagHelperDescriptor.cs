@@ -24,6 +24,36 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
             Enumerable.Empty<TagHelperRequiredAttributeDescriptor>();
 
         /// <summary>
+        /// Creates a new <see cref="TagHelperDescriptor"/>. 
+        /// </summary>
+        public TagHelperDescriptor()
+        {
+        }
+
+        /// <summary>
+        /// Creates a shallow copy of the given <see cref="TagHelperDescriptor"/>.
+        /// </summary>
+        /// <param name="descriptor">The <see cref="TagHelperDescriptor"/> to copy.</param>
+        public TagHelperDescriptor (TagHelperDescriptor descriptor)
+        {
+            Prefix = descriptor.Prefix;
+            TagName = descriptor.TagName;
+            TypeName = descriptor.TypeName;
+            AssemblyName = descriptor.AssemblyName;
+            Attributes = descriptor.Attributes;
+            RequiredAttributes = descriptor.RequiredAttributes;
+            AllowedChildren = descriptor.AllowedChildren;
+            RequiredParent = descriptor.RequiredParent;
+            TagStructure = descriptor.TagStructure;
+            DesignTimeDescriptor = descriptor.DesignTimeDescriptor;
+
+            foreach (var property in descriptor.PropertyBag)
+            {
+                PropertyBag.Add(property.Key, property.Value);
+            }
+        }
+
+        /// <summary>
         /// Text used as a required prefix when matching HTML start and end tags in the Razor source to available
         /// tag helpers.
         /// </summary>

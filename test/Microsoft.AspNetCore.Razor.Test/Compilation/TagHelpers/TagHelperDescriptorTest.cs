@@ -13,6 +13,49 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
     public class TagHelperDescriptorTest
     {
         [Fact]
+        public void Constructor_CorrectlyCreatesCopy()
+        {
+            // Arrange
+            var descriptor = new TagHelperDescriptor
+            {
+                Prefix = "prefix",
+                TagName = "tag-name",
+                TypeName = "TypeName",
+                AssemblyName = "AsssemblyName",
+                Attributes = new List<TagHelperAttributeDescriptor>
+                {
+                    new TagHelperAttributeDescriptor
+                    {
+                        Name = "test-attribute",
+                        PropertyName = "TestAttribute",
+                        TypeName = "string"
+                    }
+                },
+                RequiredAttributes = new List<TagHelperRequiredAttributeDescriptor>
+                {
+                    new TagHelperRequiredAttributeDescriptor
+                    {
+                        Name = "test-required-attribute"
+                    }
+                },
+                AllowedChildren = new[] { "child" },
+                RequiredParent = "required parent",
+                TagStructure = TagStructure.NormalOrSelfClosing,
+                DesignTimeDescriptor = new TagHelperDesignTimeDescriptor()
+            };
+
+            descriptor.PropertyBag.Add("foo", "bar");
+
+            // Act
+            var copyDescriptor = new TagHelperDescriptor(descriptor);
+
+            // Assert
+            Assert.Equal(descriptor, copyDescriptor, CaseSensitiveTagHelperDescriptorComparer.Default);
+            Assert.Same(descriptor.Attributes, copyDescriptor.Attributes);
+            Assert.Same(descriptor.RequiredAttributes, copyDescriptor.RequiredAttributes);
+        }
+
+        [Fact]
         public void TagHelperDescriptor_CanBeSerialized()
         {
             // Arrange

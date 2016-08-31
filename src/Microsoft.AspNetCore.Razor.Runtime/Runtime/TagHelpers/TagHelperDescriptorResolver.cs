@@ -151,20 +151,10 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 
             if (!string.IsNullOrEmpty(tagHelperPrefix))
             {
-                return descriptors.Select(descriptor =>
-                    new TagHelperDescriptor
-                    {
-                        Prefix = tagHelperPrefix,
-                        TagName = descriptor.TagName,
-                        TypeName = descriptor.TypeName,
-                        AssemblyName = descriptor.AssemblyName,
-                        Attributes = descriptor.Attributes,
-                        RequiredAttributes = descriptor.RequiredAttributes,
-                        AllowedChildren = descriptor.AllowedChildren,
-                        RequiredParent = descriptor.RequiredParent,
-                        TagStructure = descriptor.TagStructure,
-                        DesignTimeDescriptor = descriptor.DesignTimeDescriptor
-                    });
+                return descriptors.Select(descriptor => new TagHelperDescriptor(descriptor)
+                {
+                    Prefix = tagHelperPrefix
+                });
             }
 
             return descriptors;
