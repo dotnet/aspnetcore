@@ -252,6 +252,130 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
+        [Theory]
+        [InlineData("%D0%A4", "Ф")]
+        [InlineData("%d0%a4", "Ф")]
+        [InlineData("%E0%A4%AD", "भ")]
+        [InlineData("%e0%A4%Ad", "भ")]
+        [InlineData("%F0%A4%AD%A2", "𤭢")]
+        [InlineData("%F0%a4%Ad%a2", "𤭢")]
+        [InlineData("%48%65%6C%6C%6F%20%57%6F%72%6C%64", "Hello World")]
+        [InlineData("%48%65%6C%6C%6F%2D%C2%B5%40%C3%9F%C3%B6%C3%A4%C3%BC%C3%A0%C3%A1", "Hello-µ@ßöäüàá")]
+        // Test the borderline cases of overlong UTF8.
+        [InlineData("%C2%80", "\u0080")]
+        [InlineData("%E0%A0%80", "\u0800")]
+        [InlineData("%F0%90%80%80", "\U00010000")]
+        [InlineData("%63", "c")]
+        [InlineData("%32", "2")]
+        [InlineData("%20", " ")]
+        // Mixed
+        [InlineData("%%32", "%2")]
+        [InlineData("%%20", "% ")]
+        public async Task Request_PathDecodingValidUTF8(string requestPath, string expect)
+        {
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext =>
+            {
+                Assert.Equal(expect, httpContext.Request.Path.Value.TrimStart('/'));
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendRequestAsync(root + "/" + requestPath);
+                Assert.Equal(string.Empty, response);
+            }
+        }
+
+        [Theory]
+        [InlineData("%C3%84ra%20Benetton", "Ära Benetton")]
+        [InlineData("%E6%88%91%E8%87%AA%E6%A8%AA%E5%88%80%E5%90%91%E5%A4%A9%E7%AC%91%E5%8E%BB%E7%95%99%E8%82%9D%E8%83%86%E4%B8%A4%E6%98%86%E4%BB%91", "我自横刀向天笑去留肝胆两昆仑")]
+        public async Task Request_PathDecodingInternationalized(string requestPath, string expect)
+        {
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext =>
+            {
+                Assert.Equal(expect, httpContext.Request.Path.Value.TrimStart('/'));
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendRequestAsync(root + "/" + requestPath);
+                Assert.Equal(string.Empty, response);
+            }
+        }
+
+        [Theory]
+        // Incomplete
+        [InlineData("%", "%")]
+        [InlineData("%%", "%%")]
+        [InlineData("%A", "%A")]
+        [InlineData("%Y", "%Y")]
+        public async Task Request_PathDecodingInvalidUTF8(string requestPath, string expect)
+        {
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext =>
+            {
+                var actualPath = httpContext.Request.Path.Value.TrimStart('/');
+                Assert.Equal(expect, actualPath);
+
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendRequestAsync(root + "/" + requestPath);
+                Assert.Equal(string.Empty, response);
+            }
+        }
+
+        // This test case ensures the consistency of current server behavior through it is not
+        // an idea one.
+        [Theory]
+        // Overlong ASCII
+        [InlineData("%C0%A4", true, HttpStatusCode.OK)]
+        [InlineData("%C1%BF", true, HttpStatusCode.OK)]
+        [InlineData("%E0%80%AF", true, HttpStatusCode.OK)]
+        [InlineData("%E0%9F%BF", true, HttpStatusCode.OK)]
+        [InlineData("%F0%80%80%AF", true, HttpStatusCode.OK)]
+        [InlineData("%F0%8F%8F%BF", false, HttpStatusCode.BadRequest)]
+        // Mixed
+        [InlineData("%C0%A4%32", true, HttpStatusCode.OK)]
+        [InlineData("%32%C0%A4%32", true, HttpStatusCode.OK)]
+        [InlineData("%C0%32%A4", true, HttpStatusCode.OK)]
+        public async Task Request_ServerErrorFromInvalidUTF8(string requestPath, bool unescaped, HttpStatusCode expectStatus)
+        {
+            bool pathIsUnescaped = false;
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext =>
+            {
+                var actualPath = httpContext.Request.Path.Value.TrimStart('/');
+                pathIsUnescaped = !string.Equals(actualPath, requestPath, StringComparison.Ordinal);
+                return Task.FromResult(0);
+            }))
+            {
+                using (var client = new HttpClient())
+                {
+                    var response = await client.GetAsync(root + "/" + requestPath);
+                    Assert.Equal(expectStatus, response.StatusCode);
+                    Assert.Equal(unescaped, pathIsUnescaped);
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("%2F", "%2F")]
+        [InlineData("foo%2Fbar", "foo%2Fbar")]
+        [InlineData("foo%2F%20bar", "foo%2F bar")]
+        public async Task Request_PathDecodingSkipForwardSlash(string requestPath, string expect)
+        {
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext =>
+            {
+                Assert.Equal(expect, httpContext.Request.Path.Value.TrimStart('/'));
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendRequestAsync(root + "/" + requestPath);
+                Assert.Equal(string.Empty, response);
+            }
+        }
+
         [Fact]
         public async Task Request_DoubleEscapingAllowed()
         {
