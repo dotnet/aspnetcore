@@ -19,7 +19,18 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             _loggerFactory = new LoggerFactory();
 
-            var commandProvider = new CommandOutputProvider();
+            var logVar = Environment.GetEnvironmentVariable("DOTNET_WATCH_LOG_LEVEL");
+
+            LogLevel logLevel;
+            if (string.IsNullOrEmpty(logVar) || !Enum.TryParse<LogLevel>(logVar, out logLevel))
+            {
+                logLevel = LogLevel.Information;
+            }
+
+            var commandProvider = new CommandOutputProvider()
+            {
+                LogLevel = logLevel
+            };
             _loggerFactory.AddProvider(commandProvider);
         }
 
@@ -32,7 +43,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     ctrlCTokenSource.Cancel();
                     ev.Cancel = false;
                 };
-                
+
                 return new Program().MainInternal(args, ctrlCTokenSource.Token);
             }
         }
@@ -44,7 +55,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             app.FullName = "Microsoft dotnet File Watcher";
 
             app.HelpOption("-?|-h|--help");
- 
+
             app.OnExecute(() =>
             {
                 var projectToWatch = Path.Combine(Directory.GetCurrentDirectory(), ProjectModel.Project.FileName);
