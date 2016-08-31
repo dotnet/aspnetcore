@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/WebListener/issues/210")]
         [InlineData("Set-cookie")]
         [InlineData("vary")]
         [InlineData("pragma")]
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
         public async Task Caching_ExpiresWithoutPublic_NotCached()
         {
             var requestCount = 1;

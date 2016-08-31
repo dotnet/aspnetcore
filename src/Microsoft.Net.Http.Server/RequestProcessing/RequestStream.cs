@@ -154,9 +154,7 @@ namespace Microsoft.Net.Http.Server
 
             if (_dataChunkIndex != -1)
             {
-                dataRead = HttpApi.GetChunks(_requestContext.Request.RequestBuffer,
-                    _requestContext.Request.BufferAlignment, _requestContext.Request.OriginalBlobAddress,
-                    ref _dataChunkIndex, ref _dataChunkOffset, buffer, offset, size);
+                dataRead = _requestContext.Request.GetChunks(ref _dataChunkIndex, ref _dataChunkOffset, buffer, offset, size);
             }
 
             if (_dataChunkIndex == -1 && dataRead < size)
@@ -232,8 +230,7 @@ namespace Microsoft.Net.Http.Server
             uint dataRead = 0;
             if (_dataChunkIndex != -1)
             {
-                dataRead = HttpApi.GetChunks(_requestContext.Request.RequestBuffer, _requestContext.Request.BufferAlignment,
-                    _requestContext.Request.OriginalBlobAddress, ref _dataChunkIndex, ref _dataChunkOffset, buffer, offset, size);
+                dataRead = _requestContext.Request.GetChunks(ref _dataChunkIndex, ref _dataChunkOffset, buffer, offset, size);
 
                 if (_dataChunkIndex != -1 && dataRead == size)
                 {
@@ -350,8 +347,7 @@ namespace Microsoft.Net.Http.Server
             uint dataRead = 0;
             if (_dataChunkIndex != -1)
             {
-                dataRead = HttpApi.GetChunks(_requestContext.Request.RequestBuffer, _requestContext.Request.BufferAlignment,
-                    _requestContext.Request.OriginalBlobAddress, ref _dataChunkIndex, ref _dataChunkOffset, buffer, offset, size);
+                dataRead = _requestContext.Request.GetChunks(ref _dataChunkIndex, ref _dataChunkOffset, buffer, offset, size);
                 if (_dataChunkIndex != -1 && dataRead == size)
                 {
                     UpdateAfterRead(UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS, dataRead);

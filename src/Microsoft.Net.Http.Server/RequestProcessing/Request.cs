@@ -25,7 +25,6 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -51,46 +50,27 @@ namespace Microsoft.Net.Http.Server
 
         private bool _isDisposed = false;
 
-        internal unsafe Request(RequestContext requestContext, NativeRequestContext memoryBlob)
+        internal Request(RequestContext requestContext, NativeRequestContext nativeRequestContext)
         {
             // TODO: Verbose log
             RequestContext = requestContext;
-            _nativeRequestContext = memoryBlob;
+            _nativeRequestContext = nativeRequestContext;
             _contentBoundaryType = BoundaryType.None;
 
-            // Set up some of these now to avoid refcounting on memory blob later.
-            RequestId = memoryBlob.RequestBlob->RequestId;
-            UConnectionId = memoryBlob.RequestBlob->ConnectionId;
-            SslStatus = memoryBlob.RequestBlob->pSslInfo == null ? SslStatus.Insecure :
-                memoryBlob.RequestBlob->pSslInfo->SslClientCertNegotiated == 0 ? SslStatus.NoClientCert :
-                SslStatus.ClientCert;
+            RequestId = nativeRequestContext.RequestId;
+            UConnectionId = nativeRequestContext.ConnectionId;
+            SslStatus = nativeRequestContext.SslStatus;
 
-            KnownMethod = memoryBlob.RequestBlob->Verb;
-            Method = HttpApi.GetVerb(memoryBlob.RequestBlob);
+            KnownMethod = nativeRequestContext.VerbId;
+            Method = _nativeRequestContext.GetVerb();
 
-            if (memoryBlob.RequestBlob->pRawUrl != null && memoryBlob.RequestBlob->RawUrlLength > 0)
-            {
-                RawUrl = Marshal.PtrToStringAnsi((IntPtr)memoryBlob.RequestBlob->pRawUrl, memoryBlob.RequestBlob->RawUrlLength);
-            }
+            RawUrl = nativeRequestContext.GetRawUrl();
 
-            HttpApi.HTTP_COOKED_URL cookedUrl = memoryBlob.RequestBlob->CookedUrl;
-            if (cookedUrl.pHost != null && cookedUrl.HostLength > 0)
-            {
-                // TODO: Unused
-                // _cookedUrlHost = Marshal.PtrToStringUni((IntPtr)cookedUrl.pHost, cookedUrl.HostLength / 2);
-            }
-            var cookedUrlPath = string.Empty;
-            if (cookedUrl.pAbsPath != null && cookedUrl.AbsPathLength > 0)
-            {
-                cookedUrlPath = Marshal.PtrToStringUni((IntPtr)cookedUrl.pAbsPath, cookedUrl.AbsPathLength / 2);
-            }
-            QueryString = string.Empty;
-            if (cookedUrl.pQueryString != null && cookedUrl.QueryStringLength > 0)
-            {
-                QueryString = Marshal.PtrToStringUni((IntPtr)cookedUrl.pQueryString, cookedUrl.QueryStringLength / 2);
-            }
+            var cookedUrl = nativeRequestContext.GetCookedUrl();
+            var cookedUrlPath = cookedUrl.GetAbsPath() ?? string.Empty;
+            QueryString = cookedUrl.GetQueryString() ?? string.Empty;
 
-            var prefix = requestContext.Server.Settings.UrlPrefixes.GetPrefix((int)memoryBlob.RequestBlob->UrlContext);
+            var prefix = requestContext.Server.Settings.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
             var originalPath = RequestUriBuilder.GetRequestPath(RawUrl, cookedUrlPath, RequestContext.Logger);
 
             // 'OPTIONS * HTTP/1.1'
@@ -114,58 +94,17 @@ namespace Microsoft.Net.Http.Server
                 Path = originalPath.Substring(prefix.Path.Length - 1);
             }
 
-            int major = memoryBlob.RequestBlob->Version.MajorVersion;
-            int minor = memoryBlob.RequestBlob->Version.MinorVersion;
-            if (major == 1 && minor == 1)
-            {
-                ProtocolVersion = Constants.V1_1;
-            }
-            else if (major == 1 && minor == 0)
-            {
-                ProtocolVersion = Constants.V1_0;
-            }
-            else
-            {
-                ProtocolVersion = new Version(major, minor);
-            }
+            ProtocolVersion = _nativeRequestContext.GetVersion();
 
             Headers = new HeaderCollection(new RequestHeaders(_nativeRequestContext));
 
-            var requestV2 = (HttpApi.HTTP_REQUEST_V2*)memoryBlob.RequestBlob;
-            User = AuthenticationManager.GetUser(requestV2->pRequestInfo, requestV2->RequestInfoCount);
+            User = nativeRequestContext.GetUser();
 
             // GetTlsTokenBindingInfo(); TODO: https://github.com/aspnet/WebListener/issues/231
 
             // Finished directly accessing the HTTP_REQUEST structure.
             _nativeRequestContext.ReleasePins();
             // TODO: Verbose log parameters
-        }
-
-        internal byte[] RequestBuffer
-        {
-            get
-            {
-                CheckDisposed();
-                return _nativeRequestContext.RequestBuffer;
-            }
-        }
-
-        internal int BufferAlignment
-        {
-            get
-            {
-                CheckDisposed();
-                return _nativeRequestContext.BufferAlignment;
-            }
-        }
-
-        internal IntPtr OriginalBlobAddress
-        {
-            get
-            {
-                CheckDisposed();
-                return _nativeRequestContext.OriginalBlobAddress;
-            }
         }
 
         internal ulong UConnectionId { get; }
@@ -260,7 +199,7 @@ namespace Microsoft.Net.Http.Server
             {
                 if (_remoteEndPoint == null)
                 {
-                    _remoteEndPoint = HttpApi.GetRemoteEndPoint(RequestBuffer, BufferAlignment, OriginalBlobAddress);
+                    _remoteEndPoint = _nativeRequestContext.GetRemoteEndPoint();
                 }
 
                 return _remoteEndPoint;
@@ -273,7 +212,7 @@ namespace Microsoft.Net.Http.Server
             {
                 if (_localEndPoint == null)
                 {
-                    _localEndPoint = HttpApi.GetLocalEndPoint(RequestBuffer, BufferAlignment, OriginalBlobAddress);
+                    _localEndPoint = _nativeRequestContext.GetLocalEndPoint();
                 }
 
                 return _localEndPoint;
@@ -356,6 +295,7 @@ namespace Microsoft.Net.Http.Server
         // Key: HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_TOKEN_BINDING
         // Value: "iexplore.exe"=dword:00000001
         // TODO: https://github.com/aspnet/WebListener/issues/231
+        // TODO: https://github.com/aspnet/WebListener/issues/204 Move to NativeRequestContext
         /*
         private unsafe void GetTlsTokenBindingInfo()
         {
@@ -371,6 +311,11 @@ namespace Microsoft.Net.Http.Server
             }
         }
         */
+        internal uint GetChunks(ref int dataChunkIndex, ref uint dataChunkOffset, byte[] buffer, int offset, int size)
+        {
+            return _nativeRequestContext.GetChunks(ref dataChunkIndex, ref dataChunkOffset, buffer, offset, size);
+        }
+
         // should only be called from RequestContext
         internal void Dispose()
         {

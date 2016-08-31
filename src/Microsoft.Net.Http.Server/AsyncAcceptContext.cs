@@ -108,13 +108,13 @@ namespace Microsoft.Net.Http.Server
                             }
                             else
                             {
-                                asyncResult._nativeRequestContext.Reset(0, 0);
+                                asyncResult._nativeRequestContext.Reset();
                             }
                         }
                     }
                     else
                     {
-                        asyncResult._nativeRequestContext.Reset(asyncResult._nativeRequestContext.RequestBlob->RequestId, numBytes);
+                        asyncResult._nativeRequestContext.Reset(asyncResult._nativeRequestContext.RequestId, numBytes);
                     }
 
                     // We need to issue a new request, either because auth failed, or because our buffer was too small the first time.
@@ -166,26 +166,26 @@ namespace Microsoft.Net.Http.Server
                 uint bytesTransferred = 0;
                 statusCode = HttpApi.HttpReceiveHttpRequest(
                     Server.RequestQueue.Handle,
-                    _nativeRequestContext.RequestBlob->RequestId,
+                    _nativeRequestContext.RequestId,
                     (uint)HttpApi.HTTP_FLAGS.HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY,
-                    _nativeRequestContext.RequestBlob,
+                    _nativeRequestContext.NativeRequest,
                     _nativeRequestContext.Size,
                     &bytesTransferred,
                     _nativeRequestContext.NativeOverlapped);
 
-                if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_PARAMETER && _nativeRequestContext.RequestBlob->RequestId != 0)
+                if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_PARAMETER && _nativeRequestContext.RequestId != 0)
                 {
                     // we might get this if somebody stole our RequestId,
                     // set RequestId to 0 and start all over again with the buffer we just allocated
                     // BUGBUG: how can someone steal our request ID?  seems really bad and in need of fix.
-                    _nativeRequestContext.RequestBlob->RequestId = 0;
+                    _nativeRequestContext.RequestId = 0;
                     retry = true;
                 }
                 else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
                 {
                     // the buffer was not big enough to fit the headers, we need
                     // to read the RequestId returned, allocate a new buffer of the required size
-                    _nativeRequestContext.Reset(_nativeRequestContext.RequestBlob->RequestId, bytesTransferred);
+                    _nativeRequestContext.Reset(_nativeRequestContext.RequestId, bytesTransferred);
                     retry = true;
                 }
                 else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS

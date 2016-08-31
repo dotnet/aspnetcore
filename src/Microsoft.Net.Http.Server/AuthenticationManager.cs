@@ -152,51 +152,5 @@ namespace Microsoft.Net.Http.Server
                     = StringValues.Concat(context.Response.Headers[HttpKnownHeaderNames.WWWAuthenticate], challenges.ToArray());
             }
         }
-
-        internal static unsafe bool CheckAuthenticated(HttpApi.HTTP_REQUEST_INFO* requestInfo)
-        {
-            if (requestInfo != null
-                && requestInfo->InfoType == HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
-                && requestInfo->pInfo->AuthStatus == HttpApi.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        internal static unsafe ClaimsPrincipal GetUser(HttpApi.HTTP_REQUEST_INFO* requestInfo, int infoCount)
-        {
-            for (int i = 0; i < infoCount; i++)
-            {
-                var info = &requestInfo[i];
-                if (requestInfo != null
-                    && info->InfoType == HttpApi.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
-                    && info->pInfo->AuthStatus == HttpApi.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
-                {
-                    return new WindowsPrincipal(new WindowsIdentity(info->pInfo->AccessToken,
-                        GetAuthTypeFromRequest(info->pInfo->AuthType).ToString()));
-                }
-            }
-            return new ClaimsPrincipal(new ClaimsIdentity()); // Anonymous / !IsAuthenticated
-        }
-
-        private static AuthenticationSchemes GetAuthTypeFromRequest(HttpApi.HTTP_REQUEST_AUTH_TYPE input)
-        {
-            switch (input)
-            {
-                case HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeBasic:
-                    return AuthenticationSchemes.Basic;
-                // case HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeDigest:
-                //  return AuthenticationSchemes.Digest;
-                case HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeNTLM:
-                    return AuthenticationSchemes.NTLM;
-                case HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeNegotiate:
-                    return AuthenticationSchemes.Negotiate;
-                case HttpApi.HTTP_REQUEST_AUTH_TYPE.HttpRequestAuthTypeKerberos:
-                    return AuthenticationSchemes.Kerberos;
-                default:
-                    throw new NotImplementedException(input.ToString());
-            }
-        }
     }
 }

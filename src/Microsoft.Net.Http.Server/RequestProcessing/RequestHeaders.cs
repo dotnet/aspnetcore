@@ -85,14 +85,12 @@ namespace Microsoft.Net.Http.Server
 
         private string GetKnownHeader(HttpSysRequestHeader header)
         {
-            return HttpApi.GetKnownHeader(_requestMemoryBlob.RequestBuffer,
-                _requestMemoryBlob.BufferAlignment, _requestMemoryBlob.OriginalBlobAddress, (int)header);
+            return _requestMemoryBlob.GetKnownHeader(header);
         }
 
         private void GetUnknownHeaders(IDictionary<string, StringValues> extra)
         {
-            HttpApi.GetUnknownHeaders(extra, _requestMemoryBlob.RequestBuffer,
-                _requestMemoryBlob.BufferAlignment, _requestMemoryBlob.OriginalBlobAddress);
+            _requestMemoryBlob.GetUnknownHeaders(extra);
         }
 
         void IDictionary<string, StringValues>.Add(string key, StringValues value)

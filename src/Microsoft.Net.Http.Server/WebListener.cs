@@ -319,9 +319,9 @@ namespace Microsoft.Net.Http.Server
         internal unsafe bool ValidateRequest(NativeRequestContext requestMemory)
         {
             // Block potential DOS attacks
-            if (requestMemory.RequestBlob->Headers.UnknownHeaderCount > UnknownHeaderLimit)
+            if (requestMemory.UnknownHeaderCount > UnknownHeaderLimit)
             {
-                SendError(requestMemory.RequestBlob->RequestId, HttpStatusCode.BadRequest, authChallenges: null);
+                SendError(requestMemory.RequestId, HttpStatusCode.BadRequest, authChallenges: null);
                 return false;
             }
             return true;
@@ -329,10 +329,9 @@ namespace Microsoft.Net.Http.Server
 
         internal unsafe bool ValidateAuth(NativeRequestContext requestMemory)
         {
-            var requestV2 = (HttpApi.HTTP_REQUEST_V2*)requestMemory.RequestBlob;
-            if (!Settings.Authentication.AllowAnonymous && !AuthenticationManager.CheckAuthenticated(requestV2->pRequestInfo))
+            if (!Settings.Authentication.AllowAnonymous && !requestMemory.CheckAuthenticated())
             {
-                SendError(requestMemory.RequestBlob->RequestId, HttpStatusCode.Unauthorized,
+                SendError(requestMemory.RequestId, HttpStatusCode.Unauthorized,
                     AuthenticationManager.GenerateChallenges(Settings.Authentication.Schemes));
                 return false;
             }
