@@ -11,13 +11,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
         public ChangeCookieAction(string cookie)
         {
             // TODO
-            throw new NotImplementedException(cookie);
+            throw new NotImplementedException("Changing the cookie is not implemented");
         }
 
         public override void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
             // modify the cookies
-
+            throw new NotImplementedException("Changing the cookie is not implemented");
         }
     }
 }

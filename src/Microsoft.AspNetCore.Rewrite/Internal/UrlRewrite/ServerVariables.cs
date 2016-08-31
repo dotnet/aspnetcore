@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             {
                 // TODO Add all server variables here.
                 case "ALL_RAW":
-                    throw new NotImplementedException("All-Raw server variable not implemented");
+                    throw new NotSupportedException("Rules using the AUTH_TYPE server variable are not supported");
                 case "APP_POOL_ID":
-                    throw new NotImplementedException("All-Pool-Id server variable not implemented");
+                    throw new NotSupportedException("Rules using the AUTH_TYPE server variable are not supported");
                 case "CONTENT_LENGTH":
                     return new HeaderSegment(HeaderNames.ContentLength);
                 case "CONTENT_TYPE":
@@ -41,13 +41,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                 case "LOCAL_ADDR":
                     return new LocalAddressSegment();
                 case "HTTP_PROXY_CONNECTION":
-                    throw new NotSupportedException("Proxy Connections not supported");
+                    throw new NotSupportedException("Rules using the AUTH_TYPE server variable are not supported");
                 case "QUERY_STRING":
                     return new QueryStringSegment();
                 case "REMOTE_ADDR":
                     return new RemoteAddressSegment();
                 case "REMOTE_HOST":
-                    throw new NotImplementedException("Remote-Host server variable not implemented");
+                    throw new NotSupportedException("Rules using the REMOTE_HOST server variable are not supported");
                 case "REMOTE_PORT":
                     return new RemotePortSegment();
                 case "REQUEST_FILENAME":
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                 case "REQUEST_URI":
                     return new UrlSegment();
                 default:
-                    throw new FormatException("Unrecognized server variable.");
+                    throw new FormatException("Unrecognized server variable");
             }
         }
     }

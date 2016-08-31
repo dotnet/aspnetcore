@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                             }
                         case "UrlDecode":
                             {
-                                throw new NotImplementedException("UrlDecode is not supported.");
+                                throw new NotImplementedException("UrlDecode is not implemented because of no great library available");
                             }
                         case "UrlEncode":
                             {

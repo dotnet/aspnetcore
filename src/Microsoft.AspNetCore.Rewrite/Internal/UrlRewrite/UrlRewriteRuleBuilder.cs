@@ -53,10 +53,9 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                     _action = new RedirectAction(statusCode, url, appendQueryString);
                     break;
                 case ActionType.AbortRequest:
-                    throw new NotImplementedException("Abort Requests are not supported");
+                    throw new NotImplementedException("Abort Requests are not implemented");
                 case ActionType.CustomResponse:
-                    // TODO
-                    throw new NotImplementedException("Custom Responses are not supported");
+                    throw new NotImplementedException("Custom Responses are not implemented");
             }
         }
 
@@ -79,7 +78,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                         break;
                     }
                 case PatternSyntax.WildCard:
-                    throw new NotImplementedException("Wildcard syntax is not supported");
+                    throw new NotSupportedException("Wildcard syntax is not supported");
                 case PatternSyntax.ExactMatch:
                     _initialMatch = new ExactMatch(ignoreCase, input, negate);
                     break;
@@ -132,7 +131,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                         break;
                     }
                 case PatternSyntax.WildCard:
-                    throw new NotImplementedException("Wildcard syntax is not supported");
+                    throw new NotSupportedException("Wildcard syntax is not supported");
                 case PatternSyntax.ExactMatch:
                     if (pattern == null)
                     {

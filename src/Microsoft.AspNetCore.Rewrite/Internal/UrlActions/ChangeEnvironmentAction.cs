@@ -11,13 +11,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
         public ChangeEnvironmentAction(string env)
         {
             // TODO
-            throw new NotImplementedException();
+            throw new NotImplementedException("Changing the environment is not implemented");
         }
 
         public override void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
             // Do stuff to modify the env
-            throw new NotImplementedException();
+            throw new NotImplementedException("Changing the environment is not implemented");
         }
     }
 }

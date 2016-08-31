@@ -132,16 +132,19 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                             condition.Match = new IsFileMatch(input.Invert);
                             break;
                         case OperationType.SymbolicLink:
-                            throw new NotImplementedException("Symbolic links are not implemented");
+                            // TODO see if FileAttributes.ReparsePoint works for this?
+                            throw new NotImplementedException("Symbolic links are not supported because " +
+                                                            "of cross platform implementation");
                         case OperationType.Size:
                             condition.Match = new FileSizeMatch(input.Invert);
                             break;
                         case OperationType.ExistingUrl:
-                            throw new NotImplementedException("Existing Url lookups not implemented");
+                            throw new NotSupportedException("Existing Url lookups not supported because it requires a subrequest");
                         case OperationType.Executable:
-                            throw new NotImplementedException("Executable Property search is not implemented");
+                            throw new NotSupportedException("Executable Property is not supported because Windows " +
+                                                            "requires a pinvoke to get this property");
                         default:
-                            throw new ArgumentException("Invalid operation for property comparison.");
+                            throw new ArgumentException("Invalid operation for property comparison");
                     }
                     break;
             }
@@ -166,7 +169,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             Pattern pattern,
             Flags flags)
         {
-            // first create pre conditions
             string flag;
             if (flags.GetValue(FlagType.Cookie, out flag))
             {

@@ -44,6 +44,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                 switch (tokens[0])
                 {
                     case "RewriteBase":
+                        // the notion of the path base spans across all rules, not just mod_rewrite
+                        // So not implemented for now
                         throw new NotImplementedException("RewriteBase is not implemented");
                     case "RewriteCond":
                         try
@@ -91,7 +93,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
                         }
                         break;
                     case "RewriteMap":
-                        throw new NotImplementedException("RewriteMap to be added soon.");
+                        // Lack of use
+                        throw new NotImplementedException("RewriteMap are not implemented");
                     case "RewriteEngine":
                         // Explicitly do nothing here, no notion of turning on regex engine.
                         break;
