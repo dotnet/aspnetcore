@@ -150,7 +150,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             var decoder = _utf8.GetDecoder();
 
             var length = start.GetLength(end);
-            var charLength = length * 2;
+            var charLength = length;
+            // Worse case is 1 byte = 1 char
             var chars = new char[charLength];
             var charIndex = 0;
 
