@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             {
                 throw new FormatException("Regex expression is null");
             }
-            if (regex.StartsWith("!"))
+            if (regex[0] == '!')
             {
                 return new ParsedModRewriteInput { Invert = true, Operand = regex.Substring(1) };
             }

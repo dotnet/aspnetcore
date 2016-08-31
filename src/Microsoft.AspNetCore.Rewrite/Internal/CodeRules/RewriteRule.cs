@@ -10,13 +10,22 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
 {
     public class RewriteRule : Rule
     {
-        private readonly string ForwardSlash = "/";
         private readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(1);
         public Regex InitialMatch { get; }
         public string Replacement { get; }
         public bool StopProcessing { get; }
         public RewriteRule(string regex, string replacement, bool stopProcessing)
         {
+            if (string.IsNullOrEmpty(regex))
+            {
+                throw new ArgumentNullException(nameof(regex));
+            }
+
+            if (string.IsNullOrEmpty(replacement))
+            {
+                throw new ArgumentNullException(nameof(replacement));
+            }
+
             InitialMatch = new Regex(regex, RegexOptions.Compiled | RegexOptions.CultureInvariant, _regexTimeout);
             Replacement = replacement;
             StopProcessing = stopProcessing;
@@ -39,6 +48,17 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
             {
                 var result = initMatchResults.Result(Replacement);
                 var request = context.HttpContext.Request;
+
+                if (StopProcessing)
+                {
+                    context.Result = RuleTermination.StopRules;
+                }
+
+                if (string.IsNullOrEmpty(result))
+                {
+                    result = "/";
+                }
+
                 if (result.IndexOf("://", StringComparison.Ordinal) >= 0)
                 {
                     string scheme;
@@ -59,13 +79,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
                     if (split >= 0)
                     {
                         var newPath = result.Substring(0, split);
-                        if (newPath.StartsWith(ForwardSlash))
+                        if (newPath[0] == '/')
                         {
                             request.Path = PathString.FromUriComponent(newPath);
                         }
                         else
                         {
-                            request.Path = PathString.FromUriComponent(ForwardSlash + newPath);
+                            request.Path = PathString.FromUriComponent('/' + newPath);
                         }
                         request.QueryString = request.QueryString.Add(
                             QueryString.FromUriComponent(
@@ -73,19 +93,15 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
                     }
                     else
                     {
-                        if (result.StartsWith(ForwardSlash))
+                        if (result[0] == '/')
                         {
                             request.Path = PathString.FromUriComponent(result);
                         }
                         else
                         {
-                            request.Path = PathString.FromUriComponent(ForwardSlash + result);
+                            request.Path = PathString.FromUriComponent('/' + result);
                         }
                     }
-                }
-                if (StopProcessing)
-                {
-                    context.Result = RuleTermination.StopRules;
                 }
             }
         }

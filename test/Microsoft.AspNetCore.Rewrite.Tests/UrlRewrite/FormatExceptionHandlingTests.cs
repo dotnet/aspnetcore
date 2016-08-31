@@ -91,6 +91,16 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
     </rules>
 </rewrite>", 
             "Could not parse the UrlRewrite file. Message: 'Match does not have an associated pattern attribute in condition'. Line number '6': '18'.")]
+        [InlineData(
+@"<rewrite>
+    <rules>
+        <rule name=""Rewrite to article.aspx"">
+            <match url = ""(.*)"" />
+            <action type=""Rewrite"" url ="""" />
+        </rule>
+    </rules>
+</rewrite>",
+            "Could not parse the UrlRewrite file. Message: 'Url attribute cannot contain an empty string'. Line number '5': '14'.")]
         public void ThrowFormatExceptionWithCorrectMessage(string input, string expected)
         {
             // Arrange, Act, Assert

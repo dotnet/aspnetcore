@@ -165,7 +165,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
             }
 
             var parsedPatternString = condition.Attribute(RewriteTags.Pattern)?.Value;
-
             try
             {
                 var input = _inputParser.ParseInputString(parsedInputString);
@@ -197,9 +196,19 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                 redirectType = RedirectType.Permanent;
             }
 
+            string url = string.Empty;
+            if (urlAction.Attribute(RewriteTags.Url) != null)
+            {
+                url = urlAction.Attribute(RewriteTags.Url).Value;
+                if (string.IsNullOrEmpty(url))
+                {
+                    ThrowUrlFormatException(urlAction, "Url attribute cannot contain an empty string");
+                }
+            }
+
             try
             {
-                var input = _inputParser.ParseInputString(urlAction.Attribute(RewriteTags.Url)?.Value);
+                var input = _inputParser.ParseInputString(url);
                 builder.AddUrlAction(input, actionType, appendQuery, stopProcessing, (int)redirectType);
             }
             catch (FormatException formatException)

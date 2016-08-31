@@ -67,5 +67,40 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             Assert.Equal(response.Headers.Location.OriginalString, "https://example.com/");
         }
+
+
+        [Fact]
+        public async Task CheckIfEmptyStringRedirectCorrectly()
+        {
+            var options = new RewriteOptions().AddRedirect("(.*)", "$1", statusCode: 301);
+            var builder = new WebHostBuilder()
+            .Configure(app =>
+            {
+                app.UseRewriter(options);
+            });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetAsync("");
+            Assert.Equal(response.Headers.Location.OriginalString, "/");
+        }
+
+        [Fact]
+        public async Task CheckIfEmptyStringRewriteCorrectly()
+        {
+            var options = new RewriteOptions().AddRewrite("(.*)", "$1");
+            var builder = new WebHostBuilder()
+            .Configure(app =>
+            {
+                app.UseRewriter(options);
+                app.Run(context => context.Response.WriteAsync(
+                        context.Request.Path +
+                        context.Request.QueryString));
+            });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetStringAsync("");
+
+            Assert.Equal(response, "/");
+        }
     }
 }

@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite
                         {
                             case MatchType.Pattern:
                                 {
-                                    if (pattern == null)
+                                    if (string.IsNullOrEmpty(pattern))
                                     {
                                         throw new FormatException("Match does not have an associated pattern attribute in condition");
                                     }

@@ -53,7 +53,14 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
                 pattern = Uri.EscapeDataString(pattern);
             }
 
-            if (pattern.IndexOf("://", StringComparison.Ordinal) == -1 && !pattern.StartsWith("/"))
+            if (string.IsNullOrEmpty(pattern))
+            {
+                response.Headers[HeaderNames.Location] = "/";
+                return;
+            }
+
+
+            if (pattern.IndexOf("://", StringComparison.Ordinal) == -1 && pattern[0] != '/')
             {
                 pattern = '/' + pattern;
             }

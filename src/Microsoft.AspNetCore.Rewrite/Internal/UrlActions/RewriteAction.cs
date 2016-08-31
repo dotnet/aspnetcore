@@ -9,7 +9,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
 {
     public class RewriteAction : UrlAction
     {
-        private readonly string ForwardSlash = "/";
         public RuleTermination Result { get; }
         public bool QueryStringAppend { get; }
         public bool QueryStringDelete { get; }
@@ -22,6 +21,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
             bool queryStringDelete,
             bool escapeBackReferences)
         {
+            // For the replacement, we must have at least 
+            // one segment (cannot have an empty replacement)
             Result = result;
             Url = pattern;
             QueryStringAppend = queryStringAppend;
@@ -47,11 +48,17 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
             var pattern = Url.Evaluate(context, ruleMatch, condMatch);
             var request = context.HttpContext.Request;
 
+            if (string.IsNullOrEmpty(pattern))
+            {
+                pattern = "/";
+            }
+
             if (EscapeBackReferences)
             {
                 // because escapebackreferences will be encapsulated by the pattern, just escape the pattern
                 pattern = Uri.EscapeDataString(pattern);
             }
+
 
             // TODO PERF, substrings, object creation, etc.
             if (pattern.IndexOf("://", StringComparison.Ordinal) >= 0)
@@ -89,13 +96,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
                 if (split >= 0)
                 {
                     var path = pattern.Substring(0, split);
-                    if (path.StartsWith(ForwardSlash))
+                    if (path[0] == '/')
                     {
                         request.Path = PathString.FromUriComponent(path);
                     }
                     else
                     {
-                        request.Path = PathString.FromUriComponent(ForwardSlash + path);
+                        request.Path = PathString.FromUriComponent('/' + path);
                     }
 
                     if (QueryStringAppend)
@@ -112,13 +119,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
                 }
                 else
                 {
-                    if (pattern.StartsWith(ForwardSlash))
+                    if (pattern[0] == '/')
                     {
                         request.Path = PathString.FromUriComponent(pattern);
                     }
                     else
                     {
-                        request.Path = PathString.FromUriComponent(ForwardSlash + pattern);
+                        request.Path = PathString.FromUriComponent('/' + pattern);
                     }
 
                     if (QueryStringDelete)

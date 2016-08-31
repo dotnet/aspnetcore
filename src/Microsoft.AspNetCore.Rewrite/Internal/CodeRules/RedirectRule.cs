@@ -16,6 +16,16 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
         public int StatusCode { get; }
         public RedirectRule(string regex, string replacement, int statusCode)
         {
+            if (string.IsNullOrEmpty(regex))
+            {
+                throw new ArgumentNullException(nameof(regex));
+            }
+
+            if (string.IsNullOrEmpty(replacement))
+            {
+                throw new ArgumentNullException(nameof(replacement));
+            }
+
             InitialMatch = new Regex(regex, RegexOptions.Compiled | RegexOptions.CultureInvariant, _regexTimeout);
             Replacement = replacement;
             StatusCode = statusCode;
@@ -38,9 +48,17 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
             {
                 var newPath = initMatchResults.Result(Replacement);
                 var response = context.HttpContext.Response;
-                response.StatusCode = StatusCode;
 
-                if (newPath.IndexOf("://", StringComparison.Ordinal) == -1 && !newPath.StartsWith("/"))
+                response.StatusCode = StatusCode;
+                context.Result = RuleTermination.ResponseComplete;
+
+                if (string.IsNullOrEmpty(newPath))
+                {
+                    response.Headers[HeaderNames.Location] = "/";
+                    return;
+                }
+
+                if (newPath.IndexOf("://", StringComparison.Ordinal) == -1 && newPath[0] != '/')
                 {
                     newPath = '/' + newPath;
                 }
@@ -58,8 +76,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
                 {
                     response.Headers[HeaderNames.Location] = newPath;
                 }
-
-                context.Result = RuleTermination.ResponseComplete;
             }
         }
     }

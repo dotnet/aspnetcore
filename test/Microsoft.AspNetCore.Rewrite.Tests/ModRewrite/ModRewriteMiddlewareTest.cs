@@ -248,5 +248,43 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             Assert.Equal(response.StatusCode, (HttpStatusCode)301);
             Assert.Equal(response.Headers.Location.AbsoluteUri, @"https://www.example.com/foo/");
         }
+
+        [Theory]
+        [InlineData("http://www.example.com/")]
+        public async Task Invoke_CaptureEmptyStringInRegexAssertRedirectLocationHasForwardSlash(string input)
+        {
+            var options = new RewriteOptions()
+                .AddApacheModRewrite(new StringReader("RewriteRule ^(.*)$ $1 [R=301,L]"));
+            var builder = new WebHostBuilder()
+              .Configure(app =>
+              {
+                  app.UseRewriter(options);
+                  app.Run(context => context.Response.WriteAsync(context.Request.Scheme + "://" + context.Request.Host.Host + context.Request.Path + context.Request.QueryString));
+              });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetAsync(input);
+
+            Assert.Equal(response.StatusCode, (HttpStatusCode)301);
+            Assert.Equal(response.Headers.Location.OriginalString, "/");
+        }
+
+        [Theory]
+        [InlineData("http://www.example.com/")]
+        public async Task Invoke_CaptureEmptyStringInRegexAssertRewriteHasForwardSlash(string input)
+        {
+            var options = new RewriteOptions()
+                .AddApacheModRewrite(new StringReader("RewriteRule ^(.*)$ $1 [L]"));
+            var builder = new WebHostBuilder()
+              .Configure(app =>
+              {
+                  app.UseRewriter(options);
+                  app.Run(context => context.Response.WriteAsync(context.Request.Path + context.Request.QueryString));
+              });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetStringAsync(input);
+            Assert.Equal(response, "/");
+        }
     }
 }

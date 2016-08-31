@@ -255,5 +255,60 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             Assert.Equal(response, "http://internalserver/");
         }
+
+        [Fact]
+        public async Task Invoke_CaptureEmptyStringInRegexAssertRedirectLocationHasForwardSlash()
+        {
+            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+                <rules>
+                <rule name=""Test"">  
+                <match url=""(.*)"" />  
+                <action type=""Redirect"" url=""{R:1}"" />  
+                </rule>  
+                </rules>
+                </rewrite>"));
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(
+                        context.Request.Scheme +
+                        "://" +
+                        context.Request.Host +
+                        context.Request.Path +
+                        context.Request.QueryString));
+                });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetAsync(new Uri("http://example.com/"));
+
+            Assert.Equal(response.Headers.Location.OriginalString, "/");
+        }
+
+        [Fact]
+        public async Task Invoke_CaptureEmptyStringInRegexAssertRewriteLocationHasForwardSlash()
+        {
+            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+                <rules>
+                <rule name=""Test"">  
+                <match url=""(.*)"" />  
+                <action type=""Rewrite"" url=""{R:1}"" />  
+                </rule>  
+                </rules>
+                </rewrite>"));
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(
+                        context.Request.Path +
+                        context.Request.QueryString));
+                });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetStringAsync(new Uri("http://example.com/"));
+
+            Assert.Equal(response, "/");
+        }
     }
 }

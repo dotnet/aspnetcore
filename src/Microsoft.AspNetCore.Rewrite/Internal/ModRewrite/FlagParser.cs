@@ -63,7 +63,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ModRewrite
             }
 
             // Check that flags are contained within []
-            if (!(flagString.StartsWith("[") && flagString.EndsWith("]")))
+            // Guaranteed to have a length of at least 1 here, so this will never throw for indexing.
+            if (!(flagString[0] == '[' && flagString[flagString.Length - 1] == ']'))
             {
                 throw new FormatException("Flags should start and end with square brackets: [flags]");
             }
