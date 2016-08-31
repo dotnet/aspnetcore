@@ -338,11 +338,6 @@ namespace Microsoft.Net.Http.Server
             _responseState = ResponseState.Started;
             var reasonPhrase = GetReasonPhrase(StatusCode);
 
-            /*
-            if (m_BoundaryType==BoundaryType.Raw) {
-                use HTTP_SEND_RESPONSE_FLAG_RAW_HEADER;
-            }
-            */
             uint statusCode;
             uint bytesSent;
             List<GCHandle> pinnedHeaders = SerializeHeaders(isOpaqueUpgrade);
@@ -414,7 +409,7 @@ namespace Microsoft.Net.Http.Server
             return statusCode;
         }
 
-        internal HttpApi.HTTP_FLAGS ComputeHeaders(bool endOfRequest = false)
+        internal HttpApi.HTTP_FLAGS ComputeHeaders(long writeCount, bool endOfRequest = false)
         {
             // 401
             if (StatusCode == (ushort)HttpStatusCode.Unauthorized)
@@ -456,6 +451,13 @@ namespace Microsoft.Net.Http.Server
                 _boundaryType = BoundaryType.ContentLength;
                 // ComputeLeftToWrite checks for HEAD requests when setting _leftToWrite
                 _expectedBodyLength = responseContentLength.Value;
+                if (responseContentLength.Value == writeCount && !isHeadRequest)
+                {
+                    // A single write with the whole content-length. Http.Sys will set the content-length for us in this scenario.
+                    // If we don't remove it then range requests served from cache will have two.
+                    // https://github.com/aspnet/WebListener/issues/167
+                    ContentLength = null;
+                }
             }
             else if (responseChunkedSet)
             {
@@ -495,7 +497,6 @@ namespace Microsoft.Net.Http.Server
                 flags = HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
             }
 
-            Headers.IsReadOnly = true; // Prohibit further modifications.
             return flags;
         }
 
@@ -511,12 +512,7 @@ namespace Microsoft.Net.Http.Server
             HttpApi.HTTP_RESPONSE_INFO[] knownHeaderInfo = null;
             List<GCHandle> pinnedHeaders;
             GCHandle gcHandle;
-            /*
-            // here we would check for BoundaryType.Raw, in this case we wouldn't need to do anything
-            if (m_BoundaryType==BoundaryType.Raw) {
-                return null;
-            }
-            */
+
             if (Headers.Count == 0)
             {
                 return null;

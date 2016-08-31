@@ -1000,8 +1000,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "Cached response contains duplicate Content-Length headers (#167).")]
+        [Fact]
         public async Task Caching_RequestRangeFromCachedFile_ServedFromCache()
         {
             string address;

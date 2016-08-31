@@ -137,7 +137,7 @@ namespace Microsoft.Net.Http.Server
             }
 
             // Make sure all validation is performed before this computes the headers
-            var flags = ComputeLeftToWrite(endOfRequest);
+            var flags = ComputeLeftToWrite(data.Count, endOfRequest);
             if (!_inOpaqueMode && endOfRequest && _leftToWrite > 0)
             {
                 _requestContext.Abort();
@@ -315,7 +315,7 @@ namespace Microsoft.Net.Http.Server
             }
 
             // Make sure all validation is performed before this computes the headers
-            var flags = ComputeLeftToWrite();
+            var flags = ComputeLeftToWrite(data.Count);
             if (_leftToWrite != data.Count)
             {
                 flags |= HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
@@ -438,12 +438,12 @@ namespace Microsoft.Net.Http.Server
             _requestContext.Abort();
         }
 
-        private HttpApi.HTTP_FLAGS ComputeLeftToWrite(bool endOfRequest = false)
+        private HttpApi.HTTP_FLAGS ComputeLeftToWrite(long writeCount, bool endOfRequest = false)
         {
             var flags = HttpApi.HTTP_FLAGS.NONE;
             if (!_requestContext.Response.HasComputedHeaders)
             {
-                flags = _requestContext.Response.ComputeHeaders(endOfRequest);
+                flags = _requestContext.Response.ComputeHeaders(writeCount, endOfRequest);
             }
             if (_leftToWrite == long.MinValue)
             {
@@ -591,7 +591,7 @@ namespace Microsoft.Net.Http.Server
             }
 
             // Make sure all validation is performed before this computes the headers
-            var flags = ComputeLeftToWrite();
+            var flags = ComputeLeftToWrite(count.Value);
             uint statusCode;
             uint bytesSent = 0;
             var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
