@@ -69,8 +69,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Debug.Assert(httpContext != null);
             Debug.Assert(token != null);
 
-            var options = new CookieOptions() { HttpOnly = true };
-
+            var options = new CookieOptions();
+            options.HttpOnly = true;
+            options.Path = httpContext.Request.PathBase;
             // Note: don't use "newCookie.Secure = _options.RequireSSL;" since the default
             // value of newCookie.Secure is poulated out of band.
             if (_options.RequireSsl)

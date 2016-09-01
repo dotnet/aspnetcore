@@ -245,10 +245,13 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             bool defaultCookieSecureValue = expectedCookieSecureFlag ?? false; // pulled from config; set by ctor
             var cookies = new MockResponseCookieCollection();
 
-            var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext
+            var httpContext = new Mock<HttpContext>();
+            httpContext
                 .Setup(o => o.Response.Cookies)
                 .Returns(cookies);
+            httpContext
+                .SetupGet(hc => hc.Request.PathBase)
+                .Returns("/");
 
             var options = new AntiforgeryOptions()
             {
@@ -259,7 +262,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
 
             // Act
-            tokenStore.SaveCookieToken(mockHttpContext.Object, token);
+            tokenStore.SaveCookieToken(httpContext.Object, token);
 
             // Assert
             Assert.Equal(1, cookies.Count);
@@ -268,6 +271,41 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.Equal("serialized-value", cookies.Value);
             Assert.True(cookies.Options.HttpOnly);
             Assert.Equal(defaultCookieSecureValue, cookies.Options.Secure);
+        }
+
+        [Theory]
+        [InlineData("/")]
+        [InlineData("/vdir1")]
+        [InlineData("/vdir1/vdir2")]
+        public void SaveCookieToken_SetsCookieWithApproriatePathBase(string requestPathBase)
+        {
+            // Arrange
+            var token = "serialized-value";
+            var cookies = new MockResponseCookieCollection();
+            var httpContext = new Mock<HttpContext>();
+            httpContext
+                .Setup(hc => hc.Response.Cookies)
+                .Returns(cookies);
+            httpContext
+                .SetupGet(hc => hc.Request.PathBase)
+                .Returns(requestPathBase);
+            httpContext
+                .SetupGet(hc => hc.Request.Path)
+                .Returns("/index.html");
+            var options = new AntiforgeryOptions();
+            options.CookieName = _cookieName;
+            var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
+
+            // Act
+            tokenStore.SaveCookieToken(httpContext.Object, token);
+
+            // Assert
+            Assert.Equal(1, cookies.Count);
+            Assert.NotNull(cookies);
+            Assert.Equal(_cookieName, cookies.Key);
+            Assert.Equal("serialized-value", cookies.Value);
+            Assert.True(cookies.Options.HttpOnly);
+            Assert.Equal(requestPathBase, cookies.Options.Path);
         }
 
         private HttpContext GetHttpContext(string cookieName, string cookieValue)
