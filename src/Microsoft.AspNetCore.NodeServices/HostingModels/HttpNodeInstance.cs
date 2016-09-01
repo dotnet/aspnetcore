@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         private int _portNumber;
 
         public HttpNodeInstance(string projectPath, string[] watchFileExtensions, ILogger nodeInstanceOutputLogger,
-            IDictionary<string, string> environmentVars, bool launchWithDebugging, int? debuggingPort, int port = 0)
+            IDictionary<string, string> environmentVars, bool launchWithDebugging, int debuggingPort, int port = 0)
         : base(
                 EmbeddedResourceReader.Read(
                     typeof(HttpNodeInstance),

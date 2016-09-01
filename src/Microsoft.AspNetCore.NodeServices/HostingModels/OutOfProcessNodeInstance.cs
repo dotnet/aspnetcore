@@ -49,7 +49,7 @@ If you haven't yet installed node-inspector, you can do so as follows:
             ILogger nodeOutputLogger,
             IDictionary<string, string> environmentVars,
             bool launchWithDebugging,
-            int? debuggingPort)
+            int debuggingPort)
         {
             if (nodeOutputLogger == null)
             {
@@ -101,12 +101,12 @@ If you haven't yet installed node-inspector, you can do so as follows:
         // This method is virtual, as it provides a way to override the NODE_PATH or the path to node.exe
         protected virtual ProcessStartInfo PrepareNodeProcessStartInfo(
             string entryPointFilename, string projectPath, string commandLineArguments,
-            IDictionary<string, string> environmentVars, bool launchWithDebugging, int? debuggingPort)
+            IDictionary<string, string> environmentVars, bool launchWithDebugging, int debuggingPort)
         {
             string debuggingArgs;
             if (launchWithDebugging)
             {
-                debuggingArgs = debuggingPort.HasValue ? $"--debug={debuggingPort.Value} " : "--debug ";
+                debuggingArgs = debuggingPort != default(int) ? $"--debug={debuggingPort} " : "--debug ";
                 _nodeDebuggingPort = debuggingPort;
             }
             else

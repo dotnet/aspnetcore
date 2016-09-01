@@ -15,10 +15,10 @@ namespace ConsoleApplication
         public static void Main(string[] args) {
             // Set up the DI system
             var services = new ServiceCollection();
-            services.AddNodeServices(new NodeServicesOptions {
-                HostingModel = NodeServicesOptions.DefaultNodeHostingModel,
-                ProjectPath = Directory.GetCurrentDirectory(),
-                WatchFileExtensions = new string[] {} // Don't watch anything
+            services.AddNodeServices(options => {
+                options.HostingModel = NodeServicesOptions.DefaultNodeHostingModel;
+                options.ProjectPath = Directory.GetCurrentDirectory();
+                options.WatchFileExtensions = new string[] {}; // Don't watch anything
             });
             var serviceProvider = services.BuildServiceProvider();
 

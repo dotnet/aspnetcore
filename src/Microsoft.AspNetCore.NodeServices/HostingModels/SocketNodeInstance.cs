@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
         public SocketNodeInstance(string projectPath, string[] watchFileExtensions, string socketAddress,
             ILogger nodeInstanceOutputLogger, IDictionary<string, string> environmentVars,
-            bool launchWithDebugging, int? debuggingPort)
+            bool launchWithDebugging, int debuggingPort)
         : base(
                 EmbeddedResourceReader.Read(
                     typeof(SocketNodeInstance),

@@ -40,12 +40,9 @@ namespace Microsoft.AspNetCore.Builder
             // because it must *not* restart when files change (if it did, you'd lose all the benefits of Webpack
             // middleware). And since this is a dev-time-only feature, it doesn't matter if the default transport isn't
             // as fast as some theoretical future alternative.
-            var nodeServices = Configuration.CreateNodeServices(
-                appBuilder.ApplicationServices,
-                new NodeServicesOptions
-                {
-                    WatchFileExtensions = new string[] { } // Don't watch anything
-                });
+            var nodeServicesOptions = new NodeServicesOptions(appBuilder.ApplicationServices);
+            nodeServicesOptions.WatchFileExtensions = new string[] {}; // Don't watch anything
+            var nodeServices = NodeServicesFactory.CreateNodeServices(nodeServicesOptions);
 
             // Get a filename matching the middleware Node script
             var script = EmbeddedResourceReader.Read(typeof(WebpackDevMiddleware),
