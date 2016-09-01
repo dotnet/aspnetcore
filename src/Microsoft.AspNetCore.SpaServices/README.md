@@ -388,7 +388,7 @@ If instead of LESS you prefer SASS or another CSS preprocessor, the exact same t
 
 #### Approach 1: Loading the styles using JavaScript
 
-This technique is a little simpler to set up than technique 1, plus it works flawlessly with Hot Module Replacement (HMR). The downside is that it's really only good for development time, because in production you probably don't want users to wait until JavaScript is loaded before styles are applied to the page (this would mean they'd see a 'flash of unstyled content' while the page is being loaded).
+This technique is a little simpler to set up than technique 2, plus it works flawlessly with Hot Module Replacement (HMR). The downside is that it's really only good for development time, because in production you probably don't want users to wait until JavaScript is loaded before styles are applied to the page (this would mean they'd see a 'flash of unstyled content' while the page is being loaded).
 
 First create a `.less` file in your project. For example, create a file at `ClientApp/styles/mystyles.less` containing:
 
@@ -506,7 +506,7 @@ If you run `webpack` on the command line now, you should now find that it emits 
 <link rel="stylesheet" href="~/dist/mystyles.css" asp-append-version="true" />
 ```
 
-**Note** This technique (writing the built `.css` file to disk) is ideal for production use. But note that, at development time, *it does not support Hot Module Replacement (HMR)*. You will need to reload the page each time you edit your `.less` file. This is a known limitation of `extract-text-webpack-plugin`. If you have constructive opinions on how this can be improved, see the [discussion here](https://github.com/webpack/extract-text-webpack-plugin/issues/30).
+**Note:** This technique (writing the built `.css` file to disk) is ideal for production use. But note that, at development time, *it does not support Hot Module Replacement (HMR)*. You will need to reload the page each time you edit your `.less` file. This is a known limitation of `extract-text-webpack-plugin`. If you have constructive opinions on how this can be improved, see the [discussion here](https://github.com/webpack/extract-text-webpack-plugin/issues/30).
 
 ### Enabling webpack dev middleware
 
