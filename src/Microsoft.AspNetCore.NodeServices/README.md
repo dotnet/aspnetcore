@@ -43,15 +43,9 @@ In that case, you don't need to use NodeServices directly (or install it manuall
 
 ## For ASP.NET Core apps
 
-ASP.NET Core has a built-in dependency injection (DI) system. NodeServices is designed to work with this, so you don't have to manage the creation or disposal of instances.
+.NET Core has a built-in dependency injection (DI) system. NodeServices is designed to work with this, so you don't have to manage the creation or disposal of instances.
 
-Enable NodeServices in your application by first adding the following to the top of your `Startup.cs` file:
-
-```csharp
-using Microsoft.AspNetCore.NodeServices;
-```
-
-... and then add to your `ConfigureServices` method in that file:
+Enable NodeServices in your application by first adding the following to your `ConfigureServices` method in `Startup.cs`:
 
 ```csharp
 public void ConfigureServices(IServiceCollection services)
@@ -93,7 +87,6 @@ If you want to put `addNumber.js` inside a subfolder rather than the root of you
 In other types of .NET Core app, where you don't have ASP.NET supplying an `IServiceCollection` to you, you'll need to instantiate your own DI container. For example, add a reference to the .NET package `Microsoft.Extensions.DependencyInjection`, and then you can construct an `IServiceCollection`, then register NodeServices as usual:
 
 ```csharp
-// Remember to add 'using Microsoft.AspNetCore.NodeServices;' at the top of your file
 var services = new ServiceCollection();
 services.AddNodeServices(options => {
     // Set any properties that you want on 'options' here
@@ -133,10 +126,10 @@ AddNodeServices(Action<NodeServicesOptions> setupAction)
 
 This is an extension method on `IServiceCollection`. It registers NodeServices with ASP.NET Core's DI system. Typically you should call this from the `ConfigureServices` method in your `Startup.cs` file.
 
-To access this extension method, you'll need to add the following namespace import to the top of your file:
+To access this extension method, you'll need to add the following namespace import to the top of your file, if it isn't already there:
 
 ```csharp
-using Microsoft.AspNetCore.NodeServices;
+using Microsoft.Extensions.DependencyInjection;
 ```
 
 **Examples**
