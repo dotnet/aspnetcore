@@ -6,6 +6,7 @@
     "skipDefaultLibCheck": true
   },
   "exclude": [
+      "bin",
       "node_modules"
   ]
 }
