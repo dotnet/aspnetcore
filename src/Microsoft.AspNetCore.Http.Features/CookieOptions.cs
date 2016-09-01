@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets or sets a value that indicates whether a cookie is accessible by client-side script.
         /// </summary>
-        /// <returns>true if a cookie is accessible by client-side script; otherwise, false.</returns>
+        /// <returns>true if a cookie must not be accessible by client-side script; otherwise, false.</returns>
         public bool HttpOnly { get; set; }
     }
 }
