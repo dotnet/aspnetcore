@@ -258,22 +258,22 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             }));
         }
 
-        private class CustomizeKeySuffixProvider : IResponseCachingCacheKeySuffixProvider
+        private class KeyModifier : IResponseCachingCacheKeyModifier
         {
-            public string CreateCustomKeySuffix(HttpContext httpContext) => "CustomizedKey";
+            public string CreatKeyPrefix(HttpContext httpContext) => "CustomizedKeyPrefix";
         }
 
         [Fact]
-        public void CreateCacheKey_OptionalCacheKey_AppendedToDefaultKey()
+        public void CreateCacheKey_CacheKeyModifier_AddsPrefix()
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Method = "GET";
             httpContext.Request.Path = "/";
             httpContext.Request.Headers["HeaderA"] = "ValueA";
             httpContext.Request.Headers["HeaderB"] = "ValueB";
-            var responseCachingContext = CreateTestContext(httpContext, new CustomizeKeySuffixProvider());
+            var responseCachingContext = CreateTestContext(httpContext, new KeyModifier());
 
-            Assert.Equal($"GET{KeyDelimiter}/{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeyDelimiter}HeaderC=null{KeyDelimiter}C{KeyDelimiter}CustomizedKey", responseCachingContext.CreateCacheKey(new CachedVaryBy()
+            Assert.Equal($"CustomizedKeyPrefix{KeyDelimiter}GET{KeyDelimiter}/{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeyDelimiter}HeaderC=null", responseCachingContext.CreateCacheKey(new CachedVaryBy()
             {
                 Headers = new string[] { "HeaderA", "HeaderC" }
             }));
@@ -831,15 +831,15 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             return CreateTestContext(
                 httpContext,
-                new NoopCacheKeySuffixProvider(),
+                new NoopCacheKeyModifier(),
                 new NoopCacheabilityValidator());
         }
 
-        private static ResponseCachingContext CreateTestContext(HttpContext httpContext, IResponseCachingCacheKeySuffixProvider cacheKeySuffixProvider)
+        private static ResponseCachingContext CreateTestContext(HttpContext httpContext, IResponseCachingCacheKeyModifier cacheKeyModifier)
         {
             return CreateTestContext(
                 httpContext,
-                cacheKeySuffixProvider,
+                cacheKeyModifier,
                 new NoopCacheabilityValidator());
         }
 
@@ -847,13 +847,13 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             return CreateTestContext(
                 httpContext,
-                new NoopCacheKeySuffixProvider(),
+                new NoopCacheKeyModifier(),
                 cacheabilityValidator);
         }
 
         private static ResponseCachingContext CreateTestContext(
             HttpContext httpContext,
-            IResponseCachingCacheKeySuffixProvider cacheKeySuffixProvider,
+            IResponseCachingCacheKeyModifier cacheKeyModifier,
             IResponseCachingCacheabilityValidator cacheabilityValidator)
         {
             return new ResponseCachingContext(
@@ -862,7 +862,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 new SystemClock(),
                 new DefaultObjectPool<StringBuilder>(new StringBuilderPooledObjectPolicy()),
                 cacheabilityValidator,
-                cacheKeySuffixProvider);
+                cacheKeyModifier);
         }
 
         private class TestResponseCache : IResponseCache

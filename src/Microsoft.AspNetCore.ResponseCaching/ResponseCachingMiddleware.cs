@@ -22,14 +22,14 @@ namespace Microsoft.AspNetCore.ResponseCaching
         private readonly IResponseCache _cache;
         private readonly ObjectPool<StringBuilder> _builderPool;
         private readonly IResponseCachingCacheabilityValidator _cacheabilityValidator;
-        private readonly IResponseCachingCacheKeySuffixProvider _cacheKeySuffixProvider;
+        private readonly IResponseCachingCacheKeyModifier _cacheKeyModifier;
 
         public ResponseCachingMiddleware(
             RequestDelegate next, 
             IResponseCache cache,
             ObjectPoolProvider poolProvider,
             IResponseCachingCacheabilityValidator cacheabilityValidator,
-            IResponseCachingCacheKeySuffixProvider cacheKeySuffixProvider)
+            IResponseCachingCacheKeyModifier cacheKeyModifier)
         {
             if (next == null)
             {
@@ -47,16 +47,16 @@ namespace Microsoft.AspNetCore.ResponseCaching
             {
                 throw new ArgumentNullException(nameof(cacheabilityValidator));
             }
-            if (cacheKeySuffixProvider == null)
+            if (cacheKeyModifier == null)
             {
-                throw new ArgumentNullException(nameof(cacheKeySuffixProvider));
+                throw new ArgumentNullException(nameof(cacheKeyModifier));
             }
 
             _next = next;
             _cache = cache;
             _builderPool = poolProvider.CreateStringBuilderPool();
             _cacheabilityValidator = cacheabilityValidator;
-            _cacheKeySuffixProvider = cacheKeySuffixProvider;
+            _cacheKeyModifier = cacheKeyModifier;
         }
 
         public async Task Invoke(HttpContext context)
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 _cache,
                 _builderPool,
                 _cacheabilityValidator,
-                _cacheKeySuffixProvider);
+                _cacheKeyModifier);
 
             // Should we attempt any caching logic?
             if (cachingContext.RequestIsCacheable())

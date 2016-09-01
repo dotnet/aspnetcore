@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         private readonly ISystemClock _clock;
         private readonly ObjectPool<StringBuilder> _builderPool;
         private readonly IResponseCachingCacheabilityValidator _cacheabilityValidator;
-        private readonly IResponseCachingCacheKeySuffixProvider _cacheKeySuffixProvider;
+        private readonly IResponseCachingCacheKeyModifier _cacheKeyModifier;
 
         private string _cacheKey;
         private ResponseType? _responseType;
@@ -46,8 +46,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
             IResponseCache cache,
             ObjectPool<StringBuilder> builderPool,
             IResponseCachingCacheabilityValidator cacheabilityValidator,
-            IResponseCachingCacheKeySuffixProvider cacheKeySuffixProvider)
-            : this(httpContext, cache, new SystemClock(), builderPool, cacheabilityValidator, cacheKeySuffixProvider)
+            IResponseCachingCacheKeyModifier cacheKeyModifier)
+            : this(httpContext, cache, new SystemClock(), builderPool, cacheabilityValidator, cacheKeyModifier)
         {
         }
 
@@ -58,14 +58,14 @@ namespace Microsoft.AspNetCore.ResponseCaching
             ISystemClock clock,
             ObjectPool<StringBuilder> builderPool,
             IResponseCachingCacheabilityValidator cacheabilityValidator,
-            IResponseCachingCacheKeySuffixProvider cacheKeySuffixProvider)
+            IResponseCachingCacheKeyModifier cacheKeyModifier)
         {
             _httpContext = httpContext;
             _cache = cache;
             _clock = clock;
             _builderPool = builderPool;
             _cacheabilityValidator = cacheabilityValidator;
-            _cacheKeySuffixProvider = cacheKeySuffixProvider;
+            _cacheKeyModifier = cacheKeyModifier;
         }
 
         internal bool CacheResponse
@@ -153,6 +153,14 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
             try
             {
+                // Prepend custom cache key prefix
+                var customKeyPrefix = _cacheKeyModifier.CreatKeyPrefix(_httpContext);
+                if (!string.IsNullOrEmpty(customKeyPrefix))
+                {
+                    builder.Append(customKeyPrefix)
+                        .Append(KeyDelimiter);
+                }
+
                 // Default key 
                 builder
                     .Append(request.Method.ToUpperInvariant())
@@ -223,18 +231,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
                                 .Append(value);
                         }
                     }
-                }
-
-                // Append custom cache key segment
-                var customKey = _cacheKeySuffixProvider.CreateCustomKeySuffix(_httpContext);
-                if (!string.IsNullOrEmpty(customKey))
-                {
-                    // Append a group separator for the custom segment of the cache key
-                    builder.Append(KeyDelimiter)
-                        .Append('C');
-
-                    builder.Append(KeyDelimiter)
-                        .Append(customKey);
                 }
 
                 return builder.ToString();

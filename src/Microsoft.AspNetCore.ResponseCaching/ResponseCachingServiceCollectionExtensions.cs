@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static IServiceCollection AddResponseCachingServices(this IServiceCollection services)
         {
-            services.TryAdd(ServiceDescriptor.Singleton<IResponseCachingCacheKeySuffixProvider, NoopCacheKeySuffixProvider>());
+            services.TryAdd(ServiceDescriptor.Singleton<IResponseCachingCacheKeyModifier, NoopCacheKeyModifier>());
             services.TryAdd(ServiceDescriptor.Singleton<IResponseCachingCacheabilityValidator, NoopCacheabilityValidator>());
 
             return services;

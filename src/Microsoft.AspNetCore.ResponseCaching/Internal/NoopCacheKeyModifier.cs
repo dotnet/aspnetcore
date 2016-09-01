@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    internal class NoopCacheKeySuffixProvider : IResponseCachingCacheKeySuffixProvider
+    internal class NoopCacheKeyModifier : IResponseCachingCacheKeyModifier
     {
-        public string CreateCustomKeySuffix(HttpContext httpContext) => null;
+        public string CreatKeyPrefix(HttpContext httpContext) => null;
     }
 }
