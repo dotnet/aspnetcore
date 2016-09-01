@@ -40,7 +40,6 @@ namespace Microsoft.Net.Http.Server
         private long _leftToWrite = long.MinValue;
         private bool _skipWrites;
         private bool _disposed;
-        private bool _inOpaqueMode;
 
         // The last write needs special handling to cancel.
         private ResponseStreamAsyncResult _lastWrite;
@@ -138,7 +137,7 @@ namespace Microsoft.Net.Http.Server
 
             // Make sure all validation is performed before this computes the headers
             var flags = ComputeLeftToWrite(data.Count, endOfRequest);
-            if (!_inOpaqueMode && endOfRequest && _leftToWrite > 0)
+            if (endOfRequest && _leftToWrite > 0)
             {
                 _requestContext.Abort();
                 // This is logged rather than thrown because it is too late for an exception to be visible in user code.
@@ -146,16 +145,6 @@ namespace Microsoft.Net.Http.Server
                 return;
             }
 
-            if (endOfRequest && _requestContext.Response.BoundaryType == BoundaryType.Close)
-            {
-                flags |= HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
-            }
-            else if (!endOfRequest && _leftToWrite != data.Count)
-            {
-                flags |= HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
-            }
-
-            UpdateWritenCount((uint)data.Count);
             uint statusCode = 0;
             HttpApi.HTTP_DATA_CHUNK[] dataChunks;
             var pinnedBuffers = PinDataBuffers(endOfRequest, data, out dataChunks);
@@ -316,12 +305,6 @@ namespace Microsoft.Net.Http.Server
 
             // Make sure all validation is performed before this computes the headers
             var flags = ComputeLeftToWrite(data.Count);
-            if (_leftToWrite != data.Count)
-            {
-                flags |= HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
-            }
-
-            UpdateWritenCount((uint)data.Count);
             uint statusCode = 0;
             var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
             var asyncResult = new ResponseStreamAsyncResult(this, data, chunked, cancellationToken);
@@ -460,6 +443,29 @@ namespace Microsoft.Net.Http.Server
                     _leftToWrite = -1; // unlimited
                 }
             }
+
+            if (endOfRequest && _requestContext.Response.BoundaryType == BoundaryType.Close)
+            {
+                flags |= HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
+            }
+            else if (!endOfRequest && _leftToWrite != writeCount)
+            {
+                flags |= HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
+            }
+
+            // Update _leftToWrite now so we can queue up additional async writes.
+            if (_leftToWrite > 0)
+            {
+                // keep track of the data transferred
+                _leftToWrite -= writeCount;
+            }
+            if (_leftToWrite == 0)
+            {
+                // in this case we already passed 0 as the flag, so we don't need to call HttpSendResponseEntityBody() when we Close()
+                _disposed = true;
+            }
+            // else -1 unlimited
+
             return flags;
         }
 
@@ -597,20 +603,6 @@ namespace Microsoft.Net.Http.Server
             var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
             var asyncResult = new ResponseStreamAsyncResult(this, fileStream, offset, count.Value, chunked, cancellationToken);
 
-            long bytesWritten;
-            if (chunked)
-            {
-                bytesWritten = 0;
-            }
-            else
-            {
-                bytesWritten = count.Value;
-            }
-
-            // Update _leftToWrite now so we can queue up additional calls to SendFileAsync.
-            flags |= _leftToWrite == bytesWritten ? HttpApi.HTTP_FLAGS.NONE : HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
-            UpdateWritenCount((uint)bytesWritten);
-
             try
             {
                 if (!started)
@@ -680,23 +672,6 @@ namespace Microsoft.Net.Http.Server
             return asyncResult.Task;
         }
 
-        private void UpdateWritenCount(uint dataWritten)
-        {
-            if (!_inOpaqueMode)
-            {
-                if (_leftToWrite > 0)
-                {
-                    // keep track of the data transferred
-                    _leftToWrite -= dataWritten;
-                }
-                if (_leftToWrite == 0)
-                {
-                    // in this case we already passed 0 as the flag, so we don't need to call HttpSendResponseEntityBody() when we Close()
-                    _disposed = true;
-                }
-            }
-        }
-
         protected override unsafe void Dispose(bool disposing)
         {
             try
@@ -719,8 +694,7 @@ namespace Microsoft.Net.Http.Server
 
         internal void SwitchToOpaqueMode()
         {
-            _inOpaqueMode = true;
-            _leftToWrite = long.MaxValue;
+            _leftToWrite = -1;
         }
 
         // The final Content-Length async write can only be Canceled by CancelIoEx.
