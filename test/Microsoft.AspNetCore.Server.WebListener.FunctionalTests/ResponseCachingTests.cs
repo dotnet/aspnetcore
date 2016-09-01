@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             {
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_JustPublic_NotCached()
         {
             var requestCount = 1;
@@ -37,6 +38,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public";
+                httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
@@ -45,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_MaxAge_Cached()
         {
             var requestCount = 1;
@@ -55,6 +57,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
+                httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
@@ -63,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_SMaxAge_Cached()
         {
             var requestCount = 1;
@@ -73,6 +76,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public, s-maxage=10";
+                httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
@@ -81,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_SMaxAgeAndMaxAge_SMaxAgePreferredCached()
         {
             var requestCount = 1;
@@ -91,6 +95,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=0, s-maxage=10";
+                httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
@@ -99,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_Expires_Cached()
         {
             var requestCount = 1;
@@ -110,6 +115,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public";
                 httpContext.Response.Headers["Expires"] = (DateTime.UtcNow + TimeSpan.FromSeconds(10)).ToString("r");
+                httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
@@ -118,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Theory(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Theory]
         [InlineData("Set-cookie")]
         [InlineData("vary")]
         [InlineData("pragma")]
@@ -132,6 +138,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
                 httpContext.Response.Headers[headerName] = "headerValue";
+                httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
@@ -153,6 +160,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public";
                 httpContext.Response.Headers["Expires"] = expiresValue;
+                httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
@@ -161,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_ExpiresWithoutPublic_NotCached()
         {
             var requestCount = 1;
@@ -171,6 +179,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Expires"] = (DateTime.UtcNow + TimeSpan.FromSeconds(10)).ToString("r");
+                httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
@@ -179,7 +188,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_MaxAgeAndExpires_MaxAgePreferred()
         {
             var requestCount = 1;
@@ -190,6 +199,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
                 httpContext.Response.Headers["Expires"] = (DateTime.UtcNow - TimeSpan.FromSeconds(10)).ToString("r"); // In the past
+                httpContext.Response.ContentLength = 10;
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {

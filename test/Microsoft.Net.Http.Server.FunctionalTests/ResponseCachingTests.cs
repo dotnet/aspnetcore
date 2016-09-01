@@ -56,7 +56,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_SetTtlWithContentType_Cached()
         {
             string address;
@@ -83,7 +83,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         // Http.Sys does not set the optional Age header for cached content.
         // http://tools.ietf.org/html/rfc7234#section-5.1
         public async Task Caching_CheckAge_NotSentWithCachedContent()
@@ -114,7 +114,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         // Http.Sys does not update the optional Age header for cached content.
         // http://tools.ietf.org/html/rfc7234#section-5.1
         public async Task Caching_SetAge_AgeHeaderCachedAndNotUpdated()
@@ -250,7 +250,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_SetTtlHuge_Cached()
         {
             string address;
@@ -277,7 +277,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_SetTtlAndWriteBody_Cached()
         {
             string address;
@@ -288,21 +288,50 @@ namespace Microsoft.Net.Http.Server
                 var context = await server.AcceptAsync();
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
+                context.Response.ContentLength = 10;
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
                 context.Response.Body.Write(new byte[10], 0, 10);
+                context.Dispose();
+
+                var response = await responseTask;
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.Equal("1", response.Headers.GetValues("x-request-count").FirstOrDefault());
+                Assert.Equal(new byte[10], await response.Content.ReadAsByteArrayAsync());
+
+                // Send a second request and make sure we get the same response (without listening for one on the server).
+                response = await SendRequestAsync(address);
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.Equal("1", response.Headers.GetValues("x-request-count").FirstOrDefault());
+                Assert.Equal(new byte[10], await response.Content.ReadAsByteArrayAsync());
+            }
+        }
+
+        [Fact]
+        public async Task Caching_SetTtlAndWriteAsyncBody_Cached()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                var responseTask = SendRequestAsync(address);
+
+                var context = await server.AcceptAsync();
+                context.Response.Headers["x-request-count"] = "1";
+                context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
+                context.Response.ContentLength = 10;
+                context.Response.CacheTtl = TimeSpan.FromSeconds(10);
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
                 context.Dispose();
 
                 var response = await responseTask;
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.Equal("1", response.Headers.GetValues("x-request-count").FirstOrDefault());
-                Assert.Equal(new byte[20], await response.Content.ReadAsByteArrayAsync());
+                Assert.Equal(new byte[10], await response.Content.ReadAsByteArrayAsync());
 
                 // Send a second request and make sure we get the same response (without listening for one on the server).
                 response = await SendRequestAsync(address);
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.Equal("1", response.Headers.GetValues("x-request-count").FirstOrDefault());
-                Assert.Equal(new byte[20], await response.Content.ReadAsByteArrayAsync());
+                Assert.Equal(new byte[10], await response.Content.ReadAsByteArrayAsync());
             }
         }
 
@@ -373,7 +402,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_WriteFullContentLength_Cached()
         {
             string address;
@@ -435,7 +464,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_SendFileWithFullContentLength_Cached()
         {
             string address;
@@ -464,19 +493,20 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_SetTtlAndStatusCode_Cached()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                // Http.Sys will cache any status code.
+                // Http.Sys will cache almost any status code.
                 for (int status = 200; status < 600; status++)
                 {
-                    // 407 (Proxy Authentication Required) makes CoreCLR's HttpClient throw
-                    if (status == 407)
+                    switch (status)
                     {
-                        continue;
+                        case 206: // 206 (Partial Content) is not cached
+                        case 407: // 407 (Proxy Authentication Required) makes CoreCLR's HttpClient throw
+                            continue;
                     }
 
                     var responseTask = SendRequestAsync(address + status);
@@ -561,7 +591,7 @@ namespace Microsoft.Net.Http.Server
         // RFC violation. http://tools.ietf.org/html/rfc7234#section-4.4 
         // "A cache MUST invalidate the effective Request URI ... when a non-error status code
         // is received in response to an unsafe request method."
-        [Theory(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Theory]
         // See HTTP_VERB for known verbs
         [InlineData("HEAD")]
         [InlineData("UNKNOWN")]
@@ -628,7 +658,7 @@ namespace Microsoft.Net.Http.Server
 
         // RFC violation / implementation limiation, Vary is not respected.
         // http://tools.ietf.org/html/rfc7234#section-4.1
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_SetVary_NotRespected()
         {
             string address;
@@ -729,7 +759,7 @@ namespace Microsoft.Net.Http.Server
 
         // Responses can be cached for requests with Pragma: no-cache.
         // http://tools.ietf.org/html/rfc7234#section-5.2.1.4
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_RequestPragmaNoCache_Cached()
         {
             string address;
@@ -758,7 +788,7 @@ namespace Microsoft.Net.Http.Server
         // RFC violation, Requests with Pragma: no-cache should not be served from cache.
         // http://tools.ietf.org/html/rfc7234#section-5.4
         // http://tools.ietf.org/html/rfc7234#section-5.2.1.4
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_RequestPragmaNoCache_NotRespectedAndServedFromCache()
         {
             string address;
@@ -786,7 +816,7 @@ namespace Microsoft.Net.Http.Server
 
         // Responses can be cached for requests with cache-control: no-cache.
         // http://tools.ietf.org/html/rfc7234#section-5.2.1.4
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_RequestCacheControlNoCache_Cached()
         {
             string address;
@@ -814,7 +844,7 @@ namespace Microsoft.Net.Http.Server
 
         // RFC violation, Requests with Cache-Control: no-cache should not be served from cache.
         // http://tools.ietf.org/html/rfc7234#section-5.2.1.4
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_RequestCacheControlNoCache_NotRespectedAndServedFromCache()
         {
             string address;
@@ -842,7 +872,7 @@ namespace Microsoft.Net.Http.Server
 
         // RFC violation
         // http://tools.ietf.org/html/rfc7234#section-5.2.1.1
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_RequestCacheControlMaxAgeZero_NotRespectedAndServedFromCache()
         {
             string address;
@@ -870,7 +900,7 @@ namespace Microsoft.Net.Http.Server
 
         // RFC violation
         // http://tools.ietf.org/html/rfc7234#section-5.2.1.3
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_RequestCacheControlMinFreshOutOfRange_NotRespectedAndServedFromCache()
         {
             string address;
@@ -941,8 +971,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         // http://tools.ietf.org/html/rfc7233#section-4.1
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "Cached response contains duplicate Content-Length headers (#167).")]
+        [Fact]
         public async Task Caching_RequestRangeFromCache_RangeServedFromCache()
         {
             string address;
@@ -972,7 +1001,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         // http://tools.ietf.org/html/rfc7233#section-4.1
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_RequestMultipleRangesFromCache_RangesServedFromCache()
         {
             string address;
@@ -1032,7 +1061,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/WebListener/issues/210")]
+        [Fact]
         public async Task Caching_RequestMultipleRangesFromCachedFile_ServedFromCache()
         {
             string address;
