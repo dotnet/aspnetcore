@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Headers;
@@ -859,7 +860,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             return new ResponseCachingContext(
                 httpContext,
                 new TestResponseCache(),
-                new SystemClock(),
+                new ResponseCachingOptions(),
                 new DefaultObjectPool<StringBuilder>(new StringBuilderPooledObjectPolicy()),
                 cacheabilityValidator,
                 cacheKeyModifier);

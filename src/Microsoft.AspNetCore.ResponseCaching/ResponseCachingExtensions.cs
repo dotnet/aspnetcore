@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.ResponseCaching;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -16,6 +17,20 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             return app.UseMiddleware<ResponseCachingMiddleware>();
+        }
+
+        public static IApplicationBuilder UseResponseCaching(this IApplicationBuilder app, ResponseCachingOptions options)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            return app.UseMiddleware<ResponseCachingMiddleware>(Options.Create(options));
         }
     }
 }

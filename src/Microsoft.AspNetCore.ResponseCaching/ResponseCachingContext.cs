@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Headers;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         private readonly HttpContext _httpContext;
         private readonly IResponseCache _cache;
-        private readonly ISystemClock _clock;
+        private readonly ResponseCachingOptions _options;
         private readonly ObjectPool<StringBuilder> _builderPool;
         private readonly IResponseCachingCacheabilityValidator _cacheabilityValidator;
         private readonly IResponseCachingCacheKeyModifier _cacheKeyModifier;
@@ -40,29 +41,19 @@ namespace Microsoft.AspNetCore.ResponseCaching
         private CachedResponse _cachedResponse;
         private TimeSpan _cachedResponseValidFor;
         internal DateTimeOffset _responseTime;
-        
-        internal ResponseCachingContext(
-            HttpContext httpContext,
-            IResponseCache cache,
-            ObjectPool<StringBuilder> builderPool,
-            IResponseCachingCacheabilityValidator cacheabilityValidator,
-            IResponseCachingCacheKeyModifier cacheKeyModifier)
-            : this(httpContext, cache, new SystemClock(), builderPool, cacheabilityValidator, cacheKeyModifier)
-        {
-        }
 
         // Internal for testing
         internal ResponseCachingContext(
             HttpContext httpContext, 
             IResponseCache cache,
-            ISystemClock clock,
+            ResponseCachingOptions options,
             ObjectPool<StringBuilder> builderPool,
             IResponseCachingCacheabilityValidator cacheabilityValidator,
             IResponseCachingCacheKeyModifier cacheKeyModifier)
         {
             _httpContext = httpContext;
             _cache = cache;
-            _clock = clock;
+            _options = options;
             _builderPool = builderPool;
             _cacheabilityValidator = cacheabilityValidator;
             _cacheKeyModifier = cacheKeyModifier;
@@ -74,10 +65,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             {
                 if (_cacheResponse == null)
                 {
-                    // TODO: apparent age vs corrected age value
-                    var responseAge = _responseTime - ResponseHeaders.Date ?? TimeSpan.Zero;
-
-                    _cacheResponse = ResponseIsCacheable() && EntryIsFresh(ResponseHeaders, responseAge, verifyAgainstRequest: false);
+                    _cacheResponse = ResponseIsCacheable();
                 }
                 return _cacheResponse.Value;
             }
@@ -363,6 +351,14 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 return false;
             }
 
+            // Check response freshness
+            // TODO: apparent age vs corrected age value
+            var responseAge = _responseTime - ResponseHeaders.Date ?? TimeSpan.Zero;
+            if (!EntryIsFresh(ResponseHeaders, responseAge, verifyAgainstRequest: false))
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -433,7 +429,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 var cachedResponse = cacheEntry as CachedResponse;
                 var cachedResponseHeaders = new ResponseHeaders(cachedResponse.Headers);
 
-                _responseTime = _clock.UtcNow;
+                _responseTime = _options.SystemClock.UtcNow;
                 var age = _responseTime - cachedResponse.Created;
                 age = age > TimeSpan.Zero ? age : TimeSpan.Zero;
 
@@ -607,7 +603,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             if (!ResponseStarted)
             {
                 ResponseStarted = true;
-                _responseTime = _clock.UtcNow;
+                _responseTime = _options.SystemClock.UtcNow;
 
                 FinalizeCachingHeaders();
             }
@@ -619,7 +615,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
             // Shim response stream
             OriginalResponseStream = _httpContext.Response.Body;
-            ResponseCacheStream = new ResponseCacheStream(OriginalResponseStream);
+            ResponseCacheStream = new ResponseCacheStream(OriginalResponseStream, _options.MaximumCachedBodySize);
             _httpContext.Response.Body = ResponseCacheStream;
 
             // Shim IHttpSendFileFeature

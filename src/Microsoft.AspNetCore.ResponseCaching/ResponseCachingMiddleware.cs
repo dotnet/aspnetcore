@@ -4,6 +4,7 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
@@ -20,13 +21,15 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         private readonly RequestDelegate _next;
         private readonly IResponseCache _cache;
+        private readonly ResponseCachingOptions _options;
         private readonly ObjectPool<StringBuilder> _builderPool;
         private readonly IResponseCachingCacheabilityValidator _cacheabilityValidator;
         private readonly IResponseCachingCacheKeyModifier _cacheKeyModifier;
 
         public ResponseCachingMiddleware(
-            RequestDelegate next, 
+            RequestDelegate next,
             IResponseCache cache,
+            IOptions<ResponseCachingOptions> options,
             ObjectPoolProvider poolProvider,
             IResponseCachingCacheabilityValidator cacheabilityValidator,
             IResponseCachingCacheKeyModifier cacheKeyModifier)
@@ -38,6 +41,10 @@ namespace Microsoft.AspNetCore.ResponseCaching
             if (cache == null)
             {
                 throw new ArgumentNullException(nameof(cache));
+            }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
             }
             if (poolProvider == null)
             {
@@ -54,6 +61,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
             _next = next;
             _cache = cache;
+            _options = options.Value;
             _builderPool = poolProvider.CreateStringBuilderPool();
             _cacheabilityValidator = cacheabilityValidator;
             _cacheKeyModifier = cacheKeyModifier;
@@ -64,6 +72,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             var cachingContext = new ResponseCachingContext(
                 context,
                 _cache,
+                _options,
                 _builderPool,
                 _cacheabilityValidator,
                 _cacheKeyModifier);

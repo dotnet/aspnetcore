@@ -11,10 +11,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
     internal class ResponseCacheStream : Stream
     {
         private readonly Stream _innerStream;
+        private readonly long _maxBufferSize;
 
-        public ResponseCacheStream(Stream innerStream)
+        public ResponseCacheStream(Stream innerStream, long maxBufferSize)
         {
             _innerStream = innerStream;
+            _maxBufferSize = maxBufferSize;
         }
 
         public MemoryStream BufferedStream { get; } = new MemoryStream();
@@ -38,6 +40,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         public void DisableBuffering()
         {
             BufferingEnabled = false;
+            BufferedStream.SetLength(0);
+            BufferedStream.Capacity = 0;
             BufferedStream.Dispose();
         }
 
@@ -77,7 +81,14 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
             if (BufferingEnabled)
             {
-                BufferedStream.Write(buffer, offset, count);
+                if (BufferedStream.Length + count > _maxBufferSize)
+                {
+                    DisableBuffering();
+                }
+                else
+                {
+                    BufferedStream.Write(buffer, offset, count);
+                }
             }
         }
 
@@ -95,7 +106,14 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
             if (BufferingEnabled)
             {
-                await BufferedStream.WriteAsync(buffer, offset, count, cancellationToken);
+                if (BufferedStream.Length + count > _maxBufferSize)
+                {
+                    DisableBuffering();
+                }
+                else
+                {
+                    await BufferedStream.WriteAsync(buffer, offset, count, cancellationToken);
+                }
             }
         }
 
@@ -113,7 +131,14 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
             if (BufferingEnabled)
             {
-                BufferedStream.WriteByte(value);
+                if (BufferedStream.Length + 1 > _maxBufferSize)
+                {
+                    DisableBuffering();
+                }
+                else
+                {
+                    BufferedStream.WriteByte(value);
+                }
             }
         }
 
