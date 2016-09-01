@@ -247,7 +247,7 @@ namespace Microsoft.Net.Http.Server
         {
             if (!IsUpgradableRequest)
             {
-                throw new InvalidOperationException("This request is cannot be upgraded.");
+                throw new InvalidOperationException("This request cannot be upgraded.");
             }
             WebSocketHelpers.ValidateOptions(subProtocol, keepAliveInterval);
 
