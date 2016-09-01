@@ -25,21 +25,5 @@ namespace Microsoft.AspNetCore.NodeServices
         public bool LaunchWithDebugging { get; set; }
         public IDictionary<string, string> EnvironmentVariables { get; set; }
         public int? DebuggingPort { get; set; }
-
-        public NodeServicesOptions AddDefaultEnvironmentVariables(bool isDevelopmentMode)
-        {
-            if (EnvironmentVariables == null)
-            {
-                EnvironmentVariables = new Dictionary<string, string>();
-            }
-
-            if (!EnvironmentVariables.ContainsKey("NODE_ENV"))
-            {
-                // These strings are a de-facto standard in Node
-                EnvironmentVariables["NODE_ENV"] = isDevelopmentMode ? "development" : "production";
-            }
-
-            return this;
-        }
     }
 }

@@ -33,10 +33,9 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
             // in your startup file, but then again it might be confusing that you don't need to.
             if (_nodeServices == null)
             {
-                _nodeServices = _fallbackNodeServices = Configuration.CreateNodeServices(new NodeServicesOptions
-                {
-                    ProjectPath = _applicationBasePath
-                }.AddDefaultEnvironmentVariables(hostEnv.IsDevelopment()));
+                _nodeServices = _fallbackNodeServices = Configuration.CreateNodeServices(
+                    serviceProvider,
+                    new NodeServicesOptions());
             }
         }
 

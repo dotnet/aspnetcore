@@ -10,7 +10,7 @@ module.exports = merge({
     },
     module: {
         loaders: [
-            { test: /\.ts(x?)$/, exclude: /node_modules/, loader: 'ts-loader' }
+            { test: /\.ts(x?)$/, exclude: /node_modules/, loader: 'ts-loader?silent' }
         ],
     },
     entry: {

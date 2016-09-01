@@ -90,18 +90,33 @@ If you want to put `addNumber.js` inside a subfolder rather than the root of you
 
 ## For non-ASP.NET apps
 
-In other types of .NET app where you don't have ASP.NET Core's DI system, you can get an instance of `NodeServices` as follows:
+In other types of .NET Core app, where you don't have ASP.NET supplying an `IServiceCollection` to you, you'll need to instantiate your own DI container. For example, add a reference to the .NET package `Microsoft.Extensions.DependencyInjection`, and then you can construct an `IServiceCollection`, then register NodeServices as usual:
 
 ```csharp
 // Remember to add 'using Microsoft.AspNetCore.NodeServices;' at the top of your file
+var services = new ServiceCollection();
+services.AddNodeServices(new NodeServicesOptions { /* your options here */ });
+```
 
-var nodeServices = Configuration.CreateNodeServices(new NodeServicesOptions());
+Now you can ask it to supply the shared `INodeServices` instance:
+
+```csharp
+var serviceProvider = services.BuildServiceProvider();
+var nodeServices = serviceProvider.GetRequiredService<INodeServices>();
+```
+
+Or, if you want to obtain a separate (non-shared) `INodeServices` instance:
+
+```csharp
+var options = new NodeServicesOptions { /* your options here */ };
+var nodeServices = Microsoft.AspNetCore.NodeServices.Configuration.CreateNodeServices(serviceProvider, options);
 ```
 
 Besides this, the usage is the same as described for ASP.NET above, so you can now call `nodeServices.InvokeAsync<T>(...)` etc.
 
-You can dispose the `nodeServices` object whenever you are done with it (and it will shut down the associated Node.js instance), but because these instances are expensive to create, you should whenever possible retain and reuse instances. They are thread-safe - you can call `InvokeAsync<T>` simultaneously from multiple threads. Also, `NodeServices` instances are smart enough to detect if the associated Node instance has died and will automatically start a new Node instance if needed.
+You can dispose the `nodeServices` object whenever you are done with it (and it will shut down the associated Node.js instance), but because these instances are expensive to create, you should whenever possible retain and reuse instances. Don't dispose the shared instance returned from `serviceProvider.GetRequiredService` (except perhaps if you know your application is shutting down, although .NET's finalizers will dispose it anyway if the shutdown is graceful).
 
+NodeServices instances are thread-safe - you can call `InvokeAsync<T>` simultaneously from multiple threads. Also, they are smart enough to detect if the associated Node instance has died and will automatically start a new Node instance if needed.
 
 # API Reference
 
@@ -158,21 +173,22 @@ If no `options` is passed, the default `WatchFileExtensions` array includes `.js
 **Signature:**
 
 ```csharp
-CreateNodeServices(NodeServicesOptions options)
+CreateNodeServices(IServiceProvider serviceProvider, NodeServicesOptions options)
 ```
 
-Directly supplies an instance of `NodeServices` without using ASP.NET's DI system.
+Supplies a new (non-shared) instance of `NodeServices`. It takes configuration from the .NET DI system (hence requiring an `IServiceProvider`), though some aspects of configuration can be overridden via the `options` parameter.
 
 **Example**
 
 ```csharp
-var nodeServices = Configuration.CreateNodeServices(new NodeServicesOptions {
+var nodeServices = Configuration.CreateNodeServices(serviceProvider, new NodeServicesOptions {
     HostingModel = NodeHostingModel.Socket
 });
 ```
 
 **Parameters**
-
+ * `serviceProvider` - type: `IServiceProvider`
+   * An instance of .NET's standard DI service provider. You can get an instance of this by calling `BuildServiceProvider` on an `IServiceCollection` object. See the example usage of `CreateNodeServices` earlier in this document.
  * `options` - type: `NodeServicesOptions`.
    * Configures the returned `NodeServices` instance.
    * Properties:

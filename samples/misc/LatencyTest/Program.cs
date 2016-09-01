@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.NodeServices;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ConsoleApplication
 {
@@ -12,7 +13,17 @@ namespace ConsoleApplication
     public class Program
     {
         public static void Main(string[] args) {
-            using (var nodeServices = CreateNodeServices(NodeServicesOptions.DefaultNodeHostingModel)) {
+            // Set up the DI system
+            var services = new ServiceCollection();
+            services.AddNodeServices(new NodeServicesOptions {
+                HostingModel = NodeServicesOptions.DefaultNodeHostingModel,
+                ProjectPath = Directory.GetCurrentDirectory(),
+                WatchFileExtensions = new string[] {} // Don't watch anything
+            });
+            var serviceProvider = services.BuildServiceProvider();
+
+            // Now instantiate an INodeServices and use it
+            using (var nodeServices = serviceProvider.GetRequiredService<INodeServices>()) {
                 MeasureLatency(nodeServices).Wait();
             }
         }
@@ -33,14 +44,6 @@ namespace ConsoleApplication
             var elapsedSeconds = (float)watch.ElapsedTicks / Stopwatch.Frequency;
             Console.WriteLine("\nTotal time: {0:F2} milliseconds", 1000 * elapsedSeconds);
             Console.WriteLine("\nTime per invocation: {0:F2} milliseconds", 1000 * elapsedSeconds / requestCount);
-        }
-
-        private static INodeServices CreateNodeServices(NodeHostingModel hostingModel) {
-            return Configuration.CreateNodeServices(new NodeServicesOptions {
-                HostingModel = hostingModel,
-                ProjectPath = Directory.GetCurrentDirectory(),
-                WatchFileExtensions = new string[] {} // Don't watch anything
-            });
         }
     }
 }

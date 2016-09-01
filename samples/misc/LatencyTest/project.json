@@ -8,7 +8,8 @@
       "version": "1.0.0",
       "type": "platform"
     },
-    "Microsoft.AspNetCore.NodeServices": "1.0.0-*"
+    "Microsoft.AspNetCore.NodeServices": "1.0.0-*",
+    "Microsoft.Extensions.DependencyInjection": "1.0.0"
   },
   "frameworks": {
     "netcoreapp1.0": {

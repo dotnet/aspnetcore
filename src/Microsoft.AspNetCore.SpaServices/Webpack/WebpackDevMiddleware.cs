@@ -35,19 +35,17 @@ namespace Microsoft.AspNetCore.Builder
                     "To enable ReactHotModuleReplacement, you must also enable HotModuleReplacement.");
             }
 
-            var hostEnv = (IHostingEnvironment)appBuilder.ApplicationServices.GetService(typeof(IHostingEnvironment));
-            var projectPath = options.ProjectPath ?? hostEnv.ContentRootPath;
-
             // Unlike other consumers of NodeServices, WebpackDevMiddleware dosen't share Node instances, nor does it
             // use your DI configuration. It's important for WebpackDevMiddleware to have its own private Node instance
             // because it must *not* restart when files change (if it did, you'd lose all the benefits of Webpack
             // middleware). And since this is a dev-time-only feature, it doesn't matter if the default transport isn't
             // as fast as some theoretical future alternative.
-            var nodeServices = Configuration.CreateNodeServices(new NodeServicesOptions
-            {
-                ProjectPath = projectPath,
-                WatchFileExtensions = new string[] { } // Don't watch anything
-            }.AddDefaultEnvironmentVariables(hostEnv.IsDevelopment()));
+            var nodeServices = Configuration.CreateNodeServices(
+                appBuilder.ApplicationServices,
+                new NodeServicesOptions
+                {
+                    WatchFileExtensions = new string[] { } // Don't watch anything
+                });
 
             // Get a filename matching the middleware Node script
             var script = EmbeddedResourceReader.Read(typeof(WebpackDevMiddleware),
@@ -55,6 +53,8 @@ namespace Microsoft.AspNetCore.Builder
             var nodeScript = new StringAsTempFile(script); // Will be cleaned up on process exit
 
             // Tell Node to start the server hosting webpack-dev-middleware
+            var hostEnv = (IHostingEnvironment)appBuilder.ApplicationServices.GetService(typeof(IHostingEnvironment));
+            var projectPath = options.ProjectPath ?? hostEnv.ContentRootPath;
             var devServerOptions = new
             {
                 webpackConfigPath = Path.Combine(projectPath, options.ConfigFile ?? DefaultConfigFile),

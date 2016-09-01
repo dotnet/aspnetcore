@@ -19,15 +19,13 @@ namespace Microsoft.AspNetCore.NodeServices
     internal class NodeServicesImpl : INodeServices
     {
         private static TimeSpan ConnectionDrainingTimespan = TimeSpan.FromSeconds(15);
-        private NodeServicesOptions _options;
         private Func<INodeInstance> _nodeInstanceFactory;
         private INodeInstance _currentNodeInstance;
         private object _currentNodeInstanceAccessLock = new object();
         private Exception _instanceDelayedDisposalException;
 
-        internal NodeServicesImpl(NodeServicesOptions options, Func<INodeInstance> nodeInstanceFactory)
+        internal NodeServicesImpl(Func<INodeInstance> nodeInstanceFactory)
         {
-            _options = options;
             _nodeInstanceFactory = nodeInstanceFactory;
         }
 
