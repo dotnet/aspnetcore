@@ -83,46 +83,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        // TODO: remove test once people agree to change this behavior
-        /*
-        [Theory]
-        [InlineData(" ")]
-        [InlineData("GET  ")]
-        [InlineData("GET / HTTP/1.2\r")]
-        [InlineData("GET / HTTP/1.0\rA")]
-        // Bad HTTP Methods (invalid according to RFC)
-        [InlineData("( ")]
-        [InlineData(") ")]
-        [InlineData("< ")]
-        [InlineData("> ")]
-        [InlineData("@ ")]
-        [InlineData(", ")]
-        [InlineData("; ")]
-        [InlineData(": ")]
-        [InlineData("\\ ")]
-        [InlineData("\" ")]
-        [InlineData("/ ")]
-        [InlineData("[ ")]
-        [InlineData("] ")]
-        [InlineData("? ")]
-        [InlineData("= ")]
-        [InlineData("{ ")]
-        [InlineData("} ")]
-        [InlineData("get@ ")]
-        [InlineData("post= ")]
-        public async Task ServerClosesConnectionAsSoonAsBadRequestLineIsDetected(string request)
-        {
-            using (var server = new TestServer(context => TaskUtilities.CompletedTask))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.SendAll(request);
-                    await ReceiveBadRequestResponse(connection, server.Context.DateHeaderValue);
-                }
-            }
-        }
-        */
-
         [Theory]
         // Missing final CRLF
         [InlineData("Header-1: value1\r\nHeader-2: value2\r\n")]
