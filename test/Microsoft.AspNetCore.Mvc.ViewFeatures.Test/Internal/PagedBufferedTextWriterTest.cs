@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         static PagedBufferedTextWriterTest()
         {
-            Content = new char[4 * PagedBufferedTextWriter.PageSize];
+            Content = new char[4 * PagedCharBuffer.PageSize];
             for (var i = 0; i < Content.Length; i++)
             {
                 Content[i] = (char)((i % 26) + 'A');

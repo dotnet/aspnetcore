@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -9,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Primitives;
@@ -174,29 +176,62 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             var content = await output.GetChildContentAsync();
 
-            var stringBuilder = new StringBuilder();
-            using (var writer = new StringWriter(stringBuilder))
+            using (var writer = new CharBufferTextWriter())
             {
                 content.WriteTo(writer, HtmlEncoder);
+                return new CharBufferHtmlContent(writer.Buffer);
             }
-
-            return new StringBuilderHtmlContent(stringBuilder);
         }
 
-        private class StringBuilderHtmlContent : IHtmlContent
+        private class CharBufferTextWriter : TextWriter
         {
-            private readonly StringBuilder _builder;
-
-            public StringBuilderHtmlContent(StringBuilder builder)
+            public CharBufferTextWriter()
             {
-                _builder = builder;
+                Buffer = new PagedCharBuffer(CharArrayBufferSource.Instance);
+            }
+
+            public override Encoding Encoding => Null.Encoding;
+
+            public PagedCharBuffer Buffer { get; }
+
+            public override void Write(char value)
+            {
+                Buffer.Append(value);
+            }
+
+            public override void Write(char[] buffer, int index, int count)
+            {
+                Buffer.Append(buffer, index, count);
+            }
+
+            public override void Write(string value)
+            {
+                Buffer.Append(value);
+            }
+        }
+
+        private class CharBufferHtmlContent : IHtmlContent
+        {
+            private readonly PagedCharBuffer _buffer;
+
+            public CharBufferHtmlContent(PagedCharBuffer buffer)
+            {
+                _buffer = buffer;
             }
 
             public void WriteTo(TextWriter writer, HtmlEncoder encoder)
             {
-                for (var i = 0; i < _builder.Length; i++)
+                var length = _buffer.Length;
+                if (length == 0)
                 {
-                    writer.Write(_builder[i]);
+                    return;
+                }
+
+                for (var i = 0; i < _buffer.Pages.Count; i++)
+                {
+                    var pageLength = Math.Min(length, PagedCharBuffer.PageSize);
+                    writer.Write(_buffer.Pages[i], 0, pageLength);
+                    length -= pageLength;
                 }
             }
         }
