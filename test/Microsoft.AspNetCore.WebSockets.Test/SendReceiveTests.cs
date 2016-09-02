@@ -73,5 +73,35 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
             Assert.Equal(sendBuffer, receiveBuffer.Take(result.Count).ToArray());
         }
+
+        [Fact]
+        public async Task ThrowsWhenUnderlyingStreamClosed()
+        {
+            var pair = WebSocketPair.Create();
+            var sendBuffer = new byte[] { 0xde, 0xad, 0xbe, 0xef };
+
+            await pair.ServerSocket.SendAsync(new ArraySegment<byte>(sendBuffer), WebSocketMessageType.Binary, endOfMessage: true, cancellationToken: CancellationToken.None);
+
+            var receiveBuffer = new byte[32];
+            var result = await pair.ClientSocket.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), CancellationToken.None);
+
+            Assert.Equal(WebSocketMessageType.Binary, result.MessageType);
+
+            // Close the client socket's read end
+            pair.ClientStream.ReadStream.End();
+
+            // Assert.Throws doesn't support async :(
+            try
+            {
+                await pair.ClientSocket.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), CancellationToken.None);
+
+                // The exception should prevent this line from running
+                Assert.False(true, "Expected an exception to be thrown!");
+            }
+            catch (WebSocketException ex)
+            {
+                Assert.Equal(WebSocketError.ConnectionClosedPrematurely, ex.WebSocketErrorCode);
+            }
+        }
     }
 }

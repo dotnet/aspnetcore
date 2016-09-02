@@ -10,30 +10,31 @@ namespace Microsoft.AspNetCore.WebSockets.Test
     // A duplex wrapper around a read and write stream.
     public class DuplexStream : Stream
     {
-        private readonly Stream _readStream;
-        private readonly Stream _writeStream;
+        public BufferStream ReadStream { get; }
+        public BufferStream WriteStream { get; }
 
         public DuplexStream()
             : this (new BufferStream(), new BufferStream())
         {
         }
 
-        public DuplexStream(Stream readStream, Stream writeStream)
+        public DuplexStream(BufferStream readStream, BufferStream writeStream)
         {
-            _readStream = readStream;
-            _writeStream = writeStream;
+            ReadStream = readStream;
+            WriteStream = writeStream;
         }
 
         public DuplexStream CreateReverseDuplexStream()
         {
-            return new DuplexStream(_writeStream, _readStream);
+            return new DuplexStream(WriteStream, ReadStream);
         }
+
 
 #region Properties
 
         public override bool CanRead
         {
-            get { return _readStream.CanRead; }
+            get { return ReadStream.CanRead; }
         }
 
         public override bool CanSeek
@@ -43,12 +44,12 @@ namespace Microsoft.AspNetCore.WebSockets.Test
 
         public override bool CanTimeout
         {
-            get { return _readStream.CanTimeout || _writeStream.CanTimeout; }
+            get { return ReadStream.CanTimeout || WriteStream.CanTimeout; }
         }
 
         public override bool CanWrite
         {
-            get { return _writeStream.CanWrite; }
+            get { return WriteStream.CanWrite; }
         }
 
         public override long Length
@@ -64,14 +65,14 @@ namespace Microsoft.AspNetCore.WebSockets.Test
 
         public override int ReadTimeout
         {
-            get { return _readStream.ReadTimeout; }
-            set { _readStream.ReadTimeout = value; }
+            get { return ReadStream.ReadTimeout; }
+            set { ReadStream.ReadTimeout = value; }
         }
 
         public override int WriteTimeout
         {
-            get { return _writeStream.WriteTimeout; }
-            set { _writeStream.WriteTimeout = value; }
+            get { return WriteStream.WriteTimeout; }
+            set { WriteStream.WriteTimeout = value; }
         }
 
 #endregion Properties
@@ -90,33 +91,33 @@ namespace Microsoft.AspNetCore.WebSockets.Test
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return _readStream.Read(buffer, offset, count);
+            return ReadStream.Read(buffer, offset, count);
         }
 
 #if !NETCOREAPP1_0
         public override int ReadByte()
         {
-            return _readStream.ReadByte();
+            return ReadStream.ReadByte();
         }
 
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            return _readStream.BeginRead(buffer, offset, count, callback, state);
+            return ReadStream.BeginRead(buffer, offset, count, callback, state);
         }
 
         public override int EndRead(IAsyncResult asyncResult)
         {
-            return _readStream.EndRead(asyncResult);
+            return ReadStream.EndRead(asyncResult);
         }
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return _readStream.ReadAsync(buffer, offset, count, cancellationToken);
+            return ReadStream.ReadAsync(buffer, offset, count, cancellationToken);
         }
 
         public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
         {
-            return _readStream.CopyToAsync(destination, bufferSize, cancellationToken);
+            return ReadStream.CopyToAsync(destination, bufferSize, cancellationToken);
         }
 #endif
 
@@ -126,39 +127,39 @@ namespace Microsoft.AspNetCore.WebSockets.Test
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            _writeStream.Write(buffer, offset, count);
+            WriteStream.Write(buffer, offset, count);
         }
 
 #if !NETCOREAPP1_0
         public override void WriteByte(byte value)
         {
-            _writeStream.WriteByte(value);
+            WriteStream.WriteByte(value);
         }
 
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            return _writeStream.BeginWrite(buffer, offset, count, callback, state);
+            return WriteStream.BeginWrite(buffer, offset, count, callback, state);
         }
 
         public override void EndWrite(IAsyncResult asyncResult)
         {
-            _writeStream.EndWrite(asyncResult);
+            WriteStream.EndWrite(asyncResult);
         }
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return _writeStream.WriteAsync(buffer, offset, count, cancellationToken);
+            return WriteStream.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            return _writeStream.FlushAsync(cancellationToken);
+            return WriteStream.FlushAsync(cancellationToken);
         }
 #endif
 
         public override void Flush()
         {
-            _writeStream.Flush();
+            WriteStream.Flush();
         }
 
 #endregion Write
@@ -167,8 +168,8 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         {
             if (disposing)
             {
-                _readStream.Dispose();
-                _writeStream.Dispose();
+                ReadStream.Dispose();
+                WriteStream.Dispose();
             }
             base.Dispose(disposing);
         }

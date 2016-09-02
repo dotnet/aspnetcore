@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
     {
         private bool _disposed;
         private bool _aborted;
+        private bool _terminated;
         private Exception _abortException;
         private ConcurrentQueue<byte[]> _bufferedData;
         private ArraySegment<byte> _topBuffer;
@@ -71,6 +72,14 @@ namespace Microsoft.AspNetCore.WebSockets.Test
 
         #endregion NotSupported
 
+        /// <summary>
+        /// Ends the stream, meaning all future reads will return '0'.
+        /// </summary>
+        public void End()
+        {
+            _terminated = true;
+        }
+
         public override void Flush()
         {
             CheckDisposed();
@@ -95,6 +104,11 @@ namespace Microsoft.AspNetCore.WebSockets.Test
 
         public override int Read(byte[] buffer, int offset, int count)
         {
+            if(_terminated)
+            {
+                return 0;
+            }
+
             VerifyBuffer(buffer, offset, count, allowEmpty: false);
             _readLock.Wait();
             try
@@ -154,6 +168,11 @@ namespace Microsoft.AspNetCore.WebSockets.Test
 
         public async override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
+            if(_terminated)
+            {
+                return 0;
+            }
+
             VerifyBuffer(buffer, offset, count, allowEmpty: false);
             CancellationTokenRegistration registration = cancellationToken.Register(Abort);
             await _readLock.WaitAsync(cancellationToken);

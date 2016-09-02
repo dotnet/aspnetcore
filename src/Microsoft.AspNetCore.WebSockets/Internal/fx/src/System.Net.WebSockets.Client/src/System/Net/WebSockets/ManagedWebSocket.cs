@@ -615,12 +615,7 @@ namespace System.Net.WebSockets
                             // Make sure we have the first two bytes, which includes the start of the payload length.
                             if (_receiveBufferCount < 2)
                             {
-                                await EnsureBufferContainsAsync(2, cancellationToken, throwOnPrematureClosure: false).ConfigureAwait(false);
-                                if (_receiveBufferCount < 2)
-                                {
-                                    // The connection closed; nothing more to read.
-                                    return new WebSocketReceiveResult(0, WebSocketMessageType.Text, true);
-                                }
+                                await EnsureBufferContainsAsync(2, cancellationToken, throwOnPrematureClosure: true).ConfigureAwait(false);
                             }
 
                             // Then make sure we have the full header based on the payload length.

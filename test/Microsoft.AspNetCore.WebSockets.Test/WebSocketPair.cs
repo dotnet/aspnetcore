@@ -8,9 +8,13 @@ namespace Microsoft.AspNetCore.WebSockets.Test
     {
         public WebSocket ClientSocket { get; }
         public WebSocket ServerSocket { get; }
+        public DuplexStream ServerStream { get; }
+        public DuplexStream ClientStream { get; }
 
-        public WebSocketPair(WebSocket clientSocket, WebSocket serverSocket)
+        public WebSocketPair(DuplexStream serverStream, DuplexStream clientStream, WebSocket clientSocket, WebSocket serverSocket)
         {
+            ClientStream = clientStream;
+            ServerStream = serverStream;
             ClientSocket = clientSocket;
             ServerSocket = serverSocket;
         }
@@ -22,6 +26,8 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             var clientStream = serverStream.CreateReverseDuplexStream();
 
             return new WebSocketPair(
+                serverStream,
+                clientStream,
                 clientSocket: WebSocketFactory.CreateClientWebSocket(clientStream, null, TimeSpan.FromMinutes(2), 1024),
                 serverSocket: WebSocketFactory.CreateServerWebSocket(serverStream, null, TimeSpan.FromMinutes(2), 1024));
         }
