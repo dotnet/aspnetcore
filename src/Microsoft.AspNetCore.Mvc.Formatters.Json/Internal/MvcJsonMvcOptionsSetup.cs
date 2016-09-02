@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
     public class MvcJsonMvcOptionsSetup : ConfigureOptions<MvcOptions>
     {
         /// <summary>
-        /// Intiailizes a new instance of <see cref="MvcJsonMvcOptionsSetup"/>.
+        /// Initializes a new instance of <see cref="MvcJsonMvcOptionsSetup"/>.
         /// </summary>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         /// <param name="jsonOptions"></param>
