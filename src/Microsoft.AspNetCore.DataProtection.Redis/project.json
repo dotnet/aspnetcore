@@ -1,0 +1,31 @@
+{
+  "version": "0.1.0-*",
+  "description": "Redis storrage support as key store.",
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/dataprotection"
+    },
+    "tags": [
+      "aspnetcore",
+      "dataprotection",
+      "redis"
+    ]
+  },
+  "dependencies": {
+    "Microsoft.AspNetCore.DataProtection": "1.1.0-*",
+    "StackExchange.Redis.StrongName": "1.1.603"
+  },
+  "frameworks": {
+    "net451": {}
+  },
+  "buildOptions": {
+    "allowUnsafe": true,
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk",
+    "nowarn": [
+      "CS1591"
+    ],
+    "xmlDoc": true
+  }
+}
