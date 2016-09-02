@@ -9,9 +9,14 @@ namespace Microsoft.AspNetCore.Builder
     public class ResponseCachingOptions
     {
         /// <summary>
-        /// The largest cacheable size for the response body in bytes.
+        /// The largest cacheable size for the response body in bytes. The default is set to 1 MB.
         /// </summary>
         public long MaximumCachedBodySize { get; set; } = 1024 * 1024;
+
+        /// <summary>
+        /// <c>true</c> if request paths are case-sensitive; otherwise <c>false</c>. The default is to treat paths as case-insensitive.
+        /// </summary>
+        public bool CaseSensitivePaths { get; set; } = false;
 
         /// <summary>
         /// For testing purposes only.

@@ -281,6 +281,34 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
+        public void CreateCacheKey_CaseInsensitivePath_NormalizesPath()
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Method = "GET";
+            httpContext.Request.Path = "/Path";
+            var context = CreateTestContext(httpContext, new ResponseCachingOptions()
+            {
+                CaseSensitivePaths = false
+            });
+
+            Assert.Equal($"GET{KeyDelimiter}/PATH", context.CreateCacheKey());
+        }
+
+        [Fact]
+        public void CreateCacheKey_CaseSensitivePath_PreservesPathCase()
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Method = "GET";
+            httpContext.Request.Path = "/Path";
+            var context = CreateTestContext(httpContext, new ResponseCachingOptions()
+            {
+                CaseSensitivePaths = true
+            });
+
+            Assert.Equal($"GET{KeyDelimiter}/Path", context.CreateCacheKey());
+        }
+
+        [Fact]
         public void ResponseIsCacheable_NoPublic_NotAllowed()
         {
             var httpContext = new DefaultHttpContext();
@@ -832,6 +860,16 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             return CreateTestContext(
                 httpContext,
+                new ResponseCachingOptions(),
+                new NoopCacheKeyModifier(),
+                new NoopCacheabilityValidator());
+        }
+
+        private static ResponseCachingContext CreateTestContext(HttpContext httpContext, ResponseCachingOptions options)
+        {
+            return CreateTestContext(
+                httpContext,
+                options,
                 new NoopCacheKeyModifier(),
                 new NoopCacheabilityValidator());
         }
@@ -840,6 +878,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             return CreateTestContext(
                 httpContext,
+                new ResponseCachingOptions(),
                 cacheKeyModifier,
                 new NoopCacheabilityValidator());
         }
@@ -848,19 +887,21 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             return CreateTestContext(
                 httpContext,
+                new ResponseCachingOptions(),
                 new NoopCacheKeyModifier(),
                 cacheabilityValidator);
         }
 
         private static ResponseCachingContext CreateTestContext(
             HttpContext httpContext,
+            ResponseCachingOptions options,
             IResponseCachingCacheKeyModifier cacheKeyModifier,
             IResponseCachingCacheabilityValidator cacheabilityValidator)
         {
             return new ResponseCachingContext(
                 httpContext,
                 new TestResponseCache(),
-                new ResponseCachingOptions(),
+                options,
                 new DefaultObjectPool<StringBuilder>(new StringBuilderPooledObjectPolicy()),
                 cacheabilityValidator,
                 cacheKeyModifier);

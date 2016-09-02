@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         // Internal for testing
         internal ResponseCachingContext(
-            HttpContext httpContext, 
+            HttpContext httpContext,
             IResponseCache cache,
             ResponseCachingOptions options,
             ObjectPool<StringBuilder> builderPool,
@@ -149,11 +149,11 @@ namespace Microsoft.AspNetCore.ResponseCaching
                         .Append(KeyDelimiter);
                 }
 
-                // Default key 
+                // Default key
                 builder
                     .Append(request.Method.ToUpperInvariant())
                     .Append(KeyDelimiter)
-                    .Append(request.Path.Value.ToUpperInvariant());
+                    .Append(_options.CaseSensitivePaths ? request.Path.Value : request.Path.Value.ToUpperInvariant());
 
                 // Vary by headers
                 if (varyBy?.Headers.Count > 0)
@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
 
             // TODO: public MAY override the cacheability checks for private and status codes
-            
+
             // Check private
             if (ResponseCacheControl.Private)
             {
@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         internal bool EntryIsFresh(ResponseHeaders responseHeaders, TimeSpan age, bool verifyAgainstRequest)
         {
             var responseCacheControl = responseHeaders.CacheControl ?? EmptyCacheControl;
-            
+
             // Add min-fresh requirements
             if (verifyAgainstRequest)
             {
