@@ -47,23 +47,30 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 var value = valueProviderResult.FirstValue;
 
-                object model = null;
-                if (!string.IsNullOrWhiteSpace(value))
+                object model;
+                if (bindingContext.ModelType == typeof(string))
+                {
+                    // Already have a string. No further conversion required but handle ConvertEmptyStringToNull.
+                    if (bindingContext.ModelMetadata.ConvertEmptyStringToNull && string.IsNullOrWhiteSpace(value))
+                    {
+                        model = null;
+                    }
+                    else
+                    {
+                        model = value;
+                    }
+                }
+                else if (string.IsNullOrWhiteSpace(value))
+                {
+                    // Other than the StringConverter, converters Trim() the value then throw if the result is empty.
+                    model = null;
+                }
+                else
                 {
                     model = _typeConverter.ConvertFrom(
                         context: null,
                         culture: valueProviderResult.Culture,
                         value: value);
-                }
-
-                if (bindingContext.ModelType == typeof(string))
-                {
-                    var modelAsString = model as string;
-                    if (bindingContext.ModelMetadata.ConvertEmptyStringToNull &&
-                        string.IsNullOrEmpty(modelAsString))
-                    {
-                        model = null;
-                    }
                 }
 
                 // When converting newModel a null value may indicate a failed conversion for an otherwise required
@@ -75,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         bindingContext.ModelName,
                         bindingContext.ModelMetadata.ModelBindingMessageProvider.ValueMustNotBeNullAccessor(
                             valueProviderResult.ToString()));
-                    
+
                     return TaskCache.CompletedTask;
                 }
                 else

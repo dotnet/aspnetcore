@@ -11,6 +11,58 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
     public class SimpleTypeModelBinderTest
     {
+        [Theory]
+        [InlineData(null)]
+        [InlineData("value")]
+        [InlineData("intermediate   whitespace")]
+        [InlineData("\t untrimmed whitespace \t\r\n")]
+        public async Task BindModelAsync_ReturnsProvidedString(string value)
+        {
+            // Arrange
+            var bindingContext = GetBindingContext(typeof(string));
+            bindingContext.ValueProvider = new SimpleValueProvider
+            {
+                { "theModelName", value }
+            };
+
+            var binder = new SimpleTypeModelBinder(typeof(string));
+
+            // Act
+            await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.Same(value, bindingContext.Result.Model);
+            Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(" \t \r\n ")]
+        public async Task BindModel_ReturnsProvidedWhitespaceString_WhenNotConvertEmptyStringToNull(string value)
+        {
+            // Arrange
+            var bindingContext = GetBindingContext(typeof(string));
+            bindingContext.ValueProvider = new SimpleValueProvider
+            {
+                { "theModelName", value }
+            };
+
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForType(typeof(string))
+                .DisplayDetails(d => d.ConvertEmptyStringToNull = false);
+            bindingContext.ModelMetadata = metadataProvider.GetMetadataForType(typeof(string));
+
+            var binder = new SimpleTypeModelBinder(typeof(string));
+
+            // Act
+            await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.Same(value, bindingContext.Result.Model);
+            Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
+        }
+
         public static TheoryData<Type> ConvertableTypeData
         {
             get
@@ -125,26 +177,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Empty(bindingContext.ModelState);
         }
 
-        [Fact]
-        public async Task BindModel_ValidValueProviderResult_ConvertEmptyStringsToNull()
-        {
-            // Arrange
-            var bindingContext = GetBindingContext(typeof(string));
-            bindingContext.ValueProvider = new SimpleValueProvider
-            {
-                { "theModelName", string.Empty }
-            };
-
-            var binder = new SimpleTypeModelBinder(typeof(string));
-
-            // Act
-            await binder.BindModelAsync(bindingContext);
-
-            // Assert
-            Assert.Null(bindingContext.Result.Model);
-            Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
-        }
-
         [Theory]
         [InlineData("")]
         [InlineData(" \t \r\n ")]
@@ -215,7 +247,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var bindingContext = GetBindingContext(typeof(int));
             bindingContext.ValueProvider = new SimpleValueProvider
-            { 
+            {
                 { "theModelName", "42" }
             };
 

@@ -17,8 +17,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public IDictionary<object, object> AdditionalValues { get; } = new Dictionary<object, object>();
 
         /// <summary>
-        /// Gets or sets a value indicating whether or not empty strings should be treated as <c>null</c>.
-        /// See <see cref="ModelMetadata.ConvertEmptyStringToNull"/>
+        /// Gets or sets a value indicating whether or not to convert an empty string value or one containing only
+        /// whitespace characters to <c>null</c> when representing a model as text. See
+        /// <see cref="ModelMetadata.ConvertEmptyStringToNull"/>
         /// </summary>
         public bool ConvertEmptyStringToNull { get; set; } = true;
 

@@ -92,8 +92,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract BindingSource BindingSource { get; }
 
         /// <summary>
-        /// Gets a value indicating whether or not to convert an empty string value to <c>null</c> when
-        /// representing a model as text.
+        /// Gets a value indicating whether or not to convert an empty string value or one containing only whitespace
+        /// characters to <c>null</c> when representing a model as text.
         /// </summary>
         public abstract bool ConvertEmptyStringToNull { get; }
 
