@@ -10,9 +10,7 @@
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
-      "CS1591",
-      "CS1572",
-      "CS1573"
+      "CS1591"
     ],
     "xmlDoc": true
   },
