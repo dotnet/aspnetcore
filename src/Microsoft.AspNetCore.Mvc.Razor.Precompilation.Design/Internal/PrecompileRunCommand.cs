@@ -95,9 +95,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Internal
 
             var precompileAssemblyName = $"{ApplicationNameOption.Value()}{AssemblyPart.PrecompiledViewsAssemblySuffix}";
             var compilation = CompileViews(results, precompileAssemblyName);
+            var resources = GetResources(results);
 
             var assemblyPath = Path.Combine(OutputPathOption.Value(), precompileAssemblyName + ".dll");
-            var emitResult = EmitAssembly(compilation, assemblyPath);
+            var emitResult = EmitAssembly(compilation, assemblyPath, resources);
 
             if (!emitResult.Success)
             {
@@ -115,7 +116,31 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Internal
             return 0;
         }
 
-        private EmitResult EmitAssembly(CSharpCompilation compilation, string assemblyPath)
+        private ResourceDescription[] GetResources(ViewCompilationInfo[] results)
+        {
+            if (!Options.EmbedViewSourcesOption.HasValue())
+            {
+                return new ResourceDescription[0];
+            }
+
+            var resources = new ResourceDescription[results.Length];
+            for (var i = 0; i < results.Length; i++)
+            {
+                var fileInfo = results[i].RelativeFileInfo;
+
+                resources[i] = new ResourceDescription(
+                    fileInfo.RelativePath.Replace('\\', '/'),
+                    fileInfo.FileInfo.CreateReadStream,
+                    isPublic: true);
+            }
+
+            return resources;
+        }
+
+        private EmitResult EmitAssembly(
+            CSharpCompilation compilation,
+            string assemblyPath,
+            ResourceDescription[] resources)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(assemblyPath));
 
@@ -127,6 +152,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Internal
                     emitResult = compilation.Emit(
                         assemblyStream,
                         pdbStream,
+                        manifestResources: resources,
                         options: MvcServiceProvider.Compiler.EmitOptions);
                 }
             }

@@ -29,6 +29,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Internal
 
         private CommandOption BuildBasePathOption { get; set; }
 
+        private CommandOption DumpFilesOption { get; set; }
+
         private string ProjectPath { get; set; }
 
         private string Configuration { get; set; }
@@ -79,6 +81,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Internal
             {
                 dispatchArgs.Add(CommonOptions.ConfigureCompilationTypeTemplate);
                 dispatchArgs.Add(Options.ConfigureCompilationType.Value());
+            }
+
+            if (Options.EmbedViewSourcesOption.HasValue())
+            {
+                dispatchArgs.Add(CommonOptions.EmbedViewSourceTemplate);
             }
 
             var compilerOptions = runtimeContext.ProjectFile.GetCompilerOptions(TargetFramework, Configuration);

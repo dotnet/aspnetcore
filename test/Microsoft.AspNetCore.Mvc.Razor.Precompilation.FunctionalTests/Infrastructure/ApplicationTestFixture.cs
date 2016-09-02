@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.DotNet.Cli.Utils;
@@ -31,6 +32,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
         public string ApplicationPath => ApplicationPaths.GetTestAppDirectory(ApplicationName);
 
         public string TempRestoreDirectory { get; } = CreateTempRestoreDirectory();
+
+        public HttpClient HttpClient { get; } = new HttpClient();
 
         public ILogger Logger { get; private set; }
 
@@ -66,7 +69,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
             {
                 PublishApplicationBeforeDeployment = true,
                 TargetFramework = flavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.0",
-                PreservePublishedApplicationForDebugging = true,
                 Configuration = "Release",
                 EnvironmentVariables =
                 {
@@ -93,6 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
         public virtual void Dispose()
         {
             TryDeleteDirectory(TempRestoreDirectory);
+            HttpClient.Dispose();
         }
 
         protected static void TryDeleteDirectory(string directory)

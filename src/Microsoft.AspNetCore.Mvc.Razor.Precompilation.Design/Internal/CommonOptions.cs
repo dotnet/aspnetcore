@@ -9,12 +9,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Internal
     {
         public static readonly string ConfigureCompilationTypeTemplate = "--configure-compilation-type";
         public static readonly string ContentRootTemplate = "--content-root";
+        public static readonly string EmbedViewSourceTemplate = "--embed-view-sources";
 
         public CommandArgument ProjectArgument { get; private set; }
 
         public CommandOption ConfigureCompilationType { get; private set; }
 
         public CommandOption ContentRootOption { get; private set; }
+
+        public CommandOption EmbedViewSourcesOption { get; private set; }
 
         public void Configure(CommandLineApplication app)
         {
@@ -31,6 +34,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Internal
                 ContentRootTemplate,
                 "The application's content root.",
                 CommandOptionType.SingleValue);
+
+            EmbedViewSourcesOption = app.Option(
+                EmbedViewSourceTemplate,
+                "Embed view sources as resources in the generated assembly.",
+                CommandOptionType.NoValue);
         }
     }
 }

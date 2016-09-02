@@ -19,6 +19,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ApplicationWithConfigureMvc
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ClassLibraryWithPrecompiledViews", "testapps\ClassLibraryWithPrecompiledViews\ClassLibraryWithPrecompiledViews.xproj", "{4684DE8B-3FBE-421B-8798-56C3D6698B76}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PublishWIthEmbedViewSources", "testapps\PublishWIthEmbedViewSources\PublishWIthEmbedViewSources.xproj", "{E3462190-3068-40F0-9AA5-34779FE252AC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{4684DE8B-3FBE-421B-8798-56C3D6698B76}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4684DE8B-3FBE-421B-8798-56C3D6698B76}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4684DE8B-3FBE-421B-8798-56C3D6698B76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3462190-3068-40F0-9AA5-34779FE252AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3462190-3068-40F0-9AA5-34779FE252AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3462190-3068-40F0-9AA5-34779FE252AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3462190-3068-40F0-9AA5-34779FE252AC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
