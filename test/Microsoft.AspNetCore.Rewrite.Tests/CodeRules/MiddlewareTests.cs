@@ -102,5 +102,24 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             Assert.Equal(response, "/");
         }
+
+        [Fact]
+        public async Task SettingPathBase()
+        {
+            var options = new RewriteOptions().AddRedirect("(.*)", "$1");
+            var builder = new WebHostBuilder()
+            .Configure(app =>
+            {
+                app.UseRewriter(options);
+                app.Run(context => context.Response.WriteAsync(
+                        context.Request.Path +
+                        context.Request.QueryString));
+            });
+            var server = new TestServer(builder) {BaseAddress = new Uri("http://localhost:5000/foo")};
+
+            var response = await server.CreateClient().GetAsync("");
+
+            Assert.Equal(response.Headers.Location.OriginalString, "/foo");
+        }
     }
 }

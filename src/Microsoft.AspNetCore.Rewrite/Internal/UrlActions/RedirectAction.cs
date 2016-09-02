@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
         {
             var pattern = Url.Evaluate(context, ruleMatch, condMatch);
             var response = context.HttpContext.Response;
+            var pathBase = context.HttpContext.Request.PathBase;
             if (EscapeBackReferences)
             {
                 // because escapebackreferences will be encapsulated by the pattern, just escape the pattern
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
 
             if (string.IsNullOrEmpty(pattern))
             {
-                response.Headers[HeaderNames.Location] = "/";
+                response.Headers[HeaderNames.Location] = pathBase.HasValue ? pathBase.Value : "/";
                 return;
             }
 
@@ -77,7 +78,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
                         pattern.Substring(split)));
 
                 // not using the response.redirect here because status codes may be 301, 302, 307, 308 
-                response.Headers[HeaderNames.Location] = pattern.Substring(0, split) + query;
+                response.Headers[HeaderNames.Location] = pathBase + pattern.Substring(0, split) + query;
             }
             else
             {
@@ -85,11 +86,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
                 // by default.
                 if (QueryStringDelete)
                 {
-                    response.Headers[HeaderNames.Location] = pattern;
+                    response.Headers[HeaderNames.Location] = pathBase + pattern;
                 }
                 else
                 {
-                    response.Headers[HeaderNames.Location] = pattern + context.HttpContext.Request.QueryString;
+                    response.Headers[HeaderNames.Location] = pathBase + pattern + context.HttpContext.Request.QueryString;
                 }
             }
             context.Result = RuleTermination.ResponseComplete;

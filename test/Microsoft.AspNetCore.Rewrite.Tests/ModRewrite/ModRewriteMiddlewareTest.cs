@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -285,6 +286,25 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
 
             var response = await server.CreateClient().GetStringAsync(input);
             Assert.Equal(response, "/");
+        }
+
+        [Fact]
+        public async Task Invoke_CaptureEmptyStringInRegexAssertLocationHeaderContainsPathBase()
+        {
+            var options = new RewriteOptions().AddApacheModRewrite(new StringReader(@"RewriteRule ^(.*)$ $1 [R=301,L]"));
+            var builder = new WebHostBuilder()
+            .Configure(app =>
+            {
+                app.UseRewriter(options);
+                app.Run(context => context.Response.WriteAsync(
+                        context.Request.Path +
+                        context.Request.QueryString));
+            });
+            var server = new TestServer(builder) { BaseAddress = new Uri("http://localhost:5000/foo") };
+
+            var response = await server.CreateClient().GetAsync("");
+
+            Assert.Equal(response.Headers.Location.OriginalString, "/foo");
         }
     }
 }

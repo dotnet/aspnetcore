@@ -310,5 +310,31 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             Assert.Equal(response, "/");
         }
+
+        [Fact]
+        public async Task Invoke_CaptureEmptyStringInRegexAssertLocationHeaderContainsPathBase()
+        {
+            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+                <rules>
+                <rule name=""Test"">  
+                <match url=""(.*)"" />  
+                <action type=""Redirect"" url=""{R:1}"" />  
+                </rule>  
+                </rules>
+                </rewrite>"));
+            var builder = new WebHostBuilder()
+            .Configure(app =>
+            {
+                app.UseRewriter(options);
+                app.Run(context => context.Response.WriteAsync(
+                        context.Request.Path +
+                        context.Request.QueryString));
+            });
+            var server = new TestServer(builder) { BaseAddress = new Uri("http://localhost:5000/foo") };
+
+            var response = await server.CreateClient().GetAsync("");
+
+            Assert.Equal(response.Headers.Location.OriginalString, "/foo");
+        }
     }
 }

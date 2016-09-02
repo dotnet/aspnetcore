@@ -34,6 +34,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
         public override void ApplyRule(RewriteContext context)
         {
             var path = context.HttpContext.Request.Path;
+            var pathBase = context.HttpContext.Request.PathBase;
+
             Match initMatchResults;
             if (path == PathString.Empty)
             {
@@ -54,7 +56,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
 
                 if (string.IsNullOrEmpty(newPath))
                 {
-                    response.Headers[HeaderNames.Location] = "/";
+                    response.Headers[HeaderNames.Location] = pathBase.HasValue ? pathBase.Value : "/";
                     return;
                 }
 
@@ -70,11 +72,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.CodeRules
                         QueryString.FromUriComponent(
                             newPath.Substring(split)));
                     // not using the HttpContext.Response.redirect here because status codes may be 301, 302, 307, 308 
-                    response.Headers[HeaderNames.Location] = newPath.Substring(0, split) + query;
+                    response.Headers[HeaderNames.Location] = pathBase + newPath.Substring(0, split) + query;
                 }
                 else
                 {
-                    response.Headers[HeaderNames.Location] = newPath;
+                    response.Headers[HeaderNames.Location] = pathBase + newPath;
                 }
             }
         }
