@@ -451,7 +451,7 @@ namespace Microsoft.Net.Http.Server
                 _boundaryType = BoundaryType.ContentLength;
                 // ComputeLeftToWrite checks for HEAD requests when setting _leftToWrite
                 _expectedBodyLength = responseContentLength.Value;
-                if (responseContentLength.Value == writeCount && !isHeadRequest)
+                if (_expectedBodyLength == writeCount && !isHeadRequest)
                 {
                     // A single write with the whole content-length. Http.Sys will set the content-length for us in this scenario.
                     // If we don't remove it then range requests served from cache will have two.

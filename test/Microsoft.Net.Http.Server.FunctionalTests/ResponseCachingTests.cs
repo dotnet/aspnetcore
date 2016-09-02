@@ -291,6 +291,8 @@ namespace Microsoft.Net.Http.Server
                 context.Response.ContentLength = 10;
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
                 context.Response.Body.Write(new byte[10], 0, 10);
+                // Http.Sys will add this for us
+                Assert.Null(context.Response.ContentLength);
                 context.Dispose();
 
                 var response = await responseTask;
@@ -320,6 +322,8 @@ namespace Microsoft.Net.Http.Server
                 context.Response.ContentLength = 10;
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
+                // Http.Sys will add this for us
+                Assert.Null(context.Response.ContentLength);
                 context.Dispose();
 
                 var response = await responseTask;
@@ -416,6 +420,8 @@ namespace Microsoft.Net.Http.Server
                 context.Response.ContentLength = 10;
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
                 context.Response.Body.Write(new byte[10], 0, 10);
+                // Http.Sys will add this for us
+                Assert.Null(context.Response.ContentLength);
                 context.Dispose();
 
                 var response = await responseTask;
@@ -478,6 +484,8 @@ namespace Microsoft.Net.Http.Server
                 context.Response.ContentLength =_fileLength;
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
                 await context.Response.SendFileAsync(_absoluteFilePath, 0, null, CancellationToken.None);
+                // Http.Sys will add this for us
+                Assert.Null(context.Response.ContentLength);
                 context.Dispose();
 
                 var response = await responseTask;
