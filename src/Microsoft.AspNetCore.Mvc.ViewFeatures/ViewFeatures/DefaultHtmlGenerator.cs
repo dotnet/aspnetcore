@@ -33,30 +33,68 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             new[] { "text", "search", "url", "tel", "email", "password", "number" };
 
         private readonly IAntiforgery _antiforgery;
-        private readonly IClientModelValidatorProvider _clientModelValidatorProvider;
         private readonly IModelMetadataProvider _metadataProvider;
         private readonly IUrlHelperFactory _urlHelperFactory;
         private readonly HtmlEncoder _htmlEncoder;
-        private readonly ClientValidatorCache _clientValidatorCache;
+        private readonly ValidationHtmlAttributeProvider _validationAttributeProvider;
 
         /// <summary>
+        /// <para>
         /// Initializes a new instance of the <see cref="DefaultHtmlGenerator"/> class.
+        /// </para>
+        /// <para>
+        /// This constructor is obsolete and will be removed in a future version. The recommended alternative is to
+        /// use <see cref="DefaultHtmlGenerator(IAntiforgery, IOptions{MvcViewOptions}, IModelMetadataProvider,
+        /// IUrlHelperFactory, HtmlEncoder, ClientValidatorCache, ValidationHtmlAttributeProvider)"/>.
+        /// </para>
         /// </summary>
         /// <param name="antiforgery">The <see cref="IAntiforgery"/> instance which is used to generate antiforgery
         /// tokens.</param>
-        /// <param name="optionsAccessor">The accessor for <see cref="MvcOptions"/>.</param>
+        /// <param name="optionsAccessor">The accessor for <see cref="MvcViewOptions"/>.</param>
         /// <param name="metadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
         /// <param name="clientValidatorCache">The <see cref="ClientValidatorCache"/> that provides
         /// a list of <see cref="IClientModelValidator"/>s.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended " +
+            "alternative is to use the other public constructor.")]
         public DefaultHtmlGenerator(
             IAntiforgery antiforgery,
             IOptions<MvcViewOptions> optionsAccessor,
             IModelMetadataProvider metadataProvider,
             IUrlHelperFactory urlHelperFactory,
             HtmlEncoder htmlEncoder,
-            ClientValidatorCache clientValidatorCache)
+            ClientValidatorCache clientValidatorCache) : this(
+                antiforgery,
+                optionsAccessor,
+                metadataProvider,
+                urlHelperFactory,
+                htmlEncoder,
+                clientValidatorCache,
+                new DefaultValidationHtmlAttributeProvider(optionsAccessor, metadataProvider, clientValidatorCache))
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefaultHtmlGenerator"/> class.
+        /// </summary>
+        /// <param name="antiforgery">The <see cref="IAntiforgery"/> instance which is used to generate antiforgery
+        /// tokens.</param>
+        /// <param name="optionsAccessor">The accessor for <see cref="MvcViewOptions"/>.</param>
+        /// <param name="metadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
+        /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
+        /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
+        /// <param name="clientValidatorCache">The <see cref="ClientValidatorCache"/> that provides
+        /// a list of <see cref="IClientModelValidator"/>s.</param>
+        /// <param name="validationAttributeProvider">The <see cref="ValidationHtmlAttributeProvider"/>.</param>
+        public DefaultHtmlGenerator(
+            IAntiforgery antiforgery,
+            IOptions<MvcViewOptions> optionsAccessor,
+            IModelMetadataProvider metadataProvider,
+            IUrlHelperFactory urlHelperFactory,
+            HtmlEncoder htmlEncoder,
+            ClientValidatorCache clientValidatorCache,
+            ValidationHtmlAttributeProvider validationAttributeProvider)
         {
             if (antiforgery == null)
             {
@@ -88,13 +126,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(clientValidatorCache));
             }
 
+            if (validationAttributeProvider == null)
+            {
+                throw new ArgumentNullException(nameof(validationAttributeProvider));
+            }
+
             _antiforgery = antiforgery;
-            var clientValidatorProviders = optionsAccessor.Value.ClientModelValidatorProviders;
-            _clientModelValidatorProvider = new CompositeClientModelValidatorProvider(clientValidatorProviders);
             _metadataProvider = metadataProvider;
             _urlHelperFactory = urlHelperFactory;
             _htmlEncoder = htmlEncoder;
-            _clientValidatorCache = clientValidatorCache;
+            _validationAttributeProvider = validationAttributeProvider;
 
             // Underscores are fine characters in id's.
             IdAttributeDotReplacement = optionsAccessor.Value.HtmlHelperOptions.IdAttributeDotReplacement;
@@ -1313,7 +1354,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             ModelExplorer modelExplorer,
             string expression)
         {
-            modelExplorer = modelExplorer ?? ExpressionMetadataProvider.FromStringExpression(expression, viewData, _metadataProvider);
+            modelExplorer = modelExplorer ?? ExpressionMetadataProvider.FromStringExpression(
+                expression,
+                viewData,
+                _metadataProvider);
+
             var placeholder = modelExplorer.Metadata.Placeholder;
             if (!string.IsNullOrEmpty(placeholder))
             {
@@ -1335,41 +1380,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             ModelExplorer modelExplorer,
             string expression)
         {
-            // Only render attributes if client-side validation is enabled, and then only if we've
-            // never rendered validation for a field with this name in this form.
-            var formContext = viewContext.ClientValidationEnabled ? viewContext.FormContext : null;
-            if (formContext == null)
-            {
-                return;
-            }
+            modelExplorer = modelExplorer ?? ExpressionMetadataProvider.FromStringExpression(
+                expression,
+                viewContext.ViewData,
+                _metadataProvider);
 
-            var fullName = GetFullHtmlFieldName(viewContext, expression);
-            if (formContext.RenderedField(fullName))
-            {
-                return;
-            }
-
-            formContext.RenderedField(fullName, true);
-
-            modelExplorer = modelExplorer ??
-                ExpressionMetadataProvider.FromStringExpression(expression, viewContext.ViewData, _metadataProvider);
-
-
-            var validators = _clientValidatorCache.GetValidators(modelExplorer.Metadata, _clientModelValidatorProvider);
-            if (validators.Count > 0)
-            {
-                var validationContext = new ClientModelValidationContext(
-                    viewContext,
-                    modelExplorer.Metadata,
-                    _metadataProvider,
-                    tagBuilder.Attributes);
-
-                for (var i = 0; i < validators.Count; i++)
-                {
-                    var validator = validators[i];
-                    validator.AddValidation(validationContext);
-                }
-            }
+            _validationAttributeProvider.AddAndTrackValidationAttributes(
+                viewContext,
+                modelExplorer,
+                expression,
+                tagBuilder.Attributes);
         }
 
         private static Enum ConvertEnumFromInteger(object value, Type targetType)

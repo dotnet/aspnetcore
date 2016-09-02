@@ -6,7 +6,6 @@ using System.Buffers;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -117,6 +116,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IHtmlGenerator, DefaultHtmlGenerator>();
             services.TryAddSingleton<ExpressionTextCache>();
             services.TryAddSingleton<IModelExpressionProvider, ModelExpressionProvider>();
+            services.TryAddSingleton<ValidationHtmlAttributeProvider, DefaultValidationHtmlAttributeProvider>();
 
             //
             // JSON Helper
@@ -132,7 +132,7 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             // View Components
             //
-            
+
             // These do caching so they should stay singleton
             services.TryAddSingleton<IViewComponentSelector, DefaultViewComponentSelector>();
             services.TryAddSingleton<IViewComponentFactory, DefaultViewComponentFactory>();

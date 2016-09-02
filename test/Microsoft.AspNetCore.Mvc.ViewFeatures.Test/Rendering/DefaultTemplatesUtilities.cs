@@ -253,13 +253,18 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
             if (htmlGenerator == null)
             {
+                var attributeProvider = new DefaultValidationHtmlAttributeProvider(
+                    optionsAccessor.Object,
+                    provider,
+                    new ClientValidatorCache());
                 htmlGenerator = new DefaultHtmlGenerator(
                     Mock.Of<IAntiforgery>(),
                     optionsAccessor.Object,
                     provider,
                     urlHelperFactory.Object,
                     new HtmlTestEncoder(),
-                    new ClientValidatorCache());
+                    new ClientValidatorCache(),
+                    attributeProvider);
             }
 
             // TemplateRenderer will Contextualize this transient service.
