@@ -324,36 +324,33 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        // This test case ensures the consistency of current server behavior through it is not
-        // an idea one.
         [Theory]
         // Overlong ASCII
-        [InlineData("%C0%A4", true, HttpStatusCode.OK)]
-        [InlineData("%C1%BF", true, HttpStatusCode.OK)]
-        [InlineData("%E0%80%AF", true, HttpStatusCode.OK)]
-        [InlineData("%E0%9F%BF", true, HttpStatusCode.OK)]
-        [InlineData("%F0%80%80%AF", true, HttpStatusCode.OK)]
-        [InlineData("%F0%8F%8F%BF", false, HttpStatusCode.BadRequest)]
+        [InlineData("%C0%A4", "%C0%A4")]
+        [InlineData("%C1%BF", "%C1%BF")]
+        [InlineData("%E0%80%AF", "%E0%80%AF")]
+        [InlineData("%E0%9F%BF", "%E0%9F%BF")]
+        [InlineData("%F0%80%80%AF", "%F0%80%80%AF")]
+        //[InlineData("%F0%8F%8F%BF", "%F0%8F%8F%BF")]
         // Mixed
-        [InlineData("%C0%A4%32", true, HttpStatusCode.OK)]
-        [InlineData("%32%C0%A4%32", true, HttpStatusCode.OK)]
-        [InlineData("%C0%32%A4", true, HttpStatusCode.OK)]
-        public async Task Request_ServerErrorFromInvalidUTF8(string requestPath, bool unescaped, HttpStatusCode expectStatus)
+        [InlineData("%C0%A4%32", "%C0%A42")]
+        [InlineData("%32%C0%A4%32", "2%C0%A42")]
+        [InlineData("%C0%32%A4", "%C02%A4")]
+        public async Task Request_ServerErrorFromInvalidUTF8(string requestPath, string expectedPath)
         {
-            bool pathIsUnescaped = false;
             string root;
             using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext =>
             {
                 var actualPath = httpContext.Request.Path.Value.TrimStart('/');
-                pathIsUnescaped = !string.Equals(actualPath, requestPath, StringComparison.Ordinal);
+                Assert.Equal(expectedPath, actualPath);
+
                 return Task.FromResult(0);
             }))
             {
                 using (var client = new HttpClient())
                 {
                     var response = await client.GetAsync(root + "/" + requestPath);
-                    Assert.Equal(expectStatus, response.StatusCode);
-                    Assert.Equal(unescaped, pathIsUnescaped);
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 }
             }
         }

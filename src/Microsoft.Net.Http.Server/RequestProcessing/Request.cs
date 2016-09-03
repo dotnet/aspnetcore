@@ -67,11 +67,12 @@ namespace Microsoft.Net.Http.Server
             RawUrl = nativeRequestContext.GetRawUrl();
 
             var cookedUrl = nativeRequestContext.GetCookedUrl();
-            var cookedUrlPath = cookedUrl.GetAbsPath() ?? string.Empty;
             QueryString = cookedUrl.GetQueryString() ?? string.Empty;
 
             var prefix = requestContext.Server.Settings.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
-            var originalPath = RequestUriBuilder.GetRequestPath(RawUrl, cookedUrlPath, RequestContext.Logger);
+
+            var rawUrlInBytes = _nativeRequestContext.GetRawUrlInBytes();
+            var originalPath = RequestUriBuilder.GetRequestPath(rawUrlInBytes, RequestContext.Logger);
 
             // 'OPTIONS * HTTP/1.1'
             if (KnownMethod == HttpApi.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawUrl, "*", StringComparison.Ordinal))

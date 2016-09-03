@@ -181,6 +181,20 @@ namespace Microsoft.Net.Http.Server
             return null;
         }
 
+        internal byte[] GetRawUrlInBytes()
+        {
+
+            if (NativeRequest->pRawUrl != null && NativeRequest->RawUrlLength > 0)
+            {
+                var result = new byte[NativeRequest->RawUrlLength];
+                Marshal.Copy((IntPtr)NativeRequest->pRawUrl, result, 0, NativeRequest->RawUrlLength);
+
+                return result;
+            }
+
+            return null;
+        }
+
         internal CookedUrl GetCookedUrl()
         {
             return new CookedUrl(NativeRequest->CookedUrl);
