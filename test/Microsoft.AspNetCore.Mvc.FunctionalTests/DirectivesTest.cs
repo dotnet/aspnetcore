@@ -55,7 +55,7 @@ Write says:WriteLiteral says:<strong>Write says:98052WriteLiteral says:</strong>
             var body = await Client.GetStringAsync("Directives/ViewReplacesTModelTokenFromInheritedBasePages");
 
             // Assert
-            Assert.Equal(expected, body.Trim());
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
         }
     }
 }

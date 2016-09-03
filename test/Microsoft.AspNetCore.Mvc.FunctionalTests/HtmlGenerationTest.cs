@@ -496,7 +496,7 @@ Products: Music Systems, Televisions (3)";
             var response = await Client.GetStringAsync("http://localhost/HtmlGeneration_Home/ItemUsingSharedEditorTemplate");
 
             // Assert
-            Assert.Equal(expected, response);
+            Assert.Equal(expected, response, ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -510,7 +510,7 @@ Products: Music Systems, Televisions (3)";
             var response = await Client.GetStringAsync("http://localhost/HtmlGeneration_Home/ItemUsingModelSpecificEditorTemplate");
 
             // Assert
-            Assert.Equal(expected, response);
+            Assert.Equal(expected, response, ignoreLineEndingDifferences: true);
         }
 
         private static HttpRequestMessage RequestWithLocale(string url, string locale)
