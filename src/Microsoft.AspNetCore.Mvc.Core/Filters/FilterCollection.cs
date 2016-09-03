@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <param name="filterType">Type representing an <see cref="IFilterMetadata"/>.</param>
         /// <returns>An <see cref="IFilterMetadata"/> representing the added service type.</returns>
         /// <remarks>
-        /// Filter instances will created through dependency injection. Use
+        /// Filter instances will be created through dependency injection. Use
         /// <see cref="Add(Type)"/> to register a service that will be created via
         /// type activation.
         /// </remarks>
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <param name="order">The order of the added filter.</param>
         /// <returns>An <see cref="IFilterMetadata"/> representing the added service type.</returns>
         /// <remarks>
-        /// Filter instances will created through dependency injection. Use
+        /// Filter instances will be created through dependency injection. Use
         /// <see cref="Add(Type)"/> to register a service that will be created via
         /// type activation.
         /// </remarks>
