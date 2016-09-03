@@ -1,27 +1,36 @@
-﻿using System;
-using System.Text;
+﻿// Copyright (c) Microsoft Open Technologies, Inc.
+// All Rights Reserved
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED *AS IS* BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING
+// WITHOUT LIMITATION ANY IMPLIED WARRANTIES OR CONDITIONS OF
+// TITLE, FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABLITY OR
+// NON-INFRINGEMENT.
+// See the Apache 2 License for the specific language governing
+// permissions and limitations under the License.
+
+// -----------------------------------------------------------------------
+// <copyright file="SslStatus.cs" company="Microsoft">
+//      Copyright (c) Microsoft Corporation.  All rights reserved.
+// </copyright>
+// -----------------------------------------------------------------------
+
+using System;
 
 namespace Microsoft.Net.Http.Server
 {
-    internal class UrlInByte
+    internal static class RawUrlHelper
     {
-        private static string HTTP_SCHEME = "http://";
-        private static string HTTPS_SCHEME = "https://";
-
-        private readonly byte[] _raw;
-
-        public UrlInByte(byte[] raw)
-        {
-            _raw = raw;
-            Path = LocalPath(_raw);
-        }
-
-        public ArraySegment<byte> Path { get; }
-
         /// <summary>
         /// Find the segment of the URI byte array which represents the path.
         /// </summary>
-        private static ArraySegment<byte> LocalPath(byte[] raw)
+        public static ArraySegment<byte> GetPath(byte[] raw)
         {
             // performance 
             var pathStartIndex = 0;
@@ -84,27 +93,52 @@ namespace Microsoft.Net.Http.Server
         /// <returns>Length of the matched bytes, 0 if it is not matched.</returns>
         private static int FindHttpOrHttps(byte[] raw)
         {
-            if (raw.Length < 7)
+            if (raw[0] != 'h' && raw[0] != 'H')
             {
                 return 0;
             }
 
-            if (string.Equals(HTTP_SCHEME, Encoding.UTF8.GetString(raw, 0, 7), StringComparison.OrdinalIgnoreCase))
-            {
-                return 7;
-            }
-
-            if (raw.Length < 8)
+            if (raw[1] != 't' && raw[1] != 'T')
             {
                 return 0;
             }
 
-            if (string.Equals(HTTPS_SCHEME, Encoding.UTF8.GetString(raw, 0, 8), StringComparison.OrdinalIgnoreCase))
+            if (raw[2] != 't' && raw[2] != 'T')
             {
-                return 8;
+                return 0;
             }
 
-            return 0;
+            if (raw[3] != 'p' && raw[3] != 'P')
+            {
+                return 0;
+            }
+
+            if (raw[4] == ':')
+            {
+                if (raw[5] != '/' || raw[6] != '/')
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 7;
+                }
+            }
+            else if (raw[4] == 's' || raw[4] == 'S')
+            {
+                if (raw[5] != ':' || raw[6] != '/' || raw[7] != '/')
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 8;
+                }
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         private static int Find(byte[] raw, int begin, char target)

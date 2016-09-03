@@ -72,7 +72,7 @@ namespace Microsoft.Net.Http.Server
             var prefix = requestContext.Server.Settings.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
 
             var rawUrlInBytes = _nativeRequestContext.GetRawUrlInBytes();
-            var originalPath = RequestUriBuilder.GetRequestPath(rawUrlInBytes, RequestContext.Logger);
+            var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);
 
             // 'OPTIONS * HTTP/1.1'
             if (KnownMethod == HttpApi.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawUrl, "*", StringComparison.Ordinal))
@@ -179,7 +179,7 @@ namespace Microsoft.Net.Http.Server
         public string Path { get; }
 
         public bool IsHttps => SslStatus != SslStatus.Insecure;
-        
+
         public string RawUrl { get; }
 
         public Version ProtocolVersion { get; }
