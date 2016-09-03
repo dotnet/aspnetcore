@@ -816,9 +816,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(viewContext));
             }
 
-            if (viewContext.ViewData.ModelState.IsValid && (!viewContext.ClientValidationEnabled || excludePropertyErrors))
+            var viewData = viewContext.ViewData;
+            if (!viewContext.ClientValidationEnabled && viewData.ModelState.IsValid)
             {
-                // No client side validation/updates
+                // Client-side validation is not enabled to add to the generated element and element will be empty.
+                return null;
+            }
+
+            ModelStateEntry entryForModel;
+            if (excludePropertyErrors &&
+                (!viewData.ModelState.TryGetValue(viewData.TemplateInfo.HtmlFieldPrefix, out entryForModel) ||
+                 entryForModel.Errors.Count == 0))
+            {
+                // Client-side validation (if enabled) will not affect the generated element and element will be empty.
                 return null;
             }
 
@@ -829,6 +839,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 {
                     headerTag = viewContext.ValidationSummaryMessageElement;
                 }
+
                 var messageTag = new TagBuilder(headerTag);
                 messageTag.InnerHtml.SetContent(message);
                 wrappedMessage.AppendLine(messageTag);
@@ -841,7 +852,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // If excludePropertyErrors is true, describe any validation issue with the current model in a single item.
             // Otherwise, list individual property errors.
             var isHtmlSummaryModified = false;
-            var modelStates = ValidationHelpers.GetModelStateList(viewContext.ViewData, excludePropertyErrors);
+            var modelStates = ValidationHelpers.GetModelStateList(viewData, excludePropertyErrors);
 
             var htmlSummary = new TagBuilder("ul");
             foreach (var modelState in modelStates)
@@ -871,7 +882,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var tagBuilder = new TagBuilder("div");
             tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
 
-            if (viewContext.ViewData.ModelState.IsValid)
+            if (viewData.ModelState.IsValid)
             {
                 tagBuilder.AddCssClass(HtmlHelper.ValidationSummaryValidCssClassName);
             }

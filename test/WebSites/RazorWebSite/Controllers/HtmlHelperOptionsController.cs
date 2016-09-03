@@ -23,6 +23,7 @@ namespace RazorWebSite.Controllers
                 offset: TimeSpan.FromHours(0))
             };
 
+            ModelState.AddModelError(string.Empty, "A model error occurred.");
             ModelState.AddModelError("Error", "An error occurred.");
             return View(model);
         }
@@ -42,6 +43,7 @@ namespace RazorWebSite.Controllers
                 offset: TimeSpan.FromHours(0))
             };
 
+            ModelState.AddModelError(string.Empty, "A model error occurred.");
             ModelState.AddModelError("Error", "An error occurred.");
             return View(model);
         }

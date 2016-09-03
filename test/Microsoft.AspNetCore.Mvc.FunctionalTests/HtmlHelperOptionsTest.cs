@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             var expected =
 @"<div class=""validation-summary-errors""><validationSummaryElement>MySummary</validationSummaryElement>
-<ul><li style=""display:none""></li>
+<ul><li>A model error occurred.</li>
 </ul></div>
 <validationMessageElement class=""field-validation-error"">An error occurred.</validationMessageElement>
 <input id=""Prefix!Property1"" name=""Prefix.Property1"" type=""text"" value="""" />
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 <div class=""editor-field""><input class=""text-box single-line"" id=""MyDate"" name=""MyDate"" type=""datetime"" value=""2000-01-02T03:04:05.060&#x2B;00:00"" /> </div>
 
 <div class=""validation-summary-errors""><validationSummaryElement>MySummary</validationSummaryElement>
-<ul><li style=""display:none""></li>
+<ul><li>A model error occurred.</li>
 </ul></div>
 <validationMessageElement class=""field-validation-error"">An error occurred.</validationMessageElement>
 <input id=""Prefix!Property1"" name=""Prefix.Property1"" type=""text"" value="""" />
@@ -54,7 +54,7 @@ False";
             // Arrange
             var expected =
 @"<div class=""validation-summary-errors""><ValidationSummaryInView>MySummary</ValidationSummaryInView>
-<ul><li style=""display:none""></li>
+<ul><li>A model error occurred.</li>
 </ul></div>
 <ValidationInView class=""field-validation-error"" data-valmsg-for=""Error"" data-valmsg-replace=""true"">An error occurred.</ValidationInView>
 <input id=""Prefix!Property1"" name=""Prefix.Property1"" type=""text"" value="""" />
@@ -63,7 +63,7 @@ False";
 
 True
 <div class=""validation-summary-errors""><ValidationSummaryInPartialView>MySummary</ValidationSummaryInPartialView>
-<ul><li style=""display:none""></li>
+<ul><li>A model error occurred.</li>
 </ul></div>
 <ValidationInPartialView class=""field-validation-error"" data-valmsg-for=""Error"" data-valmsg-replace=""true"">An error occurred.</ValidationInPartialView>
 <input id=""Prefix!Property1"" name=""Prefix.Property1"" type=""text"" value="""" />
