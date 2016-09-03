@@ -4,15 +4,12 @@
 using System;
 using System.IO;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.ResponseCaching.Internal;
-using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -20,54 +17,37 @@ namespace Microsoft.AspNetCore.ResponseCaching
 {
     internal class ResponseCachingContext
     {
-        private static readonly CacheControlHeaderValue EmptyCacheControl = new CacheControlHeaderValue();
-        // Use the record separator for delimiting components of the cache key to avoid possible collisions
-        private static readonly char KeyDelimiter = '\x1e';
-
         private readonly HttpContext _httpContext;
         private readonly IResponseCache _cache;
         private readonly ResponseCachingOptions _options;
-        private readonly ObjectPool<StringBuilder> _builderPool;
-        private readonly IResponseCachingCacheabilityValidator _cacheabilityValidator;
-        private readonly IResponseCachingCacheKeyModifier _cacheKeyModifier;
+        private readonly ICacheabilityValidator _cacheabilityValidator;
+        private readonly IKeyProvider _keyProvider;
 
-        private string _cacheKey;
-        private ResponseType? _responseType;
-        private RequestHeaders _requestHeaders;
-        private ResponseHeaders _responseHeaders;
-        private CacheControlHeaderValue _requestCacheControl;
-        private CacheControlHeaderValue _responseCacheControl;
-        private bool? _cacheResponse;
-        private CachedResponse _cachedResponse;
-        private TimeSpan _cachedResponseValidFor;
-        internal DateTimeOffset _responseTime;
+        private ResponseCachingState _state;
 
-        // Internal for testing
         internal ResponseCachingContext(
             HttpContext httpContext,
             IResponseCache cache,
             ResponseCachingOptions options,
-            ObjectPool<StringBuilder> builderPool,
-            IResponseCachingCacheabilityValidator cacheabilityValidator,
-            IResponseCachingCacheKeyModifier cacheKeyModifier)
+            ICacheabilityValidator cacheabilityValidator,
+            IKeyProvider keyProvider)
         {
             _httpContext = httpContext;
             _cache = cache;
             _options = options;
-            _builderPool = builderPool;
             _cacheabilityValidator = cacheabilityValidator;
-            _cacheKeyModifier = cacheKeyModifier;
+            _keyProvider = keyProvider;
         }
 
-        internal bool CacheResponse
+        internal ResponseCachingState State
         {
             get
             {
-                if (_cacheResponse == null)
+                if (_state == null)
                 {
-                    _cacheResponse = ResponseIsCacheable();
+                    _state = _httpContext.GetResponseCachingState();
                 }
-                return _cacheResponse.Value;
+                return _state;
             }
         }
 
@@ -79,349 +59,17 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         private IHttpSendFileFeature OriginalSendFileFeature { get; set; }
 
-        private RequestHeaders RequestHeaders
-        {
-            get
-            {
-                if (_requestHeaders == null)
-                {
-                    _requestHeaders = _httpContext.Request.GetTypedHeaders();
-                }
-                return _requestHeaders;
-            }
-        }
-
-        private ResponseHeaders ResponseHeaders
-        {
-            get
-            {
-                if (_responseHeaders == null)
-                {
-                    _responseHeaders = _httpContext.Response.GetTypedHeaders();
-                }
-                return _responseHeaders;
-            }
-        }
-
-        private CacheControlHeaderValue RequestCacheControl
-        {
-            get
-            {
-                if (_requestCacheControl == null)
-                {
-                    _requestCacheControl = RequestHeaders.CacheControl ?? EmptyCacheControl;
-                }
-                return _requestCacheControl;
-            }
-        }
-
-        private CacheControlHeaderValue ResponseCacheControl
-        {
-            get
-            {
-                if (_responseCacheControl == null)
-                {
-                    _responseCacheControl = ResponseHeaders.CacheControl ?? EmptyCacheControl;
-                }
-                return _responseCacheControl;
-            }
-        }
-
-        // GET;/PATH;VaryBy
-        // TODO: Method invariant retrieval? E.g. HEAD after GET to the same resource.
-        internal string CreateCacheKey()
-        {
-            return CreateCacheKey(varyBy: null);
-        }
-
-        internal string CreateCacheKey(CachedVaryBy varyBy)
-        {
-            var request = _httpContext.Request;
-            var builder = _builderPool.Get();
-
-            try
-            {
-                // Prepend custom cache key prefix
-                var customKeyPrefix = _cacheKeyModifier.CreatKeyPrefix(_httpContext);
-                if (!string.IsNullOrEmpty(customKeyPrefix))
-                {
-                    builder.Append(customKeyPrefix)
-                        .Append(KeyDelimiter);
-                }
-
-                // Default key
-                builder
-                    .Append(request.Method.ToUpperInvariant())
-                    .Append(KeyDelimiter)
-                    .Append(_options.CaseSensitivePaths ? request.Path.Value : request.Path.Value.ToUpperInvariant());
-
-                // Vary by headers
-                if (varyBy?.Headers.Count > 0)
-                {
-                    // Append a group separator for the header segment of the cache key
-                    builder.Append(KeyDelimiter)
-                        .Append('H');
-
-                    // TODO: resolve key format and delimiters
-                    foreach (var header in varyBy.Headers)
-                    {
-                        // TODO: Normalization of order, case?
-                        var value = _httpContext.Request.Headers[header];
-
-                        // TODO: How to handle null/empty string?
-                        if (StringValues.IsNullOrEmpty(value))
-                        {
-                            value = "null";
-                        }
-
-                        builder.Append(KeyDelimiter)
-                            .Append(header)
-                            .Append("=")
-                            .Append(value);
-                    }
-                }
-
-                // Vary by query params
-                if (varyBy?.Params.Count > 0)
-                {
-                    // Append a group separator for the query parameter segment of the cache key
-                    builder.Append(KeyDelimiter)
-                        .Append('Q');
-
-                    if (varyBy.Params.Count == 1 && string.Equals(varyBy.Params[0], "*", StringComparison.Ordinal))
-                    {
-                        // Vary by all available query params
-                        foreach (var query in _httpContext.Request.Query.OrderBy(q => q.Key, StringComparer.OrdinalIgnoreCase))
-                        {
-                            builder.Append(KeyDelimiter)
-                                .Append(query.Key.ToUpperInvariant())
-                                .Append("=")
-                                .Append(query.Value);
-                        }
-                    }
-                    else
-                    {
-                        // TODO: resolve key format and delimiters
-                        foreach (var param in varyBy.Params)
-                        {
-                            // TODO: Normalization of order, case?
-                            var value = _httpContext.Request.Query[param];
-
-                            // TODO: How to handle null/empty string?
-                            if (StringValues.IsNullOrEmpty(value))
-                            {
-                                value = "null";
-                            }
-
-                            builder.Append(KeyDelimiter)
-                                .Append(param)
-                                .Append("=")
-                                .Append(value);
-                        }
-                    }
-                }
-
-                return builder.ToString();
-            }
-            finally
-            {
-                _builderPool.Return(builder);
-            }
-        }
-
-        internal bool RequestIsCacheable()
-        {
-            // Use optional override if specified by user
-            switch(_cacheabilityValidator.RequestIsCacheableOverride(_httpContext))
-            {
-                case OverrideResult.UseDefaultLogic:
-                    break;
-                case OverrideResult.DoNotCache:
-                    return false;
-                case OverrideResult.Cache:
-                    return true;
-                default:
-                    throw new NotSupportedException($"Unrecognized result from {nameof(_cacheabilityValidator.RequestIsCacheableOverride)}.");
-            }
-
-            // Verify the method
-            // TODO: RFC lists POST as a cacheable method when explicit freshness information is provided, but this is not widely implemented. Will revisit.
-            var request = _httpContext.Request;
-            if (string.Equals("GET", request.Method, StringComparison.OrdinalIgnoreCase))
-            {
-                _responseType = ResponseType.FullReponse;
-            }
-            else if (string.Equals("HEAD", request.Method, StringComparison.OrdinalIgnoreCase))
-            {
-                _responseType = ResponseType.HeadersOnly;
-            }
-            else
-            {
-                return false;
-            }
-
-            // Verify existence of authorization headers
-            // TODO: The server may indicate that the response to these request are cacheable
-            if (!string.IsNullOrEmpty(request.Headers[HeaderNames.Authorization]))
-            {
-                return false;
-            }
-
-            // Verify request cache-control parameters
-            // TODO: no-cache requests can be retrieved upon validation with origin
-            if (!string.IsNullOrEmpty(request.Headers[HeaderNames.CacheControl]))
-            {
-                if (RequestCacheControl.NoCache)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                // Support for legacy HTTP 1.0 cache directive
-                var pragmaHeaderValues = request.Headers[HeaderNames.Pragma];
-                foreach (var directive in pragmaHeaderValues)
-                {
-                    if (string.Equals("no-cache", directive, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            // TODO: Verify global middleware settings? Explicit ignore list, range requests, etc.
-            return true;
-        }
-
-        internal bool ResponseIsCacheable()
-        {
-            // Use optional override if specified by user
-            switch (_cacheabilityValidator.ResponseIsCacheableOverride(_httpContext))
-            {
-                case OverrideResult.UseDefaultLogic:
-                    break;
-                case OverrideResult.DoNotCache:
-                    return false;
-                case OverrideResult.Cache:
-                    return true;
-                default:
-                    throw new NotSupportedException($"Unrecognized result from {nameof(_cacheabilityValidator.ResponseIsCacheableOverride)}.");
-            }
-
-            // Only cache pages explicitly marked with public
-            // TODO: Consider caching responses that are not marked as public but otherwise cacheable?
-            if (!ResponseCacheControl.Public)
-            {
-                return false;
-            }
-
-            // Check no-store
-            if (RequestCacheControl.NoStore || ResponseCacheControl.NoStore)
-            {
-                return false;
-            }
-
-            // Check no-cache
-            // TODO: Handle no-cache with headers
-            if (ResponseCacheControl.NoCache)
-            {
-                return false;
-            }
-
-            var response = _httpContext.Response;
-
-            // Do not cache responses varying by *
-            if (string.Equals(response.Headers[HeaderNames.Vary], "*", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            // TODO: public MAY override the cacheability checks for private and status codes
-
-            // Check private
-            if (ResponseCacheControl.Private)
-            {
-                return false;
-            }
-
-            // Check response code
-            // TODO: RFC also lists 203, 204, 206, 300, 301, 404, 405, 410, 414, and 501 as cacheable by default
-            if (response.StatusCode != StatusCodes.Status200OK)
-            {
-                return false;
-            }
-
-            // Check response freshness
-            // TODO: apparent age vs corrected age value
-            var responseAge = _responseTime - ResponseHeaders.Date ?? TimeSpan.Zero;
-            if (!EntryIsFresh(ResponseHeaders, responseAge, verifyAgainstRequest: false))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        internal bool EntryIsFresh(ResponseHeaders responseHeaders, TimeSpan age, bool verifyAgainstRequest)
-        {
-            var responseCacheControl = responseHeaders.CacheControl ?? EmptyCacheControl;
-
-            // Add min-fresh requirements
-            if (verifyAgainstRequest)
-            {
-                age += RequestCacheControl.MinFresh ?? TimeSpan.Zero;
-            }
-
-            // Validate shared max age, this overrides any max age settings for shared caches
-            if (age > responseCacheControl.SharedMaxAge)
-            {
-                // shared max age implies must revalidate
-                return false;
-            }
-            else if (responseCacheControl.SharedMaxAge == null)
-            {
-                // Validate max age
-                if (age > responseCacheControl.MaxAge || (verifyAgainstRequest && age > RequestCacheControl.MaxAge))
-                {
-                    // Must revalidate
-                    if (responseCacheControl.MustRevalidate)
-                    {
-                        return false;
-                    }
-
-                    // Request allows stale values
-                    if (verifyAgainstRequest && age < RequestCacheControl.MaxStaleLimit)
-                    {
-                        // TODO: Add warning header indicating the response is stale
-                        return true;
-                    }
-
-                    return false;
-                }
-                else if (responseCacheControl.MaxAge == null && (!verifyAgainstRequest || RequestCacheControl.MaxAge == null))
-                {
-                    // Validate expiration
-                    if (_responseTime > responseHeaders.Expires)
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
-
         internal async Task<bool> TryServeFromCacheAsync()
         {
-            _cacheKey = CreateCacheKey();
-            var cacheEntry = _cache.Get(_cacheKey);
+            State.BaseKey = _keyProvider.CreateBaseKey(_httpContext);
+            var cacheEntry = _cache.Get(State.BaseKey);
             var responseServed = false;
 
-            if (cacheEntry is CachedVaryBy)
+            if (cacheEntry is CachedVaryRules)
             {
-                // Request contains VaryBy rules, recompute key and try again
-                _cacheKey = CreateCacheKey(cacheEntry as CachedVaryBy);
-                cacheEntry = _cache.Get(_cacheKey);
+                // Request contains vary rules, recompute key and try again
+                var varyKey = _keyProvider.CreateVaryKey(_httpContext, ((CachedVaryRules)cacheEntry).VaryRules);
+                cacheEntry = _cache.Get(varyKey);
             }
 
             if (cacheEntry is CachedResponse)
@@ -429,17 +77,18 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 var cachedResponse = cacheEntry as CachedResponse;
                 var cachedResponseHeaders = new ResponseHeaders(cachedResponse.Headers);
 
-                _responseTime = _options.SystemClock.UtcNow;
-                var age = _responseTime - cachedResponse.Created;
-                age = age > TimeSpan.Zero ? age : TimeSpan.Zero;
+                State.ResponseTime = _options.SystemClock.UtcNow;
+                var cachedEntryAge = State.ResponseTime - cachedResponse.Created;
+                State.CachedEntryAge = cachedEntryAge > TimeSpan.Zero ? cachedEntryAge : TimeSpan.Zero;
 
-                if (EntryIsFresh(cachedResponseHeaders, age, verifyAgainstRequest: true))
+                if (_cacheabilityValidator.CachedEntryIsFresh(_httpContext, cachedResponseHeaders))
                 {
+                    responseServed = true;
+
                     // Check conditional request rules
                     if (ConditionalRequestSatisfied(cachedResponseHeaders))
                     {
                         _httpContext.Response.StatusCode = StatusCodes.Status304NotModified;
-                        responseServed = true;
                     }
                     else
                     {
@@ -451,33 +100,20 @@ namespace Microsoft.AspNetCore.ResponseCaching
                             response.Headers.Add(header);
                         }
 
-                        response.Headers[HeaderNames.Age] = age.TotalSeconds.ToString("F0", CultureInfo.InvariantCulture);
+                        response.Headers[HeaderNames.Age] = State.CachedEntryAge.TotalSeconds.ToString("F0", CultureInfo.InvariantCulture);
 
-                        if (_responseType == ResponseType.HeadersOnly)
-                        {
-                            responseServed = true;
-                        }
-                        else if (_responseType == ResponseType.FullReponse)
-                        {
-                            // Copy the cached response body
-                            var body = cachedResponse.Body;
 
+                        var body = cachedResponse.Body;
+
+                        // Copy the cached response body
+                        if (body.Length > 0)
+                        {
                             // Add a content-length if required
-                            if (response.ContentLength == null && string.IsNullOrEmpty(response.Headers[HeaderNames.TransferEncoding]))
+                            if (response.ContentLength == null && StringValues.IsNullOrEmpty(response.Headers[HeaderNames.TransferEncoding]))
                             {
                                 response.ContentLength = body.Length;
                             }
-
-                            if (body.Length > 0)
-                            {
-                                await response.Body.WriteAsync(body, 0, body.Length);
-                            }
-
-                            responseServed = true;
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException($"{nameof(_responseType)} not specified or is unrecognized.");
+                            await response.Body.WriteAsync(body, 0, body.Length);
                         }
                     }
                 }
@@ -487,7 +123,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 }
             }
 
-            if (!responseServed && RequestCacheControl.OnlyIfCached)
+            if (!responseServed && State.RequestCacheControl.OnlyIfCached)
             {
                 _httpContext.Response.StatusCode = StatusCodes.Status504GatewayTimeout;
                 responseServed = true;
@@ -498,7 +134,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         internal bool ConditionalRequestSatisfied(ResponseHeaders cachedResponseHeaders)
         {
-            var ifNoneMatchHeader = RequestHeaders.IfNoneMatch;
+            var ifNoneMatchHeader = State.RequestHeaders.IfNoneMatch;
 
             if (ifNoneMatchHeader != null)
             {
@@ -518,7 +154,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     }
                 }
             }
-            else if ((cachedResponseHeaders.LastModified ?? cachedResponseHeaders.Date) <= RequestHeaders.IfUnmodifiedSince)
+            else if ((cachedResponseHeaders.LastModified ?? cachedResponseHeaders.Date) <= State.RequestHeaders.IfUnmodifiedSince)
             {
                 return true;
             }
@@ -528,57 +164,56 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         internal void FinalizeCachingHeaders()
         {
-            if (CacheResponse)
+            if (_cacheabilityValidator.ResponseIsCacheable(_httpContext))
             {
+                State.ShouldCacheResponse = true;
+
                 // Create the cache entry now
                 var response = _httpContext.Response;
                 var varyHeaderValue = response.Headers[HeaderNames.Vary];
-                var varyParamsValue = _httpContext.GetResponseCachingFeature().VaryByParams;
-                _cachedResponseValidFor = ResponseCacheControl.SharedMaxAge
-                    ?? ResponseCacheControl.MaxAge
-                    ?? (ResponseHeaders.Expires - _responseTime)
+                var varyParamsValue = _httpContext.GetResponseCachingFeature()?.VaryParams ?? StringValues.Empty;
+                State.CachedResponseValidFor = State.ResponseCacheControl.SharedMaxAge
+                    ?? State.ResponseCacheControl.MaxAge
+                    ?? (State.ResponseHeaders.Expires - State.ResponseTime)
                     // TODO: Heuristics for expiration?
                     ?? TimeSpan.FromSeconds(10);
 
-                // Check if any VaryBy rules exist
+                // Check if any vary rules exist
                 if (!StringValues.IsNullOrEmpty(varyHeaderValue) || !StringValues.IsNullOrEmpty(varyParamsValue))
                 {
-                    if (varyParamsValue.Count > 1)
+                    var cachedVaryRules = new CachedVaryRules
                     {
-                        Array.Sort(varyParamsValue.ToArray(), StringComparer.OrdinalIgnoreCase);
-                    }
-
-                    var cachedVaryBy = new CachedVaryBy
-                    {
-                        // TODO: VaryBy Encoding
-                        Headers = varyHeaderValue,
-                        Params = varyParamsValue
+                        VaryRules = new VaryRules()
+                        {
+                            // TODO: Vary Encoding
+                            Headers = varyHeaderValue,
+                            Params = varyParamsValue
+                        }
                     };
 
                     // TODO: Overwrite?
-                    _cache.Set(_cacheKey, cachedVaryBy, _cachedResponseValidFor);
-                    _cacheKey = CreateCacheKey(cachedVaryBy);
+                    _cache.Set(State.BaseKey, cachedVaryRules, State.CachedResponseValidFor);
+                    State.VaryKey = _keyProvider.CreateVaryKey(_httpContext, cachedVaryRules.VaryRules);
                 }
 
                 // Ensure date header is set
-                if (ResponseHeaders.Date == null)
+                if (State.ResponseHeaders.Date == null)
                 {
-                    ResponseHeaders.Date = _responseTime;
+                    State.ResponseHeaders.Date = State.ResponseTime;
                 }
 
                 // Store the response to cache
-                _cachedResponse = new CachedResponse
+                State.CachedResponse = new CachedResponse
                 {
-                    Created = ResponseHeaders.Date.Value,
+                    Created = State.ResponseHeaders.Date.Value,
                     StatusCode = _httpContext.Response.StatusCode
                 };
 
-                foreach (var header in ResponseHeaders.Headers)
+                foreach (var header in State.ResponseHeaders.Headers)
                 {
-                    if (!string.Equals(header.Key, HeaderNames.Age, StringComparison.OrdinalIgnoreCase)
-                        && !string.Equals(header.Key, HeaderNames.SetCookie, StringComparison.OrdinalIgnoreCase))
+                    if (!string.Equals(header.Key, HeaderNames.Age, StringComparison.OrdinalIgnoreCase))
                     {
-                        _cachedResponse.Headers.Add(header);
+                        State.CachedResponse.Headers.Add(header);
                     }
                 }
             }
@@ -590,11 +225,11 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         internal void FinalizeCachingBody()
         {
-            if (CacheResponse && ResponseCacheStream.BufferingEnabled)
+            if (State.ShouldCacheResponse && ResponseCacheStream.BufferingEnabled)
             {
-                _cachedResponse.Body = ResponseCacheStream.BufferedStream.ToArray();
+                State.CachedResponse.Body = ResponseCacheStream.BufferedStream.ToArray();
 
-                _cache.Set(_cacheKey, _cachedResponse, _cachedResponseValidFor);
+                _cache.Set(State.VaryKey ?? State.BaseKey, State.CachedResponse, State.CachedResponseValidFor);
             }
         }
 
@@ -603,7 +238,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             if (!ResponseStarted)
             {
                 ResponseStarted = true;
-                _responseTime = _options.SystemClock.UtcNow;
+                State.ResponseTime = _options.SystemClock.UtcNow;
 
                 FinalizeCachingHeaders();
             }
@@ -639,12 +274,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
             // TODO: Move this temporary interface with endpoint to HttpAbstractions
             _httpContext.RemoveResponseCachingFeature();
-        }
-
-        private enum ResponseType
-        {
-            HeadersOnly = 0,
-            FullReponse = 1
         }
     }
 }

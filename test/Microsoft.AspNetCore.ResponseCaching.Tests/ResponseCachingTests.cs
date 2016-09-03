@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryByHeader_Matches()
+        public async void ServesCachedContent_IfVaryHeader_Matches()
         {
             var builder = CreateBuilderWithResponseCaching(async (context) =>
             {
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfVaryByHeader_Mismatches()
+        public async void ServesFreshContent_IfVaryHeader_Mismatches()
         {
             var builder = CreateBuilderWithResponseCaching(async (context) =>
             {
@@ -90,11 +90,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryByParams_Matches()
+        public async void ServesCachedContent_IfVaryParams_Matches()
         {
             var builder = CreateBuilderWithResponseCaching(async (context) =>
             {
-                context.GetResponseCachingFeature().VaryByParams = "param";
+                context.GetResponseCachingFeature().VaryParams = "param";
                 await DefaultRequestDelegate(context);
             });
 
@@ -109,11 +109,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryByParamsExplicit_Matches_ParamNameCaseInsensitive()
+        public async void ServesCachedContent_IfVaryParamsExplicit_Matches_ParamNameCaseInsensitive()
         {
             var builder = CreateBuilderWithResponseCaching(async (context) =>
             {
-                context.GetResponseCachingFeature().VaryByParams = new[] { "ParamA", "paramb" };
+                context.GetResponseCachingFeature().VaryParams = new[] { "ParamA", "paramb" };
                 await DefaultRequestDelegate(context);
             });
 
@@ -128,11 +128,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryByParamsStar_Matches_ParamNameCaseInsensitive()
+        public async void ServesCachedContent_IfVaryParamsStar_Matches_ParamNameCaseInsensitive()
         {
             var builder = CreateBuilderWithResponseCaching(async (context) =>
             {
-                context.GetResponseCachingFeature().VaryByParams = new[] { "*" };
+                context.GetResponseCachingFeature().VaryParams = new[] { "*" };
                 await DefaultRequestDelegate(context);
             });
 
@@ -147,11 +147,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryByParamsExplicit_Matches_OrderInsensitive()
+        public async void ServesCachedContent_IfVaryParamsExplicit_Matches_OrderInsensitive()
         {
             var builder = CreateBuilderWithResponseCaching(async (context) =>
             {
-                context.GetResponseCachingFeature().VaryByParams = new[] { "ParamB", "ParamA" };
+                context.GetResponseCachingFeature().VaryParams = new[] { "ParamB", "ParamA" };
                 await DefaultRequestDelegate(context);
             });
 
@@ -166,11 +166,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryByParamsStar_Matches_OrderInsensitive()
+        public async void ServesCachedContent_IfVaryParamsStar_Matches_OrderInsensitive()
         {
             var builder = CreateBuilderWithResponseCaching(async (context) =>
             {
-                context.GetResponseCachingFeature().VaryByParams = new[] { "*" };
+                context.GetResponseCachingFeature().VaryParams = new[] { "*" };
                 await DefaultRequestDelegate(context);
             });
 
@@ -185,11 +185,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfVaryByParams_Mismatches()
+        public async void ServesFreshContent_IfVaryParams_Mismatches()
         {
             var builder = CreateBuilderWithResponseCaching(async (context) =>
             {
-                context.GetResponseCachingFeature().VaryByParams = "param";
+                context.GetResponseCachingFeature().VaryParams = "param";
                 await DefaultRequestDelegate(context);
             });
 
@@ -204,11 +204,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfVaryByParamsExplicit_Mismatch_ParamValueCaseSensitive()
+        public async void ServesFreshContent_IfVaryParamsExplicit_Mismatch_ParamValueCaseSensitive()
         {
             var builder = CreateBuilderWithResponseCaching(async (context) =>
             {
-                context.GetResponseCachingFeature().VaryByParams = new[] { "ParamA", "ParamB" };
+                context.GetResponseCachingFeature().VaryParams = new[] { "ParamA", "ParamB" };
                 await DefaultRequestDelegate(context);
             });
 
@@ -223,11 +223,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfVaryByParamsStar_Mismatch_ParamValueCaseSensitive()
+        public async void ServesFreshContent_IfVaryParamsStar_Mismatch_ParamValueCaseSensitive()
         {
             var builder = CreateBuilderWithResponseCaching(async (context) =>
             {
-                context.GetResponseCachingFeature().VaryByParams = new[] { "*" };
+                context.GetResponseCachingFeature().VaryParams = new[] { "*" };
                 await DefaultRequestDelegate(context);
             });
 
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_WithoutSetCookie()
+        public async void ServesFreshContent_IfSetCookie_IsSpecified()
         {
             var builder = CreateBuilderWithResponseCaching(async (context) =>
             {
@@ -295,20 +295,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 var initialResponse = await client.GetAsync("");
                 var subsequentResponse = await client.GetAsync("");
 
-                initialResponse.EnsureSuccessStatusCode();
-                subsequentResponse.EnsureSuccessStatusCode();
-
-                foreach (var header in initialResponse.Headers)
-                {
-                    if (!string.Equals(HeaderNames.SetCookie, header.Key, StringComparison.OrdinalIgnoreCase))
-                    {
-                        Assert.Equal(initialResponse.Headers.GetValues(header.Key), subsequentResponse.Headers.GetValues(header.Key));
-                    }
-                }
-                Assert.True(initialResponse.Headers.Contains(HeaderNames.SetCookie));
-                Assert.True(subsequentResponse.Headers.Contains(HeaderNames.Age));
-                Assert.False(subsequentResponse.Headers.Contains(HeaderNames.SetCookie));
-                Assert.Equal(await initialResponse.Content.ReadAsStringAsync(), await subsequentResponse.Content.ReadAsStringAsync());
+                await AssertResponseNotCachedAsync(initialResponse, subsequentResponse);
             }
         }
 

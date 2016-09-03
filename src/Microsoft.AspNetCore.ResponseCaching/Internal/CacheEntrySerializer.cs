@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    internal static class DefaultResponseCacheSerializer
+    internal static class CacheEntrySerializer
     {
         private const int FormatVersion = 1;
 
@@ -37,8 +37,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         // Serialization Format
         // Format version (int)
-        // Type (char: 'R' for CachedResponse, 'V' for CachedVaryBy)
-        // Type-dependent data (see CachedResponse and CachedVaryBy)
+        // Type (char: 'R' for CachedResponse, 'V' for CachedVaryRules)
+        // Type-dependent data (see CachedResponse and CachedVaryRules)
         public static object Read(BinaryReader reader)
         {
             if (reader == null)
@@ -60,11 +60,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             }
             else if (type == 'V')
             {
-                var cachedResponse = ReadCachedVaryBy(reader);
-                return cachedResponse;
+                var cachedVaryRules = ReadCachedVaryRules(reader);
+                return cachedVaryRules;
             }
 
-            // Unable to read as CachedResponse or CachedVaryBy
+            // Unable to read as CachedResponse or CachedVaryRules
             return null;
         }
 
@@ -96,12 +96,19 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         }
 
         // Serialization Format
-        // Headers count 
-        // Headers if count > 0 (comma separated string)
-        // Params count 
-        // Params if count > 0 (comma separated string)
-        private static CachedVaryBy ReadCachedVaryBy(BinaryReader reader)
+        // ContainsVaryRules (bool)
+        // If containing vary rules:
+        //   Headers count
+        //   Headers if count > 0 (comma separated string)
+        //   Params count
+        //   Params if count > 0 (comma separated string)
+        private static CachedVaryRules ReadCachedVaryRules(BinaryReader reader)
         {
+            if (!reader.ReadBoolean())
+            {
+                return new CachedVaryRules();
+            }
+
             var headerCount = reader.ReadInt32();
             var headers = new string[headerCount];
             for (var index = 0; index < headerCount; index++)
@@ -115,7 +122,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 param[index] = reader.ReadString();
             }
 
-            return new CachedVaryBy { Headers = headers, Params = param };
+            return new CachedVaryRules { VaryRules = new VaryRules() { Headers = headers, Params = param } };
         }
 
         // See serialization format above
@@ -132,14 +139,16 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             }
 
             writer.Write(FormatVersion);
-            
+
             if (entry is CachedResponse)
             {
+                writer.Write('R');
                 WriteCachedResponse(writer, entry as CachedResponse);
             }
-            else if (entry is CachedVaryBy)
+            else if (entry is CachedVaryRules)
             {
-                WriteCachedVaryBy(writer, entry as CachedVaryBy);
+                writer.Write('V');
+                WriteCachedVaryRules(writer, entry as CachedVaryRules);
             }
             else
             {
@@ -150,7 +159,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         // See serialization format above
         private static void WriteCachedResponse(BinaryWriter writer, CachedResponse entry)
         {
-            writer.Write('R');
             writer.Write(entry.Created.UtcTicks);
             writer.Write(entry.StatusCode);
             writer.Write(entry.Headers.Count);
@@ -165,20 +173,26 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         }
 
         // See serialization format above
-        private static void WriteCachedVaryBy(BinaryWriter writer, CachedVaryBy entry)
+        private static void WriteCachedVaryRules(BinaryWriter writer, CachedVaryRules varyRules)
         {
-            writer.Write('V');
-
-            writer.Write(entry.Headers.Count);
-            foreach (var header in entry.Headers)
+            if (varyRules.VaryRules == null)
             {
-                writer.Write(header);
+                writer.Write(false);
             }
-
-            writer.Write(entry.Params.Count);
-            foreach (var param in entry.Params)
+            else
             {
-                writer.Write(param);
+                writer.Write(true);
+                writer.Write(varyRules.VaryRules.Headers.Count);
+                foreach (var header in varyRules.VaryRules.Headers)
+                {
+                    writer.Write(header);
+                }
+
+                writer.Write(varyRules.VaryRules.Params.Count);
+                foreach (var param in varyRules.VaryRules.Params)
+                {
+                    writer.Write(param);
+                }
             }
         }
     }

@@ -3,9 +3,9 @@
 
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.ResponseCaching.Internal
+namespace Microsoft.AspNetCore.ResponseCaching
 {
-    internal class CachedVaryBy
+    public class VaryRules
     {
         internal StringValues Headers { get; set; }
         internal StringValues Params { get; set; }

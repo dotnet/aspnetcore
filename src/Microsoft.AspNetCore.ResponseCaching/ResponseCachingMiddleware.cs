@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ResponseCaching
@@ -23,17 +22,15 @@ namespace Microsoft.AspNetCore.ResponseCaching
         private readonly RequestDelegate _next;
         private readonly IResponseCache _cache;
         private readonly ResponseCachingOptions _options;
-        private readonly ObjectPool<StringBuilder> _builderPool;
-        private readonly IResponseCachingCacheabilityValidator _cacheabilityValidator;
-        private readonly IResponseCachingCacheKeyModifier _cacheKeyModifier;
+        private readonly ICacheabilityValidator _cacheabilityValidator;
+        private readonly IKeyProvider _keyProvider;
 
         public ResponseCachingMiddleware(
             RequestDelegate next,
             IResponseCache cache,
             IOptions<ResponseCachingOptions> options,
-            ObjectPoolProvider poolProvider,
-            IResponseCachingCacheabilityValidator cacheabilityValidator,
-            IResponseCachingCacheKeyModifier cacheKeyModifier)
+            ICacheabilityValidator cacheabilityValidator,
+            IKeyProvider keyProvider)
         {
             if (next == null)
             {
@@ -47,71 +44,74 @@ namespace Microsoft.AspNetCore.ResponseCaching
             {
                 throw new ArgumentNullException(nameof(options));
             }
-            if (poolProvider == null)
-            {
-                throw new ArgumentNullException(nameof(poolProvider));
-            }
             if (cacheabilityValidator == null)
             {
                 throw new ArgumentNullException(nameof(cacheabilityValidator));
             }
-            if (cacheKeyModifier == null)
+            if (keyProvider == null)
             {
-                throw new ArgumentNullException(nameof(cacheKeyModifier));
+                throw new ArgumentNullException(nameof(keyProvider));
             }
 
             _next = next;
             _cache = cache;
             _options = options.Value;
-            _builderPool = poolProvider.CreateStringBuilderPool();
             _cacheabilityValidator = cacheabilityValidator;
-            _cacheKeyModifier = cacheKeyModifier;
+            _keyProvider = keyProvider;
         }
 
         public async Task Invoke(HttpContext context)
         {
-            var cachingContext = new ResponseCachingContext(
-                context,
-                _cache,
-                _options,
-                _builderPool,
-                _cacheabilityValidator,
-                _cacheKeyModifier);
+            context.AddResponseCachingState();
 
-            // Should we attempt any caching logic?
-            if (cachingContext.RequestIsCacheable())
+            try
             {
-                // Can this request be served from cache?
-                if (await cachingContext.TryServeFromCacheAsync())
+                var cachingContext = new ResponseCachingContext(
+                    context,
+                    _cache,
+                    _options,
+                    _cacheabilityValidator,
+                    _keyProvider);
+
+                // Should we attempt any caching logic?
+                if (_cacheabilityValidator.RequestIsCacheable(context))
                 {
-                    return;
+                    // Can this request be served from cache?
+                    if (await cachingContext.TryServeFromCacheAsync())
+                    {
+                        return;
+                    }
+
+                    // Hook up to listen to the response stream
+                    cachingContext.ShimResponseStream();
+
+                    try
+                    {
+                        // Subscribe to OnStarting event
+                        context.Response.OnStarting(OnStartingCallback, cachingContext);
+
+                        await _next(context);
+
+                        // If there was no response body, check the response headers now. We can cache things like redirects.
+                        cachingContext.OnResponseStarting();
+
+                        // Finalize the cache entry
+                        cachingContext.FinalizeCachingBody();
+                    }
+                    finally
+                    {
+                        cachingContext.UnshimResponseStream();
+                    }
                 }
-
-                // Hook up to listen to the response stream
-                cachingContext.ShimResponseStream();
-
-                try
+                else
                 {
-                    // Subscribe to OnStarting event
-                    context.Response.OnStarting(OnStartingCallback, cachingContext);
-
+                    // TODO: Invalidate resources for successful unsafe methods? Required by RFC
                     await _next(context);
-
-                    // If there was no response body, check the response headers now. We can cache things like redirects.
-                    cachingContext.OnResponseStarting();
-
-                    // Finalize the cache entry
-                    cachingContext.FinalizeCachingBody();
-                }
-                finally
-                {
-                    cachingContext.UnshimResponseStream();
                 }
             }
-            else
+            finally
             {
-                // TODO: Invalidate resources for successful unsafe methods? Required by RFC
-                await _next(context);
+                context.RemoveResponseCachingState();
             }
         }
     }

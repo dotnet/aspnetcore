@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         {
             try
             {
-                return DefaultResponseCacheSerializer.Deserialize(_cache.Get(key));
+                return CacheEntrySerializer.Deserialize(_cache.Get(key));
             }
             catch
             {
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             {
                 _cache.Set(
                     key,
-                    DefaultResponseCacheSerializer.Serialize(entry),
+                    CacheEntrySerializer.Serialize(entry),
                     new DistributedCacheEntryOptions()
                     {
                         AbsoluteExpirationRelativeToNow = validFor
