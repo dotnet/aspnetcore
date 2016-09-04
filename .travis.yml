@@ -10,6 +10,10 @@ addons:
     - libssl-dev
     - libunwind8
     - zlib1g
+env:
+  global:
+    - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+    - DOTNET_CLI_TELEMETRY_OPTOUT: 1
 mono:
   - 4.0.5
 os:
@@ -25,7 +29,7 @@ branches:
 before_install:
   - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install openssl; ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/; ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/; fi
 script:
-  - ./build.sh verify
+  - ./build.sh --quiet verify
 notifications:
   webhooks:
     secure: "QLltxzNQ+TUgMurX3FuWB37LVsRx6kZBTXk4JG/BELqO5/Xuwzf8ChElW29d4AbwOeYv5ONYyrvdnLtel8MJCMs8rCxZ2kZZtmUtGdUpPeMavmrvDYQeNqHhFYpLu+bEjxuilGoVI2qonI29S3Q9fC+grXsktGPwPmhyulHbwkk="
