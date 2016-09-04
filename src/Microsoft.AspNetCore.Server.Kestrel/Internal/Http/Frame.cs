@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         /// </summary>
         public void Abort(Exception error = null)
         {
-            if (Interlocked.CompareExchange(ref _requestAborted, 1, 0) == 0)
+            if (Interlocked.Exchange(ref _requestAborted, 1) == 0)
             {
                 _requestProcessingStopping = true;
 
