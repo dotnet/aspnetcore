@@ -27,10 +27,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 engine.Start(count: 1);
 
                 var trace = new TestKestrelTrace();
-                var context = new ListenerContext(new TestServiceContext())
+                var serviceContext = new TestServiceContext
                 {
                     FrameFactory = connectionContext => new Frame<HttpContext>(
                         new DummyApplication(httpContext => TaskCache.CompletedTask), connectionContext),
+                };
+                var context = new ListenerContext(serviceContext)
+                {
                     ServerAddress = ServerAddress.FromUrl("http://127.0.0.1:0"),
                     Thread = engine.Threads[0]
                 };

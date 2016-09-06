@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
         {
             ConnectionControl = this;
             RequestAbortedSource = new CancellationTokenSource();
-            ServerOptions = options;
+            ListenerContext = new ListenerContext(new ServiceContext { ServerOptions = options });
         }
 
         public override void Abort(Exception error = null)

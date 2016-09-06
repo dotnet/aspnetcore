@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         protected UvStreamHandle ListenSocket { get; private set; }
 
+        public IKestrelTrace Log => ServiceContext.Log;
+
         public Task StartAsync(
             ServerAddress address,
             KestrelThread thread)

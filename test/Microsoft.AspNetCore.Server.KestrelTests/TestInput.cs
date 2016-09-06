@@ -22,19 +22,22 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
-            var connectionContext = new ConnectionContext()
-            {
-                ServerAddress = new ServerAddress(),
-                ServerOptions = new KestrelServerOptions()
-            };
-            var context = new Frame<object>(null, connectionContext)
+            var serviceContext = new ServiceContext
             {
                 DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
-                ConnectionControl = this,
-                FrameControl = this
+                ServerOptions = new KestrelServerOptions()
             };
+            var listenerContext = new ListenerContext(serviceContext)
+            {
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+            };
+            var connectionContext = new ConnectionContext(listenerContext)
+            {
+                ConnectionControl = this
+            };
+            var context = new Frame<object>(null, connectionContext);
             FrameContext = context;
+            FrameContext.FrameControl = this;
 
             _memoryPool = new MemoryPool();
             FrameContext.SocketInput = new SocketInput(_memoryPool, ltp);

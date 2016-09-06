@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
     /// <summary>
-    /// A secondary listener is delegated requests from a primary listener via a named pipe or 
+    /// A secondary listener is delegated requests from a primary listener via a named pipe or
     /// UNIX domain socket.
     /// </summary>
     public abstract class ListenerSecondary : ListenerContext, IAsyncDisposable
@@ -28,6 +28,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         }
 
         UvPipeHandle DispatchPipe { get; set; }
+
+        public IKestrelTrace Log => ServiceContext.Log;
 
         public Task StartAsync(
             string pipeName,

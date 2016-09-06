@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -20,7 +21,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
-    public abstract partial class Frame : ConnectionContext, IFrameControl
+    public abstract partial class Frame : IFrameControl
     {
         private static readonly ArraySegment<byte> _endChunkedResponseBytes = CreateAsciiByteArraySegment("0\r\n\r\n");
         private static readonly ArraySegment<byte> _continueBytes = CreateAsciiByteArraySegment("HTTP/1.1 100 Continue\r\n\r\n");
@@ -72,13 +73,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         protected readonly long _keepAliveMilliseconds;
 
         public Frame(ConnectionContext context)
-            : base(context)
         {
-            _pathBase = context.ServerAddress.PathBase;
+            ConnectionContext = context;
+            SocketInput = context.SocketInput;
+            SocketOutput = context.SocketOutput;
+
+            ServerOptions = context.ListenerContext.ServiceContext.ServerOptions;
+
+            _pathBase = ServerAddress.PathBase;
 
             FrameControl = this;
             _keepAliveMilliseconds = (long)ServerOptions.Limits.KeepAliveTimeout.TotalMilliseconds;
         }
+
+        public ConnectionContext ConnectionContext { get; }
+        public SocketInput SocketInput { get; set; }
+        public ISocketOutput SocketOutput { get; set; }
+        public Action<IFeatureCollection> PrepareRequest
+        {
+            get
+            {
+                return ConnectionContext.PrepareRequest;
+            }
+            set
+            {
+                ConnectionContext.PrepareRequest = value;
+            }
+        }
+
+        protected IConnectionControl ConnectionControl => ConnectionContext.ConnectionControl;
+        protected IKestrelTrace Log => ConnectionContext.ListenerContext.ServiceContext.Log;
+
+        private DateHeaderValueManager DateHeaderValueManager => ConnectionContext.ListenerContext.ServiceContext.DateHeaderValueManager;
+        private ServerAddress ServerAddress => ConnectionContext.ListenerContext.ServerAddress;
+        // Hold direct reference to ServerOptions since this is used very often in the request processing path
+        private KestrelServerOptions ServerOptions { get; }
+        private IPEndPoint LocalEndPoint => ConnectionContext.LocalEndPoint;
+        private IPEndPoint RemoteEndPoint => ConnectionContext.RemoteEndPoint;
+        private string ConnectionId => ConnectionContext.ConnectionId;
 
         public string ConnectionIdFeature { get; set; }
         public IPAddress RemoteIpAddress { get; set; }
@@ -736,7 +768,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         responseHeaders.SetRawContentLength("0", _bytesContentLengthZero);
                     }
                 }
-                else if(_keepAlive)
+                else if (_keepAlive)
                 {
                     // Note for future reference: never change this to set _autoChunk to true on HTTP/1.0
                     // connections, even if we were to infer the client supports it because an HTTP/1.0 request

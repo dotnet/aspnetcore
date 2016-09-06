@@ -7,26 +7,18 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
-    public class ConnectionContext : ListenerContext
+    public class ConnectionContext
     {
         public ConnectionContext()
         {
         }
 
-        public ConnectionContext(ListenerContext context) : base(context)
+        public ConnectionContext(ListenerContext context)
         {
+            ListenerContext = context;
         }
 
-        public ConnectionContext(ConnectionContext context) : base(context)
-        {
-            SocketInput = context.SocketInput;
-            SocketOutput = context.SocketOutput;
-            ConnectionControl = context.ConnectionControl;
-            RemoteEndPoint = context.RemoteEndPoint;
-            LocalEndPoint = context.LocalEndPoint;
-            ConnectionId = context.ConnectionId;
-            PrepareRequest = context.PrepareRequest;
-        }
+        public ListenerContext ListenerContext { get; set; }
 
         public SocketInput SocketInput { get; set; }
 

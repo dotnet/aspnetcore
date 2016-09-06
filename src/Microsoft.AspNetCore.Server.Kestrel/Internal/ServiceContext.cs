@@ -10,20 +10,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 {
     public class ServiceContext
     {
-        public ServiceContext()
-        {
-        }
-
-        public ServiceContext(ServiceContext context)
-        {
-            AppLifetime = context.AppLifetime;
-            Log = context.Log;
-            ThreadPool = context.ThreadPool;
-            FrameFactory = context.FrameFactory;
-            DateHeaderValueManager = context.DateHeaderValueManager;
-            ServerOptions = context.ServerOptions;
-        }
-
         public IApplicationLifetime AppLifetime { get; set; }
 
         public IKestrelTrace Log { get; set; }

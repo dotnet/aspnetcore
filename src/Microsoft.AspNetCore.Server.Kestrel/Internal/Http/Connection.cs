@@ -66,7 +66,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
 
             _frame = FrameFactory(this);
-
             _lastTimestamp = Thread.Loop.Now();
         }
 
@@ -74,6 +73,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         internal Connection()
         {
         }
+
+        public KestrelServerOptions ServerOptions => ListenerContext.ServiceContext.ServerOptions;
+        private Func<ConnectionContext, Frame> FrameFactory => ListenerContext.ServiceContext.FrameFactory;
+        private IKestrelTrace Log => ListenerContext.ServiceContext.Log;
+        private IThreadPool ThreadPool => ListenerContext.ServiceContext.ThreadPool;
+        private ServerAddress ServerAddress => ListenerContext.ServerAddress;
+        private KestrelThread Thread => ListenerContext.Thread;
 
         public void Start()
         {
