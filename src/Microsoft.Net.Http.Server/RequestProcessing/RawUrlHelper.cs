@@ -93,6 +93,11 @@ namespace Microsoft.Net.Http.Server
         /// <returns>Length of the matched bytes, 0 if it is not matched.</returns>
         private static int FindHttpOrHttps(byte[] raw)
         {
+            if (raw.Length < 7)
+            {
+                return 0;
+            }
+
             if (raw[0] != 'h' && raw[0] != 'H')
             {
                 return 0;
@@ -126,6 +131,11 @@ namespace Microsoft.Net.Http.Server
             }
             else if (raw[4] == 's' || raw[4] == 'S')
             {
+                if (raw.Length < 8)
+                {
+                    return 0;
+                }
+
                 if (raw[5] != ':' || raw[6] != '/' || raw[7] != '/')
                 {
                     return 0;

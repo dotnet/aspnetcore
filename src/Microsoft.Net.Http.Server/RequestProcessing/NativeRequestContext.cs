@@ -183,7 +183,6 @@ namespace Microsoft.Net.Http.Server
 
         internal byte[] GetRawUrlInBytes()
         {
-
             if (NativeRequest->pRawUrl != null && NativeRequest->RawUrlLength > 0)
             {
                 var result = new byte[NativeRequest->RawUrlLength];
