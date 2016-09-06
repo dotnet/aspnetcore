@@ -14,10 +14,11 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.DataProtection": "1.1.0-*",
-    "StackExchange.Redis.StrongName": "1.1.603"
+    "StackExchange.Redis.StrongName": "1.1.604-alpha"
   },
   "frameworks": {
-    "net451": {}
+    "net451": {},
+    "netstandard1.5": {}
   },
   "buildOptions": {
     "allowUnsafe": true,
