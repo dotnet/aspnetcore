@@ -18,7 +18,9 @@ Add `Microsoft.DotNet.Watcher.Tools` to the `tools` section of your `project.jso
 
 ### How To Use
 
-    dotnet watch [dotnet arguments]
+    dotnet watch [-?|-h|--help]
+
+    dotnet watch [[--] <dotnet arguments>...]
 
 Add `watch` after `dotnet` in the command that you want to run:
 

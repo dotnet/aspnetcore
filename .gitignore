@@ -29,4 +29,5 @@ project.lock.json
 .build/
 /.vs/
 testWorkDir/
-
+*.nuget.props
+*.nuget.targets

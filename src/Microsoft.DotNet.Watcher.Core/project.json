@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "Microsoft.DotNet.ProjectModel": "1.0.0-*",
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
     "Microsoft.Extensions.FileProviders.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.FileProviders.Physical": "1.1.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",

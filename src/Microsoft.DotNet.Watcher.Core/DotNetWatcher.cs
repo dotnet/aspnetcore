@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Watcher.Core.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -33,7 +35,7 @@ namespace Microsoft.DotNet.Watcher.Core
             _logger = _loggerFactory.CreateLogger(nameof(DotNetWatcher));
         }
 
-        public async Task WatchAsync(string projectFile, string[] dotnetArguments, CancellationToken cancellationToken)
+        public async Task WatchAsync(string projectFile, IEnumerable<string> dotnetArguments, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(projectFile))
             {
@@ -48,24 +50,7 @@ namespace Microsoft.DotNet.Watcher.Core
                 throw new ArgumentNullException(nameof(cancellationToken));
             }
 
-            // If any argument has spaces then quote it because we're going to convert everything
-            // to string
-            for (var i = 0; i < dotnetArguments.Length; i++)
-            {
-                var arg = dotnetArguments[i];
-                foreach (char c in arg)
-                {
-                    if (c == ' ' ||
-                        c == '\t')
-                    {
-                        arg = $"\"{arg}\"";
-                        break;
-                    }
-                }
-                dotnetArguments[i] = arg;
-            }
-
-            var dotnetArgumentsAsString = string.Join(" ", dotnetArguments);
+            var dotnetArgumentsAsString = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(dotnetArguments);
 
             var workingDir = Path.GetDirectoryName(projectFile);
 

@@ -6,7 +6,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Watcher.Core;
-using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -14,9 +13,24 @@ namespace Microsoft.DotNet.Watcher.Tools
     public class Program
     {
         private readonly ILoggerFactory _loggerFactory;
+        private readonly CancellationToken _cancellationToken;
+        private readonly TextWriter _out;
 
-        public Program()
+        public Program(TextWriter consoleOutput, CancellationToken cancellationToken)
         {
+            if (consoleOutput == null)
+            {
+                throw new ArgumentNullException(nameof(consoleOutput));
+            }
+
+            if (cancellationToken == null)
+            {
+                throw new ArgumentNullException(nameof(cancellationToken));
+            }
+
+            _cancellationToken = cancellationToken;
+            _out = consoleOutput;
+
             _loggerFactory = new LoggerFactory();
 
             var logVar = Environment.GetEnvironmentVariable("DOTNET_WATCH_LOG_LEVEL");
@@ -44,49 +58,44 @@ namespace Microsoft.DotNet.Watcher.Tools
                     ev.Cancel = false;
                 };
 
-                return new Program().MainInternal(args, ctrlCTokenSource.Token);
+                int exitCode;
+                try
+                {
+                    exitCode = new Program(Console.Out, ctrlCTokenSource.Token)
+                        .MainInternalAsync(args)
+                        .GetAwaiter()
+                        .GetResult();
+                }
+                catch (TaskCanceledException)
+                {
+                    // swallow when only exception is the CTRL+C exit cancellation task
+                    exitCode = 0;
+                }
+                return exitCode;
             }
         }
 
-        private int MainInternal(string[] args, CancellationToken cancellationToken)
+        private async Task<int> MainInternalAsync(string[] args)
         {
-            var app = new CommandLineApplication();
-            app.Name = "dotnet-watch";
-            app.FullName = "Microsoft dotnet File Watcher";
-
-            app.HelpOption("-?|-h|--help");
-
-            app.OnExecute(() =>
+            var options = CommandLineOptions.Parse(args, _out);
+            if (options == null)
             {
-                var projectToWatch = Path.Combine(Directory.GetCurrentDirectory(), ProjectModel.Project.FileName);
-                var watcher = DotNetWatcher.CreateDefault(_loggerFactory);
-
-                try
-                {
-                    watcher.WatchAsync(projectToWatch, args, cancellationToken).Wait();
-                }
-                catch (AggregateException ex)
-                {
-                    if (ex.InnerExceptions.Count != 1 || !(ex.InnerException is TaskCanceledException))
-                    {
-                        throw;
-                    }
-                }
-
-                return 0;
-            });
-
-            if (args == null ||
-                args.Length == 0 ||
-                args[0].Equals("--help", StringComparison.OrdinalIgnoreCase) ||
-                args[0].Equals("-h", StringComparison.OrdinalIgnoreCase) ||
-                args[0].Equals("-?", StringComparison.OrdinalIgnoreCase))
-            {
-                app.ShowHelp();
+                // invalid args syntax
                 return 1;
             }
 
-            return app.Execute();
+            if (options.IsHelp)
+            {
+                return 2;
+            }
+
+            var projectToWatch = Path.Combine(Directory.GetCurrentDirectory(), ProjectModel.Project.FileName);
+
+            await DotNetWatcher
+                    .CreateDefault(_loggerFactory)
+                    .WatchAsync(projectToWatch, options.RemainingArguments, _cancellationToken);
+
+            return 0;
         }
     }
 }
