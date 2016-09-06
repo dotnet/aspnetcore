@@ -33,14 +33,14 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
         public RewriteAction(
             RuleTermination result,
             Pattern pattern,
-            bool queryStringAppend):
-            this (result, 
+            bool queryStringAppend) :
+            this(result,
                 pattern,
                 queryStringAppend,
                 queryStringDelete: false,
                 escapeBackReferences: false)
         {
-            
+
         }
 
         public override void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)

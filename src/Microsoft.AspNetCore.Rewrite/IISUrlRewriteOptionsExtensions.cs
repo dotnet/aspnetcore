@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite;
+using Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite;
 
 namespace Microsoft.AspNetCore.Rewrite
 {

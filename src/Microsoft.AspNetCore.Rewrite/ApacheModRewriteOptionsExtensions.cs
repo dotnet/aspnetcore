@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Rewrite.Internal.ModRewrite;
+using Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite;
 
 namespace Microsoft.AspNetCore.Rewrite
 {

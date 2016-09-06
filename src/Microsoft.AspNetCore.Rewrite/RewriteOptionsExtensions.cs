@@ -3,13 +3,11 @@
 
 using System;
 using Microsoft.AspNetCore.Rewrite.Internal;
-using Microsoft.AspNetCore.Rewrite.Internal.CodeRules;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlRewrite;
 
 namespace Microsoft.AspNetCore.Rewrite
 {
     /// <summary>
-    /// The builder to a list of rules for <see cref="RewriteOptions"/> and <see cref="RewriteMiddleware"/> 
+    /// The builder to a list of rules for <see cref="RewriteOptions"/> and <see cref="RewriteMiddleware"/>
     /// </summary>
     public static class RewriteOptionsExtensions
     {
@@ -90,7 +88,7 @@ namespace Microsoft.AspNetCore.Rewrite
         }
 
         /// <summary>
-        /// Redirect a request to https if the incoming request is http, with returning a 301 
+        /// Redirect a request to https if the incoming request is http, with returning a 301
         /// status code for permanently redirected.
         /// </summary>
         /// <param name="options"></param>

@@ -32,9 +32,9 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <param name="loggerFactory">The Logger Factory.</param>
         /// <param name="options">The middleware options, containing the rules to apply.</param>
         public RewriteMiddleware(
-            RequestDelegate next, 
-            IHostingEnvironment hostingEnvironment, 
-            ILoggerFactory loggerFactory, 
+            RequestDelegate next,
+            IHostingEnvironment hostingEnvironment,
+            ILoggerFactory loggerFactory,
             RewriteOptions options)
         {
             if (next == null)
@@ -64,7 +64,9 @@ namespace Microsoft.AspNetCore.Rewrite
             {
                 throw new ArgumentNullException(nameof(context));
             }
-            var rewriteContext = new RewriteContext {
+
+            var rewriteContext = new RewriteContext
+            {
                 HttpContext = context,
                 StaticFileProvider = _fileProvider,
                 Logger = _logger,
