@@ -37,19 +37,19 @@ namespace Microsoft.Net.Http.Server
             encoderShouldEmitUTF8Identifier: false,
             throwOnInvalidBytes: true);
 
-        public static string DecodeAndUnescapePath(byte[] urlInBytes)
+        public static string DecodeAndUnescapePath(byte[] rawUrlBytes)
         {
-            if (urlInBytes == null)
+            if (rawUrlBytes == null)
             {
-                throw new ArgumentNullException(nameof(urlInBytes));
+                throw new ArgumentNullException(nameof(rawUrlBytes));
             }
 
-            if (urlInBytes.Length == 0)
+            if (rawUrlBytes.Length == 0)
             {
-                throw new ArgumentException("Length of the URL cannot be zero.", nameof(urlInBytes));
+                throw new ArgumentException("Length of the URL cannot be zero.", nameof(rawUrlBytes));
             }
 
-            var rawPath = RawUrlHelper.GetPath(urlInBytes);
+            var rawPath = RawUrlHelper.GetPath(rawUrlBytes);
 
             var unescapedPath = Unescape(rawPath);
 
