@@ -2,8 +2,8 @@
   "version": "0.2.0-*",
   "description": "ASP.NET 5 self-host web server.",
   "dependencies": {
-    "Microsoft.AspNetCore.Hosting": "1.1.0-*",
-    "Microsoft.Net.Http.Headers": "1.1.0-*",
+    "Microsoft.AspNetCore.Hosting": "1.0.0",
+    "Microsoft.Net.Http.Headers": "1.0.0",
     "Microsoft.Net.Http.Server": "0.2.0-*"
   },
   "buildOptions": {
