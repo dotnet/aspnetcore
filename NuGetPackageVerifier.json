@@ -8,6 +8,7 @@
             "Microsoft.AspNetCore.Cryptography.KeyDerivation": { },
             "Microsoft.AspNetCore.DataProtection": { },
             "Microsoft.AspNetCore.DataProtection.Abstractions": { },
+            "Microsoft.AspNetCore.DataProtection.Azure.Blob": { },
             "Microsoft.AspNetCore.DataProtection.Extensions": { },
             "Microsoft.AspNetCore.DataProtection.Redis": { },
             "Microsoft.AspNetCore.DataProtection.SystemWeb": { }

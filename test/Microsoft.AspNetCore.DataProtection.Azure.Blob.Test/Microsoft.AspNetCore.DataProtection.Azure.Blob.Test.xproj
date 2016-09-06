@@ -6,8 +6,8 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>abcf00e5-5b2f-469c-90dc-908c5a04c08d</ProjectGuid>
-    <RootNamespace>Microsoft.AspNetCore.DataProtection.Redis.Test</RootNamespace>
+    <ProjectGuid>8c41240e-48f8-402f-9388-74cfe27f4d76</ProjectGuid>
+    <RootNamespace>Microsoft.AspNetCore.DataProtection.Azure.Test</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
   </PropertyGroup>

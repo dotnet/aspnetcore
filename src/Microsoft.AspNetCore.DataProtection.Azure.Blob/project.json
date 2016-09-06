@@ -1,0 +1,35 @@
+{
+  "version": "0.1.0-*",
+  "description": "Microsoft Azure Blob storrage support as key store.",
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/dataprotection"
+    },
+    "tags": [
+      "aspnetcore",
+      "dataprotection",
+      "azure",
+      "blob"
+    ]
+  },
+  "dependencies": {
+    "Microsoft.AspNetCore.DataProtection": "1.1.0-*",
+    "WindowsAzure.Storage": "7.0.2-preview"
+  },
+  "frameworks": {
+    "net451": {},
+    "netstandard1.5": {
+      "imports": "portable-net45+win8+wp8+wpa81"
+    }
+  },
+  "buildOptions": {
+    "allowUnsafe": true,
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk",
+    "nowarn": [
+      "CS1591"
+    ],
+    "xmlDoc": true
+  }
+}

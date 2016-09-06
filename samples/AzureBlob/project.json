@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0-*",
+  "buildOptions": {
+    "emitEntryPoint": true
+  },
+
+  "dependencies": {
+    "Microsoft.AspNetCore.DataProtection": "1.1.0-*",
+    "Microsoft.AspNetCore.DataProtection.Azure.Blob": "1.1.0-*",
+    "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
+    "Microsoft.Extensions.Logging": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.1.0-*",
+    "Microsoft.NETCore.App": {
+      "type": "platform",
+      "version": "1.0.0"
+    }
+  },
+
+  "frameworks": {
+    "netcoreapp1.0": {
+      "imports": [
+        "portable-net45+win8+wp8+wpa81"
+      ]
+    }
+  }
+}
