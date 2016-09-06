@@ -114,6 +114,7 @@ namespace Microsoft.Net.Http.Server
         /// </summary>
         /// <param name="reader">The iterator point to the first % char</param>
         /// <param name="writer">The place to write to</param>
+        /// <param name="end">The end of the buffer</param>
         /// <param name="buffer">The byte array</param>
         private static bool DecodeCore(ref int reader, ref int writer, int end, byte[] buffer)
         {
@@ -276,6 +277,7 @@ namespace Microsoft.Net.Http.Server
         /// will be returned.
         /// </summary>
         /// <param name="scan">The value to read</param>
+        /// <param name="end">The end of the buffer</param>
         /// <param name="buffer">The byte array</param>
         /// <returns>The unescaped byte if success. Otherwise return -1.</returns>
         private static int? UnescapePercentEncoding(ref int scan, int end, byte[] buffer)
@@ -315,6 +317,7 @@ namespace Microsoft.Net.Http.Server
         /// byte no matter no matter whether the operation successes.
         /// </summary>
         /// <param name="scan">The value to read</param>
+        /// <param name="end">The end of the buffer</param>
         /// <param name="buffer">The byte array</param>
         /// <returns>The hexadecimal value if successes, otherwise -1.</returns>
         private static int? ReadHex(ref int scan, int end, byte[] buffer)
