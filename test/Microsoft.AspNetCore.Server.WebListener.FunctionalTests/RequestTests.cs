@@ -331,7 +331,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         [InlineData("%E0%80%AF", "%E0%80%AF")]
         [InlineData("%E0%9F%BF", "%E0%9F%BF")]
         [InlineData("%F0%80%80%AF", "%F0%80%80%AF")]
-        //[InlineData("%F0%8F%8F%BF", "%F0%8F%8F%BF")]
+        [InlineData("%F0%80%BF%BF", "%F0%80%BF%BF")]
         // Mixed
         [InlineData("%C0%A4%32", "%C0%A42")]
         [InlineData("%32%C0%A4%32", "2%C0%A42")]
@@ -351,6 +351,20 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 {
                     var response = await client.GetAsync(root + "/" + requestPath);
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                }
+            }
+        }
+
+        [InlineData("%F0%8F%8F%BF")]
+        public async Task Request_InvalidCodePointCausesBadRequest(string requestPath)
+        {
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext => Task.FromResult(0)))
+            {
+                using (var client = new HttpClient())
+                {
+                    var response = await client.GetAsync(root + "/" + requestPath);
+                    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
                 }
             }
         }
