@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.Rewrite
 {
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Rewrite
         public IList<Rule> Rules { get; } = new List<Rule>();
 
         /// <summary>
-        /// Gets and sets the File Provider for file and directory checks.
+        /// Gets and sets the File Provider for file and directory checks. Defaults to <see cref="IHostingEnvironment.WebRootFileProvider"/>
         /// </summary>
         public IFileProvider StaticFileProvider { get; set; }
     }

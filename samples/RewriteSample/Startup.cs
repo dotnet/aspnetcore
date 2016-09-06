@@ -11,14 +11,14 @@ namespace RewriteSample
 {
     public class Startup
     {
-        public void Configure(IApplicationBuilder app, IHostingEnvironment hostingEnvironment)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             var options = new RewriteOptions()
                 .AddRedirect("(.*)/$", "$1")
                 .AddRewrite(@"app/(\d+)", "app?id=$1")
                 .AddRedirectToHttps(302)
-                .AddIISUrlRewrite(hostingEnvironment, "UrlRewrite.xml")
-                .AddApacheModRewrite(hostingEnvironment, "Rewrite.txt");
+                .AddIISUrlRewrite(env.ContentRootFileProvider, "UrlRewrite.xml")
+                .AddApacheModRewrite(env.ContentRootFileProvider, "Rewrite.txt");
 
             app.UseRewriter(options);
 

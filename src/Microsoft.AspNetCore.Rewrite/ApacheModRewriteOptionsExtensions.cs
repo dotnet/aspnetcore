@@ -3,50 +3,45 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite;
+using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Rewrite
 {
     /// <summary>
-    /// Apache mod_rewrite extensions on top of the <see cref="RewriteOptions"/>
+    /// Extensions for adding Apache mod_rewrite rules to <see cref="RewriteOptions"/>
     /// </summary>
     public static class ApacheModRewriteOptionsExtensions
     {
         /// <summary>
-        /// Imports rules from a mod_rewrite file and adds the rules to current rules. 
+        /// Add rules from an Apache mod_rewrite file
         /// </summary>
-        /// <param name="options">The Rewrite options.</param>
-        /// <param name="hostingEnvironment">The Hosting Environment</param>
+        /// <param name="options">The <see cref="RewriteOptions"/></param>
+        /// <param name="fileProvider">The <see cref="IFileProvider"/> </param>
         /// <param name="filePath">The path to the file containing mod_rewrite rules.</param>
-        public static RewriteOptions AddApacheModRewrite(this RewriteOptions options, IHostingEnvironment hostingEnvironment, string filePath)
+        public static RewriteOptions AddApacheModRewrite(this RewriteOptions options, IFileProvider fileProvider, string filePath)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (hostingEnvironment == null)
+            if (fileProvider == null)
             {
-                throw new ArgumentNullException(nameof(hostingEnvironment));
+                throw new ArgumentNullException(nameof(fileProvider));
             }
 
-            if (string.IsNullOrEmpty(filePath))
-            {
-                throw new ArgumentException(nameof(filePath));
-            }
-
-            var path = Path.Combine(hostingEnvironment.ContentRootPath, filePath);
-            using (var stream = File.OpenRead(path))
+            var fileInfo = fileProvider.GetFileInfo(filePath);
+            using (var stream = fileInfo.CreateReadStream())
             {
                 return options.AddApacheModRewrite(new StreamReader(stream));
             }
         }
 
         /// <summary>
-        /// Imports rules from a mod_rewrite file and adds the rules to current rules. 
+        /// Add rules from an Apache mod_rewrite file
         /// </summary>
-        /// <param name="options">The Rewrite options.</param>
+        /// <param name="options">The <see cref="RewriteOptions"/></param>
         /// <param name="reader">A stream of mod_rewrite rules.</param>
         public static RewriteOptions AddApacheModRewrite(this RewriteOptions options, TextReader reader)
         {

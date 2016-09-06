@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <summary>
         /// Adds a rule to the current rules.
         /// </summary>
-        /// <param name="options">The UrlRewrite options.</param>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
         /// <param name="rule">A rule to be added to the current rules.</param>
         /// <returns>The Rewrite options.</returns>
         public static RewriteOptions Add(this RewriteOptions options, Rule rule)
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <summary>
         /// Adds a rule to the current rules.
         /// </summary>
-        /// <param name="options">The Rewrite options.</param>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
         /// <param name="applyRule">A Func that checks and applies the rule.</param>
         /// <returns></returns>
         public static RewriteOptions Add(this RewriteOptions options, Action<RewriteContext> applyRule)
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <summary>
         /// Rewrites the path if the regex matches the HttpContext's PathString
         /// </summary>
-        /// <param name="options">The Rewrite options.</param>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
         /// <param name="regex">The regex string to compare with.</param>
         /// <param name="replacement">If the regex matches, what to replace HttpContext with.</param>
         /// <returns>The Rewrite options.</returns>
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <summary>
         /// Rewrites the path if the regex matches the HttpContext's PathString
         /// </summary>
-        /// <param name="options">The Rewrite options.</param>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
         /// <param name="regex">The regex string to compare with.</param>
         /// <param name="replacement">If the regex matches, what to replace the uri with.</param>
         /// <param name="stopProcessing">If the regex matches, conditionally stop processing other rules.</param>
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <summary>
         /// Redirect the request if the regex matches the HttpContext's PathString
         /// </summary>
-        /// <param name="options">The Rewrite options.</param>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
         /// <param name="regex">The regex string to compare with.</param>
         /// <param name="replacement">If the regex matches, what to replace the uri with.</param>
         /// <returns>The Rewrite options.</returns>
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <summary>
         /// Redirect the request if the regex matches the HttpContext's PathString
         /// </summary>
-        /// <param name="options">The Rewrite options.</param>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
         /// <param name="regex">The regex string to compare with.</param>
         /// <param name="replacement">If the regex matches, what to replace the uri with.</param>
         /// <param name="statusCode">The status code to add to the response.</param>
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Rewrite
         /// Redirect a request to https if the incoming request is http, with returning a 301
         /// status code for permanently redirected.
         /// </summary>
-        /// <param name="options"></param>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
         /// <returns></returns>
         public static RewriteOptions AddRedirectToHttpsPermanent(this RewriteOptions options)
         {
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <summary>
         /// Redirect a request to https if the incoming request is http
         /// </summary>
-        /// <param name="options">The Rewrite options.</param>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
         public static RewriteOptions AddRedirectToHttps(this RewriteOptions options)
         {
             return AddRedirectToHttps(options, statusCode: 302, sslPort: null);
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <summary>
         /// Redirect a request to https if the incoming request is http
         /// </summary>
-        /// <param name="options">The Rewrite options.</param>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
         /// <param name="statusCode">The status code to add to the response.</param>
         public static RewriteOptions AddRedirectToHttps(this RewriteOptions options, int statusCode)
         {
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <summary>
         /// Redirect a request to https if the incoming request is http
         /// </summary>
-        /// <param name="options">The Rewrite options.</param>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
         /// <param name="statusCode">The status code to add to the response.</param>
         /// <param name="sslPort">The SSL port to add to the response.</param>
         public static RewriteOptions AddRedirectToHttps(this RewriteOptions options, int statusCode, int? sslPort)

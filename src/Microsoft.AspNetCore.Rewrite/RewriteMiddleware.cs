@@ -14,7 +14,7 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Rewrite
 {
     /// <summary>
-    /// Represents a middleware that rewrites urls imported from mod_rewrite, UrlRewrite, and code.
+    /// Represents a middleware that rewrites urls
     /// </summary>
     public class RewriteMiddleware
     {
