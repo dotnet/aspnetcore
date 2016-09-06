@@ -57,7 +57,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         /// <summary>
-        /// Unescape a given path string which may contain escaped char.
+        /// Unescape a given path string in place. The given path string  may contain escaped char.
         /// </summary>
         /// <param name="rawPath">The raw path string to be unescaped</param>
         /// <returns>The unescaped path string</returns>
@@ -121,14 +121,14 @@ namespace Microsoft.Net.Http.Server
             // bytes from this till the last scanned one will be copied to the memory pointed by writer.
             var byte1 = UnescapePercentEncoding(ref reader, end, buffer);
 
+            if (!byte1.HasValue)
+            {
+                return false;
+            }
+
             if (byte1 == 0)
             {
                 throw new InvalidOperationException("The path contains null characters.");
-            }
-
-            if (byte1 == -1)
-            {
-                return false;
             }
 
             if (byte1 <= 0x7F)
@@ -147,21 +147,21 @@ namespace Microsoft.Net.Http.Server
             if ((byte1 & 0xE0) == 0xC0)
             {
                 // 110x xxxx, expect one more byte
-                currentDecodeBits = byte1 & 0x1F;
+                currentDecodeBits = byte1.Value & 0x1F;
                 byteCount = 2;
                 expectValueMin = 0x80;
             }
             else if ((byte1 & 0xF0) == 0xE0)
             {
                 // 1110 xxxx, expect two more bytes
-                currentDecodeBits = byte1 & 0x0F;
+                currentDecodeBits = byte1.Value & 0x0F;
                 byteCount = 3;
                 expectValueMin = 0x800;
             }
             else if ((byte1 & 0xF8) == 0xF0)
             {
                 // 1111 0xxx, expect three more bytes
-                currentDecodeBits = byte1 & 0x07;
+                currentDecodeBits = byte1.Value & 0x07;
                 byteCount = 4;
                 expectValueMin = 0x10000;
             }
@@ -182,7 +182,7 @@ namespace Microsoft.Net.Http.Server
 
                 var nextItr = reader;
                 var nextByte = UnescapePercentEncoding(ref nextItr, end, buffer);
-                if (nextByte == -1)
+                if (!nextByte.HasValue)
                 {
                     return false;
                 }
@@ -193,7 +193,7 @@ namespace Microsoft.Net.Http.Server
                     return false;
                 }
 
-                currentDecodeBits = (currentDecodeBits << 6) | (nextByte & 0x3F);
+                currentDecodeBits = (currentDecodeBits << 6) | (nextByte.Value & 0x3F);
                 remainingBytes--;
 
                 if (remainingBytes == 1 && currentDecodeBits >= 0x360 && currentDecodeBits <= 0x37F)
@@ -212,15 +212,15 @@ namespace Microsoft.Net.Http.Server
                 reader = nextItr;
                 if (byteCount - remainingBytes == 2)
                 {
-                    byte2 = nextByte;
+                    byte2 = nextByte.Value;
                 }
                 else if (byteCount - remainingBytes == 3)
                 {
-                    byte3 = nextByte;
+                    byte3 = nextByte.Value;
                 }
                 else if (byteCount - remainingBytes == 4)
                 {
-                    byte4 = nextByte;
+                    byte4 = nextByte.Value;
                 }
             }
 
@@ -278,7 +278,7 @@ namespace Microsoft.Net.Http.Server
         /// <param name="scan">The value to read</param>
         /// <param name="buffer">The byte array</param>
         /// <returns>The unescaped byte if success. Otherwise return -1.</returns>
-        private static int UnescapePercentEncoding(ref int scan, int end, byte[] buffer)
+        private static int? UnescapePercentEncoding(ref int scan, int end, byte[] buffer)
         {
             if (buffer[scan++] != '%')
             {
@@ -287,25 +287,25 @@ namespace Microsoft.Net.Http.Server
 
             var probe = scan;
 
-            int value1 = ReadHex(ref probe, end, buffer);
-            if (value1 == -1)
+            var value1 = ReadHex(ref probe, end, buffer);
+            if (!value1.HasValue)
             {
-                return -1;
+                return null;
             }
 
-            int value2 = ReadHex(ref probe, end, buffer);
-            if (value2 == -1)
+            var value2 = ReadHex(ref probe, end, buffer);
+            if (!value2.HasValue)
             {
-                return -1;
+                return null;
             }
 
-            if (SkipUnescape(value1, value2))
+            if (SkipUnescape(value1.Value, value2.Value))
             {
-                return -1;
+                return null;
             }
 
             scan = probe;
-            return (value1 << 4) + value2;
+            return (value1.Value << 4) + value2.Value;
         }
 
         /// <summary>
@@ -317,11 +317,11 @@ namespace Microsoft.Net.Http.Server
         /// <param name="scan">The value to read</param>
         /// <param name="buffer">The byte array</param>
         /// <returns>The hexadecimal value if successes, otherwise -1.</returns>
-        private static int ReadHex(ref int scan, int end, byte[] buffer)
+        private static int? ReadHex(ref int scan, int end, byte[] buffer)
         {
             if (scan == end)
             {
-                return -1;
+                return null;
             }
 
             var value = buffer[scan++];
@@ -331,7 +331,7 @@ namespace Microsoft.Net.Http.Server
 
             if (!isHead)
             {
-                return -1;
+                return null;
             }
 
             if (value <= '9')
@@ -350,7 +350,7 @@ namespace Microsoft.Net.Http.Server
 
         private static bool SkipUnescape(int value1, int value2)
         {
-            // skip %2F
+            // skip %2F - '/'
             if (value1 == 2 && value2 == 15)
             {
                 return true;
