@@ -17,17 +17,19 @@ const server = http.createServer((req, res) => {
             if (!hasSentResult) {
                 hasSentResult = true;
                 if (errorValue) {
-                    res.statusCode = 500;
-
-                    if (errorValue.stack) {
-                        res.end(errorValue.stack);
-                    } else {
-                        res.end(errorValue.toString());
-                    }
+                    respondWithError(res, errorValue);
                 } else if (typeof successValue !== 'string') {
                     // Arbitrary object/number/etc - JSON-serialize it
+                    let successValueJson: string;
+                    try {
+                        successValueJson = JSON.stringify(successValue);
+                    } catch (ex) {
+                        // JSON serialization error - pass it back to .NET
+                        respondWithError(res, ex);
+                        return;
+                    }
                     res.setHeader('Content-Type', 'application/json');
-                    res.end(JSON.stringify(successValue));
+                    res.end(JSON.stringify(successValueJson));
                 } else {
                     // String - can bypass JSON-serialization altogether
                     res.setHeader('Content-Type', 'text/plain');
@@ -81,4 +83,9 @@ function readRequestBodyAsJson(request, callback) {
     request
         .on('data', chunk => { requestBodyAsString += chunk; })
         .on('end', () => { callback(JSON.parse(requestBodyAsString)); });
+}
+
+function respondWithError(res: http.ServerResponse, errorValue: any) {
+    res.statusCode = 500;
+    res.end(errorValue.stack || errorValue.toString());
 }

@@ -69,18 +69,21 @@
 	            if (!hasSentResult) {
 	                hasSentResult = true;
 	                if (errorValue) {
-	                    res.statusCode = 500;
-	                    if (errorValue.stack) {
-	                        res.end(errorValue.stack);
-	                    }
-	                    else {
-	                        res.end(errorValue.toString());
-	                    }
+	                    respondWithError(res, errorValue);
 	                }
 	                else if (typeof successValue !== 'string') {
 	                    // Arbitrary object/number/etc - JSON-serialize it
+	                    var successValueJson = void 0;
+	                    try {
+	                        successValueJson = JSON.stringify(successValue);
+	                    }
+	                    catch (ex) {
+	                        // JSON serialization error - pass it back to .NET
+	                        respondWithError(res, ex);
+	                        return;
+	                    }
 	                    res.setHeader('Content-Type', 'application/json');
-	                    res.end(JSON.stringify(successValue));
+	                    res.end(JSON.stringify(successValueJson));
 	                }
 	                else {
 	                    // String - can bypass JSON-serialization altogether
@@ -128,6 +131,10 @@
 	    request
 	        .on('data', function (chunk) { requestBodyAsString += chunk; })
 	        .on('end', function () { callback(JSON.parse(requestBodyAsString)); });
+	}
+	function respondWithError(res, errorValue) {
+	    res.statusCode = 500;
+	    res.end(errorValue.stack || errorValue.toString());
 	}
 
 
