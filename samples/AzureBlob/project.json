@@ -6,7 +6,7 @@
 
   "dependencies": {
     "Microsoft.AspNetCore.DataProtection": "1.1.0-*",
-    "Microsoft.AspNetCore.DataProtection.Azure.Blob": "1.1.0-*",
+    "Microsoft.AspNetCore.DataProtection.Azure.Blob": "0.1.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
     "Microsoft.Extensions.Logging": "1.1.0-*",
     "Microsoft.Extensions.Logging.Console": "1.1.0-*",
