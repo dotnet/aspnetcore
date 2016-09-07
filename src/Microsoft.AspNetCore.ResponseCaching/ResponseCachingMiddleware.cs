@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         private static readonly Func<object, Task> OnStartingCallback = state =>
         {
             ((ResponseCachingContext)state).OnResponseStarting();
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         };
 
         private readonly RequestDelegate _next;
