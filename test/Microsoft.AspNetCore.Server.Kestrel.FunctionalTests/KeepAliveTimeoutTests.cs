@@ -97,8 +97,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "GET / HTTP/1.1",
                         "",
                         "");
-                    await ReceiveResponse(connection, server.Context);
                     await Task.Delay(ShortDelay);
+                }
+
+                for (var i = 0; i < 10; i++)
+                {
+                    await ReceiveResponse(connection, server.Context);
                 }
             }
         }
@@ -107,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             using (var connection = new TestConnection(server.Port))
             {
-                for (var i = 0; i < 5; i++)
+                for (var i = 0; i < 10; i++)
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",
@@ -118,8 +122,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "0",
                          "",
                          "");
-                    await ReceiveResponse(connection, server.Context);
                     await Task.Delay(ShortDelay);
+                }
+
+                for (var i = 0; i < 10; i++)
+                {
+                    await ReceiveResponse(connection, server.Context);
                 }
             }
         }
