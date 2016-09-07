@@ -24,6 +24,10 @@
     "Microsoft.AspNetCore.WebUtilities": "1.1.0-*",
     "Microsoft.Extensions.ObjectPool": "1.1.0-*",
     "Microsoft.Extensions.Options": "1.1.0-*",
+    "Microsoft.Extensions.TaskCache.Sources": {
+      "version": "1.1.0-*",
+      "type": "build"
+    },
     "Microsoft.Net.Http.Headers": "1.1.0-*",
     "System.Buffers": "4.0.0-*"
   },

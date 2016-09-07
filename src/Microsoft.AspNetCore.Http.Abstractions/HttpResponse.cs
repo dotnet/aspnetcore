@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly Func<object, Task> _disposeDelegate = disposable =>
         {
             ((IDisposable)disposable).Dispose();
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         };
 
         /// <summary>

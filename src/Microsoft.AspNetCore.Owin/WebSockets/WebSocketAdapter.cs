@@ -7,6 +7,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Owin
 {
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.Owin
             else if (messageType == 0x9 || messageType == 0xA)
             {
                 // Ping & Pong, not allowed by the underlying APIs, silently discard.
-                return Task.FromResult(0);
+                return TaskCache.CompletedTask;
             }
 
             return _webSocket.SendAsync(buffer, OpCodeToEnum(messageType), endOfMessage, cancel);

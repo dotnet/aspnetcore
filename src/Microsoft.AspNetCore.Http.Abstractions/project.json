@@ -24,6 +24,10 @@
       "type": "build",
       "version": "1.1.0-*"
     },
+    "Microsoft.Extensions.TaskCache.Sources": {
+      "version": "1.1.0-*",
+      "type": "build"
+    },
     "System.Text.Encodings.Web": "4.0.0-*"
   },
   "frameworks": {
