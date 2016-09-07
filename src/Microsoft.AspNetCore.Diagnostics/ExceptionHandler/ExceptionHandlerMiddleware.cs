@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -99,7 +100,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             response.Headers[HeaderNames.Pragma] = "no-cache";
             response.Headers[HeaderNames.Expires] = "-1";
             response.Headers.Remove(HeaderNames.ETag);
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
     }
 }
