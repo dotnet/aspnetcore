@@ -26,7 +26,11 @@
     "Microsoft.Extensions.Configuration.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.FileProviders.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
-    "Microsoft.Extensions.Options": "1.1.0-*"
+    "Microsoft.Extensions.Options": "1.1.0-*",
+    "Microsoft.Extensions.TaskCache.Sources": {
+      "version": "1.1.0-*",
+      "type": "build"
+    }
   },
   "frameworks": {
     "net451": {

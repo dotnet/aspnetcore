@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Buffering
 {
@@ -133,7 +134,7 @@ namespace Microsoft.AspNetCore.Buffering
             {
                 return FlushAsync(cancellationToken);
             }
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         public override void Write(byte[] buffer, int offset, int count)

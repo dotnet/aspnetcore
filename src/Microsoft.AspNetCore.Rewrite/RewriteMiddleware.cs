@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Rewrite.Logging;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -17,8 +18,6 @@ namespace Microsoft.AspNetCore.Rewrite
     /// </summary>
     public class RewriteMiddleware
     {
-        private static readonly Task CompletedTask = Task.FromResult(0);
-
         private readonly RequestDelegate _next;
         private readonly RewriteOptions _options;
         private readonly IFileProvider _fileProvider;
@@ -85,7 +84,7 @@ namespace Microsoft.AspNetCore.Rewrite
                         _logger.RewriteMiddlewareRequestResponseComplete(
                             context.Response.Headers[HeaderNames.Location],
                             context.Response.StatusCode);
-                        return CompletedTask;
+                        return TaskCache.CompletedTask;
                     case RuleTermination.StopRules:
                         _logger.RewriteMiddlewareRequestStopRules();
                         return _next(context);
