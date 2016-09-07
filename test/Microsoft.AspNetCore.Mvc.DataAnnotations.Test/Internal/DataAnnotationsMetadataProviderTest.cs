@@ -2,12 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.Localization;
 using Moq;
 using Xunit;
@@ -353,13 +358,13 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var stringLocalizer = new Mock<IStringLocalizer>(MockBehavior.Strict);
             stringLocalizer
                 .Setup(s => s["Model_Name"])
-                .Returns(new LocalizedString("Model_Name", "name from localizer"));
+                .Returns(() => new LocalizedString("Model_Name", "name from localizer " + CultureInfo.CurrentCulture));
             stringLocalizer
                 .Setup(s => s["Model_Description"])
-                .Returns(new LocalizedString("Model_Description", "description from localizer"));
+                .Returns(() => new LocalizedString("Model_Description", "description from localizer " + CultureInfo.CurrentCulture));
             stringLocalizer
                 .Setup(s => s["Model_Prompt"])
-                .Returns(new LocalizedString("Model_Prompt", "prompt from localizer"));
+                .Returns(() => new LocalizedString("Model_Prompt", "prompt from localizer " + CultureInfo.CurrentCulture));
 
             var stringLocalizerFactory = new Mock<IStringLocalizerFactory>(MockBehavior.Strict);
             stringLocalizerFactory
@@ -383,9 +388,18 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             provider.CreateDisplayMetadata(context);
 
             // Assert
-            Assert.Equal("name from localizer", context.DisplayMetadata.DisplayName());
-            Assert.Equal("description from localizer", context.DisplayMetadata.Description());
-            Assert.Equal("prompt from localizer", context.DisplayMetadata.Placeholder());
+            using (new CultureReplacer("en-US", "en-US"))
+            {
+                Assert.Equal("name from localizer en-US", context.DisplayMetadata.DisplayName());
+                Assert.Equal("description from localizer en-US", context.DisplayMetadata.Description());
+                Assert.Equal("prompt from localizer en-US", context.DisplayMetadata.Placeholder());
+            }
+            using (new CultureReplacer("fr-FR", "fr-FR"))
+            {
+                Assert.Equal("name from localizer fr-FR", context.DisplayMetadata.DisplayName());
+                Assert.Equal("description from localizer fr-FR", context.DisplayMetadata.Description());
+                Assert.Equal("prompt from localizer fr-FR", context.DisplayMetadata.Placeholder());
+            }
         }
 
         [Theory]
@@ -589,6 +603,48 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             Assert.Equal(expectedDictionary, context.DisplayMetadata.EnumNamesAndValues);
         }
 
+        [Fact]
+        public void CreateDisplayMetadata_DisplayName_LocalizeWithStringLocalizer()
+        {
+            // Arrange
+            var expectedKeyValuePairs = new List<KeyValuePair<EnumGroupAndName, string>>
+            {
+                new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName("Zero", string.Empty), "0"),
+                new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, nameof(EnumWithDisplayNames.One)), "1"),
+                new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, "dos value"), "2"),
+                new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, "tres value"), "3"),
+                new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName(string.Empty, "name from resources"), "-2"),
+                new KeyValuePair<EnumGroupAndName, string>(new EnumGroupAndName("Negatives", "menos uno value"), "-1"),
+            };
+
+            var type = typeof(EnumWithDisplayNames);
+            var attributes = new object[0];
+
+            var key = ModelMetadataIdentity.ForType(type);
+            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes));
+
+            var stringLocalizer = new Mock<IStringLocalizer>(MockBehavior.Strict);
+            stringLocalizer
+                .Setup(s => s[It.IsAny<string>()])
+                .Returns<string>((index) => new LocalizedString(index, index + " value"));
+
+            var stringLocalizerFactory = new Mock<IStringLocalizerFactory>(MockBehavior.Strict);
+            stringLocalizerFactory
+                .Setup(f => f.Create(It.IsAny<Type>()))
+                .Returns(stringLocalizer.Object);
+
+            var provider = new DataAnnotationsMetadataProvider(stringLocalizerFactory.Object);
+
+            // Act
+            provider.CreateDisplayMetadata(context);
+
+            // Assert
+            Assert.Equal(
+                expectedKeyValuePairs,
+                context.DisplayMetadata.EnumGroupedDisplayNamesAndValues,
+                KVPEnumGroupAndNameComparer.Instance);
+        }
+
         // Type -> expected EnumDisplayNamesAndValues
         public static TheoryData<Type, IEnumerable<KeyValuePair<EnumGroupAndName, string>>> EnumDisplayNamesData
         {
@@ -719,12 +775,90 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             provider.CreateDisplayMetadata(context);
 
             // Assert
-            // OrderBy is used because the order of the results may very depending on the platform / client.
             Assert.Equal(
-                expectedKeyValuePairs?.OrderBy(item => item.Key.Group, StringComparer.Ordinal)
-                .ThenBy(item => item.Key.Name, StringComparer.Ordinal),
-                context.DisplayMetadata.EnumGroupedDisplayNamesAndValues?.OrderBy(item => item.Key.Group, StringComparer.Ordinal)
-                .ThenBy(item => item.Key.Name, StringComparer.Ordinal));
+                expectedKeyValuePairs,
+                context.DisplayMetadata.EnumGroupedDisplayNamesAndValues,
+                KVPEnumGroupAndNameComparer.Instance);
+        }
+
+        [Fact]
+        public void CreateDisplayMetadata_EnumGroupedDisplayNamesAndValues_NameWithNoIStringLocalizerAndNoResourceType()
+        {
+            // Arrange & Act
+            var enumNameAndGroup = GetLocalizedEnumGroupedDisplayNamesAndValues(useStringLocalizer: false);
+
+            // Assert
+            var groupTwo = Assert.Single(enumNameAndGroup, e => e.Value.Equals("2", StringComparison.Ordinal));
+
+            using (new CultureReplacer("en-US", "en-US"))
+            {
+                Assert.Equal("Loc_Two_Name", groupTwo.Key.Name);
+            }
+
+            using (new CultureReplacer("fr-FR", "fr-FR"))
+            {
+                Assert.Equal("Loc_Two_Name", groupTwo.Key.Name);
+            }
+        }
+
+        [Fact]
+        public void CreateDisplayMetadata_EnumGroupedDisplayNamesAndValues_NameWithIStringLocalizerAndNoResourceType()
+        {
+            // Arrange & Act
+            var enumNameAndGroup = GetLocalizedEnumGroupedDisplayNamesAndValues(useStringLocalizer: true);
+
+            // Assert
+            var groupTwo = Assert.Single(enumNameAndGroup, e => e.Value.Equals("2", StringComparison.Ordinal));
+
+            using (new CultureReplacer("en-US", "en-US"))
+            {
+                Assert.Equal("Loc_Two_Name en-US", groupTwo.Key.Name);
+            }
+
+            using (new CultureReplacer("fr-FR", "fr-FR"))
+            {
+                Assert.Equal("Loc_Two_Name fr-FR", groupTwo.Key.Name);
+            }
+        }
+
+        [Fact]
+        public void CreateDisplayMetadata_EnumGroupedDisplayNamesAndValues_NameWithNoIStringLocalizerAndResourceType()
+        {
+            // Arrange & Act
+            var enumNameAndGroup = GetLocalizedEnumGroupedDisplayNamesAndValues(useStringLocalizer: false);
+
+            // Assert
+            var groupThree = Assert.Single(enumNameAndGroup, e => e.Value.Equals("3", StringComparison.Ordinal));
+
+            using (new CultureReplacer("en-US", "en-US"))
+            {
+                Assert.Equal("type three name en-US", groupThree.Key.Name);
+            }
+
+            using (new CultureReplacer("fr-FR", "fr-FR"))
+            {
+                Assert.Equal("type three name fr-FR", groupThree.Key.Name);
+            }
+        }
+
+        [Fact]
+        public void CreateDisplayMetadata_EnumGroupedDisplayNamesAndValues_NameWithIStringLocalizerAndResourceType()
+        {
+            // Arrange & Act
+            var enumNameAndGroup = GetLocalizedEnumGroupedDisplayNamesAndValues(useStringLocalizer: true);
+
+            var groupThree = Assert.Single(enumNameAndGroup, e => e.Value.Equals("3", StringComparison.Ordinal));
+
+            // Assert
+            using (new CultureReplacer("en-US", "en-US"))
+            {
+                Assert.Equal("type three name en-US", groupThree.Key.Name);
+            }
+
+            using (new CultureReplacer("fr-FR", "fr-FR"))
+            {
+                Assert.Equal("type three name fr-FR", groupThree.Key.Name);
+            }
         }
 
         [Fact]
@@ -848,6 +982,70 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             Assert.Same(attribute, validatorMetadata);
         }
 
+        private IEnumerable<KeyValuePair<EnumGroupAndName, string>> GetLocalizedEnumGroupedDisplayNamesAndValues(
+            bool useStringLocalizer)
+        {
+            var provider = CreateIStringLocalizerProvider(useStringLocalizer);
+
+            var key = ModelMetadataIdentity.ForType(typeof(EnumWithLocalizedDisplayNames));
+            var attributes = new object[0];
+
+            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes));
+            provider.CreateDisplayMetadata(context);
+
+            return context.DisplayMetadata.EnumGroupedDisplayNamesAndValues;
+        }
+
+        private DataAnnotationsMetadataProvider CreateIStringLocalizerProvider(bool useStringLocalizer)
+        {
+            var stringLocalizer = new Mock<IStringLocalizer>(MockBehavior.Strict);
+            stringLocalizer
+                .Setup(loc => loc[It.IsAny<string>()])
+                .Returns<string>((k =>
+                {
+                    return new LocalizedString(k, $"{k} {CultureInfo.CurrentCulture}");
+                }));
+
+            var stringLocalizerFactory = new Mock<IStringLocalizerFactory>(MockBehavior.Strict);
+            stringLocalizerFactory
+                .Setup(factory => factory.Create(typeof(EnumWithLocalizedDisplayNames)))
+                .Returns(stringLocalizer.Object);
+
+            return new DataAnnotationsMetadataProvider(
+                useStringLocalizer ? stringLocalizerFactory.Object : null);
+        }
+
+        private class KVPEnumGroupAndNameComparer : IEqualityComparer<KeyValuePair<EnumGroupAndName, string>>
+        {
+            public static readonly IEqualityComparer<KeyValuePair<EnumGroupAndName, string>> Instance = new KVPEnumGroupAndNameComparer();
+
+            private KVPEnumGroupAndNameComparer()
+            {
+            }
+
+            public bool Equals(KeyValuePair<EnumGroupAndName, string> x, KeyValuePair<EnumGroupAndName, string> y)
+            {
+                using (new CultureReplacer(string.Empty, string.Empty))
+                {
+                    return x.Key.Name.Equals(y.Key.Name, StringComparison.Ordinal)
+                        && x.Key.Group.Equals(y.Key.Group, StringComparison.Ordinal);
+                }
+            }
+
+            public int GetHashCode(KeyValuePair<EnumGroupAndName, string> obj)
+            {
+                using (new CultureReplacer(string.Empty, string.Empty))
+                {
+                    var hashcode = HashCodeCombiner.Start();
+
+                    hashcode.Add(obj.Key.Name);
+                    hashcode.Add(obj.Key.Group);
+
+                    return hashcode.CombinedHash;
+                }
+            }
+        }
+
         private class TestValidationAttribute : ValidationAttribute, IClientModelValidator
         {
             public void AddValidation(ClientModelValidationContext context)
@@ -872,6 +1070,14 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             public int Id { get; set; }
 
             public string Name { get; set; }
+        }
+
+        private enum EnumWithLocalizedDisplayNames
+        {
+            [Display(Name = "Loc_Two_Name")]
+            Two = 2,
+            [Display(Name = nameof(TestResources.Type_Three_Name), ResourceType = typeof(TestResources))]
+            Three = 3
         }
 
         private enum EmptyEnum

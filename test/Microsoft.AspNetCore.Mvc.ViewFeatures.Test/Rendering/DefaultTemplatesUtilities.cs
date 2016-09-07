@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
@@ -161,9 +162,14 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
         public static HtmlHelper<TModel> GetHtmlHelper<TModel>(
             TModel model,
-            ICompositeViewEngine viewEngine)
+            ICompositeViewEngine viewEngine,
+            IStringLocalizerFactory stringLocalizerFactory = null)
         {
-            return GetHtmlHelper(model, CreateUrlHelper(), viewEngine, TestModelMetadataProvider.CreateDefaultProvider());
+            return GetHtmlHelper(
+                model,
+                CreateUrlHelper(),
+                viewEngine,
+                TestModelMetadataProvider.CreateDefaultProvider(stringLocalizerFactory));
         }
 
         public static HtmlHelper<TModel> GetHtmlHelper<TModel>(

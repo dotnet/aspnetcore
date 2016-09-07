@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.Extensions.Localization;
 using Moq;
 using Xunit;
 
@@ -17,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         public void DisplayHelpers_FindsModel_WhenViewDataIsNotSet()
         {
             // Arrange
-            var expected = $"<div class=\"HtmlEncode[[display-label]]\">HtmlEncode[[SomeProperty]]</div>{Environment.NewLine}" + 
+            var expected = $"<div class=\"HtmlEncode[[display-label]]\">HtmlEncode[[SomeProperty]]</div>{Environment.NewLine}" +
                 $"<div class=\"HtmlEncode[[display-field]]\">HtmlEncode[[PropValue]]</div>{Environment.NewLine}";
             var model = new SomeModel
             {
@@ -224,6 +226,75 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         }
 
         [Fact]
+        public void DisplayFor_EnumProperty_IStringLocalizedValue()
+        {
+            // Arrange
+            var model = new StatusModel
+            {
+                Status = Status.Created
+            };
+            var view = new Mock<IView>();
+            view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
+                .Callback((ViewContext v) => v.Writer.WriteAsync(v.ViewData.TemplateInfo.FormattedModelValue.ToString()))
+                .Returns(Task.FromResult(0));
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
+            viewEngine
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isMainPage*/ false))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), "DisplayTemplates/Status", /*isMainPage*/ false))
+                .Returns(ViewEngineResult.Found("SomeView", view.Object));
+
+            var stringLocalizer = new Mock<IStringLocalizer>(MockBehavior.Strict);
+            stringLocalizer
+                .Setup(s => s["CreatedKey"])
+                .Returns<string>((key) =>
+                {
+                    return new LocalizedString(key, "created from IStringLocalizer");
+                });
+            var stringLocalizerFactory = new Mock<IStringLocalizerFactory>();
+            stringLocalizerFactory
+                .Setup(s => s.Create(typeof(Status)))
+                .Returns(stringLocalizer.Object);
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object, stringLocalizerFactory.Object);
+
+            // Act
+            var displayResult = helper.DisplayFor(m => m.Status);
+
+            // Assert
+            Assert.Equal("created from IStringLocalizer", HtmlContentUtilities.HtmlContentToString(displayResult));
+        }
+
+        [Fact]
+        public void DisplayFor_EnumProperty_ResourceTypeLocalizedValue()
+        {
+            // Arrange
+            var model = new StatusModel
+            {
+                Status = Status.Faulted
+            };
+            var view = new Mock<IView>();
+            view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
+                .Callback((ViewContext v) => v.Writer.WriteAsync(v.ViewData.TemplateInfo.FormattedModelValue.ToString()))
+                .Returns(Task.FromResult(0));
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
+            viewEngine
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isMainPage*/ false))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), "DisplayTemplates/Status", /*isMainPage*/ false))
+                .Returns(ViewEngineResult.Found("SomeView", view.Object));
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
+
+            // Act
+            var displayResult = helper.DisplayFor(m => m.Status);
+
+            // Assert
+            Assert.Equal("Faulted from ResourceType", HtmlContentUtilities.HtmlContentToString(displayResult));
+        }
+
+        [Fact]
         public void DisplayFor_UsesTemplateNameAndHtmlFieldName()
         {
             // Arrange
@@ -355,6 +426,25 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         private class SomeModel
         {
             public string SomeProperty { get; set; }
+        }
+
+        private class StatusModel
+        {
+            public Status Status { get; set; }
+        }
+
+        public class StatusResource
+        {
+            public static string FaultedKey { get { return "Faulted from ResourceType"; } }
+        }
+
+        private enum Status : byte
+        {
+            [Display(Name = "CreatedKey")]
+            Created,
+            [Display(Name = "FaultedKey", ResourceType = typeof(StatusResource))]
+            Faulted,
+            Done
         }
     }
 }

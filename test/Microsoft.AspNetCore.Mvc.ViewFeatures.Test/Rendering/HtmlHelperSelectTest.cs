@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Localization;
 using Moq;
 using Xunit;
 
@@ -1296,6 +1298,32 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 () => htmlHelper.GetEnumSelectList<StructWithFields>(),
                 "TEnum",
                 $"The type '{ typeof(StructWithFields).FullName }' is not supported.");
+        }
+
+        [Fact]
+        [ReplaceCulture("en-US", "en-US")]
+        public void GetEnumSelectListTEnum_DisplayAttributeUsesIStringLocalizer()
+        {
+            // Arrange
+            var stringLocalizer = new Mock<IStringLocalizer>();
+            stringLocalizer
+                .Setup(s => s[It.IsAny<string>()])
+                .Returns<string>((s) => { return new LocalizedString(s, s + " " + CultureInfo.CurrentCulture); });
+            var stringLocalizerFactory = new Mock<IStringLocalizerFactory>();
+            stringLocalizerFactory
+                .Setup(s => s.Create(It.IsAny<Type>()))
+                .Returns(stringLocalizer.Object);
+
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider(stringLocalizerFactory.Object);
+            var metadata = metadataProvider.GetMetadataForType(typeof(EnumWithFields));
+            var htmlHelper = new TestHtmlHelper(metadataProvider);
+
+            // Act
+            var result = htmlHelper.GetEnumSelectList<EnumWithDisplayNames>();
+
+            // Assert
+            var zeroSelect = Assert.Single(result, s => s.Value.Equals("0", StringComparison.Ordinal));
+            Assert.Equal("cero en-US", zeroSelect.Text);
         }
 
         [Fact]

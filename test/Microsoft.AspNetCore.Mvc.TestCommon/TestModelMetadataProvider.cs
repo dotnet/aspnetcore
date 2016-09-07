@@ -7,6 +7,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.Extensions.Localization;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -14,13 +15,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     internal class TestModelMetadataProvider : DefaultModelMetadataProvider
     {
         // Creates a provider with all the defaults - includes data annotations
-        public static IModelMetadataProvider CreateDefaultProvider()
+        public static IModelMetadataProvider CreateDefaultProvider(IStringLocalizerFactory stringLocalizerFactory = null)
         {
             var detailsProviders = new IMetadataDetailsProvider[]
             {
                 new DefaultBindingMetadataProvider(),
                 new DefaultValidationMetadataProvider(),
-                new DataAnnotationsMetadataProvider(stringLocalizerFactory: null),
+                new DataAnnotationsMetadataProvider(stringLocalizerFactory),
                 new DataMemberRequiredBindingMetadataProvider(),
             };
 
