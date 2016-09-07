@@ -3,7 +3,7 @@
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.Net.Http.Server": "1.0.0-rc1-*",
-    "Microsoft.AspNetCore.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0",
     "xunit": "2.2.0-*"
   },
   "frameworks": {
