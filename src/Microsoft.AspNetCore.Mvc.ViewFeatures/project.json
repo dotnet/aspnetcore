@@ -22,6 +22,10 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Antiforgery": "1.1.0-*",
+    "Microsoft.AspNetCore.ChunkingCookieManager.Sources": {
+      "version": "1.1.0-*",
+      "type": "build"
+    },
     "Microsoft.AspNetCore.Diagnostics.Abstractions": "1.1.0-*",
     "Microsoft.AspNetCore.Html.Abstractions": "1.1.0-*",
     "Microsoft.AspNetCore.Mvc.Core": "1.1.0-*",
@@ -35,15 +39,15 @@
       "version": "1.1.0-*",
       "type": "build"
     },
+    "Microsoft.Extensions.HashCodeCombiner.Sources": {
+      "version": "1.1.0-*",
+      "type": "build"
+    },
     "Microsoft.Extensions.PropertyActivator.Sources": {
       "version": "1.1.0-*",
       "type": "build"
     },
     "Microsoft.Extensions.PropertyHelper.Sources": {
-      "version": "1.1.0-*",
-      "type": "build"
-    },
-    "Microsoft.Extensions.HashCodeCombiner.Sources": {
       "version": "1.1.0-*",
       "type": "build"
     },

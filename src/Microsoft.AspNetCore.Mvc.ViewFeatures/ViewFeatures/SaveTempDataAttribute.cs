@@ -14,7 +14,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class SaveTempDataAttribute : Attribute, IFilterFactory, IOrderedFilter
     {
-        /// <inheritdoc />
+        public SaveTempDataAttribute()
+        {
+            // Since SaveTempDataFilter registers for a response's OnStarting callback, we want this filter to run 
+            // as early as possible to get the oppurtunity to register the call back before any other result filter 
+            // starts writing to the response stream.
+            Order = int.MinValue + 100;
+        }
+
+        // <inheritdoc />
         public int Order { get; set; }
 
         /// <inheritdoc />

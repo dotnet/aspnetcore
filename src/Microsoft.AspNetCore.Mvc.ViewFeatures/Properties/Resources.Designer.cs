@@ -779,7 +779,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// The '{0}' cannot serialize a dictionary with a key of type '{1}' to session state.
+        /// The '{0}' cannot serialize a dictionary with a key of type '{1}'.
         /// </summary>
         internal static string TempData_CannotSerializeDictionary
         {
@@ -787,7 +787,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// The '{0}' cannot serialize a dictionary with a key of type '{1}' to session state.
+        /// The '{0}' cannot serialize a dictionary with a key of type '{1}'.
         /// </summary>
         internal static string FormatTempData_CannotSerializeDictionary(object p0, object p1)
         {
@@ -795,19 +795,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// The '{0}' cannot serialize an object of type '{1}' to session state.
+        /// The '{0}' cannot serialize an object of type '{1}'.
         /// </summary>
-        internal static string TempData_CannotSerializeToSession
+        internal static string TempData_CannotSerializeType
         {
-            get { return GetString("TempData_CannotSerializeToSession"); }
+            get { return GetString("TempData_CannotSerializeType"); }
         }
 
         /// <summary>
-        /// The '{0}' cannot serialize an object of type '{1}' to session state.
+        /// The '{0}' cannot serialize an object of type '{1}'.
         /// </summary>
-        internal static string FormatTempData_CannotSerializeToSession(object p0, object p1)
+        internal static string FormatTempData_CannotSerializeType(object p0, object p1)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TempData_CannotSerializeToSession"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("TempData_CannotSerializeType"), p0, p1);
         }
 
         /// <summary>

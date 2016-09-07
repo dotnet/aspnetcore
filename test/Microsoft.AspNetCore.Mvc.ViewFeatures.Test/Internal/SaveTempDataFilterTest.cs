@@ -1,7 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
@@ -12,85 +15,335 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     public class SaveTempDataFilterTest
     {
-        [Fact]
-        public void SaveTempDataFilter_OnResourceExecuted_SavesTempData()
+        public static TheoryData<IActionResult> ActionResultsData
         {
-            // Arrange
-            var tempData = new Mock<ITempDataDictionary>(MockBehavior.Strict);
-            tempData
-                .Setup(m => m.Save())
-                .Verifiable();
-
-            var tempDataFactory = new Mock<ITempDataDictionaryFactory>(MockBehavior.Strict);
-            tempDataFactory
-                .Setup(f => f.GetTempData(It.IsAny<HttpContext>()))
-                .Returns(tempData.Object);
-
-            var filter = new SaveTempDataFilter(tempDataFactory.Object);
-
-            var context = new ResourceExecutedContext(
-                new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
-                new IFilterMetadata[] { });
-
-            // Act
-            filter.OnResourceExecuted(context);
-
-            // Assert
-            tempData.Verify();
+            get
+            {
+                return new TheoryData<IActionResult>()
+                {
+                    new TestActionResult(),
+                    new TestKeepTempDataActionResult()
+                };
+            }
         }
 
         [Fact]
-        public void SaveTempDataFilter_OnResultExecuted_KeepsTempData_ForIKeepTempDataResult()
+        public void OnResultExecuting_RegistersOnStartingCallback()
         {
             // Arrange
-            var tempData = new Mock<ITempDataDictionary>(MockBehavior.Strict);
-            tempData
-                .Setup(m => m.Keep())
+            var responseFeature = new Mock<IHttpResponseFeature>(MockBehavior.Strict);
+            responseFeature
+                .Setup(rf => rf.OnStarting(It.IsAny<System.Func<object, Task>>(), It.IsAny<object>()))
                 .Verifiable();
-
             var tempDataFactory = new Mock<ITempDataDictionaryFactory>(MockBehavior.Strict);
             tempDataFactory
                 .Setup(f => f.GetTempData(It.IsAny<HttpContext>()))
-                .Returns(tempData.Object);
-
+                .Verifiable();
             var filter = new SaveTempDataFilter(tempDataFactory.Object);
+            var httpContext = GetHttpContext(responseFeature.Object);
+            var context = GetResultExecutingContext(httpContext);
 
-            var context = new ResultExecutedContext(
-                new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
-                new IFilterMetadata[] { },
-                new Mock<IKeepTempDataResult>().Object,
-                new object());
+            // Act
+            filter.OnResultExecuting(context);
+
+            // Assert
+            responseFeature.Verify();
+            tempDataFactory.Verify(tdf => tdf.GetTempData(It.IsAny<HttpContext>()), Times.Never());
+        }
+
+        [Fact]
+        public async Task OnResultExecuting_DoesNotSaveTempData_WhenTempDataAlreadySaved()
+        {
+            // Arrange
+            var responseFeature = new TestResponseFeature();
+            var httpContext = GetHttpContext(responseFeature);
+            httpContext.Items[SaveTempDataFilter.TempDataSavedKey] = true; // indicate that tempdata was already saved
+            var tempDataFactory = new Mock<ITempDataDictionaryFactory>(MockBehavior.Strict);
+            tempDataFactory
+                .Setup(f => f.GetTempData(It.IsAny<HttpContext>()))
+                .Verifiable();
+            var filter = new SaveTempDataFilter(tempDataFactory.Object);
+            var context = GetResultExecutingContext(httpContext);
+            filter.OnResultExecuting(context); // registers callback
+
+            // Act
+            await responseFeature.FireOnSendingHeadersAsync();
+
+            // Assert
+            tempDataFactory.Verify(tdf => tdf.GetTempData(It.IsAny<HttpContext>()), Times.Never());
+        }
+
+        [Theory]
+        [MemberData(nameof(ActionResultsData))]
+        public async Task OnResultExecuting_SavesTempData_WhenTempData_NotSavedAlready(IActionResult result)
+        {
+            // Arrange
+            var tempDataDictionary = GetTempDataDictionary();
+            var filter = GetFilter(tempDataDictionary.Object);
+            var responseFeature = new TestResponseFeature();
+            var actionContext = GetActionContext(GetHttpContext(responseFeature));
+            var context = GetResultExecutingContext(actionContext, result);
+            filter.OnResultExecuting(context); // registers callback
+
+            // Act
+            await responseFeature.FireOnSendingHeadersAsync();
+
+            // Assert
+            tempDataDictionary.Verify(tdd => tdd.Save(), Times.Once());
+        }
+
+        [Fact]
+        public async Task OnResultExecuting_KeepsTempData_ForIKeepTempDataResult()
+        {
+            // Arrange
+            var tempDataDictionary = GetTempDataDictionary();
+            var filter = GetFilter(tempDataDictionary.Object);
+            var responseFeature = new TestResponseFeature();
+            var actionContext = GetActionContext(GetHttpContext(responseFeature));
+            var context = GetResultExecutingContext(actionContext, new TestKeepTempDataActionResult());
+            filter.OnResultExecuting(context); // registers callback
+
+            // Act
+            await responseFeature.FireOnSendingHeadersAsync();
+
+            // Assert
+            tempDataDictionary.Verify(tdf => tdf.Keep(), Times.Once());
+            tempDataDictionary.Verify(tdf => tdf.Save(), Times.Once());
+        }
+
+        [Fact]
+        public async Task OnResultExecuting_DoesNotKeepTempData_ForNonIKeepTempDataResult()
+        {
+            // Arrange
+            var tempDataDictionary = GetTempDataDictionary();
+            var filter = GetFilter(tempDataDictionary.Object);
+            var responseFeature = new TestResponseFeature();
+            var actionContext = GetActionContext(GetHttpContext(responseFeature));
+            var context = GetResultExecutingContext(actionContext, new TestActionResult());
+            filter.OnResultExecuting(context); // registers callback
+
+            // Act
+            await responseFeature.FireOnSendingHeadersAsync();
+
+            // Assert
+            tempDataDictionary.Verify(tdf => tdf.Keep(), Times.Never());
+            tempDataDictionary.Verify(tdf => tdf.Save(), Times.Once());
+        }
+
+        [Fact]
+        public void OnResultExecuted_DoesNotSaveTempData_WhenResponseHas_AlreadyStarted()
+        {
+            // Arrange
+            var tempDataFactory = new Mock<ITempDataDictionaryFactory>(MockBehavior.Strict);
+            tempDataFactory
+                .Setup(f => f.GetTempData(It.IsAny<HttpContext>()))
+                .Verifiable();
+            var filter = new SaveTempDataFilter(tempDataFactory.Object);
+            var httpContext = GetHttpContext(new TestResponseFeature(hasStarted: true));
+            var context = GetResultExecutedContext(httpContext);
 
             // Act
             filter.OnResultExecuted(context);
 
             // Assert
-            tempData.Verify();
+            tempDataFactory.Verify(tdf => tdf.GetTempData(It.IsAny<HttpContext>()), Times.Never());
+        }
+
+        [Theory]
+        [MemberData(nameof(ActionResultsData))]
+        public void OnResultExecuted_SavesTempData_WhenResponseHas_NotStarted(IActionResult result)
+        {
+            // Arrange
+            var tempDataDictionary = GetTempDataDictionary();
+            var filter = GetFilter(tempDataDictionary.Object);
+            var context = GetResultExecutedContext(actionResult: result);
+
+            // Act
+            filter.OnResultExecuted(context);
+
+            // Assert
+            tempDataDictionary.Verify(tdf => tdf.Save(), Times.Once());
         }
 
         [Fact]
-        public void SaveTempDataFilter_OnResultExecuted_DoesNotKeepTempData_ForNonIKeepTempDataResult()
+        public void OnResultExecuted_KeepsTempData_ForIKeepTempDataResult()
         {
             // Arrange
-            var tempData = new Mock<ITempDataDictionary>(MockBehavior.Strict);
+            var tempDataDictionary = GetTempDataDictionary();
+            var filter = GetFilter(tempDataDictionary.Object);
+            var context = GetResultExecutedContext(actionResult: new TestKeepTempDataActionResult());
 
+            // Act
+            filter.OnResultExecuted(context);
+
+            // Assert
+            tempDataDictionary.Verify(tdf => tdf.Keep(), Times.Once());
+            tempDataDictionary.Verify(tdf => tdf.Save(), Times.Once());
+        }
+
+        [Fact]
+        public void OnResultExecuted_DoesNotKeepTempData_ForNonIKeepTempDataResult()
+        {
+            // Arrange
+            var tempDataDictionary = GetTempDataDictionary();
+            var filter = GetFilter(tempDataDictionary.Object);
+            var context = GetResultExecutedContext(actionResult: new TestActionResult());
+
+            // Act
+            filter.OnResultExecuted(context);
+
+            // Assert
+            tempDataDictionary.Verify(tdf => tdf.Keep(), Times.Never());
+            tempDataDictionary.Verify(tdf => tdf.Save(), Times.Once());
+        }
+
+        private SaveTempDataFilter GetFilter(ITempDataDictionary tempDataDictionary)
+        {
+            var tempDataFactory = GetTempDataDictionaryFactory(tempDataDictionary);
+            return new SaveTempDataFilter(tempDataFactory.Object);
+        }
+
+        private Mock<ITempDataDictionaryFactory> GetTempDataDictionaryFactory(ITempDataDictionary tempDataDictionary)
+        {
             var tempDataFactory = new Mock<ITempDataDictionaryFactory>(MockBehavior.Strict);
             tempDataFactory
                 .Setup(f => f.GetTempData(It.IsAny<HttpContext>()))
-                .Returns(tempData.Object);
+                .Returns(tempDataDictionary);
+            return tempDataFactory;
+        }
 
-            var filter = new SaveTempDataFilter(tempDataFactory.Object);
+        private Mock<ITempDataDictionary> GetTempDataDictionary()
+        {
+            var tempDataDictionary = new Mock<ITempDataDictionary>(MockBehavior.Strict);
+            tempDataDictionary
+                .Setup(tdd => tdd.Keep())
+                .Verifiable();
+            tempDataDictionary
+                .Setup(tdd => tdd.Save())
+                .Verifiable();
+            return tempDataDictionary;
+        }
 
-            var context = new ResultExecutedContext(
-                new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
+        private ResultExecutedContext GetResultExecutedContext(HttpContext httpContext = null, IActionResult actionResult = null)
+        {
+            if (httpContext == null)
+            {
+                httpContext = GetHttpContext();
+            }
+            if (actionResult == null)
+            {
+                actionResult = new TestActionResult();
+            }
+            return new ResultExecutedContext(
+                new ActionContext(httpContext, new RouteData(), new ActionDescriptor()),
+                new IFilterMetadata[] { },
+                actionResult,
+                new TestController());
+        }
+
+        private ResultExecutingContext GetResultExecutingContext(ActionContext actionContext, IActionResult actionResult = null)
+        {
+            if (actionResult == null)
+            {
+                actionResult = new TestActionResult();
+            }
+            return new ResultExecutingContext(
+                actionContext,
+                new IFilterMetadata[] { },
+                actionResult,
+                new TestController());
+        }
+
+        private ResultExecutingContext GetResultExecutingContext(HttpContext httpContext = null, IActionResult actionResult = null)
+        {
+            if (httpContext == null)
+            {
+                httpContext = new DefaultHttpContext();
+            }
+            if (actionResult == null)
+            {
+                actionResult = new TestActionResult();
+            }
+            return new ResultExecutingContext(
+                new ActionContext(httpContext, new RouteData(), new ActionDescriptor()),
                 new IFilterMetadata[] { },
                 new Mock<IActionResult>().Object,
-                new object());
+                new TestController());
+        }
 
-            // Act
-            filter.OnResultExecuted(context);
+        private HttpContext GetHttpContext(IHttpResponseFeature responseFeature = null)
+        {
+            if (responseFeature == null)
+            {
+                responseFeature = new TestResponseFeature();
+            }
+            var httpContext = new DefaultHttpContext();
+            httpContext.Features.Set<IHttpResponseFeature>(responseFeature);
+            return httpContext;
+        }
 
-            // Assert - The mock will throw if we do the wrong thing.
+        private ActionContext GetActionContext(HttpContext httpContext = null)
+        {
+            if (httpContext == null)
+            {
+                httpContext = GetHttpContext();
+            }
+            return new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+        }
+
+        private class TestController : Controller
+        {
+        }
+
+        private class TestActionResult : IActionResult
+        {
+            public Task ExecuteResultAsync(ActionContext context)
+            {
+                return context.HttpContext.Response.WriteAsync($"Hello from {nameof(TestActionResult)}");
+            }
+        }
+
+        private class TestKeepTempDataActionResult : IActionResult, IKeepTempDataResult
+        {
+            public Task ExecuteResultAsync(ActionContext context)
+            {
+                return context.HttpContext.Response.WriteAsync($"Hello from {nameof(TestKeepTempDataActionResult)}");
+            }
+        }
+
+        private class TestResponseFeature : HttpResponseFeature
+        {
+            private bool _hasStarted;
+            private Func<Task> _responseStartingAsync = () => Task.FromResult(true);
+
+            public TestResponseFeature(bool hasStarted = false)
+            {
+                _hasStarted = hasStarted;
+            }
+
+            public override bool HasStarted
+            {
+                get
+                {
+                    return _hasStarted;
+                }
+            }
+
+            public override void OnStarting(Func<object, Task> callback, object state)
+            {
+                var prior = _responseStartingAsync;
+                _responseStartingAsync = async () =>
+                {
+                    await callback(state);
+                    await prior();
+                };
+            }
+
+            public async Task FireOnSendingHeadersAsync()
+            {
+                await _responseStartingAsync();
+                _hasStarted = true;
+            }
         }
     }
 }

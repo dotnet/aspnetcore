@@ -68,5 +68,30 @@ namespace BasicWebSite.Controllers
             var value5 = (Guid)TempData["key5"];
             return $"{value1} {value2.ToString()} {value3.Count.ToString()} {value4.ToString()} {value5.ToString()}";
         }
+
+        [HttpGet]
+        public IActionResult SetTempDataInActionResult()
+        {
+            return new StoreIntoTempDataActionResult();
+        }
+
+        [HttpGet]
+        public string GetTempDataSetInActionResult()
+        {
+            return TempData["Name"]?.ToString();
+        }
+
+        [HttpGet]
+        public IActionResult SetLargeValueInTempData(int size, char character)
+        {
+            TempData["LargeValue"] = new string(character, size);
+            return Ok();
+        }
+
+        [HttpGet]
+        public string GetLargeValueFromTempData()
+        {
+            return TempData["LargeValue"]?.ToString();
+        }
     }
 }
