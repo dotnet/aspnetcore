@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.Internal;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 {
