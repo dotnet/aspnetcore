@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using Microsoft.AspNetCore.Testing.Functional;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
@@ -22,6 +21,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public DotNetWatchScenario()
         {
             _scenario = new ProjectToolScenario();
+            Directory.CreateDirectory(_artifactsFolder);
             _scenario.AddNugetFeed(DotnetWatch, _artifactsFolder);
         }
 

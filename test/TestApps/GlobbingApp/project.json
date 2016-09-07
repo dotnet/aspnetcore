@@ -1,5 +1,4 @@
 {
-  "version": "1.0.0-*",
   "buildOptions": {
     "emitEntryPoint": true,
     "compile": {
@@ -17,13 +16,9 @@
       "dependencies": {
         "Microsoft.NETCore.App": {
           "type": "platform",
-          "version": "1.0.0-*"
+          "version": "1.0.0"
         }
-      },
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ]
+      }
     }
   }
 }
