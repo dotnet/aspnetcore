@@ -10,6 +10,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
 {
@@ -291,7 +292,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         protected Task SaveChanges(CancellationToken cancellationToken)
         {
-            return AutoSaveChanges ? Context.SaveChangesAsync(cancellationToken) : Task.FromResult(0);
+            return AutoSaveChanges ? Context.SaveChangesAsync(cancellationToken) : TaskCache.CompletedTask;
         }
 
         /// <summary>
@@ -344,7 +345,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(user));
             }
             user.UserName = userName;
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         /// <summary>
@@ -380,7 +381,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(user));
             }
             user.NormalizedUserName = normalizedName;
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         /// <summary>
@@ -541,7 +542,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(user));
             }
             user.PasswordHash = passwordHash;
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         /// <summary>
@@ -933,7 +934,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(user));
             }
             user.EmailConfirmed = confirmed;
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         /// <summary>
@@ -952,7 +953,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(user));
             }
             user.Email = email;
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         /// <summary>
@@ -1007,7 +1008,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(user));
             }
             user.NormalizedEmail = normalizedEmail;
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         /// <summary>
@@ -1062,7 +1063,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(user));
             }
             user.LockoutEnd = lockoutEnd;
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         /// <summary>
@@ -1099,7 +1100,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(user));
             }
             user.AccessFailedCount = 0;
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         /// <summary>
@@ -1154,7 +1155,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(user));
             }
             user.LockoutEnabled = enabled;
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         /// <summary>
@@ -1173,7 +1174,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(user));
             }
             user.PhoneNumber = phoneNumber;
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         /// <summary>
@@ -1229,7 +1230,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(user));
             }
             user.PhoneNumberConfirmed = confirmed;
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         /// <summary>
@@ -1248,7 +1249,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(user));
             }
             user.SecurityStamp = stamp;
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         /// <summary>
@@ -1285,7 +1286,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(user));
             }
             user.TwoFactorEnabled = enabled;
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         /// <summary>

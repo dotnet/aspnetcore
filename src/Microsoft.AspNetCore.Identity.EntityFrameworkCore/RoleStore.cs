@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
 {
@@ -263,7 +264,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(role));
             }
             role.Name = roleName;
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         /// <summary>
@@ -354,7 +355,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(role));
             }
             role.NormalizedName = normalizedName;
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         /// <summary>
