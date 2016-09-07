@@ -38,6 +38,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         internal CachedResponse CachedResponse { get;  set; }
 
+        internal CachedVaryRules CachedVaryRules { get; set; }
+
         public RequestHeaders RequestHeaders
         {
             get

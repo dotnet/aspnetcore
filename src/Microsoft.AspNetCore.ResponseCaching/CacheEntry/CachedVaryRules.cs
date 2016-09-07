@@ -5,6 +5,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
     internal class CachedVaryRules
     {
-        internal VaryRules VaryRules;
+        internal string VaryKeyPrefix { get; set; }
+
+        internal VaryRules VaryRules { get; set; }
     }
 }

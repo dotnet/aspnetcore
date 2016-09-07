@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -70,10 +69,9 @@ namespace Microsoft.AspNetCore.ResponseCaching
             {
                 throw new ArgumentNullException(nameof(httpContext));
             }
-            if (varyRules == null)
+            if (varyRules == null || (StringValues.IsNullOrEmpty(varyRules.Headers) && StringValues.IsNullOrEmpty(varyRules.Params)))
             {
-                // TODO: replace this with a GUID
-                return httpContext.GetResponseCachingState()?.BaseKey ?? CreateBaseKey(httpContext);
+                return httpContext.GetResponseCachingState().CachedVaryRules.VaryKeyPrefix;
             }
 
             var request = httpContext.Request;
@@ -81,8 +79,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
             try
             {
-                // TODO: replace this with a GUID
-                builder.Append(httpContext.GetResponseCachingState()?.BaseKey ?? CreateBaseKey(httpContext));
+                // Prepend with the Guid of the CachedVaryRules
+                builder.Append(httpContext.GetResponseCachingState().CachedVaryRules.VaryKeyPrefix);
 
                 // Vary by headers
                 if (varyRules?.Headers.Count > 0)

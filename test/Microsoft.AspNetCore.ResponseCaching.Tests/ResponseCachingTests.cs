@@ -497,6 +497,29 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             }
         }
 
+        [Fact]
+        public async void ServesCachedContent_WithoutReplacingCachedVaryBy_OnCacheMiss()
+        {
+            var builder = CreateBuilderWithResponseCaching(async (context) =>
+            {
+                context.Response.Headers[HeaderNames.Vary] = HeaderNames.From;
+                await DefaultRequestDelegate(context);
+            });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                client.DefaultRequestHeaders.From = "user@example.com";
+                var initialResponse = await client.GetAsync("");
+                client.DefaultRequestHeaders.From = "user2@example.com";
+                var otherResponse = await client.GetAsync("");
+                client.DefaultRequestHeaders.From = "user@example.com";
+                var subsequentResponse = await client.GetAsync("");
+
+                await AssertResponseCachedAsync(initialResponse, subsequentResponse);
+            }
+        }
+
         private static async Task AssertResponseCachedAsync(HttpResponseMessage initialResponse, HttpResponseMessage subsequentResponse)
         {
             initialResponse.EnsureSuccessStatusCode();

@@ -2,6 +2,7 @@
   "version": "0.1.0-*",
   "buildOptions": {
     "warningsAsErrors": true,
+    "allowUnsafe": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
       "CS1591"

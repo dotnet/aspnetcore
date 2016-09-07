@@ -68,17 +68,18 @@ namespace Microsoft.AspNetCore.ResponseCaching
             if (cacheEntry is CachedVaryRules)
             {
                 // Request contains vary rules, recompute key and try again
+                State.CachedVaryRules = cacheEntry as CachedVaryRules;
                 var varyKey = _keyProvider.CreateVaryKey(_httpContext, ((CachedVaryRules)cacheEntry).VaryRules);
                 cacheEntry = _cache.Get(varyKey);
             }
 
             if (cacheEntry is CachedResponse)
             {
-                var cachedResponse = cacheEntry as CachedResponse;
-                var cachedResponseHeaders = new ResponseHeaders(cachedResponse.Headers);
+                State.CachedResponse = cacheEntry as CachedResponse;
+                var cachedResponseHeaders = new ResponseHeaders(State.CachedResponse.Headers);
 
                 State.ResponseTime = _options.SystemClock.UtcNow;
-                var cachedEntryAge = State.ResponseTime - cachedResponse.Created;
+                var cachedEntryAge = State.ResponseTime - State.CachedResponse.Created;
                 State.CachedEntryAge = cachedEntryAge > TimeSpan.Zero ? cachedEntryAge : TimeSpan.Zero;
 
                 if (_cacheabilityValidator.CachedEntryIsFresh(_httpContext, cachedResponseHeaders))
@@ -94,16 +95,22 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     {
                         var response = _httpContext.Response;
                         // Copy the cached status code and response headers
-                        response.StatusCode = cachedResponse.StatusCode;
-                        foreach (var header in cachedResponse.Headers)
+                        response.StatusCode = State.CachedResponse.StatusCode;
+                        foreach (var header in State.CachedResponse.Headers)
                         {
                             response.Headers.Add(header);
                         }
 
                         response.Headers[HeaderNames.Age] = State.CachedEntryAge.TotalSeconds.ToString("F0", CultureInfo.InvariantCulture);
 
+                        var body = State.CachedResponse.Body ??
+                            ((CachedResponseBody)_cache.Get(State.CachedResponse.BodyKeyPrefix))?.Body;
 
-                        var body = cachedResponse.Body;
+                        // If the body is not found, something went wrong.
+                        if (body == null)
+                        {
+                            return false;
+                        }
 
                         // Copy the cached response body
                         if (body.Length > 0)
@@ -181,19 +188,31 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 // Check if any vary rules exist
                 if (!StringValues.IsNullOrEmpty(varyHeaderValue) || !StringValues.IsNullOrEmpty(varyParamsValue))
                 {
-                    var cachedVaryRules = new CachedVaryRules
-                    {
-                        VaryRules = new VaryRules()
-                        {
-                            // TODO: Vary Encoding
-                            Headers = varyHeaderValue,
-                            Params = varyParamsValue
-                        }
-                    };
+                    // Normalize order and casing of vary by rules
+                    var normalizedVaryHeaderValue = GetNormalizedStringValues(varyHeaderValue);
+                    var normalizedVaryParamsValue = GetNormalizedStringValues(varyParamsValue);
 
-                    // TODO: Overwrite?
-                    _cache.Set(State.BaseKey, cachedVaryRules, State.CachedResponseValidFor);
-                    State.VaryKey = _keyProvider.CreateVaryKey(_httpContext, cachedVaryRules.VaryRules);
+                    // Update vary rules if they are different
+                    if (State.CachedVaryRules == null ||
+                        !StringValues.Equals(State.CachedVaryRules.VaryRules.Params, normalizedVaryParamsValue) ||
+                        !StringValues.Equals(State.CachedVaryRules.VaryRules.Headers, normalizedVaryHeaderValue))
+                    {
+                        var cachedVaryRules = new CachedVaryRules
+                        {
+                            VaryKeyPrefix = FastGuid.NewGuid().IdString,
+                            VaryRules = new VaryRules()
+                            {
+                                // TODO: Vary Encoding
+                                Headers = normalizedVaryHeaderValue,
+                                Params = normalizedVaryParamsValue
+                            }
+                        };
+
+                        State.CachedVaryRules = cachedVaryRules;
+                        _cache.Set(State.BaseKey, cachedVaryRules, State.CachedResponseValidFor);
+                    }
+
+                    State.VaryKey = _keyProvider.CreateVaryKey(_httpContext, State.CachedVaryRules.VaryRules);
                 }
 
                 // Ensure date header is set
@@ -202,9 +221,10 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     State.ResponseHeaders.Date = State.ResponseTime;
                 }
 
-                // Store the response to cache
+                // Store the response on the state
                 State.CachedResponse = new CachedResponse
                 {
+                    BodyKeyPrefix = FastGuid.NewGuid().IdString,
                     Created = State.ResponseHeaders.Date.Value,
                     StatusCode = _httpContext.Response.StatusCode
                 };
@@ -227,9 +247,24 @@ namespace Microsoft.AspNetCore.ResponseCaching
         {
             if (State.ShouldCacheResponse && ResponseCacheStream.BufferingEnabled)
             {
-                State.CachedResponse.Body = ResponseCacheStream.BufferedStream.ToArray();
+                if (ResponseCacheStream.BufferedStream.Length >= _options.MinimumSplitBodySize)
+                {
+                    // Store response and response body separately
+                    _cache.Set(State.VaryKey ?? State.BaseKey, State.CachedResponse, State.CachedResponseValidFor);
 
-                _cache.Set(State.VaryKey ?? State.BaseKey, State.CachedResponse, State.CachedResponseValidFor);
+                    var cachedResponseBody = new CachedResponseBody()
+                    {
+                        Body = ResponseCacheStream.BufferedStream.ToArray()
+                    };
+
+                    _cache.Set(State.CachedResponse.BodyKeyPrefix, cachedResponseBody, State.CachedResponseValidFor);
+                }
+                else
+                {
+                    // Store response and response body together
+                    State.CachedResponse.Body = ResponseCacheStream.BufferedStream.ToArray();
+                    _cache.Set(State.VaryKey ?? State.BaseKey, State.CachedResponse, State.CachedResponseValidFor);
+                }
             }
         }
 
@@ -274,6 +309,30 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
             // TODO: Move this temporary interface with endpoint to HttpAbstractions
             _httpContext.RemoveResponseCachingFeature();
+        }
+
+        // Normalize order and casing
+        internal static StringValues GetNormalizedStringValues(StringValues stringVales)
+        {
+            if (stringVales.Count == 1)
+            {
+                return new StringValues(stringVales.ToString().ToUpperInvariant());
+            }
+            else
+            {
+                var originalArray = stringVales.ToArray();
+                var newArray = new string[originalArray.Length];
+
+                for (int i = 0; i < originalArray.Length; i++)
+                {
+                    newArray[i] = originalArray[i].ToUpperInvariant();
+                }
+
+                // Since the casing has already been normalized, use Ordinal comparison
+                Array.Sort(newArray, StringComparer.Ordinal);
+
+                return new StringValues(newArray);
+            }
         }
     }
 }

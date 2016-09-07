@@ -25,78 +25,109 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public void RoundTrip_CachedResponses_Succeeds()
+        public void Deserialize_NullObject_ReturnsNull()
+        {
+            Assert.Null(CacheEntrySerializer.Deserialize(null));
+        }
+
+        [Fact]
+        public void RoundTrip_CachedResponseBody_Succeeds()
+        {
+            var cachedResponseBody = new CachedResponseBody()
+            {
+                Body = Encoding.ASCII.GetBytes("Hello world"),
+            };
+
+            AssertCachedResponseBodyEqual(cachedResponseBody, (CachedResponseBody)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedResponseBody)));
+        }
+
+        [Fact]
+        public void RoundTrip_CachedResponseWithoutBody_Succeeds()
         {
             var headers = new HeaderDictionary();
             headers["keyA"] = "valueA";
             headers["keyB"] = "valueB";
-            var cachedEntry = new CachedResponse()
+            var cachedResponse = new CachedResponse()
             {
+                BodyKeyPrefix = FastGuid.NewGuid().IdString,
+                Created = DateTimeOffset.UtcNow,
+                StatusCode = StatusCodes.Status200OK,
+                Headers = headers
+            };
+
+            AssertCachedResponseEqual(cachedResponse, (CachedResponse)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedResponse)));
+        }
+
+        [Fact]
+        public void RoundTrip_CachedResponseWithBody_Succeeds()
+        {
+            var headers = new HeaderDictionary();
+            headers["keyA"] = "valueA";
+            headers["keyB"] = "valueB";
+            var cachedResponse = new CachedResponse()
+            {
+                BodyKeyPrefix = FastGuid.NewGuid().IdString,
                 Created = DateTimeOffset.UtcNow,
                 StatusCode = StatusCodes.Status200OK,
                 Body = Encoding.ASCII.GetBytes("Hello world"),
                 Headers = headers
             };
 
-            AssertCachedResponsesEqual(cachedEntry, (CachedResponse)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedEntry)));
+            AssertCachedResponseEqual(cachedResponse, (CachedResponse)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedResponse)));
         }
 
         [Fact]
-        public void RoundTrip_Empty_CachedVaryRules_Succeeds()
+        public void RoundTrip_CachedVaryRule_EmptyRules_Succeeds()
         {
-            var cachedVaryRules = new CachedVaryRules();
-
-            AssertCachedVaryRulesEqual(cachedVaryRules, (CachedVaryRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryRules)));
-        }
-
-        [Fact]
-        public void RoundTrip_CachedVaryRules_EmptyRules_Succeeds()
-        {
-            var cachedVaryRules = new CachedVaryRules()
+            var cachedVaryRule = new CachedVaryRules()
             {
+                VaryKeyPrefix = FastGuid.NewGuid().IdString,
                 VaryRules = new VaryRules()
             };
 
-            AssertCachedVaryRulesEqual(cachedVaryRules, (CachedVaryRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryRules)));
+            AssertCachedVaryRuleEqual(cachedVaryRule, (CachedVaryRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryRule)));
         }
 
         [Fact]
-        public void RoundTrip_HeadersOnly_CachedVaryRules_Succeeds()
+        public void RoundTrip_CachedVaryRule_HeadersOnly_Succeeds()
         {
             var headers = new[] { "headerA", "headerB" };
-            var cachedVaryRules = new CachedVaryRules()
+            var cachedVaryRule = new CachedVaryRules()
             {
+                VaryKeyPrefix = FastGuid.NewGuid().IdString,
                 VaryRules = new VaryRules()
                 {
                     Headers = headers
                 }
             };
 
-            AssertCachedVaryRulesEqual(cachedVaryRules, (CachedVaryRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryRules)));
+            AssertCachedVaryRuleEqual(cachedVaryRule, (CachedVaryRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryRule)));
         }
 
         [Fact]
-        public void RoundTrip_ParamsOnly_CachedVaryRules_Succeeds()
+        public void RoundTrip_CachedVaryRule_ParamsOnly_Succeeds()
         {
             var param = new[] { "paramA", "paramB" };
-            var cachedVaryRules = new CachedVaryRules()
+            var cachedVaryRule = new CachedVaryRules()
             {
+                VaryKeyPrefix = FastGuid.NewGuid().IdString,
                 VaryRules = new VaryRules()
                 {
                     Params = param
                 }
             };
 
-            AssertCachedVaryRulesEqual(cachedVaryRules, (CachedVaryRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryRules)));
+            AssertCachedVaryRuleEqual(cachedVaryRule, (CachedVaryRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryRule)));
         }
 
         [Fact]
-        public void RoundTrip_HeadersAndParams_CachedVaryRules_Succeeds()
+        public void RoundTrip_CachedVaryRule_HeadersAndParams_Succeeds()
         {
             var headers = new[] { "headerA", "headerB" };
             var param = new[] { "paramA", "paramB" };
-            var cachedVaryRules = new CachedVaryRules()
+            var cachedVaryRule = new CachedVaryRules()
             {
+                VaryKeyPrefix = FastGuid.NewGuid().IdString,
                 VaryRules = new VaryRules()
                 {
                     Headers = headers,
@@ -104,30 +135,37 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 }
             };
 
-            AssertCachedVaryRulesEqual(cachedVaryRules, (CachedVaryRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryRules)));
+            AssertCachedVaryRuleEqual(cachedVaryRule, (CachedVaryRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryRule)));
         }
 
         [Fact]
         public void Deserialize_InvalidEntries_ReturnsNull()
         {
             var headers = new[] { "headerA", "headerB" };
-            var cachedVaryRules = new CachedVaryRules()
+            var cachedVaryRule = new CachedVaryRules()
             {
+                VaryKeyPrefix = FastGuid.NewGuid().IdString,
                 VaryRules = new VaryRules()
                 {
                     Headers = headers
                 }
             };
-            var serializedEntry = CacheEntrySerializer.Serialize(cachedVaryRules);
+            var serializedEntry = CacheEntrySerializer.Serialize(cachedVaryRule);
             Array.Reverse(serializedEntry);
 
             Assert.Null(CacheEntrySerializer.Deserialize(serializedEntry));
         }
 
-        private static void AssertCachedResponsesEqual(CachedResponse expected, CachedResponse actual)
+        private static void AssertCachedResponseBodyEqual(CachedResponseBody expected, CachedResponseBody actual)
+        {
+            Assert.True(expected.Body.SequenceEqual(actual.Body));
+        }
+
+        private static void AssertCachedResponseEqual(CachedResponse expected, CachedResponse actual)
         {
             Assert.NotNull(actual);
             Assert.NotNull(expected);
+            Assert.Equal(expected.BodyKeyPrefix, actual.BodyKeyPrefix);
             Assert.Equal(expected.Created, actual.Created);
             Assert.Equal(expected.StatusCode, actual.StatusCode);
             Assert.Equal(expected.Headers.Count, actual.Headers.Count);
@@ -135,23 +173,23 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             {
                 Assert.Equal(expectedHeader.Value, actual.Headers[expectedHeader.Key]);
             }
-            Assert.True(expected.Body.SequenceEqual(actual.Body));
-        }
-
-        private static void AssertCachedVaryRulesEqual(CachedVaryRules expected, CachedVaryRules actual)
-        {
-            Assert.NotNull(actual);
-            Assert.NotNull(expected);
-            if (expected.VaryRules == null)
+            if (expected.Body == null)
             {
-                Assert.Null(actual.VaryRules);
+                Assert.Null(actual.Body);
             }
             else
             {
-                Assert.NotNull(actual.VaryRules);
-                Assert.Equal(expected.VaryRules.Headers, actual.VaryRules.Headers);
-                Assert.Equal(expected.VaryRules.Params, actual.VaryRules.Params);
+                Assert.True(expected.Body.SequenceEqual(actual.Body));
             }
+        }
+
+        private static void AssertCachedVaryRuleEqual(CachedVaryRules expected, CachedVaryRules actual)
+        {
+            Assert.NotNull(actual);
+            Assert.NotNull(expected);
+            Assert.Equal(expected.VaryKeyPrefix, actual.VaryKeyPrefix);
+            Assert.Equal(expected.VaryRules.Headers, actual.VaryRules.Headers);
+            Assert.Equal(expected.VaryRules.Params, actual.VaryRules.Params);
         }
     }
 }

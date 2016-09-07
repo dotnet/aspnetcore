@@ -33,8 +33,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         public void Set(string key, object entry, TimeSpan validFor)
         {
             _cache.Set(
-                key, 
-                entry, 
+                key,
+                entry,
                 new MemoryCacheEntryOptions()
                 {
                     AbsoluteExpirationRelativeToNow = validFor

@@ -8,18 +8,18 @@ namespace Microsoft.AspNetCore.ResponseCaching
     public interface IKeyProvider
     {
         /// <summary>
-        /// Create a key using the HTTP request.
+        /// Create a base key using the HTTP request.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
         /// <returns>The created base key.</returns>
         string CreateBaseKey(HttpContext httpContext);
 
         /// <summary>
-        /// Create a key using the HTTP context and vary rules.
+        /// Create a vary key using the HTTP context and vary rules.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
         /// <param name="varyRules">The <see cref="VaryRules"/>.</param>
-        /// <returns>The created base key.</returns>
+        /// <returns>The created vary key.</returns>
         string CreateVaryKey(HttpContext httpContext, VaryRules varyRules);
     }
 }
