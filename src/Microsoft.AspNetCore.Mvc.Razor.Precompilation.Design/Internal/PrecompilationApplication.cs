@@ -37,10 +37,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Internal
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine(ex.Message);
-#if DEBUG
-                Console.Error.WriteLine(ex);
-#endif
+                Error.WriteLine(ex.Message);
+                Error.WriteLine(ex.StackTrace);
                 return 1;
             }
         }
@@ -48,14 +46,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Internal
         private string GetInformationalVersion()
         {
             var assembly = _callingType.GetTypeInfo().Assembly;
-            var attributes = assembly.GetCustomAttributes(
-                typeof(AssemblyInformationalVersionAttribute)) as AssemblyInformationalVersionAttribute[];
-
-            var versionAttribute = attributes.Length == 0 ?
-                assembly.GetName().Version.ToString() :
-                attributes[0].InformationalVersion;
-
-            return versionAttribute;
+            var attribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+            return attribute.InformationalVersion;
         }
     }
 }

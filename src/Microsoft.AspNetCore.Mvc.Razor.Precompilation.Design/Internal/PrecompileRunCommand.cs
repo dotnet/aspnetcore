@@ -24,12 +24,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Internal
 {
     public class PrecompileRunCommand
     {
-        public static readonly string ApplicationNameTemplate = "--applicationName";
+        public static readonly string ApplicationNameTemplate = "--application-name";
         public static readonly string OutputPathTemplate = "--output-path";
         private static readonly ParallelOptions ParalellOptions = new ParallelOptions
         {
             MaxDegreeOfParallelism = 4
         };
+
+        private CommandLineApplication Application { get; set; }
 
         private CommandOption OutputPathOption { get; set; }
 
@@ -45,6 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Internal
 
         public void Configure(CommandLineApplication app)
         {
+            Application = app;
             Options.Configure(app);
             StrongNameOptions.Configure(app);
 
@@ -63,7 +66,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Internal
 
         private int Execute()
         {
-            ParseArguments();
+            if (!ParseArguments())
+            {
+                return 1;
+            }
 
             MvcServiceProvider = new MvcServiceProvider(
                 ProjectPath,
@@ -71,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Internal
                 Options.ContentRootOption.Value(),
                 Options.ConfigureCompilationType.Value());
 
-            Console.WriteLine("Running Razor view precompilation.");
+            Application.Out.WriteLine("Running Razor view precompilation.");
 
             var stopWatch = Stopwatch.StartNew();
             var results = GenerateCode();
@@ -83,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Internal
                     success = false;
                     foreach (var error in result.GeneratorResults.ParserErrors)
                     {
-                        Console.Error.WriteLine($"{error.Location.FilePath} ({error.Location.LineIndex}): {error.Message}");
+                        Application.Error.WriteLine($"{error.Location.FilePath} ({error.Location.LineIndex}): {error.Message}");
                     }
                 }
             }
@@ -104,15 +110,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Internal
             {
                 foreach (var diagnostic in emitResult.Diagnostics)
                 {
-                    Console.Error.WriteLine(CSharpDiagnosticFormatter.Instance.Format(diagnostic));
+                    Application.Error.WriteLine(CSharpDiagnosticFormatter.Instance.Format(diagnostic));
                 }
 
                 return 1;
             }
 
             stopWatch.Stop();
-            Console.WriteLine($"Precompiled views emitted to {assemblyPath}.");
-            Console.WriteLine($"Successfully compiled {results.Length} Razor views in {stopWatch.ElapsedMilliseconds}ms.");
+            Application.Out.WriteLine($"Precompiled views emitted to {assemblyPath}.");
+            Application.Out.WriteLine($"Successfully compiled {results.Length} Razor views in {stopWatch.ElapsedMilliseconds}ms.");
             return 0;
         }
 
@@ -198,23 +204,34 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Internal
             return codeGenerator.Compilation;
         }
 
-        private void ParseArguments()
+        private bool ParseArguments()
         {
             ProjectPath = Options.ProjectArgument.Value;
             if (string.IsNullOrEmpty(ProjectPath))
             {
-                throw new ArgumentException("Project path not specified.");
+                Application.Error.WriteLine("Project path not specified.");
+                return false;
             }
 
             if (!OutputPathOption.HasValue())
             {
-                throw new ArgumentException($"Option {OutputPathTemplate} does not specify a value.");
+                Application.Error.WriteLine($"Option {OutputPathTemplate} does not specify a value.");
+                return false;
             }
 
             if (!ApplicationNameOption.HasValue())
             {
-                throw new ArgumentException($"Option {ApplicationNameTemplate} does not specify a value.");
+                Application.Error.WriteLine($"Option {ApplicationNameTemplate} does not specify a value.");
+                return false;
             }
+
+            if (!Options.ContentRootOption.HasValue())
+            {
+                Application.Error.WriteLine($"Option {CommonOptions.ContentRootTemplate} does not specify a value.");
+                return false;
+            }
+
+            return true;
         }
 
         private ViewCompilationInfo[] GenerateCode()

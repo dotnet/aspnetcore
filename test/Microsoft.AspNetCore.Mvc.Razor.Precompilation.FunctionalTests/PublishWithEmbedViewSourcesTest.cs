@@ -64,9 +64,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.FunctionalTests
                     Fixture.Logger);
 
                 // Assert - 2
-                Assert.Equal(
-                    expectedViews,
-                    response2.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries));
+                var actual = response2.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                    .OrderBy(p => p, StringComparer.OrdinalIgnoreCase);
+                Assert.Equal(expectedViews, actual);
             }
         }
 

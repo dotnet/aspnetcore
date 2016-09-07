@@ -19,6 +19,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0398AFFF-5
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Razor.Precompilation.FunctionalTests", "test\Microsoft.AspNetCore.Mvc.Razor.Precompilation.FunctionalTests\Microsoft.AspNetCore.Mvc.Razor.Precompilation.FunctionalTests.xproj", "{46C9A4B2-8B1C-451B-B670-C194901D66AC}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Razor.Precompilation.Tools.Test", "test\Microsoft.AspNetCore.Mvc.Razor.Precompilation.Tools.Test\Microsoft.AspNetCore.Mvc.Razor.Precompilation.Tools.Test.xproj", "{B58E3380-D451-4E54-B522-CD21404FCD58}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Test", "test\Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Test\Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Test.xproj", "{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +41,14 @@ Global
 		{46C9A4B2-8B1C-451B-B670-C194901D66AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{46C9A4B2-8B1C-451B-B670-C194901D66AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46C9A4B2-8B1C-451B-B670-C194901D66AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B58E3380-D451-4E54-B522-CD21404FCD58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B58E3380-D451-4E54-B522-CD21404FCD58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B58E3380-D451-4E54-B522-CD21404FCD58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B58E3380-D451-4E54-B522-CD21404FCD58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -45,5 +57,7 @@ Global
 		{4339FC9B-AEC6-442A-B413-A41555ED76C7} = {02F7AA35-91AF-491E-9F0E-03CFAF86C720}
 		{F8BF7D95-0633-407F-BB0B-02563F13C068} = {02F7AA35-91AF-491E-9F0E-03CFAF86C720}
 		{46C9A4B2-8B1C-451B-B670-C194901D66AC} = {0398AFFF-505E-4283-89DA-BBD9D28B53DB}
+		{B58E3380-D451-4E54-B522-CD21404FCD58} = {0398AFFF-505E-4283-89DA-BBD9D28B53DB}
+		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F} = {0398AFFF-505E-4283-89DA-BBD9D28B53DB}
 	EndGlobalSection
 EndGlobal

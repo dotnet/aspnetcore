@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Internal
 {
     public class PrecompileDispatchCommand
     {
+        private CommandLineApplication Application { get; set; }
+
         private CommonOptions Options { get; } = new CommonOptions();
 
         private CommandOption FrameworkOption { get; set; }
@@ -25,9 +27,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Internal
 
         private CommandOption OutputPathOption { get; set; }
 
-        private NuGetFramework TargetFramework { get; set; }
-
         private CommandOption BuildBasePathOption { get; set; }
+
+        private NuGetFramework TargetFramework { get; set; }
 
         private CommandOption DumpFilesOption { get; set; }
 
@@ -39,6 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Internal
 
         public void Configure(CommandLineApplication app)
         {
+            Application = app;
             Options.Configure(app);
             FrameworkOption = app.Option(
                 "-f|--framework",
@@ -52,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Internal
 
             OutputPathOption = app.Option(
                 "-o|--output-path",
-                "Published path of the application.",
+                "Output path.",
                 CommandOptionType.SingleValue);
 
             app.OnExecute(() => Execute());
@@ -60,7 +63,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Internal
 
         private int Execute()
         {
-            ParseArguments();
+            if (!ParseArguments())
+            {
+                return 1;
+            }
 
             var runtimeContext = GetRuntimeContext();
 
@@ -125,41 +131,45 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Internal
                 toolName: toolName);
 
             var commandExitCode = dispatchCommand
-                .ForwardStdErr(Console.Error)
-                .ForwardStdOut(Console.Out)
+                .ForwardStdErr(Application.Error)
+                .ForwardStdOut(Application.Out)
                 .Execute()
                 .ExitCode;
 
             return commandExitCode;
         }
 
-        private void ParseArguments()
+        private bool ParseArguments()
         {
-            ProjectPath = GetProjectPath();
+            ProjectPath = GetProjectPath(Options.ProjectArgument.Value);
             Configuration = ConfigurationOption.Value() ?? DotNet.Cli.Utils.Constants.DefaultConfiguration;
 
             if (!FrameworkOption.HasValue())
             {
-                throw new Exception($"Option {FrameworkOption.Template} does not have a value.");
+                Application.Error.WriteLine($"Option {FrameworkOption.Template} does not have a value.");
+                return false;
             }
             TargetFramework = NuGetFramework.Parse(FrameworkOption.Value());
 
             if (!OutputPathOption.HasValue())
             {
-                throw new Exception($"Option {OutputPathOption.Template} does not have a value.");
+                Application.Error.WriteLine($"Option {OutputPathOption.Template} does not have a value.");
+                return false;
             }
             OutputPath = OutputPathOption.Value();
+
+            return true;
         }
 
-        private string GetProjectPath()
+        public static string GetProjectPath(string projectArgument)
         {
             string projectPath;
-            if (!string.IsNullOrEmpty(Options.ProjectArgument.Value))
+            if (!string.IsNullOrEmpty(projectArgument))
             {
-                projectPath = Path.GetFullPath(Options.ProjectArgument.Value);
-                if (string.Equals(Path.GetFileName(ProjectPath), "project.json", StringComparison.OrdinalIgnoreCase))
+                projectPath = Path.GetFullPath(projectArgument);
+                if (string.Equals(Path.GetFileName(projectPath), "project.json", StringComparison.OrdinalIgnoreCase))
                 {
-                    projectPath = Path.GetDirectoryName(ProjectPath);
+                    projectPath = Path.GetDirectoryName(projectPath);
                 }
 
                 if (!Directory.Exists(projectPath))
