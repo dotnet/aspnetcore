@@ -29,7 +29,8 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
     {
         private readonly static JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings
         {
-            ContractResolver = new CamelCasePropertyNamesContractResolver()
+            ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            TypeNameHandling = TypeNameHandling.None
         };
 
         private readonly SemaphoreSlim _connectionCreationSemaphore = new SemaphoreSlim(1);

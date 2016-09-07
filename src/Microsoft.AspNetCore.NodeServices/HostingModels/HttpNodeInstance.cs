@@ -25,9 +25,10 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         private static readonly Regex PortMessageRegex =
             new Regex(@"^\[Microsoft.AspNetCore.NodeServices.HttpNodeHost:Listening on port (\d+)\]$");
 
-        private static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings
+        private static readonly JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings
         {
-            ContractResolver = new CamelCasePropertyNamesContractResolver()
+            ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            TypeNameHandling = TypeNameHandling.None
         };
 
         private readonly HttpClient _client;
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
         protected override async Task<T> InvokeExportAsync<T>(NodeInvocationInfo invocationInfo)
         {
-            var payloadJson = JsonConvert.SerializeObject(invocationInfo, JsonSerializerSettings);
+            var payloadJson = JsonConvert.SerializeObject(invocationInfo, jsonSerializerSettings);
             var payload = new StringContent(payloadJson, Encoding.UTF8, "application/json");
             var response = await _client.PostAsync("http://localhost:" + _portNumber, payload);
 
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
                 case "application/json":
                     var responseJson = await response.Content.ReadAsStringAsync();
-                    return JsonConvert.DeserializeObject<T>(responseJson);
+                    return JsonConvert.DeserializeObject<T>(responseJson, jsonSerializerSettings);
 
                 case "application/octet-stream":
                     // Streamed responses have to be received as System.IO.Stream instances
