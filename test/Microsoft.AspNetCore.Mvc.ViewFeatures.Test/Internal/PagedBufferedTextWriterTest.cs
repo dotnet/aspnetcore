@@ -188,6 +188,63 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         }
 
         [Fact]
+        public async Task SynchronousWrites_FollowedByAsyncWriteString_WritesAllContent()
+        {
+            // Arrange
+            var pool = new TestArrayPool();
+            var inner = new StringWriter();
+
+            var writer = new PagedBufferedTextWriter(new TestArrayPool(), inner);
+
+            // Act
+            writer.Write('a');
+            writer.Write(new[] { 'b', 'c', 'd' });
+            writer.Write("ef");
+            await writer.WriteAsync("ghi");
+
+            // Assert
+            Assert.Equal("abcdefghi", inner.ToString());
+        }
+
+        [Fact]
+        public async Task SynchronousWrites_FollowedByAsyncWriteChar_WritesAllContent()
+        {
+            // Arrange
+            var pool = new TestArrayPool();
+            var inner = new StringWriter();
+
+            var writer = new PagedBufferedTextWriter(new TestArrayPool(), inner);
+
+            // Act
+            writer.Write('a');
+            writer.Write(new[] { 'b', 'c', 'd' });
+            writer.Write("ef");
+            await writer.WriteAsync('g');
+
+            // Assert
+            Assert.Equal("abcdefg", inner.ToString());
+        }
+
+        [Fact]
+        public async Task SynchronousWrites_FollowedByAsyncWriteCharArray_WritesAllContent()
+        {
+            // Arrange
+            var pool = new TestArrayPool();
+            var inner = new StringWriter();
+
+            var writer = new PagedBufferedTextWriter(new TestArrayPool(), inner);
+
+            // Act
+            writer.Write('a');
+            writer.Write(new[] { 'b', 'c', 'd' });
+            writer.Write("ef");
+            await writer.WriteAsync(new[] { 'g', 'h', 'i' });
+
+            // Assert
+            Assert.Equal("abcdefghi", inner.ToString());
+        }
+
+        [Fact]
         public async Task FlushAsync_ReturnsPages()
         {
             // Arrange
