@@ -4,8 +4,7 @@
             "AdxVerificationCompositeRule"
         ],
         "packages": {
-            "Microsoft.AspNetCore.Server.IISIntegration": { },
-            "Microsoft.AspNetCore.Server.IISIntegration.Tools": { }
+            "Microsoft.AspNetCore.Server.IISIntegration": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.
