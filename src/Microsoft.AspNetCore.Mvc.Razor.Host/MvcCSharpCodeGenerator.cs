@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNetCore.Mvc.Razor.Directives;
+using Microsoft.AspNetCore.Mvc.Razor.Host.Internal;
+using Microsoft.AspNetCore.Razor.Chunks;
 using Microsoft.AspNetCore.Razor.CodeGenerators;
 using Microsoft.AspNetCore.Razor.CodeGenerators.Visitors;
 
@@ -12,6 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     public class MvcCSharpCodeGenerator : CSharpCodeGenerator
     {
         private readonly GeneratedTagHelperAttributeContext _tagHelperAttributeContext;
+        private readonly TagHelperChunkDecorator _tagHelperChunkDecorator;
         private readonly string _defaultModel;
         private readonly string _injectAttribute;
 
@@ -45,6 +49,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             _tagHelperAttributeContext = tagHelperAttributeContext;
             _defaultModel = defaultModel;
             _injectAttribute = injectAttribute;
+            _tagHelperChunkDecorator = new TagHelperChunkDecorator(Context);
+        }
+
+        public override CodeGeneratorResult Generate()
+        {
+            _tagHelperChunkDecorator.Accept(Context.ChunkTreeBuilder.Root.Children);
+            return base.Generate();
         }
 
         protected override CSharpCodeWritingScope BuildClassDeclaration(CSharpCodeWriter writer)
@@ -60,6 +71,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
 
             return base.BuildClassDeclaration(writer);
+        }
+
+        protected override void BuildAfterExecuteContent(CSharpCodeWriter writer, IList<Chunk> chunks)
+        {
+            new ViewComponentTagHelperChunkVisitor(writer, Context).Accept(chunks);
         }
 
         protected override CSharpCodeVisitor CreateCSharpCodeVisitor(

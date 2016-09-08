@@ -98,8 +98,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// attribute to that formatted <see cref="string"/>.
         /// </summary>
         /// <remarks>
-        /// Not used if the provided (see <see cref="InputTypeName"/>) or calculated "type" attribute value is
-        /// <c>checkbox</c>, <c>password</c>, or <c>radio</c>. That is, <see cref="Format"/> is used when calling
+        /// Used only the calculated "type" attribute is "text" (the most common value) e.g.
+        /// <see cref="InputTypeName"/> is "String". That is, <see cref="Format"/> is used when calling
         /// <see cref="IHtmlGenerator.GenerateTextBox"/>.
         /// </remarks>
         [HtmlAttributeName(FormatAttributeName)]
@@ -110,9 +110,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// </summary>
         /// <remarks>
         /// Passed through to the generated HTML in all cases. Also used to determine the <see cref="IHtmlGenerator"/>
-        /// helper to call and the default <see cref="Format"/> value. A default <see cref="Format"/> is not calculated
-        /// if the provided (see <see cref="InputTypeName"/>) or calculated "type" attribute value is <c>checkbox</c>,
-        /// <c>hidden</c>, <c>password</c>, or <c>radio</c>.
+        /// helper to call and the default <see cref="Format"/> value (when calling
+        /// <see cref="IHtmlGenerator.GenerateTextBox"/>).
         /// </remarks>
         [HtmlAttributeName("type")]
         public string InputTypeName { get; set; }
@@ -190,13 +189,19 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             TagBuilder tagBuilder;
             switch (inputType)
             {
-                case "hidden":
-                    tagBuilder = GenerateHidden(modelExplorer);
-                    break;
-
                 case "checkbox":
                     GenerateCheckBox(modelExplorer, output);
                     return;
+
+                case "hidden":
+                    tagBuilder = Generator.GenerateHidden(
+                        ViewContext,
+                        modelExplorer,
+                        For.Name,
+                        value: For.Model,
+                        useViewData: false,
+                        htmlAttributes: null);
+                    break;
 
                 case "password":
                     tagBuilder = Generator.GeneratePassword(
@@ -356,34 +361,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 For.Name,
                 value: modelExplorer.Model,
                 format: format,
-                htmlAttributes: htmlAttributes);
-        }
-
-        // Imitate Generator.GenerateHidden() using Generator.GenerateTextBox(). This adds support for asp-format that
-        // is not available in Generator.GenerateHidden().
-        private TagBuilder GenerateHidden(ModelExplorer modelExplorer)
-        {
-            var value = For.Model;
-            var byteArrayValue = value as byte[];
-            if (byteArrayValue != null)
-            {
-                value = Convert.ToBase64String(byteArrayValue);
-            }
-
-            // In DefaultHtmlGenerator(), GenerateTextBox() calls GenerateInput() _almost_ identically to how
-            // GenerateHidden() does and the main switch inside GenerateInput() handles InputType.Text and
-            // InputType.Hidden identically. No behavior differences at all when a type HTML attribute already exists.
-            var htmlAttributes = new Dictionary<string, object>
-            {
-                { "type", "hidden" }
-            };
-
-            return Generator.GenerateTextBox(
-                ViewContext,
-                modelExplorer,
-                For.Name,
-                value: value,
-                format: Format,
                 htmlAttributes: htmlAttributes);
         }
 

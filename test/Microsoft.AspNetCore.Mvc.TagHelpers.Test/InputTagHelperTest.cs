@@ -246,75 +246,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Equal(expectedTagName, output.TagName);
         }
 
-        [Theory]
-        [InlineData(null, "datetime")]
-        [InlineData("hidden", "hidden")]
-        public void Process_GeneratesFormattedOutput(string specifiedType, string expectedType)
-        {
-            // Arrange
-            var expectedAttributes = new TagHelperAttributeList
-            {
-                { "type", expectedType },
-                { "id", "DateTimeOffset" },
-                { "name", "DateTimeOffset" },
-                { "valid", "from validation attributes" },
-                { "value", "datetime: 2011-08-31T05:30:45.0000000+03:00" },
-            };
-            var expectedTagName = "not-input";
-            var container = new Model
-            {
-                DateTimeOffset = new DateTimeOffset(2011, 8, 31, hour: 5, minute: 30, second: 45, offset: TimeSpan.FromHours(3))
-            };
-
-            var allAttributes = new TagHelperAttributeList
-            {
-                { "type", specifiedType },
-            };
-            var context = new TagHelperContext(
-                allAttributes: allAttributes,
-                items: new Dictionary<object, object>(),
-                uniqueId: "test");
-            var output = new TagHelperOutput(
-                expectedTagName,
-                new TagHelperAttributeList(),
-                getChildContentAsync: (useCachedResult, encoder) =>
-                {
-                    throw new Exception("getChildContentAsync should not be called.");
-                })
-            {
-                TagMode = TagMode.StartTagOnly,
-            };
-
-            var htmlGenerator = new TestableHtmlGenerator(new EmptyModelMetadataProvider())
-            {
-                ValidationAttributes =
-                {
-                    {  "valid", "from validation attributes" },
-                }
-            };
-
-            var tagHelper = GetTagHelper(
-                htmlGenerator,
-                container,
-                typeof(Model),
-                model: container.DateTimeOffset,
-                propertyName: nameof(Model.DateTimeOffset),
-                expressionName: nameof(Model.DateTimeOffset));
-            tagHelper.Format = "datetime: {0:o}";
-            tagHelper.InputTypeName = specifiedType;
-
-            // Act
-            tagHelper.Process(context, output);
-
-            // Assert
-            Assert.Equal(expectedAttributes, output.Attributes);
-            Assert.Empty(output.PreContent.GetContent());
-            Assert.Empty(output.Content.GetContent());
-            Assert.Empty(output.PostContent.GetContent());
-            Assert.Equal(TagMode.StartTagOnly, output.TagMode);
-            Assert.Equal(expectedTagName, output.TagName);
-        }
-
         [Fact]
         public async Task ProcessAsync_CallsGenerateCheckBox_WithExpectedParameters()
         {
@@ -352,8 +283,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var tagHelper = GetTagHelper(htmlGenerator.Object, model: false, propertyName: nameof(Model.IsACar));
-            tagHelper.Format = "somewhat-less-null"; // ignored
-
             var tagBuilder = new TagBuilder("input")
             {
                 Attributes =
@@ -394,19 +323,18 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Theory]
-        [InlineData(null, "hidden", null, null)]
-        [InlineData(null, "Hidden", "not-null", "somewhat-less-null")]
-        [InlineData(null, "HIDden", null, "somewhat-less-null")]
-        [InlineData(null, "HIDDEN", "not-null", null)]
-        [InlineData("hiddeninput", null, null, null)]
-        [InlineData("HiddenInput", null, "not-null", null)]
-        [InlineData("hidDENinPUT", null, null, "somewhat-less-null")]
-        [InlineData("HIDDENINPUT", null, "not-null", "somewhat-less-null")]
-        public async Task ProcessAsync_CallsGenerateTextBox_WithExpectedParametersForHidden(
+        [InlineData(null, "hidden", null)]
+        [InlineData(null, "Hidden", "not-null")]
+        [InlineData(null, "HIDden", null)]
+        [InlineData(null, "HIDDEN", "not-null")]
+        [InlineData("hiddeninput", null, null)]
+        [InlineData("HiddenInput", null, "not-null")]
+        [InlineData("hidDENinPUT", null, null)]
+        [InlineData("HIDDENINPUT", null, "not-null")]
+        public async Task ProcessAsync_CallsGenerateHidden_WithExpectedParameters(
             string dataTypeName,
             string inputTypeName,
-            string model,
-            string format)
+            string model)
         {
             // Arrange
             var contextAttributes = new TagHelperAttributeList
@@ -461,7 +389,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 model,
                 nameof(Model.Text),
                 metadataProvider: metadataProvider);
-            tagHelper.Format = format;
             tagHelper.InputTypeName = inputTypeName;
 
             var tagBuilder = new TagBuilder("input")
@@ -472,13 +399,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 },
             };
             htmlGenerator
-                .Setup(mock => mock.GenerateTextBox(
+                .Setup(mock => mock.GenerateHidden(
                     tagHelper.ViewContext,
                     tagHelper.For.ModelExplorer,
                     tagHelper.For.Name,
-                    model,  // value
-                    format,
-                    new Dictionary<string, object> { { "type", "hidden" } }))   // htmlAttributes
+                    model,      // value
+                    false,      // useViewData
+                    null))      // htmlAttributes
                 .Returns(tagBuilder)
                 .Verifiable();
 
@@ -563,7 +490,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 model,
                 nameof(Model.Text),
                 metadataProvider: metadataProvider);
-            tagHelper.Format = "somewhat-less-null"; // ignored
             tagHelper.InputTypeName = inputTypeName;
 
             var tagBuilder = new TagBuilder("input")
@@ -655,7 +581,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var tagHelper = GetTagHelper(htmlGenerator.Object, model, nameof(Model.Text));
-            tagHelper.Format = "somewhat-less-null"; // ignored
             tagHelper.InputTypeName = inputTypeName;
             tagHelper.Value = value;
 
@@ -692,33 +617,32 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Theory]
-        [InlineData(null, null, null, "somewhat-less-null")]
-        [InlineData(null, null, "not-null", null)]
-        [InlineData(null, "string", null, null)]
-        [InlineData(null, "String", "not-null", null)]
-        [InlineData(null, "STRing", null, "somewhat-less-null")]
-        [InlineData(null, "STRING", "not-null", null)]
-        [InlineData(null, "text", null, null)]
-        [InlineData(null, "Text", "not-null", "somewhat-less-null")]
-        [InlineData(null, "TExt", null, null)]
-        [InlineData(null, "TEXT", "not-null", null)]
-        [InlineData("string", null, null, null)]
-        [InlineData("String", null, "not-null", null)]
-        [InlineData("STRing", null, null, null)]
-        [InlineData("STRING", null, "not-null", null)]
-        [InlineData("text", null, null, null)]
-        [InlineData("Text", null, "not-null", null)]
-        [InlineData("TExt", null, null, null)]
-        [InlineData("TEXT", null, "not-null", null)]
-        [InlineData("custom-datatype", null, null, null)]
-        [InlineData(null, "unknown-input-type", "not-null", null)]
-        [InlineData("Image", null, "not-null", "somewhat-less-null")]
-        [InlineData(null, "image", "not-null", null)]
+        [InlineData(null, null, null)]
+        [InlineData(null, null, "not-null")]
+        [InlineData(null, "string", null)]
+        [InlineData(null, "String", "not-null")]
+        [InlineData(null, "STRing", null)]
+        [InlineData(null, "STRING", "not-null")]
+        [InlineData(null, "text", null)]
+        [InlineData(null, "Text", "not-null")]
+        [InlineData(null, "TExt", null)]
+        [InlineData(null, "TEXT", "not-null")]
+        [InlineData("string", null, null)]
+        [InlineData("String", null, "not-null")]
+        [InlineData("STRing", null, null)]
+        [InlineData("STRING", null, "not-null")]
+        [InlineData("text", null, null)]
+        [InlineData("Text", null, "not-null")]
+        [InlineData("TExt", null, null)]
+        [InlineData("TEXT", null, "not-null")]
+        [InlineData("custom-datatype", null, null)]
+        [InlineData(null, "unknown-input-type", "not-null")]
+        [InlineData("Image", null, "not-null")]
+        [InlineData(null, "image", "not-null")]
         public async Task ProcessAsync_CallsGenerateTextBox_WithExpectedParameters(
             string dataTypeName,
             string inputTypeName,
-            string model,
-            string format)
+            string model)
         {
             // Arrange
             var contextAttributes = new TagHelperAttributeList
@@ -773,7 +697,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 model,
                 nameof(Model.Text),
                 metadataProvider: metadataProvider);
-            tagHelper.Format = format;
             tagHelper.InputTypeName = inputTypeName;
 
             var tagBuilder = new TagBuilder("input")
@@ -788,9 +711,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     tagHelper.ViewContext,
                     tagHelper.For.ModelExplorer,
                     tagHelper.For.Name,
-                    model,  // value
-                    format,
-                    It.Is<Dictionary<string, object>>(m => m.ContainsKey("type"))))     // htmlAttributes
+                    model,      // value
+                    null,       // format
+                    It.Is<Dictionary<string, object>>(m => m.ContainsKey("type"))))      // htmlAttributes
                 .Returns(tagBuilder)
                 .Verifiable();
 

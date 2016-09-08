@@ -352,22 +352,4 @@
   <data name="OutputFormattersAreRequired" xml:space="preserve">
     <value>'{0}.{1}' must not be empty. At least one '{2}' is required to format a response.</value>
   </data>
-  <data name="MiddewareFilter_ConfigureMethodOverload" xml:space="preserve">
-    <value>Multiple overloads of method '{0}' are not supported.</value>
-  </data>
-  <data name="MiddewareFilter_NoConfigureMethod" xml:space="preserve">
-    <value>A public method named '{0}' could not be found in the '{1}' type.</value>
-  </data>
-  <data name="MiddlewareFilterBuilder_NoMiddlewareFeature" xml:space="preserve">
-    <value>Could not find '{0}' in the feature list.</value>
-  </data>
-  <data name="MiddlewareFilterBuilder_NullApplicationBuilder" xml:space="preserve">
-    <value>The '{0}' property cannot be null.</value>
-  </data>
-  <data name="MiddlewareFilter_InvalidConfigureReturnType" xml:space="preserve">
-    <value>The '{0}' method in the type '{1}' must have a return type of '{2}'.</value>
-  </data>
-  <data name="MiddlewareFilter_ServiceResolutionFail" xml:space="preserve">
-    <value>Could not resolve a service of type '{0}' for the parameter '{1}' of method '{2}' on type '{3}'.</value>
-  </data>
 </root>
