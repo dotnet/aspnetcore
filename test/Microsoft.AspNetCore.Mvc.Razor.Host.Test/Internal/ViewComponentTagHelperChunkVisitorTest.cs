@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host.Test.Internal
 #endif
 
             // Assert
-            Assert.Equal(expectedOutput, resultOutput, StringComparer.Ordinal, ignoreLineEndingDifferences: true);
+            Assert.Equal(expectedOutput, resultOutput, ignoreLineEndingDifferences: true);
         }
     }
 }
