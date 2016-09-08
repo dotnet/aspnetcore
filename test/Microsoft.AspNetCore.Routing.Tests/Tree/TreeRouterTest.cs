@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.ObjectPool;
@@ -1531,7 +1532,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                     nestedRouters = new List<IRouter>(c.RouteData.Routers);
                     c.Handler = null; // Not a match
                 })
-                .Returns(TaskCache.CompletedTask);
+                .Returns(Task.FromResult(0));
 
             var builder = CreateBuilder();
             MapInboundEntry(builder, "api/Store", handler: next.Object);
@@ -1568,7 +1569,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                     nestedRouters = new List<IRouter>(c.RouteData.Routers);
                     c.Handler = null; // Not a match
                 })
-                .Returns(TaskCache.CompletedTask);
+                .Returns(Task.FromResult(0));
 
             var builder = CreateBuilder();
             MapInboundEntry(builder, "api/Store", handler: next.Object);
@@ -1612,7 +1613,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                     nestedRouters = new List<IRouter>(c.RouteData.Routers);
                     throw new Exception();
                 })
-                .Returns(TaskCache.CompletedTask);
+                .Returns(Task.FromResult(0));
 
             var builder = CreateBuilder();
             MapInboundEntry(builder, "api/Store", handler: next.Object);

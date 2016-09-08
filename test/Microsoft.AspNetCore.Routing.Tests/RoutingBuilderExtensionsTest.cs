@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
@@ -60,7 +59,7 @@ namespace Microsoft.AspNetCore.Builder
             var router = new Mock<IRouter>(MockBehavior.Strict);
             router
                 .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Returns(TaskCache.CompletedTask)
+                .Returns(Task.FromResult(0))
                 .Verifiable();
 
             app.UseRouter(router.Object);
@@ -85,7 +84,7 @@ namespace Microsoft.AspNetCore.Builder
             var router = new Mock<IRouter>(MockBehavior.Strict);
             router
                 .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Returns(TaskCache.CompletedTask)
+                .Returns(Task.FromResult(0))
                 .Verifiable();
 
             app.UseRouter(b =>

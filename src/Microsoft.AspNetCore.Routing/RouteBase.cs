@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Logging;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 

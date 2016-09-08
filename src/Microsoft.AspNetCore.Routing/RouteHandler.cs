@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Routing
 {
