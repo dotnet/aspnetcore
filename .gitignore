@@ -34,13 +34,6 @@ npm-debug.log
 # files with that name (https://github.com/npm/npm/issues/1862). So, each template instead has a template_gitignore
 # file which gets renamed after the files are copied. And so any files that need to be excluded in the source
 # repo have to be excluded here.
-
-# Note that we need to exclude node_modules/** (i.e., subdirs, not the whole of node_modules) because we do need to
-# include the _placeholder.txt files, and can't do that using gitignore exclusion because developers aren't promoted to
-# commit files included that way. This is all a workaround for Workaround for https://github.com/aspnet/JavaScriptServices/issues/235
-/templates/*/node_modules/**
+/templates/*/node_modules/
 /templates/*/wwwroot/dist/
 .vscode/
-
-# Workaround for https://github.com/aspnet/JavaScriptServices/issues/235
-!/templates/*/node_modules/_placeholder.txt

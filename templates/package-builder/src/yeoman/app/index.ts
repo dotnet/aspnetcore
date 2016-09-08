@@ -52,6 +52,18 @@ class MyGenerator extends yeoman.Base {
                 outputFn = path.join(path.dirname(fn), '.gitignore');
             }
 
+            // Likewise, output template_nodemodules_placeholder.txt as node_modules/_placeholder.txt
+            // This is a workaround for https://github.com/aspnet/JavaScriptServices/issues/235. We need the new project
+            // to have a nonempty node_modules dir as far as *source control* is concerned. So, there's a gitignore
+            // rule that explicitly causes node_modules/_placeholder.txt to be tracked in source control. But how
+            // does that file get there in the first place? It's not enough for such a file to exist when the
+            // generator-aspnetcore-spa NPM package is published, because NPM doesn't allow any directories called
+            // node_modules to exist in the package. So we have a file with at a different location, and move it
+            // to node_modules as part of executing the template.
+            if (path.basename(fn) === 'template_nodemodules_placeholder.txt') {
+                outputFn = path.join(path.dirname(fn), 'node_modules', '_placeholder.txt');
+            }
+
             this.fs.copyTpl(
                 path.join(templateRoot, fn),
                 this.destinationPath(outputFn),
