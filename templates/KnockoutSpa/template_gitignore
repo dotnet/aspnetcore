@@ -184,8 +184,11 @@ ClientBin/
 *.dbproj.schemaview
 *.pfx
 *.publishsettings
-node_modules/
 orleans.codegen.cs
+
+# Workaround for https://github.com/aspnet/JavaScriptServices/issues/235
+/node_modules/**
+!/node_modules/_placeholder.txt
 
 # RIA/Silverlight projects
 Generated_Code/

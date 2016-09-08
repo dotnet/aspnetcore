@@ -1,0 +1,7 @@
+This file exists as a workaround for https://github.com/dotnet/cli/issues/1396
+('dotnet publish' does not publish any directories that didn't exist or were
+empty before the publish script started, which means it's not enough just to
+run 'npm install' during publishing: you need to ensure node_modules already
+existed at least).
+
+Hopefully, this can be removed after the move to the new MSBuild.
