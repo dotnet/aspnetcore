@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -67,7 +68,8 @@ If you haven't yet installed node-inspector, you can do so as follows:
             ConnectToInputOutputStreams();
         }
 
-        public async Task<T> InvokeExportAsync<T>(string moduleName, string exportNameOrNull, params object[] args)
+        public async Task<T> InvokeExportAsync<T>(
+            CancellationToken cancellationToken, string moduleName, string exportNameOrNull, params object[] args)
         {
             if (_nodeProcess.HasExited || _nodeProcessNeedsRestart)
             {
@@ -79,15 +81,17 @@ If you haven't yet installed node-inspector, you can do so as follows:
                 throw new NodeInvocationException(message, null, nodeInstanceUnavailable: true);
             }
 
-            // Wait until the connection is established. This will throw if the connection fails to initialize.
-            await _connectionIsReadySource.Task;
+            // Wait until the connection is established. This will throw if the connection fails to initialize,
+            // or if cancellation is requested first. Note that we can't really cancel the "establishing connection"
+            // task because that's shared with all callers, but we can stop waiting for it if this call is cancelled.
+            await _connectionIsReadySource.Task.OrThrowOnCancellation(cancellationToken);
 
             return await InvokeExportAsync<T>(new NodeInvocationInfo
             {
                 ModuleName = moduleName,
                 ExportedFunctionName = exportNameOrNull,
                 Args = args
-            });
+            }, cancellationToken);
         }
 
         public void Dispose()
@@ -96,7 +100,9 @@ If you haven't yet installed node-inspector, you can do so as follows:
             GC.SuppressFinalize(this);
         }
 
-        protected abstract Task<T> InvokeExportAsync<T>(NodeInvocationInfo invocationInfo);
+        protected abstract Task<T> InvokeExportAsync<T>(
+            NodeInvocationInfo invocationInfo,
+            CancellationToken cancellationToken);
 
         // This method is virtual, as it provides a way to override the NODE_PATH or the path to node.exe
         protected virtual ProcessStartInfo PrepareNodeProcessStartInfo(

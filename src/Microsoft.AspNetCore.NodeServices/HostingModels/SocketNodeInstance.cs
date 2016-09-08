@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             _socketAddress = socketAddress;
         }
 
-        protected override async Task<T> InvokeExportAsync<T>(NodeInvocationInfo invocationInfo)
+        protected override async Task<T> InvokeExportAsync<T>(NodeInvocationInfo invocationInfo, CancellationToken cancellationToken)
         {
             if (_connectionHasFailed)
             {
@@ -70,7 +70,12 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
             if (_virtualConnectionClient == null)
             {
-                await EnsureVirtualConnectionClientCreated();
+                // Although we could pass the cancellationToken into EnsureVirtualConnectionClientCreated and
+                // have it signal cancellations upstream, that would be a bad thing to do, because all callers
+                // wait for the same connection task. There's no reason why the first caller should have the
+                // special ability to cancel the connection process in a way that would affect subsequent
+                // callers. So, each caller just independently stops awaiting connection if that call is cancelled.
+                await EnsureVirtualConnectionClientCreated().OrThrowOnCancellation(cancellationToken);
             }
 
             // For each invocation, we open a new virtual connection. This gives an API equivalent to opening a new
@@ -83,7 +88,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                 virtualConnection = _virtualConnectionClient.OpenVirtualConnection();
 
                 // Send request
-                await WriteJsonLineAsync(virtualConnection, invocationInfo);
+                await WriteJsonLineAsync(virtualConnection, invocationInfo, cancellationToken);
 
                 // Determine what kind of response format is expected
                 if (typeof(T) == typeof(Stream))
@@ -96,7 +101,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                 else
                 {
                     // Parse and return non-streamed JSON response
-                    var response = await ReadJsonAsync<RpcJsonResponse<T>>(virtualConnection);
+                    var response = await ReadJsonAsync<RpcJsonResponse<T>>(virtualConnection, cancellationToken);
                     if (response.ErrorMessage != null)
                     {
                         throw new NodeInvocationException(response.ErrorMessage, response.ErrorDetails);
@@ -163,27 +168,27 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             base.Dispose(disposing);
         }
 
-        private static async Task WriteJsonLineAsync(Stream stream, object serializableObject)
+        private static async Task WriteJsonLineAsync(Stream stream, object serializableObject, CancellationToken cancellationToken)
         {
             var json = JsonConvert.SerializeObject(serializableObject, jsonSerializerSettings);
             var bytes = Encoding.UTF8.GetBytes(json + '\n');
-            await stream.WriteAsync(bytes, 0, bytes.Length);
+            await stream.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
         }
 
-        private static async Task<T> ReadJsonAsync<T>(Stream stream)
+        private static async Task<T> ReadJsonAsync<T>(Stream stream, CancellationToken cancellationToken)
         {
-            var json = Encoding.UTF8.GetString(await ReadAllBytesAsync(stream));
+            var json = Encoding.UTF8.GetString(await ReadAllBytesAsync(stream, cancellationToken));
             return JsonConvert.DeserializeObject<T>(json, jsonSerializerSettings);
         }
 
-        private static async Task<byte[]> ReadAllBytesAsync(Stream input)
+        private static async Task<byte[]> ReadAllBytesAsync(Stream input, CancellationToken cancellationToken)
         {
             byte[] buffer = new byte[16 * 1024];
 
             using (var ms = new MemoryStream())
             {
                 int read;
-                while ((read = await input.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                while ((read = await input.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
                 {
                     ms.Write(buffer, 0, read);
                 }

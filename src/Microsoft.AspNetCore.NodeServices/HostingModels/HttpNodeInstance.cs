@@ -4,6 +4,7 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -57,15 +58,17 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             return $"--port {port}";
         }
 
-        protected override async Task<T> InvokeExportAsync<T>(NodeInvocationInfo invocationInfo)
+        protected override async Task<T> InvokeExportAsync<T>(
+            NodeInvocationInfo invocationInfo, CancellationToken cancellationToken)
         {
             var payloadJson = JsonConvert.SerializeObject(invocationInfo, jsonSerializerSettings);
             var payload = new StringContent(payloadJson, Encoding.UTF8, "application/json");
-            var response = await _client.PostAsync("http://localhost:" + _portNumber, payload);
+            var response = await _client.PostAsync("http://localhost:" + _portNumber, payload, cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
-                var responseErrorString = await response.Content.ReadAsStringAsync();
+                // Unfortunately there's no true way to cancel ReadAsStringAsync calls, hence AbandonIfCancelled
+                var responseErrorString = await response.Content.ReadAsStringAsync().OrThrowOnCancellation(cancellationToken);
                 throw new Exception("Call to Node module failed with error: " + responseErrorString);
             }
 
@@ -81,11 +84,11 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                             typeof(T).FullName);
                     }
 
-                    var responseString = await response.Content.ReadAsStringAsync();
+                    var responseString = await response.Content.ReadAsStringAsync().OrThrowOnCancellation(cancellationToken);
                     return (T)(object)responseString;
 
                 case "application/json":
-                    var responseJson = await response.Content.ReadAsStringAsync();
+                    var responseJson = await response.Content.ReadAsStringAsync().OrThrowOnCancellation(cancellationToken);
                     return JsonConvert.DeserializeObject<T>(responseJson, jsonSerializerSettings);
 
                 case "application/octet-stream":
@@ -97,7 +100,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                             typeof(T).FullName + ". Instead you must use the generic type System.IO.Stream.");
                     }
 
-                    return (T)(object)(await response.Content.ReadAsStreamAsync());
+                    return (T)(object)(await response.Content.ReadAsStreamAsync().OrThrowOnCancellation(cancellationToken));
 
                 default:
                     throw new InvalidOperationException("Unexpected response content type: " + responseContentType.MediaType);

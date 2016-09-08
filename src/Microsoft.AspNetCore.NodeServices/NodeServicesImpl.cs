@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.NodeServices.HostingModels;
 
@@ -34,19 +35,29 @@ namespace Microsoft.AspNetCore.NodeServices
             return InvokeExportAsync<T>(moduleName, null, args);
         }
 
-        public Task<T> InvokeExportAsync<T>(string moduleName, string exportedFunctionName, params object[] args)
+        public Task<T> InvokeAsync<T>(CancellationToken cancellationToken, string moduleName, params object[] args)
         {
-            return InvokeExportWithPossibleRetryAsync<T>(moduleName, exportedFunctionName, args, allowRetry: true);
+            return InvokeExportAsync<T>(cancellationToken, moduleName, null, args);
         }
 
-        public async Task<T> InvokeExportWithPossibleRetryAsync<T>(string moduleName, string exportedFunctionName, object[] args, bool allowRetry)
+        public Task<T> InvokeExportAsync<T>(string moduleName, string exportedFunctionName, params object[] args)
+        {
+            return InvokeExportWithPossibleRetryAsync<T>(moduleName, exportedFunctionName, args, /* allowRetry */ true, CancellationToken.None);
+        }
+
+        public Task<T> InvokeExportAsync<T>(CancellationToken cancellationToken, string moduleName, string exportedFunctionName, params object[] args)
+        {
+            return InvokeExportWithPossibleRetryAsync<T>(moduleName, exportedFunctionName, args, /* allowRetry */ true, cancellationToken);
+        }
+
+        public async Task<T> InvokeExportWithPossibleRetryAsync<T>(string moduleName, string exportedFunctionName, object[] args, bool allowRetry, CancellationToken cancellationToken)
         {
             ThrowAnyOutstandingDelayedDisposalException();
             var nodeInstance = GetOrCreateCurrentNodeInstance();
 
             try
             {
-                return await nodeInstance.InvokeExportAsync<T>(moduleName, exportedFunctionName, args);
+                return await nodeInstance.InvokeExportAsync<T>(cancellationToken, moduleName, exportedFunctionName, args);
             }
             catch (NodeInvocationException ex)
             {
@@ -69,7 +80,7 @@ namespace Microsoft.AspNetCore.NodeServices
                     // One the next call, don't allow retries, because we could get into an infinite retry loop, or a long retry
                     // loop that masks an underlying problem. A newly-created Node instance should be able to accept invocations,
                     // or something more serious must be wrong.
-                    return await InvokeExportWithPossibleRetryAsync<T>(moduleName, exportedFunctionName, args, allowRetry: false);
+                    return await InvokeExportWithPossibleRetryAsync<T>(moduleName, exportedFunctionName, args, /* allowRetry */ false, cancellationToken);
                 }
                 else
                 {
