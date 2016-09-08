@@ -90,15 +90,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
             else
             {
-                try
-                {
-                    // We've originally published the application in a temp folder. We need to delete it.
-                    Directory.Delete(DeploymentParameters.PublishedApplicationRootPath, true);
-                }
-                catch (Exception exception)
-                {
-                    Logger.LogWarning($"Failed to delete directory : {exception.Message}");
-                }
+                RetryHelper.RetryOperation(
+                    () => Directory.Delete(DeploymentParameters.PublishedApplicationRootPath, true),
+                    e => Logger.LogWarning($"Failed to delete directory : {e.Message}"),
+                    retryCount: 3,
+                    retryDelayMilliseconds: 100);
             }
         }
 

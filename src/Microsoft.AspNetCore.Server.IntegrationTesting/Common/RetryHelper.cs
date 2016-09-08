@@ -72,5 +72,27 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             logger.LogInformation("Failed to connect, retry limit exceeded.");
             throw new OperationCanceledException("Failed to connect, retry limit exceeded.");
         }
+
+        public static void RetryOperation(
+            Action retryBlock,
+            Action<Exception> exceptionBlock,
+            int retryCount = 3,
+            int retryDelayMilliseconds = 0)
+        {
+            for (var retry = 0; retry < retryCount; ++retry)
+            {
+                try
+                {
+                    retryBlock();
+                    break;
+                }
+                catch (Exception exception)
+                {
+                    exceptionBlock(exception);
+                }
+
+                Thread.Sleep(retryDelayMilliseconds);
+            }
+        }
     }
 }
