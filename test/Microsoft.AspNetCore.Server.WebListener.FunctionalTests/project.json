@@ -6,7 +6,7 @@
   "testRunner": "xunit",
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.AspNetCore.Server.WebListener": "1.0.0-rc1-*",
+    "Microsoft.AspNetCore.Server.WebListener": "1.0.0-rc1-final",
     "Microsoft.AspNetCore.Testing": "1.0.0",
     "xunit": "2.2.0-*"
   },
@@ -14,7 +14,7 @@
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
+          "version": "1.0.0",
           "type": "platform"
         },
         "System.Net.Http.WinHttpHandler": "4.0.0-*",

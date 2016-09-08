@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-rc1-*",
+  "version": "1.0.0-rc1-final",
   "description": "Implementation of WebListener, a successor to HttpListener. It is used in the WebListener server package.",
   "dependencies": {
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0",

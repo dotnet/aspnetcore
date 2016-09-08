@@ -3,7 +3,7 @@
     "emitEntryPoint": true
   },
   "dependencies": {
-    "Microsoft.Net.Http.Server": "1.0.0-rc1-*"
+    "Microsoft.Net.Http.Server": "1.0.0-rc1-final"
   },
   "commands": {
     "sample": "HelloWorld"
@@ -13,7 +13,7 @@
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
+          "version": "1.0.0",
           "type": "platform"
         }
       }
