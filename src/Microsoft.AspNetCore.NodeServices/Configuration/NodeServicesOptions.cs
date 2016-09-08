@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.NodeServices
     public class NodeServicesOptions
     {
         public const NodeHostingModel DefaultNodeHostingModel = NodeHostingModel.Http;
+        internal const string TimeoutConfigPropertyName = nameof(InvocationTimeoutMilliseconds);
+        private const int DefaultInvocationTimeoutMilliseconds = 60 * 1000;
         private const string LogCategoryName = "Microsoft.AspNetCore.NodeServices";
         private static readonly string[] DefaultWatchFileExtensions = { ".js", ".jsx", ".ts", ".tsx", ".json", ".html" };
 
@@ -22,6 +24,7 @@ namespace Microsoft.AspNetCore.NodeServices
             }
 
             EnvironmentVariables = new Dictionary<string, string>();
+            InvocationTimeoutMilliseconds = DefaultInvocationTimeoutMilliseconds;
             HostingModel = DefaultNodeHostingModel;
             WatchFileExtensions = (string[])DefaultWatchFileExtensions.Clone();
 
@@ -49,5 +52,6 @@ namespace Microsoft.AspNetCore.NodeServices
         public bool LaunchWithDebugging { get; set; }
         public IDictionary<string, string> EnvironmentVariables { get; set; }
         public int DebuggingPort { get; set; }
+        public int InvocationTimeoutMilliseconds { get; set; }
     }
 }

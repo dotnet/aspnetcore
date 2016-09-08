@@ -29,11 +29,11 @@ namespace Microsoft.AspNetCore.NodeServices
                 {
                     case NodeHostingModel.Http:
                         return new HttpNodeInstance(options.ProjectPath, options.WatchFileExtensions, options.NodeInstanceOutputLogger, 
-                            options.EnvironmentVariables, options.LaunchWithDebugging, options.DebuggingPort, /* port */ 0);
+                            options.EnvironmentVariables, options.InvocationTimeoutMilliseconds, options.LaunchWithDebugging, options.DebuggingPort, /* port */ 0);
                     case NodeHostingModel.Socket:
                         var pipeName = "pni-" + Guid.NewGuid().ToString("D"); // Arbitrary non-clashing string
                         return new SocketNodeInstance(options.ProjectPath, options.WatchFileExtensions, pipeName, options.NodeInstanceOutputLogger,
-                            options.EnvironmentVariables, options.LaunchWithDebugging, options.DebuggingPort);
+                            options.EnvironmentVariables, options.InvocationTimeoutMilliseconds, options.LaunchWithDebugging, options.DebuggingPort);
                     default:
                         throw new ArgumentException("Unknown hosting model: " + options.HostingModel);
                 }

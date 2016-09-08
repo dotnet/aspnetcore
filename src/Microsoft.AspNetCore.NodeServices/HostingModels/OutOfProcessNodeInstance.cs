@@ -37,6 +37,7 @@ If you haven't yet installed node-inspector, you can do so as follows:
         private bool _disposed;
         private readonly StringAsTempFile _entryPointScript;
         private FileSystemWatcher _fileSystemWatcher;
+        private int _invocationTimeoutMilliseconds;
         private readonly Process _nodeProcess;
         private int? _nodeDebuggingPort;
         private bool _nodeProcessNeedsRestart;
@@ -49,6 +50,7 @@ If you haven't yet installed node-inspector, you can do so as follows:
             string commandLineArguments,
             ILogger nodeOutputLogger,
             IDictionary<string, string> environmentVars,
+            int invocationTimeoutMilliseconds,
             bool launchWithDebugging,
             int debuggingPort)
         {
@@ -59,6 +61,7 @@ If you haven't yet installed node-inspector, you can do so as follows:
 
             OutputLogger = nodeOutputLogger;
             _entryPointScript = new StringAsTempFile(entryPointScript);
+            _invocationTimeoutMilliseconds = invocationTimeoutMilliseconds;
 
             var startInfo = PrepareNodeProcessStartInfo(_entryPointScript.FileName, projectPath, commandLineArguments,
                 environmentVars, launchWithDebugging, debuggingPort);
@@ -81,17 +84,74 @@ If you haven't yet installed node-inspector, you can do so as follows:
                 throw new NodeInvocationException(message, null, nodeInstanceUnavailable: true);
             }
 
-            // Wait until the connection is established. This will throw if the connection fails to initialize,
-            // or if cancellation is requested first. Note that we can't really cancel the "establishing connection"
-            // task because that's shared with all callers, but we can stop waiting for it if this call is cancelled.
-            await _connectionIsReadySource.Task.OrThrowOnCancellation(cancellationToken);
-
-            return await InvokeExportAsync<T>(new NodeInvocationInfo
+            // Construct a new cancellation token that combines the supplied token with the configured invocation
+            // timeout. Technically we could avoid wrapping the cancellationToken if no timeout is configured,
+            // but that's not really a major use case, since timeouts are enabled by default.
+            using (var timeoutSource = new CancellationTokenSource())
+            using (var combinedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token))
             {
-                ModuleName = moduleName,
-                ExportedFunctionName = exportNameOrNull,
-                Args = args
-            }, cancellationToken);
+                if (_invocationTimeoutMilliseconds > 0)
+                {
+                    timeoutSource.CancelAfter(_invocationTimeoutMilliseconds);
+                }
+
+                // By overwriting the supplied cancellation token, we ensure that it isn't accidentally used
+                // below. We only want to pass through the token that respects timeouts.
+                cancellationToken = combinedCancellationTokenSource.Token;
+                var connectionDidSucceed = false;
+
+                try
+                {
+                    // Wait until the connection is established. This will throw if the connection fails to initialize,
+                    // or if cancellation is requested first. Note that we can't really cancel the "establishing connection"
+                    // task because that's shared with all callers, but we can stop waiting for it if this call is cancelled.
+                    await _connectionIsReadySource.Task.OrThrowOnCancellation(cancellationToken);
+                    connectionDidSucceed = true;
+
+                    return await InvokeExportAsync<T>(new NodeInvocationInfo
+                    {
+                        ModuleName = moduleName,
+                        ExportedFunctionName = exportNameOrNull,
+                        Args = args
+                    }, cancellationToken);
+                }
+                catch (TaskCanceledException)
+                {
+                    if (timeoutSource.IsCancellationRequested)
+                    {
+                        // It was very common for developers to report 'TaskCanceledException' when encountering almost any
+                        // trouble when using NodeServices. Now we have a default invocation timeout, and attempt to give
+                        // a more descriptive exception message if it happens.
+                        if (!connectionDidSucceed)
+                        {
+                            // This is very unlikely, but for debugging, it's still useful to differentiate it from the
+                            // case below.
+                            throw new NodeInvocationException(
+                                $"Attempt to connect to Node timed out after {_invocationTimeoutMilliseconds}ms.",
+                                string.Empty);
+                        }
+                        else
+                        {
+                            // Developers encounter this fairly often (if their Node code fails without invoking the callback,
+                            // all that the .NET side knows is that the invocation eventually times out). Previously, this surfaced
+                            // as a TaskCanceledException, but this led to a lot of issue reports. Now we throw the following
+                            // descriptive error.
+                            throw new NodeInvocationException(
+                                $"The Node invocation timed out after {_invocationTimeoutMilliseconds}ms.",
+                                $"You can change the timeout duration by setting the {NodeServicesOptions.TimeoutConfigPropertyName} "
+                                + $"property on {nameof(NodeServicesOptions)}.\n\n"
+                                + "The first debugging step is to ensure that your Node.js function always invokes the supplied "
+                                + "callback (or throws an exception synchronously), even if it encounters an error. Otherwise, "
+                                + "the .NET code has no way to know that it is finished or has failed."
+                            );
+                        }
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
         }
 
         public void Dispose()
