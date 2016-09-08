@@ -789,10 +789,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             SocketOutput.ProducingComplete(end);
         }
 
-        protected RequestLineStatus TakeStartLine(SocketInput input)
+        public RequestLineStatus TakeStartLine(SocketInput input)
         {
             var scan = input.ConsumingStart();
             var consumed = scan;
+            var end = scan;
 
             try
             {
@@ -806,7 +807,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                 _requestProcessingStatus = RequestProcessingStatus.RequestStarted;
 
-                var end = scan;
                 int bytesScanned;
                 if (end.Seek(ref _vectorLFs, out bytesScanned, ServerOptions.Limits.MaxRequestLineSize) == -1)
                 {
@@ -923,6 +923,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     RejectRequest(RequestRejectionReason.MissingLFInRequestLine);
                 }
                 scan.Take(); // consume LF
+                end = scan;
 
                 // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
                 // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
@@ -984,7 +985,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
             finally
             {
-                input.ConsumingComplete(consumed, scan);
+                input.ConsumingComplete(consumed, end);
             }
         }
 
@@ -1049,11 +1050,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             var scan = input.ConsumingStart();
             var consumed = scan;
+            var end = scan;
             try
             {
-                while (!scan.IsEnd)
+                while (!end.IsEnd)
                 {
-                    var ch = scan.Peek();
+                    var ch = end.Peek();
                     if (ch == -1)
                     {
                         return false;
@@ -1061,8 +1063,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     else if (ch == '\r')
                     {
                         // Check for final CRLF.
-                        scan.Take();
-                        ch = scan.Take();
+                        end.Take();
+                        ch = end.Take();
 
                         if (ch == -1)
                         {
@@ -1070,7 +1072,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         }
                         else if (ch == '\n')
                         {
-                            consumed = scan;
+                            consumed = end;
                             return true;
                         }
 
@@ -1089,7 +1091,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         RejectRequest(RequestRejectionReason.TooManyHeaders);
                     }
 
-                    var end = scan;
                     int bytesScanned;
                     if (end.Seek(ref _vectorLFs, out bytesScanned, _remainingRequestHeadersBytesAllowed) == -1)
                     {
@@ -1135,6 +1136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                     scan.Take(); // we know this is '\r'
                     ch = scan.Take(); // expecting '\n'
+                    end = scan;
 
                     if (ch != '\n')
                     {
@@ -1203,7 +1205,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
             finally
             {
-                input.ConsumingComplete(consumed, scan);
+                input.ConsumingComplete(consumed, end);
             }
         }
 
@@ -1286,12 +1288,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             _secondsSinceLastRequest = 0;
         }
 
-        protected enum RequestLineStatus
+        public enum RequestLineStatus
         {
             Empty,
-            MethodIncomplete,
-            TargetIncomplete,
-            VersionIncomplete,
             Incomplete,
             Done
         }

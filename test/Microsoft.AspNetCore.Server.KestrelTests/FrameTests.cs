@@ -713,5 +713,156 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.Same(originalResponseBody, frame.ResponseBody);
             Assert.Same(originalDuplexStream, frame.DuplexStream);
         }
+
+        [Fact]
+        public void TakeStartLineCallsConsumingCompleteWithFurthestExamined()
+        {
+            var trace = new KestrelTrace(new TestKestrelTrace());
+            var ltp = new LoggingThreadPool(trace);
+            using (var pool = new MemoryPool())
+            using (var socketInput = new SocketInput(pool, ltp))
+            {
+                var connectionContext = new ConnectionContext()
+                {
+                    DateHeaderValueManager = new DateHeaderValueManager(),
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
+                    Log = trace
+                };
+                var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
+
+                var requestLineBytes = Encoding.ASCII.GetBytes("GET / ");
+                socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
+                frame.TakeStartLine(socketInput);
+                Assert.False(socketInput.IsCompleted);
+
+                requestLineBytes = Encoding.ASCII.GetBytes("HTTP/1.1\r\n");
+                socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
+                frame.TakeStartLine(socketInput);
+                Assert.False(socketInput.IsCompleted);
+            }
+        }
+
+        [Theory]
+        [InlineData("", Frame.RequestLineStatus.Empty)]
+        [InlineData("G", Frame.RequestLineStatus.Incomplete)]
+        [InlineData("GE", Frame.RequestLineStatus.Incomplete)]
+        [InlineData("GET", Frame.RequestLineStatus.Incomplete)]
+        [InlineData("GET ", Frame.RequestLineStatus.Incomplete)]
+        [InlineData("GET /", Frame.RequestLineStatus.Incomplete)]
+        [InlineData("GET / ", Frame.RequestLineStatus.Incomplete)]
+        [InlineData("GET / H", Frame.RequestLineStatus.Incomplete)]
+        [InlineData("GET / HT", Frame.RequestLineStatus.Incomplete)]
+        [InlineData("GET / HTT", Frame.RequestLineStatus.Incomplete)]
+        [InlineData("GET / HTTP", Frame.RequestLineStatus.Incomplete)]
+        [InlineData("GET / HTTP/", Frame.RequestLineStatus.Incomplete)]
+        [InlineData("GET / HTTP/1", Frame.RequestLineStatus.Incomplete)]
+        [InlineData("GET / HTTP/1.", Frame.RequestLineStatus.Incomplete)]
+        [InlineData("GET / HTTP/1.1", Frame.RequestLineStatus.Incomplete)]
+        [InlineData("GET / HTTP/1.1\r", Frame.RequestLineStatus.Incomplete)]
+        public void TakeStartLineReturnsWhenGivenIncompleteRequestLines(string requestLine, Frame.RequestLineStatus expectedReturnValue)
+        {
+            var trace = new KestrelTrace(new TestKestrelTrace());
+            var ltp = new LoggingThreadPool(trace);
+            using (var pool = new MemoryPool())
+            using (var socketInput = new SocketInput(pool, ltp))
+            {
+                var connectionContext = new ConnectionContext()
+                {
+                    DateHeaderValueManager = new DateHeaderValueManager(),
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
+                    Log = trace
+                };
+                var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
+
+                var requestLineBytes = Encoding.ASCII.GetBytes(requestLine);
+                socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
+
+                var returnValue = frame.TakeStartLine(socketInput);
+                Assert.Equal(expectedReturnValue, returnValue);
+            }
+        }
+
+        [Fact]
+        public void TakeMessageHeadersCallsConsumingCompleteWithFurthestExamined()
+        {
+            var trace = new KestrelTrace(new TestKestrelTrace());
+            var ltp = new LoggingThreadPool(trace);
+            using (var pool = new MemoryPool())
+            using (var socketInput = new SocketInput(pool, ltp))
+            {
+                var connectionContext = new ConnectionContext()
+                {
+                    DateHeaderValueManager = new DateHeaderValueManager(),
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
+                    Log = trace
+                };
+                var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
+                frame.InitializeHeaders();
+
+                var headersBytes = Encoding.ASCII.GetBytes("Header: ");
+                socketInput.IncomingData(headersBytes, 0, headersBytes.Length);
+                frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders);
+                Assert.False(socketInput.IsCompleted);
+
+                headersBytes = Encoding.ASCII.GetBytes("value\r\n");
+                socketInput.IncomingData(headersBytes, 0, headersBytes.Length);
+                frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders);
+                Assert.False(socketInput.IsCompleted);
+
+                headersBytes = Encoding.ASCII.GetBytes("\r\n");
+                socketInput.IncomingData(headersBytes, 0, headersBytes.Length);
+                frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders);
+                Assert.False(socketInput.IsCompleted);
+            }
+        }
+
+        [Theory]
+        [InlineData("\r")]
+        [InlineData("H")]
+        [InlineData("He")]
+        [InlineData("Hea")]
+        [InlineData("Head")]
+        [InlineData("Heade")]
+        [InlineData("Header")]
+        [InlineData("Header:")]
+        [InlineData("Header: ")]
+        [InlineData("Header: v")]
+        [InlineData("Header: va")]
+        [InlineData("Header: val")]
+        [InlineData("Header: valu")]
+        [InlineData("Header: value")]
+        [InlineData("Header: value\r")]
+        [InlineData("Header: value\r\n")]
+        [InlineData("Header: value\r\n\r")]
+        public void TakeMessageHeadersReturnsWhenGivenIncompleteHeaders(string headers)
+        {
+            var trace = new KestrelTrace(new TestKestrelTrace());
+            var ltp = new LoggingThreadPool(trace);
+            using (var pool = new MemoryPool())
+            using (var socketInput = new SocketInput(pool, ltp))
+            {
+                var connectionContext = new ConnectionContext()
+                {
+                    DateHeaderValueManager = new DateHeaderValueManager(),
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
+                    Log = trace
+                };
+                var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
+                frame.InitializeHeaders();
+
+                var headerBytes = Encoding.ASCII.GetBytes(headers);
+                socketInput.IncomingData(headerBytes, 0, headerBytes.Length);
+
+                Assert.Equal(false, frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+            }
+        }
     }
 }
