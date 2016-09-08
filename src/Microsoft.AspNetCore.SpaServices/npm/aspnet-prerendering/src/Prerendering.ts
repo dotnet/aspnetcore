@@ -5,6 +5,8 @@ import * as domain from 'domain';
 import { run as domainTaskRun } from 'domain-task/main';
 import { baseUrl } from 'domain-task/fetch';
 
+const defaultTimeoutMilliseconds = 30 * 1000;
+
 export interface RenderToStringCallback {
     (error: any, result: RenderToStringResult): void;
 }
@@ -33,7 +35,7 @@ export interface BootModuleInfo {
     webpackConfig?: string;
 }
 
-export function renderToString(callback: RenderToStringCallback, applicationBasePath: string, bootModule: BootModuleInfo, absoluteRequestUrl: string, requestPathAndQuery: string, customDataParameter: any) {
+export function renderToString(callback: RenderToStringCallback, applicationBasePath: string, bootModule: BootModuleInfo, absoluteRequestUrl: string, requestPathAndQuery: string, customDataParameter: any, overrideTimeoutMilliseconds: number) {
     findBootFunc(applicationBasePath, bootModule, (findBootFuncError, bootFunc) => {
         if (findBootFuncError) {
             callback(findBootFuncError, null);
@@ -66,8 +68,22 @@ export function renderToString(callback: RenderToStringCallback, applicationBase
             // Make the base URL available to the 'domain-tasks/fetch' helper within this execution context
             baseUrl(absoluteRequestUrl);
 
+            // Begin rendering, and apply a timeout
+            const bootFuncPromise = bootFunc(params);
+            if (!bootFuncPromise || typeof bootFuncPromise.then !== 'function') {
+                callback(`Prerendering failed because the boot function in ${bootModule.moduleName} did not return a promise.`, null);
+                return;
+            }
+            const timeoutMilliseconds = overrideTimeoutMilliseconds || defaultTimeoutMilliseconds; // e.g., pass -1 to override as 'never time out'
+            const bootFuncPromiseWithTimeout = timeoutMilliseconds > 0
+                ? wrapWithTimeout(bootFuncPromise, timeoutMilliseconds, 
+                    `Prerendering timed out after ${timeoutMilliseconds}ms because the boot function in '${bootModule.moduleName}' `
+                    + 'returned a promise that did not resolve or reject. Make sure that your boot function always resolves or '
+                    + 'rejects its promise. You can change the timeout value using the \'asp-prerender-timeout\' tag helper.')
+                : bootFuncPromise;
+
             // Actually perform the rendering
-            bootFunc(params).then(successResult => {
+            bootFuncPromiseWithTimeout.then(successResult => {
                 callback(null, { html: successResult.html, globals: successResult.globals });
             }, error => {
                 callback(error, null);
@@ -81,6 +97,25 @@ export function renderToString(callback: RenderToStringCallback, applicationBase
                 domainTaskCompletionPromiseResolve();
             }
         });
+    });
+}
+
+function wrapWithTimeout<T>(promise: Promise<T>, timeoutMilliseconds: number, timeoutRejectionValue: any): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+        const timeoutTimer = setTimeout(() => {
+            reject(timeoutRejectionValue);
+        }, timeoutMilliseconds);
+
+        promise.then(
+            resolvedValue => {
+                clearTimeout(timeoutTimer);
+                resolve(resolvedValue);
+            },
+            rejectedValue => {
+                clearTimeout(timeoutTimer);
+                reject(rejectedValue);
+            }
+        )
     });
 }
 

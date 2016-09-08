@@ -23,7 +23,8 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
             JavaScriptModuleExport bootModule,
             string requestAbsoluteUrl,
             string requestPathAndQuery,
-            object customDataParameter)
+            object customDataParameter,
+            int timeoutMilliseconds)
         {
             return nodeServices.InvokeExportAsync<RenderToStringResult>(
                 NodeScript.Value.FileName,
@@ -32,7 +33,8 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
                 bootModule,
                 requestAbsoluteUrl,
                 requestPathAndQuery,
-                customDataParameter);
+                customDataParameter,
+                timeoutMilliseconds);
         }
     }
 }
