@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration
 {
@@ -49,8 +50,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 return PriorHandler.AuthenticateAsync(context);
             }
-            
-            return Task.FromResult(0);
+
+            return TaskCache.CompletedTask;
         }
 
         public Task ChallengeAsync(ChallengeContext context)
@@ -86,8 +87,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 return PriorHandler.ChallengeAsync(context);
             }
-            
-            return Task.FromResult(0);
+
+            return TaskCache.CompletedTask;
         }
 
         public void GetDescriptions(DescribeSchemesContext context)
@@ -110,8 +111,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 return PriorHandler.SignInAsync(context);
             }
-            
-            return Task.FromResult(0);
+
+            return TaskCache.CompletedTask;
         }
 
         public Task SignOutAsync(SignOutContext context)
@@ -121,8 +122,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 return PriorHandler.SignOutAsync(context);
             }
-            
-            return Task.FromResult(0);
+
+            return TaskCache.CompletedTask;
         }
 
         private bool ShouldHandleScheme(string authenticationScheme)
