@@ -4,6 +4,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Authentication
 {
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 return PriorHandler.ChallengeAsync(context);
             }
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         public void GetDescriptions(DescribeSchemesContext context)
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 return PriorHandler.SignInAsync(context);
             }
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         public Task SignOutAsync(SignOutContext context)
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 return PriorHandler.SignOutAsync(context);
             }
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         public void RegisterAuthenticationHandler(IHttpAuthenticationFeature auth)

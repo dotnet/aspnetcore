@@ -3,14 +3,15 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Authentication
 {
     public class RemoteAuthenticationEvents : IRemoteAuthenticationEvents
     {
-        public Func<FailureContext, Task> OnRemoteFailure { get; set; } = context => Task.FromResult(0);
+        public Func<FailureContext, Task> OnRemoteFailure { get; set; } = context => TaskCache.CompletedTask;
 
-        public Func<TicketReceivedContext, Task> OnTicketReceived { get; set; } = context => Task.FromResult(0);
+        public Func<TicketReceivedContext, Task> OnTicketReceived { get; set; } = context => TaskCache.CompletedTask;
 
         /// <summary>
         /// Invoked when there is a remote failure

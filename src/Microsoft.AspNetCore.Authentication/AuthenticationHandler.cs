@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <returns></returns>
         protected virtual Task FinishResponseAsync()
         {
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         private async Task HandleAutomaticChallengeIfNeeded()
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Authentication
 
         protected virtual Task HandleSignInAsync(SignInContext context)
         {
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         public async Task SignOutAsync(SignOutContext context)
@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Authentication
 
         protected virtual Task HandleSignOutAsync(SignOutContext context)
         {
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         protected virtual Task<bool> HandleForbiddenAsync(ChallengeContext context)
