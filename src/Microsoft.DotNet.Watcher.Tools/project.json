@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.0.0-preview3-*",
   "description": "Command line tool to watch for source file changes during development and restart the dotnet command.",
   "packOptions": {
     "tags": [
@@ -18,18 +18,18 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-*",
     "Microsoft.DotNet.Watcher.Core": "1.0.0-*",
-    "Microsoft.Extensions.CommandLineUtils": "1.1.0-*",
-    "Microsoft.Extensions.Logging": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.1.0-*"
+    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0",
+    "Microsoft.Extensions.CommandLineUtils": "1.0.0",
+    "Microsoft.Extensions.Logging": "1.0.0",
+    "Microsoft.Extensions.Logging.Console": "1.0.0"
   },
   "frameworks": {
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
           "type": "platform",
-          "version": "1.0.0-*"
+          "version": "1.0.0"
         }
       }
     }

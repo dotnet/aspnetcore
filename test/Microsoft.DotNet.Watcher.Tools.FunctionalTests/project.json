@@ -6,14 +6,14 @@
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
-    "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
+    "Microsoft.Extensions.DependencyInjection": "1.0.0",
     "Microsoft.Extensions.Process.Sources": {
       "type": "build",
       "version": "1.1.0-*"
     },
     "Microsoft.DotNet.Watcher.Core": "1.0.0-*",
     "Newtonsoft.Json": "9.0.1",
-    "System.Threading.Thread": "4.0.0-*",
+    "System.Threading.Thread": "4.0.0",
     "xunit": "2.2.0-*"
   },
   "frameworks": {
@@ -21,7 +21,7 @@
       "dependencies": {
         "Microsoft.NETCore.App": {
           "type": "platform",
-          "version": "1.0.0-*"
+          "version": "1.0.0"
         }
       }
     }
