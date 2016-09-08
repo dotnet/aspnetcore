@@ -28,6 +28,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.Extensions.Internal;
 using Microsoft.Net.Http.Headers;
 using Microsoft.Net.Http.Server;
 
@@ -590,7 +591,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         {
             if (_completed)
             {
-                return Helpers.CompletedTask;
+                return TaskCache.CompletedTask;
             }
             _completed = true;
             return NotifyOnCompletedAsync();

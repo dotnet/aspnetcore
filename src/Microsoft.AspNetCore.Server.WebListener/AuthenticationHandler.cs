@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.Extensions.Internal;
 using Microsoft.Net.Http.Server;
 
 namespace Microsoft.AspNetCore.Server.WebListener
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
                     }
                 }
             }
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         public Task ChallengeAsync(ChallengeContext context)
@@ -108,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
             // A challenge was issued, it overrides any pre-set auth types.
             _requestContext.Response.AuthenticationChallenges = _customChallenges;
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         public void GetDescriptions(DescribeSchemesContext context)
@@ -123,13 +124,13 @@ namespace Microsoft.AspNetCore.Server.WebListener
         public Task SignInAsync(SignInContext context)
         {
             // Not supported. AuthenticationManager will throw if !Accepted.
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         public Task SignOutAsync(SignOutContext context)
         {
             // Not supported. AuthenticationManager will throw if !Accepted.
-            return Task.FromResult(0);
+            return TaskCache.CompletedTask;
         }
 
         private IDictionary<string, object> GetDescription(string authenticationScheme)
