@@ -29,7 +29,7 @@ const server = http.createServer((req, res) => {
                         return;
                     }
                     res.setHeader('Content-Type', 'application/json');
-                    res.end(JSON.stringify(successValueJson));
+                    res.end(successValueJson);
                 } else {
                     // String - can bypass JSON-serialization altogether
                     res.setHeader('Content-Type', 'text/plain');

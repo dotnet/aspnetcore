@@ -83,7 +83,7 @@
 	                        return;
 	                    }
 	                    res.setHeader('Content-Type', 'application/json');
-	                    res.end(JSON.stringify(successValueJson));
+	                    res.end(successValueJson);
 	                }
 	                else {
 	                    // String - can bypass JSON-serialization altogether
