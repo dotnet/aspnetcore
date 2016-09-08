@@ -536,5 +536,23 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("text/plain", response.Content.Headers.ContentType.MediaType);
             Assert.Equal("Data:10", await response.Content.ReadAsStringAsync());
         }
+
+        [Theory]
+        [InlineData("en-US", "en-US")]
+        [InlineData("fr", "fr")]
+        [InlineData("ab-cd", "en-US")]
+        public async Task MiddlewareFilter_LocalizationMiddlewareRegistration_UsesRouteDataToFindCulture(
+            string culture,
+            string expected)
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync($"http://localhost/{culture}/MiddlewareFilterTest/CultureFromRouteData");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(
+                $"CurrentCulture:{expected},CurrentUICulture:{expected}",
+                await response.Content.ReadAsStringAsync());
+        }
     }
 }
