@@ -189,6 +189,23 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.Null(await ReadPair(reader));
         }
 
+        // https://en.wikipedia.org/wiki/Percent-encoding
+        [Theory]
+        [InlineData("++=hello", "  ", "hello")]
+        [InlineData("a=1+1", "a", "1 1")]
+        [InlineData("%22%25%2D%2E%3C%3E%5C%5E%5F%60%7B%7C%7D%7E=%22%25%2D%2E%3C%3E%5C%5E%5F%60%7B%7C%7D%7E", "\"%-.<>\\^_`{|}~", "\"%-.<>\\^_`{|}~")]
+        [InlineData("a=%41", "a", "A")] // ascii encoded hex
+        [InlineData("a=%C3%A1", "a", "\u00e1")] // utf8 code points
+        [InlineData("a=%u20AC", "a", "%u20AC")] // utf16 not supported
+        public async Task ReadForm_Decoding(string formData, string key, string expectedValue)
+        {
+            var body = MakeStream(bufferRequest: false, text: formData);
+
+            var form = await ReadFormAsync(new FormReader(body));
+
+            Assert.Equal(expectedValue, form[key]);
+        }
+
         protected virtual Task<Dictionary<string, StringValues>> ReadFormAsync(FormReader reader)
         {
             return Task.FromResult(reader.ReadForm());
