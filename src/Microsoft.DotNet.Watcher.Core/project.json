@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-preview3-*",
+  "version": "1.0.0-*",
   "description": "Core logic for the dotnet-watch command line tool.",
   "packOptions": {
     "tags": [

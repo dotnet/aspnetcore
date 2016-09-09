@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-preview3-*",
+  "version": "1.0.0-*",
   "description": "Command line tool to watch for source file changes during development and restart the dotnet command.",
   "packOptions": {
     "tags": [
