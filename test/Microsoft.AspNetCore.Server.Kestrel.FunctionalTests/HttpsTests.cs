@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 LastLogLevel = logLevel;
                 LastEventId = eventId;
-                LogTcs.SetResult(null);
+                Task.Run(() => LogTcs.SetResult(null));
             }
 
             public bool IsEnabled(LogLevel logLevel)
