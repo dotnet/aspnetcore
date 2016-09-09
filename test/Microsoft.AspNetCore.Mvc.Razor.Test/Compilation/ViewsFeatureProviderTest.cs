@@ -1,9 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
@@ -18,49 +20,89 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             applicationPartManager.ApplicationParts.Add(
                 new AssemblyPart(typeof(ViewsFeatureProviderTest).GetTypeInfo().Assembly));
             applicationPartManager.FeatureProviders.Add(new ViewsFeatureProvider());
-            var feature = new MetadataReferenceFeature();
+            var feature = new ViewsFeature();
 
             // Act
             applicationPartManager.PopulateFeature(feature);
 
             // Assert
-            Assert.Empty(feature.MetadataReferences);
+            Assert.Empty(feature.Views);
         }
 
         [Fact]
         public void PopulateFeature_ReturnsViewsFromAllAvailableApplicationParts()
         {
             // Arrange
-            var applicationPart1 = new Mock<ApplicationPart>();
-            var viewsProvider1 = applicationPart1
-                .As<IViewsProvider>()
-                .SetupGet(p => p.Views)
-                .Returns(new[]
-                {
-                    new ViewInfo("/Views/test/Index.cshtml", typeof(object))
-                });
-            var applicationPart2 = new Mock<ApplicationPart>();
-            var viewsProvider2 = applicationPart2
-                .As<IViewsProvider>()
-                .SetupGet(p => p.Views)
-                .Returns(new[]
-                {
-                    new ViewInfo("/Areas/Admin/Views/Index.cshtml", typeof(string)),
-                    new ViewInfo("/Areas/Admin/Views/About.cshtml", typeof(int))
-                });
-
+            var part1 = new AssemblyPart(typeof(object).GetTypeInfo().Assembly);
+            var part2 = new AssemblyPart(GetType().GetTypeInfo().Assembly);
+            var featureProvider = new TestableViewsFeatureProvider(new Dictionary<AssemblyPart, Type>
+            {
+                { part1, typeof(ViewInfoContainer1) },
+                { part2, typeof(ViewInfoContainer2) },
+            });
 
             var applicationPartManager = new ApplicationPartManager();
-            applicationPartManager.ApplicationParts.Add(applicationPart1.Object);
-            applicationPartManager.ApplicationParts.Add(applicationPart2.Object);
-            applicationPartManager.FeatureProviders.Add(new ViewsFeatureProvider());
-            var feature = new MetadataReferenceFeature();
+            applicationPartManager.ApplicationParts.Add(part1);
+            applicationPartManager.ApplicationParts.Add(part2);
+            applicationPartManager.FeatureProviders.Add(featureProvider);
+            var feature = new ViewsFeature();
 
             // Act
             applicationPartManager.PopulateFeature(feature);
 
             // Assert
-            Assert.Empty(feature.MetadataReferences);
+            Assert.Collection(feature.Views.OrderBy(f => f.Key, StringComparer.Ordinal),
+                view =>
+                {
+                    Assert.Equal("/Areas/Admin/Views/About.cshtml", view.Key);
+                    Assert.Equal(typeof(int), view.Value);
+                },
+                view =>
+                {
+                    Assert.Equal("/Areas/Admin/Views/Index.cshtml", view.Key);
+                    Assert.Equal(typeof(string), view.Value);
+                },
+                view =>
+                {
+                    Assert.Equal("/Views/test/Index.cshtml", view.Key);
+                    Assert.Equal(typeof(object), view.Value);
+                });
+        }
+
+        private class TestableViewsFeatureProvider : ViewsFeatureProvider
+        {
+            private readonly Dictionary<AssemblyPart, Type> _containerLookup;
+
+            public TestableViewsFeatureProvider(Dictionary<AssemblyPart, Type> containerLookup)
+            {
+                _containerLookup = containerLookup;
+            }
+
+            protected override Type GetViewInfoContainerType(AssemblyPart assemblyPart) =>
+                _containerLookup[assemblyPart];
+        }
+
+        private class ViewInfoContainer1 : ViewInfoContainer
+        {
+            public ViewInfoContainer1()
+                : base(new[]
+                {
+                    new ViewInfo("/Views/test/Index.cshtml", typeof(object))
+                })
+            {
+            }
+        }
+
+        private class ViewInfoContainer2 : ViewInfoContainer
+        {
+            public ViewInfoContainer2()
+                : base(new[]
+                {
+                    new ViewInfo("/Areas/Admin/Views/Index.cshtml", typeof(string)),
+                    new ViewInfo("/Areas/Admin/Views/About.cshtml", typeof(int))
+                })
+            {
+            }
         }
     }
 }
