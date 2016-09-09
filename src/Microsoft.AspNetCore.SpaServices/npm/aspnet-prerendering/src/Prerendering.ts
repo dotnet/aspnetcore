@@ -84,7 +84,7 @@ export function renderToString(callback: RenderToStringCallback, applicationBase
 
             // Actually perform the rendering
             bootFuncPromiseWithTimeout.then(successResult => {
-                callback(null, { html: successResult.html, globals: successResult.globals });
+                callback(null, successResult);
             }, error => {
                 callback(error, null);
             });
