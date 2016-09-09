@@ -26,9 +26,9 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         public bool ShouldCacheResponse { get; internal set; }
 
-        public string BaseKey { get; internal set; }
+        public string StorageBaseKey { get; internal set; }
 
-        public string VaryKey { get; internal set; }
+        public string StorageVaryKey { get; internal set; }
 
         public DateTimeOffset ResponseTime { get; internal set; }
 

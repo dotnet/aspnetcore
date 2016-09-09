@@ -10,16 +10,100 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.ResponseCaching.Internal;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Xunit;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Tests
 {
     public class ResponseCachingContextTests
     {
+        [Fact]
+        public async Task TryServeFromCacheAsync_OnlyIfCached_Serves504()
+        {
+            var cache = new TestResponseCache();
+            var httpContext = new DefaultHttpContext();
+            var context = CreateTestContext(httpContext, responseCache: cache, keyProvider: new TestKeyProvider());
+            httpContext.Request.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
+            {
+                OnlyIfCached = true
+            };
+
+            Assert.True(await context.TryServeFromCacheAsync());
+            Assert.Equal(StatusCodes.Status504GatewayTimeout, httpContext.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task TryServeFromCacheAsync_CachedResponseNotFound_Fails()
+        {
+            var cache = new TestResponseCache();
+            var httpContext = new DefaultHttpContext();
+            var context = CreateTestContext(httpContext, responseCache: cache, keyProvider: new TestKeyProvider(new[] { "BaseKey", "BaseKey2" }));
+
+            Assert.False(await context.TryServeFromCacheAsync());
+            Assert.Equal(2, cache.GetCount);
+        }
+
+        [Fact]
+        public async Task TryServeFromCacheAsync_CachedResponseFound_Succeeds()
+        {
+            var cache = new TestResponseCache();
+            var httpContext = new DefaultHttpContext();
+            var context = CreateTestContext(httpContext, responseCache: cache, keyProvider: new TestKeyProvider(new[] { "BaseKey", "BaseKey2" }));
+
+            cache.Set(
+                "BaseKey2",
+                new CachedResponse()
+                {
+                    Body = new byte[0]
+                },
+                TimeSpan.Zero);
+
+            Assert.True(await context.TryServeFromCacheAsync());
+            Assert.Equal(2, cache.GetCount);
+        }
+
+        [Fact]
+        public async Task TryServeFromCacheAsync_VaryRuleFound_CachedResponseNotFound_Fails()
+        {
+            var cache = new TestResponseCache();
+            var httpContext = new DefaultHttpContext();
+            var context = CreateTestContext(httpContext, responseCache: cache, keyProvider: new TestKeyProvider(new[] { "BaseKey", "BaseKey2" }));
+
+            cache.Set(
+                "BaseKey2",
+                new CachedVaryRules(),
+                TimeSpan.Zero);
+
+            Assert.False(await context.TryServeFromCacheAsync());
+            Assert.Equal(2, cache.GetCount);
+        }
+
+        [Fact]
+        public async Task TryServeFromCacheAsync_VaryRuleFound_CachedResponseFound_Succeeds()
+        {
+            var cache = new TestResponseCache();
+            var httpContext = new DefaultHttpContext();
+            var context = CreateTestContext(httpContext, responseCache: cache, keyProvider: new TestKeyProvider(new[] { "BaseKey", "BaseKey2" }, new[] { "VaryKey", "VaryKey2" }));
+
+            cache.Set(
+                "BaseKey2",
+                new CachedVaryRules(),
+                TimeSpan.Zero);
+            cache.Set(
+                "BaseKey2VaryKey2",
+                new CachedResponse()
+                {
+                    Body = new byte[0]
+                },
+                TimeSpan.Zero);
+
+            Assert.True(await context.TryServeFromCacheAsync());
+            Assert.Equal(6, cache.GetCount);
+        }
 
         [Fact]
         public void ConditionalRequestSatisfied_NotConditionalRequest_Fails()
@@ -159,7 +243,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public void FinalizeCachingHeaders_DoNotUpdateShouldCacheResponse_IfResponseIsNotCacheable()
         {
             var httpContext = new DefaultHttpContext();
-            var context = CreateTestContext(httpContext);
+            var context = CreateTestContext(httpContext, cacheabilityValidator: new CacheabilityValidator());
             var state = httpContext.GetResponseCachingState();
 
             Assert.False(state.ShouldCacheResponse);
@@ -178,7 +262,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             {
                 Public = true
             };
-            var context = CreateTestContext(httpContext);
+            var context = CreateTestContext(httpContext, cacheabilityValidator: new CacheabilityValidator());
             var state = httpContext.GetResponseCachingState();
 
             Assert.False(state.ShouldCacheResponse);
@@ -192,10 +276,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public void FinalizeCachingHeaders_DefaultResponseValidity_Is10Seconds()
         {
             var httpContext = new DefaultHttpContext();
-            httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
-            {
-                Public = true
-            };
             var context = CreateTestContext(httpContext);
 
             context.FinalizeCachingHeaders();
@@ -207,10 +287,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public void FinalizeCachingHeaders_ResponseValidity_UseExpiryIfAvailable()
         {
             var httpContext = new DefaultHttpContext();
-            httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
-            {
-                Public = true
-            };
             var context = CreateTestContext(httpContext);
 
             var state = httpContext.GetResponseCachingState();
@@ -229,7 +305,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var httpContext = new DefaultHttpContext();
             httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
             {
-                Public = true,
                 MaxAge = TimeSpan.FromSeconds(12)
             };
             var context = CreateTestContext(httpContext);
@@ -249,7 +324,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var httpContext = new DefaultHttpContext();
             httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
             {
-                Public = true,
                 MaxAge = TimeSpan.FromSeconds(12),
                 SharedMaxAge = TimeSpan.FromSeconds(13)
             };
@@ -269,16 +343,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var httpContext = new DefaultHttpContext();
             var cache = new TestResponseCache();
-            var context = CreateTestContext(httpContext, cache, new ResponseCachingOptions());
+            var context = CreateTestContext(httpContext, cache);
             var state = httpContext.GetResponseCachingState();
 
             httpContext.Response.Headers[HeaderNames.Vary] = new StringValues(new[] { "headerA", "HEADERB", "HEADERc" });
             httpContext.AddResponseCachingFeature();
             httpContext.GetResponseCachingFeature().VaryParams = new StringValues(new[] { "paramB", "PARAMAA" });
-            httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
-            {
-                Public = true,
-            };
             var cachedVaryRules = new CachedVaryRules()
             {
                 VaryRules = new VaryRules()
@@ -291,7 +361,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             context.FinalizeCachingHeaders();
 
-            Assert.Equal(1, cache.StoredItems);
+            Assert.Equal(1, cache.SetCount);
             Assert.NotSame(cachedVaryRules, state.CachedVaryRules);
         }
 
@@ -300,16 +370,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var httpContext = new DefaultHttpContext();
             var cache = new TestResponseCache();
-            var context = CreateTestContext(httpContext, cache, new ResponseCachingOptions());
+            var context = CreateTestContext(httpContext, cache);
             var state = httpContext.GetResponseCachingState();
 
             httpContext.Response.Headers[HeaderNames.Vary] = new StringValues(new[] { "headerA", "HEADERB" });
             httpContext.AddResponseCachingFeature();
             httpContext.GetResponseCachingFeature().VaryParams = new StringValues(new[] { "paramB", "PARAMA" });
-            httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
-            {
-                Public = true,
-            };
             var cachedVaryRules = new CachedVaryRules()
             {
                 VaryKeyPrefix = FastGuid.NewGuid().IdString,
@@ -323,7 +389,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             context.FinalizeCachingHeaders();
 
-            Assert.Equal(0, cache.StoredItems);
+            Assert.Equal(0, cache.SetCount);
             Assert.Same(cachedVaryRules, state.CachedVaryRules);
         }
 
@@ -331,10 +397,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public void FinalizeCachingHeaders_DoNotAddDate_IfSpecified()
         {
             var httpContext = new DefaultHttpContext();
-            httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
-            {
-                Public = true
-            };
             var context = CreateTestContext(httpContext);
             var state = httpContext.GetResponseCachingState();
             var utcNow = DateTimeOffset.MinValue;
@@ -351,10 +413,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public void FinalizeCachingHeaders_AddsDate_IfNoneSpecified()
         {
             var httpContext = new DefaultHttpContext();
-            httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
-            {
-                Public = true
-            };
             var context = CreateTestContext(httpContext);
             var state = httpContext.GetResponseCachingState();
             var utcNow = DateTimeOffset.MinValue;
@@ -372,10 +430,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public void FinalizeCachingHeaders_StoresCachedResponse_InState()
         {
             var httpContext = new DefaultHttpContext();
-            httpContext.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
-            {
-                Public = true
-            };
             var context = CreateTestContext(httpContext);
             var state = httpContext.GetResponseCachingState();
 
@@ -391,7 +445,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var httpContext = new DefaultHttpContext();
             var cache = new TestResponseCache();
-            var context = CreateTestContext(httpContext, cache, new ResponseCachingOptions());
+            var context = CreateTestContext(httpContext, cache);
 
             context.ShimResponseStream();
             await httpContext.Response.WriteAsync(new string('0', 70 * 1024));
@@ -402,12 +456,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             {
                 BodyKeyPrefix = FastGuid.NewGuid().IdString
             };
-            state.BaseKey = "BaseKey";
+            state.StorageBaseKey = "BaseKey";
             state.CachedResponseValidFor = TimeSpan.FromSeconds(10);
 
             context.FinalizeCachingBody();
 
-            Assert.Equal(2, cache.StoredItems);
+            Assert.Equal(2, cache.SetCount);
         }
 
         [Fact]
@@ -415,7 +469,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var httpContext = new DefaultHttpContext();
             var cache = new TestResponseCache();
-            var context = CreateTestContext(httpContext, cache, new ResponseCachingOptions());
+            var context = CreateTestContext(httpContext, cache);
 
             context.ShimResponseStream();
             await httpContext.Response.WriteAsync(new string('0', 70 * 1024 - 1));
@@ -426,12 +480,113 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             {
                 BodyKeyPrefix = FastGuid.NewGuid().IdString
             };
-            state.BaseKey = "BaseKey";
+            state.StorageBaseKey = "BaseKey";
             state.CachedResponseValidFor = TimeSpan.FromSeconds(10);
 
             context.FinalizeCachingBody();
 
-            Assert.Equal(1, cache.StoredItems);
+            Assert.Equal(1, cache.SetCount);
+        }
+
+        [Fact]
+        public async Task FinalizeCachingBody_StoreResponseBodySeparately_LimitIsConfigurable()
+        {
+            var httpContext = new DefaultHttpContext();
+            var cache = new TestResponseCache();
+            var context = CreateTestContext(httpContext, cache, new ResponseCachingOptions()
+            {
+                MinimumSplitBodySize = 2048
+            });
+
+            context.ShimResponseStream();
+            await httpContext.Response.WriteAsync(new string('0', 1024));
+
+            var state = httpContext.GetResponseCachingState();
+            state.ShouldCacheResponse = true;
+            state.CachedResponse = new CachedResponse()
+            {
+                BodyKeyPrefix = FastGuid.NewGuid().IdString
+            };
+            state.StorageBaseKey = "BaseKey";
+            state.CachedResponseValidFor = TimeSpan.FromSeconds(10);
+
+            context.FinalizeCachingBody();
+
+            Assert.Equal(1, cache.SetCount);
+        }
+
+        [Fact]
+        public async Task FinalizeCachingBody_Cache_IfContentLengthMatches()
+        {
+            var httpContext = new DefaultHttpContext();
+            var cache = new TestResponseCache();
+            var context = CreateTestContext(httpContext, cache);
+
+            context.ShimResponseStream();
+            httpContext.Response.ContentLength = 10;
+            await httpContext.Response.WriteAsync(new string('0', 10));
+
+            var state = httpContext.GetResponseCachingState();
+            state.ShouldCacheResponse = true;
+            state.CachedResponse = new CachedResponse()
+            {
+                BodyKeyPrefix = FastGuid.NewGuid().IdString
+            };
+            state.StorageBaseKey = "BaseKey";
+            state.CachedResponseValidFor = TimeSpan.FromSeconds(10);
+
+            context.FinalizeCachingBody();
+
+            Assert.Equal(1, cache.SetCount);
+        }
+
+        [Fact]
+        public async Task FinalizeCachingBody_DoNotCache_IfContentLengthMismatches()
+        {
+            var httpContext = new DefaultHttpContext();
+            var cache = new TestResponseCache();
+            var context = CreateTestContext(httpContext, cache);
+
+            context.ShimResponseStream();
+            httpContext.Response.ContentLength = 9;
+            await httpContext.Response.WriteAsync(new string('0', 10));
+
+            var state = httpContext.GetResponseCachingState();
+            state.ShouldCacheResponse = true;
+            state.CachedResponse = new CachedResponse()
+            {
+                BodyKeyPrefix = FastGuid.NewGuid().IdString
+            };
+            state.StorageBaseKey = "BaseKey";
+            state.CachedResponseValidFor = TimeSpan.FromSeconds(10);
+
+            context.FinalizeCachingBody();
+
+            Assert.Equal(0, cache.SetCount);
+        }
+
+        [Fact]
+        public async Task FinalizeCachingBody_Cache_IfContentLengthAbsent()
+        {
+            var httpContext = new DefaultHttpContext();
+            var cache = new TestResponseCache();
+            var context = CreateTestContext(httpContext, cache);
+
+            context.ShimResponseStream();
+            await httpContext.Response.WriteAsync(new string('0', 10));
+
+            var state = httpContext.GetResponseCachingState();
+            state.ShouldCacheResponse = true;
+            state.CachedResponse = new CachedResponse()
+            {
+                BodyKeyPrefix = FastGuid.NewGuid().IdString
+            };
+            state.StorageBaseKey = "BaseKey";
+            state.CachedResponseValidFor = TimeSpan.FromSeconds(10);
+
+            context.FinalizeCachingBody();
+
+            Assert.Equal(1, cache.SetCount);
         }
 
         [Fact]
@@ -456,48 +611,30 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             Assert.Equal(orderedStrings, normalizedStrings);
         }
 
-        private static ResponseCachingContext CreateTestContext(HttpContext httpContext)
-        {
-            return CreateTestContext(
-                httpContext,
-                new TestResponseCache(),
-                new ResponseCachingOptions(),
-                new CacheabilityValidator());
-        }
-
-        private static ResponseCachingContext CreateTestContext(HttpContext httpContext, ResponseCachingOptions options)
-        {
-            return CreateTestContext(
-                httpContext,
-                new TestResponseCache(),
-                options,
-                new CacheabilityValidator());
-        }
-
-        private static ResponseCachingContext CreateTestContext(HttpContext httpContext, ICacheabilityValidator cacheabilityValidator)
-        {
-            return CreateTestContext(
-                httpContext,
-                new TestResponseCache(),
-                new ResponseCachingOptions(),
-                cacheabilityValidator);
-        }
-
-        private static ResponseCachingContext CreateTestContext(HttpContext httpContext, IResponseCache responseCache, ResponseCachingOptions options)
-        {
-            return CreateTestContext(
-                httpContext,
-                responseCache,
-                options,
-                new CacheabilityValidator());
-        }
-
         private static ResponseCachingContext CreateTestContext(
             HttpContext httpContext,
-            IResponseCache responseCache,
-            ResponseCachingOptions options,
-            ICacheabilityValidator cacheabilityValidator)
+            IResponseCache responseCache = null,
+            ResponseCachingOptions options = null,
+            IKeyProvider keyProvider = null,
+            ICacheabilityValidator cacheabilityValidator = null)
         {
+            if (responseCache == null)
+            {
+                responseCache = new TestResponseCache();
+            }
+            if (options == null)
+            {
+                options = new ResponseCachingOptions();
+            }
+            if (keyProvider == null)
+            {
+                keyProvider = new KeyProvider(new DefaultObjectPoolProvider(), Options.Create(options));
+            }
+            if (cacheabilityValidator == null)
+            {
+                cacheabilityValidator = new TestCacheabilityValidator();
+            }
+
             httpContext.AddResponseCachingState();
 
             return new ResponseCachingContext(
@@ -505,16 +642,82 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 responseCache,
                 options,
                 cacheabilityValidator,
-                new KeyProvider(new DefaultObjectPoolProvider(), Options.Create(options)));
+                keyProvider);
+        }
+
+        private class TestCacheabilityValidator : ICacheabilityValidator
+        {
+            public bool CachedEntryIsFresh(HttpContext httpContext, ResponseHeaders cachedResponseHeaders) => true;
+
+            public bool RequestIsCacheable(HttpContext httpContext) => true;
+
+            public bool ResponseIsCacheable(HttpContext httpContext) => true;
+        }
+
+        private class TestKeyProvider : IKeyProvider
+        {
+            private readonly StringValues _baseKey;
+            private readonly StringValues _varyKey;
+
+            public TestKeyProvider(StringValues? lookupBaseKey = null, StringValues? lookupVaryKey = null)
+            {
+                if (lookupBaseKey.HasValue)
+                {
+                    _baseKey = lookupBaseKey.Value;
+                }
+                if (lookupVaryKey.HasValue)
+                {
+                    _varyKey = lookupVaryKey.Value;
+                }
+            }
+
+            public IEnumerable<string> CreateLookupBaseKey(HttpContext httpContext) => _baseKey;
+
+
+            public IEnumerable<string> CreateLookupVaryKey(HttpContext httpContext, VaryRules varyRules)
+            {
+                foreach (var baseKey in _baseKey)
+                {
+                    foreach (var varyKey in _varyKey)
+                    {
+                        yield return baseKey + varyKey;
+                    }
+                }
+            }
+
+            public string CreateBodyKey(HttpContext httpContext)
+            {
+                throw new NotImplementedException();
+            }
+
+            public string CreateStorageBaseKey(HttpContext httpContext)
+            {
+                throw new NotImplementedException();
+            }
+
+            public string CreateStorageVaryKey(HttpContext httpContext, VaryRules varyRules)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class TestResponseCache : IResponseCache
         {
-            public int StoredItems { get; private set; }
+            private readonly IDictionary<string, object> _storage = new Dictionary<string, object>();
+            public int GetCount { get; private set; }
+            public int SetCount { get; private set; }
 
             public object Get(string key)
             {
-                return null;
+                GetCount++;
+                try
+                {
+                    return _storage[key];
+                }
+                catch
+                {
+                    return null;
+                }
             }
 
             public void Remove(string key)
@@ -523,7 +726,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             public void Set(string key, object entry, TimeSpan validFor)
             {
-                StoredItems++;
+                SetCount++;
+                _storage[key] = entry;
             }
         }
 
@@ -531,7 +735,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
             {
-                return Task.FromResult(0);
+                return TaskCache.CompletedTask;
             }
         }
     }

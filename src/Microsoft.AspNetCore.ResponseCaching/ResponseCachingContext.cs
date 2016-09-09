@@ -59,84 +59,101 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         private IHttpSendFileFeature OriginalSendFileFeature { get; set; }
 
-        internal async Task<bool> TryServeFromCacheAsync()
+        internal async Task<bool> TryServeCachedResponseAsync(CachedResponse cachedResponse)
         {
-            State.BaseKey = _keyProvider.CreateBaseKey(_httpContext);
-            var cacheEntry = _cache.Get(State.BaseKey);
-            var responseServed = false;
+            State.CachedResponse = cachedResponse;
+            var cachedResponseHeaders = new ResponseHeaders(State.CachedResponse.Headers);
 
-            if (cacheEntry is CachedVaryRules)
+            State.ResponseTime = _options.SystemClock.UtcNow;
+            var cachedEntryAge = State.ResponseTime - State.CachedResponse.Created;
+            State.CachedEntryAge = cachedEntryAge > TimeSpan.Zero ? cachedEntryAge : TimeSpan.Zero;
+
+            if (_cacheabilityValidator.CachedEntryIsFresh(_httpContext, cachedResponseHeaders))
             {
-                // Request contains vary rules, recompute key and try again
-                State.CachedVaryRules = cacheEntry as CachedVaryRules;
-                var varyKey = _keyProvider.CreateVaryKey(_httpContext, ((CachedVaryRules)cacheEntry).VaryRules);
-                cacheEntry = _cache.Get(varyKey);
-            }
-
-            if (cacheEntry is CachedResponse)
-            {
-                State.CachedResponse = cacheEntry as CachedResponse;
-                var cachedResponseHeaders = new ResponseHeaders(State.CachedResponse.Headers);
-
-                State.ResponseTime = _options.SystemClock.UtcNow;
-                var cachedEntryAge = State.ResponseTime - State.CachedResponse.Created;
-                State.CachedEntryAge = cachedEntryAge > TimeSpan.Zero ? cachedEntryAge : TimeSpan.Zero;
-
-                if (_cacheabilityValidator.CachedEntryIsFresh(_httpContext, cachedResponseHeaders))
+                // Check conditional request rules
+                if (ConditionalRequestSatisfied(cachedResponseHeaders))
                 {
-                    responseServed = true;
-
-                    // Check conditional request rules
-                    if (ConditionalRequestSatisfied(cachedResponseHeaders))
-                    {
-                        _httpContext.Response.StatusCode = StatusCodes.Status304NotModified;
-                    }
-                    else
-                    {
-                        var response = _httpContext.Response;
-                        // Copy the cached status code and response headers
-                        response.StatusCode = State.CachedResponse.StatusCode;
-                        foreach (var header in State.CachedResponse.Headers)
-                        {
-                            response.Headers.Add(header);
-                        }
-
-                        response.Headers[HeaderNames.Age] = State.CachedEntryAge.TotalSeconds.ToString("F0", CultureInfo.InvariantCulture);
-
-                        var body = State.CachedResponse.Body ??
-                            ((CachedResponseBody)_cache.Get(State.CachedResponse.BodyKeyPrefix))?.Body;
-
-                        // If the body is not found, something went wrong.
-                        if (body == null)
-                        {
-                            return false;
-                        }
-
-                        // Copy the cached response body
-                        if (body.Length > 0)
-                        {
-                            // Add a content-length if required
-                            if (response.ContentLength == null && StringValues.IsNullOrEmpty(response.Headers[HeaderNames.TransferEncoding]))
-                            {
-                                response.ContentLength = body.Length;
-                            }
-                            await response.Body.WriteAsync(body, 0, body.Length);
-                        }
-                    }
+                    _httpContext.Response.StatusCode = StatusCodes.Status304NotModified;
                 }
                 else
                 {
-                    // TODO: Validate with endpoint instead
+                    var response = _httpContext.Response;
+                    // Copy the cached status code and response headers
+                    response.StatusCode = State.CachedResponse.StatusCode;
+                    foreach (var header in State.CachedResponse.Headers)
+                    {
+                        response.Headers.Add(header);
+                    }
+
+                    response.Headers[HeaderNames.Age] = State.CachedEntryAge.TotalSeconds.ToString("F0", CultureInfo.InvariantCulture);
+
+                    var body = State.CachedResponse.Body ??
+                        ((CachedResponseBody)_cache.Get(State.CachedResponse.BodyKeyPrefix))?.Body;
+
+                    // If the body is not found, something went wrong.
+                    if (body == null)
+                    {
+                        return false;
+                    }
+
+                    // Copy the cached response body
+                    if (body.Length > 0)
+                    {
+                        // Add a content-length if required
+                        if (response.ContentLength == null && StringValues.IsNullOrEmpty(response.Headers[HeaderNames.TransferEncoding]))
+                        {
+                            response.ContentLength = body.Length;
+                        }
+                        await response.Body.WriteAsync(body, 0, body.Length);
+                    }
+                }
+
+                return true;
+            }
+            else
+            {
+                // TODO: Validate with endpoint instead
+            }
+
+            return false;
+        }
+
+        internal async Task<bool> TryServeFromCacheAsync()
+        {
+            foreach (var baseKey in _keyProvider.CreateLookupBaseKey(_httpContext))
+            {
+                var cacheEntry = _cache.Get(baseKey);
+
+                if (cacheEntry is CachedVaryRules)
+                {
+                    // Request contains vary rules, recompute key(s) and try again
+                    State.CachedVaryRules = cacheEntry as CachedVaryRules;
+
+                    foreach (var varyKey in _keyProvider.CreateLookupVaryKey(_httpContext, State.CachedVaryRules.VaryRules))
+                    {
+                        cacheEntry = _cache.Get(varyKey);
+
+                        if (cacheEntry is CachedResponse && await TryServeCachedResponseAsync(cacheEntry as CachedResponse))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                if (cacheEntry is CachedResponse && await TryServeCachedResponseAsync(cacheEntry as CachedResponse))
+                {
+                    return true;
                 }
             }
 
-            if (!responseServed && State.RequestCacheControl.OnlyIfCached)
+
+            if (State.RequestCacheControl.OnlyIfCached)
             {
                 _httpContext.Response.StatusCode = StatusCodes.Status504GatewayTimeout;
-                responseServed = true;
+                return true;
             }
 
-            return responseServed;
+            return false;
         }
 
         internal bool ConditionalRequestSatisfied(ResponseHeaders cachedResponseHeaders)
@@ -174,6 +191,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             if (_cacheabilityValidator.ResponseIsCacheable(_httpContext))
             {
                 State.ShouldCacheResponse = true;
+                State.StorageBaseKey = _keyProvider.CreateStorageBaseKey(_httpContext);
 
                 // Create the cache entry now
                 var response = _httpContext.Response;
@@ -209,10 +227,10 @@ namespace Microsoft.AspNetCore.ResponseCaching
                         };
 
                         State.CachedVaryRules = cachedVaryRules;
-                        _cache.Set(State.BaseKey, cachedVaryRules, State.CachedResponseValidFor);
+                        _cache.Set(State.StorageBaseKey, cachedVaryRules, State.CachedResponseValidFor);
                     }
 
-                    State.VaryKey = _keyProvider.CreateVaryKey(_httpContext, State.CachedVaryRules.VaryRules);
+                    State.StorageVaryKey = _keyProvider.CreateStorageVaryKey(_httpContext, State.CachedVaryRules.VaryRules);
                 }
 
                 // Ensure date header is set
@@ -245,12 +263,15 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         internal void FinalizeCachingBody()
         {
-            if (State.ShouldCacheResponse && ResponseCacheStream.BufferingEnabled)
+            if (State.ShouldCacheResponse &&
+                ResponseCacheStream.BufferingEnabled &&
+                (State.ResponseHeaders.ContentLength == null ||
+                 State.ResponseHeaders.ContentLength == ResponseCacheStream.BufferedStream.Length))
             {
                 if (ResponseCacheStream.BufferedStream.Length >= _options.MinimumSplitBodySize)
                 {
                     // Store response and response body separately
-                    _cache.Set(State.VaryKey ?? State.BaseKey, State.CachedResponse, State.CachedResponseValidFor);
+                    _cache.Set(State.StorageVaryKey ?? State.StorageBaseKey, State.CachedResponse, State.CachedResponseValidFor);
 
                     var cachedResponseBody = new CachedResponseBody()
                     {
@@ -263,7 +284,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 {
                     // Store response and response body together
                     State.CachedResponse.Body = ResponseCacheStream.BufferedStream.ToArray();
-                    _cache.Set(State.VaryKey ?? State.BaseKey, State.CachedResponse, State.CachedResponseValidFor);
+                    _cache.Set(State.StorageVaryKey ?? State.StorageBaseKey, State.CachedResponse, State.CachedResponseValidFor);
                 }
             }
         }

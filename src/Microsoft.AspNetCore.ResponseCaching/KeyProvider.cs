@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
@@ -35,9 +36,19 @@ namespace Microsoft.AspNetCore.ResponseCaching
             _options = options.Value;
         }
 
+        public virtual IEnumerable<string> CreateLookupBaseKey(HttpContext httpContext)
+        {
+            return new string[] { CreateStorageBaseKey(httpContext) };
+        }
+
+        public virtual IEnumerable<string> CreateLookupVaryKey(HttpContext httpContext, VaryRules varyRules)
+        {
+            return new string[] { CreateStorageVaryKey(httpContext, varyRules) };
+        }
+
         // GET<delimiter>/PATH
         // TODO: Method invariant retrieval? E.g. HEAD after GET to the same resource.
-        public virtual string CreateBaseKey(HttpContext httpContext)
+        public virtual string CreateStorageBaseKey(HttpContext httpContext)
         {
             if (httpContext == null)
             {
@@ -63,7 +74,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         }
 
         // BaseKey<delimiter>H<delimiter>HeaderName=HeaderValue<delimiter>Q<delimiter>QueryName=QueryValue
-        public virtual string CreateVaryKey(HttpContext httpContext, VaryRules varyRules)
+        public virtual string CreateStorageVaryKey(HttpContext httpContext, VaryRules varyRules)
         {
             if (httpContext == null)
             {
