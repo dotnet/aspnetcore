@@ -43,12 +43,26 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
     const listener = app.listen(suggestedHMRPortOrZero, () => {
         // Build the final Webpack config based on supplied options
         if (enableHotModuleReplacement) {
-            // TODO: Stop assuming there's an entry point called 'main'
-            if (typeof webpackConfig.entry['main'] === 'string') {
-              webpackConfig.entry['main'] = ['webpack-hot-middleware/client', webpackConfig.entry['main']];
-            } else {
-              webpackConfig.entry['main'].unshift('webpack-hot-middleware/client');
+            // For this, we only support the key/value config format, not string or string[], since
+            // those ones don't clearly indicate what the resulting bundle name will be
+            const entryPoints = webpackConfig.entry;
+            const isObjectStyleConfig = entryPoints
+                                     && typeof entryPoints === 'object'
+                                     && !(entryPoints instanceof Array);
+            if (!isObjectStyleConfig) {
+                callback('To use HotModuleReplacement, your webpack config must specify an \'entry\' value as a key-value object (e.g., "entry: { main: \'ClientApp/boot-client.ts\' }")', null);
+                return;
             }
+
+            // Augment all entry points so they support HMR
+            Object.getOwnPropertyNames(entryPoints).forEach(entryPointName => {
+                if (typeof entryPoints[entryPointName] === 'string') {
+                    entryPoints[entryPointName] = ['webpack-hot-middleware/client', entryPoints[entryPointName]];
+                } else {
+                    entryPoints[entryPointName].unshift('webpack-hot-middleware/client');
+                }
+            });
+
             webpackConfig.plugins.push(
                 new webpack.HotModuleReplacementPlugin()
             );
