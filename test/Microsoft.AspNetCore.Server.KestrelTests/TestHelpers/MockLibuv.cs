@@ -69,7 +69,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
                 {
                     _loopWh.Wait();
                     KestrelThreadBlocker.Wait();
-                    TaskCompletionSource<object> onPostTcs = null;
 
                     lock (_postLock)
                     {
@@ -84,14 +83,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
                             // Ensure any subsequent calls to uv_async_send
                             // create a new _onPostTcs to be completed.
                             _completedOnPostTcs = true;
-                            onPostTcs = _onPostTcs;
+
+                            // Calling TrySetResult outside the lock to avoid deadlock
+                            // when the code attempts to call uv_async_send after awaiting
+                            // OnPostTask. Task.Run so the run loop doesn't block either.
+                            var onPostTcs = _onPostTcs;
+                            Task.Run(() => onPostTcs.TrySetResult(null));
                         }
                     }
-
-                    // Calling TrySetResult outside the lock to avoid deadlock
-                    // when the code attempts to call uv_async_send after awaiting
-                    // OnPostTask.
-                    onPostTcs?.TrySetResult(null);
                 }
 
                 return 0;
