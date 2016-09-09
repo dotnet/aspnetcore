@@ -69,8 +69,9 @@ Also in this repo, [the `samples` directory](https://github.com/aspnet/JavaScrip
 **To run the samples:**
 
  * Clone this repo
- * Change directory to the same you want to run (e.g., `cd samples/angular/MusicStore`)
- * Restore dependencies (run `dotnet restore` and `npm install`).
+ * At the repo's root directory (the one containing `src`, `samples`, etc.), run `dotnet restore`
+ * Change directory to the sample you want to run (e.g., `cd samples/angular/MusicStore`)
+ * Restore Node dependencies by running `npm install`
    * If you're trying to run the Angular 2 "Music Store" sample, then also run `gulp` (which you need to have installed globally). None of the other samples require this.
  * Run the application (`dotnet run`)
  * Browse to [http://localhost:5000](http://localhost:5000)
