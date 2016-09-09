@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
@@ -10,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     /// Provides a return type, status code and a set of possible content types returned by a
     /// successful execution of the action.
     /// </summary>
-    public interface IApiResponseMetadataProvider
+    public interface IApiResponseMetadataProvider : IFilterMetadata
     {
         /// <summary>
         /// Gets the optimistic return type of the action.

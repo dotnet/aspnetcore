@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -12,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// A filter that specifies the type of the value and status code returned by the action.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public class ProducesResponseTypeAttribute : Attribute, IApiResponseMetadataProvider, IFilterMetadata
+    public class ProducesResponseTypeAttribute : Attribute, IApiResponseMetadataProvider
     {
         /// <summary>
         /// Initializes an instance of <see cref="ProducesResponseTypeAttribute"/>.
