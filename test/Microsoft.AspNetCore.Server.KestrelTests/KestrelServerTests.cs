@@ -5,8 +5,8 @@ using System;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         private static void StartDummyApplication(IServer server)
         {
-            server.Start(new DummyApplication(context => TaskUtilities.CompletedTask));
+            server.Start(new DummyApplication(context => TaskCache.CompletedTask));
         }
 
         private class TestLoggerFactory : ILoggerFactory

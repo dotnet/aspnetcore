@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -629,7 +630,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             // Act/Assert
             Assert.True(frame.HasResponseStarted);
-            Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)frame).OnStarting(_ => TaskUtilities.CompletedTask, null));
+            Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)frame).OnStarting(_ => TaskCache.CompletedTask, null));
         }
 
         [Fact]

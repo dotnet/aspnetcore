@@ -4,8 +4,8 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Filter;
 using Microsoft.AspNetCore.Server.Kestrel.Filter.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public Task OnConnectionAsync(ConnectionFilterContext context)
         {
             context.Connection = new LoggingStream(context.Connection, new TestApplicationErrorLogger());
-            return TaskUtilities.CompletedTask;
+            return TaskCache.CompletedTask;
         }
     }
 }

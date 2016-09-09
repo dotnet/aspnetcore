@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Filter
 {
@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
     {
         public Task OnConnectionAsync(ConnectionFilterContext context)
         {
-            return TaskUtilities.CompletedTask;
+            return TaskCache.CompletedTask;
         }
     }
 }

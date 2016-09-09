@@ -6,18 +6,16 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Filter.Internal
 {
     public class LibuvStream : Stream
     {
-        private readonly static Task<int> _initialCachedTask = Task.FromResult(0);
-
         private readonly SocketInput _input;
         private readonly ISocketOutput _output;
 
-        private Task<int> _cachedTask = _initialCachedTask;
+        private Task<int> _cachedTask = TaskCache<int>.DefaultCompletedTask;
 
         public LibuvStream(SocketInput input, ISocketOutput output)
         {
@@ -125,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter.Internal
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
             // No-op since writes are immediate.
-            return TaskUtilities.CompletedTask;
+            return TaskCache.CompletedTask;
         }
 
         private ValueTask<int> ReadAsync(ArraySegment<byte> buffer)

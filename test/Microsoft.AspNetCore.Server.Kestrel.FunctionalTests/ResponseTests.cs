@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         await context.Response.WriteAsync("hello, world");
                         await context.Response.Body.FlushAsync();
-                        ex = Assert.Throws<InvalidOperationException>(() => context.Response.OnStarting(_ => TaskUtilities.CompletedTask, null));
+                        ex = Assert.Throws<InvalidOperationException>(() => context.Response.OnStarting(_ => TaskCache.CompletedTask, null));
                     });
                 });
 

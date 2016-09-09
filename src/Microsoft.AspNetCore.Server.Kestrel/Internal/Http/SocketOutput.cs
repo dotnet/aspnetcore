@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
@@ -98,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {
                     _log.ConnectionDisconnectedWrite(_connectionId, buffer.Count, _lastWriteError);
 
-                    return TaskUtilities.CompletedTask;
+                    return TaskCache.CompletedTask;
                 }
 
                 if (buffer.Count > 0)
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     var tail = ProducingStart();
                     if (tail.IsDefault)
                     {
-                        return TaskUtilities.CompletedTask;
+                        return TaskCache.CompletedTask;
                     }
 
                     if (chunk)
@@ -201,7 +202,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
 
             // Return TaskCompletionSource's Task if set, otherwise completed Task 
-            return tcs?.Task ?? TaskUtilities.CompletedTask;
+            return tcs?.Task ?? TaskCache.CompletedTask;
         }
 
         public void End(ProduceEndType endType)
@@ -523,7 +524,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
             else if (_cancelled)
             {
-                return TaskUtilities.CompletedTask;
+                return TaskCache.CompletedTask;
             }
 
             return WriteAsync(buffer, cancellationToken, chunk);

@@ -5,7 +5,7 @@ using System;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 else if (result.Result == 0)
                 {
                     // Completed Task, end of stream
-                    return TaskUtilities.CompletedTask;
+                    return TaskCache.CompletedTask;
                 }
 
             } while (true);

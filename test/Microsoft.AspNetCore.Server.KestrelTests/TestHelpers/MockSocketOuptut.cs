@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 {
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 
         public Task WriteAsync(ArraySegment<byte> buffer, bool chunk = false, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return TaskUtilities.CompletedTask;
+            return TaskCache.CompletedTask;
         }
     }
 }

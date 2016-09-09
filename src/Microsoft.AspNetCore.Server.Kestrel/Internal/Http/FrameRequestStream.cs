@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
             // No-op.
-            return TaskUtilities.CompletedTask;
+            return TaskCache.CompletedTask;
         }
 
         public override long Seek(long offset, SeekOrigin origin)

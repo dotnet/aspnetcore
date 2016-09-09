@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 {
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return Task.FromResult(0);
+            return TaskCache<int>.DefaultCompletedTask;
         }
 
         public override void Write(byte[] buffer, int offset, int count)

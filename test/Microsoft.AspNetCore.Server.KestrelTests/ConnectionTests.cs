@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var context = new ListenerContext(new TestServiceContext())
                 {
                     FrameFactory = connectionContext => new Frame<HttpContext>(
-                        new DummyApplication(httpContext => TaskUtilities.CompletedTask), connectionContext),
+                        new DummyApplication(httpContext => TaskCache.CompletedTask), connectionContext),
                     ServerAddress = ServerAddress.FromUrl("http://127.0.0.1:0"),
                     Thread = engine.Threads[0]
                 };

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         Task IFrameControl.WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
-            return TaskUtilities.CompletedTask;
+            return TaskCache.CompletedTask;
         }
 
         void IFrameControl.Flush()
@@ -93,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         Task IFrameControl.FlushAsync(CancellationToken cancellationToken)
         {
-            return TaskUtilities.CompletedTask;
+            return TaskCache.CompletedTask;
         }
 
         public void Dispose()

@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Filter;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -113,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 new NoOpConnectionFilter())
             );
 
-            using (var server = new TestServer(context => TaskUtilities.CompletedTask, serviceContext, _serverAddress))
+            using (var server = new TestServer(context => TaskCache.CompletedTask, serviceContext, _serverAddress))
             {
                 using (var client = new TcpClient())
                 {
@@ -231,7 +232,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 new NoOpConnectionFilter())
             );
 
-            using (var server = new TestServer(context => TaskUtilities.CompletedTask, serviceContext, _serverAddress))
+            using (var server = new TestServer(context => TaskCache.CompletedTask, serviceContext, _serverAddress))
             {
                 using (var client = new TcpClient())
                 {
@@ -258,7 +259,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 new NoOpConnectionFilter())
             );
 
-            using (var server = new TestServer(context => TaskUtilities.CompletedTask, serviceContext, _serverAddress))
+            using (var server = new TestServer(context => TaskCache.CompletedTask, serviceContext, _serverAddress))
             {
                 using (var client = new TcpClient())
                 {
@@ -283,7 +284,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 new NoOpConnectionFilter())
             );
 
-            using (var server = new TestServer(context => TaskUtilities.CompletedTask, serviceContext, _serverAddress))
+            using (var server = new TestServer(context => TaskCache.CompletedTask, serviceContext, _serverAddress))
             {
                 using (var client = new TcpClient())
                 {

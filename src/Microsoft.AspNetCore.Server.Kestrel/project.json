@@ -18,7 +18,11 @@
     "System.Threading.Tasks.Extensions": "4.0.0-*",
     "Libuv": "1.9.0-*",
     "Microsoft.AspNetCore.Hosting": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*"
+    "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
+    "Microsoft.Extensions.TaskCache.Sources": {
+      "version": "1.1.0-*",
+      "type": "build"
+    }
   },
   "frameworks": {
     "net451": {

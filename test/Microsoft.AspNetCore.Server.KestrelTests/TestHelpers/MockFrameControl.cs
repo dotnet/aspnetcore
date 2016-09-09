@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 {
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 
         public Task FlushAsync(CancellationToken cancellationToken)
         {
-            return TaskUtilities.CompletedTask;
+            return TaskCache.CompletedTask;
         }
 
         public void ProduceContinue()
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 
         public Task WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
-            return TaskUtilities.CompletedTask;
+            return TaskCache.CompletedTask;
         }
     }
 }

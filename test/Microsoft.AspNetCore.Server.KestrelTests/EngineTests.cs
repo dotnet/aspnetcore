@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -1084,7 +1085,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             using (var server = new TestServer(httpContext =>
             {
                 httpContext.Abort();
-                return TaskUtilities.CompletedTask;
+                return TaskCache.CompletedTask;
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -1121,7 +1122,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     Assert.Same(originalRequestHeaders, requestFeature.Headers);
                 }
 
-                return TaskUtilities.CompletedTask;
+                return TaskCache.CompletedTask;
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -1168,7 +1169,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     Assert.Same(originalResponseHeaders, responseFeature.Headers);
                 }
 
-                return TaskUtilities.CompletedTask;
+                return TaskCache.CompletedTask;
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -1234,12 +1235,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 context.Response.OnStarting(_ =>
                 {
                     callOrder.Push(1);
-                    return TaskUtilities.CompletedTask;
+                    return TaskCache.CompletedTask;
                 }, null);
                 context.Response.OnStarting(_ =>
                 {
                     callOrder.Push(2);
-                    return TaskUtilities.CompletedTask;
+                    return TaskCache.CompletedTask;
                 }, null);
                 
                 context.Response.ContentLength = response.Length;
@@ -1278,12 +1279,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 context.Response.OnCompleted(_ =>
                 {
                     callOrder.Push(1);
-                    return TaskUtilities.CompletedTask;
+                    return TaskCache.CompletedTask;
                 }, null);
                 context.Response.OnCompleted(_ =>
                 {
                     callOrder.Push(2);
-                    return TaskUtilities.CompletedTask;
+                    return TaskCache.CompletedTask;
                 }, null);
 
                 context.Response.ContentLength = response.Length;

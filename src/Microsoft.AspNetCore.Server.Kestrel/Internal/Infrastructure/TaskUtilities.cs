@@ -9,13 +9,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 {
     public static class TaskUtilities
     {
-#if NETSTANDARD1_3
-        public static Task CompletedTask = Task.CompletedTask;
-#else
-        public static Task CompletedTask = Task.FromResult<object>(null);
-#endif
-        public static Task<int> ZeroTask = Task.FromResult(0);
-
         public static Task GetCancelledTask(CancellationToken cancellationToken)
         {
 #if NETSTANDARD1_3

@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -338,7 +339,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 _requestProcessingStopping = true;
             }
-            return _requestProcessingTask ?? TaskUtilities.CompletedTask;
+            return _requestProcessingTask ?? TaskCache.CompletedTask;
         }
 
         /// <summary>
@@ -500,7 +501,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 if (data.Count == 0)
                 {
-                    return TaskUtilities.CompletedTask;
+                    return TaskCache.CompletedTask;
                 }
                 return WriteChunkedAsync(data, cancellationToken);
             }
@@ -569,7 +570,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             if (HasResponseStarted)
             {
-                return TaskUtilities.CompletedTask;
+                return TaskCache.CompletedTask;
             }
 
             if (_onStarting != null)
@@ -583,7 +584,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
 
             ProduceStart(appCompleted: false);
-            return TaskUtilities.CompletedTask;
+            return TaskCache.CompletedTask;
         }
 
         private async Task ProduceStartAndFireOnStartingAwaited()
@@ -624,7 +625,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 return ProduceEnd();
             }
 
-            return TaskUtilities.CompletedTask;
+            return TaskCache.CompletedTask;
         }
 
         protected Task ProduceEnd()
@@ -635,7 +636,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {
                     // We can no longer change the response, so we simply close the connection.
                     _requestProcessingStopping = true;
-                    return TaskUtilities.CompletedTask;
+                    return TaskCache.CompletedTask;
                 }
 
                 if (_requestRejected)
@@ -697,7 +698,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 ConnectionControl.End(ProduceEndType.ConnectionKeepAlive);
             }
 
-            return TaskUtilities.CompletedTask;
+            return TaskCache.CompletedTask;
         }
 
         private async Task WriteAutoChunkSuffixAwaited()

@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("post= / HTTP/1.0\r\n")]
         public async Task TestInvalidRequestLines(string request)
         {
-            using (var server = new TestServer(context => TaskUtilities.CompletedTask))
+            using (var server = new TestServer(context => TaskCache.CompletedTask))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("Header-1: value1\r\nHeader-2\t: value2\r\n\r\n")]
         public async Task TestInvalidHeaders(string rawHeaders)
         {
-            using (var server = new TestServer(context => TaskUtilities.CompletedTask))
+            using (var server = new TestServer(context => TaskCache.CompletedTask))
             {
                 using (var connection = server.CreateConnection())
                 {
