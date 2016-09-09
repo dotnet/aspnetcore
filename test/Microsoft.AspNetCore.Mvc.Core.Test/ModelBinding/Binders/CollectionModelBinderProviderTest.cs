@@ -43,9 +43,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         [InlineData(typeof(IList<int>))]
         [InlineData(typeof(List<int>))]
         [InlineData(typeof(Collection<int>))]
-        [InlineData(typeof(IEnumerable<int>))]
-        [InlineData(typeof(IReadOnlyCollection<int>))]
-        [InlineData(typeof(IReadOnlyList<int>))]
         public void Create_ForSupportedTypes_ReturnsBinder(Type modelType)
         {
             // Arrange

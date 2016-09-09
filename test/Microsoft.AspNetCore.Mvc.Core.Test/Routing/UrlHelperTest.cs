@@ -941,10 +941,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         [Theory]
         [InlineData(null, null, null, "/", null, "/")]
-        [InlineData(null, null, null, "/", null, "/")]
         [InlineData(null, null, null, "/Hello", null, "/Hello" )]
         [InlineData(null, null, null, "Hello", null, "/Hello")]
-        [InlineData(null, null, null, "/Hello", null, "/Hello")]
         [InlineData("/", null, null, "", null, "/")]
         [InlineData("/hello/", null, null, "/world", null, "/hello/world")]
         [InlineData("/hello/", "https", "myhost", "/world", "fragment-value", "https://myhost/hello/world#fragment-value")]
