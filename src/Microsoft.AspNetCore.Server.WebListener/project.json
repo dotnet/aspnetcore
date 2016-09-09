@@ -1,6 +1,12 @@
 {
   "version": "1.0.0-rc1-final",
-  "description": "ASP.NET 5 self-host web server.",
+  "description": "ASP.NET Core HTTP server for Windows.",
+  "packOptions": {
+    "tags": [
+      "aspnetcore",
+      "weblistener"
+    ]
+  },
   "dependencies": {
     "Microsoft.AspNetCore.Hosting": "1.0.0",
     "Microsoft.Net.Http.Headers": "1.0.0",
