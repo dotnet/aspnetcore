@@ -6,5 +6,6 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
     {
         public JObject Globals { get; set; }
         public string Html { get; set; }
+        public string RedirectUrl { get; set; }
     }
 }

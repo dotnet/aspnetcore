@@ -85,6 +85,15 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
                 unencodedPathAndQuery,
                 CustomDataParameter,
                 TimeoutMillisecondsParameter);
+
+            if (!string.IsNullOrEmpty(result.RedirectUrl))
+            {
+                // It's a redirection
+                ViewContext.HttpContext.Response.Redirect(result.RedirectUrl);
+                return;
+            }
+
+            // It's some HTML to inject
             output.Content.SetHtmlContent(result.Html);
 
             // Also attach any specified globals to the 'window' object. This is useful for transferring
