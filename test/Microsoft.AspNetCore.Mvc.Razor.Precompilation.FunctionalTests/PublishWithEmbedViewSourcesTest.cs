@@ -23,13 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.FunctionalTests
 
         public ApplicationTestFixture Fixture { get; }
 
-        public static IEnumerable<object[]> SupportedFlavorsTheoryData
-        {
-            get
-            {
-                return RuntimeFlavors.SupportedFlavors.Select(f => new object[] { f });
-            }
-        }
+        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
 
         [Theory]
         [MemberData(nameof(SupportedFlavorsTheoryData))]

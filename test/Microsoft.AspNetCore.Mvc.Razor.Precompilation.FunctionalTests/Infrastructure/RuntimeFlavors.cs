@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
 {
@@ -18,6 +19,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
                 {
                     yield return RuntimeFlavor.Clr;
                 }
+            }
+        }
+
+        public static TheoryData SupportedFlavorsTheoryData
+        {
+            get
+            {
+                var theory = new TheoryData<RuntimeFlavor>();
+                foreach (var item in SupportedFlavors)
+                {
+                    theory.Add(item);
+                }
+
+                return theory;
             }
         }
     }
