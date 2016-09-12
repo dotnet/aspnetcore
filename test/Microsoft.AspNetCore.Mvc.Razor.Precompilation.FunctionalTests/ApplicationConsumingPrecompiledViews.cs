@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
@@ -40,13 +39,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
             using (var deployer = Fixture.CreateDeployment(flavor))
             {
                 var deploymentResult = deployer.Deploy();
-                var httpClient = new HttpClient()
-                {
-                    BaseAddress = new Uri(deploymentResult.ApplicationBaseUri)
-                };
 
                 // Act
-                var response = await httpClient.GetStringWithRetryAsync("Manage/Home", Fixture.Logger);
+                var response = await Fixture.HttpClient.GetStringWithRetryAsync(
+                    deploymentResult.ApplicationBaseUri + "Manage/Home",
+                    Fixture.Logger);
 
                 // Assert
                 TestEmbeddedResource.AssertContent("ApplicationConsumingPrecompiledViews.Manage.Home.Index.txt", response);
