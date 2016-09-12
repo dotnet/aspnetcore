@@ -5,8 +5,10 @@ using System;
 
 namespace Microsoft.AspNetCore.Diagnostics
 {
-    public class ExceptionHandlerFeature : IExceptionHandlerFeature
+    public class ExceptionHandlerFeature : IExceptionHandlerPathFeature
     {
         public Exception Error { get; set; }
+
+        public string Path { get; set; }
     }
 }

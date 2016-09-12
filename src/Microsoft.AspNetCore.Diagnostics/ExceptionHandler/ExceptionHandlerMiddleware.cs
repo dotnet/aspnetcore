@@ -22,8 +22,8 @@ namespace Microsoft.AspNetCore.Diagnostics
         private readonly DiagnosticSource _diagnosticSource;
 
         public ExceptionHandlerMiddleware(
-            RequestDelegate next, 
-            ILoggerFactory loggerFactory, 
+            RequestDelegate next,
+            ILoggerFactory loggerFactory,
             IOptions<ExceptionHandlerOptions> options,
             DiagnosticSource diagnosticSource)
         {
@@ -65,8 +65,10 @@ namespace Microsoft.AspNetCore.Diagnostics
                     var exceptionHandlerFeature = new ExceptionHandlerFeature()
                     {
                         Error = ex,
+                        Path = originalPath.Value,
                     };
                     context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
+                    context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
                     context.Response.StatusCode = 500;
                     context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
