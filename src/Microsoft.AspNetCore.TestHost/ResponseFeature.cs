@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.TestHost
 {
     internal class ResponseFeature : IHttpResponseFeature
     {
-        private Action _responseStarting = () => { };
-        private Action _responseCompleted = () => { };
+        private Func<Task> _responseStartingAsync = () => Task.FromResult(true);
+        private Func<Task> _responseCompletedAsync = () => Task.FromResult(true);
 
         public ResponseFeature()
         {
@@ -36,33 +36,39 @@ namespace Microsoft.AspNetCore.TestHost
 
         public void OnStarting(Func<object, Task> callback, object state)
         {
-            var prior = _responseStarting;
-            _responseStarting = () =>
+            var prior = _responseStartingAsync;
+            _responseStartingAsync = async () =>
             {
-                callback(state);
-                prior();
+                await callback(state);
+                await prior();
             };
         }
 
         public void OnCompleted(Func<object, Task> callback, object state)
         {
-            var prior = _responseCompleted;
-            _responseCompleted = () =>
+            var prior = _responseCompletedAsync;
+            _responseCompletedAsync = async () =>
             {
-                callback(state);
-                prior();
+                try
+                {
+                    await callback(state);
+                }
+                finally
+                {
+                    await prior();
+                }
             };
         }
 
-        public void FireOnSendingHeaders()
+        public async Task FireOnSendingHeadersAsync()
         {
-            _responseStarting();
+            await _responseStartingAsync();
             HasStarted = true;
         }
 
-        public void FireOnResponseCompleted()
+        public Task FireOnResponseCompletedAsync()
         {
-            _responseCompleted();
+            return _responseCompletedAsync();
         }
     }
 }

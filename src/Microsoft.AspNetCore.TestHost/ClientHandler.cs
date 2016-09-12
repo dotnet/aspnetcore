@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.TestHost
                     try
                     {
                         await _application.ProcessRequestAsync(state.Context);
-                        state.CompleteResponse();
+                        await state.CompleteResponseAsync();
                         state.ServerCleanup(exception: null);
                     }
                     catch (Exception ex)
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.TestHost
                     }
                 }
 
-                _responseStream = new ResponseStream(ReturnResponseMessage, AbortRequest);
+                _responseStream = new ResponseStream(ReturnResponseMessageAsync, AbortRequest);
                 httpContext.Response.Body = _responseStream;
                 httpContext.Response.StatusCode = 200;
                 httpContext.RequestAborted = _requestAbortedSource.Token;
@@ -187,27 +187,30 @@ namespace Microsoft.AspNetCore.TestHost
                 _responseStream.Complete();
             }
 
-            internal void CompleteResponse()
+            internal async Task CompleteResponseAsync()
             {
                 _pipelineFinished = true;
-                ReturnResponseMessage();
+                await ReturnResponseMessageAsync();
                 _responseStream.Complete();
-                _responseFeature.FireOnResponseCompleted();
+                await _responseFeature.FireOnResponseCompletedAsync();
             }
 
-            internal void ReturnResponseMessage()
+            internal async Task ReturnResponseMessageAsync()
             {
-                if (!_responseTcs.Task.IsCompleted)
+                // Check if the response has already started because the TrySetResult below could happen a bit late
+                // (as it happens on a different thread) by which point the CompleteResponseAsync could run and calls this
+                // method again.
+                if (!Context.HttpContext.Response.HasStarted)
                 {
-                    var response = GenerateResponse();
+                    var response = await GenerateResponseAsync();
                     // Dispatch, as TrySetResult will synchronously execute the waiters callback and block our Write.
-                    Task.Factory.StartNew(() => _responseTcs.TrySetResult(response));
+                    var setResult = Task.Factory.StartNew(() => _responseTcs.TrySetResult(response));
                 }
             }
 
-            private HttpResponseMessage GenerateResponse()
+            private async Task<HttpResponseMessage> GenerateResponseAsync()
             {
-                _responseFeature.FireOnSendingHeaders();
+                await _responseFeature.FireOnSendingHeadersAsync();
                 var httpContext = Context.HttpContext;
 
                 var response = new HttpResponseMessage();

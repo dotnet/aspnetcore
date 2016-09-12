@@ -24,15 +24,15 @@ namespace Microsoft.AspNetCore.TestHost
         private TaskCompletionSource<object> _readWaitingForData;
         private object _signalReadLock;
 
-        private Action _onFirstWrite;
+        private Func<Task> _onFirstWriteAsync;
         private bool _firstWrite;
         private Action _abortRequest;
 
-        internal ResponseStream(Action onFirstWrite, Action abortRequest)
+        internal ResponseStream(Func<Task> onFirstWriteAsync, Action abortRequest)
         {
-            if (onFirstWrite == null)
+            if (onFirstWriteAsync == null)
             {
-                throw new ArgumentNullException(nameof(onFirstWrite));
+                throw new ArgumentNullException(nameof(onFirstWriteAsync));
             }
 
             if (abortRequest == null)
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentNullException(nameof(abortRequest));
             }
 
-            _onFirstWrite = onFirstWrite;
+            _onFirstWriteAsync = onFirstWriteAsync;
             _firstWrite = true;
             _abortRequest = abortRequest;
 
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.TestHost
             _writeLock.Wait();
             try
             {
-                FirstWrite();
+                FirstWriteAsync().GetAwaiter().GetResult();
             }
             finally
             {
@@ -230,13 +230,14 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         // Called under write-lock.
-        private void FirstWrite()
+        private Task FirstWriteAsync()
         {
             if (_firstWrite)
             {
                 _firstWrite = false;
-                _onFirstWrite();
+                return _onFirstWriteAsync();
             }
+            return Task.FromResult(true);
         }
 
         // Write with count 0 will still trigger OnFirstWrite
@@ -248,7 +249,7 @@ namespace Microsoft.AspNetCore.TestHost
             _writeLock.Wait();
             try
             {
-                FirstWrite();
+                FirstWriteAsync().GetAwaiter().GetResult();
                 if (count == 0)
                 {
                     return;
