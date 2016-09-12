@@ -138,6 +138,22 @@ namespace Microsoft.AspNetCore.Rewrite
             return string.Format(CultureInfo.CurrentCulture, GetString("Error_ModRewriteGeneralParseError"), p0);
         }
 
+        /// <summary>
+        /// Syntax error for integers in comparison.
+        /// </summary>
+        internal static string Error_IntegerMatch_FormatExceptionMessage
+        {
+            get { return GetString("Error_IntegerMatch_FormatExceptionMessage"); }
+        }
+
+        /// <summary>
+        /// Syntax error for integers in comparison.
+        /// </summary>
+        internal static string FormatError_IntegerMatch_FormatExceptionMessage()
+        {
+            return GetString("Error_IntegerMatch_FormatExceptionMessage");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

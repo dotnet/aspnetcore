@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using Microsoft.AspNetCore.Rewrite;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.UrlMatches
 {
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlMatches
             int compValue;
             if (!int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out compValue))
             {
-                throw new FormatException("Syntax error for integers in comparison.");
+                throw new FormatException(Resources.Error_IntegerMatch_FormatExceptionMessage);
             }
             _value = compValue;
             _operation = operation;

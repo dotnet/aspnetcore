@@ -141,4 +141,7 @@
   <data name="Error_ModRewriteGeneralParseError" xml:space="preserve">
     <value>Could not parse the mod_rewrite file.  Line number '{0}'.</value>
   </data>
+  <data name="Error_IntegerMatch_FormatExceptionMessage" xml:space="preserve">
+    <value>Syntax error for integers in comparison.</value>
+  </data>
 </root>

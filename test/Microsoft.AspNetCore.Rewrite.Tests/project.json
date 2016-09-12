@@ -1,7 +1,8 @@
 ﻿{
   "version": "1.1.0-*",
   "buildOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
@@ -12,7 +13,12 @@
   },
   "frameworks": {
     "netcoreapp1.0": {
+      "imports": "dnxcore50",
       "dependencies": {
+        "Microsoft.CodeCoverage": {
+          "type": "build",
+          "version": "1.0.1"
+        },
         "Microsoft.NETCore.App": {
           "version": "1.0.0-*",
           "type": "platform"
