@@ -33,6 +33,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             _uv.stop(this);
         }
 
+        public long Now()
+        {
+            return _uv.now(this);
+        }
+
         unsafe protected override bool ReleaseHandle()
         {
             var memory = handle;

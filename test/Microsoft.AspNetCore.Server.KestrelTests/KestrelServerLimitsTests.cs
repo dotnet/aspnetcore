@@ -161,11 +161,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData(2.1)]
         [InlineData(2.5)]
         [InlineData(2.9)]
-        public void KeepAliveTimeoutIsRoundedToTheNextSecond(double seconds)
+        public void KeepAliveTimeoutValid(double seconds)
         {
             var o = new KestrelServerLimits();
             o.KeepAliveTimeout = TimeSpan.FromSeconds(seconds);
-            Assert.Equal(Math.Ceiling(seconds), o.KeepAliveTimeout.TotalSeconds);
+            Assert.Equal(seconds, o.KeepAliveTimeout.TotalSeconds);
         }
     }
 }

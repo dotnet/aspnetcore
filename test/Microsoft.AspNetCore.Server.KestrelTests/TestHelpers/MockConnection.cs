@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 
         public MockConnection(KestrelServerOptions options)
         {
+            ConnectionControl = this;
             RequestAbortedSource = new CancellationTokenSource();
             ServerOptions = options;
         }

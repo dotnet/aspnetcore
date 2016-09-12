@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,6 +39,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>();
         private BufferSizeControl _bufferSizeControl;
 
+        private long _lastTimestamp;
+        private long _timeoutTimestamp = long.MaxValue;
+
         public Connection(ListenerContext context, UvStreamHandle socket) : base(context)
         {
             _socket = socket;
@@ -62,6 +66,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
 
             _frame = FrameFactory(this);
+
+            _lastTimestamp = Thread.Loop.Now();
         }
 
         // Internal for testing
@@ -156,9 +162,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         }
 
         // Called on Libuv thread
-        public void Tick()
+        public void Tick(long timestamp)
         {
-            _frame.Tick();
+            if (timestamp > _timeoutTimestamp)
+            {
+                StopAsync();
+            }
+
+            Interlocked.Exchange(ref _lastTimestamp, timestamp);
         }
 
         private void ApplyConnectionFilter()
@@ -282,9 +293,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
         }
 
-        void IConnectionControl.Stop()
+        void IConnectionControl.SetTimeout(long milliseconds)
         {
-            StopAsync();
+            Debug.Assert(_timeoutTimestamp == long.MaxValue, "Concurrent timeouts are not supported");
+
+            // Add KestrelThread.HeartbeatMilliseconds extra milliseconds since this can be called right before the next heartbeat.
+            Interlocked.Exchange(ref _timeoutTimestamp, _lastTimestamp + milliseconds + KestrelThread.HeartbeatMilliseconds);
+        }
+
+        void IConnectionControl.CancelTimeout()
+        {
+            Interlocked.Exchange(ref _timeoutTimestamp, long.MaxValue);
         }
 
         private static unsafe string GenerateConnectionId(long id)

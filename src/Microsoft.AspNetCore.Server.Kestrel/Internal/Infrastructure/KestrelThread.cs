@@ -19,6 +19,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
     /// </summary>
     public class KestrelThread
     {
+        public const long HeartbeatMilliseconds = 1000;
+
         private static readonly Action<object, object> _postCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
         private static readonly Action<object, object> _postAsyncCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
 
@@ -26,9 +28,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
         // as completing a task may immediately have write data to put on the network
         // otherwise it needs to wait till the next pass of the libuv loop
         private readonly int _maxLoops = 8;
-
-        // how often the heartbeat timer will tick connections
-        private const int _heartbeatMilliseconds = 1000;
 
         private readonly KestrelEngine _engine;
         private readonly IApplicationLifetime _appLifetime;
@@ -280,7 +279,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                     _loop.Init(_engine.Libuv);
                     _post.Init(_loop, OnPost, EnqueueCloseHandle);
                     _heartbeatTimer.Init(_loop, EnqueueCloseHandle);
-                    _heartbeatTimer.Start(OnHeartbeat, timeout: 1000, repeat: 1000);
+                    _heartbeatTimer.Start(OnHeartbeat, timeout: HeartbeatMilliseconds, repeat: HeartbeatMilliseconds);
                     _initCompleted = true;
                     tcs.SetResult(0);
                 }
@@ -337,10 +336,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
         private void OnHeartbeat(UvTimerHandle timer)
         {
+            var now = Loop.Now();
+
             Walk(ptr =>
             {
                 var handle = UvMemory.FromIntPtr<UvHandle>(ptr);
-                (handle as UvStreamHandle)?.Connection?.Tick();
+                (handle as UvStreamHandle)?.Connection?.Tick(now);
             });
         }
 

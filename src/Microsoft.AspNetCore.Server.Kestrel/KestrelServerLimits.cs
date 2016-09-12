@@ -23,8 +23,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         // Matches the default LimitRequestFields in Apache httpd.
         private int _maxRequestHeaderCount = 100;
 
-        // Matches the default http.sys keep-alive timouet.
-        private TimeSpan _keepAliveTimeout = TimeSpan.FromMinutes(2);
+        // Matches the default http.sys connection timeout.
+        private TimeSpan _connectionTimeout = TimeSpan.FromMinutes(2);
 
         /// <summary>
         /// Gets or sets the maximum size of the response buffer before write
@@ -146,17 +146,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         /// Gets or sets the keep-alive timeout.
         /// </summary>
         /// <remarks>
-        /// Defaults to 2 minutes. Timeout granularity is in seconds. Sub-second values will be rounded to the next second.
+        /// Defaults to 2 minutes.
         /// </remarks>
         public TimeSpan KeepAliveTimeout
         {
             get
             {
-                return _keepAliveTimeout;
+                return _connectionTimeout;
             }
             set
             {
-                _keepAliveTimeout = TimeSpan.FromSeconds(Math.Ceiling(value.TotalSeconds));
+                _connectionTimeout = value;
             }
         }
     }

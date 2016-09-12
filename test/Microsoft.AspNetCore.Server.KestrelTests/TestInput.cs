@@ -22,7 +22,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
-            var context = new Frame<object>(null, new ConnectionContext() { ServerAddress = new ServerAddress() })
+            var connectionContext = new ConnectionContext()
+            {
+                ServerAddress = new ServerAddress(),
+                ServerOptions = new KestrelServerOptions()
+            };
+            var context = new Frame<object>(null, connectionContext)
             {
                 DateHeaderValueManager = new DateHeaderValueManager(),
                 ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
@@ -63,7 +68,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
         }
 
-        public void Stop()
+        public void SetTimeout(long milliseconds)
+        {
+        }
+
+        public void CancelTimeout()
         {
         }
 

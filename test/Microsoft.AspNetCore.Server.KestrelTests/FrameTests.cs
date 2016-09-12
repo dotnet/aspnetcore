@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -724,6 +725,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 var connectionContext = new ConnectionContext()
                 {
+                    ConnectionControl = new Mock<IConnectionControl>().Object,
                     DateHeaderValueManager = new DateHeaderValueManager(),
                     ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
                     ServerOptions = new KestrelServerOptions(),
@@ -770,6 +772,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 var connectionContext = new ConnectionContext()
                 {
+                    ConnectionControl = new Mock<IConnectionControl>().Object,
                     DateHeaderValueManager = new DateHeaderValueManager(),
                     ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
                     ServerOptions = new KestrelServerOptions(),
@@ -783,6 +786,59 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var returnValue = frame.TakeStartLine(socketInput);
                 Assert.Equal(expectedReturnValue, returnValue);
+            }
+        }
+
+        [Fact]
+        public void TakeStartLineDisablesKeepAliveTimeoutOnFirstByteAvailable()
+        {
+            var trace = new KestrelTrace(new TestKestrelTrace());
+            var ltp = new LoggingThreadPool(trace);
+            using (var pool = new MemoryPool())
+            using (var socketInput = new SocketInput(pool, ltp))
+            {
+                var connectionControl = new Mock<IConnectionControl>();
+                var connectionContext = new ConnectionContext()
+                {
+                    ConnectionControl = connectionControl.Object,
+                    DateHeaderValueManager = new DateHeaderValueManager(),
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
+                    Log = trace
+                };
+                var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
+
+                var requestLineBytes = Encoding.ASCII.GetBytes("G");
+                socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
+
+                frame.TakeStartLine(socketInput);
+                connectionControl.Verify(cc => cc.CancelTimeout());
+            }
+        }
+
+        [Fact]
+        public void TakeStartLineDoesNotDisableKeepAliveTimeoutIfNoDataAvailable()
+        {
+            var trace = new KestrelTrace(new TestKestrelTrace());
+            var ltp = new LoggingThreadPool(trace);
+            using (var pool = new MemoryPool())
+            using (var socketInput = new SocketInput(pool, ltp))
+            {
+                var connectionControl = new Mock<IConnectionControl>();
+                var connectionContext = new ConnectionContext()
+                {
+                    ConnectionControl = connectionControl.Object,
+                    DateHeaderValueManager = new DateHeaderValueManager(),
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
+                    Log = trace
+                };
+                var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
+
+                frame.TakeStartLine(socketInput);
+                connectionControl.Verify(cc => cc.CancelTimeout(), Times.Never);
             }
         }
 
@@ -862,6 +918,36 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 socketInput.IncomingData(headerBytes, 0, headerBytes.Length);
 
                 Assert.Equal(false, frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
+            }
+        }
+
+        [Fact]
+        public void RequestProcessingAsyncEnablesKeepAliveTimeout()
+        {
+            var trace = new KestrelTrace(new TestKestrelTrace());
+            var ltp = new LoggingThreadPool(trace);
+            using (var pool = new MemoryPool())
+            using (var socketInput = new SocketInput(pool, ltp))
+            {
+                var connectionControl = new Mock<IConnectionControl>();
+                var connectionContext = new ConnectionContext()
+                {
+                    ConnectionControl = connectionControl.Object,
+                    DateHeaderValueManager = new DateHeaderValueManager(),
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
+                    Log = trace
+                };
+                var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
+
+                var requestProcessingTask = frame.RequestProcessingAsync();
+                connectionControl.Verify(cc => cc.SetTimeout((long)connectionContext.ServerOptions.Limits.KeepAliveTimeout.TotalMilliseconds));
+
+                frame.Stop();
+                socketInput.IncomingFin();
+
+                requestProcessingTask.Wait();
             }
         }
     }

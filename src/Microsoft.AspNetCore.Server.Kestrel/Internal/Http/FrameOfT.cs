@@ -32,6 +32,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 while (!_requestProcessingStopping)
                 {
+                    ConnectionControl.SetTimeout(_keepAliveMilliseconds);
+
                     while (!_requestProcessingStopping && TakeStartLine(SocketInput) != RequestLineStatus.Done)
                     {
                         if (SocketInput.CheckFinOrThrow())

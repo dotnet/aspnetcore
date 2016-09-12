@@ -129,6 +129,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
             _uv_timer_init = (loop, handle) => 0;
             _uv_timer_start = (handle, callback, timeout, repeat) => 0;
             _uv_timer_stop = handle => 0;
+            _uv_now = (loop) => DateTime.UtcNow.Ticks / TimeSpan.TicksPerMillisecond;
         }
 
         public Func<UvStreamHandle, int, Action<int>, int> OnWrite { get; set; }

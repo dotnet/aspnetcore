@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private int _remainingRequestHeadersBytesAllowed;
         private int _requestHeadersParsed;
 
-        private int _secondsSinceLastRequest;
+        protected readonly long _keepAliveMilliseconds;
 
         public Frame(ConnectionContext context)
             : base(context)
@@ -77,6 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             _pathBase = context.ServerAddress.PathBase;
 
             FrameControl = this;
+            _keepAliveMilliseconds = (long)ServerOptions.Limits.KeepAliveTimeout.TotalMilliseconds;
         }
 
         public string ConnectionIdFeature { get; set; }
@@ -805,6 +806,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     return RequestLineStatus.Empty;
                 }
 
+                ConnectionControl.CancelTimeout();
+
                 _requestProcessingStatus = RequestProcessingStatus.RequestStarted;
 
                 int bytesScanned;
@@ -1267,25 +1270,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
 
             Log.ApplicationError(ConnectionId, ex);
-        }
-
-        public void Tick()
-        {
-            // we're in between requests and not about to start processing a new one
-            if (_requestProcessingStatus == RequestProcessingStatus.RequestPending && !SocketInput.IsCompleted)
-            {
-                if (_secondsSinceLastRequest > ServerOptions.Limits.KeepAliveTimeout.TotalSeconds)
-                {
-                    ConnectionControl.Stop();
-                }
-
-                _secondsSinceLastRequest++;
-            }
-        }
-
-        public void RequestFinished()
-        {
-            _secondsSinceLastRequest = 0;
         }
 
         public enum RequestLineStatus
