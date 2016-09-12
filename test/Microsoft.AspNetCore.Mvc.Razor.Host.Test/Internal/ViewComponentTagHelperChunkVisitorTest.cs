@@ -50,12 +50,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host.Test.Internal
             if (!string.Equals(expectedOutput, resultOutput, StringComparison.Ordinal))
             {
                 ResourceFile.UpdateFile(assembly, path, expectedOutput, resultOutput);
-                expectedOutput = ResourceFile.ReadResource(assembly, path, sourceFile: true);
             }
-#endif
-
+#else
             // Assert
             Assert.Equal(expectedOutput, resultOutput, ignoreLineEndingDifferences: true);
+#endif
+
         }
     }
 }

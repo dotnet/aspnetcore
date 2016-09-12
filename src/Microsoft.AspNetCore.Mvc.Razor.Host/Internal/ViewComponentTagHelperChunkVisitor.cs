@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host.Internal
                     }))
             {
                 Writer.WriteInstanceMethodInvocation(
-                    $"((global::{_context.IViewContextAwareTypeName}){ViewComponentTagHelperVariable})",
+                    $"({ViewComponentTagHelperVariable} as global::{_context.IViewContextAwareTypeName})?",
                     _context.ContextualizeMethodName,
                     new [] { ViewContextVariable });
 

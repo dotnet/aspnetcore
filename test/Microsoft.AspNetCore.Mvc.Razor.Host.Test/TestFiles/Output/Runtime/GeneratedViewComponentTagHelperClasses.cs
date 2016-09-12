@@ -11,7 +11,7 @@ public class __Generated__FooViewComponentTagHelper : Microsoft.AspNetCore.Razor
     public System.String Attribute { get; set; }
     public override async global::System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output)
     {
-        ((global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)_viewComponentHelper).Contextualize(ViewContext);
+        (_viewComponentHelper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);
         var viewContent = await _viewComponentHelper.InvokeAsync("Foo",  new { Attribute });
         output.TagName = null;
         output.Content.SetHtmlContent(viewContent);
@@ -30,7 +30,7 @@ public class __Generated__BarViewComponentTagHelper : Microsoft.AspNetCore.Razor
     public System.String Attribute { get; set; }
     public override async global::System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output)
     {
-        ((global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)_viewComponentHelper).Contextualize(ViewContext);
+        (_viewComponentHelper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);
         var viewContent = await _viewComponentHelper.InvokeAsync("Bar",  new { Attribute });
         output.TagName = null;
         output.Content.SetHtmlContent(viewContent);
