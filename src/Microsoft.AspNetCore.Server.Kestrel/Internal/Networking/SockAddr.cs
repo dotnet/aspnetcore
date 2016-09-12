@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Net;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
@@ -19,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
 
         public SockAddr(long ignored)
         {
-            _field3 = _field0 = _field1 = _field2 = _field3 = 0;
+            _field0 = _field1 = _field2 = _field3 = 0;
         }
 
         public unsafe IPEndPoint GetIPEndPoint()
