@@ -4,18 +4,18 @@
 using System;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.ResponseCaching.Internal
+namespace Microsoft.AspNetCore.ResponseCaching
 {
-    internal class CachedResponse
+    public class CachedResponse
     {
-        internal string BodyKeyPrefix { get; set; }
+        public string BodyKeyPrefix { get; internal set; }
 
-        internal DateTimeOffset Created { get; set; }
+        public DateTimeOffset Created { get; internal set; }
 
-        internal int StatusCode { get; set; }
+        public int StatusCode { get; internal set; }
 
-        internal IHeaderDictionary Headers { get; set; } = new HeaderDictionary();
+        public IHeaderDictionary Headers { get; internal set; } = new HeaderDictionary();
 
-        internal byte[] Body { get; set; }
+        public byte[] Body { get; internal set; }
     }
 }

@@ -13,13 +13,11 @@ namespace Microsoft.AspNetCore.ResponseCaching
     {
         private static readonly CacheControlHeaderValue EmptyCacheControl = new CacheControlHeaderValue();
 
-        public virtual bool RequestIsCacheable(HttpContext httpContext)
+        public virtual bool IsRequestCacheable(ResponseCachingContext context)
         {
-            var state = httpContext.GetResponseCachingState();
-
             // Verify the method
             // TODO: RFC lists POST as a cacheable method when explicit freshness information is provided, but this is not widely implemented. Will revisit.
-            var request = httpContext.Request;
+            var request = context.HttpContext.Request;
             if (!string.Equals("GET", request.Method, StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals("HEAD", request.Method, StringComparison.OrdinalIgnoreCase))
             {
@@ -37,7 +35,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             // TODO: no-cache requests can be retrieved upon validation with origin
             if (!StringValues.IsNullOrEmpty(request.Headers[HeaderNames.CacheControl]))
             {
-                if (state.RequestCacheControl.NoCache)
+                if (context.RequestCacheControlHeaderValue.NoCache)
                 {
                     return false;
                 }
@@ -59,31 +57,29 @@ namespace Microsoft.AspNetCore.ResponseCaching
             return true;
         }
 
-        public virtual bool ResponseIsCacheable(HttpContext httpContext)
+        public virtual bool IsResponseCacheable(ResponseCachingContext context)
         {
-            var state = httpContext.GetResponseCachingState();
-
             // Only cache pages explicitly marked with public
             // TODO: Consider caching responses that are not marked as public but otherwise cacheable?
-            if (!state.ResponseCacheControl.Public)
+            if (!context.ResponseCacheControlHeaderValue.Public)
             {
                 return false;
             }
 
             // Check no-store
-            if (state.RequestCacheControl.NoStore || state.ResponseCacheControl.NoStore)
+            if (context.RequestCacheControlHeaderValue.NoStore || context.ResponseCacheControlHeaderValue.NoStore)
             {
                 return false;
             }
 
             // Check no-cache
             // TODO: Handle no-cache with headers
-            if (state.ResponseCacheControl.NoCache)
+            if (context.ResponseCacheControlHeaderValue.NoCache)
             {
                 return false;
             }
 
-            var response = httpContext.Response;
+            var response = context.HttpContext.Response;
 
             // Do not cache responses with Set-Cookie headers
             if (!StringValues.IsNullOrEmpty(response.Headers[HeaderNames.SetCookie]))
@@ -101,7 +97,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             // TODO: public MAY override the cacheability checks for private and status codes
 
             // Check private
-            if (state.ResponseCacheControl.Private)
+            if (context.ResponseCacheControlHeaderValue.Private)
             {
                 return false;
             }
@@ -115,35 +111,35 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
             // Check response freshness
             // TODO: apparent age vs corrected age value
-            if (state.ResponseHeaders.Date == null)
+            if (context.TypedResponseHeaders.Date == null)
             {
-                if (state.ResponseCacheControl.SharedMaxAge == null &&
-                    state.ResponseCacheControl.MaxAge == null &&
-                    state.ResponseTime > state.ResponseHeaders.Expires)
+                if (context.ResponseCacheControlHeaderValue.SharedMaxAge == null &&
+                    context.ResponseCacheControlHeaderValue.MaxAge == null &&
+                    context.ResponseTime > context.TypedResponseHeaders.Expires)
                 {
                     return false;
                 }
             }
             else
             {
-                var age = state.ResponseTime - state.ResponseHeaders.Date.Value;
+                var age = context.ResponseTime - context.TypedResponseHeaders.Date.Value;
 
                 // Validate shared max age
-                if (age > state.ResponseCacheControl.SharedMaxAge)
+                if (age > context.ResponseCacheControlHeaderValue.SharedMaxAge)
                 {
                     return false;
                 }
-                else if (state.ResponseCacheControl.SharedMaxAge == null)
+                else if (context.ResponseCacheControlHeaderValue.SharedMaxAge == null)
                 {
                     // Validate max age
-                    if (age > state.ResponseCacheControl.MaxAge)
+                    if (age > context.ResponseCacheControlHeaderValue.MaxAge)
                     {
                         return false;
                     }
-                    else if (state.ResponseCacheControl.MaxAge == null)
+                    else if (context.ResponseCacheControlHeaderValue.MaxAge == null)
                     {
                         // Validate expiration
-                        if (state.ResponseTime > state.ResponseHeaders.Expires)
+                        if (context.ResponseTime > context.TypedResponseHeaders.Expires)
                         {
                             return false;
                         }
@@ -154,16 +150,15 @@ namespace Microsoft.AspNetCore.ResponseCaching
             return true;
         }
 
-        public virtual bool CachedEntryIsFresh(HttpContext httpContext, ResponseHeaders cachedResponseHeaders)
+        public virtual bool IsCachedEntryFresh(ResponseCachingContext context)
         {
-            var state = httpContext.GetResponseCachingState();
-            var age = state.CachedEntryAge;
-            var cachedControlHeaders = cachedResponseHeaders.CacheControl ?? EmptyCacheControl;
+            var age = context.CachedEntryAge;
+            var cachedControlHeaders = context.CachedResponseHeaders.CacheControl ?? EmptyCacheControl;
 
             // Add min-fresh requirements
-            if (state.RequestCacheControl.MinFresh != null)
+            if (context.RequestCacheControlHeaderValue.MinFresh != null)
             {
-                age += state.RequestCacheControl.MinFresh.Value;
+                age += context.RequestCacheControlHeaderValue.MinFresh.Value;
             }
 
             // Validate shared max age, this overrides any max age settings for shared caches
@@ -175,7 +170,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             else if (cachedControlHeaders.SharedMaxAge == null)
             {
                 // Validate max age
-                if (age > cachedControlHeaders.MaxAge || age > state.RequestCacheControl.MaxAge)
+                if (age > cachedControlHeaders.MaxAge || age > context.RequestCacheControlHeaderValue.MaxAge)
                 {
                     // Must revalidate
                     if (cachedControlHeaders.MustRevalidate)
@@ -184,7 +179,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     }
 
                     // Request allows stale values
-                    if (age < state.RequestCacheControl.MaxStaleLimit)
+                    if (age < context.RequestCacheControlHeaderValue.MaxStaleLimit)
                     {
                         // TODO: Add warning header indicating the response is stale
                         return true;
@@ -192,10 +187,10 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
                     return false;
                 }
-                else if (cachedControlHeaders.MaxAge == null && state.RequestCacheControl.MaxAge == null)
+                else if (cachedControlHeaders.MaxAge == null && context.RequestCacheControlHeaderValue.MaxAge == null)
                 {
                     // Validate expiration
-                    if (state.ResponseTime > cachedResponseHeaders.Expires)
+                    if (context.ResponseTime > context.CachedResponseHeaders.Expires)
                     {
                         return false;
                     }

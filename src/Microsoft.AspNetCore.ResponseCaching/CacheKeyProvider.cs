@@ -6,14 +6,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
-    public class KeyProvider : IKeyProvider
+    public class CacheKeyProvider : ICacheKeyProvider
     {
         // Use the record separator for delimiting components of the cache key to avoid possible collisions
         private static readonly char KeyDelimiter = '\x1e';
@@ -21,7 +20,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         private readonly ObjectPool<StringBuilder> _builderPool;
         private readonly ResponseCachingOptions _options;
 
-        public KeyProvider(ObjectPoolProvider poolProvider, IOptions<ResponseCachingOptions> options)
+        public CacheKeyProvider(ObjectPoolProvider poolProvider, IOptions<ResponseCachingOptions> options)
         {
             if (poolProvider == null)
             {
@@ -36,26 +35,25 @@ namespace Microsoft.AspNetCore.ResponseCaching
             _options = options.Value;
         }
 
-        public virtual IEnumerable<string> CreateLookupBaseKey(HttpContext httpContext)
+        public virtual IEnumerable<string> CreateLookupBaseKeys(ResponseCachingContext context)
         {
-            return new string[] { CreateStorageBaseKey(httpContext) };
+            return new string[] { CreateStorageBaseKey(context) };
         }
 
-        public virtual IEnumerable<string> CreateLookupVaryKey(HttpContext httpContext, VaryRules varyRules)
+        public virtual IEnumerable<string> CreateLookupVaryKeys(ResponseCachingContext context)
         {
-            return new string[] { CreateStorageVaryKey(httpContext, varyRules) };
+            return new string[] { CreateStorageVaryKey(context) };
         }
 
         // GET<delimiter>/PATH
-        // TODO: Method invariant retrieval? E.g. HEAD after GET to the same resource.
-        public virtual string CreateStorageBaseKey(HttpContext httpContext)
+        public virtual string CreateStorageBaseKey(ResponseCachingContext context)
         {
-            if (httpContext == null)
+            if (context == null)
             {
-                throw new ArgumentNullException(nameof(httpContext));
+                throw new ArgumentNullException(nameof(context));
             }
 
-            var request = httpContext.Request;
+            var request = context.HttpContext.Request;
             var builder = _builderPool.Get();
 
             try
@@ -74,24 +72,31 @@ namespace Microsoft.AspNetCore.ResponseCaching
         }
 
         // BaseKey<delimiter>H<delimiter>HeaderName=HeaderValue<delimiter>Q<delimiter>QueryName=QueryValue
-        public virtual string CreateStorageVaryKey(HttpContext httpContext, VaryRules varyRules)
+        public virtual string CreateStorageVaryKey(ResponseCachingContext context)
         {
-            if (httpContext == null)
+            if (context == null)
             {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
-            if (varyRules == null || (StringValues.IsNullOrEmpty(varyRules.Headers) && StringValues.IsNullOrEmpty(varyRules.Params)))
-            {
-                return httpContext.GetResponseCachingState().CachedVaryRules.VaryKeyPrefix;
+                throw new ArgumentNullException(nameof(context));
             }
 
-            var request = httpContext.Request;
+            var varyRules = context.CachedVaryRules;
+            if  (varyRules == null)
+            {
+                throw new InvalidOperationException($"{nameof(CachedVaryRules)} must not be null on the {nameof(ResponseCachingContext)}");
+            }
+
+            if ((StringValues.IsNullOrEmpty(varyRules.Headers) && StringValues.IsNullOrEmpty(varyRules.Params)))
+            {
+                return varyRules.VaryKeyPrefix;
+            }
+
+            var request = context.HttpContext.Request;
             var builder = _builderPool.Get();
 
             try
             {
                 // Prepend with the Guid of the CachedVaryRules
-                builder.Append(httpContext.GetResponseCachingState().CachedVaryRules.VaryKeyPrefix);
+                builder.Append(varyRules.VaryKeyPrefix);
 
                 // Vary by headers
                 if (varyRules?.Headers.Count > 0)
@@ -102,18 +107,11 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
                     foreach (var header in varyRules.Headers)
                     {
-                        var value = httpContext.Request.Headers[header];
-
-                        // TODO: How to handle null/empty string?
-                        if (StringValues.IsNullOrEmpty(value))
-                        {
-                            value = "null";
-                        }
-
                         builder.Append(KeyDelimiter)
                             .Append(header)
                             .Append("=")
-                            .Append(value);
+                            // TODO: Perf - iterate the string values instead?
+                            .Append(context.HttpContext.Request.Headers[header]);
                     }
                 }
 
@@ -127,7 +125,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     if (varyRules.Params.Count == 1 && string.Equals(varyRules.Params[0], "*", StringComparison.Ordinal))
                     {
                         // Vary by all available query params
-                        foreach (var query in httpContext.Request.Query.OrderBy(q => q.Key, StringComparer.OrdinalIgnoreCase))
+                        foreach (var query in context.HttpContext.Request.Query.OrderBy(q => q.Key, StringComparer.OrdinalIgnoreCase))
                         {
                             builder.Append(KeyDelimiter)
                                 .Append(query.Key.ToUpperInvariant())
@@ -139,18 +137,11 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     {
                         foreach (var param in varyRules.Params)
                         {
-                            var value = httpContext.Request.Query[param];
-
-                            // TODO: How to handle null/empty string?
-                            if (StringValues.IsNullOrEmpty(value))
-                            {
-                                value = "null";
-                            }
-
                             builder.Append(KeyDelimiter)
                                 .Append(param)
                                 .Append("=")
-                                .Append(value);
+                                // TODO: Perf - iterate the string values instead?
+                                .Append(context.HttpContext.Request.Query[param]);
                         }
                     }
                 }

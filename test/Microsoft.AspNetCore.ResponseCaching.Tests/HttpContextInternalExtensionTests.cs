@@ -21,17 +21,5 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             // Should throw
             Assert.ThrowsAny<InvalidOperationException>(() => httpContext.AddResponseCachingFeature());
         }
-
-        [Fact]
-        public void AddingSecondResponseCachingState_Throws()
-        {
-            var httpContext = new DefaultHttpContext();
-
-            // Should not throw
-            httpContext.AddResponseCachingState();
-
-            // Should throw
-            Assert.ThrowsAny<InvalidOperationException>(() => httpContext.AddResponseCachingState());
-        }
     }
 }

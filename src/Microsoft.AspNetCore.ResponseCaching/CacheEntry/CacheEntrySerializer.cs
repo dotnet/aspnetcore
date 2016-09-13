@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 param[index] = reader.ReadString();
             }
 
-            return new CachedVaryRules { VaryKeyPrefix = varyKeyPrefix, VaryRules = new VaryRules() { Headers = headers, Params = param } };
+            return new CachedVaryRules { VaryKeyPrefix = varyKeyPrefix, Headers = headers, Params = param };
         }
 
         // See serialization format above
@@ -222,14 +222,14 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         {
             writer.Write(varyRules.VaryKeyPrefix);
 
-            writer.Write(varyRules.VaryRules.Headers.Count);
-            foreach (var header in varyRules.VaryRules.Headers)
+            writer.Write(varyRules.Headers.Count);
+            foreach (var header in varyRules.Headers)
             {
                 writer.Write(header);
             }
 
-            writer.Write(varyRules.VaryRules.Params.Count);
-            foreach (var param in varyRules.VaryRules.Params)
+            writer.Write(varyRules.Params.Count);
+            foreach (var param in varyRules.Params)
             {
                 writer.Write(param);
             }
