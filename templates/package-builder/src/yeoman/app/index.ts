@@ -28,6 +28,7 @@ class MyGenerator extends yeoman.Base {
     prompting() {
         const done = this.async();
 
+        this.option('projectguid');
         this._optionOrPrompt([{
             type: 'list',
             name: 'framework',
@@ -41,7 +42,7 @@ class MyGenerator extends yeoman.Base {
         }], answers => {
             this._answers = answers;
             this._answers.namePascalCase = toPascalCase(answers.name);
-            this._answers.projectGuid = uuid.v4();
+            this._answers.projectGuid = this.options['projectguid'] || uuid.v4();
             done();
         });
     }
