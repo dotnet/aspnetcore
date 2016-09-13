@@ -5,6 +5,9 @@ import * as glob from 'glob';
 const yosay = require('yosay');
 const toPascalCase = require('to-pascal-case');
 
+type YeomanPrompt = (opt: yeoman.IPromptOptions | yeoman.IPromptOptions[], callback: (answers: any) => void) => void;
+const optionOrPrompt: YeomanPrompt = require('yeoman-option-or-prompt');
+
 const templates = [
     { value: 'angular-2', name: 'Angular 2' },
     { value: 'knockout', name: 'Knockout' },
@@ -14,16 +17,18 @@ const templates = [
 
 class MyGenerator extends yeoman.Base {
     private _answers: any;
+    private _optionOrPrompt: YeomanPrompt;
 
     constructor(args: string | string[], options: any) {
         super(args, options);
+        this._optionOrPrompt = optionOrPrompt;
         this.log(yosay('Welcome to the ASP.NET Core Single-Page App generator!'));
     }
 
     prompting() {
         const done = this.async();
 
-        this.prompt([{
+        this._optionOrPrompt([{
             type: 'list',
             name: 'framework',
             message: 'Framework',
