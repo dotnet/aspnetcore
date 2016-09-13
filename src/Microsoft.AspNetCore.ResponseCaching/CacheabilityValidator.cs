@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Headers;
-using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -12,6 +11,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
 {
     public class CacheabilityValidator : ICacheabilityValidator
     {
+        private static readonly CacheControlHeaderValue EmptyCacheControl = new CacheControlHeaderValue();
+
         public virtual bool RequestIsCacheable(HttpContext httpContext)
         {
             var state = httpContext.GetResponseCachingState();
@@ -157,6 +158,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         {
             var state = httpContext.GetResponseCachingState();
             var age = state.CachedEntryAge;
+            var cachedControlHeaders = cachedResponseHeaders.CacheControl ?? EmptyCacheControl;
 
             // Add min-fresh requirements
             if (state.RequestCacheControl.MinFresh != null)
@@ -165,18 +167,18 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
 
             // Validate shared max age, this overrides any max age settings for shared caches
-            if (age > cachedResponseHeaders.CacheControl.SharedMaxAge)
+            if (age > cachedControlHeaders.SharedMaxAge)
             {
                 // shared max age implies must revalidate
                 return false;
             }
-            else if (cachedResponseHeaders.CacheControl.SharedMaxAge == null)
+            else if (cachedControlHeaders.SharedMaxAge == null)
             {
                 // Validate max age
-                if (age > cachedResponseHeaders.CacheControl.MaxAge || age > state.RequestCacheControl.MaxAge)
+                if (age > cachedControlHeaders.MaxAge || age > state.RequestCacheControl.MaxAge)
                 {
                     // Must revalidate
-                    if (cachedResponseHeaders.CacheControl.MustRevalidate)
+                    if (cachedControlHeaders.MustRevalidate)
                     {
                         return false;
                     }
@@ -190,7 +192,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
                     return false;
                 }
-                else if (cachedResponseHeaders.CacheControl.MaxAge == null && state.RequestCacheControl.MaxAge == null)
+                else if (cachedControlHeaders.MaxAge == null && state.RequestCacheControl.MaxAge == null)
                 {
                     // Validate expiration
                     if (state.ResponseTime > cachedResponseHeaders.Expires)

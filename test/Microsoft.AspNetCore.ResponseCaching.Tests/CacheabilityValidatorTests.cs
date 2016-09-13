@@ -387,6 +387,16 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
+        public void EntryIsFresh_NoCachedCacheControl_FallsbackToEmptyCacheControl()
+        {
+            var utcNow = DateTimeOffset.UtcNow;
+            var httpContext = CreateDefaultContext();
+            httpContext.GetResponseCachingState().ResponseTime = DateTimeOffset.MaxValue;
+
+            Assert.True(new CacheabilityValidator().CachedEntryIsFresh(httpContext, new ResponseHeaders(new HeaderDictionary())));
+        }
+
+        [Fact]
         public void EntryIsFresh_NoExpiryRequirements_IsFresh()
         {
             var utcNow = DateTimeOffset.UtcNow;
