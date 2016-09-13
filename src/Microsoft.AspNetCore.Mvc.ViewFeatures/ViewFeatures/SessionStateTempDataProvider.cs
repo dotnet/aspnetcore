@@ -21,7 +21,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     /// </summary>
     public class SessionStateTempDataProvider : ITempDataProvider
     {
-        private const string TempDataSessionStateKey = "__ControllerTempData";
+        // Internal for testing
+        internal const string TempDataSessionStateKey = "__ControllerTempData";
+
         private readonly JsonSerializer _jsonSerializer = JsonSerializer.Create(
             new JsonSerializerSettings()
             {
@@ -61,15 +63,22 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // Accessing Session property will throw if the session middleware is not enabled.
             var session = context.Session;
 
-            var tempDataDictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, object> tempDataDictionary = null;
             byte[] value;
 
             if (session.TryGetValue(TempDataSessionStateKey, out value))
             {
+                // If we got it from Session, remove it so that no other request gets it
+                session.Remove(TempDataSessionStateKey);
+
                 using (var memoryStream = new MemoryStream(value))
                 using (var writer = new BsonReader(memoryStream))
                 {
                     tempDataDictionary = _jsonSerializer.Deserialize<Dictionary<string, object>>(writer);
+                    if (tempDataDictionary == null)
+                    {
+                        return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                    }
                 }
 
                 var convertedDictionary = new Dictionary<string, object>(
@@ -142,9 +151,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 }
 
                 tempDataDictionary = convertedDictionary;
-
-                // If we got it from Session, remove it so that no other request gets it
-                session.Remove(TempDataSessionStateKey);
             }
             else
             {
@@ -153,7 +159,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 session.Set(TempDataSessionStateKey, new byte[] { });
             }
 
-            return tempDataDictionary;
+            return tempDataDictionary ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc />
@@ -172,8 +178,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             {
                 foreach (var item in values.Values)
                 {
-                    // We want to allow only simple types to be serialized in session.
-                    EnsureObjectCanBeSerialized(item);
+                    if (item != null)
+                    {
+                        // We want to allow only simple types to be serialized in session.
+                        EnsureObjectCanBeSerialized(item);
+                    }
                 }
 
                 using (var memoryStream = new MemoryStream())
