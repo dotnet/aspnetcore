@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             new TheoryData<Mock<IBufferSizeControl>>() { new Mock<IBufferSizeControl>(), null };
 
         [Theory]
-        [MemberData("MockBufferSizeControlData")]
+        [MemberData(nameof(MockBufferSizeControlData))]
         public void IncomingDataCallsBufferSizeControlAdd(Mock<IBufferSizeControl> mockBufferSizeControl)
         {
             using (var memory = new MemoryPool())
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [MemberData("MockBufferSizeControlData")]
+        [MemberData(nameof(MockBufferSizeControlData))]
         public void IncomingCompleteCallsBufferSizeControlAdd(Mock<IBufferSizeControl> mockBufferSizeControl)
         {
             using (var memory = new MemoryPool())
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [MemberData("MockBufferSizeControlData")]
+        [MemberData(nameof(MockBufferSizeControlData))]
         public void ConsumingCompleteCallsBufferSizeControlSubtract(Mock<IBufferSizeControl> mockBufferSizeControl)
         {
             using (var kestrelEngine = new KestrelEngine(new MockLibuv(), new TestServiceContext()))
@@ -151,6 +151,80 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 socketInput.ConsumingStart();
                 Assert.Throws<InvalidOperationException>(() => socketInput.ConsumingStart());
+            }
+        }
+
+        [Fact]
+        public async Task PeekAsyncRereturnsTheSameData()
+        {
+            using (var memory = new MemoryPool())
+            using (var socketInput = new SocketInput(memory, new SynchronousThreadPool()))
+            {
+                socketInput.IncomingData(new byte[5], 0, 5);
+
+                Assert.True(socketInput.IsCompleted);
+                Assert.Equal(5, (await socketInput.PeekAsync()).Count);
+
+                // The same 5 bytes will be returned again since it hasn't been consumed.
+                Assert.True(socketInput.IsCompleted);
+                Assert.Equal(5, (await socketInput.PeekAsync()).Count);
+
+                var scan = socketInput.ConsumingStart();
+                scan.Skip(3);
+                socketInput.ConsumingComplete(scan, scan);
+
+                // The remaining 2 unconsumed bytes will be returned.
+                Assert.True(socketInput.IsCompleted);
+                Assert.Equal(2, (await socketInput.PeekAsync()).Count);
+
+                scan = socketInput.ConsumingStart();
+                scan.Skip(2);
+                socketInput.ConsumingComplete(scan, scan);
+
+                // Everything has been consume so socketInput is no longer in the completed state
+                Assert.False(socketInput.IsCompleted);
+            }
+        }
+
+        [Fact]
+        public async Task CompleteAwaitingDoesNotCauseZeroLengthRead()
+        {
+            using (var memory = new MemoryPool())
+            using (var socketInput = new SocketInput(memory, new SynchronousThreadPool()))
+            {
+                var readBuffer = new byte[20];
+
+                socketInput.IncomingData(new byte[5], 0, 5);
+                Assert.Equal(5, await socketInput.ReadAsync(readBuffer, 0, 20));
+
+                var readTask = socketInput.ReadAsync(readBuffer, 0, 20);
+                socketInput.CompleteAwaiting();
+                Assert.False(readTask.IsCompleted);
+
+                socketInput.IncomingData(new byte[5], 0, 5);
+                Assert.Equal(5, await readTask);
+            }
+        }
+
+        [Fact]
+        public async Task CompleteAwaitingDoesNotCauseZeroLengthPeek()
+        {
+            using (var memory = new MemoryPool())
+            using (var socketInput = new SocketInput(memory, new SynchronousThreadPool()))
+            {
+                socketInput.IncomingData(new byte[5], 0, 5);
+                Assert.Equal(5, (await socketInput.PeekAsync()).Count);
+
+                var scan = socketInput.ConsumingStart();
+                scan.Skip(5);
+                socketInput.ConsumingComplete(scan, scan);
+
+                var peekTask = socketInput.PeekAsync();
+                socketInput.CompleteAwaiting();
+                Assert.False(peekTask.IsCompleted);
+
+                socketInput.IncomingData(new byte[5], 0, 5);
+                Assert.Equal(5, (await socketInput.PeekAsync()).Count);
             }
         }
 

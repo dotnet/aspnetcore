@@ -232,6 +232,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             return new ArraySegment<byte>(array, 0, length);
         }
 
+        public static ArraySegment<byte> PeekArraySegment(this MemoryPoolIterator iter)
+        {
+            if (iter.IsDefault || iter.IsEnd)
+            {
+                return default(ArraySegment<byte>);
+            }
+
+            if (iter.Index < iter.Block.End)
+            {
+                return new ArraySegment<byte>(iter.Block.Array, iter.Index, iter.Block.End - iter.Index);
+            }
+
+            var block = iter.Block.Next;
+            while (block != null)
+            {
+                if (block.Start < block.End)
+                {
+                    return new ArraySegment<byte>(block.Array, block.Start, block.End - block.Start);
+                }
+                block = block.Next;
+            }
+
+            // The following should be unreachable due to the IsEnd check above.
+            throw new InvalidOperationException("This should be unreachable!");
+        }
+
         /// <summary>
         /// Checks that up to 8 bytes from <paramref name="begin"/> correspond to a known HTTP method.
         /// </summary>

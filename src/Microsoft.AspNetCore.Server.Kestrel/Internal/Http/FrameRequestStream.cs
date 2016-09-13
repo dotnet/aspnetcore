@@ -119,8 +119,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             var task = ValidateState(cancellationToken);
             if (task == null)
             {
-                // Needs .AsTask to match Stream's Async method return types
-                return _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken).AsTask();
+                return _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
+            }
+            return task;
+        }
+
+        public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+        {
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+            if (bufferSize <= 0)
+            {
+                throw new ArgumentException($"{nameof(bufferSize)} must be positive.", nameof(bufferSize));
+            }
+
+            var task = ValidateState(cancellationToken);
+            if (task == null)
+            {
+                return _body.CopyToAsync(destination, cancellationToken);
             }
             return task;
         }

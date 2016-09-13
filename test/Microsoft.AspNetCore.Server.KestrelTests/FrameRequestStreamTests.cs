@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -125,6 +126,62 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var task = stream.ReadAsync(new byte[1], 0, 1);
             Assert.True(task.IsFaulted);
             Assert.Same(error, task.Exception.InnerException);
+        }
+
+        [Fact]
+        public void StopAcceptingReadsCausesReadToThrowObjectDisposedException()
+        {
+            var stream = new FrameRequestStream();
+            stream.StartAcceptingReads(null);
+            stream.StopAcceptingReads();
+            Assert.Throws<ObjectDisposedException>(() => { stream.ReadAsync(new byte[1], 0, 1); });
+        }
+
+        [Fact]
+        public void AbortCausesCopyToAsyncToCancel()
+        {
+            var stream = new FrameRequestStream();
+            stream.StartAcceptingReads(null);
+            stream.Abort();
+            var task = stream.CopyToAsync(Mock.Of<Stream>());
+            Assert.True(task.IsCanceled);
+        }
+
+        [Fact]
+        public void AbortWithErrorCausesCopyToAsyncToCancel()
+        {
+            var stream = new FrameRequestStream();
+            stream.StartAcceptingReads(null);
+            var error = new Exception();
+            stream.Abort(error);
+            var task = stream.CopyToAsync(Mock.Of<Stream>());
+            Assert.True(task.IsFaulted);
+            Assert.Same(error, task.Exception.InnerException);
+        }
+
+        [Fact]
+        public void StopAcceptingReadsCausesCopyToAsyncToThrowObjectDisposedException()
+        {
+            var stream = new FrameRequestStream();
+            stream.StartAcceptingReads(null);
+            stream.StopAcceptingReads();
+            Assert.Throws<ObjectDisposedException>(() => { stream.CopyToAsync(Mock.Of<Stream>()); });
+        }
+
+        [Fact]
+        public void NullDestinationCausesCopyToAsyncToThrowArgumentNullException()
+        {
+            var stream = new FrameRequestStream();
+            stream.StartAcceptingReads(null);
+            Assert.Throws<ArgumentNullException>(() => { stream.CopyToAsync(null); });
+        }
+
+        [Fact]
+        public void ZeroBufferSizeCausesCopyToAsyncToThrowArgumentException()
+        {
+            var stream = new FrameRequestStream();
+            stream.StartAcceptingReads(null);
+            Assert.Throws<ArgumentException>(() => { stream.CopyToAsync(Mock.Of<Stream>(), 0); });
         }
     }
 }

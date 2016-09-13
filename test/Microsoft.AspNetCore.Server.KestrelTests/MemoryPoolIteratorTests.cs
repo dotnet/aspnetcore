@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public void MemorySeek(string raw, string search, char expectResult, int expectIndex)
         {
             var block = _pool.Lease();
-            var chars = raw.ToCharArray().Select(c => (byte)c).ToArray();
+            var chars = raw.ToCharArray().Select(c => (byte) c).ToArray();
             Buffer.BlockCopy(chars, 0, block.Array, block.Start, chars.Length);
             block.End += chars.Length;
 
@@ -98,20 +98,20 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             int found = -1;
             if (searchFor.Length == 1)
             {
-                var search0 = new Vector<byte>((byte)searchFor[0]);
+                var search0 = new Vector<byte>((byte) searchFor[0]);
                 found = begin.Seek(ref search0);
             }
             else if (searchFor.Length == 2)
             {
-                var search0 = new Vector<byte>((byte)searchFor[0]);
-                var search1 = new Vector<byte>((byte)searchFor[1]);
+                var search0 = new Vector<byte>((byte) searchFor[0]);
+                var search1 = new Vector<byte>((byte) searchFor[1]);
                 found = begin.Seek(ref search0, ref search1);
             }
             else if (searchFor.Length == 3)
             {
-                var search0 = new Vector<byte>((byte)searchFor[0]);
-                var search1 = new Vector<byte>((byte)searchFor[1]);
-                var search2 = new Vector<byte>((byte)searchFor[2]);
+                var search0 = new Vector<byte>((byte) searchFor[0]);
+                var search1 = new Vector<byte>((byte) searchFor[1]);
+                var search2 = new Vector<byte>((byte) searchFor[2]);
                 found = begin.Seek(ref search0, ref search1, ref search2);
             }
             else
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             head = blocks[0].GetIterator();
             for (var i = 0; i < 64; ++i)
             {
-                Assert.True(head.Put((byte)i), $"Fail to put data at {i}.");
+                Assert.True(head.Put((byte) i), $"Fail to put data at {i}.");
             }
 
             // Can't put anything by the end
@@ -186,6 +186,112 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 _pool.Return(blocks[i]);
             }
+        }
+
+        [Fact]
+        public void PeekArraySegment()
+        {
+            // Arrange
+            var block = _pool.Lease();
+            var bytes = new byte[] {0, 1, 2, 3, 4, 5, 6, 7};
+            Buffer.BlockCopy(bytes, 0, block.Array, block.Start, bytes.Length);
+            block.End += bytes.Length;
+            var scan = block.GetIterator();
+            var originalIndex = scan.Index;
+
+            // Act
+            var result = scan.PeekArraySegment();
+
+            // Assert
+            Assert.Equal(new byte[] {0, 1, 2, 3, 4, 5, 6, 7}, result);
+            Assert.Equal(originalIndex, scan.Index);
+
+            _pool.Return(block);
+        }
+
+        [Fact]
+        public void PeekArraySegmentOnDefaultIteratorReturnsDefaultArraySegment()
+        {
+            // Assert.Equals doesn't work since xunit tries to access the underlying array.
+            Assert.True(default(ArraySegment<byte>).Equals(default(MemoryPoolIterator).PeekArraySegment()));
+        }
+
+        [Fact]
+        public void PeekArraySegmentAtEndOfDataReturnsDefaultArraySegment()
+        {
+            // Arrange
+            var block = _pool.Lease();
+            var bytes = new byte[] {0, 1, 2, 3, 4, 5, 6, 7};
+            Buffer.BlockCopy(bytes, 0, block.Array, block.Start, bytes.Length);
+            block.End += bytes.Length;
+            block.Start = block.End;
+
+            var scan = block.GetIterator();
+
+            // Act
+            var result = scan.PeekArraySegment();
+
+            // Assert
+            // Assert.Equals doesn't work since xunit tries to access the underlying array.
+            Assert.True(default(ArraySegment<byte>).Equals(result));
+
+            _pool.Return(block);
+        }
+
+        [Fact]
+        public void PeekArraySegmentAtBlockBoundary()
+        {
+            // Arrange
+            var firstBlock = _pool.Lease();
+            var lastBlock = _pool.Lease();
+
+            var firstBytes = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 };
+            var lastBytes = new byte[] { 8, 9, 10, 11, 12, 13, 14, 15 };
+
+            Buffer.BlockCopy(firstBytes, 0, firstBlock.Array, firstBlock.Start, firstBytes.Length);
+            firstBlock.End += lastBytes.Length;
+
+            firstBlock.Next = lastBlock;
+            Buffer.BlockCopy(lastBytes, 0, lastBlock.Array, lastBlock.Start, lastBytes.Length);
+            lastBlock.End += lastBytes.Length;
+
+            var scan = firstBlock.GetIterator();
+            var originalIndex = scan.Index;
+            var originalBlock = scan.Block;
+
+            // Act
+            var result = scan.PeekArraySegment();
+
+            // Assert
+            Assert.Equal(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, result);
+            Assert.Equal(originalBlock, scan.Block);
+            Assert.Equal(originalIndex, scan.Index);
+
+            // Act
+            // Advance past the data in the first block
+            scan.Skip(8);
+            result = scan.PeekArraySegment();
+
+            // Assert
+            Assert.Equal(new byte[] { 8, 9, 10, 11, 12, 13, 14, 15 }, result);
+            Assert.Equal(originalBlock, scan.Block);
+            Assert.Equal(originalIndex + 8, scan.Index);
+
+            // Act
+            // Add anther empty block between the first and last block
+            var middleBlock = _pool.Lease();
+            firstBlock.Next = middleBlock;
+            middleBlock.Next = lastBlock;
+            result = scan.PeekArraySegment();
+
+            // Assert
+            Assert.Equal(new byte[] { 8, 9, 10, 11, 12, 13, 14, 15 }, result);
+            Assert.Equal(originalBlock, scan.Block);
+            Assert.Equal(originalIndex + 8, scan.Index);
+
+            _pool.Return(firstBlock);
+            _pool.Return(middleBlock);
+            _pool.Return(lastBlock);
         }
 
         [Fact]
