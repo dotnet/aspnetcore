@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
             _pathPrefix = pathPrefix;
             _options = options;
             _httpClient = new HttpClient(new HttpClientHandler());
-            _httpClient.Timeout = _options.RequestTimeout;
         }
 
         public async Task Invoke(HttpContext context)
