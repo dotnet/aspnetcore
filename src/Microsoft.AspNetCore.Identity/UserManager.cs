@@ -1289,11 +1289,11 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Gets the user, if any, associated with the specified, normalized email address.
+        /// Gets the user, if any, associated with the normalized value of the specified email address.
         /// </summary>
-        /// <param name="email">The normalized email address to return the user for.</param>
+        /// <param name="email">The email address to return the user for.</param>
         /// <returns>
-        /// The task object containing the results of the asynchronous lookup operation, the user if any associated with the specified normalized email address.
+        /// The task object containing the results of the asynchronous lookup operation, the user, if any, associated with a normalized value of the specified email address.
         /// </returns>
         public virtual Task<TUser> FindByEmailAsync(string email)
         {
