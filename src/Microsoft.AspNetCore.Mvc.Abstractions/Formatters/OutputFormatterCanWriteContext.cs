@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -11,6 +12,39 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public abstract class OutputFormatterCanWriteContext
     {
+        /// <summary>
+        /// <para>
+        /// This constructor is obsolete and will be removed in a future version.
+        /// Please use <see cref="OutputFormatterCanWriteContext(Http.HttpContext)"/> instead.
+        /// </para>
+        /// <para>
+        /// Creates a new <see cref="OutputFormatterCanWriteContext"/>.
+        /// </para>
+        /// </summary>
+        [Obsolete("This constructor is obsolete and will be removed in a future version. Please use the constructor taking a HttpContext instead.")]
+        protected OutputFormatterCanWriteContext()
+        {
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="OutputFormatterCanWriteContext"/>.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>
+        protected OutputFormatterCanWriteContext(HttpContext httpContext)
+        {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            HttpContext = httpContext;
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="HttpContext"/> context associated with the current operation.
+        /// </summary>
+        public virtual HttpContext HttpContext { get; protected set; }
+
         /// <summary>
         /// Gets or sets the content type to write to the response.
         /// </summary>

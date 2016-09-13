@@ -21,27 +21,17 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <param name="objectType">The <see cref="Type"/> of the object to write to the response.</param>
         /// <param name="object">The object to write to the response.</param>
         public OutputFormatterWriteContext(HttpContext httpContext, Func<Stream, Encoding, TextWriter> writerFactory, Type objectType, object @object)
+            : base(httpContext)
         {
-            if (httpContext == null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
-
             if (writerFactory == null)
             {
                 throw new ArgumentNullException(nameof(writerFactory));
             }
 
-            HttpContext = httpContext;
             WriterFactory = writerFactory;
             ObjectType = objectType;
             Object = @object;
         }
-
-        /// <summary>
-        /// Gets or sets the <see cref="HttpContext"/> context associated with the current operation.
-        /// </summary>
-        public virtual HttpContext HttpContext { get; protected set; }
 
         /// <summary>
         /// Gets or sets a delegate used to create a <see cref="TextWriter"/> for writing the response.
