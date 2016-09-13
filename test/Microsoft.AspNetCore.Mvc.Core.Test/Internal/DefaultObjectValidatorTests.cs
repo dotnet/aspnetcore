@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
@@ -1064,6 +1066,31 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var entry = modelState["userIds[0]"];
             Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
             Assert.Empty(entry.Errors);
+        }
+
+        [Fact]
+        public void Validate_SuppressesValidation_ForExcludedType_Stream()
+        {
+            // Arrange
+            var options = new MvcOptions();
+            var optionsSetup = new MvcCoreMvcOptionsSetup(Mock.Of<IHttpRequestStreamReaderFactory>());
+            optionsSetup.Configure(options);
+            var validator = CreateValidator(providers: options.ModelMetadataDetailsProviders.ToArray());
+            var model = new MemoryStream(Encoding.UTF8.GetBytes("Hello!"));
+            var actionContext = new ActionContext();
+            var modelState = actionContext.ModelState;
+            modelState.SetModelValue("parameter", rawValue: null, attemptedValue: null);
+            var validationState = new ValidationStateDictionary();
+            validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
+
+            // Act
+            validator.Validate(actionContext, validationState, "parameter", model);
+
+            // Assert
+            Assert.True(modelState.IsValid);
+            var entry = Assert.Single(modelState);
+            Assert.Equal(ModelValidationState.Valid, entry.Value.ValidationState);
+            Assert.Empty(entry.Value.Errors);
         }
 
         private static DefaultObjectValidator CreateValidator(Type excludedType)
