@@ -17,19 +17,19 @@ namespace FilesWebSite
             _hostingEnvironment = hostingEnvironment;
         }
 
-        public IActionResult DowloadFromDisk()
+        public IActionResult DownloadFromDisk()
         {
             var path = Path.Combine(_hostingEnvironment.ContentRootPath, "sample.txt");
             return PhysicalFile(path, "text/plain");
         }
 
-        public IActionResult DowloadFromDiskWithFileName()
+        public IActionResult DownloadFromDiskWithFileName()
         {
             var path = Path.Combine(_hostingEnvironment.ContentRootPath, "sample.txt");
             return PhysicalFile(path, "text/plain", "downloadName.txt");
         }
 
-        public IActionResult DowloadFromStream()
+        public IActionResult DownloadFromStream()
         {
             var stream = new MemoryStream();
             var writer = new StreamWriter(stream);
@@ -40,7 +40,7 @@ namespace FilesWebSite
             return File(stream, "text/plain");
         }
 
-        public IActionResult DowloadFromStreamWithFileName()
+        public IActionResult DownloadFromStreamWithFileName()
         {
             var stream = new MemoryStream();
             var writer = new StreamWriter(stream);
@@ -51,13 +51,13 @@ namespace FilesWebSite
             return File(stream, "text/plain", "downloadName.txt");
         }
 
-        public IActionResult DowloadFromBinaryData()
+        public IActionResult DownloadFromBinaryData()
         {
             var data = Encoding.UTF8.GetBytes("This is a sample text from a binary array");
             return File(data, "text/plain");
         }
 
-        public IActionResult DowloadFromBinaryDataWithFileName()
+        public IActionResult DownloadFromBinaryDataWithFileName()
         {
             var data = Encoding.UTF8.GetBytes("This is a sample text from a binary array");
             return File(data, "text/plain", "downloadName.txt");

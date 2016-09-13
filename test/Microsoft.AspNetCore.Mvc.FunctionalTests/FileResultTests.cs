@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task FileFromDisk_CanBeEnabled_WithMiddleware()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/DownloadFiles/DowloadFromDisk");
+            var response = await Client.GetAsync("http://localhost/DownloadFiles/DownloadFromDisk");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task FileFromDisk_ReturnsFileWithFileName()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/DownloadFiles/DowloadFromDiskWithFileName");
+            var response = await Client.GetAsync("http://localhost/DownloadFiles/DownloadFromDiskWithFileName");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task FileFromStream_ReturnsFile()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/DownloadFiles/DowloadFromStream");
+            var response = await Client.GetAsync("http://localhost/DownloadFiles/DownloadFromStream");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task FileFromStream_ReturnsFileWithFileName()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/DownloadFiles/DowloadFromStreamWithFileName");
+            var response = await Client.GetAsync("http://localhost/DownloadFiles/DownloadFromStreamWithFileName");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task FileFromBinaryData_ReturnsFile()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/DownloadFiles/DowloadFromBinaryData");
+            var response = await Client.GetAsync("http://localhost/DownloadFiles/DownloadFromBinaryData");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task FileFromBinaryData_ReturnsFileWithFileName()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/DownloadFiles/DowloadFromBinaryDataWithFileName");
+            var response = await Client.GetAsync("http://localhost/DownloadFiles/DownloadFromBinaryDataWithFileName");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
