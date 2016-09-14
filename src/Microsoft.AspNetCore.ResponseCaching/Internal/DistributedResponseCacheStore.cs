@@ -6,11 +6,11 @@ using Microsoft.Extensions.Caching.Distributed;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    internal class DistributedResponseCache : IResponseCache
+    public class DistributedResponseCacheStore : IResponseCacheStore
     {
         private readonly IDistributedCache _cache;
 
-        public DistributedResponseCache(IDistributedCache cache)
+        public DistributedResponseCacheStore(IDistributedCache cache)
         {
             if (cache == null)
             {

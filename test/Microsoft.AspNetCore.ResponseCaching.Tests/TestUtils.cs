@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 {
     internal class TestUtils
     {
-        internal static RequestDelegate DefaultRequestDelegate = async (context) =>
+        internal static RequestDelegate TestRequestDelegate = async (context) =>
         {
             var uniqueId = Guid.NewGuid().ToString();
             var headers = context.Response.GetTypedHeaders();
@@ -34,19 +34,19 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             await context.Response.WriteAsync(uniqueId);
         };
 
-        internal static ICacheKeyProvider CreateTestKeyProvider()
+        internal static IResponseCacheKeyProvider CreateTestKeyProvider()
         {
-            return CreateTestKeyProvider(new ResponseCachingOptions());
+            return CreateTestKeyProvider(new ResponseCacheOptions());
         }
 
-        internal static ICacheKeyProvider CreateTestKeyProvider(ResponseCachingOptions options)
+        internal static IResponseCacheKeyProvider CreateTestKeyProvider(ResponseCacheOptions options)
         {
-            return new CacheKeyProvider(new DefaultObjectPoolProvider(), Options.Create(options));
+            return new ResponseCacheKeyProvider(new DefaultObjectPoolProvider(), Options.Create(options));
         }
 
-        internal static IWebHostBuilder CreateBuilderWithResponseCaching(
+        internal static IWebHostBuilder CreateBuilderWithResponseCache(
             Action<IApplicationBuilder> configureDelegate = null,
-            ResponseCachingOptions options = null,
+            ResponseCacheOptions options = null,
             RequestDelegate requestDelegate = null)
         {
             if (configureDelegate == null)
@@ -55,11 +55,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             }
             if (options == null)
             {
-                options = new ResponseCachingOptions();
+                options = new ResponseCacheOptions();
             }
             if (requestDelegate == null)
             {
-                requestDelegate = DefaultRequestDelegate;
+                requestDelegate = TestRequestDelegate;
             }
 
             return new WebHostBuilder()
@@ -70,45 +70,45 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 .Configure(app =>
                 {
                     configureDelegate(app);
-                    app.UseResponseCaching(options);
+                    app.UseResponseCache(options);
                     app.Run(requestDelegate);
                 });
         }
 
-        internal static ResponseCachingMiddleware CreateTestMiddleware(
-            IResponseCache responseCache = null,
-            ResponseCachingOptions options = null,
-            ICacheKeyProvider cacheKeyProvider = null,
-            ICacheabilityValidator cacheabilityValidator = null)
+        internal static ResponseCacheMiddleware CreateTestMiddleware(
+            IResponseCacheStore store = null,
+            ResponseCacheOptions options = null,
+            IResponseCacheKeyProvider keyProvider = null,
+            IResponseCachePolicyProvider policyProvider = null)
         {
-            if (responseCache == null)
+            if (store == null)
             {
-                responseCache = new TestResponseCache();
+                store = new TestResponseCacheStore();
             }
             if (options == null)
             {
-                options = new ResponseCachingOptions();
+                options = new ResponseCacheOptions();
             }
-            if (cacheKeyProvider == null)
+            if (keyProvider == null)
             {
-                cacheKeyProvider = new CacheKeyProvider(new DefaultObjectPoolProvider(), Options.Create(options));
+                keyProvider = new ResponseCacheKeyProvider(new DefaultObjectPoolProvider(), Options.Create(options));
             }
-            if (cacheabilityValidator == null)
+            if (policyProvider == null)
             {
-                cacheabilityValidator = new TestCacheabilityValidator();
+                policyProvider = new TestResponseCachePolicyProvider();
             }
 
-            return new ResponseCachingMiddleware(
+            return new ResponseCacheMiddleware(
                 httpContext => TaskCache.CompletedTask,
-                responseCache,
+                store,
                 Options.Create(options),
-                cacheabilityValidator,
-                cacheKeyProvider);
+                policyProvider,
+                keyProvider);
         }
 
-        internal static ResponseCachingContext CreateTestContext()
+        internal static ResponseCacheContext CreateTestContext()
         {
-            return new ResponseCachingContext(new DefaultHttpContext());
+            return new ResponseCacheContext(new DefaultHttpContext());
         }
     }
 
@@ -120,58 +120,49 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
     }
 
-    internal class TestCacheabilityValidator : ICacheabilityValidator
+    internal class TestResponseCachePolicyProvider : IResponseCachePolicyProvider
     {
-        public bool IsCachedEntryFresh(ResponseCachingContext context) => true;
+        public bool IsCachedEntryFresh(ResponseCacheContext context) => true;
 
-        public bool IsRequestCacheable(ResponseCachingContext context) => true;
+        public bool IsRequestCacheable(ResponseCacheContext context) => true;
 
-        public bool IsResponseCacheable(ResponseCachingContext context) => true;
+        public bool IsResponseCacheable(ResponseCacheContext context) => true;
     }
 
-    internal class TestKeyProvider : ICacheKeyProvider
+    internal class TestResponseCacheKeyProvider : IResponseCacheKeyProvider
     {
-        private readonly StringValues _baseKey;
+        private readonly string _baseKey;
         private readonly StringValues _varyKey;
 
-        public TestKeyProvider(StringValues? lookupBaseKey = null, StringValues? lookupVaryKey = null)
+        public TestResponseCacheKeyProvider(string lookupBaseKey = null, StringValues? lookupVaryKey = null)
         {
-            if (lookupBaseKey.HasValue)
-            {
-                _baseKey = lookupBaseKey.Value;
-            }
+            _baseKey = lookupBaseKey;
             if (lookupVaryKey.HasValue)
             {
                 _varyKey = lookupVaryKey.Value;
             }
         }
 
-        public IEnumerable<string> CreateLookupBaseKeys(ResponseCachingContext context) => _baseKey;
-
-
-        public IEnumerable<string> CreateLookupVaryKeys(ResponseCachingContext context)
+        public IEnumerable<string> CreateLookupVaryByKeys(ResponseCacheContext context)
         {
-            foreach (var baseKey in _baseKey)
+            foreach (var varyKey in _varyKey)
             {
-                foreach (var varyKey in _varyKey)
-                {
-                    yield return baseKey + varyKey;
-                }
+                yield return _baseKey + varyKey;
             }
         }
 
-        public string CreateStorageBaseKey(ResponseCachingContext context)
+        public string CreateBaseKey(ResponseCacheContext context)
         {
-            throw new NotImplementedException();
+            return _baseKey;
         }
 
-        public string CreateStorageVaryKey(ResponseCachingContext context)
+        public string CreateStorageVaryByKey(ResponseCacheContext context)
         {
             throw new NotImplementedException();
         }
     }
 
-    internal class TestResponseCache : IResponseCache
+    internal class TestResponseCacheStore : IResponseCacheStore
     {
         private readonly IDictionary<string, object> _storage = new Dictionary<string, object>();
         public int GetCount { get; private set; }
@@ -198,14 +189,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             SetCount++;
             _storage[key] = entry;
-        }
-    }
-
-    internal class TestHttpSendFileFeature : IHttpSendFileFeature
-    {
-        public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
-        {
-            return TaskCache.CompletedTask;
         }
     }
 }

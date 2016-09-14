@@ -5,12 +5,12 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
-    public class CachedVaryRules
+    public class CachedVaryByRules
     {
-        public string VaryKeyPrefix { get; internal set; }
+        public string VaryByKeyPrefix { get; set; }
 
-        public StringValues Headers { get; internal set; }
+        public StringValues Headers { get; set; }
 
-        public StringValues Params { get; internal set; }
+        public StringValues Params { get; set; }
     }
 }

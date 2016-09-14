@@ -77,67 +77,67 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public void RoundTrip_CachedVaryRule_EmptyRules_Succeeds()
+        public void RoundTrip_CachedVaryByRule_EmptyRules_Succeeds()
         {
-            var cachedVaryRule = new CachedVaryRules()
+            var cachedVaryByRule = new CachedVaryByRules()
             {
-                VaryKeyPrefix = FastGuid.NewGuid().IdString
+                VaryByKeyPrefix = FastGuid.NewGuid().IdString
             };
 
-            AssertCachedVaryRuleEqual(cachedVaryRule, (CachedVaryRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryRule)));
+            AssertCachedVaryByRuleEqual(cachedVaryByRule, (CachedVaryByRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryByRule)));
         }
 
         [Fact]
-        public void RoundTrip_CachedVaryRule_HeadersOnly_Succeeds()
+        public void RoundTrip_CachedVaryByRule_HeadersOnly_Succeeds()
         {
             var headers = new[] { "headerA", "headerB" };
-            var cachedVaryRule = new CachedVaryRules()
+            var cachedVaryByRule = new CachedVaryByRules()
             {
-                VaryKeyPrefix = FastGuid.NewGuid().IdString,
+                VaryByKeyPrefix = FastGuid.NewGuid().IdString,
                 Headers = headers
             };
 
-            AssertCachedVaryRuleEqual(cachedVaryRule, (CachedVaryRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryRule)));
+            AssertCachedVaryByRuleEqual(cachedVaryByRule, (CachedVaryByRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryByRule)));
         }
 
         [Fact]
-        public void RoundTrip_CachedVaryRule_ParamsOnly_Succeeds()
+        public void RoundTrip_CachedVaryByRule_ParamsOnly_Succeeds()
         {
             var param = new[] { "paramA", "paramB" };
-            var cachedVaryRule = new CachedVaryRules()
+            var cachedVaryByRule = new CachedVaryByRules()
             {
-                VaryKeyPrefix = FastGuid.NewGuid().IdString,
+                VaryByKeyPrefix = FastGuid.NewGuid().IdString,
                 Params = param
             };
 
-            AssertCachedVaryRuleEqual(cachedVaryRule, (CachedVaryRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryRule)));
+            AssertCachedVaryByRuleEqual(cachedVaryByRule, (CachedVaryByRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryByRule)));
         }
 
         [Fact]
-        public void RoundTrip_CachedVaryRule_HeadersAndParams_Succeeds()
+        public void RoundTrip_CachedVaryByRule_HeadersAndParams_Succeeds()
         {
             var headers = new[] { "headerA", "headerB" };
             var param = new[] { "paramA", "paramB" };
-            var cachedVaryRule = new CachedVaryRules()
+            var cachedVaryByRule = new CachedVaryByRules()
             {
-                VaryKeyPrefix = FastGuid.NewGuid().IdString,
+                VaryByKeyPrefix = FastGuid.NewGuid().IdString,
                 Headers = headers,
                 Params = param
             };
 
-            AssertCachedVaryRuleEqual(cachedVaryRule, (CachedVaryRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryRule)));
+            AssertCachedVaryByRuleEqual(cachedVaryByRule, (CachedVaryByRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryByRule)));
         }
 
         [Fact]
         public void Deserialize_InvalidEntries_ReturnsNull()
         {
             var headers = new[] { "headerA", "headerB" };
-            var cachedVaryRule = new CachedVaryRules()
+            var cachedVaryByRule = new CachedVaryByRules()
             {
-                VaryKeyPrefix = FastGuid.NewGuid().IdString,
+                VaryByKeyPrefix = FastGuid.NewGuid().IdString,
                 Headers = headers
             };
-            var serializedEntry = CacheEntrySerializer.Serialize(cachedVaryRule);
+            var serializedEntry = CacheEntrySerializer.Serialize(cachedVaryByRule);
             Array.Reverse(serializedEntry);
 
             Assert.Null(CacheEntrySerializer.Deserialize(serializedEntry));
@@ -170,11 +170,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             }
         }
 
-        private static void AssertCachedVaryRuleEqual(CachedVaryRules expected, CachedVaryRules actual)
+        private static void AssertCachedVaryByRuleEqual(CachedVaryByRules expected, CachedVaryByRules actual)
         {
             Assert.NotNull(actual);
             Assert.NotNull(expected);
-            Assert.Equal(expected.VaryKeyPrefix, actual.VaryKeyPrefix);
+            Assert.Equal(expected.VaryByKeyPrefix, actual.VaryByKeyPrefix);
             Assert.Equal(expected.Headers, actual.Headers);
             Assert.Equal(expected.Params, actual.Params);
         }

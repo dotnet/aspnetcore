@@ -5,6 +5,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
 {
     public class CachedResponseBody
     {
-        public byte[] Body { get; internal set; }
+        public byte[] Body { get; set; }
     }
 }

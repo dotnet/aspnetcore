@@ -14,12 +14,12 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Tests
 {
-    public class ResponseCachingTests
+    public class ResponseCacheTests
     {
         [Fact]
         public async void ServesCachedContent_IfAvailable()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching();
+            var builder = TestUtils.CreateBuilderWithResponseCache();
 
             using (var server = new TestServer(builder))
             {
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesFreshContent_IfNotAvailable()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching();
+            var builder = TestUtils.CreateBuilderWithResponseCache();
 
             using (var server = new TestServer(builder))
             {
@@ -49,10 +49,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesCachedContent_IfVaryHeader_Matches()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching(requestDelegate: async (context) =>
+            var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
                 context.Response.Headers[HeaderNames.Vary] = HeaderNames.From;
-                await TestUtils.DefaultRequestDelegate(context);
+                await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
@@ -69,10 +69,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesFreshContent_IfVaryHeader_Mismatches()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching(requestDelegate: async (context) =>
+            var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
                 context.Response.Headers[HeaderNames.Vary] = HeaderNames.From;
-                await TestUtils.DefaultRequestDelegate(context);
+                await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
@@ -90,10 +90,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesCachedContent_IfVaryParams_Matches()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching(requestDelegate: async (context) =>
+            var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCachingFeature().VaryParams = "param";
-                await TestUtils.DefaultRequestDelegate(context);
+                context.GetResponseCacheFeature().VaryByParams = "param";
+                await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
@@ -109,10 +109,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesCachedContent_IfVaryParamsExplicit_Matches_ParamNameCaseInsensitive()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching(requestDelegate: async (context) =>
+            var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCachingFeature().VaryParams = new[] { "ParamA", "paramb" };
-                await TestUtils.DefaultRequestDelegate(context);
+                context.GetResponseCacheFeature().VaryByParams = new[] { "ParamA", "paramb" };
+                await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
@@ -128,10 +128,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesCachedContent_IfVaryParamsStar_Matches_ParamNameCaseInsensitive()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching(requestDelegate: async (context) =>
+            var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCachingFeature().VaryParams = new[] { "*" };
-                await TestUtils.DefaultRequestDelegate(context);
+                context.GetResponseCacheFeature().VaryByParams = new[] { "*" };
+                await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
@@ -147,10 +147,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesCachedContent_IfVaryParamsExplicit_Matches_OrderInsensitive()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching(requestDelegate: async (context) =>
+            var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCachingFeature().VaryParams = new[] { "ParamB", "ParamA" };
-                await TestUtils.DefaultRequestDelegate(context);
+                context.GetResponseCacheFeature().VaryByParams = new[] { "ParamB", "ParamA" };
+                await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
@@ -166,10 +166,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesCachedContent_IfVaryParamsStar_Matches_OrderInsensitive()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching(requestDelegate: async (context) =>
+            var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCachingFeature().VaryParams = new[] { "*" };
-                await TestUtils.DefaultRequestDelegate(context);
+                context.GetResponseCacheFeature().VaryByParams = new[] { "*" };
+                await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
@@ -185,10 +185,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesFreshContent_IfVaryParams_Mismatches()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching(requestDelegate: async (context) =>
+            var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCachingFeature().VaryParams = "param";
-                await TestUtils.DefaultRequestDelegate(context);
+                context.GetResponseCacheFeature().VaryByParams = "param";
+                await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
@@ -204,10 +204,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesFreshContent_IfVaryParamsExplicit_Mismatch_ParamValueCaseSensitive()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching(requestDelegate: async (context) =>
+            var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCachingFeature().VaryParams = new[] { "ParamA", "ParamB" };
-                await TestUtils.DefaultRequestDelegate(context);
+                context.GetResponseCacheFeature().VaryByParams = new[] { "ParamA", "ParamB" };
+                await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
@@ -223,10 +223,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesFreshContent_IfVaryParamsStar_Mismatch_ParamValueCaseSensitive()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching(requestDelegate: async (context) =>
+            var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCachingFeature().VaryParams = new[] { "*" };
-                await TestUtils.DefaultRequestDelegate(context);
+                context.GetResponseCacheFeature().VaryByParams = new[] { "*" };
+                await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesFreshContent_IfRequestRequirements_NotMet()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching();
+            var builder = TestUtils.CreateBuilderWithResponseCache();
 
             using (var server = new TestServer(builder))
             {
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void Serves504_IfOnlyIfCachedHeader_IsSpecified()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching();
+            var builder = TestUtils.CreateBuilderWithResponseCache();
 
             using (var server = new TestServer(builder))
             {
@@ -281,10 +281,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesFreshContent_IfSetCookie_IsSpecified()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching(requestDelegate: async (context) =>
+            var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
                 var headers = context.Response.Headers[HeaderNames.SetCookie] = "cookieName=cookieValue";
-                await TestUtils.DefaultRequestDelegate(context);
+                await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesCachedContent_IfIHttpSendFileFeature_NotUsed()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching(app =>
+            var builder = TestUtils.CreateBuilderWithResponseCache(app =>
             {
                 app.Use(async (context, next) =>
                 {
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesFreshContent_IfIHttpSendFileFeature_Used()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching(
+            var builder = TestUtils.CreateBuilderWithResponseCache(
                 app =>
                 {
                     app.Use(async (context, next) =>
@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 requestDelegate: async (context) =>
                 {
                     await context.Features.Get<IHttpSendFileFeature>().SendFileAsync("dummy", 0, 0, CancellationToken.None);
-                    await TestUtils.DefaultRequestDelegate(context);
+                    await TestUtils.TestRequestDelegate(context);
                 });
 
             using (var server = new TestServer(builder))
@@ -350,7 +350,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesCachedContent_IfSubsequentRequest_ContainsNoStore()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching();
+            var builder = TestUtils.CreateBuilderWithResponseCache();
 
             using (var server = new TestServer(builder))
             {
@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesFreshContent_IfInitialRequestContains_NoStore()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching();
+            var builder = TestUtils.CreateBuilderWithResponseCache();
 
             using (var server = new TestServer(builder))
             {
@@ -388,7 +388,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void Serves304_IfIfModifiedSince_Satisfied()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching();
+            var builder = TestUtils.CreateBuilderWithResponseCache();
 
             using (var server = new TestServer(builder))
             {
@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesCachedContent_IfIfModifiedSince_NotSatisfied()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching();
+            var builder = TestUtils.CreateBuilderWithResponseCache();
 
             using (var server = new TestServer(builder))
             {
@@ -421,10 +421,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void Serves304_IfIfNoneMatch_Satisfied()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching(requestDelegate: async (context) =>
+            var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
                 var headers = context.Response.GetTypedHeaders().ETag = new EntityTagHeaderValue("\"E1\"");
-                await TestUtils.DefaultRequestDelegate(context);
+                await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
@@ -442,10 +442,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesCachedContent_IfIfNoneMatch_NotSatisfied()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching(requestDelegate: async (context) =>
+            var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
                 var headers = context.Response.GetTypedHeaders().ETag = new EntityTagHeaderValue("\"E1\"");
-                await TestUtils.DefaultRequestDelegate(context);
+                await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
@@ -462,7 +462,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesCachedContent_IfBodySize_IsCacheable()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching(options: new ResponseCachingOptions()
+            var builder = TestUtils.CreateBuilderWithResponseCache(options: new ResponseCacheOptions()
             {
                 MaximumCachedBodySize = 100
             });
@@ -480,7 +480,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesFreshContent_IfBodySize_IsNotCacheable()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching(options: new ResponseCachingOptions()
+            var builder = TestUtils.CreateBuilderWithResponseCache(options: new ResponseCacheOptions()
             {
                 MaximumCachedBodySize = 1
             });
@@ -498,10 +498,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async void ServesCachedContent_WithoutReplacingCachedVaryBy_OnCacheMiss()
         {
-            var builder = TestUtils.CreateBuilderWithResponseCaching(requestDelegate: async (context) =>
+            var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
                 context.Response.Headers[HeaderNames.Vary] = HeaderNames.From;
-                await TestUtils.DefaultRequestDelegate(context);
+                await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))

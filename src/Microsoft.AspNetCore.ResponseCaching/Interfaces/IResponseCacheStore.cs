@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
-    public interface IResponseCache
+    public interface IResponseCacheStore
     {
         object Get(string key);
         void Set(string key, object entry, TimeSpan validFor);

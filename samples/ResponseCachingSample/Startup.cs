@@ -20,7 +20,7 @@ namespace ResponseCachingSample
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseResponseCaching();
+            app.UseResponseCache();
             app.Run(async (context) =>
             {
                 // These settings should be configured by context.Response.Cache.*

@@ -7,19 +7,19 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
 {
-    public static class ResponseCachingExtensions
+    public static class ResponseCacheExtensions
     {
-        public static IApplicationBuilder UseResponseCaching(this IApplicationBuilder app)
+        public static IApplicationBuilder UseResponseCache(this IApplicationBuilder app)
         {
             if (app == null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseMiddleware<ResponseCachingMiddleware>();
+            return app.UseMiddleware<ResponseCacheMiddleware>();
         }
 
-        public static IApplicationBuilder UseResponseCaching(this IApplicationBuilder app, ResponseCachingOptions options)
+        public static IApplicationBuilder UseResponseCache(this IApplicationBuilder app, ResponseCacheOptions options)
         {
             if (app == null)
             {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return app.UseMiddleware<ResponseCachingMiddleware>(Options.Create(options));
+            return app.UseMiddleware<ResponseCacheMiddleware>(Options.Create(options));
         }
     }
 }

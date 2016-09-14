@@ -11,15 +11,15 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
     public class HttpContextInternalExtensionTests
     {
         [Fact]
-        public void AddingSecondResponseCachingFeature_Throws()
+        public void AddingSecondResponseCacheFeature_Throws()
         {
             var httpContext = new DefaultHttpContext();
 
             // Should not throw
-            httpContext.AddResponseCachingFeature();
+            httpContext.AddResponseCacheFeature();
 
             // Should throw
-            Assert.ThrowsAny<InvalidOperationException>(() => httpContext.AddResponseCachingFeature());
+            Assert.ThrowsAny<InvalidOperationException>(() => httpContext.AddResponseCacheFeature());
         }
     }
 }

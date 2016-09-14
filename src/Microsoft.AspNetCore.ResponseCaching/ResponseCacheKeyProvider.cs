@@ -12,15 +12,15 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
-    public class CacheKeyProvider : ICacheKeyProvider
+    public class ResponseCacheKeyProvider : IResponseCacheKeyProvider
     {
         // Use the record separator for delimiting components of the cache key to avoid possible collisions
         private static readonly char KeyDelimiter = '\x1e';
 
         private readonly ObjectPool<StringBuilder> _builderPool;
-        private readonly ResponseCachingOptions _options;
+        private readonly ResponseCacheOptions _options;
 
-        public CacheKeyProvider(ObjectPoolProvider poolProvider, IOptions<ResponseCachingOptions> options)
+        public ResponseCacheKeyProvider(ObjectPoolProvider poolProvider, IOptions<ResponseCacheOptions> options)
         {
             if (poolProvider == null)
             {
@@ -35,18 +35,13 @@ namespace Microsoft.AspNetCore.ResponseCaching
             _options = options.Value;
         }
 
-        public virtual IEnumerable<string> CreateLookupBaseKeys(ResponseCachingContext context)
+        public virtual IEnumerable<string> CreateLookupVaryByKeys(ResponseCacheContext context)
         {
-            return new string[] { CreateStorageBaseKey(context) };
-        }
-
-        public virtual IEnumerable<string> CreateLookupVaryKeys(ResponseCachingContext context)
-        {
-            return new string[] { CreateStorageVaryKey(context) };
+            return new string[] { CreateStorageVaryByKey(context) };
         }
 
         // GET<delimiter>/PATH
-        public virtual string CreateStorageBaseKey(ResponseCachingContext context)
+        public virtual string CreateBaseKey(ResponseCacheContext context)
         {
             if (context == null)
             {
@@ -61,7 +56,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 builder
                     .Append(request.Method.ToUpperInvariant())
                     .Append(KeyDelimiter)
-                    .Append(_options.CaseSensitivePaths ? request.Path.Value : request.Path.Value.ToUpperInvariant());
+                    .Append(_options.UseCaseSensitivePaths ? request.Path.Value : request.Path.Value.ToUpperInvariant());
 
                 return builder.ToString();;
             }
@@ -72,22 +67,22 @@ namespace Microsoft.AspNetCore.ResponseCaching
         }
 
         // BaseKey<delimiter>H<delimiter>HeaderName=HeaderValue<delimiter>Q<delimiter>QueryName=QueryValue
-        public virtual string CreateStorageVaryKey(ResponseCachingContext context)
+        public virtual string CreateStorageVaryByKey(ResponseCacheContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var varyRules = context.CachedVaryRules;
-            if  (varyRules == null)
+            var varyByRules = context.CachedVaryByRules;
+            if  (varyByRules == null)
             {
-                throw new InvalidOperationException($"{nameof(CachedVaryRules)} must not be null on the {nameof(ResponseCachingContext)}");
+                throw new InvalidOperationException($"{nameof(CachedVaryByRules)} must not be null on the {nameof(ResponseCacheContext)}");
             }
 
-            if ((StringValues.IsNullOrEmpty(varyRules.Headers) && StringValues.IsNullOrEmpty(varyRules.Params)))
+            if ((StringValues.IsNullOrEmpty(varyByRules.Headers) && StringValues.IsNullOrEmpty(varyByRules.Params)))
             {
-                return varyRules.VaryKeyPrefix;
+                return varyByRules.VaryByKeyPrefix;
             }
 
             var request = context.HttpContext.Request;
@@ -95,17 +90,17 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
             try
             {
-                // Prepend with the Guid of the CachedVaryRules
-                builder.Append(varyRules.VaryKeyPrefix);
+                // Prepend with the Guid of the CachedVaryByRules
+                builder.Append(varyByRules.VaryByKeyPrefix);
 
                 // Vary by headers
-                if (varyRules?.Headers.Count > 0)
+                if (varyByRules?.Headers.Count > 0)
                 {
                     // Append a group separator for the header segment of the cache key
                     builder.Append(KeyDelimiter)
                         .Append('H');
 
-                    foreach (var header in varyRules.Headers)
+                    foreach (var header in varyByRules.Headers)
                     {
                         builder.Append(KeyDelimiter)
                             .Append(header)
@@ -116,13 +111,13 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 }
 
                 // Vary by query params
-                if (varyRules?.Params.Count > 0)
+                if (varyByRules?.Params.Count > 0)
                 {
                     // Append a group separator for the query parameter segment of the cache key
                     builder.Append(KeyDelimiter)
                         .Append('Q');
 
-                    if (varyRules.Params.Count == 1 && string.Equals(varyRules.Params[0], "*", StringComparison.Ordinal))
+                    if (varyByRules.Params.Count == 1 && string.Equals(varyByRules.Params[0], "*", StringComparison.Ordinal))
                     {
                         // Vary by all available query params
                         foreach (var query in context.HttpContext.Request.Query.OrderBy(q => q.Key, StringComparer.OrdinalIgnoreCase))
@@ -135,7 +130,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     }
                     else
                     {
-                        foreach (var param in varyRules.Params)
+                        foreach (var param in varyByRules.Params)
                         {
                             builder.Append(KeyDelimiter)
                                 .Append(param)

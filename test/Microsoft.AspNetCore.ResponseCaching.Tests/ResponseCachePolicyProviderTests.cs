@@ -9,17 +9,17 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Tests
 {
-    public class CacheabilityValidatorTests
+    public class ResponseCachePolicyProviderTests
     {
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
-        public void RequestIsCacheable_CacheableMethods_Allowed(string method)
+        public void IsRequestCacheable_CacheableMethods_Allowed(string method)
         {
             var context = TestUtils.CreateTestContext();
             context.HttpContext.Request.Method = method;
 
-            Assert.True(new CacheabilityValidator().IsRequestCacheable(context));
+            Assert.True(new ResponseCachePolicyProvider().IsRequestCacheable(context));
         }
 
         [Theory]
@@ -31,26 +31,26 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [InlineData("CONNECT")]
         [InlineData("")]
         [InlineData(null)]
-        public void RequestIsCacheable_UncacheableMethods_NotAllowed(string method)
+        public void IsRequestCacheable_UncacheableMethods_NotAllowed(string method)
         {
             var context = TestUtils.CreateTestContext();
             context.HttpContext.Request.Method = method;
 
-            Assert.False(new CacheabilityValidator().IsRequestCacheable(context));
+            Assert.False(new ResponseCachePolicyProvider().IsRequestCacheable(context));
         }
 
         [Fact]
-        public void RequestIsCacheable_AuthorizationHeaders_NotAllowed()
+        public void IsRequestCacheable_AuthorizationHeaders_NotAllowed()
         {
             var context = TestUtils.CreateTestContext();
             context.HttpContext.Request.Method = "GET";
             context.HttpContext.Request.Headers[HeaderNames.Authorization] = "Basic plaintextUN:plaintextPW";
 
-            Assert.False(new CacheabilityValidator().IsRequestCacheable(context));
+            Assert.False(new ResponseCachePolicyProvider().IsRequestCacheable(context));
         }
 
         [Fact]
-        public void RequestIsCacheable_NoCache_NotAllowed()
+        public void IsRequestCacheable_NoCache_NotAllowed()
         {
             var context = TestUtils.CreateTestContext();
             context.HttpContext.Request.Method = "GET";
@@ -59,11 +59,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 NoCache = true
             };
 
-            Assert.False(new CacheabilityValidator().IsRequestCacheable(context));
+            Assert.False(new ResponseCachePolicyProvider().IsRequestCacheable(context));
         }
 
         [Fact]
-        public void RequestIsCacheable_NoStore_Allowed()
+        public void IsRequestCacheable_NoStore_Allowed()
         {
             var context = TestUtils.CreateTestContext();
             context.HttpContext.Request.Method = "GET";
@@ -72,40 +72,40 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 NoStore = true
             };
 
-            Assert.True(new CacheabilityValidator().IsRequestCacheable(context));
+            Assert.True(new ResponseCachePolicyProvider().IsRequestCacheable(context));
         }
 
         [Fact]
-        public void RequestIsCacheable_LegacyDirectives_NotAllowed()
+        public void IsRequestCacheable_LegacyDirectives_NotAllowed()
         {
             var context = TestUtils.CreateTestContext();
             context.HttpContext.Request.Method = "GET";
             context.HttpContext.Request.Headers[HeaderNames.Pragma] = "no-cache";
 
-            Assert.False(new CacheabilityValidator().IsRequestCacheable(context));
+            Assert.False(new ResponseCachePolicyProvider().IsRequestCacheable(context));
         }
 
         [Fact]
-        public void RequestIsCacheable_LegacyDirectives_OverridenByCacheControl()
+        public void IsRequestCacheable_LegacyDirectives_OverridenByCacheControl()
         {
             var context = TestUtils.CreateTestContext();
             context.HttpContext.Request.Method = "GET";
             context.HttpContext.Request.Headers[HeaderNames.Pragma] = "no-cache";
             context.HttpContext.Request.Headers[HeaderNames.CacheControl] = "max-age=10";
 
-            Assert.True(new CacheabilityValidator().IsRequestCacheable(context));
+            Assert.True(new ResponseCachePolicyProvider().IsRequestCacheable(context));
         }
 
         [Fact]
-        public void ResponseIsCacheable_NoPublic_NotAllowed()
+        public void IsResponseCacheable_NoPublic_NotAllowed()
         {
             var context = TestUtils.CreateTestContext();
 
-            Assert.False(new CacheabilityValidator().IsResponseCacheable(context));
+            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
         }
 
         [Fact]
-        public void ResponseIsCacheable_Public_Allowed()
+        public void IsResponseCacheable_Public_Allowed()
         {
             var context = TestUtils.CreateTestContext();
             context.TypedResponseHeaders.CacheControl = new CacheControlHeaderValue()
@@ -113,11 +113,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Public = true
             };
 
-            Assert.True(new CacheabilityValidator().IsResponseCacheable(context));
+            Assert.True(new ResponseCachePolicyProvider().IsResponseCacheable(context));
         }
 
         [Fact]
-        public void ResponseIsCacheable_NoCache_NotAllowed()
+        public void IsResponseCacheable_NoCache_NotAllowed()
         {
             var context = TestUtils.CreateTestContext();
             context.TypedResponseHeaders.CacheControl = new CacheControlHeaderValue()
@@ -126,11 +126,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 NoCache = true
             };
 
-            Assert.False(new CacheabilityValidator().IsResponseCacheable(context));
+            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
         }
 
         [Fact]
-        public void ResponseIsCacheable_RequestNoStore_NotAllowed()
+        public void IsResponseCacheable_RequestNoStore_NotAllowed()
         {
             var context = TestUtils.CreateTestContext();
             context.TypedRequestHeaders.CacheControl = new CacheControlHeaderValue()
@@ -142,11 +142,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Public = true
             };
 
-            Assert.False(new CacheabilityValidator().IsResponseCacheable(context));
+            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
         }
 
         [Fact]
-        public void ResponseIsCacheable_ResponseNoStore_NotAllowed()
+        public void IsResponseCacheable_ResponseNoStore_NotAllowed()
         {
             var context = TestUtils.CreateTestContext();
             context.TypedResponseHeaders.CacheControl = new CacheControlHeaderValue()
@@ -155,11 +155,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 NoStore = true
             };
 
-            Assert.False(new CacheabilityValidator().IsResponseCacheable(context));
+            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
         }
 
         [Fact]
-        public void ResponseIsCacheable_SetCookieHeader_NotAllowed()
+        public void IsResponseCacheable_SetCookieHeader_NotAllowed()
         {
             var context = TestUtils.CreateTestContext();
             context.TypedResponseHeaders.CacheControl = new CacheControlHeaderValue()
@@ -168,11 +168,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             };
             context.HttpContext.Response.Headers[HeaderNames.SetCookie] = "cookieName=cookieValue";
 
-            Assert.False(new CacheabilityValidator().IsResponseCacheable(context));
+            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
         }
 
         [Fact]
-        public void ResponseIsCacheable_VaryHeaderByStar_NotAllowed()
+        public void IsResponseCacheable_VaryHeaderByStar_NotAllowed()
         {
             var context = TestUtils.CreateTestContext();
             context.TypedResponseHeaders.CacheControl = new CacheControlHeaderValue()
@@ -181,11 +181,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             };
             context.HttpContext.Response.Headers[HeaderNames.Vary] = "*";
 
-            Assert.False(new CacheabilityValidator().IsResponseCacheable(context));
+            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
         }
 
         [Fact]
-        public void ResponseIsCacheable_Private_NotAllowed()
+        public void IsResponseCacheable_Private_NotAllowed()
         {
             var context = TestUtils.CreateTestContext();
             context.TypedResponseHeaders.CacheControl = new CacheControlHeaderValue()
@@ -194,12 +194,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Private = true
             };
 
-            Assert.False(new CacheabilityValidator().IsResponseCacheable(context));
+            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
         }
 
         [Theory]
         [InlineData(StatusCodes.Status200OK)]
-        public void ResponseIsCacheable_SuccessStatusCodes_Allowed(int statusCode)
+        public void IsResponseCacheable_SuccessStatusCodes_Allowed(int statusCode)
         {
             var context = TestUtils.CreateTestContext();
             context.HttpContext.Response.StatusCode = statusCode;
@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Public = true
             };
 
-            Assert.True(new CacheabilityValidator().IsResponseCacheable(context));
+            Assert.True(new ResponseCachePolicyProvider().IsResponseCacheable(context));
         }
 
         [Theory]
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [InlineData(StatusCodes.Status505HttpVersionNotsupported)]
         [InlineData(StatusCodes.Status506VariantAlsoNegotiates)]
         [InlineData(StatusCodes.Status507InsufficientStorage)]
-        public void ResponseIsCacheable_NonSuccessStatusCodes_NotAllowed(int statusCode)
+        public void IsResponseCacheable_NonSuccessStatusCodes_NotAllowed(int statusCode)
         {
             var context = TestUtils.CreateTestContext();
             context.HttpContext.Response.StatusCode = statusCode;
@@ -269,11 +269,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Public = true
             };
 
-            Assert.False(new CacheabilityValidator().IsResponseCacheable(context));
+            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
         }
 
         [Fact]
-        public void ResponseIsCacheable_NoExpiryRequirements_IsAllowed()
+        public void IsResponseCacheable_NoExpiryRequirements_IsAllowed()
         {
             var context = TestUtils.CreateTestContext();
             context.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
@@ -286,11 +286,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.TypedResponseHeaders.Date = utcNow;
             context.ResponseTime = DateTimeOffset.MaxValue;
 
-            Assert.True(new CacheabilityValidator().IsResponseCacheable(context));
+            Assert.True(new ResponseCachePolicyProvider().IsResponseCacheable(context));
         }
 
         [Fact]
-        public void ResponseIsCacheable_PastExpiry_NotAllowed()
+        public void IsResponseCacheable_PastExpiry_NotAllowed()
         {
             var context = TestUtils.CreateTestContext();
             context.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
@@ -304,11 +304,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.TypedResponseHeaders.Date = utcNow;
             context.ResponseTime = DateTimeOffset.MaxValue;
 
-            Assert.False(new CacheabilityValidator().IsResponseCacheable(context));
+            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
         }
 
         [Fact]
-        public void ResponseIsCacheable_MaxAgeOverridesExpiry_ToAllowed()
+        public void IsResponseCacheable_MaxAgeOverridesExpiry_ToAllowed()
         {
             var utcNow = DateTimeOffset.UtcNow;
             var context = TestUtils.CreateTestContext();
@@ -322,11 +322,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.TypedResponseHeaders.Date = utcNow;
             context.ResponseTime = utcNow + TimeSpan.FromSeconds(9);
 
-            Assert.True(new CacheabilityValidator().IsResponseCacheable(context));
+            Assert.True(new ResponseCachePolicyProvider().IsResponseCacheable(context));
         }
 
         [Fact]
-        public void ResponseIsCacheable_MaxAgeOverridesExpiry_ToNotAllowed()
+        public void IsResponseCacheable_MaxAgeOverridesExpiry_ToNotAllowed()
         {
             var utcNow = DateTimeOffset.UtcNow;
             var context = TestUtils.CreateTestContext();
@@ -340,11 +340,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.TypedResponseHeaders.Date = utcNow;
             context.ResponseTime = utcNow + TimeSpan.FromSeconds(11);
 
-            Assert.False(new CacheabilityValidator().IsResponseCacheable(context));
+            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
         }
 
         [Fact]
-        public void ResponseIsCacheable_SharedMaxAgeOverridesMaxAge_ToAllowed()
+        public void IsResponseCacheable_SharedMaxAgeOverridesMaxAge_ToAllowed()
         {
             var utcNow = DateTimeOffset.UtcNow;
             var context = TestUtils.CreateTestContext();
@@ -358,11 +358,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.TypedResponseHeaders.Date = utcNow;
             context.ResponseTime = utcNow + TimeSpan.FromSeconds(11);
 
-            Assert.True(new CacheabilityValidator().IsResponseCacheable(context));
+            Assert.True(new ResponseCachePolicyProvider().IsResponseCacheable(context));
         }
 
         [Fact]
-        public void ResponseIsCacheable_SharedMaxAgeOverridesMaxAge_ToNotFresh()
+        public void IsResponseCacheable_SharedMaxAgeOverridesMaxAge_ToNotFresh()
         {
             var utcNow = DateTimeOffset.UtcNow;
             var context = TestUtils.CreateTestContext();
@@ -376,22 +376,22 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.TypedResponseHeaders.Date = utcNow;
             context.ResponseTime = utcNow + TimeSpan.FromSeconds(6);
 
-            Assert.False(new CacheabilityValidator().IsResponseCacheable(context));
+            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
         }
 
         [Fact]
-        public void EntryIsFresh_NoCachedCacheControl_FallsbackToEmptyCacheControl()
+        public void IsCachedEntryFresh_NoCachedCacheControl_FallsbackToEmptyCacheControl()
         {
             var utcNow = DateTimeOffset.UtcNow;
             var context = TestUtils.CreateTestContext();
             context.ResponseTime = DateTimeOffset.MaxValue;
             context.CachedResponseHeaders = new ResponseHeaders(new HeaderDictionary());
 
-            Assert.True(new CacheabilityValidator().IsCachedEntryFresh(context));
+            Assert.True(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
         }
 
         [Fact]
-        public void EntryIsFresh_NoExpiryRequirements_IsFresh()
+        public void IsCachedEntryFresh_NoExpiryRequirements_IsFresh()
         {
             var utcNow = DateTimeOffset.UtcNow;
             var context = TestUtils.CreateTestContext();
@@ -404,11 +404,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 }
             };
 
-            Assert.True(new CacheabilityValidator().IsCachedEntryFresh(context));
+            Assert.True(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
         }
 
         [Fact]
-        public void EntryIsFresh_PastExpiry_IsNotFresh()
+        public void IsCachedEntryFresh_PastExpiry_IsNotFresh()
         {
             var context = TestUtils.CreateTestContext();
             context.ResponseTime = DateTimeOffset.MaxValue;
@@ -421,11 +421,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Expires = DateTimeOffset.UtcNow
             };
 
-            Assert.False(new CacheabilityValidator().IsCachedEntryFresh(context));
+            Assert.False(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
         }
 
         [Fact]
-        public void EntryIsFresh_MaxAgeOverridesExpiry_ToFresh()
+        public void IsCachedEntryFresh_MaxAgeOverridesExpiry_ToFresh()
         {
             var utcNow = DateTimeOffset.UtcNow;
             var context = TestUtils.CreateTestContext();
@@ -441,11 +441,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Expires = utcNow
             };
 
-            Assert.True(new CacheabilityValidator().IsCachedEntryFresh(context));
+            Assert.True(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
         }
 
         [Fact]
-        public void EntryIsFresh_MaxAgeOverridesExpiry_ToNotFresh()
+        public void IsCachedEntryFresh_MaxAgeOverridesExpiry_ToNotFresh()
         {
             var utcNow = DateTimeOffset.UtcNow;
             var context = TestUtils.CreateTestContext();
@@ -461,11 +461,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Expires = utcNow
             };
 
-            Assert.False(new CacheabilityValidator().IsCachedEntryFresh(context));
+            Assert.False(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
         }
 
         [Fact]
-        public void EntryIsFresh_SharedMaxAgeOverridesMaxAge_ToFresh()
+        public void IsCachedEntryFresh_SharedMaxAgeOverridesMaxAge_ToFresh()
         {
             var utcNow = DateTimeOffset.UtcNow;
             var context = TestUtils.CreateTestContext();
@@ -482,11 +482,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Expires = utcNow
             };
 
-            Assert.True(new CacheabilityValidator().IsCachedEntryFresh(context));
+            Assert.True(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
         }
 
         [Fact]
-        public void EntryIsFresh_SharedMaxAgeOverridesMaxAge_ToNotFresh()
+        public void IsCachedEntryFresh_SharedMaxAgeOverridesMaxAge_ToNotFresh()
         {
             var utcNow = DateTimeOffset.UtcNow;
             var context = TestUtils.CreateTestContext();
@@ -503,11 +503,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Expires = utcNow
             };
 
-            Assert.False(new CacheabilityValidator().IsCachedEntryFresh(context));
+            Assert.False(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
         }
 
         [Fact]
-        public void EntryIsFresh_MinFreshReducesFreshness_ToNotFresh()
+        public void IsCachedEntryFresh_MinFreshReducesFreshness_ToNotFresh()
         {
             var context = TestUtils.CreateTestContext();
             context.TypedRequestHeaders.CacheControl = new CacheControlHeaderValue()
@@ -524,11 +524,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             };
             context.CachedEntryAge = TimeSpan.FromSeconds(3);
 
-            Assert.False(new CacheabilityValidator().IsCachedEntryFresh(context));
+            Assert.False(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
         }
 
         [Fact]
-        public void EntryIsFresh_RequestMaxAgeRestrictAge_ToNotFresh()
+        public void IsCachedEntryFresh_RequestMaxAgeRestrictAge_ToNotFresh()
         {
             var context = TestUtils.CreateTestContext();
             context.TypedRequestHeaders.CacheControl = new CacheControlHeaderValue()
@@ -544,11 +544,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             };
             context.CachedEntryAge = TimeSpan.FromSeconds(6);
 
-            Assert.False(new CacheabilityValidator().IsCachedEntryFresh(context));
+            Assert.False(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
         }
 
         [Fact]
-        public void EntryIsFresh_MaxStaleOverridesFreshness_ToFresh()
+        public void IsCachedEntryFresh_MaxStaleOverridesFreshness_ToFresh()
         {
             var context = TestUtils.CreateTestContext();
             context.TypedRequestHeaders.CacheControl = new CacheControlHeaderValue()
@@ -566,11 +566,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             };
             context.CachedEntryAge = TimeSpan.FromSeconds(6);
 
-            Assert.True(new CacheabilityValidator().IsCachedEntryFresh(context));
+            Assert.True(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
         }
 
         [Fact]
-        public void EntryIsFresh_MustRevalidateOverridesRequestMaxStale_ToNotFresh()
+        public void IsCachedEntryFresh_MustRevalidateOverridesRequestMaxStale_ToNotFresh()
         {
             var context = TestUtils.CreateTestContext();
             context.TypedRequestHeaders.CacheControl = new CacheControlHeaderValue()
@@ -589,11 +589,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             };
             context.CachedEntryAge = TimeSpan.FromSeconds(6);
 
-            Assert.False(new CacheabilityValidator().IsCachedEntryFresh(context));
+            Assert.False(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
         }
 
         [Fact]
-        public void EntryIsFresh_IgnoresRequestVerificationWhenSpecified()
+        public void IsCachedEntryFresh_IgnoresRequestVerificationWhenSpecified()
         {
             var context = TestUtils.CreateTestContext();
             context.TypedRequestHeaders.CacheControl = new CacheControlHeaderValue()
@@ -611,7 +611,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             };
             context.CachedEntryAge = TimeSpan.FromSeconds(3);
 
-            Assert.True(new CacheabilityValidator().IsCachedEntryFresh(context));
+            Assert.True(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
         }
     }
 }

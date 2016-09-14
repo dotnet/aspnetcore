@@ -8,14 +8,14 @@ namespace Microsoft.AspNetCore.ResponseCaching
 {
     public class CachedResponse
     {
-        public string BodyKeyPrefix { get; internal set; }
+        public string BodyKeyPrefix { get; set; }
 
-        public DateTimeOffset Created { get; internal set; }
+        public DateTimeOffset Created { get; set; }
 
-        public int StatusCode { get; internal set; }
+        public int StatusCode { get; set; }
 
-        public IHeaderDictionary Headers { get; internal set; } = new HeaderDictionary();
+        public IHeaderDictionary Headers { get; set; } = new HeaderDictionary();
 
-        public byte[] Body { get; internal set; }
+        public byte[] Body { get; set; }
     }
 }

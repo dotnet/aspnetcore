@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static class ResponseCachingServiceCollectionExtensions
+    public static class ResponseCacheServiceCollectionExtensions
     {
         public static IServiceCollection AddMemoryResponseCache(this IServiceCollection services)
         {
@@ -18,8 +18,8 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddMemoryCache();
-            services.AddResponseCachingServices();
-            services.TryAdd(ServiceDescriptor.Singleton<IResponseCache, MemoryResponseCache>());
+            services.AddResponseCacheServices();
+            services.TryAdd(ServiceDescriptor.Singleton<IResponseCacheStore, MemoryResponseCacheStore>());
 
             return services;
         }
@@ -32,16 +32,16 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddDistributedMemoryCache();
-            services.AddResponseCachingServices();
-            services.TryAdd(ServiceDescriptor.Singleton<IResponseCache, DistributedResponseCache>());
+            services.AddResponseCacheServices();
+            services.TryAdd(ServiceDescriptor.Singleton<IResponseCacheStore, DistributedResponseCacheStore>());
 
             return services;
         }
 
-        private static IServiceCollection AddResponseCachingServices(this IServiceCollection services)
+        private static IServiceCollection AddResponseCacheServices(this IServiceCollection services)
         {
-            services.TryAdd(ServiceDescriptor.Singleton<ICacheKeyProvider, CacheKeyProvider>());
-            services.TryAdd(ServiceDescriptor.Singleton<ICacheabilityValidator, CacheabilityValidator>());
+            services.TryAdd(ServiceDescriptor.Singleton<IResponseCacheKeyProvider, ResponseCacheKeyProvider>());
+            services.TryAdd(ServiceDescriptor.Singleton<IResponseCachePolicyProvider, ResponseCachePolicyProvider>());
 
             return services;
         }

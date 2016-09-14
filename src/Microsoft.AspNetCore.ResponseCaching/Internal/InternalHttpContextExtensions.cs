@@ -8,18 +8,18 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
     internal static class InternalHttpContextExtensions
     {
-        internal static void AddResponseCachingFeature(this HttpContext httpContext)
+        internal static void AddResponseCacheFeature(this HttpContext httpContext)
         {
-            if (httpContext.GetResponseCachingFeature() != null)
+            if (httpContext.GetResponseCacheFeature() != null)
             {
-                throw new InvalidOperationException($"Another instance of {nameof(ResponseCachingFeature)} already exists. Only one instance of {nameof(ResponseCachingMiddleware)} can be configured for an application.");
+                throw new InvalidOperationException($"Another instance of {nameof(ResponseCacheFeature)} already exists. Only one instance of {nameof(ResponseCacheMiddleware)} can be configured for an application.");
             }
-            httpContext.Features.Set(new ResponseCachingFeature());
+            httpContext.Features.Set(new ResponseCacheFeature());
         }
 
-        internal static void RemoveResponseCachingFeature(this HttpContext httpContext)
+        internal static void RemoveResponseCacheFeature(this HttpContext httpContext)
         {
-            httpContext.Features.Set<ResponseCachingFeature>(null);
+            httpContext.Features.Set<ResponseCacheFeature>(null);
         }
     }
 }

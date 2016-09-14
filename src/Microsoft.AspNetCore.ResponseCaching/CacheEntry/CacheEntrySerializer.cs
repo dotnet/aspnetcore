@@ -42,8 +42,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         // Serialization Format
         // Format version (int)
-        // Type (char: 'B' for CachedResponseBody, 'R' for CachedResponse, 'V' for CachedVaryRules)
-        // Type-dependent data (see CachedResponse and CachedVaryRules)
+        // Type (char: 'B' for CachedResponseBody, 'R' for CachedResponse, 'V' for CachedVaryByRules)
+        // Type-dependent data (see CachedResponse and CachedVaryByRules)
         public static object Read(BinaryReader reader)
         {
             if (reader == null)
@@ -68,10 +68,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             }
             else if (type == 'V')
             {
-                return ReadCachedVaryRules(reader);
+                return ReadCachedVaryByRules(reader);
             }
 
-            // Unable to read as CachedResponse or CachedVaryRules
+            // Unable to read as CachedResponse or CachedVaryByRules
             return null;
         }
 
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         // Header(s) (comma separated string)
         // Params count
         // Param(s) (comma separated string)
-        private static CachedVaryRules ReadCachedVaryRules(BinaryReader reader)
+        private static CachedVaryByRules ReadCachedVaryByRules(BinaryReader reader)
         {
             var varyKeyPrefix = reader.ReadString();
 
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 param[index] = reader.ReadString();
             }
 
-            return new CachedVaryRules { VaryKeyPrefix = varyKeyPrefix, Headers = headers, Params = param };
+            return new CachedVaryByRules { VaryByKeyPrefix = varyKeyPrefix, Headers = headers, Params = param };
         }
 
         // See serialization format above
@@ -174,10 +174,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 writer.Write('R');
                 WriteCachedResponse(writer, entry as CachedResponse);
             }
-            else if (entry is CachedVaryRules)
+            else if (entry is CachedVaryByRules)
             {
                 writer.Write('V');
-                WriteCachedVaryRules(writer, entry as CachedVaryRules);
+                WriteCachedVaryByRules(writer, entry as CachedVaryByRules);
             }
             else
             {
@@ -218,18 +218,18 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         }
 
         // See serialization format above
-        private static void WriteCachedVaryRules(BinaryWriter writer, CachedVaryRules varyRules)
+        private static void WriteCachedVaryByRules(BinaryWriter writer, CachedVaryByRules varyByRules)
         {
-            writer.Write(varyRules.VaryKeyPrefix);
+            writer.Write(varyByRules.VaryByKeyPrefix);
 
-            writer.Write(varyRules.Headers.Count);
-            foreach (var header in varyRules.Headers)
+            writer.Write(varyByRules.Headers.Count);
+            foreach (var header in varyByRules.Headers)
             {
                 writer.Write(header);
             }
 
-            writer.Write(varyRules.Params.Count);
-            foreach (var param in varyRules.Params)
+            writer.Write(varyByRules.Params.Count);
+            foreach (var param in varyByRules.Params)
             {
                 writer.Write(param);
             }

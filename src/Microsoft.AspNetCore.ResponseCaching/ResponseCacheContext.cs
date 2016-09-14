@@ -11,7 +11,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
-    public class ResponseCachingContext
+    public class ResponseCacheContext
     {
         private static readonly CacheControlHeaderValue EmptyCacheControl = new CacheControlHeaderValue();
 
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         private CacheControlHeaderValue _requestCacheControl;
         private CacheControlHeaderValue _responseCacheControl;
 
-        internal ResponseCachingContext(
+        internal ResponseCacheContext(
             HttpContext httpContext)
         {
             HttpContext = httpContext;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         public bool ShouldCacheResponse { get; internal set; }
 
-        public string StorageBaseKey { get; internal set; }
+        public string BaseKey { get; internal set; }
 
         public string StorageVaryKey { get; internal set; }
 
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         public CachedResponse CachedResponse { get; internal set; }
 
-        public CachedVaryRules CachedVaryRules { get; internal set; }
+        public CachedVaryByRules CachedVaryByRules { get; internal set; }
 
         internal bool ResponseStarted { get; set; }
 

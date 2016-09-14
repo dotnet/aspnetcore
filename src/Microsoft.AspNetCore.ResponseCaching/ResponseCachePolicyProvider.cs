@@ -3,17 +3,16 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
-    public class CacheabilityValidator : ICacheabilityValidator
+    public class ResponseCachePolicyProvider : IResponseCachePolicyProvider
     {
         private static readonly CacheControlHeaderValue EmptyCacheControl = new CacheControlHeaderValue();
 
-        public virtual bool IsRequestCacheable(ResponseCachingContext context)
+        public virtual bool IsRequestCacheable(ResponseCacheContext context)
         {
             // Verify the method
             // TODO: RFC lists POST as a cacheable method when explicit freshness information is provided, but this is not widely implemented. Will revisit.
@@ -57,7 +56,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             return true;
         }
 
-        public virtual bool IsResponseCacheable(ResponseCachingContext context)
+        public virtual bool IsResponseCacheable(ResponseCacheContext context)
         {
             // Only cache pages explicitly marked with public
             // TODO: Consider caching responses that are not marked as public but otherwise cacheable?
@@ -150,7 +149,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             return true;
         }
 
-        public virtual bool IsCachedEntryFresh(ResponseCachingContext context)
+        public virtual bool IsCachedEntryFresh(ResponseCacheContext context)
         {
             var age = context.CachedEntryAge;
             var cachedControlHeaders = context.CachedResponseHeaders.CacheControl ?? EmptyCacheControl;
