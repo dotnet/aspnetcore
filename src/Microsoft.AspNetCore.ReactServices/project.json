@@ -9,7 +9,7 @@
     "defaultNamespace": "Microsoft.AspNetCore.ReactServices"
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0",
+    "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.1",
     "Microsoft.AspNetCore.SpaServices": "1.0.0-*"
   },
   "frameworks": {
