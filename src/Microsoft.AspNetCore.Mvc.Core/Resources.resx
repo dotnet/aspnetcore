@@ -370,4 +370,7 @@
   <data name="MiddlewareFilter_ServiceResolutionFail" xml:space="preserve">
     <value>Could not resolve a service of type '{0}' for the parameter '{1}' of method '{2}' on type '{3}'.</value>
   </data>
+  <data name="AuthorizeFilter_AuthorizationPolicyCannotBeCreated" xml:space="preserve">
+    <value>An {0} cannot be created without a valid instance of {1}.</value>
+  </data>
 </root>

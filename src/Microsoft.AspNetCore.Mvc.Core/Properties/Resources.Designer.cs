@@ -1211,7 +1211,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// Having multiple overloads of method '{0}' is not supported.
+        /// Multiple overloads of method '{0}' are not supported.
         /// </summary>
         internal static string MiddewareFilter_ConfigureMethodOverload
         {
@@ -1219,7 +1219,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// Having multiple overloads of method '{0}' is not supported.
+        /// Multiple overloads of method '{0}' are not supported.
         /// </summary>
         internal static string FormatMiddewareFilter_ConfigureMethodOverload(object p0)
         {
@@ -1259,7 +1259,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// '{0}' property cannot be null.
+        /// The '{0}' property cannot be null.
         /// </summary>
         internal static string MiddlewareFilterBuilder_NullApplicationBuilder
         {
@@ -1267,7 +1267,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// '{0}' property cannot be null.
+        /// The '{0}' property cannot be null.
         /// </summary>
         internal static string FormatMiddlewareFilterBuilder_NullApplicationBuilder(object p0)
         {
@@ -1304,6 +1304,22 @@ namespace Microsoft.AspNetCore.Mvc.Core
         internal static string FormatMiddlewareFilter_ServiceResolutionFail(object p0, object p1, object p2, object p3)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("MiddlewareFilter_ServiceResolutionFail"), p0, p1, p2, p3);
+        }
+
+        /// <summary>
+        /// An {0} cannot be created without a valid instance of {1}.
+        /// </summary>
+        internal static string AuthorizeFilter_AuthorizationPolicyCannotBeCreated
+        {
+            get { return GetString("AuthorizeFilter_AuthorizationPolicyCannotBeCreated"); }
+        }
+
+        /// <summary>
+        /// An {0} cannot be created without a valid instance of {1}.
+        /// </summary>
+        internal static string FormatAuthorizeFilter_AuthorizationPolicyCannotBeCreated(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AuthorizeFilter_AuthorizationPolicyCannotBeCreated"), p0, p1);
         }
 
         private static string GetString(string name, params string[] formatterNames)

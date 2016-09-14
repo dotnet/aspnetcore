@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 var controllerModelAuthData = controllerModel.Attributes.OfType<IAuthorizeData>().ToArray();
                 if (controllerModelAuthData.Length > 0)
                 {
-                    controllerModel.Filters.Add(GetFilter(controllerModelAuthData));
+                    controllerModel.Filters.Add(GetFilter(_policyProvider, controllerModelAuthData));
                 }
                 foreach (var attribute in controllerModel.Attributes.OfType<IAllowAnonymous>())
                 {
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     var actionModelAuthData = actionModel.Attributes.OfType<IAuthorizeData>().ToArray();
                     if (actionModelAuthData.Length > 0)
                     {
-                        actionModel.Filters.Add(GetFilter(actionModelAuthData));
+                        actionModel.Filters.Add(GetFilter(_policyProvider, actionModelAuthData));
                     }
 
                     foreach (var attribute in actionModel.Attributes.OfType<IAllowAnonymous>())
@@ -61,18 +61,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private AuthorizeFilter GetFilter(IEnumerable<IAuthorizeData> authData)
+        public static AuthorizeFilter GetFilter(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizeData> authData)
         {
             // The default policy provider will make the same policy for given input, so make it only once.
             // This will always execute syncronously.
-            if (_policyProvider.GetType() == typeof(DefaultAuthorizationPolicyProvider))
+            if (policyProvider.GetType() == typeof(DefaultAuthorizationPolicyProvider))
             {
-                var policy = AuthorizationPolicy.CombineAsync(_policyProvider, authData).GetAwaiter().GetResult();
+                var policy = AuthorizationPolicy.CombineAsync(policyProvider, authData).GetAwaiter().GetResult();
                 return new AuthorizeFilter(policy);
             }
             else
             {
-                return new AuthorizeFilter(_policyProvider, authData);
+                return new AuthorizeFilter(policyProvider, authData);
             }
         }
     }

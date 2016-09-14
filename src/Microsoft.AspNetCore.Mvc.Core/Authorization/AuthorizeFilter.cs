@@ -3,11 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 
@@ -18,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
     /// <see cref="AuthorizationPolicy"/>. MVC recognizes the <see cref="AuthorizeAttribute"/> and adds an instance of
     /// this filter to the associated action or controller.
     /// </summary>
-    public class AuthorizeFilter : IAsyncAuthorizationFilter
+    public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
     {
         /// <summary>
         /// Initialize a new <see cref="AuthorizeFilter"/> instance.
@@ -30,6 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             {
                 throw new ArgumentNullException(nameof(policy));
             }
+
             Policy = policy;
         }
 
@@ -39,18 +43,37 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/> to use to resolve policy names.</param>
         /// <param name="authorizeData">The <see cref="IAuthorizeData"/> to combine into an <see cref="IAuthorizeData"/>.</param>
         public AuthorizeFilter(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizeData> authorizeData)
+            : this(authorizeData)
         {
             if (policyProvider == null)
             {
                 throw new ArgumentNullException(nameof(policyProvider));
             }
+
+            PolicyProvider = policyProvider;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="AuthorizeFilter"/>.
+        /// </summary>
+        /// <param name="authorizeData">The <see cref="IAuthorizeData"/> to combine into an <see cref="IAuthorizeData"/>.</param>
+        public AuthorizeFilter(IEnumerable<IAuthorizeData> authorizeData)
+        {
             if (authorizeData == null)
             {
                 throw new ArgumentNullException(nameof(authorizeData));
             }
 
-            PolicyProvider = policyProvider;
             AuthorizeData = authorizeData;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="AuthorizeFilter"/>.
+        /// </summary>
+        /// <param name="policy">The name of the policy to require for authorization.</param>
+        public AuthorizeFilter(string policy)
+            : this(new[] { new AuthorizeAttribute(policy) })
+        {
         }
 
         /// <summary>
@@ -64,10 +87,15 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         public IEnumerable<IAuthorizeData> AuthorizeData { get; }
 
         /// <summary>
-        /// Gets the authorization policy to be used.  If null, the policy will be constructed via
-        /// AuthorizePolicy.CombineAsync(PolicyProvider, AuthorizeData)
+        /// Gets the authorization policy to be used.
         /// </summary>
+        /// <remarks>
+        /// If<c>null</c>, the policy will be constructed using
+        /// <see cref="AuthorizationPolicy.CombineAsync(IAuthorizationPolicyProvider, IEnumerable{IAuthorizeData})"/>.
+        /// </remarks>
         public AuthorizationPolicy Policy { get; private set; }
+
+        bool IFilterFactory.IsReusable => true;
 
         /// <inheritdoc />
         public virtual async Task OnAuthorizationAsync(AuthorizationFilterContext context)
@@ -77,18 +105,32 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var effectivePolicy = Policy ?? await AuthorizationPolicy.CombineAsync(PolicyProvider, AuthorizeData);
+            var effectivePolicy = Policy;
+            if (effectivePolicy == null)
+            {
+                if (PolicyProvider == null)
+                {
+                    throw new InvalidOperationException(
+                        Resources.FormatAuthorizeFilter_AuthorizationPolicyCannotBeCreated(
+                            nameof(AuthorizationPolicy),
+                            nameof(IAuthorizationPolicyProvider)));
+                }
+
+                effectivePolicy = await AuthorizationPolicy.CombineAsync(PolicyProvider, AuthorizeData);
+            }
+
             if (effectivePolicy == null)
             {
                 return;
             }
 
             // Build a ClaimsPrincipal with the Policy's required authentication types
-            if (effectivePolicy.AuthenticationSchemes != null && effectivePolicy.AuthenticationSchemes.Any())
+            if (effectivePolicy.AuthenticationSchemes != null && effectivePolicy.AuthenticationSchemes.Count > 0)
             {
                 ClaimsPrincipal newPrincipal = null;
-                foreach (var scheme in effectivePolicy.AuthenticationSchemes)
+                for (var i = 0; i < effectivePolicy.AuthenticationSchemes.Count; i++)
                 {
+                    var scheme = effectivePolicy.AuthenticationSchemes[i];
                     var result = await context.HttpContext.Authentication.AuthenticateAsync(scheme);
                     if (result != null)
                     {
@@ -117,6 +159,19 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             {
                 context.Result = new ChallengeResult(effectivePolicy.AuthenticationSchemes.ToArray());
             }
+        }
+
+        IFilterMetadata IFilterFactory.CreateInstance(IServiceProvider serviceProvider)
+        {
+            if (Policy != null || PolicyProvider != null)
+            {
+                // The filter is fully constructed. Use the current instance to authorize.
+                return this;
+            }
+
+            Debug.Assert(AuthorizeData != null);
+            var policyProvider = serviceProvider.GetRequiredService<IAuthorizationPolicyProvider>();
+            return AuthorizationApplicationModelProvider.GetFilter(policyProvider, AuthorizeData);
         }
     }
 }

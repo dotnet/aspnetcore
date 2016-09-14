@@ -27,6 +27,36 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         }
 
         [Fact]
+        public async Task AuthorizeFilter_CreatedWithAuthorizeData_ThrowsWhenOnAuthorizationAsyncIsCalled()
+        {
+            // Arrange
+            var authorizeFilter = new AuthorizeFilter(new[] { new AuthorizeAttribute() });
+            var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization());
+            var expected = "An AuthorizationPolicy cannot be created without a valid instance of " +
+                "IAuthorizationPolicyProvider.";
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => authorizeFilter.OnAuthorizationAsync(authorizationContext));
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
+        public async Task AuthorizeFilter_CreatedWithPolicy_ThrowsWhenOnAuthorizationAsyncIsCalled()
+        {
+            // Arrange
+            var authorizeFilter = new AuthorizeFilter(new[] { new AuthorizeAttribute() });
+            var authorizationContext = GetAuthorizationContext(services => services.AddAuthorization());
+            var expected = "An AuthorizationPolicy cannot be created without a valid instance of " +
+                "IAuthorizationPolicyProvider.";
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => authorizeFilter.OnAuthorizationAsync(authorizationContext));
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
         public async Task AuthorizeFilterCanAuthorizeNonAuthenticatedUser()
         {
             // Arrange
@@ -333,7 +363,98 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             Assert.NotNull(authorizationContext.Result);
         }
 
-        private Filters.AuthorizationFilterContext GetAuthorizationContext(
+        [Fact]
+        public void CreateInstance_ReturnsSelfIfPolicyIsSet()
+        {
+            // Arrange
+            var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder()
+                .RequireAssertion(_ => true)
+                .Build());
+            var factory = (IFilterFactory)authorizeFilter;
+
+            // Act
+            var result = factory.CreateInstance(new ServiceCollection().BuildServiceProvider());
+
+            // Assert
+            Assert.Same(authorizeFilter, result);
+        }
+
+        [Fact]
+        public void CreateInstance_ReturnsSelfIfPolicyProviderIsSet()
+        {
+            // Arrange
+            var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder()
+                .RequireAssertion(_ => true)
+                .Build());
+            var factory = (IFilterFactory)authorizeFilter;
+
+            // Act
+            var result = factory.CreateInstance(new ServiceCollection().BuildServiceProvider());
+
+            // Assert
+            Assert.Same(authorizeFilter, result);
+        }
+
+        public static TheoryData AuthorizeFiltersCreatedWithoutPolicyOrPolicyProvider
+        {
+            get
+            {
+                return new TheoryData<AuthorizeFilter>
+                {
+                    new AuthorizeFilter(new[] { new AuthorizeAttribute()}),
+                    new AuthorizeFilter("some-policy"),
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(AuthorizeFiltersCreatedWithoutPolicyOrPolicyProvider))]
+        public void CreateInstance_ReturnsNewFilterIfPolicyAndPolicyProviderAreNotSet(AuthorizeFilter authorizeFilter)
+        {
+            // Arrange
+            var factory = (IFilterFactory)authorizeFilter;
+            var serviceProvider = new ServiceCollection()
+                .AddOptions()
+                .AddAuthorization(options =>
+                {
+                    var policy = new AuthorizationPolicyBuilder()
+                        .RequireAssertion(_ => true)
+                        .Build();
+                    options.AddPolicy("some-policy", policy);
+                })
+                .BuildServiceProvider();
+
+            // Act
+            var result = factory.CreateInstance(serviceProvider);
+
+            // Assert
+            Assert.NotSame(authorizeFilter, result);
+            var actual = Assert.IsType<AuthorizeFilter>(result);
+            Assert.NotNull(actual.Policy);
+        }
+
+        [Theory]
+        [MemberData(nameof(AuthorizeFiltersCreatedWithoutPolicyOrPolicyProvider))]
+        public void CreateInstance_ReturnsNewFilterIfPolicyAndPolicyProviderAreNotSetAndCustomProviderIsUsed(
+            AuthorizeFilter authorizeFilter)
+        {
+            // Arrange
+            var factory = (IFilterFactory)authorizeFilter;
+            var policyProvider = Mock.Of<IAuthorizationPolicyProvider>();
+            var serviceProvider = new ServiceCollection()
+                .AddSingleton(policyProvider)
+                .BuildServiceProvider();
+
+            // Act
+            var result = factory.CreateInstance(serviceProvider);
+
+            // Assert
+            Assert.NotSame(authorizeFilter, result);
+            var actual = Assert.IsType<AuthorizeFilter>(result);
+            Assert.Same(policyProvider, actual.PolicyProvider);
+        }
+
+        private AuthorizationFilterContext GetAuthorizationContext(
             Action<ServiceCollection> registerServices,
             bool anonymous = false)
         {
