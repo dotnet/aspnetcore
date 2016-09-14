@@ -42,6 +42,11 @@ namespace Microsoft.AspNetCore.Builder
             // as fast as some theoretical future alternative.
             var nodeServicesOptions = new NodeServicesOptions(appBuilder.ApplicationServices);
             nodeServicesOptions.WatchFileExtensions = new string[] {}; // Don't watch anything
+            if (!string.IsNullOrEmpty(options.ProjectPath))
+            {
+                nodeServicesOptions.ProjectPath = options.ProjectPath;
+            }
+
             var nodeServices = NodeServicesFactory.CreateNodeServices(nodeServicesOptions);
 
             // Get a filename matching the middleware Node script
@@ -50,11 +55,9 @@ namespace Microsoft.AspNetCore.Builder
             var nodeScript = new StringAsTempFile(script); // Will be cleaned up on process exit
 
             // Tell Node to start the server hosting webpack-dev-middleware
-            var hostEnv = (IHostingEnvironment)appBuilder.ApplicationServices.GetService(typeof(IHostingEnvironment));
-            var projectPath = options.ProjectPath ?? hostEnv.ContentRootPath;
             var devServerOptions = new
             {
-                webpackConfigPath = Path.Combine(projectPath, options.ConfigFile ?? DefaultConfigFile),
+                webpackConfigPath = Path.Combine(nodeServicesOptions.ProjectPath, options.ConfigFile ?? DefaultConfigFile),
                 suppliedOptions = options
             };
             var devServerInfo =
