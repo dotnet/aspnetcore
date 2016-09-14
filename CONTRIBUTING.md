@@ -24,7 +24,7 @@ A description of all the repos is [here](https://github.com/aspnet/Home/wiki/Rep
 Our team members also monitor several other discussion forums:
 
 * [ASP.NET vNext forum](http://forums.asp.net/1255.aspx/1?ASP+NET+vNext)
-* [StackOverflow](http://stackoverflow.com/questions/tagged/asp.net-5) with the `asp.net-5` or `entity-framework-7` tag
+* [StackOverflow](http://stackoverflow.com/questions/tagged/asp.net-core) with the `asp.net-core` or `entity-framework-core` tag
 * [JabbR chat room](https://jabbr.net/#/rooms/aspnetvnext) for real-time discussions with the community and the people who work on the project
 
 
