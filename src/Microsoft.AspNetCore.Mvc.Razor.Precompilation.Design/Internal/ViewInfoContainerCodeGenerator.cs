@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -39,11 +40,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Internal
             }
 
             var factoryContent = $@"
-namespace {AssemblyPart.ViewInfoContainerNamespace}
+namespace {ViewsFeatureProvider.ViewInfoContainerNamespace}
 {{
-  public class {AssemblyPart.ViewInfoContainerTypeName} : global::{typeof(ViewInfoContainer).FullName}
+  public class {ViewsFeatureProvider.ViewInfoContainerTypeName} : global::{typeof(ViewInfoContainer).FullName}
   {{
-    public {AssemblyPart.ViewInfoContainerTypeName}() : base(new[]
+    public {ViewsFeatureProvider.ViewInfoContainerTypeName}() : base(new[]
     {{
         {precompiledViewsArray}
     }})

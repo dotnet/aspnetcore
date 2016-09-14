@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design.Internal
                 return 1;
             }
 
-            var precompileAssemblyName = $"{ApplicationNameOption.Value()}{AssemblyPart.PrecompiledViewsAssemblySuffix}";
+            var precompileAssemblyName = $"{ApplicationNameOption.Value()}{ViewsFeatureProvider.PrecompiledViewsAssemblySuffix}";
             var compilation = CompileViews(results, precompileAssemblyName);
             var resources = GetResources(results);
 
