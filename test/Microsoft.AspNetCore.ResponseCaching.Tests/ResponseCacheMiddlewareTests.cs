@@ -411,6 +411,18 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
+        public void FinalizeCachingHeaders_SplitsVaryHeaderByCommas()
+        {
+            var middleware = TestUtils.CreateTestMiddleware();
+            var context = TestUtils.CreateTestContext();
+            context.HttpContext.Response.Headers[HeaderNames.Vary] = "HeaderB, heaDera";
+
+            middleware.FinalizeCacheHeaders(context);
+
+            Assert.Equal(new StringValues(new[] { "HEADERA", "HEADERB" }), context.CachedVaryByRules.Headers);
+        }
+
+        [Fact]
         public async Task FinalizeCacheBody_StoreResponseBodySeparately_IfLargerThanLimit()
         {
             var store = new TestResponseCacheStore();
@@ -554,26 +566,35 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public void NormalizeStringValues_NormalizesCasingToUpper()
+        public void GetOrderCasingNormalizedStringValues_NormalizesCasingToUpper()
         {
             var uppercaseStrings = new StringValues(new[] { "STRINGA", "STRINGB" });
             var lowercaseStrings = new StringValues(new[] { "stringA", "stringB" });
 
-            var normalizedStrings = ResponseCacheMiddleware.GetNormalizedStringValues(lowercaseStrings);
+            var normalizedStrings = ResponseCacheMiddleware.GetOrderCasingNormalizedStringValues(lowercaseStrings);
 
             Assert.Equal(uppercaseStrings, normalizedStrings);
         }
 
         [Fact]
-        public void NormalizeStringValues_NormalizesOrder()
+        public void GetOrderCasingNormalizedStringValues_NormalizesOrder()
         {
             var orderedStrings = new StringValues(new[] { "STRINGA", "STRINGB" });
             var reverseOrderStrings = new StringValues(new[] { "STRINGB", "STRINGA" });
 
-            var normalizedStrings = ResponseCacheMiddleware.GetNormalizedStringValues(reverseOrderStrings);
+            var normalizedStrings = ResponseCacheMiddleware.GetOrderCasingNormalizedStringValues(reverseOrderStrings);
 
             Assert.Equal(orderedStrings, normalizedStrings);
         }
 
+        [Fact]
+        public void GetOrderCasingNormalizedStringValues_PreservesCommas()
+        {
+            var originalStrings = new StringValues(new[] { "STRINGA, STRINGB" });
+
+            var normalizedStrings = ResponseCacheMiddleware.GetOrderCasingNormalizedStringValues(originalStrings);
+
+            Assert.Equal(originalStrings, normalizedStrings);
+        }
     }
 }

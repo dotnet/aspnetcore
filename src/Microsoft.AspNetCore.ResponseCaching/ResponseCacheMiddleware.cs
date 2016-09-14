@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -211,7 +212,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
                 // Create the cache entry now
                 var response = context.HttpContext.Response;
-                var varyHeaderValue = response.Headers[HeaderNames.Vary];
+                var varyHeaderValue = new StringValues(response.Headers.GetCommaSeparatedValues(HeaderNames.Vary));
                 var varyParamsValue = context.HttpContext.GetResponseCacheFeature()?.VaryByParams ?? StringValues.Empty;
                 context.CachedResponseValidFor = context.ResponseCacheControlHeaderValue.SharedMaxAge ??
                     context.ResponseCacheControlHeaderValue.MaxAge ??
@@ -222,8 +223,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 if (!StringValues.IsNullOrEmpty(varyHeaderValue) || !StringValues.IsNullOrEmpty(varyParamsValue))
                 {
                     // Normalize order and casing of vary by rules
-                    var normalizedVaryHeaderValue = GetNormalizedStringValues(varyHeaderValue);
-                    var normalizedVaryParamsValue = GetNormalizedStringValues(varyParamsValue);
+                    var normalizedVaryHeaderValue = GetOrderCasingNormalizedStringValues(varyHeaderValue);
+                    var normalizedVaryParamsValue = GetOrderCasingNormalizedStringValues(varyParamsValue);
 
                     // Update vary rules if they are different
                     if (context.CachedVaryByRules == null ||
@@ -374,7 +375,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         }
 
         // Normalize order and casing
-        internal static StringValues GetNormalizedStringValues(StringValues stringValues)
+        internal static StringValues GetOrderCasingNormalizedStringValues(StringValues stringValues)
         {
             if (stringValues.Count == 1)
             {
