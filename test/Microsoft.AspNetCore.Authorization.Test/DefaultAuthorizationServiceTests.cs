@@ -20,11 +20,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             var services = new ServiceCollection();
             services.AddAuthorization();
             services.AddLogging();
-            services.AddOptions();
-            if (setupServices != null)
-            {
-                setupServices(services);
-            }
+            setupServices?.Invoke(services);
             return services.BuildServiceProvider().GetRequiredService<IAuthorizationService>();
         }
 
@@ -108,6 +104,72 @@ namespace Microsoft.AspNetCore.Authorization.Test
             // Assert
             Assert.True(allowed);
         }
+
+        public async Task Authorize_ShouldInvokeAllHandlersByDefault()
+        {
+            // Arrange
+            var handler1 = new FailHandler();
+            var handler2 = new FailHandler();
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                services.AddSingleton<IAuthorizationHandler>(handler1);
+                services.AddSingleton<IAuthorizationHandler>(handler2);
+                services.AddAuthorization(options =>
+                {
+                    options.AddPolicy("Custom", policy => policy.Requirements.Add(new CustomRequirement()));
+                });
+            });
+
+            // Act
+            var allowed = await authorizationService.AuthorizeAsync(new ClaimsPrincipal(), "Custom");
+
+            // Assert
+            Assert.False(allowed);
+            Assert.True(handler1.Invoked);
+            Assert.True(handler2.Invoked);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task Authorize_ShouldInvokeAllHandlersDependingOnSetting(bool invokeAllHandlers)
+        {
+            // Arrange
+            var handler1 = new FailHandler();
+            var handler2 = new FailHandler();
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                services.AddSingleton<IAuthorizationHandler>(handler1);
+                services.AddSingleton<IAuthorizationHandler>(handler2);
+                services.AddAuthorization(options =>
+                {
+                    options.InvokeHandlersAfterFailure = invokeAllHandlers;
+                    options.AddPolicy("Custom", policy => policy.Requirements.Add(new CustomRequirement()));
+                });
+            });
+
+            // Act
+            var allowed = await authorizationService.AuthorizeAsync(new ClaimsPrincipal(), "Custom");
+
+            // Assert
+            Assert.False(allowed);
+            Assert.True(handler1.Invoked);
+            Assert.Equal(invokeAllHandlers, handler2.Invoked);
+        }
+
+        private class FailHandler : IAuthorizationHandler
+        {
+            public bool Invoked { get; set; }
+
+            public Task HandleAsync(AuthorizationHandlerContext context)
+            {
+                Invoked = true;
+                context.Fail();
+                return Task.FromResult(0);
+            }
+        }
+
+
 
         [Fact]
         public async Task Authorize_ShouldFailWhenAllRequirementsNotHandled()
@@ -584,8 +646,11 @@ namespace Microsoft.AspNetCore.Authorization.Test
         public class CustomRequirement : IAuthorizationRequirement { }
         public class CustomHandler : AuthorizationHandler<CustomRequirement>
         {
+            public bool Invoked { get; set; }
+
             protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, CustomRequirement requirement)
             {
+                Invoked = true;
                 context.Succeed(requirement);
                 return Task.FromResult(0);
             }

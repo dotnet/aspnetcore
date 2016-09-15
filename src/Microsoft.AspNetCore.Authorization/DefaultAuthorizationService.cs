@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authorization
 {
@@ -16,6 +17,7 @@ namespace Microsoft.AspNetCore.Authorization
     /// </summary>
     public class DefaultAuthorizationService : IAuthorizationService
     {
+        private readonly AuthorizationOptions _options;
         private readonly IAuthorizationHandlerContextFactory _contextFactory;
         private readonly IAuthorizationEvaluator _evaluator;
         private readonly IAuthorizationPolicyProvider _policyProvider;
@@ -28,7 +30,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// <param name="policyProvider">The <see cref="IAuthorizationPolicyProvider"/> used to provide policies.</param>
         /// <param name="handlers">The handlers used to fulfill <see cref="IAuthorizationRequirement"/>s.</param>
         /// <param name="logger">The logger used to log messages, warnings and errors.</param>  
-        public DefaultAuthorizationService(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizationHandler> handlers, ILogger<DefaultAuthorizationService> logger) : this(policyProvider, handlers, logger, new DefaultAuthorizationHandlerContextFactory(), new DefaultAuthorizationEvaluator()) { }
+        public DefaultAuthorizationService(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizationHandler> handlers, ILogger<DefaultAuthorizationService> logger) : this(policyProvider, handlers, logger, new DefaultAuthorizationHandlerContextFactory(), new DefaultAuthorizationEvaluator(), Options.Create(new AuthorizationOptions())) { }
 
         /// <summary>
         /// Creates a new instance of <see cref="DefaultAuthorizationService"/>.
@@ -38,8 +40,13 @@ namespace Microsoft.AspNetCore.Authorization
         /// <param name="logger">The logger used to log messages, warnings and errors.</param>  
         /// <param name="contextFactory">The <see cref="IAuthorizationHandlerContextFactory"/> used to create the context to handle the authorization.</param>  
         /// <param name="evaluator">The <see cref="IAuthorizationEvaluator"/> used to determine if authorzation was successful.</param>  
-        public DefaultAuthorizationService(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizationHandler> handlers, ILogger<DefaultAuthorizationService> logger, IAuthorizationHandlerContextFactory contextFactory, IAuthorizationEvaluator evaluator)
+        /// <param name="options">The <see cref="AuthorizationOptions"/> used.</param>  
+        public DefaultAuthorizationService(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizationHandler> handlers, ILogger<DefaultAuthorizationService> logger, IAuthorizationHandlerContextFactory contextFactory, IAuthorizationEvaluator evaluator, IOptions<AuthorizationOptions> options)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
             if (policyProvider == null)
             {
                 throw new ArgumentNullException(nameof(policyProvider));
@@ -61,6 +68,7 @@ namespace Microsoft.AspNetCore.Authorization
                 throw new ArgumentNullException(nameof(evaluator));
             }
 
+            _options = options.Value;
             _handlers = handlers.ToArray();
             _policyProvider = policyProvider;
             _logger = logger;
@@ -89,6 +97,10 @@ namespace Microsoft.AspNetCore.Authorization
             foreach (var handler in _handlers)
             {
                 await handler.HandleAsync(authContext);
+                if (!_options.InvokeHandlersAfterFailure && authContext.HasFailed)
+                {
+                    break;
+                }
             }
 
             if (_evaluator.HasSucceeded(authContext))
