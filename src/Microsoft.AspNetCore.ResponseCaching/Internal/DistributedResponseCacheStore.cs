@@ -28,7 +28,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             }
             catch
             {
-                // TODO: Log error
                 return null;
             }
         }
@@ -39,10 +38,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             {
                 _cache.Remove(key);
             }
-            catch
-            {
-                // TODO: Log error
-            }
+            catch { }
         }
 
         public void Set(string key, object entry, TimeSpan validFor)
@@ -57,10 +53,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                         AbsoluteExpirationRelativeToNow = validFor
                     });
             }
-            catch
-            {
-                // TODO: Log error
-            }
+            catch { }
         }
     }
 }

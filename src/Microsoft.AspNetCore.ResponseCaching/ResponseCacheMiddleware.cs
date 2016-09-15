@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -104,7 +103,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
             else
             {
-                // TODO: Invalidate resources for successful unsafe methods? Required by RFC
                 await _next(httpContext);
             }
         }
@@ -158,10 +156,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 }
 
                 return true;
-            }
-            else
-            {
-                // TODO: Validate with endpoint instead
             }
 
             return false;
@@ -313,8 +307,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         internal void ShimResponseStream(ResponseCacheContext context)
         {
-            // TODO: Consider caching large responses on disk and serving them from there.
-
             // Shim response stream
             context.OriginalResponseStream = context.HttpContext.Response.Body;
             context.ResponseCacheStream = new ResponseCacheStream(context.OriginalResponseStream, _options.MaximumCachedBodySize);
@@ -327,7 +319,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 context.HttpContext.Features.Set<IHttpSendFileFeature>(new SendFileFeatureWrapper(context.OriginalSendFileFeature, context.ResponseCacheStream));
             }
 
-            // TODO: Move this temporary interface with endpoint to HttpAbstractions
             context.HttpContext.AddResponseCacheFeature();
         }
 
@@ -339,7 +330,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
             // Unshim IHttpSendFileFeature
             context.HttpContext.Features.Set(context.OriginalSendFileFeature);
 
-            // TODO: Move this temporary interface with endpoint to HttpAbstractions
             context.HttpContext.RemoveResponseCacheFeature();
         }
 

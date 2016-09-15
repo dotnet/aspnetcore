@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
-    // TODO: Temporary interface for endpoints to specify options for response caching
     public static class ResponseCacheHttpContextExtensions
     {
         public static ResponseCacheFeature GetResponseCacheFeature(this HttpContext httpContext)

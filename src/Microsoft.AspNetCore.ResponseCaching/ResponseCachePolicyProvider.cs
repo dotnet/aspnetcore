@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
         public virtual bool IsRequestCacheable(ResponseCacheContext context)
         {
             // Verify the method
-            // TODO: RFC lists POST as a cacheable method when explicit freshness information is provided, but this is not widely implemented. Will revisit.
             var request = context.HttpContext.Request;
             if (!string.Equals("GET", request.Method, StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals("HEAD", request.Method, StringComparison.OrdinalIgnoreCase))
@@ -24,14 +23,12 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
 
             // Verify existence of authorization headers
-            // TODO: The server may indicate that the response to these request are cacheable
             if (!StringValues.IsNullOrEmpty(request.Headers[HeaderNames.Authorization]))
             {
                 return false;
             }
 
             // Verify request cache-control parameters
-            // TODO: no-cache requests can be retrieved upon validation with origin
             if (!StringValues.IsNullOrEmpty(request.Headers[HeaderNames.CacheControl]))
             {
                 if (context.RequestCacheControlHeaderValue.NoCache)
@@ -52,14 +49,12 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 }
             }
 
-            // TODO: Verify global middleware settings? Explicit ignore list, range requests, etc.
             return true;
         }
 
         public virtual bool IsResponseCacheable(ResponseCacheContext context)
         {
             // Only cache pages explicitly marked with public
-            // TODO: Consider caching responses that are not marked as public but otherwise cacheable?
             if (!context.ResponseCacheControlHeaderValue.Public)
             {
                 return false;
@@ -72,7 +67,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
 
             // Check no-cache
-            // TODO: Handle no-cache with headers
             if (context.ResponseCacheControlHeaderValue.NoCache)
             {
                 return false;
@@ -93,8 +87,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 return false;
             }
 
-            // TODO: public MAY override the cacheability checks for private and status codes
-
             // Check private
             if (context.ResponseCacheControlHeaderValue.Private)
             {
@@ -102,14 +94,12 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
 
             // Check response code
-            // TODO: RFC also lists 203, 204, 206, 300, 301, 404, 405, 410, 414, and 501 as cacheable by default
             if (response.StatusCode != StatusCodes.Status200OK)
             {
                 return false;
             }
 
             // Check response freshness
-            // TODO: apparent age vs corrected age value
             if (context.TypedResponseHeaders.Date == null)
             {
                 if (context.ResponseCacheControlHeaderValue.SharedMaxAge == null &&
@@ -180,7 +170,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     // Request allows stale values
                     if (age < context.RequestCacheControlHeaderValue.MaxStaleLimit)
                     {
-                        // TODO: Add warning header indicating the response is stale
                         return true;
                     }
 

@@ -518,6 +518,70 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             }
         }
 
+        [Fact]
+        public async void ServesFreshContent_IfCachedVaryByUpdated_OnCacheMiss()
+        {
+            var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
+            {
+                context.Response.Headers[HeaderNames.Vary] = context.Request.Headers[HeaderNames.Pragma];
+                await TestUtils.TestRequestDelegate(context);
+            });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                client.DefaultRequestHeaders.From = "user@example.com";
+                client.DefaultRequestHeaders.Pragma.Clear();
+                client.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("From"));
+                client.DefaultRequestHeaders.MaxForwards = 1;
+                var initialResponse = await client.GetAsync("");
+                client.DefaultRequestHeaders.From = "user2@example.com";
+                client.DefaultRequestHeaders.Pragma.Clear();
+                client.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("Max-Forwards"));
+                client.DefaultRequestHeaders.MaxForwards = 2;
+                var otherResponse = await client.GetAsync("");
+                client.DefaultRequestHeaders.From = "user@example.com";
+                client.DefaultRequestHeaders.Pragma.Clear();
+                client.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("From"));
+                client.DefaultRequestHeaders.MaxForwards = 1;
+                var subsequentResponse = await client.GetAsync("");
+
+                await AssertResponseNotCachedAsync(initialResponse, subsequentResponse);
+            }
+        }
+
+        [Fact]
+        public async void ServesCachedContent_IfCachedVaryByNotUpdated_OnCacheMiss()
+        {
+            var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
+            {
+                context.Response.Headers[HeaderNames.Vary] = context.Request.Headers[HeaderNames.Pragma];
+                await TestUtils.TestRequestDelegate(context);
+            });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                client.DefaultRequestHeaders.From = "user@example.com";
+                client.DefaultRequestHeaders.Pragma.Clear();
+                client.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("From"));
+                client.DefaultRequestHeaders.MaxForwards = 1;
+                var initialResponse = await client.GetAsync("");
+                client.DefaultRequestHeaders.From = "user2@example.com";
+                client.DefaultRequestHeaders.Pragma.Clear();
+                client.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("From"));
+                client.DefaultRequestHeaders.MaxForwards = 2;
+                var otherResponse = await client.GetAsync("");
+                client.DefaultRequestHeaders.From = "user@example.com";
+                client.DefaultRequestHeaders.Pragma.Clear();
+                client.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("From"));
+                client.DefaultRequestHeaders.MaxForwards = 1;
+                var subsequentResponse = await client.GetAsync("");
+
+                await AssertResponseCachedAsync(initialResponse, subsequentResponse);
+            }
+        }
+
         private static async Task AssertResponseCachedAsync(HttpResponseMessage initialResponse, HttpResponseMessage subsequentResponse)
         {
             initialResponse.EnsureSuccessStatusCode();
