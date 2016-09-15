@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
@@ -21,7 +22,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 new DefaultBindingMetadataProvider(),
                 new DefaultValidationMetadataProvider(),
-                new DataAnnotationsMetadataProvider(stringLocalizerFactory),
+                new DataAnnotationsMetadataProvider(
+                    new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                    stringLocalizerFactory),
                 new DataMemberRequiredBindingMetadataProvider(),
             };
 
@@ -35,7 +38,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 new DefaultBindingMetadataProvider(),
                 new DefaultValidationMetadataProvider(),
-                new DataAnnotationsMetadataProvider(stringLocalizerFactory: null),
+                new DataAnnotationsMetadataProvider(
+                    new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                    stringLocalizerFactory: null),
                 new DataMemberRequiredBindingMetadataProvider(),
             };
 
@@ -70,7 +75,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                   {
                       new DefaultBindingMetadataProvider(),
                       new DefaultValidationMetadataProvider(),
-                      new DataAnnotationsMetadataProvider(stringLocalizerFactory: null),
+                      new DataAnnotationsMetadataProvider(
+                          new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                          stringLocalizerFactory: null),
                       detailsProvider
                   }),
                   new TestOptionsManager<MvcOptions>())

@@ -50,7 +50,9 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 throw new ArgumentNullException(nameof(options));
             }
 
-            options.ModelMetadataDetailsProviders.Add(new DataAnnotationsMetadataProvider(_stringLocalizerFactory));
+            options.ModelMetadataDetailsProviders.Add(new DataAnnotationsMetadataProvider(
+                _dataAnnotationLocalizationOptions,
+                _stringLocalizerFactory));
 
             options.ModelValidatorProviders.Add(new DataAnnotationsModelValidatorProvider(
                 _validationAttributeAdapterProvider,
