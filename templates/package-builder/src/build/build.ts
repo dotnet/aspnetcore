@@ -11,8 +11,8 @@ const isWindows = /^win/.test(process.platform);
 const textFileExtensions = ['.gitignore', 'template_gitignore', '.config', '.cs', '.cshtml', 'Dockerfile', '.html', '.js', '.json', '.jsx', '.md', '.nuspec', '.ts', '.tsx', '.xproj'];
 const yeomanGeneratorSource = './src/yeoman';
 
-const templates: { [key: string]: { dir: string, dotNetNewId: string, displayName: string } } = {
-    'angular-2': { dir: '../../templates/Angular2Spa/', dotNetNewId: 'Angular', displayName: 'Angular 2' },
+const templates: { [key: string]: { dir: string, dotNetNewId: string, displayName: string, forceInclusion?: RegExp } } = {
+    'angular-2': { dir: '../../templates/Angular2Spa/', dotNetNewId: 'Angular', displayName: 'Angular 2', forceInclusion: /^wwwroot\/dist\// },
     'knockout': { dir: '../../templates/KnockoutSpa/', dotNetNewId: 'Knockout', displayName: 'Knockout.js' },
     'react-redux': { dir: '../../templates/ReactReduxSpa/', dotNetNewId: 'ReactRedux', displayName: 'React.js and Redux' },
     'react': { dir: '../../templates/ReactSpa/', dotNetNewId: 'React', displayName: 'React.js' }
@@ -28,7 +28,7 @@ function writeFileEnsuringDirExists(root: string, filename: string, contents: st
     fs.writeFileSync(fullPath, contents);
 }
 
-function listFilesExcludingGitignored(root: string): string[] {
+function listFilesExcludingGitignored(root: string, forceInclusion: RegExp): string[] {
     // Note that the gitignore files, prior to be written by the generator, are called 'template_gitignore'
     // instead of '.gitignore'. This is a workaround for Yeoman doing strange stuff with .gitignore files
     // (it renames them to .npmignore, which is not helpful).
@@ -37,11 +37,11 @@ function listFilesExcludingGitignored(root: string): string[] {
         ? gitignore.compile(fs.readFileSync(gitIgnorePath, 'utf8'))
         : { accepts: () => true };
     return glob.sync('**/*', { cwd: root, dot: true, nodir: true })
-        .filter(fn => gitignoreEvaluator.accepts(fn));
+        .filter(fn => gitignoreEvaluator.accepts(fn) || (forceInclusion && forceInclusion.test(fn)));
 }
 
-function writeTemplate(sourceRoot: string, destRoot: string, contentReplacements: { from: RegExp, to: string }[], filenameReplacements: { from: RegExp, to: string }[]) {
-    listFilesExcludingGitignored(sourceRoot).forEach(fn => {
+function writeTemplate(sourceRoot: string, destRoot: string, contentReplacements: { from: RegExp, to: string }[], filenameReplacements: { from: RegExp, to: string }[], forceInclusion: RegExp) {
+    listFilesExcludingGitignored(sourceRoot, forceInclusion).forEach(fn => {
         let sourceContent = fs.readFileSync(path.join(sourceRoot, fn));
 
         // For text files, replace hardcoded values with template tags
@@ -89,7 +89,7 @@ function buildYeomanNpmPackage() {
     ];
     _.forEach(templates, (templateConfig, templateName) => {
         const outputDir = path.join(outputTemplatesRoot, templateName);
-        writeTemplate(templateConfig.dir, outputDir, contentReplacements, filenameReplacements);
+        writeTemplate(templateConfig.dir, outputDir, contentReplacements, filenameReplacements, templateConfig.forceInclusion);
     });
 
     // Also copy the generator files (that's the compiled .js files, plus all other non-.ts files)
@@ -125,7 +125,7 @@ function buildDotNetNewNuGetPackage() {
     _.forEach(templates, (templateConfig, templateName) => {
         const templateOutputDir = path.join(outputRoot, 'templates', templateName);
         const templateOutputProjectDir = path.join(templateOutputDir, sourceProjectName);
-        writeTemplate(templateConfig.dir, templateOutputProjectDir, contentReplacements, filenameReplacements);
+        writeTemplate(templateConfig.dir, templateOutputProjectDir, contentReplacements, filenameReplacements, templateConfig.forceInclusion);
 
         // Add a .netnew.json file
         fs.writeFileSync(path.join(templateOutputDir, '.netnew.json'), JSON.stringify({
@@ -145,7 +145,7 @@ function buildDotNetNewNuGetPackage() {
     const yeomanPackageVersion = JSON.parse(fs.readFileSync(path.join(yeomanGeneratorSource, 'package.json'), 'utf8')).version;
     writeTemplate('./src/dotnetnew', outputRoot, [
         { from: /\{version\}/g, to: yeomanPackageVersion },
-    ], []);
+    ], [], null);
     const nugetExe = path.join(process.cwd(), './bin/NuGet.exe');
     const nugetStartInfo = { cwd: outputRoot, stdio: 'inherit' };
     if (isWindows) {
@@ -158,6 +158,22 @@ function buildDotNetNewNuGetPackage() {
 
     // Clean up
     rimraf.sync('./tmp');
+}
+
+// TODO: Instead of just showing this warning, improve build script so it actually does build them
+// in the correct format. Can do this once we've moved away from using ASPNETCORE_ENVIRONMENT to
+// control the build output mode. The templates we warn about here are the ones where we ship some
+// files that wouldn't normally be under source control (e.g., /wwwroot/dist/*).
+const templatesWithForceIncludes = Object.getOwnPropertyNames(templates)
+    .filter(templateName => !!templates[templateName].forceInclusion);
+if (templatesWithForceIncludes.length > 0) {
+    console.warn(`
+---
+WARNING: Ensure that the following templates are already built in the configuration desired for publishing.
+For example, build the dist files in debug mode.
+TEMPLATES: ${templatesWithForceIncludes.join(', ')}
+---
+`);
 }
 
 buildYeomanNpmPackage();
