@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4D2B6A51-2F9F-44F5-8131-EA5CAC053652}"
 EndProject
@@ -56,6 +56,10 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Owin.Security.Interop.Test", "test\Microsoft.Owin.Security.Interop.Test\Microsoft.Owin.Security.Interop.Test.xproj", "{A2B5DC39-68D5-4145-A8CC-6AEAB7D33A24}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIdConnect.AzureAdSample", "samples\OpenIdConnect.AzureAdSample\OpenIdConnect.AzureAdSample.xproj", "{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.ChunkingCookieManager.Sources", "src\Microsoft.AspNetCore.ChunkingCookieManager.Sources\Microsoft.AspNetCore.ChunkingCookieManager.Sources.xproj", "{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.ChunkingCookieManager.Sources.Test", "test\Microsoft.AspNetCore.ChunkingCookieManager.Sources.Test\Microsoft.AspNetCore.ChunkingCookieManager.Sources.Test.xproj", "{51563775-C659-4907-9BAF-9995BAB87D01}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -325,6 +329,28 @@ Global
 		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}.Release|x86.ActiveCfg = Release|Any CPU
 		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}.Release|x86.Build.0 = Release|Any CPU
+		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Debug|x86.Build.0 = Debug|Any CPU
+		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Release|x86.ActiveCfg = Release|Any CPU
+		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Release|x86.Build.0 = Release|Any CPU
+		{51563775-C659-4907-9BAF-9995BAB87D01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51563775-C659-4907-9BAF-9995BAB87D01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51563775-C659-4907-9BAF-9995BAB87D01}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{51563775-C659-4907-9BAF-9995BAB87D01}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{51563775-C659-4907-9BAF-9995BAB87D01}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{51563775-C659-4907-9BAF-9995BAB87D01}.Debug|x86.Build.0 = Debug|Any CPU
+		{51563775-C659-4907-9BAF-9995BAB87D01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51563775-C659-4907-9BAF-9995BAB87D01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51563775-C659-4907-9BAF-9995BAB87D01}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{51563775-C659-4907-9BAF-9995BAB87D01}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{51563775-C659-4907-9BAF-9995BAB87D01}.Release|x86.ActiveCfg = Release|Any CPU
+		{51563775-C659-4907-9BAF-9995BAB87D01}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -352,5 +378,7 @@ Global
 		{A7922DD8-09F1-43E4-938B-CC523EA08898} = {4D2B6A51-2F9F-44F5-8131-EA5CAC053652}
 		{A2B5DC39-68D5-4145-A8CC-6AEAB7D33A24} = {7BF11F3A-60B6-4796-B504-579C67FFBA34}
 		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E} = {F8C0AA27-F3FB-4286-8E4C-47EF86B539FF}
+		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3} = {4D2B6A51-2F9F-44F5-8131-EA5CAC053652}
+		{51563775-C659-4907-9BAF-9995BAB87D01} = {7BF11F3A-60B6-4796-B504-579C67FFBA34}
 	EndGlobalSection
 EndGlobal

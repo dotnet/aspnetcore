@@ -1,0 +1,12 @@
+{
+  "version": "1.1.0-*",
+  "shared": "*.cs",
+  "dependencies": {
+    "Microsoft.AspNetCore.Http.Abstractions": "1.1.0-*",
+    "Microsoft.Net.Http.Headers": "1.1.0-*"
+  },
+  "frameworks": {
+    "net451": {},
+    "netstandard1.3": {}
+  }
+}

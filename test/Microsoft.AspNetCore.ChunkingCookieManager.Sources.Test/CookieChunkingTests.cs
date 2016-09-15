@@ -5,7 +5,7 @@ using System;
 using Microsoft.AspNetCore.Http;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Authentication.Cookies.Infrastructure
+namespace Microsoft.AspNetCore.Internal
 {
     public class CookieChunkingTests
     {

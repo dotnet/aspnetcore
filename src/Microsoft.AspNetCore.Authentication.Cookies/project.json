@@ -18,10 +18,15 @@
     "nowarn": [
       "CS1591"
     ],
-    "xmlDoc": true
+    "xmlDoc": true,
+    "define": [ "SECURITY" ]
   },
   "dependencies": {
     "Microsoft.AspNetCore.Authentication": "1.1.0-*",
+    "Microsoft.AspNetCore.ChunkingCookieManager.Sources": {
+      "version": "1.1.0-*",
+      "type": "build"
+    },
     "Microsoft.Extensions.Options": "1.1.0-*",
     "Microsoft.Extensions.TaskCache.Sources": {
       "version": "1.1.0-*",

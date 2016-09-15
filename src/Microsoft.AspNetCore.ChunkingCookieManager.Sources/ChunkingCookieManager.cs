@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
+// Keep the type public for Security repo as it would be a breaking change to change the accessor now.
+// Make this type internal for other repos as it could be used by multiple projects and having it public causes type conflicts.
+#if SECURITY
 namespace Microsoft.AspNetCore.Authentication.Cookies
 {
     /// <summary>
@@ -17,6 +20,16 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
     /// </summary>
     public class ChunkingCookieManager : ICookieManager
     {
+#else
+namespace Microsoft.AspNetCore.Internal
+{
+    /// <summary>
+    /// This handles cookies that are limited by per cookie length. It breaks down long cookies for responses, and reassembles them
+    /// from requests.
+    /// </summary>
+    internal class ChunkingCookieManager
+    {
+#endif
         private const string ChunkKeySuffix = "C";
         private const string ChunkCountPrefix = "chunks-";
 
@@ -96,7 +109,12 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                                 totalSize += chunks[i].Length;
                             }
                             throw new FormatException(
-                                string.Format(CultureInfo.CurrentCulture, Resources.Exception_ImcompleteChunkedCookie, chunkId - 1, chunksCount, totalSize));
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    "The chunked cookie is incomplete. Only {0} of the expected {1} chunks were found, totaling {2} characters. A client size limit may have been exceeded.",
+                                    chunkId - 1,
+                                    chunksCount,
+                                    totalSize));
                         }
                         // Missing chunk, abort by returning the original cookie value. It may have been a false positive?
                         return value;
@@ -162,7 +180,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 // 10 is the minimum data we want to put in an individual cookie, including the cookie chunk identifier "CXX".
                 // No room for data, we can't chunk the options and name
-                throw new InvalidOperationException(Resources.Exception_CookieLimitTooSmall);
+                throw new InvalidOperationException("The cookie key and options are larger than ChunksSize, leaving no room for data.");
             }
             else
             {
@@ -247,10 +265,10 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             }
 
             var responseHeaders = context.Response.Headers;
-            var existingValues = responseHeaders[Constants.Headers.SetCookie];
+            var existingValues = responseHeaders[HeaderNames.SetCookie];
             if (!StringValues.IsNullOrEmpty(existingValues))
             {
-                responseHeaders[Constants.Headers.SetCookie] = existingValues.Where(value => !rejectPredicate(value)).ToArray();
+                responseHeaders[HeaderNames.SetCookie] = existingValues.Where(value => !rejectPredicate(value)).ToArray();
             }
 
             AppendResponseCookie(
