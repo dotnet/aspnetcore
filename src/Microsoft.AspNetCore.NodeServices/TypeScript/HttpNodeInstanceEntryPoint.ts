@@ -80,9 +80,8 @@ exitWhenParentExits(parseInt(parsedArgs.parentPid));
 
 function readRequestBodyAsJson(request, callback) {
     let requestBodyAsString = '';
-    request
-        .on('data', chunk => { requestBodyAsString += chunk; })
-        .on('end', () => { callback(JSON.parse(requestBodyAsString)); });
+    request.on('data', chunk => { requestBodyAsString += chunk; });
+    request.on('end', () => { callback(JSON.parse(requestBodyAsString)); });
 }
 
 function respondWithError(res: http.ServerResponse, errorValue: any) {

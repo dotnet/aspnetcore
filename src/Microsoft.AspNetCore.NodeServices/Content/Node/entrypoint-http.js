@@ -128,9 +128,8 @@
 	ExitWhenParentExits_1.exitWhenParentExits(parseInt(parsedArgs.parentPid));
 	function readRequestBodyAsJson(request, callback) {
 	    var requestBodyAsString = '';
-	    request
-	        .on('data', function (chunk) { requestBodyAsString += chunk; })
-	        .on('end', function () { callback(JSON.parse(requestBodyAsString)); });
+	    request.on('data', function (chunk) { requestBodyAsString += chunk; });
+	    request.on('end', function () { callback(JSON.parse(requestBodyAsString)); });
 	}
 	function respondWithError(res, errorValue) {
 	    res.statusCode = 500;
