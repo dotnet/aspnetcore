@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             var services = new ServiceCollection();
             services.AddAuthorization();
             services.AddLogging();
+            services.AddOptions();
             setupServices?.Invoke(services);
             return services.BuildServiceProvider().GetRequiredService<IAuthorizationService>();
         }
