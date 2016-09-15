@@ -206,5 +206,29 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             Assert.Equal(0, buffer.Length);
             bufferSource.Verify(s => s.Return(It.IsAny<char[]>()), Times.Exactly(3));
         }
+
+        [Fact]
+        public void UseAfterClear_Works()
+        {
+            // Arrange
+            var buffer = new PagedCharBuffer(new CharArrayBufferSource());
+
+            // Act - 1
+            buffer.Append(new string('a', PagedCharBuffer.PageSize));
+            buffer.Append(new string('b', 10));
+            buffer.Clear();
+
+            // Assert - 1
+            Assert.Equal(0, buffer.Length);
+            Assert.Equal(1, buffer.Pages.Count);
+
+            // Act - 2
+            buffer.Append("efgh");
+
+            // Assert - 2
+            Assert.Equal(4, buffer.Length);
+            Assert.Equal(1, buffer.Pages.Count);
+            Assert.Equal(new[] { 'e', 'f', 'g', 'h' }, buffer.Pages[0].Take(buffer.Length));
+        }
     }
 }

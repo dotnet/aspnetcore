@@ -115,12 +115,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
 
             _charIndex = 0;
+            CurrentPage = Pages.Count > 0 ? Pages[0] : null;
         }
 
         private char[] GetCurrentPage()
         {
             if (CurrentPage == null ||
-                _charIndex == CurrentPage.Length)
+                _charIndex == PageSize)
             {
                 CurrentPage = NewPage();
                 _charIndex = 0;
