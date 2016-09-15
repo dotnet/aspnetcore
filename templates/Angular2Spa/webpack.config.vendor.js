@@ -29,6 +29,8 @@ module.exports = {
             '@angular/platform-browser-dynamic',
             '@angular/router',
             '@angular/platform-server',
+            'reflect-metadata',
+            'zone.js',
         ]
     },
     output: {
