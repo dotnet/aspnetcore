@@ -1,6 +1,12 @@
 {
-  "version": "0.2.0-*",
-  "description": "Implementation of WebListener, a successor to HttpListener. It is used in the WebListener server package.",
+  "version": "1.1.0-*",
+  "description": ".NET HTTP server that uses the Windows HTTP Server API.",
+  "packOptions": {
+    "tags": [
+      "netcore",
+      "weblistener"
+    ]
+  },
   "dependencies": {
     "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.Primitives": "1.1.0-*"
