@@ -168,27 +168,29 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public int GetCount { get; private set; }
         public int SetCount { get; private set; }
 
-        public object Get(string key)
+        public Task<object> GetAsync(string key)
         {
             GetCount++;
             try
             {
-                return _storage[key];
+                return Task.FromResult(_storage[key]);
             }
             catch
             {
-                return null;
+                return Task.FromResult<object>(null);
             }
         }
 
-        public void Remove(string key)
+        public Task RemoveAsync(string key)
         {
+            return TaskCache.CompletedTask;
         }
 
-        public void Set(string key, object entry, TimeSpan validFor)
+        public Task SetAsync(string key, object entry, TimeSpan validFor)
         {
             SetCount++;
             _storage[key] = entry;
+            return TaskCache.CompletedTask;
         }
     }
 }

@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
@@ -20,17 +22,18 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             _cache = cache;
         }
 
-        public object Get(string key)
+        public Task<object> GetAsync(string key)
         {
-            return _cache.Get(key);
+            return Task.FromResult(_cache.Get(key));
         }
 
-        public void Remove(string key)
+        public Task RemoveAsync(string key)
         {
             _cache.Remove(key);
+            return TaskCache.CompletedTask;
         }
 
-        public void Set(string key, object entry, TimeSpan validFor)
+        public Task SetAsync(string key, object entry, TimeSpan validFor)
         {
             _cache.Set(
                 key,
@@ -39,6 +42,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 {
                     AbsoluteExpirationRelativeToNow = validFor
                 });
+            return TaskCache.CompletedTask;
         }
     }
 }

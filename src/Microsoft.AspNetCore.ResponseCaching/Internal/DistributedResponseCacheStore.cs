@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
@@ -20,11 +21,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             _cache = cache;
         }
 
-        public object Get(string key)
+        public async Task<object> GetAsync(string key)
         {
             try
             {
-                return CacheEntrySerializer.Deserialize(_cache.Get(key));
+                return CacheEntrySerializer.Deserialize(await _cache.GetAsync(key));
             }
             catch
             {
@@ -32,20 +33,20 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             }
         }
 
-        public void Remove(string key)
+        public async Task RemoveAsync(string key)
         {
             try
             {
-                _cache.Remove(key);
+                await _cache.RemoveAsync(key);
             }
             catch { }
         }
 
-        public void Set(string key, object entry, TimeSpan validFor)
+        public async Task SetAsync(string key, object entry, TimeSpan validFor)
         {
             try
             {
-                _cache.Set(
+                await _cache.SetAsync(
                     key,
                     CacheEntrySerializer.Serialize(entry),
                     new DistributedCacheEntryOptions()

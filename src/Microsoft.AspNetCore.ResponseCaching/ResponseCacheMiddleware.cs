@@ -60,11 +60,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             _options = options.Value;
             _policyProvider = policyProvider;
             _keyProvider = keyProvider;
-            _onStartingCallback = state =>
-            {
-                OnResponseStarting((ResponseCacheContext)state);
-                return TaskCache.CompletedTask;
-            };
+            _onStartingCallback = state => OnResponseStartingAsync((ResponseCacheContext)state);
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -91,10 +87,10 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     await _next(httpContext);
 
                     // If there was no response body, check the response headers now. We can cache things like redirects.
-                    OnResponseStarting(context);
+                    await OnResponseStartingAsync(context);
 
                     // Finalize the cache entry
-                    FinalizeCacheBody(context);
+                    await FinalizeCacheBodyAsync(context);
                 }
                 finally
                 {
@@ -135,7 +131,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     response.Headers[HeaderNames.Age] = context.CachedEntryAge.TotalSeconds.ToString("F0", CultureInfo.InvariantCulture);
 
                     var body = context.CachedResponse.Body ??
-                        ((CachedResponseBody)_store.Get(context.CachedResponse.BodyKeyPrefix))?.Body;
+                        ((CachedResponseBody) await _store.GetAsync(context.CachedResponse.BodyKeyPrefix))?.Body;
 
                     // If the body is not found, something went wrong.
                     if (body == null)
@@ -164,7 +160,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         internal async Task<bool> TryServeFromCacheAsync(ResponseCacheContext context)
         {
             context.BaseKey = _keyProvider.CreateBaseKey(context);
-            var cacheEntry = _store.Get(context.BaseKey);
+            var cacheEntry = await _store.GetAsync(context.BaseKey);
 
             if (cacheEntry is CachedVaryByRules)
             {
@@ -173,7 +169,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
                 foreach (var varyKey in _keyProvider.CreateLookupVaryByKeys(context))
                 {
-                    cacheEntry = _store.Get(varyKey);
+                    cacheEntry = await _store.GetAsync(varyKey);
 
                     if (cacheEntry is CachedResponse && await TryServeCachedResponseAsync(context, (CachedResponse)cacheEntry))
                     {
@@ -196,7 +192,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             return false;
         }
 
-        internal void FinalizeCacheHeaders(ResponseCacheContext context)
+        internal async Task FinalizeCacheHeadersAsync(ResponseCacheContext context)
         {
             if (_policyProvider.IsResponseCacheable(context))
             {
@@ -232,7 +228,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     }
 
                     // Always overwrite the CachedVaryByRules to update the expiry information
-                    _store.Set(context.BaseKey, context.CachedVaryByRules, context.CachedResponseValidFor);
+                    await _store.SetAsync(context.BaseKey, context.CachedVaryByRules, context.CachedResponseValidFor);
 
                     context.StorageVaryKey = _keyProvider.CreateStorageVaryByKey(context);
                 }
@@ -265,7 +261,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
         }
 
-        internal void FinalizeCacheBody(ResponseCacheContext context)
+        internal async Task FinalizeCacheBodyAsync(ResponseCacheContext context)
         {
             if (context.ShouldCacheResponse &&
                 context.ResponseCacheStream.BufferingEnabled &&
@@ -275,32 +271,36 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 if (context.ResponseCacheStream.BufferedStream.Length >= _options.MinimumSplitBodySize)
                 {
                     // Store response and response body separately
-                    _store.Set(context.StorageVaryKey ?? context.BaseKey, context.CachedResponse, context.CachedResponseValidFor);
+                    await _store.SetAsync(context.StorageVaryKey ?? context.BaseKey, context.CachedResponse, context.CachedResponseValidFor);
 
                     var cachedResponseBody = new CachedResponseBody()
                     {
                         Body = context.ResponseCacheStream.BufferedStream.ToArray()
                     };
 
-                    _store.Set(context.CachedResponse.BodyKeyPrefix, cachedResponseBody, context.CachedResponseValidFor);
+                    await _store.SetAsync(context.CachedResponse.BodyKeyPrefix, cachedResponseBody, context.CachedResponseValidFor);
                 }
                 else
                 {
                     // Store response and response body together
                     context.CachedResponse.Body = context.ResponseCacheStream.BufferedStream.ToArray();
-                    _store.Set(context.StorageVaryKey ?? context.BaseKey, context.CachedResponse, context.CachedResponseValidFor);
+                    await _store.SetAsync(context.StorageVaryKey ?? context.BaseKey, context.CachedResponse, context.CachedResponseValidFor);
                 }
             }
         }
 
-        internal void OnResponseStarting(ResponseCacheContext context)
+        internal Task OnResponseStartingAsync(ResponseCacheContext context)
         {
             if (!context.ResponseStarted)
             {
                 context.ResponseStarted = true;
                 context.ResponseTime = _options.SystemClock.UtcNow;
 
-                FinalizeCacheHeaders(context);
+                return FinalizeCacheHeadersAsync(context);
+            }
+            else
+            {
+                return TaskCache.CompletedTask;
             }
         }
 

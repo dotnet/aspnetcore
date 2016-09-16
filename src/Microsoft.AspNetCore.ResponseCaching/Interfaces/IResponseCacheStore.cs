@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
     public interface IResponseCacheStore
     {
-        object Get(string key);
-        void Set(string key, object entry, TimeSpan validFor);
-        void Remove(string key);
+        Task<object> GetAsync(string key);
+        Task SetAsync(string key, object entry, TimeSpan validFor);
+        Task RemoveAsync(string key);
     }
 }
