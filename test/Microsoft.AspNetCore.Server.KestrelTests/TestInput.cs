@@ -71,7 +71,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
         }
 
-        public void SetTimeout(long milliseconds)
+        public void SetTimeout(long milliseconds, TimeoutAction timeoutAction)
+        {
+        }
+
+        public void ResetTimeout(long milliseconds, TimeoutAction timeoutAction)
         {
         }
 

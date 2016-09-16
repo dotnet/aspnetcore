@@ -36,7 +36,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
                 };
-                var connectionContext = new ConnectionContext(listenerContext);
+                var connectionContext = new ConnectionContext(listenerContext)
+                {
+                    ConnectionControl = Mock.Of<IConnectionControl>()
+                };
 
                 var frame = new Frame<object>(application: null, context: connectionContext);
                 frame.Reset();
@@ -84,7 +87,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
                 };
-                var connectionContext = new ConnectionContext(listenerContext);
+                var connectionContext = new ConnectionContext(listenerContext)
+                {
+                    ConnectionControl = Mock.Of<IConnectionControl>()
+                };
 
                 var frame = new Frame<object>(application: null, context: connectionContext);
                 frame.Reset();
@@ -131,7 +137,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
                 };
-                var connectionContext = new ConnectionContext(listenerContext);
+                var connectionContext = new ConnectionContext(listenerContext)
+                {
+                    ConnectionControl = Mock.Of<IConnectionControl>()
+                };
 
                 var frame = new Frame<object>(application: null, context: connectionContext);
                 frame.Reset();
@@ -178,7 +187,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
                 };
-                var connectionContext = new ConnectionContext(listenerContext);
+                var connectionContext = new ConnectionContext(listenerContext)
+                {
+                    ConnectionControl = Mock.Of<IConnectionControl>()
+                };
 
                 var frame = new Frame<object>(application: null, context: connectionContext);
                 frame.Reset();
@@ -564,7 +576,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
                 };
-                var connectionContext = new ConnectionContext(listenerContext);
+                var connectionContext = new ConnectionContext(listenerContext)
+                {
+                    ConnectionControl = Mock.Of<IConnectionControl>()
+                };
 
                 var frame = new Frame<object>(application: null, context: connectionContext);
                 frame.Reset();
@@ -633,7 +648,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
                 };
-                var connectionContext = new ConnectionContext(listenerContext);
+                var connectionContext = new ConnectionContext(listenerContext)
+                {
+                    ConnectionControl = Mock.Of<IConnectionControl>()
+                };
 
                 var frame = new Frame<object>(application: null, context: connectionContext);
                 frame.Reset();
@@ -931,7 +949,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Fact]
-        public void TakeStartLineDisablesKeepAliveTimeoutOnFirstByteAvailable()
+        public void TakeStartLineStartsRequestHeadersTimeoutOnFirstByteAvailable()
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
@@ -960,12 +978,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
 
                 frame.TakeStartLine(socketInput);
-                connectionControl.Verify(cc => cc.CancelTimeout());
+                var expectedRequestHeadersTimeout = (long)serviceContext.ServerOptions.Limits.RequestHeadersTimeout.TotalMilliseconds;
+                connectionControl.Verify(cc => cc.ResetTimeout(expectedRequestHeadersTimeout, TimeoutAction.SendTimeoutResponse));
             }
         }
 
         [Fact]
-        public void TakeStartLineDoesNotDisableKeepAliveTimeoutIfNoDataAvailable()
+        public void TakeStartLineDoesNotStartRequestHeadersTimeoutIfNoDataAvailable()
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
@@ -991,7 +1010,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 frame.Reset();
 
                 frame.TakeStartLine(socketInput);
-                connectionControl.Verify(cc => cc.CancelTimeout(), Times.Never);
+                connectionControl.Verify(cc => cc.ResetTimeout(It.IsAny<long>(), It.IsAny<TimeoutAction>()), Times.Never);
             }
         }
 
@@ -1132,7 +1151,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
                 };
-                var connectionContext = new ConnectionContext(listenerContext);
+                var connectionContext = new ConnectionContext(listenerContext)
+                {
+                    ConnectionControl = Mock.Of<IConnectionControl>()
+                };
                 var frame = new Frame<object>(application: null, context: connectionContext);
                 frame.Reset();
                 frame.InitializeHeaders();
@@ -1228,7 +1250,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 frame.Reset();
 
                 var requestProcessingTask = frame.RequestProcessingAsync();
-                connectionControl.Verify(cc => cc.SetTimeout((long)serviceContext.ServerOptions.Limits.KeepAliveTimeout.TotalMilliseconds));
+
+                var expectedKeepAliveTimeout = (long)serviceContext.ServerOptions.Limits.KeepAliveTimeout.TotalMilliseconds;
+                connectionControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutAction.CloseConnection));
 
                 frame.Stop();
                 socketInput.IncomingFin();

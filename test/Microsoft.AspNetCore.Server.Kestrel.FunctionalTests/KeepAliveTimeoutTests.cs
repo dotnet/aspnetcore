@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,17 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     "",
                     "");
                 await ReceiveResponse(connection, server.Context);
-
-                await Task.Delay(LongDelay);
-
-                await Assert.ThrowsAsync<IOException>(async () =>
-                {
-                    await connection.Send(
-                        "GET / HTTP/1.1",
-                        "",
-                        "");
-                    await ReceiveResponse(connection, server.Context);
-                });
+                await connection.WaitForConnectionClose().TimeoutAfter(LongDelay);
             }
         }
 
@@ -143,13 +132,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             using (var connection = new TestConnection(server.Port))
             {
                 await Task.Delay(LongDelay);
-                await Assert.ThrowsAsync<IOException>(async () =>
-                {
-                    await connection.Send(
-                        "GET / HTTP/1.1",
-                        "",
-                        "");
-                });
+                await connection.WaitForConnectionClose().TimeoutAfter(LongDelay);
             }
         }
 

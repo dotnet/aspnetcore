@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 while (!_requestProcessingStopping)
                 {
-                    ConnectionControl.SetTimeout(_keepAliveMilliseconds);
+                    ConnectionControl.SetTimeout(_keepAliveMilliseconds, TimeoutAction.CloseConnection);
 
                     while (!_requestProcessingStopping && TakeStartLine(SocketInput) != RequestLineStatus.Done)
                     {
@@ -141,7 +141,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         }
                     }
 
-                    Reset();
+                    // Don't lose request rejection state
+                    if (!_requestRejected)
+                    {
+                        Reset();
+                    }
                 }
             }
             catch (BadHttpRequestException ex)

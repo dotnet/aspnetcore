@@ -71,6 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private int _requestHeadersParsed;
 
         protected readonly long _keepAliveMilliseconds;
+        private readonly long _requestHeadersTimeoutMilliseconds;
 
         public Frame(ConnectionContext context)
         {
@@ -84,6 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             FrameControl = this;
             _keepAliveMilliseconds = (long)ServerOptions.Limits.KeepAliveTimeout.TotalMilliseconds;
+            _requestHeadersTimeoutMilliseconds = (long)ServerOptions.Limits.RequestHeadersTimeout.TotalMilliseconds;
         }
 
         public ConnectionContext ConnectionContext { get; }
@@ -372,6 +374,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 _requestProcessingStopping = true;
             }
+
             return _requestProcessingTask ?? TaskCache.CompletedTask;
         }
 
@@ -648,7 +651,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         protected Task TryProduceInvalidRequestResponse()
         {
-            if (_requestProcessingStatus == RequestProcessingStatus.RequestStarted && _requestRejected)
+            if (_requestRejected)
             {
                 if (FrameRequestHeaders == null || FrameResponseHeaders == null)
                 {
@@ -833,7 +836,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     return RequestLineStatus.Empty;
                 }
 
-                ConnectionControl.CancelTimeout();
+                if (_requestProcessingStatus == RequestProcessingStatus.RequestPending)
+                {
+                    ConnectionControl.ResetTimeout(_requestHeadersTimeoutMilliseconds, TimeoutAction.SendTimeoutResponse);
+                }
 
                 _requestProcessingStatus = RequestProcessingStatus.RequestStarted;
 
@@ -1102,6 +1108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         }
                         else if (ch == '\n')
                         {
+                            ConnectionControl.CancelTimeout();
                             consumed = end;
                             return true;
                         }
@@ -1274,12 +1281,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             throw ex;
         }
 
+        public void SetBadRequestState(RequestRejectionReason reason)
+        {
+            SetBadRequestState(BadHttpRequestException.GetException(reason));
+        }
+
         public void SetBadRequestState(BadHttpRequestException ex)
         {
-            StatusCode = ex.StatusCode;
+            // Setting status code will throw if response has already started
+            if (!HasResponseStarted)
+            {
+                StatusCode = ex.StatusCode;
+            }
+
             _keepAlive = false;
             _requestProcessingStopping = true;
             _requestRejected = true;
+
             Log.ConnectionBadRequest(ConnectionId, ex);
         }
 

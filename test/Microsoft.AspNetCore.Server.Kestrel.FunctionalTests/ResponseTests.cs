@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
 using Xunit;
@@ -174,6 +175,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Despite the error, the response had already started
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                     Assert.NotNull(ex);
+                }
+            }
+        }
+
+        // https://github.com/aspnet/KestrelHttpServer/pull/1111/files#r80584475 explains the reason for this test.
+        [Fact]
+        public async Task SingleErrorResponseSentWhenAppSwallowsBadRequestException()
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                try
+                {
+                    await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1);
+                }
+                catch (BadHttpRequestException)
+                {
+                }
+            }, new TestServiceContext()))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "g",
+                        "");
+                    await connection.ReceiveForcedEnd(
+                        "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
                 }
             }
         }

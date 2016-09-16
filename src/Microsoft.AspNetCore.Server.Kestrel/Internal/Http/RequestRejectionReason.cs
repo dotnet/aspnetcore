@@ -34,5 +34,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         HeadersExceedMaxTotalSize,
         MissingCRInHeaderLine,
         TooManyHeaders,
+        RequestTimeout,
     }
 }

@@ -102,6 +102,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 case RequestRejectionReason.TooManyHeaders:
                     ex = new BadHttpRequestException("Request contains too many headers.", 431);
                     break;
+                case RequestRejectionReason.RequestTimeout:
+                    ex = new BadHttpRequestException("Request timed out.", 408);
+                    break;
                 default:
                     ex = new BadHttpRequestException("Bad request.", 400);
                     break;
