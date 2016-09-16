@@ -33,6 +33,9 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             TypeNameHandling = TypeNameHandling.None
         };
 
+        private readonly static int streamBufferSize = 16 * 1024;
+        private readonly static UTF8Encoding utf8EncodingWithoutBom = new UTF8Encoding(false);
+
         private readonly SemaphoreSlim _connectionCreationSemaphore = new SemaphoreSlim(1);
         private bool _connectionHasFailed;
         private StreamConnection _physicalConnection;
@@ -89,7 +92,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                 virtualConnection = _virtualConnectionClient.OpenVirtualConnection();
 
                 // Send request
-                await WriteJsonLineAsync(virtualConnection, invocationInfo, cancellationToken);
+                WriteJsonLine(virtualConnection, invocationInfo, cancellationToken);
 
                 // Determine what kind of response format is expected
                 if (typeof(T) == typeof(Stream))
@@ -169,11 +172,20 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             base.Dispose(disposing);
         }
 
-        private static async Task WriteJsonLineAsync(Stream stream, object serializableObject, CancellationToken cancellationToken)
+        private static void WriteJsonLine(Stream stream, object serializableObject, CancellationToken cancellationToken)
         {
-            var json = JsonConvert.SerializeObject(serializableObject, jsonSerializerSettings);
-            var bytes = Encoding.UTF8.GetBytes(json + '\n');
-            await stream.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
+            using (var streamWriter = new StreamWriter(stream, utf8EncodingWithoutBom, streamBufferSize, true))
+            using (var jsonWriter = new JsonTextWriter(streamWriter))
+            {
+                jsonWriter.CloseOutput = false;
+
+                var serializer = JsonSerializer.Create(jsonSerializerSettings);
+                serializer.Serialize(jsonWriter, serializableObject);
+                jsonWriter.Flush();
+
+                streamWriter.WriteLine();
+                streamWriter.Flush();
+            }
         }
 
         private static async Task<T> ReadJsonAsync<T>(Stream stream, CancellationToken cancellationToken)
@@ -184,7 +196,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
         private static async Task<byte[]> ReadAllBytesAsync(Stream input, CancellationToken cancellationToken)
         {
-            byte[] buffer = new byte[16 * 1024];
+            byte[] buffer = new byte[streamBufferSize];
 
             using (var ms = new MemoryStream())
             {
