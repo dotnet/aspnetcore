@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host.Internal
             Writer.Write("[")
               .Write(typeof(HtmlAttributeNotBoundAttribute).FullName)
               .WriteParameterSeparator()
-              .Write($"global::{_context.ViewContextTypeName}")
+              .Write($"global::{_context.ViewContextAttributeTypeName}")
               .WriteLine("]");
 
             Writer.WriteAutoPropertyDeclaration(

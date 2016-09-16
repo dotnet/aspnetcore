@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host.Internal
             InvokeAsyncMethodName = "InvokeAsync";
             IViewComponentHelperTypeName = "Microsoft.AspNetCore.Mvc.IViewComponentHelper";
             IViewContextAwareTypeName = "Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware";
+            ViewContextAttributeTypeName = "Microsoft.AspNetCore.Mvc.ViewFeatures.ViewContextAttribute";
             ViewContextTypeName = "Microsoft.AspNetCore.Mvc.Rendering.ViewContext";
         }
 
@@ -44,5 +45,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host.Internal
         /// Name of the ViewContext type for view execution.
         /// </summary>
         public string ViewContextTypeName { get; set; }
+
+        /// <summary>
+        /// Name of the ViewContextAttribute type for view execution.
+        /// </summary>
+        public string ViewContextAttributeTypeName { get; set; }
     }
 }
