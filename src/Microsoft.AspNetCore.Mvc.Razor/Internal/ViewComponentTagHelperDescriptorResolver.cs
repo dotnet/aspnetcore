@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class ViewComponentTagHelperDescriptorResolver : TagHelperDescriptorResolver
     {
-        ViewComponentTagHelperDescriptorFactory _descriptorFactory;
+        private readonly ViewComponentTagHelperDescriptorFactory _descriptorFactory;
 
         public ViewComponentTagHelperDescriptorResolver(
             IViewComponentDescriptorProvider viewComponentDescriptorProvider)

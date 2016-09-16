@@ -9,26 +9,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class CompositeTagHelperDescriptorResolver : ITagHelperDescriptorResolver
     {
-        public IList<TagHelperDescriptorResolver> _resolvers;
+        private readonly TagHelperDescriptorResolver _tagHelperDescriptorResolver;
+        private readonly ViewComponentTagHelperDescriptorResolver _viewComponentTagHelperDescriptorResolver;
 
         public CompositeTagHelperDescriptorResolver(
             TagHelperDescriptorResolver tagHelperDescriptorResolver,
             ViewComponentTagHelperDescriptorResolver viewComponentTagHelperDescriptorResolver)
         {
-            _resolvers = new List<TagHelperDescriptorResolver>();
-            _resolvers.Add(tagHelperDescriptorResolver);
-            _resolvers.Add(viewComponentTagHelperDescriptorResolver);
+            _tagHelperDescriptorResolver = tagHelperDescriptorResolver;
+            _viewComponentTagHelperDescriptorResolver = viewComponentTagHelperDescriptorResolver;
         }
 
         public IEnumerable<TagHelperDescriptor> Resolve(TagHelperDescriptorResolutionContext resolutionContext)
         {
             var descriptors = new List<TagHelperDescriptor>();
 
-            foreach (var resolver in _resolvers)
-            {
-                var currentDescriptors = resolver.Resolve(resolutionContext);
-                descriptors.AddRange(currentDescriptors);
-            }
+            descriptors.AddRange(_tagHelperDescriptorResolver.Resolve(resolutionContext));
+            descriptors.AddRange(_viewComponentTagHelperDescriptorResolver.Resolve(resolutionContext));
 
             return descriptors;
         }

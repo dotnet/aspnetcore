@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host.Internal
         public string ViewContextTypeName { get; set; }
 
         /// <summary>
-        /// Name of the ViewContextAttribute type for view execution.
+        /// Name of the ViewContextAttribute type.
         /// </summary>
         public string ViewContextAttributeTypeName { get; set; }
     }
