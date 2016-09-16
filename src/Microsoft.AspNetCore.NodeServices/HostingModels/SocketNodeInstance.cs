@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                 virtualConnection = _virtualConnectionClient.OpenVirtualConnection();
 
                 // Send request
-                WriteJsonLine(virtualConnection, invocationInfo, cancellationToken);
+                WriteJsonLine(virtualConnection, invocationInfo);
 
                 // Determine what kind of response format is expected
                 if (typeof(T) == typeof(Stream))
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
             base.Dispose(disposing);
         }
 
-        private static void WriteJsonLine(Stream stream, object serializableObject, CancellationToken cancellationToken)
+        private static void WriteJsonLine(Stream stream, object serializableObject)
         {
             using (var streamWriter = new StreamWriter(stream, utf8EncodingWithoutBom, streamBufferSize, true))
             using (var jsonWriter = new JsonTextWriter(streamWriter))
