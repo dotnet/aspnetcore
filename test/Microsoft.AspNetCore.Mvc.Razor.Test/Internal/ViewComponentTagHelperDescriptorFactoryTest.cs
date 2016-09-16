@@ -5,11 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Razor.Host;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Test.ViewComponentTagHelpers
+namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
 {
     public class ViewComponentTagHelperDescriptorFactoryTest
     {
