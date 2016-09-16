@@ -201,7 +201,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
             if (_policyProvider.IsResponseCacheable(context))
             {
                 context.ShouldCacheResponse = true;
-                context.BaseKey = _keyProvider.CreateBaseKey(context);
 
                 // Create the cache entry now
                 var response = context.HttpContext.Response;
@@ -230,9 +229,10 @@ namespace Microsoft.AspNetCore.ResponseCaching
                             Headers = normalizedVaryHeaderValue,
                             Params = normalizedVaryParamsValue
                         };
-
-                        _store.Set(context.BaseKey, context.CachedVaryByRules, context.CachedResponseValidFor);
                     }
+
+                    // Always overwrite the CachedVaryByRules to update the expiry information
+                    _store.Set(context.BaseKey, context.CachedVaryByRules, context.CachedResponseValidFor);
 
                     context.StorageVaryKey = _keyProvider.CreateStorageVaryByKey(context);
                 }

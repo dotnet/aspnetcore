@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public void FinalizeCacheHeaders_UpdateCachedVaryByRules_IfNotEquivalentToPrevious()
+        public async Task FinalizeCacheHeaders_UpdateCachedVaryByRules_IfNotEquivalentToPrevious()
         {
             var store = new TestResponseCacheStore();
             var middleware = TestUtils.CreateTestMiddleware(store);
@@ -336,6 +336,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             };
             context.CachedVaryByRules = cachedVaryByRules;
 
+            await middleware.TryServeFromCacheAsync(context);
             middleware.FinalizeCacheHeaders(context);
 
             Assert.Equal(1, store.SetCount);
@@ -343,7 +344,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public void FinalizeCacheHeaders_DoNotUpdateCachedVaryByRules_IfEquivalentToPrevious()
+        public async Task FinalizeCacheHeaders_DoNotUpdateCachedVaryByRules_IfEquivalentToPrevious()
         {
             var store = new TestResponseCacheStore();
             var middleware = TestUtils.CreateTestMiddleware(store);
@@ -360,9 +361,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             };
             context.CachedVaryByRules = cachedVaryByRules;
 
+            await middleware.TryServeFromCacheAsync(context);
             middleware.FinalizeCacheHeaders(context);
 
-            Assert.Equal(0, store.SetCount);
+            // An update to the cache is always made but the entry should be the same
+            Assert.Equal(1, store.SetCount);
             Assert.Same(cachedVaryByRules, context.CachedVaryByRules);
         }
 
@@ -411,12 +414,13 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public void FinalizeCachingHeaders_SplitsVaryHeaderByCommas()
+        public async Task FinalizeCacheHeaders_SplitsVaryHeaderByCommas()
         {
             var middleware = TestUtils.CreateTestMiddleware();
             var context = TestUtils.CreateTestContext();
             context.HttpContext.Response.Headers[HeaderNames.Vary] = "HeaderB, heaDera";
 
+            await middleware.TryServeFromCacheAsync(context);
             middleware.FinalizeCacheHeaders(context);
 
             Assert.Equal(new StringValues(new[] { "HEADERA", "HEADERB" }), context.CachedVaryByRules.Headers);
