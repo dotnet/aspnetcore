@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     {
         [ConditionalTheory]
         [MemberData(nameof(OneToTen))]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Test failures pending investigation.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Tests fail on OS X due to low file descriptor limit.")]
         public async Task OneToTenThreads(int threadCount)
         {
             var hostBuilder = new WebHostBuilder()
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         return context.Response.WriteAsync("Hello World");
                     });
-                });            
+                });
 
             using (var host = hostBuilder.Build())
             {
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         var requestTask = client.GetStringAsync($"http://localhost:{host.GetPort()}/");
                         requestTasks.Add(requestTask);
                     }
-                    
+
                     foreach (var result in await Task.WhenAll(requestTasks))
                     {
                         Assert.Equal("Hello World", result);
