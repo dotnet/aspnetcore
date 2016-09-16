@@ -181,8 +181,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     }
                 }
             }
-
-            if (cacheEntry is CachedResponse && await TryServeCachedResponseAsync(context, (CachedResponse)cacheEntry))
+            else if (cacheEntry is CachedResponse && await TryServeCachedResponseAsync(context, (CachedResponse)cacheEntry))
             {
                 return true;
             }
