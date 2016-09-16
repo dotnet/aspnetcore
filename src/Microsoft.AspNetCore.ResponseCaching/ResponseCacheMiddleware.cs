@@ -355,7 +355,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     }
                 }
             }
-            else if ((cachedResponseHeaders.LastModified ?? cachedResponseHeaders.Date) <= context.TypedRequestHeaders.IfUnmodifiedSince)
+            else if (context.TypedRequestHeaders.IfUnmodifiedSince != null && (cachedResponseHeaders.LastModified ?? cachedResponseHeaders.Date) <= context.TypedRequestHeaders.IfUnmodifiedSince)
             {
                 return true;
             }
