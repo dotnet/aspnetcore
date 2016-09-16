@@ -12,7 +12,43 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
     public class LocalizationTest
     {
         private static readonly string _applicationPath = Path.Combine("test", "LocalizationWebsite");
-        
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData(RuntimeFlavor.Clr, "http://localhost:5070/", RuntimeArchitecture.x64)]
+        public Task Localization_ResourcesInClassLibrary_ReturnLocalizedValue_Windows(
+            RuntimeFlavor runtimeFlavor,
+            string applicationBaseUrl,
+            RuntimeArchitecture runtimeArchitecture)
+        {
+            var testRunner = new TestRunner(_applicationPath);
+            return testRunner.RunTestAndVerifyResponse(
+                runtimeFlavor,
+                runtimeArchitecture,
+                applicationBaseUrl,
+                "ResourcesInClassLibrary",
+                "fr-FR",
+                "Bonjour from ResourcesClassLibraryNoAttribute Bonjour from ResourcesClassLibraryNoAttribute Bonjour from ResourcesClassLibraryWithAttribute Bonjour from ResourcesClassLibraryWithAttribute");
+        }
+
+        [Theory]
+        [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5071/", RuntimeArchitecture.x64)]
+        public Task Localization_ResourcesInClassLibrary_ReturnLocalizedValue_AllOS(
+            RuntimeFlavor runtimeFlavor,
+            string applicationBaseUrl,
+            RuntimeArchitecture runtimeArchitecture)
+        {
+            var testRunner = new TestRunner(_applicationPath);
+            return testRunner.RunTestAndVerifyResponse(
+                runtimeFlavor,
+                runtimeArchitecture,
+                applicationBaseUrl,
+                "ResourcesInClassLibrary",
+                "fr-FR",
+                "Bonjour from ResourcesClassLibraryNoAttribute Bonjour from ResourcesClassLibraryNoAttribute Bonjour from ResourcesClassLibraryWithAttribute Bonjour from ResourcesClassLibraryWithAttribute");
+        }
+
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
@@ -30,7 +66,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 applicationBaseUrl,
                 "ResourcesInFolder",
                 "fr-FR",
-                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
+                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Bonjour from Test in resources folder");
         }
 
         [ConditionalTheory]
@@ -50,7 +86,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 applicationBaseUrl,
                 "ResourcesInFolder",
                 "fr-FR-test",
-                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
+                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Bonjour from Test in resources folder");
         }
 
         [ConditionalTheory]
@@ -70,7 +106,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 applicationBaseUrl,
                 "ResourcesInFolder",
                 "fr-FR-test-again-too-deep-to-work",
-                "Hello Hello Hello");
+                "Hello Hello Hello Hello");
         }
 
         [ConditionalFact]
@@ -85,7 +121,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 "http://localhost:5072",
                 "ResourcesInFolder",
                 "fr-FR",
-                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
+                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Bonjour from Test in resources folder");
         }
 
         [ConditionalFact]
@@ -100,7 +136,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 "http://localhost:5072",
                 "ResourcesInFolder",
                 "fr-FR-test",
-                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
+                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Bonjour from Test in resources folder");
         }
 
         [ConditionalFact]
@@ -115,7 +151,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 "http://localhost:5073/",
                 "ResourcesInFolder",
                 "fr-FR",
-                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
+                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Bonjour from Test in resources folder");
         }
 
         [ConditionalFact]
@@ -130,7 +166,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 "http://localhost:5073/",
                 "ResourcesInFolder",
                 "fr-FR-test",
-                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
+                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Bonjour from Test in resources folder");
         }
 
         [ConditionalTheory]

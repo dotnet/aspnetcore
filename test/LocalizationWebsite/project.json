@@ -9,7 +9,9 @@
     "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
     "Microsoft.Extensions.Configuration.CommandLine": "1.1.0-*",
     "Microsoft.Extensions.Localization": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.1.0-*"
+    "Microsoft.Extensions.Logging.Console": "1.1.0-*",
+    "ResourcesClassLibraryNoAttribute": "1.0.0-*",
+    "ResourcesClassLibraryWithAttribute": "1.0.0-*"
   },
   "frameworks": {
     "netcoreapp1.0": {

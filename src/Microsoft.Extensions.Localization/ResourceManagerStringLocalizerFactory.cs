@@ -14,12 +14,17 @@ namespace Microsoft.Extensions.Localization
     /// <summary>
     /// An <see cref="IStringLocalizerFactory"/> that creates instances of <see cref="ResourceManagerStringLocalizer"/>.
     /// </summary>
+    /// <remarks>
+    /// <see cref="ResourceManagerStringLocalizerFactory"/> offers multiple ways to set the relative path of
+    /// resources to be used. They are, in order of precedence:
+    /// <see cref="ResourceLocationAttribute"/> -> <see cref="LocalizationOptions.ResourcesPath"/> -> the project root.
+    /// </remarks>
     public class ResourceManagerStringLocalizerFactory : IStringLocalizerFactory
     {
         private readonly IResourceNamesCache _resourceNamesCache = new ResourceNamesCache();
         private readonly ConcurrentDictionary<string, ResourceManagerStringLocalizer> _localizerCache =
             new ConcurrentDictionary<string, ResourceManagerStringLocalizer>();
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly string _applicationName;
         private readonly string _resourcesRelativePath;
 
         /// <summary>
@@ -41,7 +46,7 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(localizationOptions));
             }
 
-            _hostingEnvironment = hostingEnvironment;
+            _applicationName = hostingEnvironment.ApplicationName;
             _resourcesRelativePath = localizationOptions.Value.ResourcesPath ?? string.Empty;
             if (!string.IsNullOrEmpty(_resourcesRelativePath))
             {
@@ -62,7 +67,7 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(typeInfo));
             }
 
-            return GetResourcePrefix(typeInfo, _hostingEnvironment.ApplicationName, _resourcesRelativePath);
+            return GetResourcePrefix(typeInfo, new AssemblyName(typeInfo.Assembly.FullName).Name, _resourcesRelativePath);
         }
 
         /// <summary>
@@ -106,9 +111,16 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(baseResourceName));
             }
 
-            var locationPath = baseNamespace == _hostingEnvironment.ApplicationName ?
-                baseNamespace + "." + _resourcesRelativePath :
-                baseNamespace + ".";
+            if (string.IsNullOrEmpty(baseNamespace))
+            {
+                throw new ArgumentNullException(nameof(baseNamespace));
+            }
+
+            var assemblyName = new AssemblyName(baseNamespace);
+            var assembly = Assembly.Load(assemblyName);
+            var resourceLocation = GetResourcePath(assembly);
+            var locationPath = baseNamespace + "." + resourceLocation;
+
             baseResourceName = locationPath + TrimPrefix(baseResourceName, baseNamespace + ".");
 
             return baseResourceName;
@@ -129,17 +141,12 @@ namespace Microsoft.Extensions.Localization
 
             var typeInfo = resourceSource.GetTypeInfo();
             var assembly = typeInfo.Assembly;
+            var assemblyName = new AssemblyName(assembly.FullName);
+            var resourcePath = GetResourcePath(assembly);
 
-            // Re-root the base name if a resources path is set
-            var baseName = GetResourcePrefix(typeInfo);
+            var baseName = GetResourcePrefix(typeInfo, assemblyName.Name, resourcePath);
 
-            return _localizerCache.GetOrAdd(baseName, _ =>
-                new ResourceManagerStringLocalizer(
-                    new ResourceManager(baseName, assembly),
-                    assembly,
-                    baseName,
-                    _resourceNamesCache)
-            );
+            return _localizerCache.GetOrAdd(baseName, _ => CreateResourceManagerStringLocalizer(assembly, baseName));
         }
 
         /// <summary>
@@ -155,19 +162,69 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(baseName));
             }
 
-            location = location ?? _hostingEnvironment.ApplicationName;
-
-            baseName = GetResourcePrefix(baseName, location);
+            location = location ?? _applicationName;
 
             return _localizerCache.GetOrAdd($"B={baseName},L={location}", _ =>
             {
-                var assembly = Assembly.Load(new AssemblyName(location));
-                return new ResourceManagerStringLocalizer(
-                    new ResourceManager(baseName, assembly),
-                    assembly,
-                    baseName,
-                    _resourceNamesCache);
+                var assemblyName = new AssemblyName(location);
+                var assembly = Assembly.Load(assemblyName);
+                baseName = GetResourcePrefix(baseName, location);
+
+                return CreateResourceManagerStringLocalizer(assembly, baseName);
             });
+        }
+
+        /// <summary>Creates a <see cref="ResourceManagerStringLocalizer"/> for the given input.</summary>
+        /// <param name="assembly">The assembly to create a <see cref="ResourceManagerStringLocalizer"/> for.</param>
+        /// <param name="baseName">The base name of the resource to search for.</param>
+        /// <returns>A <see cref="ResourceManagerStringLocalizer"/> for the given <paramref name="assembly"/> and <paramref name="baseName"/>.</returns>
+        /// <remarks>This method is virtual for testing purposes only.</remarks>
+        protected virtual ResourceManagerStringLocalizer CreateResourceManagerStringLocalizer(
+            Assembly assembly,
+            string baseName)
+        {
+            return new ResourceManagerStringLocalizer(
+                new ResourceManager(baseName, assembly),
+                assembly,
+                baseName,
+                _resourceNamesCache);
+        }
+
+        /// <summary>
+        /// Gets the resource prefix used to look up the resource.
+        /// </summary>
+        /// <param name="location">The general location of the resource.</param>
+        /// <param name="baseName">The base name of the resource.</param>
+        /// <param name="resourceLocation">The location of the resource within <paramref name="location"/>.</param>
+        /// <returns>The resource prefix used to look up the resource.</returns>
+        protected virtual string GetResourcePrefix(string location, string baseName, string resourceLocation)
+        {
+            // Re-root the base name if a resources path is set
+            return location + "." + resourceLocation + TrimPrefix(baseName, location + ".");
+        }
+
+        /// <summary>Gets a <see cref="ResourceLocationAttribute"/> from the provided <see cref="Assembly"/>.</summary>
+        /// <param name="assembly">The assembly to get a <see cref="ResourceLocationAttribute"/> from.</param>
+        /// <returns>The <see cref="ResourceLocationAttribute"/> associated with the given <see cref="Assembly"/>.</returns>
+        /// <remarks>This method is protected and virtual for testing purposes only.</remarks>
+        protected virtual ResourceLocationAttribute GetResourceLocationAttribute(Assembly assembly)
+        {
+            return assembly.GetCustomAttribute<ResourceLocationAttribute>();
+        }
+
+        private string GetResourcePath(Assembly assembly)
+        {
+            var resourceLocationAttribute = GetResourceLocationAttribute(assembly);
+
+            // If we don't have an attribute assume all assemblies use the same resource location.
+            var resourceLocation = resourceLocationAttribute == null
+                ? _resourcesRelativePath
+                : resourceLocationAttribute.ResourceLocation + ".";
+            resourceLocation = resourceLocation
+                .Replace(Path.DirectorySeparatorChar, '.')
+                .Replace(Path.AltDirectorySeparatorChar, '.');
+
+            return resourceLocation;
         }
 
         private static string TrimPrefix(string name, string prefix)

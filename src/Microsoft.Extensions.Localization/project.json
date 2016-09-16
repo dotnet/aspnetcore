@@ -22,7 +22,8 @@
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.Localization.Abstractions": "1.1.0-*",
-    "Microsoft.Extensions.Options": "1.1.0-*"
+    "Microsoft.Extensions.Options": "1.1.0-*",
+    "System.Reflection.Extensions": "4.0.1-*"
   },
   "frameworks": {
     "net451": {},
