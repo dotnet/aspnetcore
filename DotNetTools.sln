@@ -33,6 +33,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Secret
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.SecretManager.Tools.Tests", "test\Microsoft.Extensions.SecretManager.Tools.Tests\Microsoft.Extensions.SecretManager.Tools.Tests.xproj", "{7B331122-83B1-4F08-A119-DC846959844C}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Caching.SqlConfig.Tools", "src\Microsoft.Extensions.Caching.SqlConfig.Tools\Microsoft.Extensions.Caching.SqlConfig.Tools.xproj", "{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,10 @@ Global
 		{7B331122-83B1-4F08-A119-DC846959844C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7B331122-83B1-4F08-A119-DC846959844C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7B331122-83B1-4F08-A119-DC846959844C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -90,5 +96,6 @@ Global
 		{2F48041A-F7D1-478F-9C38-D41F0F05E8CA} = {2876B12E-5841-4792-85A8-2929AEE11885}
 		{8730E848-CA0F-4E0A-9A2F-BC22AD0B2C4E} = {66517987-2A5A-4330-B130-207039378FD4}
 		{7B331122-83B1-4F08-A119-DC846959844C} = {F5B382BC-258F-46E1-AC3D-10E5CCD55134}
+		{53F3B53D-303A-4DAA-9C38-4F55195FA5B9} = {66517987-2A5A-4330-B130-207039378FD4}
 	EndGlobalSection
 EndGlobal

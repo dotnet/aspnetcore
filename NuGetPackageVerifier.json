@@ -6,6 +6,7 @@
         "packages": {
             "Microsoft.DotNet.Watcher.Tools": { },
             "Microsoft.DotNet.Watcher.Core": { },
+            "Microsoft.Extensions.Caching.SqlConfig.Tools": { },
             "Microsoft.Extensions.SecretManager.Tools": { }
         }
     },

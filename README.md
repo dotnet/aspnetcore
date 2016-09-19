@@ -8,5 +8,6 @@ The project contains command-line tools for the .NET Core SDK.
 
  - [dotnet-watch](src/Microsoft.DotNet.Watcher.Tools/)
  - [dotnet-user-secrets](src/Microsoft.Extensions.SecretManager.Tools/)
+ - [dotnet-sql-cache](src/Microsoft.Extensions.Caching.SqlConfig.Tools/)
 
 This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
