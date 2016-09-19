@@ -1,11 +1,9 @@
-import * as ng from '@angular/core';
-import { ROUTER_DIRECTIVES } from '@angular/router';
+import { Component } from '@angular/core';
 import { NavMenu } from '../nav-menu/nav-menu';
 
-@ng.Component({
+@Component({
     selector: 'app',
-    template: require('./app.html'),
-    directives: [...ROUTER_DIRECTIVES, NavMenu]
+    template: require('./app.html')
 })
 export class App {
 }

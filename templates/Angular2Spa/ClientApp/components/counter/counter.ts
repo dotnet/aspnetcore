@@ -1,6 +1,6 @@
-import * as ng from '@angular/core';
+import { Component } from '@angular/core';
 
-@ng.Component({
+@Component({
   selector: 'counter',
   template: require('./counter.html')
 })

@@ -1,9 +1,8 @@
-import { RouterConfig } from '@angular/router';
-import { Home } from './components/home/home';
-import { FetchData } from './components/fetch-data/fetch-data';
-import { Counter } from './components/counter/counter';
+import { Routes } from '@angular/router';
 
-export const routes: RouterConfig = [
+import { Home, FetchData, Counter } from './components';
+
+export const routes: Routes = [
     { path: '', redirectTo: 'home', pathMatch: 'full' },
     { path: 'home', component: Home },
     { path: 'counter', component: Counter },

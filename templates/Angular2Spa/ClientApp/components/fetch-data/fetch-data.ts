@@ -1,7 +1,7 @@
-import * as ng from '@angular/core';
+import { Component } from '@angular/core';
 import { Http } from '@angular/http';
 
-@ng.Component({
+@Component({
   selector: 'fetch-data',
   template: require('./fetch-data.html')
 })
