@@ -18,4 +18,6 @@ if (hotModuleReplacement) {
 
 // Boot the application
 const platform = platformUniversalDynamic();
-platform.bootstrapModule(AppModule);
+document.addEventListener('DOMContentLoaded', () => {
+    platform.bootstrapModule(AppModule);
+});
