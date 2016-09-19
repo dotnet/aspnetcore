@@ -3,7 +3,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
-    "Microsoft.AspNetCore.Server.WebListener": "0.2.0-*",
+    "Microsoft.AspNetCore.Server.WebListener": "1.1.0-*",
     "Microsoft.AspNetCore.WebUtilities": "1.1.0-*",
     "Microsoft.Extensions.Configuration.CommandLine": "1.1.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.1.0-*",
