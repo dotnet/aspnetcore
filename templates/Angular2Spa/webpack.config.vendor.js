@@ -31,7 +31,6 @@ module.exports = {
             'es6-shim',
             'es6-promise',
             'jquery',
-            'style-loader',
             'zone.js',
         ]
     },
