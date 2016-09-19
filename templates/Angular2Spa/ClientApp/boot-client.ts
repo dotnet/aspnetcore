@@ -16,8 +16,11 @@ if (hotModuleReplacement) {
     enableProdMode();
 }
 
-// Boot the application
+// Boot the application, either now or when the DOM content is loaded
 const platform = platformUniversalDynamic();
-document.addEventListener('DOMContentLoaded', () => {
-    platform.bootstrapModule(AppModule);
-});
+const bootApplication = () => { platform.bootstrapModule(AppModule); };
+if (document.readyState === 'complete') {
+    bootApplication();
+} else {
+    document.addEventListener('DOMContentLoaded', bootApplication);
+}
