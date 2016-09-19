@@ -1,9 +1,7 @@
-import 'angular2-universal-polyfills';
-import 'es6-shim';
-import 'zone.js';
+import 'angular2-universal-polyfills/browser';
 import 'bootstrap';
 import './styles/site.css';
-import { enableProdMode} from '@angular/core';
+import { enableProdMode } from '@angular/core';
 import { platformUniversalDynamic } from 'angular2-universal';
 import { AppModule } from './app/app.module';
 
