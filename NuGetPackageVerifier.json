@@ -5,7 +5,8 @@
         ],
         "packages": {
             "Microsoft.DotNet.Watcher.Tools": { },
-            "Microsoft.DotNet.Watcher.Core": { }
+            "Microsoft.DotNet.Watcher.Core": { },
+            "Microsoft.Extensions.SecretManager.Tools": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.

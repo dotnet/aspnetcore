@@ -1,0 +1,43 @@
+{
+  "version": "1.0.0-*",
+  "buildOptions": {
+    "outputName": "dotnet-user-secrets",
+    "emitEntryPoint": true,
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk",
+    "nowarn": [
+      "CS1591"
+    ],
+    "xmlDoc": true
+  },
+  "description": "Command line tool to manage user secrets for Microsoft.Extensions.Configuration.",
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/aspnet/DotNetTools"
+    },
+    "tags": [
+      "configuration",
+      "secrets",
+      "usersecrets"
+    ]
+  },
+  "dependencies": {
+    "Microsoft.Extensions.Configuration.UserSecrets": "1.1.0-*",
+    "Microsoft.Extensions.CommandLineUtils": "1.1.0-*",
+    "Microsoft.Extensions.Logging": "1.1.0-*",
+    "Newtonsoft.Json": "9.0.1",
+    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0",
+    "System.Runtime.Serialization.Primitives": "4.1.1"
+  },
+  "frameworks": {
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0",
+          "type": "platform"
+        }
+      }
+    }
+  }
+}
