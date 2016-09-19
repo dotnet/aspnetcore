@@ -7,8 +7,8 @@ import { AppModule } from './app/app.module';
 import 'bootstrap';
 import './styles/site.css';
 
-// Enable either Hot Module Reloading or production mode 
-const hotModuleReplacement = module['hot']; 
+// Enable either Hot Module Reloading or production mode
+const hotModuleReplacement = module['hot'];
 if (hotModuleReplacement) {
     hotModuleReplacement.accept();
     hotModuleReplacement.dispose(() => { platform.destroy(); });
