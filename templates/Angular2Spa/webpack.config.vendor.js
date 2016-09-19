@@ -16,11 +16,6 @@ module.exports = {
     },
     entry: {
         vendor: [
-            'bootstrap',
-            'bootstrap/dist/css/bootstrap.css',
-            'es6-shim',
-            'style-loader',
-            'jquery',
             '@angular/common',
             '@angular/compiler',
             '@angular/core',
@@ -29,7 +24,14 @@ module.exports = {
             '@angular/platform-browser-dynamic',
             '@angular/router',
             '@angular/platform-server',
-            'reflect-metadata',
+            'angular2-universal',
+            'angular2-universal-polyfills',
+            'bootstrap',
+            'bootstrap/dist/css/bootstrap.css',
+            'es6-shim',
+            'es6-promise',
+            'jquery',
+            'style-loader',
             'zone.js',
         ]
     },

@@ -2,7 +2,6 @@ import 'angular2-universal-polyfills';
 import 'es6-shim';
 import 'zone.js';
 import 'bootstrap';
-import 'reflect-metadata';
 import './styles/site.css';
 import { enableProdMode} from '@angular/core';
 import { platformUniversalDynamic } from 'angular2-universal';
