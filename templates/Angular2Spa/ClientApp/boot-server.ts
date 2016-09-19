@@ -1,76 +1,28 @@
-// the polyfills must be the first thing imported in node.js
 import 'angular2-universal-polyfills';
-
-// Angular 2
+import 'zone.js';
 import { enableProdMode } from '@angular/core';
-// Angular2 Universal
 import { platformNodeDynamic } from 'angular2-universal';
+import { AppModule } from './app/app.module';
 
-// Application imports
-import { MainModule } from './main.node';
-import { App } from './components';
-import { routes } from './routes';
-
-// enable prod for faster renders
 enableProdMode();
-
-declare var Zone: any;
+const platform = platformNodeDynamic();
 
 export default function (params: any) : Promise<{ html: string, globals?: any }> {
-
-    const doc = `
-        <!DOCTYPE html>\n
-        <html>
-            <head></head>
-            <body>
-                <app></app>
-            </body>
-        </html>
-    `;
-
-    // hold platform reference
-    var platformRef =  platformNodeDynamic();
-
-    var platformConfig = {
-        ngModule: MainModule,
-        document: doc,
-        preboot: false,
-        baseUrl: '/',
-        requestUrl: params.url,
-        originUrl: params.origin
-    };
-
-    // defaults
-    var cancel = false;
-
-    const _config = Object.assign({
-      get cancel() { return cancel; },
-      cancelHandler() { return Zone.current.get('cancel') }
-    }, platformConfig);
-
-    // for each user
-    const zone = Zone.current.fork({
-        name: 'UNIVERSAL request',
-        properties: _config
-    });
-
-    
-    return Promise.resolve(
-        zone.run(() => {
-            return platformRef.serializeModule(Zone.current.get('ngModule'))
-        })
-    ).then(html => {
-
-        if (typeof html !== 'string' ) {
-            return { html : doc };
+    const requestZone = Zone.current.fork({
+        name: 'angular-universal request',
+        properties: {
+            baseUrl: '/',
+            requestUrl: params.url,
+            originUrl: params.origin,
+            preboot: false,
+            // TODO: Render just the <app> component instead of wrapping it inside an extra HTML document
+            // Waiting on https://github.com/angular/universal/issues/347
+            document: '<!DOCTYPE html><html><head></head><body><app></app></body></html>'
         }
-        return { html };
-
-    }).catch(err => {
-        
-        console.log(err);
-        return { html : doc };
-
     });
 
+    return requestZone.run<Promise<string>>(() => platform.serializeModule(AppModule))
+        .then(html => {
+            return { html: html };
+        });
 }

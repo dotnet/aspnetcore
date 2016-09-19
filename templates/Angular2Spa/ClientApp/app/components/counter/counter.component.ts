@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'counter',
-  template: require('./counter.html')
+  template: require('./counter.component.html')
 })
-export class Counter {
+export class CounterComponent {
     public currentCount = 0;
 
     public incrementCounter() {

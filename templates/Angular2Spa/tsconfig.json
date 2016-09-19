@@ -6,22 +6,9 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "skipDefaultLibCheck": true,
-    "lib": ["es6", "dom"],
-    "types": [
-      "body-parser",
-      "compression",
-      "cookie-parser",
-      "express",
-      "express-serve-static-core",
-      "mime",
-      "node",
-      "serve-static",
-      "hammerjs"
-    ]
+    "lib": [ "es6", "dom" ],
+    "types": [ "node" ]
   },
-  "exclude": [
-      "bin",
-      "node_modules"
-  ],
+  "exclude": [ "bin", "node_modules" ],
   "atom": { "rewriteTsconfig": false }
 }
