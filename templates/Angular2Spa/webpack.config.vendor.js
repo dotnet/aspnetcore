@@ -49,10 +49,6 @@ module.exports = {
             name: '[name]_[hash]'
         })
     ].concat(isDevelopment ? [] : [
-        new webpack.optimize.UglifyJsPlugin({
-            compress: { warnings: false },
-            minimize: true,
-            mangle: false // Due to https://github.com/angular/angular/issues/6678
-        })
+        new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false } })
     ])
 };
