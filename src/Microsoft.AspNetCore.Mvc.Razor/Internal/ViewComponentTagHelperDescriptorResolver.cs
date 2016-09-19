@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         public ViewComponentTagHelperDescriptorResolver(
             IViewComponentDescriptorProvider viewComponentDescriptorProvider)
-            : base(designTime: true)
+            : base(designTime: false)
         {
             _descriptorFactory = new ViewComponentTagHelperDescriptorFactory(viewComponentDescriptorProvider);
         }
