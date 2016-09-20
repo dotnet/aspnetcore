@@ -9,10 +9,9 @@ import * as webpack from 'webpack';
 import { requireNewCopy } from './RequireNewCopy';
 
 // Strange import syntax to work around https://github.com/Microsoft/TypeScript/issues/2719
-import { webpackexternals } from './typings/webpack-externals-plugin';
 import { requirefromstring } from './typings/require-from-string';
 import { memoryfs } from './typings/memory-fs';
-const ExternalsPlugin = require('webpack-externals-plugin') as typeof webpackexternals.ExternalsPlugin;
+const nodeExternals = require('webpack-node-externals');
 const requireFromString = require('require-from-string') as typeof requirefromstring.requireFromString;
 const MemoryFS = require('memory-fs') as typeof memoryfs.MemoryFS;
 
@@ -59,9 +58,19 @@ function loadViaWebpackNoCache<T>(webpackConfigPath: string, modulePath: string)
 
         // In Node, we want anything under /node_modules/ to be loaded natively and not bundled into the output
         // (partly because it's faster, but also because otherwise there'd be different instances of modules
-        // depending on how they were loaded, which could lead to errors)
-        webpackConfig.plugins = webpackConfig.plugins || [];
-        webpackConfig.plugins.push(new ExternalsPlugin({ type: 'commonjs', include: /node_modules/ }));
+        // depending on how they were loaded, which could lead to errors).
+        // ---
+        // NOTE: We have to use webpack-node-externals rather than webpack-externals-plugin because
+        // webpack-externals-plugin doesn't correctly resolve relative paths, which means you can't
+        // use css-loader, since tries to require('./../../node_modules/css-loader/lib/css-base.js') (see #132)
+        // ---
+        // So, ensure that webpackConfig.externals is an array, and push WebpackNodeExternals into it:
+        let externalsArray: any[] = (webpackConfig.externals as any[]) || [];
+        if (!(externalsArray instanceof Array)) {
+            externalsArray = [externalsArray];
+        }
+        webpackConfig.externals = externalsArray;
+        externalsArray.push(nodeExternals());
 
         // The CommonsChunkPlugin is not compatible with a CommonJS environment like Node, nor is it needed in that case
         webpackConfig.plugins = webpackConfig.plugins.filter(plugin => {
