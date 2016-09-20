@@ -1,9 +1,7 @@
 var path = require('path');
 var webpack = require('webpack');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 var isDevBuild = process.env.ASPNETCORE_ENVIRONMENT === 'Development';
-var extractCSS = new ExtractTextPlugin('styles.css');
 
 module.exports = {
     devtool: isDevBuild ? 'inline-source-map' : null,
@@ -11,9 +9,9 @@ module.exports = {
     entry: { main: ['./ClientApp/boot-client.ts'] },
     module: {
         loaders: [
-            { test: /\.ts$/, include: /ClientApp/, loader: 'ts-loader?silent=true' },
-            { test: /\.html$/, loader: 'raw-loader' },
-            { test: /\.css/, loader: extractCSS.extract(['css']) }
+            { test: /\.ts$/, include: /ClientApp/, loader: 'ts', query: { silent: true } },
+            { test: /\.html$/, include: /ClientApp/, loader: 'raw' },
+            { test: /\.css/, include: /ClientApp/, loader: 'raw' }
         ]
     },
     output: {
@@ -22,7 +20,6 @@ module.exports = {
         publicPath: '/dist/'
     },
     plugins: [
-        extractCSS,
         new webpack.DllReferencePlugin({
             context: __dirname,
             manifest: require('./wwwroot/dist/vendor-manifest.json')

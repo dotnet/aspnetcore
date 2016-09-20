@@ -1,18 +1,11 @@
-@media (max-width: 767px) {
-    /* On small screens, the nav menu spans the full width of the screen. Leave a space for it. */
-    .body-content {
-        padding-top: 50px;
-    }
-}
-
-.main-nav li .glyphicon {
+li .glyphicon {
     margin-right: 10px;
 }
 
 /* Highlighting rules for nav menu items */
-.main-nav li.link-active a,
-.main-nav li.link-active a:hover,
-.main-nav li.link-active a:focus {
+li.link-active a,
+li.link-active a:hover,
+li.link-active a:focus {
     background-color: #4189C7;
     color: white;
 }
@@ -32,31 +25,31 @@
         height: 100%;
         width: calc(25% - 20px);
     }
-    .main-nav .navbar {
+    .navbar {
         border-radius: 0px;
         border-width: 0px;
         height: 100%;
     }
-    .main-nav .navbar-header {
+    .navbar-header {
         float: none;
     }
-    .main-nav .navbar-collapse {
+    .navbar-collapse {
         border-top: 1px solid #444;
         padding: 0px;
     }
-    .main-nav .navbar ul {
+    .navbar ul {
         float: none;
     }
-    .main-nav .navbar li {
+    .navbar li {
         float: none;
         font-size: 15px;
         margin: 6px;
     }
-    .main-nav .navbar li a {
+    .navbar li a {
         padding: 10px 16px;
         border-radius: 4px;
     }
-    .main-nav .navbar a {
+    .navbar a {
         /* If a menu item's text is too long, truncate it */
         width: 100%;
         white-space: nowrap;
