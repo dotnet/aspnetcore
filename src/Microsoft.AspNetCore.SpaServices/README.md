@@ -469,37 +469,6 @@ This means that when you `import` or `require` a `.less` file, it should pass it
 
 That's all you need to do! Restart your site and you should see the LESS styles being applied. This technique is compatible with both source maps and Hot Module Replacement (HMR), so you can edit your `.less` files at will and see the changes appearing live in the browser.
 
-**Scoping styles in Angular 2 components**
-
-If you're using Angular 2, you can define styles on a per-component basis rather than just globally for your whole app. Angular then takes care of ensuring that only the intended styles are applied to each component, even if the selector names would otherwise clash. To extend the above technique to per-component styling, first install the `to-string-loader` NPM module:
-
-```
-npm install --save to-string-loader
-```
-
-Then in your `webpack.config.js`, simplify the `loader` entry for LESS files so that it just outputs `css` (without preparing it for use in a `style` tag):
-
-```javascript
-{ test: /\.less/, loader: 'css!less' }
-```
-
-Now **you must remove any direct global references to the `.less` file**, since you'll no longer be loading it globally. So if you previously loaded `mystyles.less` using an `import` or `require` statement in `boot-client.ts` or similar, remove that line.
-
-Finally, load the LESS file scoped to a particular Angular 2 component by declaring a `styles` value for that component. For example,
-
-```javascript
-@ng.Component({
-  selector: ... leave value unchanged ...,
-  template: ... leave value unchanged ...,
-  styles: [require('to-string!../../styles/mystyles.less')]
-})
-export class YourComponent {
-   ... code remains here ...
-}
-```
-
-Now when you reload your page, you should file that the styles in `mystyles.less` are applied, but only to the component where you attached it. It's reasonable to use this technique in production because, even though the styles now depend on JavaScript to be applied, they are only used on elements that are injected via JavaScript anyway.
-
 #### Approach 3: Building LESS to CSS files on disk
 
 This technique takes a little more work to set up than technique 2, and lacks compatibility with HMR. But it's much better for production use if your styles are applied to the whole page (not just elements constructed via JavaScript), because it loads the CSS independently of JavaScript.
