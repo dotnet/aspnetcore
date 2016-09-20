@@ -378,17 +378,64 @@ So that's enough to build TypeScript. Here's where webpack dev middleware comes 
 
 ### Example: A simple Webpack setup that builds LESS
 
-Following on from the preceding example that builds TypeScript, you could extend your Webpack configuration further to support building LESS. There are two major approaches to doing this:
+Following on from the preceding example that builds TypeScript, you could extend your Webpack configuration further to support building LESS. There are three major approaches to doing this:
 
-1. **Have each build embed the style information into your JavaScript code**. At runtime, Webpack can dynamically attach the styles to your document via JavaScript. This has certain benefits during development.
+1. **If using Angular 2, use its native style loader to attach the styles to components**. This is extremely simple and is usually the right choice if you are using Angular 2. However it only applies to Angular 2 components, not to any other part of the host page, so sometimes you might want to combine this technique with options 2 or 3 below.
 
-2. **Or, have each build write a standalone `.css` file to disk**. At runtime, load it using a regular `<link rel='stylesheet'>` tag. This is likely to be the approach you'll want for production use as it's the most robust and best-performing option.
+2. **Or, use Webpack's style loader to attach the styles at runtime**. The CSS markup will be included in your JavaScript bundles and will be attached to the document dynamically. This has certain benefits during development but isn't recommended in production.
+
+3. **Or, have each build write a standalone `.css` file to disk**. At runtime, load it using a regular `<link rel='stylesheet'>` tag. This is likely to be the approach you'll want for production use (at least for non-Angular 2 applications, such as React applications) as it's the most robust and best-performing option.
 
 If instead of LESS you prefer SASS or another CSS preprocessor, the exact same techniques should work, but of course you'll need to replace the `less-loader` with an equivalent Webpack loader for SASS or your chosen preprocessor.
 
-#### Approach 1: Loading the styles using JavaScript
+#### Approach 1: Scoping styles to Angular 2 components
 
-This technique is a little simpler to set up than technique 2, plus it works flawlessly with Hot Module Replacement (HMR). The downside is that it's really only good for development time, because in production you probably don't want users to wait until JavaScript is loaded before styles are applied to the page (this would mean they'd see a 'flash of unstyled content' while the page is being loaded).
+If you are using Angular 2, this is the easiest way to perform styling. It works with both server and client rendering, supports Hot Module Replacement, and robustly scopes styles to particular components (and optionally, their descendant elements).
+
+This repository's Angular 2 template uses this technique to scope styles to components out of the box. It defines those styles as `.css` files. For example, its components reference `.css` files like this:
+
+```javascript
+@Component({
+    ...
+    styles: [require('./somecomponent.css')]
+})
+export class SomeComponent { ... }
+```
+
+To make this work, the template has Webpack configured to inject the contents of the `.css` file as a string literal in the built file. Here's the configuration that enables this:
+
+```javascript
+// This goes into webpack.config.js, in the module loaders array:
+{ test: /\.css/, include: /ClientApp/, loader: 'raw' }
+```
+
+Now if you want to use LESS instead of plain CSS, you just need to include a LESS loader. Run the following in a command prompt at your project root:
+
+```
+npm install --save less-loader less
+```
+
+Next, add the following loader configuration to the `loaders` array in `webpack.config.js`:
+
+```javascript
+{ test: /\.less/, include: /ClientApp/, loader: 'raw!less' }
+```
+
+Notice how this chains together the `less` loader (which transforms `.less` syntax to plain CSS syntax), then the `raw` loader (which turn the result into a string literal). With this in place, you can reference `.less` files from your Angular 2 components in the obvious way:
+
+```javascript
+@Component({
+    ...
+    styles: [require('./somecomponent.less')]
+})
+export class SomeComponent { ... }
+```
+
+... and your styles will be applied in both server-side and client-side rendering.
+
+#### Approach 2: Loading the styles using Webpack and JavaScript
+
+This technique works with any client-side framework (not just Angular 2), and can also apply styles to the entire document rather than just individual components. It's a little simpler to set up than technique 3, plus it works flawlessly with Hot Module Replacement (HMR). The downside is that it's really only good for development time, because in production you probably don't want users to wait until JavaScript is loaded before styles are applied to the page (this would mean they'd see a 'flash of unstyled content' while the page is being loaded).
 
 First create a `.less` file in your project. For example, create a file at `ClientApp/styles/mystyles.less` containing:
 
@@ -404,7 +451,7 @@ Reference this file from an `import` or `require` statement in one of your JavaS
 
 ```javascript
 import './styles/mystyles.less';
-``` 
+```
 
 If you try to run the Webpack compiler now (e.g., via `webpack` on the command line), you'll get an error saying it doesn't know how to build `.less` files. So, it's time to install a Webpack loader for LESS (plus related NPM modules). In a command prompt at your project's root directory, run:
 
@@ -453,9 +500,9 @@ export class YourComponent {
 
 Now when you reload your page, you should file that the styles in `mystyles.less` are applied, but only to the component where you attached it. It's reasonable to use this technique in production because, even though the styles now depend on JavaScript to be applied, they are only used on elements that are injected via JavaScript anyway.
 
-#### Approach 2: Building LESS to CSS files on disk
+#### Approach 3: Building LESS to CSS files on disk
 
-This technique takes a little more work to set up than technique 1, and lacks compatibility with HMR. But it's much better for production use if your styles are applied to the whole page (not just elements constructed via JavaScript), because it loads the CSS independently of JavaScript.
+This technique takes a little more work to set up than technique 2, and lacks compatibility with HMR. But it's much better for production use if your styles are applied to the whole page (not just elements constructed via JavaScript), because it loads the CSS independently of JavaScript.
 
 First add a `.less` file into your project. For example, create a file at `ClientApp/styles/mystyles.less` containing:
 
@@ -471,7 +518,7 @@ Reference this file from an `import` or `require` statement in one of your JavaS
 
 ```javascript
 import './styles/mystyles.less';
-``` 
+```
 
 If you try to run the Webpack compiler now (e.g., via `webpack` on the command line), you'll get an error saying it doesn't know how to build `.less` files. So, it's time to install a Webpack loader for LESS (plus related NPM modules). In a command prompt at your project's root directory, run:
 
