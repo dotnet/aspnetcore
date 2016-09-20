@@ -19,6 +19,10 @@ namespace Microsoft.AspNetCore.ResponseCaching
         private ResponseHeaders _responseHeaders;
         private CacheControlHeaderValue _requestCacheControl;
         private CacheControlHeaderValue _responseCacheControl;
+        private DateTimeOffset? _responseDate;
+        private bool _parsedResponseDate;
+        private DateTimeOffset? _responseExpires;
+        private bool _parsedResponseExpires;
 
         internal ResponseCacheContext(
             HttpContext httpContext)
@@ -99,6 +103,38 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     _responseCacheControl = TypedResponseHeaders.CacheControl ?? EmptyCacheControl;
                 }
                 return _responseCacheControl;
+            }
+        }
+
+        internal DateTimeOffset? ResponseDate
+        {
+            get
+            {
+                if (!_parsedResponseDate)
+                {
+                    _parsedResponseDate = true;
+                    _responseDate = TypedResponseHeaders.Date;
+                }
+                return _responseDate;
+            }
+            set
+            {
+                // Don't reparse the response date again if it's explicitly set
+                _parsedResponseDate = true;
+                _responseDate = value;
+            }
+        }
+
+        internal DateTimeOffset? ResponseExpires
+        {
+            get
+            {
+                if (!_parsedResponseExpires)
+                {
+                    _parsedResponseExpires = true;
+                    _responseExpires = TypedResponseHeaders.Expires;
+                }
+                return _responseExpires;
             }
         }
     }

@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     if (body.Length > 0)
                     {
                         // Add a content-length if required
-                        if (response.ContentLength == null && StringValues.IsNullOrEmpty(response.Headers[HeaderNames.TransferEncoding]))
+                        if (!response.ContentLength.HasValue && StringValues.IsNullOrEmpty(response.Headers[HeaderNames.TransferEncoding]))
                         {
                             response.ContentLength = body.Length;
                         }
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 var varyParamsValue = context.HttpContext.GetResponseCacheFeature()?.VaryByParams ?? StringValues.Empty;
                 context.CachedResponseValidFor = context.ResponseCacheControlHeaderValue.SharedMaxAge ??
                     context.ResponseCacheControlHeaderValue.MaxAge ??
-                    (context.TypedResponseHeaders.Expires - context.ResponseTime) ??
+                    (context.ResponseExpires - context.ResponseTime) ??
                     DefaultExpirationTimeSpan;
 
                 // Check if any vary rules exist
@@ -234,16 +234,18 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 }
 
                 // Ensure date header is set
-                if (context.TypedResponseHeaders.Date == null)
+                if (!context.ResponseDate.HasValue)
                 {
-                    context.TypedResponseHeaders.Date = context.ResponseTime;
+                    context.ResponseDate = context.ResponseTime;
+                    // Setting the date on the raw response headers.
+                    context.TypedResponseHeaders.Date = context.ResponseDate;
                 }
 
                 // Store the response on the state
                 context.CachedResponse = new CachedResponse
                 {
                     BodyKeyPrefix = FastGuid.NewGuid().IdString,
-                    Created = context.TypedResponseHeaders.Date.Value,
+                    Created = context.ResponseDate.Value,
                     StatusCode = context.HttpContext.Response.StatusCode
                 };
 
@@ -263,10 +265,10 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         internal async Task FinalizeCacheBodyAsync(ResponseCacheContext context)
         {
+            var contentLength = context.TypedResponseHeaders.ContentLength;
             if (context.ShouldCacheResponse &&
                 context.ResponseCacheStream.BufferingEnabled &&
-                (context.TypedResponseHeaders.ContentLength == null ||
-                 context.TypedResponseHeaders.ContentLength == context.ResponseCacheStream.BufferedStream.Length))
+                (!contentLength.HasValue || contentLength == context.ResponseCacheStream.BufferedStream.Length))
             {
                 if (context.ResponseCacheStream.BufferedStream.Length >= _options.MinimumSplitBodySize)
                 {
@@ -355,9 +357,13 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     }
                 }
             }
-            else if (context.TypedRequestHeaders.IfUnmodifiedSince != null && (cachedResponseHeaders.LastModified ?? cachedResponseHeaders.Date) <= context.TypedRequestHeaders.IfUnmodifiedSince)
+            else
             {
-                return true;
+                var ifUnmodifiedSince = context.TypedRequestHeaders.IfUnmodifiedSince;
+                if (ifUnmodifiedSince != null && (cachedResponseHeaders.LastModified ?? cachedResponseHeaders.Date) <= ifUnmodifiedSince)
+                {
+                    return true;
+                }
             }
 
             return false;
