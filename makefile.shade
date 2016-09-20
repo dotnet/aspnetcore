@@ -718,7 +718,6 @@ functions
                 "Logging",
                 "dotnet-watch",
                 "HtmlAbstractions",
-                "UserSecrets",
                 "DataProtection",
                 "HttpAbstractions",
                 "Testing",
