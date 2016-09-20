@@ -32,21 +32,21 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         public HttpContext HttpContext { get; }
 
-        public bool ShouldCacheResponse { get; internal set; }
+        public DateTimeOffset? ResponseTime { get; internal set; }
 
-        public string BaseKey { get; internal set; }
-
-        public string StorageVaryKey { get; internal set; }
-
-        public DateTimeOffset ResponseTime { get; internal set; }
-
-        public TimeSpan CachedEntryAge { get; internal set; }
-
-        public TimeSpan CachedResponseValidFor { get; internal set; }
-
-        public CachedResponse CachedResponse { get; internal set; }
+        public TimeSpan? CachedEntryAge { get; internal set; }
 
         public CachedVaryByRules CachedVaryByRules { get; internal set; }
+
+        internal bool ShouldCacheResponse { get;  set; }
+
+        internal string BaseKey { get;  set; }
+
+        internal string StorageVaryKey { get;  set; }
+
+        internal TimeSpan CachedResponseValidFor { get;  set; }
+
+        internal CachedResponse CachedResponse { get;  set; }
 
         internal bool ResponseStarted { get; set; }
 

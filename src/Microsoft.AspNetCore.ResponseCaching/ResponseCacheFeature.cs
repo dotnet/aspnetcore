@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
 {
     public class ResponseCacheFeature
     {
-        public StringValues VaryByParams { get; set; }
+        public StringValues VaryByQueryKeys { get; set; }
     }
 }

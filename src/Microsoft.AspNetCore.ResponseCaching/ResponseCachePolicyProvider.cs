@@ -104,14 +104,14 @@ namespace Microsoft.AspNetCore.ResponseCaching
             {
                 if (!context.ResponseCacheControlHeaderValue.SharedMaxAge.HasValue &&
                     !context.ResponseCacheControlHeaderValue.MaxAge.HasValue &&
-                    context.ResponseTime >= context.ResponseExpires)
+                    context.ResponseTime.Value >= context.ResponseExpires)
                 {
                     return false;
                 }
             }
             else
             {
-                var age = context.ResponseTime - context.ResponseDate.Value;
+                var age = context.ResponseTime.Value - context.ResponseDate.Value;
 
                 // Validate shared max age
                 if (age >= context.ResponseCacheControlHeaderValue.SharedMaxAge)
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     else if (!context.ResponseCacheControlHeaderValue.MaxAge.HasValue)
                     {
                         // Validate expiration
-                        if (context.ResponseTime >= context.ResponseExpires)
+                        if (context.ResponseTime.Value >= context.ResponseExpires)
                         {
                             return false;
                         }
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         public virtual bool IsCachedEntryFresh(ResponseCacheContext context)
         {
-            var age = context.CachedEntryAge;
+            var age = context.CachedEntryAge.Value;
             var cachedControlHeaders = context.CachedResponseHeaders.CacheControl ?? EmptyCacheControl;
 
             // Add min-fresh requirements
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 else if (!cachedControlHeaders.MaxAge.HasValue && !context.RequestCacheControlHeaderValue.MaxAge.HasValue)
                 {
                     // Validate expiration
-                    if (context.ResponseTime >= context.CachedResponseHeaders.Expires)
+                    if (context.ResponseTime.Value >= context.CachedResponseHeaders.Expires)
                     {
                         return false;
                     }

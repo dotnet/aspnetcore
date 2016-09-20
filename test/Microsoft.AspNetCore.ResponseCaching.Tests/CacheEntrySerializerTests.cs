@@ -101,28 +101,28 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public void RoundTrip_CachedVaryByRule_ParamsOnly_Succeeds()
+        public void RoundTrip_CachedVaryByRule_QueryKeysOnly_Succeeds()
         {
-            var param = new[] { "paramA", "paramB" };
+            var queryKeys = new[] { "queryA", "queryB" };
             var cachedVaryByRule = new CachedVaryByRules()
             {
                 VaryByKeyPrefix = FastGuid.NewGuid().IdString,
-                Params = param
+                QueryKeys = queryKeys
             };
 
             AssertCachedVaryByRuleEqual(cachedVaryByRule, (CachedVaryByRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryByRule)));
         }
 
         [Fact]
-        public void RoundTrip_CachedVaryByRule_HeadersAndParams_Succeeds()
+        public void RoundTrip_CachedVaryByRule_HeadersAndQueryKeys_Succeeds()
         {
             var headers = new[] { "headerA", "headerB" };
-            var param = new[] { "paramA", "paramB" };
+            var queryKeys = new[] { "queryA", "queryB" };
             var cachedVaryByRule = new CachedVaryByRules()
             {
                 VaryByKeyPrefix = FastGuid.NewGuid().IdString,
                 Headers = headers,
-                Params = param
+                QueryKeys = queryKeys
             };
 
             AssertCachedVaryByRuleEqual(cachedVaryByRule, (CachedVaryByRules)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedVaryByRule)));
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             Assert.NotNull(expected);
             Assert.Equal(expected.VaryByKeyPrefix, actual.VaryByKeyPrefix);
             Assert.Equal(expected.Headers, actual.Headers);
-            Assert.Equal(expected.Params, actual.Params);
+            Assert.Equal(expected.QueryKeys, actual.QueryKeys);
         }
     }
 }

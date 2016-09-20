@@ -127,8 +127,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         // Guid (long)
         // Headers count
         // Header(s) (comma separated string)
-        // Params count
-        // Param(s) (comma separated string)
+        // QueryKey count
+        // QueryKey(s) (comma separated string)
         private static CachedVaryByRules ReadCachedVaryByRules(BinaryReader reader)
         {
             var varyKeyPrefix = reader.ReadString();
@@ -139,14 +139,14 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             {
                 headers[index] = reader.ReadString();
             }
-            var paramCount = reader.ReadInt32();
-            var param = new string[paramCount];
-            for (var index = 0; index < paramCount; index++)
+            var queryKeysCount = reader.ReadInt32();
+            var queryKeys = new string[queryKeysCount];
+            for (var index = 0; index < queryKeysCount; index++)
             {
-                param[index] = reader.ReadString();
+                queryKeys[index] = reader.ReadString();
             }
 
-            return new CachedVaryByRules { VaryByKeyPrefix = varyKeyPrefix, Headers = headers, Params = param };
+            return new CachedVaryByRules { VaryByKeyPrefix = varyKeyPrefix, Headers = headers, QueryKeys = queryKeys };
         }
 
         // See serialization format above
@@ -228,10 +228,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 writer.Write(header);
             }
 
-            writer.Write(varyByRules.Params.Count);
-            foreach (var param in varyByRules.Params)
+            writer.Write(varyByRules.QueryKeys.Count);
+            foreach (var queryKey in varyByRules.QueryKeys)
             {
-                writer.Write(param);
+                writer.Write(queryKey);
             }
         }
     }

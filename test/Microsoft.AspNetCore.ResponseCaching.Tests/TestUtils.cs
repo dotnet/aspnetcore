@@ -108,7 +108,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
         internal static ResponseCacheContext CreateTestContext()
         {
-            return new ResponseCacheContext(new DefaultHttpContext());
+            return new ResponseCacheContext(new DefaultHttpContext())
+            {
+                ResponseTime = DateTimeOffset.UtcNow
+            };
         }
     }
 

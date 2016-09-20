@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             context.CachedResponse = cachedResponse;
             context.CachedResponseHeaders = new ResponseHeaders(cachedResponse.Headers);
             context.ResponseTime = _options.SystemClock.UtcNow;
-            var cachedEntryAge = context.ResponseTime - context.CachedResponse.Created;
+            var cachedEntryAge = context.ResponseTime.Value - context.CachedResponse.Created;
             context.CachedEntryAge = cachedEntryAge > TimeSpan.Zero ? cachedEntryAge : TimeSpan.Zero;
 
             if (_policyProvider.IsCachedEntryFresh(context))
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                         response.Headers.Add(header);
                     }
 
-                    response.Headers[HeaderNames.Age] = context.CachedEntryAge.TotalSeconds.ToString("F0", CultureInfo.InvariantCulture);
+                    response.Headers[HeaderNames.Age] = context.CachedEntryAge.Value.TotalSeconds.ToString("F0", CultureInfo.InvariantCulture);
 
                     var body = context.CachedResponse.Body ??
                         ((CachedResponseBody) await _store.GetAsync(context.CachedResponse.BodyKeyPrefix))?.Body;
@@ -200,30 +200,30 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
                 // Create the cache entry now
                 var response = context.HttpContext.Response;
-                var varyHeaderValue = new StringValues(response.Headers.GetCommaSeparatedValues(HeaderNames.Vary));
-                var varyParamsValue = context.HttpContext.GetResponseCacheFeature()?.VaryByParams ?? StringValues.Empty;
+                var varyHeaders = new StringValues(response.Headers.GetCommaSeparatedValues(HeaderNames.Vary));
+                var varyQueryKeys = context.HttpContext.GetResponseCacheFeature()?.VaryByQueryKeys ?? StringValues.Empty;
                 context.CachedResponseValidFor = context.ResponseCacheControlHeaderValue.SharedMaxAge ??
                     context.ResponseCacheControlHeaderValue.MaxAge ??
-                    (context.ResponseExpires - context.ResponseTime) ??
+                    (context.ResponseExpires - context.ResponseTime.Value) ??
                     DefaultExpirationTimeSpan;
 
                 // Check if any vary rules exist
-                if (!StringValues.IsNullOrEmpty(varyHeaderValue) || !StringValues.IsNullOrEmpty(varyParamsValue))
+                if (!StringValues.IsNullOrEmpty(varyHeaders) || !StringValues.IsNullOrEmpty(varyQueryKeys))
                 {
                     // Normalize order and casing of vary by rules
-                    var normalizedVaryHeaderValue = GetOrderCasingNormalizedStringValues(varyHeaderValue);
-                    var normalizedVaryParamsValue = GetOrderCasingNormalizedStringValues(varyParamsValue);
+                    var normalizedVaryHeaders = GetOrderCasingNormalizedStringValues(varyHeaders);
+                    var normalizedVaryQueryKeys = GetOrderCasingNormalizedStringValues(varyQueryKeys);
 
                     // Update vary rules if they are different
                     if (context.CachedVaryByRules == null ||
-                        !StringValues.Equals(context.CachedVaryByRules.Params, normalizedVaryParamsValue) ||
-                        !StringValues.Equals(context.CachedVaryByRules.Headers, normalizedVaryHeaderValue))
+                        !StringValues.Equals(context.CachedVaryByRules.QueryKeys, normalizedVaryQueryKeys) ||
+                        !StringValues.Equals(context.CachedVaryByRules.Headers, normalizedVaryHeaders))
                     {
                         context.CachedVaryByRules = new CachedVaryByRules
                         {
                             VaryByKeyPrefix = FastGuid.NewGuid().IdString,
-                            Headers = normalizedVaryHeaderValue,
-                            Params = normalizedVaryParamsValue
+                            Headers = normalizedVaryHeaders,
+                            QueryKeys = normalizedVaryQueryKeys
                         };
                     }
 
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 // Ensure date header is set
                 if (!context.ResponseDate.HasValue)
                 {
-                    context.ResponseDate = context.ResponseTime;
+                    context.ResponseDate = context.ResponseTime.Value;
                     // Setting the date on the raw response headers.
                     context.TypedResponseHeaders.Date = context.ResponseDate;
                 }

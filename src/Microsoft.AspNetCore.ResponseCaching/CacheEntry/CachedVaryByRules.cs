@@ -11,6 +11,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         public StringValues Headers { get; set; }
 
-        public StringValues Params { get; set; }
+        public StringValues QueryKeys { get; set; }
     }
 }

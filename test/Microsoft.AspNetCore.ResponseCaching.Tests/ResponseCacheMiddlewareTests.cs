@@ -292,7 +292,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 MaxAge = TimeSpan.FromSeconds(12)
             };
 
-            context.ResponseTime = DateTimeOffset.UtcNow;
             context.TypedResponseHeaders.Expires = context.ResponseTime + TimeSpan.FromSeconds(11);
 
             await middleware.FinalizeCacheHeadersAsync(context);
@@ -311,7 +310,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 SharedMaxAge = TimeSpan.FromSeconds(13)
             };
 
-            context.ResponseTime = DateTimeOffset.UtcNow;
             context.TypedResponseHeaders.Expires = context.ResponseTime + TimeSpan.FromSeconds(11);
 
             await middleware.FinalizeCacheHeadersAsync(context);
@@ -328,11 +326,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             context.HttpContext.Response.Headers[HeaderNames.Vary] = new StringValues(new[] { "headerA", "HEADERB", "HEADERc" });
             context.HttpContext.AddResponseCacheFeature();
-            context.HttpContext.GetResponseCacheFeature().VaryByParams = new StringValues(new[] { "paramB", "PARAMAA" });
+            context.HttpContext.GetResponseCacheFeature().VaryByQueryKeys = new StringValues(new[] { "queryB", "QUERYA" });
             var cachedVaryByRules = new CachedVaryByRules()
             {
                 Headers = new StringValues(new[] { "HeaderA", "HeaderB" }),
-                Params = new StringValues(new[] { "ParamA", "ParamB" })
+                QueryKeys = new StringValues(new[] { "QueryA", "QueryB" })
             };
             context.CachedVaryByRules = cachedVaryByRules;
 
@@ -352,12 +350,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             context.HttpContext.Response.Headers[HeaderNames.Vary] = new StringValues(new[] { "headerA", "HEADERB" });
             context.HttpContext.AddResponseCacheFeature();
-            context.HttpContext.GetResponseCacheFeature().VaryByParams = new StringValues(new[] { "paramB", "PARAMA" });
+            context.HttpContext.GetResponseCacheFeature().VaryByQueryKeys = new StringValues(new[] { "queryB", "QUERYA" });
             var cachedVaryByRules = new CachedVaryByRules()
             {
                 VaryByKeyPrefix = FastGuid.NewGuid().IdString,
                 Headers = new StringValues(new[] { "HEADERA", "HEADERB" }),
-                Params = new StringValues(new[] { "PARAMA", "PARAMB" })
+                QueryKeys = new StringValues(new[] { "QUERYA", "QUERYB" })
             };
             context.CachedVaryByRules = cachedVaryByRules;
 

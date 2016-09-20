@@ -88,152 +88,152 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryParams_Matches()
+        public async void ServesCachedContent_IfVaryQueryKeys_Matches()
         {
             var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCacheFeature().VaryByParams = "param";
+                context.GetResponseCacheFeature().VaryByQueryKeys = "query";
                 await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("?param=value");
-                var subsequentResponse = await client.GetAsync("?param=value");
+                var initialResponse = await client.GetAsync("?query=value");
+                var subsequentResponse = await client.GetAsync("?query=value");
 
                 await AssertResponseCachedAsync(initialResponse, subsequentResponse);
             }
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryParamsExplicit_Matches_ParamNameCaseInsensitive()
+        public async void ServesCachedContent_IfVaryQueryKeysExplicit_Matches_QueryKeyCaseInsensitive()
         {
             var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCacheFeature().VaryByParams = new[] { "ParamA", "paramb" };
+                context.GetResponseCacheFeature().VaryByQueryKeys = new[] { "QueryA", "queryb" };
                 await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("?parama=valuea&paramb=valueb");
-                var subsequentResponse = await client.GetAsync("?ParamA=valuea&ParamB=valueb");
+                var initialResponse = await client.GetAsync("?querya=valuea&queryb=valueb");
+                var subsequentResponse = await client.GetAsync("?QueryA=valuea&QueryB=valueb");
 
                 await AssertResponseCachedAsync(initialResponse, subsequentResponse);
             }
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryParamsStar_Matches_ParamNameCaseInsensitive()
+        public async void ServesCachedContent_IfVaryQueryKeyStar_Matches_QueryKeyCaseInsensitive()
         {
             var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCacheFeature().VaryByParams = new[] { "*" };
+                context.GetResponseCacheFeature().VaryByQueryKeys = new[] { "*" };
                 await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("?parama=valuea&paramb=valueb");
-                var subsequentResponse = await client.GetAsync("?ParamA=valuea&ParamB=valueb");
+                var initialResponse = await client.GetAsync("?querya=valuea&queryb=valueb");
+                var subsequentResponse = await client.GetAsync("?QueryA=valuea&QueryB=valueb");
 
                 await AssertResponseCachedAsync(initialResponse, subsequentResponse);
             }
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryParamsExplicit_Matches_OrderInsensitive()
+        public async void ServesCachedContent_IfVaryQueryKeyExplicit_Matches_OrderInsensitive()
         {
             var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCacheFeature().VaryByParams = new[] { "ParamB", "ParamA" };
+                context.GetResponseCacheFeature().VaryByQueryKeys = new[] { "QueryB", "QueryA" };
                 await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("?ParamA=ValueA&ParamB=ValueB");
-                var subsequentResponse = await client.GetAsync("?ParamB=ValueB&ParamA=ValueA");
+                var initialResponse = await client.GetAsync("?QueryA=ValueA&QueryB=ValueB");
+                var subsequentResponse = await client.GetAsync("?QueryB=ValueB&QueryA=ValueA");
 
                 await AssertResponseCachedAsync(initialResponse, subsequentResponse);
             }
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryParamsStar_Matches_OrderInsensitive()
+        public async void ServesCachedContent_IfVaryQueryKeyStar_Matches_OrderInsensitive()
         {
             var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCacheFeature().VaryByParams = new[] { "*" };
+                context.GetResponseCacheFeature().VaryByQueryKeys = new[] { "*" };
                 await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("?ParamA=ValueA&ParamB=ValueB");
-                var subsequentResponse = await client.GetAsync("?ParamB=ValueB&ParamA=ValueA");
+                var initialResponse = await client.GetAsync("?QueryA=ValueA&QueryB=ValueB");
+                var subsequentResponse = await client.GetAsync("?QueryB=ValueB&QueryA=ValueA");
 
                 await AssertResponseCachedAsync(initialResponse, subsequentResponse);
             }
         }
 
         [Fact]
-        public async void ServesFreshContent_IfVaryParams_Mismatches()
+        public async void ServesFreshContent_IfVaryQueryKey_Mismatches()
         {
             var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCacheFeature().VaryByParams = "param";
+                context.GetResponseCacheFeature().VaryByQueryKeys = "query";
                 await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("?param=value");
-                var subsequentResponse = await client.GetAsync("?param=value2");
+                var initialResponse = await client.GetAsync("?query=value");
+                var subsequentResponse = await client.GetAsync("?query=value2");
 
                 await AssertResponseNotCachedAsync(initialResponse, subsequentResponse);
             }
         }
 
         [Fact]
-        public async void ServesFreshContent_IfVaryParamsExplicit_Mismatch_ParamValueCaseSensitive()
+        public async void ServesFreshContent_IfVaryQueryKeyExplicit_Mismatch_QueryKeyCaseSensitive()
         {
             var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCacheFeature().VaryByParams = new[] { "ParamA", "ParamB" };
+                context.GetResponseCacheFeature().VaryByQueryKeys = new[] { "QueryA", "QueryB" };
                 await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("?parama=valuea&paramb=valueb");
-                var subsequentResponse = await client.GetAsync("?parama=ValueA&paramb=ValueB");
+                var initialResponse = await client.GetAsync("?querya=valuea&queryb=valueb");
+                var subsequentResponse = await client.GetAsync("?querya=ValueA&queryb=ValueB");
 
                 await AssertResponseNotCachedAsync(initialResponse, subsequentResponse);
             }
         }
 
         [Fact]
-        public async void ServesFreshContent_IfVaryParamsStar_Mismatch_ParamValueCaseSensitive()
+        public async void ServesFreshContent_IfVaryQueryKeyStar_Mismatch_QueryKeyValueCaseSensitive()
         {
             var builder = TestUtils.CreateBuilderWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCacheFeature().VaryByParams = new[] { "*" };
+                context.GetResponseCacheFeature().VaryByQueryKeys = new[] { "*" };
                 await TestUtils.TestRequestDelegate(context);
             });
 
             using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
-                var initialResponse = await client.GetAsync("?parama=valuea&paramb=valueb");
-                var subsequentResponse = await client.GetAsync("?parama=ValueA&paramb=ValueB");
+                var initialResponse = await client.GetAsync("?querya=valuea&queryb=valueb");
+                var subsequentResponse = await client.GetAsync("?querya=ValueA&queryb=ValueB");
 
                 await AssertResponseNotCachedAsync(initialResponse, subsequentResponse);
             }

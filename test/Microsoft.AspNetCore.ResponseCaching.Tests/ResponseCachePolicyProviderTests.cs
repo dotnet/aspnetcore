@@ -385,6 +385,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var utcNow = DateTimeOffset.UtcNow;
             var context = TestUtils.CreateTestContext();
             context.ResponseTime = DateTimeOffset.MaxValue;
+            context.CachedEntryAge = TimeSpan.MaxValue;
             context.CachedResponseHeaders = new ResponseHeaders(new HeaderDictionary());
 
             Assert.True(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
@@ -396,6 +397,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var utcNow = DateTimeOffset.UtcNow;
             var context = TestUtils.CreateTestContext();
             context.ResponseTime = DateTimeOffset.MaxValue;
+            context.CachedEntryAge = TimeSpan.MaxValue;
             context.CachedResponseHeaders = new ResponseHeaders(new HeaderDictionary())
             {
                 CacheControl = new CacheControlHeaderValue()
@@ -413,6 +415,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var utcNow = DateTimeOffset.UtcNow;
             var context = TestUtils.CreateTestContext();
             context.ResponseTime = utcNow;
+            context.CachedEntryAge = TimeSpan.Zero;
             context.CachedResponseHeaders =  new ResponseHeaders(new HeaderDictionary())
             {
                 CacheControl = new CacheControlHeaderValue()

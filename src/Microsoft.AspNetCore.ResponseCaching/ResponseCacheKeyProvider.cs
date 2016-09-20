@@ -75,12 +75,12 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
 
             var varyByRules = context.CachedVaryByRules;
-            if  (varyByRules == null)
+            if (varyByRules == null)
             {
                 throw new InvalidOperationException($"{nameof(CachedVaryByRules)} must not be null on the {nameof(ResponseCacheContext)}");
             }
 
-            if ((StringValues.IsNullOrEmpty(varyByRules.Headers) && StringValues.IsNullOrEmpty(varyByRules.Params)))
+            if ((StringValues.IsNullOrEmpty(varyByRules.Headers) && StringValues.IsNullOrEmpty(varyByRules.QueryKeys)))
             {
                 return varyByRules.VaryByKeyPrefix;
             }
@@ -110,16 +110,16 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     }
                 }
 
-                // Vary by query params
-                if (varyByRules?.Params.Count > 0)
+                // Vary by query keys
+                if (varyByRules?.QueryKeys.Count > 0)
                 {
-                    // Append a group separator for the query parameter segment of the cache key
+                    // Append a group separator for the query key segment of the cache key
                     builder.Append(KeyDelimiter)
                         .Append('Q');
 
-                    if (varyByRules.Params.Count == 1 && string.Equals(varyByRules.Params[0], "*", StringComparison.Ordinal))
+                    if (varyByRules.QueryKeys.Count == 1 && string.Equals(varyByRules.QueryKeys[0], "*", StringComparison.Ordinal))
                     {
-                        // Vary by all available query params
+                        // Vary by all available query keys
                         foreach (var query in context.HttpContext.Request.Query.OrderBy(q => q.Key, StringComparer.OrdinalIgnoreCase))
                         {
                             builder.Append(KeyDelimiter)
@@ -130,13 +130,13 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     }
                     else
                     {
-                        foreach (var param in varyByRules.Params)
+                        foreach (var queryKey in varyByRules.QueryKeys)
                         {
                             builder.Append(KeyDelimiter)
-                                .Append(param)
+                                .Append(queryKey)
                                 .Append("=")
                                 // TODO: Perf - iterate the string values instead?
-                                .Append(context.HttpContext.Request.Query[param]);
+                                .Append(context.HttpContext.Request.Query[queryKey]);
                         }
                     }
                 }
