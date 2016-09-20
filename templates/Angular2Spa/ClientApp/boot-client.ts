@@ -5,10 +5,9 @@ import { AppModule } from './app/app.module';
 import 'bootstrap';
 
 // Enable either Hot Module Reloading or production mode
-const hotModuleReplacement = module['hot'];
-if (hotModuleReplacement) {
-    hotModuleReplacement.accept();
-    hotModuleReplacement.dispose(() => { platform.destroy(); });
+if (module['hot']) {
+    module['hot'].accept();
+    module['hot'].dispose(() => { platform.destroy(); });
 } else {
     enableProdMode();
 }
