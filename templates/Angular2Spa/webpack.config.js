@@ -11,7 +11,8 @@ module.exports = {
         loaders: [
             { test: /\.ts$/, include: /ClientApp/, loader: 'ts', query: { silent: true } },
             { test: /\.html$/, include: /ClientApp/, loader: 'raw' },
-            { test: /\.css/, include: /ClientApp/, loader: 'raw' }
+            { test: /\.css/, include: /ClientApp/, loader: 'to-string!css' },
+            { test: /\.(png|jpg|jpeg|gif|svg)$/, loader: 'url', query: { limit: 25000 } }
         ]
     },
     output: {
