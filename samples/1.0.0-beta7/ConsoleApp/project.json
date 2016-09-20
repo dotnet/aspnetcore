@@ -1,0 +1,16 @@
+{
+    "dependencies": {
+
+    },
+    "commands": {
+        "ConsoleApp": "ConsoleApp"
+    },
+    "frameworks": {
+        "dnx451": { },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Console": "4.0.0-beta-23220"
+            }
+        }
+    }
+}

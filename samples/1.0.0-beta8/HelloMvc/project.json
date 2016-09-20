@@ -1,0 +1,27 @@
+{
+    "version": "1.0.0-beta8",
+    "webroot": "wwwroot",
+    "exclude": [
+        "wwwroot"
+    ],
+    "packExclude": [
+        "**.kproj",
+        "**.user",
+        "**.vspscc"
+    ],
+    "dependencies": {
+        "Microsoft.AspNet.Server.Kestrel": "1.0.0-beta8",
+        "Microsoft.AspNet.IISPlatformHandler": "1.0.0-beta8",
+        "Microsoft.AspNet.Diagnostics": "1.0.0-beta8",
+        "Microsoft.AspNet.Mvc": "6.0.0-beta8",
+        "Microsoft.AspNet.Server.WebListener": "1.0.0-beta8",
+        "Microsoft.Framework.Logging.Console": "1.0.0-beta8"
+    },
+    "commands": {
+        "web": "Microsoft.AspNet.Server.Kestrel --server.urls http://*:5004"
+    },
+    "frameworks": {
+         "dnx451": { },
+         "dnxcore50": { }
+    }
+}
