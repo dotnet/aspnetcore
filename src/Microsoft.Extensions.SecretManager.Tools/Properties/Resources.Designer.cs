@@ -59,6 +59,22 @@ namespace Microsoft.Extensions.SecretManager.Tools
         }
 
         /// <summary>
+        /// The project file '{path}' does not exist.
+        /// </summary>
+        internal static string Error_ProjectPath_NotFound
+        {
+            get { return GetString("Error_ProjectPath_NotFound"); }
+        }
+
+        /// <summary>
+        /// The project file '{path}' does not exist.
+        /// </summary>
+        internal static string FormatError_ProjectPath_NotFound(object path)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_ProjectPath_NotFound", "path"), path);
+        }
+
+        /// <summary>
         /// Project file path {project}.
         /// </summary>
         internal static string Message_Project_File_Path

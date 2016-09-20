@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration.UserSecrets.Tests;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
+using Microsoft.Extensions.SecretManager.Tools.Internal;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Tests
 {
@@ -20,6 +21,17 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         public SecretManagerTests(ITestOutputHelper output)
         {
             _logger = new TestLogger(output);
+        }
+
+        [Fact]
+        public void Error_Project_DoesNotExist()
+        {
+            var projectPath = Path.Combine(Path.GetTempPath(), "dne", Guid.NewGuid().ToString(), "project.json");
+            var secretManager = new Program(Console.Out, Directory.GetCurrentDirectory()) { Logger = _logger };
+
+            var ex = Assert.Throws<GracefulException>(() => secretManager.RunInternal("list", "--project", projectPath));
+
+            Assert.Equal(ex.Message, Resources.FormatError_ProjectPath_NotFound(projectPath));
         }
 
         [Theory]

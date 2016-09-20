@@ -151,6 +151,11 @@ namespace Microsoft.Extensions.SecretManager.Tools
 
             var fileInfo = new PhysicalFileInfo(new FileInfo(projectPath));
 
+            if (!fileInfo.Exists)
+            {
+                throw new GracefulException(Resources.FormatError_ProjectPath_NotFound(projectPath));
+            }
+
             Logger.LogDebug(Resources.Message_Project_File_Path, fileInfo.PhysicalPath);
             return ReadUserSecretsId(fileInfo);
         }

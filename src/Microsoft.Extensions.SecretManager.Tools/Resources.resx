@@ -126,6 +126,9 @@
   <data name="Error_No_Secrets_Found" xml:space="preserve">
     <value>No secrets configured for this application.</value>
   </data>
+  <data name="Error_ProjectPath_NotFound" xml:space="preserve">
+    <value>The project file '{path}' does not exist.</value>
+  </data>
   <data name="Message_Project_File_Path" xml:space="preserve">
     <value>Project file path {project}.</value>
   </data>
