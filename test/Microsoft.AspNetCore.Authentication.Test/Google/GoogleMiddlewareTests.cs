@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         }
 
         [Fact]
-        public async Task AuthenticateWillFail()
+        public async Task AuthenticateWithoutCookieWillFail()
         {
             var server = CreateServer(new GoogleOptions
             {
@@ -755,6 +755,243 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 transaction.Response.Headers.GetValues("Location").First());
         }
 
+        [Fact]
+        public async Task AuthenticateAutomaticWhenAlreadySignedInSucceeds()
+        {
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
+            var server = CreateServer(new GoogleOptions
+            {
+                ClientId = "Test Id",
+                ClientSecret = "Test Secret",
+                SaveTokens = true,
+                StateDataFormat = stateFormat,
+                BackchannelHttpHandler = CreateBackchannel()
+            });
+
+            // Skip the challenge step, go directly to the callback path
+
+            var properties = new AuthenticationProperties();
+            var correlationKey = ".xsrf";
+            var correlationValue = "TestCorrelationId";
+            properties.Items.Add(correlationKey, correlationValue);
+            properties.RedirectUri = "/me";
+            var state = stateFormat.Protect(properties);
+            var transaction = await server.SendAsync(
+                "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
+                $".AspNetCore.Correlation.Google.{correlationValue}=N");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
+            Assert.Equal(2, transaction.SetCookie.Count);
+            Assert.Contains($".AspNetCore.Correlation.Google.{correlationValue}", transaction.SetCookie[0]); // Delete
+            Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
+
+            var authCookie = transaction.AuthenticationCookieValue;
+            transaction = await server.SendAsync("https://example.com/authenticate", authCookie);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+            Assert.Equal("Test Name", transaction.FindClaimValue(ClaimTypes.Name));
+            Assert.Equal("Test User ID", transaction.FindClaimValue(ClaimTypes.NameIdentifier));
+            Assert.Equal("Test Given Name", transaction.FindClaimValue(ClaimTypes.GivenName));
+            Assert.Equal("Test Family Name", transaction.FindClaimValue(ClaimTypes.Surname));
+            Assert.Equal("Test email", transaction.FindClaimValue(ClaimTypes.Email));
+
+            // Ensure claims transformation
+            Assert.Equal("yup", transaction.FindClaimValue("xform"));
+        }
+
+        [Fact]
+        public async Task AuthenticateGoogleWhenAlreadySignedInSucceeds()
+        {
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
+            var server = CreateServer(new GoogleOptions
+            {
+                ClientId = "Test Id",
+                ClientSecret = "Test Secret",
+                SaveTokens = true,
+                StateDataFormat = stateFormat,
+                BackchannelHttpHandler = CreateBackchannel()
+            });
+
+            // Skip the challenge step, go directly to the callback path
+
+            var properties = new AuthenticationProperties();
+            var correlationKey = ".xsrf";
+            var correlationValue = "TestCorrelationId";
+            properties.Items.Add(correlationKey, correlationValue);
+            properties.RedirectUri = "/me";
+            var state = stateFormat.Protect(properties);
+            var transaction = await server.SendAsync(
+                "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
+                $".AspNetCore.Correlation.Google.{correlationValue}=N");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
+            Assert.Equal(2, transaction.SetCookie.Count);
+            Assert.Contains($".AspNetCore.Correlation.Google.{correlationValue}", transaction.SetCookie[0]); // Delete
+            Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
+
+            var authCookie = transaction.AuthenticationCookieValue;
+            transaction = await server.SendAsync("https://example.com/authenticateGoogle", authCookie);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+            Assert.Equal("Test Name", transaction.FindClaimValue(ClaimTypes.Name));
+            Assert.Equal("Test User ID", transaction.FindClaimValue(ClaimTypes.NameIdentifier));
+            Assert.Equal("Test Given Name", transaction.FindClaimValue(ClaimTypes.GivenName));
+            Assert.Equal("Test Family Name", transaction.FindClaimValue(ClaimTypes.Surname));
+            Assert.Equal("Test email", transaction.FindClaimValue(ClaimTypes.Email));
+
+            // Ensure claims transformation
+            Assert.Equal("yup", transaction.FindClaimValue("xform"));
+        }
+
+        [Fact]
+        public async Task ChallengeGoogleWhenAlreadySignedInReturnsForbidden()
+        {
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
+            var server = CreateServer(new GoogleOptions
+            {
+                ClientId = "Test Id",
+                ClientSecret = "Test Secret",
+                SaveTokens = true,
+                StateDataFormat = stateFormat,
+                BackchannelHttpHandler = CreateBackchannel()
+            });
+
+            // Skip the challenge step, go directly to the callback path
+
+            var properties = new AuthenticationProperties();
+            var correlationKey = ".xsrf";
+            var correlationValue = "TestCorrelationId";
+            properties.Items.Add(correlationKey, correlationValue);
+            properties.RedirectUri = "/me";
+            var state = stateFormat.Protect(properties);
+            var transaction = await server.SendAsync(
+                "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
+                $".AspNetCore.Correlation.Google.{correlationValue}=N");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
+            Assert.Equal(2, transaction.SetCookie.Count);
+            Assert.Contains($".AspNetCore.Correlation.Google.{correlationValue}", transaction.SetCookie[0]); // Delete
+            Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
+
+            var authCookie = transaction.AuthenticationCookieValue;
+            transaction = await server.SendAsync("https://example.com/challenge", authCookie);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.StartsWith("https://example.com/Account/AccessDenied?", transaction.Response.Headers.Location.OriginalString);
+        }
+
+        [Fact]
+        public async Task AuthenticateFacebookWhenAlreadySignedWithGoogleReturnsNull()
+        {
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
+            var server = CreateServer(new GoogleOptions
+            {
+                ClientId = "Test Id",
+                ClientSecret = "Test Secret",
+                SaveTokens = true,
+                StateDataFormat = stateFormat,
+                BackchannelHttpHandler = CreateBackchannel()
+            });
+
+            // Skip the challenge step, go directly to the callback path
+
+            var properties = new AuthenticationProperties();
+            var correlationKey = ".xsrf";
+            var correlationValue = "TestCorrelationId";
+            properties.Items.Add(correlationKey, correlationValue);
+            properties.RedirectUri = "/me";
+            var state = stateFormat.Protect(properties);
+            var transaction = await server.SendAsync(
+                "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
+                $".AspNetCore.Correlation.Google.{correlationValue}=N");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
+            Assert.Equal(2, transaction.SetCookie.Count);
+            Assert.Contains($".AspNetCore.Correlation.Google.{correlationValue}", transaction.SetCookie[0]); // Delete
+            Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
+
+            var authCookie = transaction.AuthenticationCookieValue;
+            transaction = await server.SendAsync("https://example.com/authenticateFacebook", authCookie);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+            Assert.Equal(null, transaction.FindClaimValue(ClaimTypes.Name));
+        }
+
+        [Fact]
+        public async Task ChallengeFacebookWhenAlreadySignedWithGoogleSucceeds()
+        {
+            var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("GoogleTest"));
+            var server = CreateServer(new GoogleOptions
+            {
+                ClientId = "Test Id",
+                ClientSecret = "Test Secret",
+                SaveTokens = true,
+                StateDataFormat = stateFormat,
+                BackchannelHttpHandler = CreateBackchannel()
+            });
+
+            // Skip the challenge step, go directly to the callback path
+
+            var properties = new AuthenticationProperties();
+            var correlationKey = ".xsrf";
+            var correlationValue = "TestCorrelationId";
+            properties.Items.Add(correlationKey, correlationValue);
+            properties.RedirectUri = "/me";
+            var state = stateFormat.Protect(properties);
+            var transaction = await server.SendAsync(
+                "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
+                $".AspNetCore.Correlation.Google.{correlationValue}=N");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
+            Assert.Equal(2, transaction.SetCookie.Count);
+            Assert.Contains($".AspNetCore.Correlation.Google.{correlationValue}", transaction.SetCookie[0]); // Delete
+            Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
+
+            var authCookie = transaction.AuthenticationCookieValue;
+            transaction = await server.SendAsync("https://example.com/challengeFacebook", authCookie);
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.StartsWith("https://www.facebook.com/", transaction.Response.Headers.Location.OriginalString);
+        }
+
+        private HttpMessageHandler CreateBackchannel()
+        {
+            return new TestHttpMessageHandler()
+            {
+                Sender = req =>
+                {
+                    if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v4/token")
+                    {
+                        return ReturnJsonResponse(new
+                        {
+                            access_token = "Test Access Token",
+                            expires_in = 3600,
+                            token_type = "Bearer"
+                        });
+                    }
+                    else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://www.googleapis.com/plus/v1/people/me")
+                    {
+                        return ReturnJsonResponse(new
+                        {
+                            id = "Test User ID",
+                            displayName = "Test Name",
+                            name = new
+                            {
+                                familyName = "Test Family Name",
+                                givenName = "Test Given Name"
+                            },
+                            url = "Profile link",
+                            emails = new[]
+                            {
+                                new
+                                {
+                                    value = "Test email",
+                                    type = "account"
+                                }
+                            }
+                        });
+                    }
+
+                    throw new NotImplementedException(req.RequestUri.AbsoluteUri);
+                }
+            };
+        }
+
         private static HttpResponseMessage ReturnJsonResponse(object content, HttpStatusCode code = HttpStatusCode.OK)
         {
             var res = new HttpResponseMessage(code);
@@ -774,6 +1011,11 @@ namespace Microsoft.AspNetCore.Authentication.Google
                         AutomaticAuthenticate = true
                     });
                     app.UseGoogleAuthentication(options);
+                    app.UseFacebookAuthentication(new FacebookOptions()
+                    {
+                        AppId = "Test AppId",
+                        AppSecret = "Test AppSecrent",
+                    });
                     app.UseClaimsTransformation(context =>
                     {
                         var id = new ClaimsIdentity("xform");
@@ -789,6 +1031,10 @@ namespace Microsoft.AspNetCore.Authentication.Google
                         {
                             await context.Authentication.ChallengeAsync("Google");
                         }
+                        else if (req.Path == new PathString("/challengeFacebook"))
+                        {
+                            await context.Authentication.ChallengeAsync("Facebook");
+                        }
                         else if (req.Path == new PathString("/tokens"))
                         {
                             var authContext = new AuthenticateContext(TestExtensions.CookieAuthenticationScheme);
@@ -799,6 +1045,21 @@ namespace Microsoft.AspNetCore.Authentication.Google
                         else if (req.Path == new PathString("/me"))
                         {
                             res.Describe(context.User);
+                        }
+                        else if (req.Path == new PathString("/authenticate"))
+                        {
+                            var user = await context.Authentication.AuthenticateAsync(Http.Authentication.AuthenticationManager.AutomaticScheme);
+                            res.Describe(user);
+                        }
+                        else if (req.Path == new PathString("/authenticateGoogle"))
+                        {
+                            var user = await context.Authentication.AuthenticateAsync("Google");
+                            res.Describe(user);
+                        }
+                        else if (req.Path == new PathString("/authenticateFacebook"))
+                        {
+                            var user = await context.Authentication.AuthenticateAsync("Facebook");
+                            res.Describe(user);
                         }
                         else if (req.Path == new PathString("/unauthorized"))
                         {

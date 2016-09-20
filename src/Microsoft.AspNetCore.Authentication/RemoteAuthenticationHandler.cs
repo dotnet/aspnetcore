@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Authentication
         private const string CorrelationPrefix = ".AspNetCore.Correlation.";
         private const string CorrelationProperty = ".xsrf";
         private const string CorrelationMarker = "N";
+        private const string AuthSchemeKey = ".AuthScheme";
 
         private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
 
@@ -86,6 +87,9 @@ namespace Microsoft.AspNetCore.Authentication
             // REVIEW: is this safe or good?
             ticket.Properties.RedirectUri = null;
 
+            // Mark which provider produced this identity so we can cross-check later in HandleAuthenticateAsync
+            context.Properties.Items[AuthSchemeKey] = Options.AuthenticationScheme;
+
             await Options.Events.TicketReceived(context);
 
             if (context.HandledResponse)
@@ -132,7 +136,11 @@ namespace Microsoft.AspNetCore.Authentication
                         return AuthenticateResult.Fail(authenticateContext.Error);
                     }
 
-                    if (authenticateContext.Principal != null)
+                    // The SignInScheme may be shared with multiple providers, make sure this middleware issued the identity.
+                    string authenticatedScheme;
+                    if (authenticateContext.Principal != null && authenticateContext.Properties != null
+                        && authenticateContext.Properties.TryGetValue(AuthSchemeKey, out authenticatedScheme)
+                        && string.Equals(Options.AuthenticationScheme, authenticatedScheme, StringComparison.Ordinal))
                     {
                         return AuthenticateResult.Success(new AuthenticationTicket(authenticateContext.Principal,
                             new AuthenticationProperties(authenticateContext.Properties), Options.AuthenticationScheme));
@@ -143,7 +151,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             }
 
-            return AuthenticateResult.Fail("Remote authentication does not support authenticate");
+            return AuthenticateResult.Fail("Remote authentication does not directly support authenticate");
         }
 
         protected override Task HandleSignOutAsync(SignOutContext context)
