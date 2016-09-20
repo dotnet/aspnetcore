@@ -4,6 +4,7 @@
 #pragma once
 
 #define FILE_WATCHER_SHUTDOWN_KEY           (ULONG_PTR)(-1)
+#define FILE_WATCHER_ENTRY_BUFFER_SIZE      4096
 #ifndef CONTAINING_RECORD
 //
 // Calculate the address of the base of the structure given its type, and an
@@ -53,14 +54,12 @@ public:
 private:
     HANDLE               m_hCompletionPort;
     HANDLE               m_hChangeNotificationThread;
-    CRITICAL_SECTION     m_csSyncRoot;
 };
 
 class FILE_WATCHER_ENTRY
 {
 public:
     FILE_WATCHER_ENTRY(FILE_WATCHER *   pFileMonitor);
-    virtual ~FILE_WATCHER_ENTRY();
 
     OVERLAPPED    _overlapped;
 
@@ -71,6 +70,33 @@ public:
         _In_ APPLICATION*            pApplication,
         _In_ HANDLE                  hImpersonationToken
         );
+
+    VOID
+    ReferenceFileWatcherEntry() const
+    {
+        InterlockedIncrement(&_cRefs);
+    }
+
+    VOID
+    DereferenceFileWatcherEntry() const
+    {
+        if (InterlockedDecrement(&_cRefs) == 0)
+        {
+            delete this;
+        }
+    }
+
+    BOOL
+    QueryIsValid() const
+    {
+        return _fIsValid;
+    }
+
+    VOID
+    MarkEntryInValid()
+    {
+        _fIsValid = FALSE;
+    }
 
     HRESULT Monitor();
 
@@ -83,6 +109,8 @@ public:
         );
 
 private:
+    virtual ~FILE_WATCHER_ENTRY();
+
     DWORD                   _dwSignature;
     BUFFER                  _buffDirectoryChanges;
     HANDLE                  _hImpersonationToken;
@@ -92,5 +120,7 @@ private:
     STRU                    _strFileName;
     STRU                    _strDirectoryName;
     LONG                    _lStopMonitorCalled;
+    mutable LONG            _cRefs;
+    BOOL                    _fIsValid;
     SRWLOCK                 _srwLock;
 };

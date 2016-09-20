@@ -129,6 +129,7 @@ SERVER_PROCESS::StartProcess(
     WCHAR*                  pszPath = NULL;
     WCHAR                   pszFullPath[_MAX_PATH];
     LPCWSTR                 apsz[1];
+    PCWSTR pszAppPath = NULL;
 
     GetStartupInfoW(&startupInfo);
 
@@ -243,8 +244,6 @@ SERVER_PROCESS::StartProcess(
 
     struApplicationId.Copy( L"ASPNETCORE_APPL_PATH=" );
 
-    PCWSTR pszAppPath = NULL;
-
     // let's find the app path. IIS does not support nested sites
     // we can seek for the fourth '/' if it exits
     // MACHINE/WEBROOT/APPHOST/<site>/<app>. 
@@ -277,7 +276,7 @@ SERVER_PROCESS::StartProcess(
 
     mszNewEnvironment.Append( struGuidEnv );
 
-    pszRootApplicationPath = context->GetRootContext()->GetApplication()->GetApplicationPhysicalPath();
+    pszRootApplicationPath = context->GetApplication()->GetApplicationPhysicalPath();
 
     //
     // generate process command line.
@@ -486,8 +485,11 @@ SERVER_PROCESS::StartProcess(
         // don't check return code as we already in error report
         strEventMsg.SafeSnwprintf(
             ASPNETCORE_EVENT_PROCESS_START_ERROR_MSG,
+            pszAppPath,
+            pszRootApplicationPath,
             finalCommandLine.QueryStr(),
-            hr);
+            hr,
+            0);
         goto Finished;
     }
 
@@ -537,8 +539,11 @@ SERVER_PROCESS::StartProcess(
                 hr = E_FAIL;
                 strEventMsg.SafeSnwprintf(
                     ASPNETCORE_EVENT_PROCESS_START_ERROR_MSG,
+                    pszAppPath,
+                    pszRootApplicationPath,
                     finalCommandLine.QueryStr(),
-                    hr);
+                    hr,
+                    processStatus);
                 goto Finished;
             }
         }
@@ -632,6 +637,8 @@ SERVER_PROCESS::StartProcess(
             hr = HRESULT_FROM_WIN32(ERROR_TIMEOUT);
             strEventMsg.SafeSnwprintf(
                 ASPNETCORE_EVENT_PROCESS_START_NOTREADY_ERROR_MSG,
+                pszAppPath,
+                pszRootApplicationPath,
                 finalCommandLine.QueryStr(),
                 m_dwPort,
                 hr);
@@ -649,6 +656,8 @@ SERVER_PROCESS::StartProcess(
         fReady = FALSE;
         strEventMsg.SafeSnwprintf(
             ASPNETCORE_EVENT_PROCESS_START_WRONGPORT_ERROR_MSG,
+            pszAppPath,
+            pszRootApplicationPath,
             finalCommandLine.QueryStr(),
             m_dwPort,
             hr);
@@ -678,6 +687,8 @@ SERVER_PROCESS::StartProcess(
         {
             strEventMsg.SafeSnwprintf(
                 ASPNETCORE_EVENT_PROCESS_START_NOTREADY_ERROR_MSG,
+                pszAppPath,
+                pszRootApplicationPath,
                 finalCommandLine.QueryStr(),
                 m_dwPort,
                 hr);
@@ -724,6 +735,7 @@ SERVER_PROCESS::StartProcess(
 
     if (SUCCEEDED(strEventMsg.SafeSnwprintf(
         ASPNETCORE_EVENT_PROCESS_START_SUCCESS_MSG,
+		pszAppPath,
         m_dwProcessId,
         m_dwPort)))
     {
@@ -754,11 +766,14 @@ Finished:
         {
             if (!fDonePrepareCommandLine)
                 strEventMsg.SafeSnwprintf(
+                pszAppPath,
                 ASPNETCORE_EVENT_PROCESS_START_INTERNAL_ERROR_MSG,
                 hr);
             else
                 strEventMsg.SafeSnwprintf(
                 ASPNETCORE_EVENT_PROCESS_START_POSTCREATE_ERROR_MSG,
+                pszAppPath,
+                pszRootApplicationPath,
                 finalCommandLine.QueryStr(),
                 hr);
         }

@@ -39,15 +39,7 @@ public:
     HRESULT
     GetApplication(
         _In_ IHttpContext*         pContext,
-        _In_ LPCWSTR               pszApplication,
         _Out_ APPLICATION **       ppApplication
-    );
-
-    static
-    VOID
-    RecycleOnFileChange(
-        APPLICATION_MANAGER* manager, 
-        APPLICATION* application
     );
 
     HRESULT

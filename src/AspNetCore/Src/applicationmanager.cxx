@@ -8,7 +8,6 @@ APPLICATION_MANAGER* APPLICATION_MANAGER::sm_pApplicationManager = NULL;
 HRESULT
 APPLICATION_MANAGER::GetApplication(
     _In_ IHttpContext*         pContext,
-    _In_ LPCWSTR               pszApplication,
     _Out_ APPLICATION **       ppApplication
 )
 {
@@ -16,11 +15,15 @@ APPLICATION_MANAGER::GetApplication(
     APPLICATION     *pApplication = NULL;
     APPLICATION_KEY  key;
     BOOL             fExclusiveLock = FALSE;
-
+    PCWSTR           pszApplicationId = NULL;
 
     *ppApplication = NULL;
+    
+    DBG_ASSERT(pContext != NULL);
+    DBG_ASSERT(pContext->GetApplication() != NULL);
+    pszApplicationId = pContext->GetApplication()->GetApplicationId();
 
-    hr = key.Initialize(pszApplication);
+    hr = key.Initialize(pszApplicationId);
     if (FAILED(hr))
     {
         goto Finished;
@@ -50,7 +53,7 @@ APPLICATION_MANAGER::GetApplication(
             goto Finished;
         }
 
-        hr = pApplication->Initialize(this, pszApplication, pContext->GetApplication()->GetApplicationPhysicalPath());
+        hr = pApplication->Initialize(this, pszApplicationId, pContext->GetApplication()->GetApplicationPhysicalPath());
         if (FAILED(hr))
         {
             goto Finished;
@@ -88,14 +91,6 @@ Finished:
     return hr;
 }
 
-VOID
-APPLICATION_MANAGER::RecycleOnFileChange(
-    APPLICATION_MANAGER*,
-APPLICATION*
-)
-{
-    g_pHttpServer->RecycleProcess(L"Asp.Net Core Module Recycle Process on File Change Notification");
-}
 
 HRESULT
 APPLICATION_MANAGER::RecycleApplication(

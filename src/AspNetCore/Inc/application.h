@@ -202,12 +202,6 @@ public:
         return m_pAppOfflineHtm;
     }
 
-    STRU*
-    QueryApplicationPhysicalPath()
-    {
-        return &m_strAppPhysicalPath;
-    }
-
     ~APPLICATION();
 
     HRESULT

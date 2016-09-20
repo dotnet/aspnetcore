@@ -359,18 +359,10 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
         DWORD headerIndex = g_pResponseHeaderHash->GetIndex(strHeaderName.QueryStr());
         if (headerIndex == UNKNOWN_INDEX)
         {
-            if (_strnicmp(strHeaderName.QueryStr(), "Sec-WebSocket", 13) != 0 )
-            {
-                //
-                // Perf Opt: Avoid setting websocket headers, since IIS websocket module
-                // will anyways set these later in the pipeline.
-                //
-
-                hr = pResponse->SetHeader(strHeaderName.QueryStr(),
-                                          strHeaderValue.QueryStr(),
-                                          static_cast<USHORT>(strHeaderValue.QueryCCH()),
-                                          FALSE); // fReplace
-            }
+            hr = pResponse->SetHeader(strHeaderName.QueryStr(),
+                                      strHeaderValue.QueryStr(),
+                                      static_cast<USHORT>(strHeaderValue.QueryCCH()),
+                                      FALSE); // fReplace
         }
         else
         {
@@ -1074,7 +1066,6 @@ VOID
     }
 
     hr = pApplicationManager->GetApplication( m_pW3Context,
-                                              m_pW3Context->GetApplication()->GetAppConfigPath(),
                                               &m_pApplication );
     if (FAILED(hr))
     {

@@ -7,8 +7,11 @@ APPLICATION::~APPLICATION()
 {
     if (m_pFileWatcherEntry != NULL)
     {
+        // Mark the entry as invalid,
+        // StopMonitor will close the file handle and trigger a FCN
+        // the entry will delete itself when processing this FCN 
+        m_pFileWatcherEntry->MarkEntryInValid();
         m_pFileWatcherEntry->StopMonitor();
-        delete m_pFileWatcherEntry;
         m_pFileWatcherEntry = NULL;
     }
 
@@ -76,7 +79,7 @@ Finished:
     {
         if (m_pFileWatcherEntry != NULL)
         {
-            delete m_pFileWatcherEntry;
+            m_pFileWatcherEntry->DereferenceFileWatcherEntry();
             m_pFileWatcherEntry = NULL;
         }
 
