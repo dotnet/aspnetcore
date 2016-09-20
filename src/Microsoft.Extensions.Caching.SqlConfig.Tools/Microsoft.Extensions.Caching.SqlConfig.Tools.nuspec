@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.Extensions.Caching.SqlConfig.Tools</id>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Command line tool to create tables and indexes in a Microsoft SQL Server database for distributed caching.</description>
+    <tags>cache,distributedcache,sqlserver</tags>
+    <serviceable>true</serviceable>
+    <packageTypes>
+      <packageType name="DotnetCliTool" />
+    </packageTypes>
+    <dependencies>
+      <group targetFramework=".NETCoreApp1.0">
+        <dependency id="Microsoft.Extensions.CommandLineUtils" version="$dep_1$" />
+        <dependency id="Microsoft.Extensions.Logging" version="$dep_2$" />
+        <dependency id="Microsoft.Extensions.Logging.Console" version="$dep_3$" />
+        <dependency id="Microsoft.NETCore.App" version="$dep_4$" />
+        <dependency id="System.Data.SqlClient" version="$dep_5$" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin/$configuration$/netcoreapp1.0/dotnet-sql-cache.dll" target="lib\netcoreapp1.0\" />
+    <file src="bin/$configuration$/netcoreapp1.0/dotnet-sql-cache.runtimeconfig.json" target="lib\netcoreapp1.0\" />
+  </files>
+</package>

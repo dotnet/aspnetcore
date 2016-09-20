@@ -11,14 +11,9 @@
     "outputName": "dotnet-watch",
     "warningsAsErrors": true,
     "emitEntryPoint": true,
-    "keyFile": "../../tools/Key.snk",
-    "nowarn": [
-      "CS1591"
-    ],
-    "xmlDoc": true
+    "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0",
     "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
     "Microsoft.Extensions.CommandLineUtils": "1.1.0-*",
     "Microsoft.Extensions.Logging": "1.1.0-*",
@@ -26,16 +21,14 @@
     "Microsoft.Extensions.Process.Sources": {
       "type": "build",
       "version": "1.1.0-*"
-    }
+    },
+    "Microsoft.NETCore.App": {
+      "type": "platform",
+      "version": "1.0.0"
+    },
+    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0"
   },
   "frameworks": {
-    "netcoreapp1.0": {
-      "dependencies": {
-        "Microsoft.NETCore.App": {
-          "type": "platform",
-          "version": "1.0.0"
-        }
-      }
-    }
+    "netcoreapp1.0": {}
   }
 }

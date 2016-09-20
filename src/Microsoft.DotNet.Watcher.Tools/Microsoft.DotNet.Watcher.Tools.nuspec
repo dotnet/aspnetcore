@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.DotNet.Watcher.Tools</id>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Command line tool to watch for source file changes during development and restart the dotnet command.</description>
+    <tags>dotnet,watch</tags>
+    <serviceable>true</serviceable>
+    <packageTypes>
+      <packageType name="DotnetCliTool" />
+    </packageTypes>
+    <dependencies>
+      <group targetFramework=".NETCoreApp1.0">
+        <dependency id="Microsoft.DotNet.Cli.Utils" version="$dep_1$" />
+        <dependency id="Microsoft.Extensions.CommandLineUtils" version="$dep_2$" />
+        <dependency id="Microsoft.Extensions.Logging" version="$dep_3$" />
+        <dependency id="Microsoft.Extensions.Logging.Console" version="$dep_4$" />
+        <dependency id="Microsoft.NETCore.App" version="$dep_5$" />
+        <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="$dep_6$" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin/$configuration$/netcoreapp1.0/dotnet-watch.dll" target="lib\netcoreapp1.0\" />
+    <file src="bin/$configuration$/netcoreapp1.0/dotnet-watch.runtimeconfig.json" target="lib/netcoreapp1.0\" />
+  </files>
+</package>

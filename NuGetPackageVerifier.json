@@ -1,15 +1,36 @@
 {
-    "adx": { // Packages written by the ADX team and that ship on NuGet.org
+    "adx": {
         "rules": [
             "AdxVerificationCompositeRule"
         ],
         "packages": {
-            "Microsoft.DotNet.Watcher.Tools": { },
-            "Microsoft.Extensions.Caching.SqlConfig.Tools": { },
-            "Microsoft.Extensions.SecretManager.Tools": { }
+            "Microsoft.DotNet.Watcher.Tools": {
+                "nowarn": {
+                    "DOC_MISSING": {
+                        "lib/netcoreapp1.0/dotnet-watch.dll": "xmldocs not required for DotnetCliTool packages"
+                    }
+                },
+                "packageTypes": ["DotnetCliTool"]
+            },
+            "Microsoft.Extensions.Caching.SqlConfig.Tools": {
+                "nowarn": {
+                    "DOC_MISSING": {
+                        "lib/netcoreapp1.0/dotnet-sql-cache.dll": "xmldocs not required for DotnetCliTool packages"
+                    }
+                },
+                "packageTypes": ["DotnetCliTool"]
+            },
+            "Microsoft.Extensions.SecretManager.Tools": {
+                "nowarn": {
+                    "DOC_MISSING": {
+                        "lib/netcoreapp1.0/dotnet-user-secrets.dll": "xmldocs not required for DotnetCliTool packages"
+                    }
+                },
+                "packageTypes": ["DotnetCliTool"]
+            }
         }
     },
-    "Default": { // Rules to run for packages not listed in any other set.
+    "Default": {
         "rules": [
             "DefaultCompositeRule"
         ]
