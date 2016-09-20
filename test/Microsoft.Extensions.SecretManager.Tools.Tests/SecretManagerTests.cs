@@ -14,24 +14,54 @@ using Microsoft.Extensions.SecretManager.Tools.Internal;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Tests
 {
-    public class SecretManagerTests
+    public class SecretManagerTests : IDisposable
     {
         private TestLogger _logger;
+        private Stack<Action> _disposables = new Stack<Action>();
 
         public SecretManagerTests(ITestOutputHelper output)
         {
             _logger = new TestLogger(output);
         }
 
+        private string GetTempSecretProject()
+        {
+            var projectPath = UserSecretHelper.GetTempSecretProject();
+            _disposables.Push(() => UserSecretHelper.DeleteTempSecretProject(projectPath));
+            return projectPath;
+        }
+
+        public void Dispose()
+        {
+            while (_disposables.Count > 0)
+            {
+                _disposables.Pop().Invoke();
+            }
+        }
+
         [Fact]
         public void Error_Project_DoesNotExist()
         {
-            var projectPath = Path.Combine(Path.GetTempPath(), "dne", Guid.NewGuid().ToString(), "project.json");
+            var projectPath = Path.Combine(GetTempSecretProject(), "does_not_exist", "project.json");
             var secretManager = new Program(Console.Out, Directory.GetCurrentDirectory()) { Logger = _logger };
 
             var ex = Assert.Throws<GracefulException>(() => secretManager.RunInternal("list", "--project", projectPath));
 
-            Assert.Equal(ex.Message, Resources.FormatError_ProjectPath_NotFound(projectPath));
+            Assert.Equal(Resources.FormatError_ProjectPath_NotFound(projectPath), ex.Message);
+        }
+
+        [Fact]
+        public void SupportsRelativePaths()
+        {
+            var projectPath = GetTempSecretProject();
+            var cwd = Path.Combine(projectPath, "nested1");
+            Directory.CreateDirectory(cwd);
+            var secretManager = new Program(Console.Out, cwd) { Logger = _logger, CommandOutputProvider = _logger.CommandOutputProvider };
+            secretManager.CommandOutputProvider.LogLevel = LogLevel.Debug;
+
+            secretManager.RunInternal("list", "-p", "../", "--verbose");
+
+            Assert.Contains(Resources.FormatMessage_Project_File_Path(Path.Combine(projectPath, "project.json")), _logger.Messages);
         }
 
         [Theory]
@@ -47,8 +77,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
                             new KeyValuePair<string, string>("key2", string.Empty)
                         };
 
-            var projectPath = UserSecretHelper.GetTempSecretProject();
-
+            var projectPath = GetTempSecretProject();
             var dir = fromCurrentDirectory
                 ? projectPath
                 : Path.GetTempPath();
@@ -102,14 +131,12 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             secretManager.RunInternal(args);
             Assert.Equal(1, _logger.Messages.Count);
             Assert.Contains(Resources.Error_No_Secrets_Found, _logger.Messages);
-
-            UserSecretHelper.DeleteTempSecretProject(projectPath);
         }
 
         [Fact]
         public void SetSecret_Update_Existing_Secret()
         {
-            var projectPath = UserSecretHelper.GetTempSecretProject();
+            var projectPath = GetTempSecretProject();
             var secretManager = new Program() { Logger = _logger };
 
             secretManager.RunInternal("set", "secret1", "value1", "-p", projectPath);
@@ -124,14 +151,12 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             secretManager.RunInternal("list", "-p", projectPath);
             Assert.Equal(1, _logger.Messages.Count);
             Assert.Contains("secret1 = value2", _logger.Messages);
-
-            UserSecretHelper.DeleteTempSecretProject(projectPath);
         }
 
         [Fact]
         public void SetSecret_With_Verbose_Flag()
         {
-            var projectPath = UserSecretHelper.GetTempSecretProject();
+            var projectPath = GetTempSecretProject();
             _logger.SetLevel(LogLevel.Debug);
             var secretManager = new Program() { Logger = _logger };
 
@@ -148,14 +173,12 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             Assert.Contains(string.Format("Project file path {0}.", Path.Combine(projectPath, "project.json")), _logger.Messages);
             Assert.Contains(string.Format("Secrets file path {0}.", PathHelper.GetSecretsPath(projectPath)), _logger.Messages);
             Assert.Contains("secret1 = value1", _logger.Messages);
-
-            UserSecretHelper.DeleteTempSecretProject(projectPath);
         }
 
         [Fact]
         public void Remove_Non_Existing_Secret()
         {
-            var projectPath = UserSecretHelper.GetTempSecretProject();
+            var projectPath = GetTempSecretProject();
             var secretManager = new Program() { Logger = _logger };
             secretManager.RunInternal("remove", "secret1", "-p", projectPath);
             Assert.Equal(1, _logger.Messages.Count);
@@ -165,7 +188,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         [Fact]
         public void Remove_Is_Case_Insensitive()
         {
-            var projectPath = UserSecretHelper.GetTempSecretProject();
+            var projectPath = GetTempSecretProject();
             var secretManager = new Program() { Logger = _logger };
             secretManager.RunInternal("set", "SeCreT1", "value", "-p", projectPath);
             secretManager.RunInternal("list", "-p", projectPath);
@@ -177,14 +200,12 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             secretManager.RunInternal("list", "-p", projectPath);
 
             Assert.Contains(Resources.Error_No_Secrets_Found, _logger.Messages);
-
-            UserSecretHelper.DeleteTempSecretProject(projectPath);
         }
 
         [Fact]
         public void List_Flattens_Nested_Objects()
         {
-            var projectPath = UserSecretHelper.GetTempSecretProject();
+            var projectPath = GetTempSecretProject();
             var secretsFile = PathHelper.GetSecretsPath(projectPath);
             Directory.CreateDirectory(Path.GetDirectoryName(secretsFile));
             File.WriteAllText(secretsFile, @"{ ""AzureAd"": { ""ClientSecret"": ""abcdéƒ©˙î""} }", Encoding.UTF8);
@@ -192,14 +213,12 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             secretManager.RunInternal("list", "-p", projectPath);
             Assert.Equal(1, _logger.Messages.Count);
             Assert.Contains("AzureAd:ClientSecret = abcdéƒ©˙î", _logger.Messages);
-
-            UserSecretHelper.DeleteTempSecretProject(projectPath);
         }
 
         [Fact]
         public void Set_Flattens_Nested_Objects()
         {
-            var projectPath = UserSecretHelper.GetTempSecretProject();
+            var projectPath = GetTempSecretProject();
             var secretsFile = PathHelper.GetSecretsPath(projectPath);
             Directory.CreateDirectory(Path.GetDirectoryName(secretsFile));
             File.WriteAllText(secretsFile, @"{ ""AzureAd"": { ""ClientSecret"": ""abcdéƒ©˙î""} }", Encoding.UTF8);
@@ -215,14 +234,12 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
     ""AzureAd:ClientSecret"": ""¡™£¢∞""
 }",
                 fileContents, ignoreLineEndingDifferences: true, ignoreWhiteSpaceDifferences: true);
-
-            UserSecretHelper.DeleteTempSecretProject(projectPath);
         }
 
         [Fact]
         public void List_Empty_Secrets_File()
         {
-            var projectPath = UserSecretHelper.GetTempSecretProject();
+            var projectPath = GetTempSecretProject();
             var secretManager = new Program() { Logger = _logger };
             secretManager.RunInternal("list", "-p", projectPath);
             Assert.Equal(1, _logger.Messages.Count);
@@ -234,7 +251,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         [InlineData(false)]
         public void Clear_Secrets(bool fromCurrentDirectory)
         {
-            var projectPath = UserSecretHelper.GetTempSecretProject();
+            var projectPath = GetTempSecretProject();
 
             var dir = fromCurrentDirectory
                 ? projectPath

@@ -144,6 +144,11 @@ namespace Microsoft.Extensions.SecretManager.Tools
         {
             var projectPath = options.Project ?? _workingDirectory;
 
+            if (!Path.IsPathRooted(projectPath))
+            {
+                projectPath = Path.Combine(_workingDirectory, projectPath);
+            }
+
             if (!projectPath.EndsWith("project.json", StringComparison.OrdinalIgnoreCase))
             {
                 projectPath = Path.Combine(projectPath, "project.json");

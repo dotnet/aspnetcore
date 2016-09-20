@@ -10,20 +10,20 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
 {
     public class TestLogger : ILogger
     {
-        private CommandOutputProvider _commandOutputProvider;
         private readonly ILogger _wrapped;
         private readonly ITestOutputHelper _output;
 
         public TestLogger(ITestOutputHelper output = null)
         {
-            _commandOutputProvider = new CommandOutputProvider();
-            _wrapped = _commandOutputProvider.CreateLogger("");
+            CommandOutputProvider = new CommandOutputProvider();
+            _wrapped = CommandOutputProvider.CreateLogger("");
             _output = output;
         }
+        public CommandOutputProvider CommandOutputProvider { get;}
 
         public void SetLevel(LogLevel level)
         {
-            _commandOutputProvider.LogLevel = LogLevel.Debug;
+            CommandOutputProvider.LogLevel = level;
         }
 
         public List<string> Messages { get; set; } = new List<string>();
