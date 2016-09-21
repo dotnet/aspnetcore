@@ -8,7 +8,7 @@
      <PlatformToolset Condition=" '$(VisualStudioVersion)' == '12.0'">v120</PlatformToolset>
      <PlatformToolset Condition=" '$(VisualStudioVersion)' == '14.0'">v140</PlatformToolset>
      <PlatformToolset Condition=" '$(PlatformToolset)' == ''">v120</PlatformToolset>
-     <OutputPath Condition="'$(OutputPath)' == ''">$(SolutionDir)$(Configuration)\$(Platform)\</OutputPath>
+     <OutputPath Condition="'$(OutputPath)' == ''">$(MSBuildProjectDirectory)\bin\$(Configuration)\$(Platform)\</OutputPath>
      <OutDir>$(OutputPath)</OutDir>
      <AspNetCoreModuleTargetName>aspnetcore</AspNetCoreModuleTargetName>
    </PropertyGroup>
