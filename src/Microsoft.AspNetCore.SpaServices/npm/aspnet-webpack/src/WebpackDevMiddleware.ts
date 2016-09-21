@@ -73,7 +73,7 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
                 try {
                     aspNetWebpackReactModule = require('aspnet-webpack-react');
                 } catch(ex) {
-                    callback('To use ReactHotModuleReplacement, you must install the NPM package \'aspnet-webpack-react\'.', null);
+                    callback('ReactHotModuleReplacement failed because of an error while loading \'aspnet-webpack-react\'. Error was: ' + ex.stack, null);
                     return;
                 }
 
@@ -93,7 +93,7 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
             try {
                 webpackHotMiddlewareModule = require('webpack-hot-middleware');
             } catch (ex) {
-                callback('To use HotModuleReplacement, you must install the NPM package \'webpack-hot-middleware\'.', null);
+                callback('HotModuleReplacement failed because of an error while loading \'webpack-hot-middleware\'. Error was: ' + ex.stack, null);
                 return;
             }
             app.use(webpackHotMiddlewareModule(compiler));

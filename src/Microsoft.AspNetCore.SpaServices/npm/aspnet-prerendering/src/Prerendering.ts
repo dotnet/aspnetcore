@@ -128,7 +128,7 @@ function findBootModule<T>(applicationBasePath: string, bootModule: BootModuleIn
         try {
             aspNetWebpackModule = require('aspnet-webpack');
         } catch (ex) {
-            callback('To load your boot module via webpack (i.e., if you specify a \'webpackConfig\' option), you must install the \'aspnet-webpack\' NPM package.', null);
+            callback('To load your boot module via webpack (i.e., if you specify a \'webpackConfig\' option), you must install the \'aspnet-webpack\' NPM package. Error encountered while loading \'aspnet-webpack\': ' + ex.stack, null);
             return;
         }
 
