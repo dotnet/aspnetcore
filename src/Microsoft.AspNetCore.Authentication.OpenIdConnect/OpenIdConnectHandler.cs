@@ -507,14 +507,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 // if any of the error fields are set, throw error null
                 if (!string.IsNullOrEmpty(authorizationResponse.Error))
                 {
-                    Logger.AuthorizationResponseError(
-                        authorizationResponse.Error,
-                        authorizationResponse.ErrorDescription ?? "ErrorDecription null",
-                        authorizationResponse.ErrorUri ?? "ErrorUri null");
-
-                    return AuthenticateResult.Fail(new OpenIdConnectProtocolException(
-                        string.Format(CultureInfo.InvariantCulture, Resources.MessageContainsError, authorizationResponse.Error,
-                        authorizationResponse.ErrorDescription ?? "ErrorDecription null", authorizationResponse.ErrorUri ?? "ErrorUri null")));
+                    return AuthenticateResult.Fail(CreateOpenIdConnectProtocolException(authorizationResponse, response: null));
                 }
 
                 if (_configuration == null && Options.ConfigurationManager != null)
@@ -590,6 +583,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                     {
                         return result;
                     }
+
                     authorizationResponse = tokenResponseReceivedContext.ProtocolMessage;
                     tokenEndpointResponse = tokenResponseReceivedContext.TokenEndpointResponse;
 
@@ -684,20 +678,50 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         }
 
         /// <summary>
-        /// Redeems the authorization code for tokens at the token endpoint
+        /// Redeems the authorization code for tokens at the token endpoint.
         /// </summary>
         /// <param name="tokenEndpointRequest">The request that will be sent to the token endpoint and is available for customization.</param>
         /// <returns>OpenIdConnect message that has tokens inside it.</returns>
         protected virtual async Task<OpenIdConnectMessage> RedeemAuthorizationCodeAsync(OpenIdConnectMessage tokenEndpointRequest)
         {
             Logger.RedeemingCodeForTokens();
+
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, _configuration.TokenEndpoint);
             requestMessage.Content = new FormUrlEncodedContent(tokenEndpointRequest.Parameters);
+
             var responseMessage = await Backchannel.SendAsync(requestMessage);
-            responseMessage.EnsureSuccessStatusCode();
-            var tokenResonse = await responseMessage.Content.ReadAsStringAsync();
-            var jsonTokenResponse = JObject.Parse(tokenResonse);
-            return new OpenIdConnectMessage(jsonTokenResponse);
+
+            var contentMediaType = responseMessage.Content.Headers.ContentType?.MediaType;
+            if (string.IsNullOrEmpty(contentMediaType))
+            {
+                Logger.LogDebug($"Unexpected token response format. Status Code: {(int)responseMessage.StatusCode}. Content-Type header is missing.");
+            }
+            else if (!string.Equals(contentMediaType, "application/json", StringComparison.OrdinalIgnoreCase))
+            {
+                Logger.LogDebug($"Unexpected token response format. Status Code: {(int)responseMessage.StatusCode}. Content-Type {responseMessage.Content.Headers.ContentType}.");
+            }
+
+            // Error handling:
+            // 1. If the response body can't be parsed as json, throws.
+            // 2. If the response's status code is not in 2XX range, throw OpenIdConnectProtocolException. If the body is correct parsed, 
+            //    pass the error information from body to the exception.
+            OpenIdConnectMessage message;
+            try
+            {
+                var responseContent = await responseMessage.Content.ReadAsStringAsync();
+                message = new OpenIdConnectMessage(responseContent);
+            }
+            catch (Exception ex)
+            {
+                throw new OpenIdConnectProtocolException($"Failed to parse token response body as JSON. Status Code: {(int)responseMessage.StatusCode}. Content-Type: {responseMessage.Content.Headers.ContentType}", ex);
+            }
+
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                throw CreateOpenIdConnectProtocolException(message, responseMessage);
+            }
+
+            return message;
         }
 
         /// <summary>
@@ -1016,7 +1040,10 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             return authorizationCodeReceivedContext;
         }
 
-        private async Task<TokenResponseReceivedContext> RunTokenResponseReceivedEventAsync(OpenIdConnectMessage message, OpenIdConnectMessage tokenEndpointResponse, AuthenticationProperties properties)
+        private async Task<TokenResponseReceivedContext> RunTokenResponseReceivedEventAsync(
+            OpenIdConnectMessage message,
+            OpenIdConnectMessage tokenEndpointResponse,
+            AuthenticationProperties properties)
         {
             Logger.TokenResponseReceived();
             var eventContext = new TokenResponseReceivedContext(Context, Options, properties)
@@ -1156,6 +1183,28 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             }
 
             return BuildRedirectUri(uri);
+        }
+
+        private OpenIdConnectProtocolException CreateOpenIdConnectProtocolException(OpenIdConnectMessage message, HttpResponseMessage response)
+        {
+            var description = message.ErrorDescription ?? "error_description is null";
+            var errorUri = message.ErrorUri ?? "error_uri is null";
+
+            if (response != null)
+            {
+                Logger.ResponseErrorWithStatusCode(message.Error, description, errorUri, (int)response.StatusCode);
+            }
+            else
+            {
+                Logger.ResponseError(message.Error, description, errorUri);
+            }
+
+            return new OpenIdConnectProtocolException(string.Format(
+                CultureInfo.InvariantCulture,
+                Resources.MessageContainsError,
+                message.Error,
+                description,
+                errorUri));
         }
     }
 }

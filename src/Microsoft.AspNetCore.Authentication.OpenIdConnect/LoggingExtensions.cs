@@ -37,7 +37,8 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, string, Exception> _invalidLogoutQueryStringRedirectUrl;
         private static Action<ILogger, Exception> _nullOrEmptyAuthorizationResponseState;
         private static Action<ILogger, Exception> _unableToReadAuthorizationResponseState;
-        private static Action<ILogger, string, string, string, Exception> _authorizationResponseError;
+        private static Action<ILogger, string, string, string, Exception> _responseError;
+        private static Action<ILogger, string, string, string, int, Exception> _responseErrorWithStatusCode;
         private static Action<ILogger, Exception> _exceptionProcessingMessage;
         private static Action<ILogger, Exception> _accessTokenNotAvailable;
         private static Action<ILogger, Exception> _retrievingClaims;
@@ -106,10 +107,14 @@ namespace Microsoft.Extensions.Logging
                 eventId: 11,
                 logLevel: LogLevel.Debug,
                 formatString: "Unable to read the message.State.");
-            _authorizationResponseError = LoggerMessage.Define<string, string, string>(
+            _responseError = LoggerMessage.Define<string, string, string>(
                 eventId: 12,
                 logLevel: LogLevel.Error,
                 formatString: "Message contains error: '{Error}', error_description: '{ErrorDescription}', error_uri: '{ErrorUri}'.");
+            _responseErrorWithStatusCode = LoggerMessage.Define<string, string, string, int>(
+                eventId: 49,
+                logLevel: LogLevel.Error,
+                formatString: "Message contains error: '{Error}', error_description: '{ErrorDescription}', error_uri: '{ErrorUri}', status code '{StatusCode}'.");
             _updatingConfiguration = LoggerMessage.Define(
                 eventId: 13,
                 logLevel: LogLevel.Debug,
@@ -380,9 +385,14 @@ namespace Microsoft.Extensions.Logging
             _unableToReadAuthorizationResponseState(logger, null);
         }
 
-        public static void AuthorizationResponseError(this ILogger logger, string error, string errorDescription, string errorUri)
+        public static void ResponseError(this ILogger logger, string error, string errorDescription, string errorUri)
         {
-            _authorizationResponseError(logger, error, errorDescription, errorUri, null);
+            _responseError(logger, error, errorDescription, errorUri, null);
+        }
+
+        public static void ResponseErrorWithStatusCode(this ILogger logger, string error, string errorDescription, string errorUri, int statusCode)
+        {
+            _responseErrorWithStatusCode(logger, error, errorDescription, errorUri, statusCode, null);
         }
 
         public static void ExceptionProcessingMessage(this ILogger logger, Exception ex)
