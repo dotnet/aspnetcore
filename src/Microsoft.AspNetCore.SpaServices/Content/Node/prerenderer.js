@@ -4,7 +4,10 @@ module.exports.renderToString = function (callback) {
     try {
         aspNetPrerendering = require('aspnet-prerendering');
     } catch (ex) {
-        callback('To use prerendering, you must install the \'aspnet-prerendering\' NPM package.');
+        // Developers sometimes have trouble with badly-configured Node installations, where it's unable
+        // to find node_modules. Or they accidentally fail to deploy node_modules, or even to run 'npm install'.
+        // Make sure such errors are reported back to the .NET part of the app.
+        callback('Prerendering failed because of an error while loading \'aspnet-prerendering\'. Error was: ' + ex.stack);
         return;
     }
 
