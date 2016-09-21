@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
         public override void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
             context.HttpContext.Response.StatusCode = StatusCodes.Status410Gone;
-            context.Result = RuleTermination.ResponseComplete;
+            context.Result = RuleResult.EndResponse;
         }
     }
 }

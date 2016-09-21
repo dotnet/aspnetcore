@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
         private const char CloseBrace = '}';
 
         /// <summary>
-        /// Creates a pattern, which is a template to create a new test string to 
+        /// Creates a pattern, which is a template to create a new test string to
         /// compare to the condition. Can contain server variables, back references, etc.
         /// </summary>
         /// <param name="testString"></param>
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             context.Mark();
             // Four main cases:
             // 1. {NAME} - Server Variable, create lambda to get the part of the context
-            // 2. {R:1}  - Rule parameter
+            // 2. {R:1}  - IRule parameter
             // 3. {C:1}  - Condition Parameter
             // 4. {function:xxx} - String function 
             // (unless we support Reload)

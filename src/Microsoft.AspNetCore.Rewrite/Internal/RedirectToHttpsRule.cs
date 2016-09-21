@@ -6,12 +6,12 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal
 {
-    public class RedirectToHttpsRule : Rule
+    public class RedirectToHttpsRule : IRule
     {
         public int? SSLPort { get; set; }
         public int StatusCode { get; set; }
 
-        public override void ApplyRule(RewriteContext context)
+        public virtual void ApplyRule(RewriteContext context)
         {
             if (!context.HttpContext.Request.IsHttps)
             {
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
 
                 var newUrl = new StringBuilder().Append("https://").Append(host).Append(req.PathBase).Append(req.Path).Append(req.QueryString);
                 context.HttpContext.Response.Redirect(newUrl.ToString());
-                context.Result = RuleTermination.ResponseComplete;
+                context.Result = RuleResult.EndResponse;
             }
         }
     }

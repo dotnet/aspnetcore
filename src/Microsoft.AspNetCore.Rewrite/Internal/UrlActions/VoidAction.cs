@@ -5,9 +5,9 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
 {
     public class VoidAction : UrlAction
     {
-        public RuleTermination Result { get; }
+        public RuleResult Result { get; }
 
-        public VoidAction(RuleTermination result)
+        public VoidAction(RuleResult result)
         {
             Result = result;
         }

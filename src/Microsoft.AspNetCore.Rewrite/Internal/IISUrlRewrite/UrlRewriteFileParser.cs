@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             if (xmlRoot != null)
             {
                 var result = new List<IISUrlRewriteRule>();
-                // TODO Global rules are currently not treated differently than normal rules, fix. 
+                // TODO Global rules are currently not treated differently than normal rules, fix.
                 // See: https://github.com/aspnet/BasicMiddleware/issues/59
                 ParseRules(xmlRoot.Descendants(RewriteTags.GlobalRules).FirstOrDefault(), result);
                 ParseRules(xmlRoot.Descendants(RewriteTags.Rules).FirstOrDefault(), result);

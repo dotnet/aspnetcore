@@ -42,10 +42,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             switch (actionType)
             {
                 case ActionType.None:
-                    _action = new VoidAction(stopProcessing ? RuleTermination.StopRules : RuleTermination.Continue);
+                    _action = new VoidAction(stopProcessing ? RuleResult.SkipRemainingRules : RuleResult.ContinueRules);
                     break;
                 case ActionType.Rewrite:
-                    _action = new RewriteAction(stopProcessing ? RuleTermination.StopRules : RuleTermination.Continue,
+                    _action = new RewriteAction(stopProcessing ? RuleResult.SkipRemainingRules : RuleResult.ContinueRules,
                         url, appendQueryString);
                     break;
                 case ActionType.Redirect:

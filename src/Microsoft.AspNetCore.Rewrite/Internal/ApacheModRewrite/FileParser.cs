@@ -9,10 +9,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
 {
     public class FileParser
     {
-        public IList<Rule> Parse(TextReader input)
+        public IList<IRule> Parse(TextReader input)
         {
             string line;
-            var rules = new List<Rule>();
+            var rules = new List<IRule>();
             var builder = new RuleBuilder();
             var lineNum = 0;
 

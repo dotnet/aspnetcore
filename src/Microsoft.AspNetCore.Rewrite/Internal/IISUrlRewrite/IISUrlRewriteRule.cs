@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Rewrite.Logging;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 {
-    public class IISUrlRewriteRule : Rule
+    public class IISUrlRewriteRule : IRule
     {
         public string Name { get; }
         public UrlMatch InitialMatch { get; }
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             Action = action;
         }
 
-        public override void ApplyRule(RewriteContext context)
+        public virtual void ApplyRule(RewriteContext context)
         {
             // Due to the path string always having a leading slash,
             // remove it from the path before regex comparison

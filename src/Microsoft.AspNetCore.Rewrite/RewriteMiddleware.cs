@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Rewrite
                 HttpContext = context,
                 StaticFileProvider = _fileProvider,
                 Logger = _logger,
-                Result = RuleTermination.Continue
+                Result = RuleResult.ContinueRules
             };
 
             foreach (var rule in _options.Rules)
@@ -77,15 +77,15 @@ namespace Microsoft.AspNetCore.Rewrite
                 rule.ApplyRule(rewriteContext);
                 switch (rewriteContext.Result)
                 {
-                    case RuleTermination.Continue:
+                    case RuleResult.ContinueRules:
                         _logger.RewriteMiddlewareRequestContinueResults();
                         break;
-                    case RuleTermination.ResponseComplete:
+                    case RuleResult.EndResponse:
                         _logger.RewriteMiddlewareRequestResponseComplete(
                             context.Response.Headers[HeaderNames.Location],
                             context.Response.StatusCode);
                         return TaskCache.CompletedTask;
-                    case RuleTermination.StopRules:
+                    case RuleResult.SkipRemainingRules:
                         _logger.RewriteMiddlewareRequestStopRules();
                         return _next(context);
                     default:

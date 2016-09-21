@@ -24,17 +24,16 @@ namespace Microsoft.AspNetCore.Rewrite
         public IFileProvider StaticFileProvider { get; set; }
 
         /// <summary>
-        /// Gets and sets the logger 
+        /// Gets and sets the logger
         /// </summary>
         public ILogger Logger { get; set; }
 
         /// <summary>
         /// A shared result that is set appropriately by each rule for the next action that
-        /// should be take. See <see cref="RuleTermination"/>
+        /// should be taken. See <see cref="RuleResult"/>
         /// </summary>
-        public RuleTermination Result { get; set; }
+        public RuleResult Result { get; set; }
 
-        // PERF: share the same string builder per request
         internal StringBuilder Builder { get; set; } = new StringBuilder(64);
     }
 }

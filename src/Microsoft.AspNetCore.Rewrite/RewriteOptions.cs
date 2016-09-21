@@ -8,14 +8,14 @@ using Microsoft.AspNetCore.Hosting;
 namespace Microsoft.AspNetCore.Rewrite
 {
     /// <summary>
-    /// Options for the <see cref="RewriteMiddleware"/> 
+    /// Options for the <see cref="RewriteMiddleware"/>
     /// </summary>
     public class RewriteOptions
     {
         /// <summary>
-        /// A list of <see cref="Rule"/> that will be applied in order upon a request.
+        /// A list of <see cref="IRule"/> that will be applied in order upon a request.
         /// </summary>
-        public IList<Rule> Rules { get; } = new List<Rule>();
+        public IList<IRule> Rules { get; } = new List<IRule>();
 
         /// <summary>
         /// Gets and sets the File Provider for file and directory checks. Defaults to <see cref="IHostingEnvironment.WebRootFileProvider"/>

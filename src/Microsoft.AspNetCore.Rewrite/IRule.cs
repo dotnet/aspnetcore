@@ -4,17 +4,17 @@
 namespace Microsoft.AspNetCore.Rewrite
 {
     /// <summary>
-    /// Represents an abstract rule.
+    /// Represents a rule.
     /// </summary>
-    public abstract class Rule
+    public interface IRule
     {
         /// <summary>
         /// Applies the rule.
-        /// Implementations of ApplyRule should set the value for <see cref="RewriteContext.Result"/> 
-        /// (defaults to <see cref="RuleTermination.Continue"/> )
+        /// Implementations of ApplyRule should set the value for <see cref="RewriteContext.Result"/>
+        /// (defaults to RuleResult.ContinueRules)
         /// </summary>
         /// <param name="context"></param>
-        public abstract void ApplyRule(RewriteContext context);
+        void ApplyRule(RewriteContext context);
     }
 }
 

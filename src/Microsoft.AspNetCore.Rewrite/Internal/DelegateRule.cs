@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal
 {
-    public class DelegateRule : Rule
+    public class DelegateRule : IRule
     {
         private readonly Action<RewriteContext> _onApplyRule;
 
@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
         {
             _onApplyRule = onApplyRule;
         }
-        public override void ApplyRule(RewriteContext context) => _onApplyRule(context);
+        public void ApplyRule(RewriteContext context) => _onApplyRule(context);
     }
 }

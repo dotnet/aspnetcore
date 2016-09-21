@@ -6,19 +6,19 @@ namespace Microsoft.AspNetCore.Rewrite
     /// <summary>
     /// An enum representing the result of a rule.
     /// </summary>
-    public enum RuleTermination
+    public enum RuleResult
     {
         /// <summary>
         /// Default value, continue applying rules.
         /// </summary>
-        Continue,
+        ContinueRules,
         ///<summary>
-        /// Redirect occured, should send back new rewritten url.
-        /// </summary> 
-        ResponseComplete,
+        /// The rule ended the request by providing a response.
+        /// </summary>
+        EndResponse,
         /// <summary>
         /// Stop applying rules and send context to the next middleware
         /// </summary>
-        StopRules
+        SkipRemainingRules
     }
 }

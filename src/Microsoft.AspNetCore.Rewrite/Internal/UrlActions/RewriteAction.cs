@@ -9,13 +9,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
 {
     public class RewriteAction : UrlAction
     {
-        public RuleTermination Result { get; }
+        public RuleResult Result { get; }
         public bool QueryStringAppend { get; }
         public bool QueryStringDelete { get; }
         public bool EscapeBackReferences { get; }
 
         public RewriteAction(
-            RuleTermination result,
+            RuleResult result,
             Pattern pattern,
             bool queryStringAppend,
             bool queryStringDelete,
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
         }
 
         public RewriteAction(
-            RuleTermination result,
+            RuleResult result,
             Pattern pattern,
             bool queryStringAppend) :
             this(result,

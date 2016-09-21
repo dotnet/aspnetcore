@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
                 else
                 {
                     var last = flags.HasFlag(FlagType.End) || flags.HasFlag(FlagType.Last);
-                    var termination = last ? RuleTermination.StopRules : RuleTermination.Continue;
+                    var termination = last ? RuleResult.SkipRemainingRules : RuleResult.ContinueRules;
                     _actions.Add(new RewriteAction(termination, pattern, queryStringAppend, queryStringDelete, escapeBackReference));
                 }
             }

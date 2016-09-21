@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <param name="options">The <see cref="RewriteOptions"/>.</param>
         /// <param name="rule">A rule to be added to the current rules.</param>
         /// <returns>The Rewrite options.</returns>
-        public static RewriteOptions Add(this RewriteOptions options, Rule rule)
+        public static RewriteOptions Add(this RewriteOptions options, IRule rule)
         {
             options.Rules.Add(rule);
             return options;
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <returns>The Rewrite options.</returns>
         public static RewriteOptions AddRewrite(this RewriteOptions options, string regex, string replacement)
         {
-            return AddRewrite(options, regex, replacement, stopProcessing: false);
+            return AddRewrite(options, regex, replacement, skipRemainingRules: false);
         }
 
         /// <summary>
@@ -53,11 +53,11 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <param name="options">The <see cref="RewriteOptions"/>.</param>
         /// <param name="regex">The regex string to compare with.</param>
         /// <param name="replacement">If the regex matches, what to replace the uri with.</param>
-        /// <param name="stopProcessing">If the regex matches, conditionally stop processing other rules.</param>
+        /// <param name="skipRemainingRules">If the regex matches, conditionally stop processing other rules.</param>
         /// <returns>The Rewrite options.</returns>
-        public static RewriteOptions AddRewrite(this RewriteOptions options, string regex, string replacement, bool stopProcessing)
+        public static RewriteOptions AddRewrite(this RewriteOptions options, string regex, string replacement, bool skipRemainingRules)
         {
-            options.Rules.Add(new RewriteRule(regex, replacement, stopProcessing));
+            options.Rules.Add(new RewriteRule(regex, replacement, skipRemainingRules));
             return options;
         }
 

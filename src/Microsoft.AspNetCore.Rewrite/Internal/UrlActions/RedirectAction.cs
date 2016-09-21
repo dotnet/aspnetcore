@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
                     response.Headers[HeaderNames.Location] = pathBase + pattern + context.HttpContext.Request.QueryString;
                 }
             }
-            context.Result = RuleTermination.ResponseComplete;
+            context.Result = RuleResult.EndResponse;
         }
     }
 }

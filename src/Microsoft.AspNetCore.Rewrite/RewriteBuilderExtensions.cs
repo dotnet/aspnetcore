@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Rewrite;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Extension methods for the <see cref="RewriteMiddleware"/> 
+    /// Extension methods for the <see cref="RewriteMiddleware"/>
     /// </summary>
     public static class RewriteBuilderExtensions
     {

@@ -8,7 +8,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal
 {
-    public class RedirectRule : Rule
+    public class RedirectRule : IRule
     {
         private readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(1);
         public Regex InitialMatch { get; }
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
             StatusCode = statusCode;
         }
 
-        public override void ApplyRule(RewriteContext context)
+        public virtual void ApplyRule(RewriteContext context)
         {
             var path = context.HttpContext.Request.Path;
             var pathBase = context.HttpContext.Request.PathBase;
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
                 var response = context.HttpContext.Response;
 
                 response.StatusCode = StatusCode;
-                context.Result = RuleTermination.ResponseComplete;
+                context.Result = RuleResult.EndResponse;
 
                 if (string.IsNullOrEmpty(newPath))
                 {

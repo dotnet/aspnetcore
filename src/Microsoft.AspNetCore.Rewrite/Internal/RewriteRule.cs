@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal
 {
-    public class RewriteRule : Rule
+    public class RewriteRule : IRule
     {
         private readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(1);
         public Regex InitialMatch { get; }
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
             StopProcessing = stopProcessing;
         }
 
-        public override void ApplyRule(RewriteContext context)
+        public virtual void ApplyRule(RewriteContext context)
         {
             var path = context.HttpContext.Request.Path;
             Match initMatchResults;
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
 
                 if (StopProcessing)
                 {
-                    context.Result = RuleTermination.StopRules;
+                    context.Result = RuleResult.SkipRemainingRules;
                 }
 
                 if (string.IsNullOrEmpty(result))

@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 {
-    // TODO add more of these 
+    // TODO add more of these
     public class UrlRewriteApplicationTests
     {
         [Fact]
@@ -17,10 +17,10 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             var xml = new StringReader(@"<rewrite>
                 <rules>
-                <rule name=""Test"" stopProcessing=""true"">  
+                <rule name=""Test"" stopProcessing=""true"">
                 <match url = ""(.*)""/>
                 <action type = ""None""/>
-                </rule>  
+                </rule>
                 </rules>
                 </rewrite>");
             var rules = new UrlRewriteFileParser().Parse(xml);
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             Assert.Equal(rules.Count, 1);
             var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
             rules.FirstOrDefault().ApplyRule(context);
-            Assert.Equal(context.Result, RuleTermination.StopRules);
+            Assert.Equal(context.Result, RuleResult.SkipRemainingRules);
         }
 
         [Fact]
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 <rule name=""Test"">
                 <match url = ""(.*)"" ignoreCase=""false"" />
                 <action type = ""None""/>
-                </rule>  
+                </rule>
                 </rules>
                 </rewrite>");
             var rules = new UrlRewriteFileParser().Parse(xml);
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             Assert.Equal(rules.Count, 1);
             var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
             rules.FirstOrDefault().ApplyRule(context);
-            Assert.Equal(context.Result, RuleTermination.Continue);
+            Assert.Equal(context.Result, RuleResult.ContinueRules);
         }
     }
 }
