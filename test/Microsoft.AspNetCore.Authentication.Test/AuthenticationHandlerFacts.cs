@@ -75,6 +75,49 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.Equal(1, handler.AuthCount);
         }
 
+        // Prior to https://github.com/aspnet/Security/issues/930 we wouldn't call prior if handled
+        [Fact]
+        public async Task AuthHandlerChallengeAlwaysCallsPriorHandler()
+        {
+            var handler = await TestHandler.Create("Alpha");
+            var previous = new PreviousHandler();
+
+            handler.PriorHandler = previous;
+            await handler.ChallengeAsync(new ChallengeContext("Alpha"));
+            Assert.True(previous.ChallengeCalled);
+        }
+
+        private class PreviousHandler : IAuthenticationHandler
+        {
+            public bool ChallengeCalled = false;
+
+            public Task AuthenticateAsync(AuthenticateContext context)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ChallengeAsync(ChallengeContext context)
+            {
+                ChallengeCalled = true;
+                return Task.FromResult(0);
+            }
+
+            public void GetDescriptions(DescribeSchemesContext context)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SignInAsync(SignInContext context)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SignOutAsync(SignOutContext context)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         private class CountOptions : AuthenticationOptions { }
 
         private class CountHandler : AuthenticationHandler<CountOptions>
@@ -109,6 +152,8 @@ namespace Microsoft.AspNetCore.Authentication
         {
             private TestHandler() { }
 
+            public AuthenticateResult Result = AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(), new AuthenticationProperties(), "whatever"));
+
             public static async Task<TestHandler> Create(string scheme)
             {
                 var handler = new TestHandler();
@@ -124,7 +169,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             protected override Task<AuthenticateResult> HandleAuthenticateAsync()
             {
-                return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(), new AuthenticationProperties(), "whatever")));
+                return Task.FromResult(Result);
             }
         }
 
@@ -220,7 +265,6 @@ namespace Microsoft.AspNetCore.Authentication
 
                 set
                 {
-                    throw new NotImplementedException();
                 }
             }
 
