@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "");
                     await connection.ReceiveForcedEnd(
-                        "HTTP/1.1 400 Bad Request",
+                        "HTTP/1.1 431 Request Header Fields Too Large",
                         "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
@@ -331,7 +331,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "");
                     await connection.ReceiveForcedEnd(
-                        "HTTP/1.1 400 Bad Request",
+                        "HTTP/1.1 431 Request Header Fields Too Large",
                         "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",

@@ -640,13 +640,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     return TaskCache.CompletedTask;
                 }
 
-                if (_requestRejected)
-                {
-                    // 400 Bad Request
-                    StatusCode = 400;
-                    _keepAlive = false;
-                }
-                else
+                // If the request was rejected, StatusCode has already been set by SetBadRequestState
+                if (!_requestRejected)
                 {
                     // 500 Internal Server Error
                     StatusCode = 500;
@@ -1249,6 +1244,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public void SetBadRequestState(BadHttpRequestException ex)
         {
+            StatusCode = ex.StatusCode;
+            _keepAlive = false;
             _requestProcessingStopping = true;
             _requestRejected = true;
             Log.ConnectionBadRequest(ConnectionId, ex);

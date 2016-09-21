@@ -1,12 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
@@ -28,17 +24,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var headers = MakeHeaders(headerCount);
 
-            using (var host = BuildWebHost(options =>
+            using (var server = CreateServer(maxRequestHeadersTotalSize: headers.Length + extraLimit))
             {
-                options.Limits.MaxRequestHeadersTotalSize = headers.Length + extraLimit;
-            }))
-            {
-                host.Start();
-
-                using (var connection = new TestConnection(host.GetPort()))
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd($"GET / HTTP/1.1\r\n{headers}\r\n");
-                    await connection.Receive($"HTTP/1.1 200 OK\r\n");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "c",
+                        "hello, world",
+                        "0",
+                        "",
+                        "");
                 }
             }
         }
@@ -56,17 +56,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var headers = MakeHeaders(headerCount);
 
-            using (var host = BuildWebHost(options =>
+            using (var server = CreateServer(maxRequestHeaderCount: maxHeaderCount))
             {
-                options.Limits.MaxRequestHeaderCount = maxHeaderCount;
-            }))
-            {
-                host.Start();
-
-                using (var connection = new TestConnection(host.GetPort()))
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd($"GET / HTTP/1.1\r\n{headers}\r\n");
-                    await connection.Receive($"HTTP/1.1 200 OK\r\n");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "c",
+                        "hello, world",
+                        "0",
+                        "",
+                        "");
                 }
             }
         }
@@ -78,17 +82,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var headers = MakeHeaders(headerCount);
 
-            using (var host = BuildWebHost(options =>
+            using (var server = CreateServer(maxRequestHeadersTotalSize: headers.Length - 1))
             {
-                options.Limits.MaxRequestHeadersTotalSize = headers.Length - 1;
-            }))
-            {
-                host.Start();
-
-                using (var connection = new TestConnection(host.GetPort()))
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendAllTryEnd($"GET / HTTP/1.1\r\n{headers}\r\n");
-                    await connection.Receive($"HTTP/1.1 400 Bad Request\r\n");
+                    await connection.ReceiveForcedEnd(
+                        "HTTP/1.1 431 Request Header Fields Too Large",
+                        "Connection: close",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
                 }
             }
         }
@@ -101,17 +106,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var headers = MakeHeaders(headerCount);
 
-            using (var host = BuildWebHost(options =>
+            using (var server = CreateServer(maxRequestHeaderCount: maxHeaderCount))
             {
-                options.Limits.MaxRequestHeaderCount = maxHeaderCount;
-            }))
-            {
-                host.Start();
-
-                using (var connection = new TestConnection(host.GetPort()))
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendAllTryEnd($"GET / HTTP/1.1\r\n{headers}\r\n");
-                    await connection.Receive($"HTTP/1.1 400 Bad Request\r\n");
+                    await connection.ReceiveForcedEnd(
+                        "HTTP/1.1 431 Request Header Fields Too Large",
+                        "Connection: close",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
                 }
             }
         }
@@ -123,18 +129,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .Select(i => $"Header-{i}: value{i}\r\n"));
         }
 
-        private static IWebHost BuildWebHost(Action<KestrelServerOptions> options)
+        private TestServer CreateServer(int? maxRequestHeaderCount = null, int? maxRequestHeadersTotalSize = null)
         {
-            var host = new WebHostBuilder()
-                .UseKestrel(options)
-                .UseUrls("http://127.0.0.1:0/")
-                .Configure(app => app.Run(async context =>
-                {
-                    await context.Response.WriteAsync("hello, world");
-                }))
-                .Build();
+            var options = new KestrelServerOptions { AddServerHeader = false };
 
-            return host;
+            if (maxRequestHeaderCount.HasValue)
+            {
+                options.Limits.MaxRequestHeaderCount = maxRequestHeaderCount.Value;
+            }
+
+            if (maxRequestHeadersTotalSize.HasValue)
+            {
+                options.Limits.MaxRequestHeadersTotalSize = maxRequestHeadersTotalSize.Value;
+            }
+
+            return new TestServer(async httpContext => await httpContext.Response.WriteAsync("hello, world"), new TestServiceContext
+            {
+                ServerOptions = options
+            });
         }
     }
 }

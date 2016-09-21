@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -243,8 +246,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             const string key = "\u00141ód\017c";
 
             var encoding = Encoding.GetEncoding("iso-8859-1");
-            Assert.Throws<BadHttpRequestException>(
+            var exception = Assert.Throws<BadHttpRequestException>(
                 () => headers.Append(encoding.GetBytes(key), 0, encoding.GetByteCount(key), key));
+            Assert.Equal(400, exception.StatusCode);
         }
     }
 }

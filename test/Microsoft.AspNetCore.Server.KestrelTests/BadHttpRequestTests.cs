@@ -19,13 +19,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("GET \r\n")]
         [InlineData("GET /\r\n")]
         [InlineData("GET / \r\n")]
-        [InlineData("GET / H\r\n")]
-        [InlineData("GET / HT\r\n")]
-        [InlineData("GET / HTT\r\n")]
-        [InlineData("GET / HTTP\r\n")]
-        [InlineData("GET / HTTP/\r\n")]
-        [InlineData("GET / HTTP/1\r\n")]
-        [InlineData("GET / HTTP/1.\r\n")]
         // Missing method
         [InlineData(" \r\n")]
         // Missing second space
@@ -37,18 +30,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("GET / \r\n")]
         // Missing CR
         [InlineData("GET / \n")]
-        // Unrecognized HTTP version
-        [InlineData("GET / http/1.0\r\n")]
-        [InlineData("GET / http/1.1\r\n")]
-        [InlineData("GET / HTTP/1.1 \r\n")]
-        [InlineData("GET / HTTP/1.1a\r\n")]
-        [InlineData("GET / HTTP/1.0\n\r\n")]
-        [InlineData("GET / HTTP/1.2\r\n")]
-        [InlineData("GET / HTTP/3.0\r\n")]
-        [InlineData("GET / H\r\n")]
-        [InlineData("GET / HTTP/1.\r\n")]
-        [InlineData("GET / hello\r\n")]
-        [InlineData("GET / 8charact\r\n")]
         // Missing LF after CR
         [InlineData("GET / HTTP/1.0\rA\n")]
         // Bad HTTP Methods (invalid according to RFC)
@@ -78,7 +59,37 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 using (var connection = server.CreateConnection())
                 {
                     await connection.SendAllTryEnd(request);
-                    await ReceiveBadRequestResponse(connection, server.Context.DateHeaderValue);
+                    await ReceiveBadRequestResponse(connection, "400 Bad Request", server.Context.DateHeaderValue);
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("GET / H\r\n")]
+        [InlineData("GET / HT\r\n")]
+        [InlineData("GET / HTT\r\n")]
+        [InlineData("GET / HTTP\r\n")]
+        [InlineData("GET / HTTP/\r\n")]
+        [InlineData("GET / HTTP/1\r\n")]
+        [InlineData("GET / HTTP/1.\r\n")]
+        [InlineData("GET / http/1.0\r\n")]
+        [InlineData("GET / http/1.1\r\n")]
+        [InlineData("GET / HTTP/1.1 \r\n")]
+        [InlineData("GET / HTTP/1.1a\r\n")]
+        [InlineData("GET / HTTP/1.2\r\n")]
+        [InlineData("GET / HTTP/3.0\r\n")]
+        [InlineData("GET / H\r\n")]
+        [InlineData("GET / HTTP/1.\r\n")]
+        [InlineData("GET / hello\r\n")]
+        [InlineData("GET / 8charact\r\n")]
+        public async Task TestInvalidRequestLinesWithUnsupportedVersion(string request)
+        {
+            using (var server = new TestServer(context => TaskCache.CompletedTask))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendAllTryEnd(request);
+                    await ReceiveBadRequestResponse(connection, "505 HTTP Version Not Supported", server.Context.DateHeaderValue);
                 }
             }
         }
@@ -114,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 using (var connection = server.CreateConnection())
                 {
                     await connection.SendAllTryEnd($"GET / HTTP/1.1\r\n{rawHeaders}");
-                    await ReceiveBadRequestResponse(connection, server.Context.DateHeaderValue);
+                    await ReceiveBadRequestResponse(connection, "400 Bad Request", server.Context.DateHeaderValue);
                 }
             }
         }
@@ -131,7 +142,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "H\u00eb\u00e4d\u00ebr: value",
                         "",
                         "");
-                    await ReceiveBadRequestResponse(connection, server.Context.DateHeaderValue);
+                    await ReceiveBadRequestResponse(connection, "400 Bad Request", server.Context.DateHeaderValue);
                 }
             }
         }
@@ -158,15 +169,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 using (var connection = server.CreateConnection())
                 {
                     await connection.SendAllTryEnd($"GET {path} HTTP/1.1\r\n");
-                    await ReceiveBadRequestResponse(connection, server.Context.DateHeaderValue);
+                    await ReceiveBadRequestResponse(connection, "400 Bad Request", server.Context.DateHeaderValue);
                 }
             }
         }
 
-        private async Task ReceiveBadRequestResponse(TestConnection connection, string expectedDateHeaderValue)
+        private async Task ReceiveBadRequestResponse(TestConnection connection, string expectedResponseStatusCode, string expectedDateHeaderValue)
         {
             await connection.ReceiveForcedEnd(
-                "HTTP/1.1 400 Bad Request",
+                $"HTTP/1.1 {expectedResponseStatusCode}",
                 "Connection: close",
                 $"Date: {expectedDateHeaderValue}",
                 "Content-Length: 0",

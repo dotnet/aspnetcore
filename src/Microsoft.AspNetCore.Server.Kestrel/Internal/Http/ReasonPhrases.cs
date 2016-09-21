@@ -52,6 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private static readonly byte[] _bytesStatus423 = Encoding.ASCII.GetBytes("423 Locked");
         private static readonly byte[] _bytesStatus424 = Encoding.ASCII.GetBytes("424 Failed Dependency");
         private static readonly byte[] _bytesStatus426 = Encoding.ASCII.GetBytes("426 Upgrade Required");
+        private static readonly byte[] _bytesStatus431 = Encoding.ASCII.GetBytes("431 Request Header Fields Too Large");
         private static readonly byte[] _bytesStatus451 = Encoding.ASCII.GetBytes("451 Unavailable For Legal Reasons");
         private static readonly byte[] _bytesStatus500 = Encoding.ASCII.GetBytes("500 Internal Server Error");
         private static readonly byte[] _bytesStatus501 = Encoding.ASCII.GetBytes("501 Not Implemented");
@@ -157,6 +158,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         return _bytesStatus424;
                     case 426:
                         return _bytesStatus426;
+                    case 431:
+                        return _bytesStatus431;
                     case 451:
                         return _bytesStatus451;
                     case 500:

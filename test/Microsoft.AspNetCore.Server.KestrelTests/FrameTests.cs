@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("Header: line1\r\n\t\tline2\r\n\r\n")]
         [InlineData("Header: line1\r\n \t\t line2\r\n\r\n")]
         [InlineData("Header: line1\r\n \t \t line2\r\n\r\n")]
-        public void ThrowsOnHeaderValueWithLineFolding(string rawHeaders)
+        public void TakeMessageHeadersThrowsOnHeaderValueWithLineFolding(string rawHeaders)
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
@@ -210,11 +210,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
                 Assert.Equal("Header value line folding not supported.", exception.Message);
+                Assert.Equal(400, exception.StatusCode);
             }
         }
 
         [Fact]
-        public void ThrowsOnHeaderValueWithLineFolding_CharacterNotAvailableOnFirstAttempt()
+        public void TakeMessageHeadersThrowsOnHeaderValueWithLineFolding_CharacterNotAvailableOnFirstAttempt()
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
@@ -241,6 +242,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
                 Assert.Equal("Header value line folding not supported.", exception.Message);
+                Assert.Equal(400, exception.StatusCode);
             }
         }
 
@@ -250,7 +252,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("Header-1: value1\rHeader-2: value2\r\n\r\n")]
         [InlineData("Header-1: value1\r\nHeader-2: value2\r\r\n")]
         [InlineData("Header-1: value1\r\nHeader-2: v\ralue2\r\n")]
-        public void ThrowsOnHeaderValueContainingCR(string rawHeaders)
+        public void TakeMessageHeadersThrowsOnHeaderValueContainingCR(string rawHeaders)
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
@@ -273,6 +275,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
                 Assert.Equal("Header value must not contain CR characters.", exception.Message);
+                Assert.Equal(400, exception.StatusCode);
             }
         }
 
@@ -280,7 +283,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("Header-1 value1\r\n\r\n")]
         [InlineData("Header-1 value1\r\nHeader-2: value2\r\n\r\n")]
         [InlineData("Header-1: value1\r\nHeader-2 value2\r\n\r\n")]
-        public void ThrowsOnHeaderLineMissingColon(string rawHeaders)
+        public void TakeMessageHeadersThrowsOnHeaderLineMissingColon(string rawHeaders)
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
@@ -303,6 +306,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
                 Assert.Equal("No ':' character found in header line.", exception.Message);
+                Assert.Equal(400, exception.StatusCode);
             }
         }
 
@@ -311,7 +315,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("\tHeader: value\r\n\r\n")]
         [InlineData(" Header-1: value1\r\nHeader-2: value2\r\n\r\n")]
         [InlineData("\tHeader-1: value1\r\nHeader-2: value2\r\n\r\n")]
-        public void ThrowsOnHeaderLineStartingWithWhitespace(string rawHeaders)
+        public void TakeMessageHeadersThrowsOnHeaderLineStartingWithWhitespace(string rawHeaders)
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
@@ -334,6 +338,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
                 Assert.Equal("Header line must not start with whitespace.", exception.Message);
+                Assert.Equal(400, exception.StatusCode);
             }
         }
 
@@ -346,7 +351,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("Header-1: value1\r\nHeader 2: value2\r\n\r\n")]
         [InlineData("Header-1: value1\r\nHeader-2 : value2\r\n\r\n")]
         [InlineData("Header-1: value1\r\nHeader-2\t: value2\r\n\r\n")]
-        public void ThrowsOnWhitespaceInHeaderName(string rawHeaders)
+        public void TakeMessageHeadersThrowsOnWhitespaceInHeaderName(string rawHeaders)
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
@@ -369,6 +374,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
                 Assert.Equal("Whitespace is not allowed in header name.", exception.Message);
+                Assert.Equal(400, exception.StatusCode);
             }
         }
 
@@ -376,7 +382,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("Header-1: value1\r\nHeader-2: value2\r\n\r\r")]
         [InlineData("Header-1: value1\r\nHeader-2: value2\r\n\r ")]
         [InlineData("Header-1: value1\r\nHeader-2: value2\r\n\r \n")]
-        public void ThrowsOnHeadersNotEndingInCRLFLine(string rawHeaders)
+        public void TakeMessageHeadersThrowsOnHeadersNotEndingInCRLFLine(string rawHeaders)
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
@@ -399,11 +405,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
                 Assert.Equal("Headers corrupted, invalid header sequence.", exception.Message);
+                Assert.Equal(400, exception.StatusCode);
             }
         }
 
         [Fact]
-        public void ThrowsWhenHeadersExceedTotalSizeLimit()
+        public void TakeMessageHeadersThrowsWhenHeadersExceedTotalSizeLimit()
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
@@ -432,11 +439,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
                 Assert.Equal("Request headers too long.", exception.Message);
+                Assert.Equal(431, exception.StatusCode);
             }
         }
 
         [Fact]
-        public void ThrowsWhenHeadersExceedCountLimit()
+        public void TakeMessageHeadersThrowsWhenHeadersExceedCountLimit()
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
@@ -465,6 +473,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
                 Assert.Equal("Request contains too many headers.", exception.Message);
+                Assert.Equal(431, exception.StatusCode);
             }
         }
 
@@ -839,6 +848,107 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 frame.TakeStartLine(socketInput);
                 connectionControl.Verify(cc => cc.CancelTimeout(), Times.Never);
+            }
+        }
+
+        [Fact]
+        public void TakeStartLineThrowsWhenTooLong()
+        {
+            var trace = new KestrelTrace(new TestKestrelTrace());
+            var ltp = new LoggingThreadPool(trace);
+            using (var pool = new MemoryPool())
+            using (var socketInput = new SocketInput(pool, ltp))
+            {
+                var connectionContext = new ConnectionContext()
+                {
+                    ConnectionControl = Mock.Of<IConnectionControl>(),
+                    DateHeaderValueManager = new DateHeaderValueManager(),
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions()
+                    {
+                        Limits =
+                        {
+                            MaxRequestLineSize = "GET / HTTP/1.1\r\n".Length
+                        }
+                    },
+                    Log = trace
+                };
+                var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
+
+                var requestLineBytes = Encoding.ASCII.GetBytes("GET /a HTTP/1.1\r\n");
+                socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
+
+                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeStartLine(socketInput));
+                Assert.Equal("Request line too long.", exception.Message);
+                Assert.Equal(414, exception.StatusCode);
+            }
+        }
+
+        [Theory]
+        [InlineData("GET/HTTP/1.1\r\n", "No space character found after method in request line.")]
+        [InlineData(" / HTTP/1.1\r\n", "Missing method.")]
+        [InlineData("GET? / HTTP/1.1\r\n", "Invalid method.")]
+        [InlineData("GET /HTTP/1.1\r\n", "No space character found after target in request line.")]
+        [InlineData("GET /a?b=cHTTP/1.1\r\n", "No space character found after target in request line.")]
+        [InlineData("GET /a%20bHTTP/1.1\r\n", "No space character found after target in request line.")]
+        [InlineData("GET /a%20b?c=dHTTP/1.1\r\n", "No space character found after target in request line.")]
+        [InlineData("GET  HTTP/1.1\r\n", "Missing request target.")]
+        [InlineData("GET / HTTP/1.1\n", "Missing CR in request line.")]
+        [InlineData("GET / \r\n", "Missing HTTP version.")]
+        [InlineData("GET / HTTP/1.1\ra\n", "Missing LF in request line.")]
+        public void TakeStartLineThrowsWhenInvalid(string requestLine, string expectedExceptionMessage)
+        {
+            var trace = new KestrelTrace(new TestKestrelTrace());
+            var ltp = new LoggingThreadPool(trace);
+            using (var pool = new MemoryPool())
+            using (var socketInput = new SocketInput(pool, ltp))
+            {
+                var connectionContext = new ConnectionContext()
+                {
+                    ConnectionControl = Mock.Of<IConnectionControl>(),
+                    DateHeaderValueManager = new DateHeaderValueManager(),
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
+                    Log = trace
+                };
+                var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
+
+                var requestLineBytes = Encoding.ASCII.GetBytes(requestLine);
+                socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
+
+                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeStartLine(socketInput));
+                Assert.Equal(expectedExceptionMessage, exception.Message);
+                Assert.Equal(400, exception.StatusCode);
+            }
+        }
+
+        [Fact]
+        public void TakeStartLineThrowsOnUnsupportedHttpVersion()
+        {
+            var trace = new KestrelTrace(new TestKestrelTrace());
+            var ltp = new LoggingThreadPool(trace);
+            using (var pool = new MemoryPool())
+            using (var socketInput = new SocketInput(pool, ltp))
+            {
+                var connectionContext = new ConnectionContext()
+                {
+                    ConnectionControl = Mock.Of<IConnectionControl>(),
+                    DateHeaderValueManager = new DateHeaderValueManager(),
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
+                    ServerOptions = new KestrelServerOptions(),
+                    Log = trace
+                };
+                var frame = new Frame<object>(application: null, context: connectionContext);
+                frame.Reset();
+
+                var requestLineBytes = Encoding.ASCII.GetBytes("GET / HTTP/1.2\r\n");
+                socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
+
+                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeStartLine(socketInput));
+                Assert.Equal("Unrecognized HTTP version.", exception.Message);
+                Assert.Equal(505, exception.StatusCode);
             }
         }
 
