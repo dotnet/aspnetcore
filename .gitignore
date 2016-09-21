@@ -46,3 +46,4 @@ src/*/x64/Release/
 src/AspNetCore/aspnetcore_msg.h
 src/AspNetCore/aspnetcore_msg.rc
 src/AspNetCore/version.h
+.build
