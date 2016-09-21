@@ -7,7 +7,12 @@ module.exports.renderToString = function (callback) {
         // Developers sometimes have trouble with badly-configured Node installations, where it's unable
         // to find node_modules. Or they accidentally fail to deploy node_modules, or even to run 'npm install'.
         // Make sure such errors are reported back to the .NET part of the app.
-        callback('Prerendering failed because of an error while loading \'aspnet-prerendering\'. Error was: ' + ex.stack);
+        callback(
+            'Prerendering failed because of an error while loading \'aspnet-prerendering\'. Error was: '
+            + ex.stack
+            + '\nCurrent directory is: '
+            + process.cwd()
+        );
         return;
     }
 
