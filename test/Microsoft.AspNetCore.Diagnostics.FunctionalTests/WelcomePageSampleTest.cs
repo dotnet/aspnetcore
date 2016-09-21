@@ -20,13 +20,14 @@ namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests
         [Fact]
         public async Task WelcomePage_ShowsWelcome()
         {
-            // Arrange
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/");
 
-            // Act
             var response = await Client.SendAsync(request);
 
-            // Assert
+            var bytes = await response.Content.ReadAsByteArrayAsync();
+            Assert.True(bytes.Length > 1);
+            Assert.NotEqual(0xEF, bytes[0]); // No leading UTF-8 BOM
+
             var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Contains("Your ASP.NET Core application has been successfully started", body);

@@ -43,6 +43,7 @@
     },
     "netstandard1.3": {
       "dependencies": {
+        "System.Text.Encoding.Extensions": "4.0.11-*",
         "System.Threading": "4.0.11-*"
       }
     }
