@@ -716,7 +716,7 @@ functions
                 "EventNotification",
                 "Options",
                 "Logging",
-                "dotnet-watch",
+                "DotNetTools",
                 "HtmlAbstractions",
                 "DataProtection",
                 "HttpAbstractions",
