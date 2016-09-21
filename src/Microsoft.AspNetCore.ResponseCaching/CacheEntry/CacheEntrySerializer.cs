@@ -93,7 +93,9 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         // Header count (int)
         // Header(s)
         //   Key (string)
-        //   Value (string)
+        //   ValueCount (int)
+        //   Value(s)
+        //     Value (string)
         // ContainsBody (bool)
         //   Body length (int)
         //   Body (byte[])
@@ -107,8 +109,20 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             for (var index = 0; index < headerCount; index++)
             {
                 var key = reader.ReadString();
-                var value = reader.ReadString();
-                headers[key] = value;
+                var headerValueCount = reader.ReadInt32();
+                if (headerValueCount > 1)
+                {
+                    var headerValues = new string[headerValueCount];
+                    for (var valueIndex = 0; valueIndex < headerValueCount; valueIndex++)
+                    {
+                        headerValues[valueIndex] = reader.ReadString();
+                    }
+                    headers[key] = headerValues;
+                }
+                else if (headerValueCount == 1)
+                {
+                    headers[key] = reader.ReadString();
+                }
             }
 
             var containsBody = reader.ReadBoolean();
@@ -202,7 +216,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             foreach (var header in entry.Headers)
             {
                 writer.Write(header.Key);
-                writer.Write(header.Value);
+                writer.Write(header.Value.Count);
+                foreach (var headerValue in header.Value)
+                {
+                    writer.Write(headerValue);
+                }
             }
 
             if (entry.Body == null)

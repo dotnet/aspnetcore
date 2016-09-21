@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCaching.Internal;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Tests
@@ -64,6 +65,40 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var headers = new HeaderDictionary();
             headers["keyA"] = "valueA";
             headers["keyB"] = "valueB";
+            var cachedResponse = new CachedResponse()
+            {
+                BodyKeyPrefix = FastGuid.NewGuid().IdString,
+                Created = DateTimeOffset.UtcNow,
+                StatusCode = StatusCodes.Status200OK,
+                Body = Encoding.ASCII.GetBytes("Hello world"),
+                Headers = headers
+            };
+
+            AssertCachedResponseEqual(cachedResponse, (CachedResponse)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedResponse)));
+        }
+
+        [Fact]
+        public void RoundTrip_CachedResponseWithMultivalueHeaders_Succeeds()
+        {
+            var headers = new HeaderDictionary();
+            headers["keyA"] = new StringValues(new[] { "ValueA", "ValueB" });
+            var cachedResponse = new CachedResponse()
+            {
+                BodyKeyPrefix = FastGuid.NewGuid().IdString,
+                Created = DateTimeOffset.UtcNow,
+                StatusCode = StatusCodes.Status200OK,
+                Body = Encoding.ASCII.GetBytes("Hello world"),
+                Headers = headers
+            };
+
+            AssertCachedResponseEqual(cachedResponse, (CachedResponse)CacheEntrySerializer.Deserialize(CacheEntrySerializer.Serialize(cachedResponse)));
+        }
+
+        [Fact]
+        public void RoundTrip_CachedResponseWithEmptyHeaders_Succeeds()
+        {
+            var headers = new HeaderDictionary();
+            headers["keyA"] = StringValues.Empty;
             var cachedResponse = new CachedResponse()
             {
                 BodyKeyPrefix = FastGuid.NewGuid().IdString,
