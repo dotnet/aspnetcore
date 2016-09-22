@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Globalization;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Localization
@@ -157,13 +157,32 @@ namespace Microsoft.AspNetCore.Localization
             return null;
         }
 
+        private static CultureInfo GetCultureInfo(string name, IList<CultureInfo> supportedCultures)
+        {
+            // Allow only known culture names as this API is called with input from users (HTTP requests) and
+            // creating CultureInfo objects is expensive and we don't want it to throw either.
+            if (name == null || supportedCultures == null)
+            {
+                return null;
+            }
+            var culture = supportedCultures.FirstOrDefault(
+                supportedCulture => string.Equals(supportedCulture.Name, name, StringComparison.OrdinalIgnoreCase));
+
+            if (culture == null)
+            {
+                return null;
+            }
+
+            return CultureInfo.ReadOnly(culture);
+        }
+
         private static CultureInfo GetCultureInfo(
             string cultureName,
             IList<CultureInfo> supportedCultures,
             bool fallbackToParentCultures,
             int currentDepth)
         {
-            var culture = CultureInfoCache.GetCultureInfo(cultureName, supportedCultures);
+            var culture = GetCultureInfo(cultureName, supportedCultures);
 
             if (culture == null && fallbackToParentCultures && currentDepth < MaxCultureFallbackDepth)
             {

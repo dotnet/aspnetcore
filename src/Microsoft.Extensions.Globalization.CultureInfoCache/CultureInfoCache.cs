@@ -12,6 +12,7 @@ namespace Microsoft.Extensions.Globalization
     /// <summary>
     /// Provides read-only cached instances of <see cref="CultureInfo"/>.
     /// </summary>
+    [Obsolete("This type is obsolete and will be removed in a future version.")]
     public static class CultureInfoCache
     {
         private static readonly ConcurrentDictionary<string, CacheEntry> _cache = new ConcurrentDictionary<string, CacheEntry>();
@@ -23,7 +24,7 @@ namespace Microsoft.Extensions.Globalization
         /// <param name="name">The culture name.</param>
         /// <param name="supportedCultures">The cultures supported by the application.</param>
         /// <returns>
-        /// A read-only cached <see cref="CultureInfo"/> or <c>null</c> a match wasn't found in
+        /// A read-only cached <see cref="CultureInfo"/> or <c>null</c> if a match wasn't found in
         /// <paramref name="supportedCultures"/>.
         /// </returns>
         public static CultureInfo GetCultureInfo(string name, IList<CultureInfo> supportedCultures)

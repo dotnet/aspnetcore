@@ -13,6 +13,19 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
     {
         private static readonly string _applicationPath = Path.Combine("test", "LocalizationWebsite");
 
+        [Fact]
+        public Task Localization_CustomCulture()
+        {
+            var testRunner = new TestRunner(_applicationPath);
+            return testRunner.RunTestAndVerifyResponse(
+                RuntimeFlavor.CoreClr,
+                RuntimeArchitecture.x64,
+                "http://localhost:5070",
+                "CustomCulturePreserved",
+                "en-US",
+                "kr10.00");
+        }
+
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]

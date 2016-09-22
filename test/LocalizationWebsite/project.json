@@ -7,6 +7,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.Localization": "1.1.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
+    "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Microsoft.Extensions.Configuration.CommandLine": "1.1.0-*",
     "Microsoft.Extensions.Localization": "1.1.0-*",
     "Microsoft.Extensions.Logging.Console": "1.1.0-*",
