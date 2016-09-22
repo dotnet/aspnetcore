@@ -16,7 +16,7 @@ namespace RewriteSample
             var options = new RewriteOptions()
                 .AddRedirect("(.*)/$", "$1")
                 .AddRewrite(@"app/(\d+)", "app?id=$1")
-                .AddRedirectToHttps(302)
+                .AddRedirectToHttps(302, 5001)
                 .AddIISUrlRewrite(env.ContentRootFileProvider, "UrlRewrite.xml")
                 .AddApacheModRewrite(env.ContentRootFileProvider, "Rewrite.txt");
 
@@ -28,7 +28,11 @@ namespace RewriteSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseKestrel()
+                .UseKestrel(options =>
+                {
+                    options.UseHttps("testCert.pfx", "testPassword");
+                })
+                .UseUrls("http://localhost:5000", "https://localhost:5001")
                 .UseStartup<Startup>()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .Build();

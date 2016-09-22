@@ -12,14 +12,11 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlActions
         [Fact]
         public void Gone_Verify410IsInStatusCode()
         {
-            // Arrange
             var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
             var action = new GoneAction();
 
-            // Act
             action.ApplyAction(context, null, null);
 
-            // Assert
             Assert.Equal(context.Result, RuleResult.EndResponse);
             Assert.Equal(context.HttpContext.Response.StatusCode, StatusCodes.Status410Gone);
         }
