@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
 
-namespace Microsoft.AspNetCore.JsonPatch.Helpers
+namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
     internal static class PathHelpers
     {

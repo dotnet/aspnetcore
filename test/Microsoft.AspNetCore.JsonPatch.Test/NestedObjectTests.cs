@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNetCore.JsonPatch.Test
+namespace Microsoft.AspNetCore.JsonPatch
 {
     public class NestedObjectTests
     {
@@ -386,8 +386,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { patchDoc.ApplyTo(doc); });
             Assert.Equal(
-                "For operation 'add' on array property at path '/simpledto/integerlist/4', the index is " +
-                    "larger than the array size.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "4"),
                 exception.Message);
 
         }
@@ -417,8 +416,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
                     deserialized.ApplyTo(doc);
                 });
             Assert.Equal(
-                "For operation 'add' on array property at path '/simpledto/integerlist/4', the index is " +
-                    "larger than the array size.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "4"),
                 exception.Message);
         }
 
@@ -445,8 +443,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
 
             //Assert
             Assert.Equal(
-                "For operation 'add' on array property at path '/simpledto/integerlist/4', the index is larger than " +
-                    "the array size.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "4"),
                 logger.ErrorMessage);
 
         }
@@ -470,7 +467,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { patchDoc.ApplyTo(doc); });
             Assert.Equal(
-                "For operation 'add' on array property at path '/simpledto/integerlist/-1', the index is negative.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
                 exception.Message);
         }
 
@@ -499,7 +496,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
                     deserialized.ApplyTo(doc);
                 });
             Assert.Equal(
-                "For operation 'add' on array property at path '/simpledto/integerlist/-1', the index is negative.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
                 exception.Message);
         }
 
@@ -527,7 +524,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
 
             //Assert
             Assert.Equal(
-                "For operation 'add' on array property at path '/simpledto/integerlist/-1', the index is negative.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
                 logger.ErrorMessage);
         }
 
@@ -697,8 +694,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { patchDoc.ApplyTo(doc); });
             Assert.Equal(
-                "For operation 'remove' on array property at path '/simpledto/integerlist/3', the index is " +
-                    "larger than the array size.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "3"),
                 exception.Message);
         }
 
@@ -727,8 +723,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
                     deserialized.ApplyTo(doc);
                 });
             Assert.Equal(
-                "For operation 'remove' on array property at path '/simpledto/integerlist/3', the index is " +
-                    "larger than the array size.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "3"),
                 exception.Message);
         }
 
@@ -754,8 +749,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
 
             // Assert
             Assert.Equal(
-                "For operation 'remove' on array property at path '/simpledto/integerlist/3', the index is " +
-                    "larger than the array size.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "3"),
                 logger.ErrorMessage);
         }
 
@@ -777,7 +771,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { patchDoc.ApplyTo(doc); });
-            Assert.Equal("For operation 'remove' on array property at path '/simpledto/integerlist/-1', the index is negative.", exception.Message);
+            Assert.Equal(
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
+                exception.Message);
         }
 
         [Fact]
@@ -804,7 +800,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
                 {
                     deserialized.ApplyTo(doc);
                 });
-            Assert.Equal("For operation 'remove' on array property at path '/simpledto/integerlist/-1', the index is negative.", exception.Message);
+            Assert.Equal(
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
+                exception.Message);
         }
 
         [Fact]
@@ -829,7 +827,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             patchDoc.ApplyTo(doc, logger.LogErrorMessage);
 
             // Assert
-            Assert.Equal("For operation 'remove' on array property at path '/simpledto/integerlist/-1', the index is negative.", logger.ErrorMessage);
+            Assert.Equal(
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
+                logger.ErrorMessage);
         }
 
         [Fact]
@@ -1239,8 +1239,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { patchDoc.ApplyTo(doc); });
             Assert.Equal(
-                "For operation 'replace' on array property at path '/simpledto/integerlist/3', the index is " +
-                    "larger than the array size.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "3"),
                 exception.Message);
         }
 
@@ -1269,8 +1268,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
                     deserialized.ApplyTo(doc);
                 });
             Assert.Equal(
-                "For operation 'replace' on array property at path '/simpledto/integerlist/3', the index is " +
-                    "larger than the array size.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "3"),
                 exception.Message);
         }
 
@@ -1298,8 +1296,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
 
             // Assert
             Assert.Equal(
-                "For operation 'replace' on array property at path '/simpledto/integerlist/3', the index is " +
-                    "larger than the array size.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "3"),
                 logger.ErrorMessage);
         }
 
@@ -1321,7 +1318,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { patchDoc.ApplyTo(doc); });
-            Assert.Equal("For operation 'replace' on array property at path '/simpledto/integerlist/-1', the index is negative.",
+            Assert.Equal(
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
                 exception.Message);
         }
 
@@ -1347,7 +1345,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { deserialized.ApplyTo(doc); });
             Assert.Equal(
-                "For operation 'replace' on array property at path '/simpledto/integerlist/-1', the index is negative.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
                 exception.Message);
         }
 
@@ -1375,7 +1373,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
 
             // Assert
             Assert.Equal(
-                "For operation 'replace' on array property at path '/simpledto/integerlist/-1', the index is negative.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
                 logger.ErrorMessage);
         }
 

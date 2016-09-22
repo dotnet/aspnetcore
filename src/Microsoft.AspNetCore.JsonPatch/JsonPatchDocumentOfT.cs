@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.JsonPatch.Adapters;
 using Microsoft.AspNetCore.JsonPatch.Converters;
-using Microsoft.AspNetCore.JsonPatch.Helpers;
+using Microsoft.AspNetCore.JsonPatch.Internal;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -502,7 +502,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// Copy from a property to a location in a list
         /// </summary>
         /// <typeparam name="TProp"></typeparam>
-        /// <param name="from">source location</param>      
+        /// <param name="from">source location</param>
         /// <param name="path">target location</param>
         /// <param name="positionTo">position</param>
         /// <returns></returns>
@@ -623,7 +623,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         /// <summary>
-        /// Apply this JsonPatchDocument 
+        /// Apply this JsonPatchDocument
         /// </summary>
         /// <param name="objectToApplyTo">Object to apply the JsonPatchDocument to</param>
         public void ApplyTo(TModel objectToApplyTo)
@@ -637,7 +637,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         /// <summary>
-        /// Apply this JsonPatchDocument 
+        /// Apply this JsonPatchDocument
         /// </summary>
         /// <param name="objectToApplyTo">Object to apply the JsonPatchDocument to</param>
         /// <param name="logErrorAction">Action to log errors</param>
@@ -652,7 +652,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         /// <summary>
-        /// Apply this JsonPatchDocument  
+        /// Apply this JsonPatchDocument
         /// </summary>
         /// <param name="objectToApplyTo">Object to apply the JsonPatchDocument to</param>
         /// <param name="adapter">IObjectAdapter instance to use when applying</param>

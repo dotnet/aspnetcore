@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "The property at path '/NewInt' could not be added.",
+                string.Format("The target location specified by path segment '{0}' was not found.", "NewInt"),
                 exception.Message);
         }
 
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "The property at path '/Nested/NewInt' could not be added.",
+                string.Format("The target location specified by path segment '{0}' was not found.", "NewInt"),
                 exception.Message);
         }
 
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "The property at path '/Nested/NewInt' could not be added.",
+                string.Format("The target location specified by path segment '{0}' was not found.", "NewInt"),
                 exception.Message);
         }
 
@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "The property at path '/ComplexProperty' could not be added.",
+                string.Format("The target location specified by path segment '{0}' was not found.", "ComplexProperty"),
                 exception.Message);
         }
 
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "The property at path '/StringProperty' could not be updated.",
+                string.Format("The property at path '{0}' could not be updated.", "StringProperty"),
                 exception.Message);
         }
 
@@ -336,7 +336,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "The property at path '/DynamicProperty/OtherProperty/IntProperty' could not be added.",
+                string.Format(
+                    "For operation '{0}', the target location specified by path '{1}' was not found.",
+                    "add",
+                    "/DynamicProperty/OtherProperty/IntProperty"),
                 exception.Message);
         }
 
@@ -374,7 +377,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "The property at path '/baz/bat' could not be added.",
+                string.Format("The target location specified by path segment '{0}' was not found.", "baz"),
                 exception.Message);
         }
 
@@ -434,7 +437,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "For operation 'add' on array property at path '/IntegerList/-1', the index is negative.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
                 exception.Message);
         }
 
@@ -478,28 +481,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "For operation 'add' on array property at path '/IntegerList/4', the index is larger than the array size.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "4"),
                 exception.Message);
-        }
-
-        [Fact]
-        public void AddToListAtEndWithSerialization()
-        {
-            var doc = new
-            {
-                IntegerList = new List<int>() { 1, 2, 3 }
-            };
-
-            // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
-            patchDoc.Add("IntegerList/3", 4);
-
-            var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-
-            deserialized.ApplyTo(doc);
-
-            Assert.Equal(new List<int>() { 1, 2, 3, 4 }, doc.IntegerList);
         }
 
         [Fact]
@@ -542,7 +525,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "For operation 'add' on array property at path '/IntegerList/-1', the index is negative.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
                 exception.Message);
         }
 

@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-               "For operation 'remove' on array property at path '/IntegerList/3', the index is larger than the array size.",
+               string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "3"),
                 exception.Message);
         }
 
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-               "For operation 'remove' on array property at path '/IntegerList/-1', the index is negative.",
+               string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
                 exception.Message);
         }
 
@@ -187,8 +187,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-               "For operation 'remove' on array property at path '/SimpleDTO/IntegerList/3', the index is larger than the array size.",
-                exception.Message);
+               string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "3"),
+               exception.Message);
         }
 
         [Fact]
@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-               "For operation 'remove' on array property at path '/SimpleDTO/IntegerList/-1', the index is negative.",
+               string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
                 exception.Message);
         }
 

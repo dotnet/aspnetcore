@@ -120,44 +120,44 @@
   <data name="CannotDeterminePropertyType" xml:space="preserve">
     <value>The type of the property at path '{0}' could not be determined.</value>
   </data>
+  <data name="CannotPerformOperation" xml:space="preserve">
+    <value>The '{0}' operation at path '{1}' could not be performed.</value>
+  </data>
   <data name="CannotReadProperty" xml:space="preserve">
     <value>The property at '{0}' could not be read.</value>
   </data>
   <data name="CannotUpdateProperty" xml:space="preserve">
     <value>The property at path '{0}' could not be updated.</value>
   </data>
-  <data name="DictionaryKeyNotFound" xml:space="preserve">
-    <value>The key '{0}' was not found.</value>
+  <data name="IndexOutOfBounds" xml:space="preserve">
+    <value>The index value provided by path segment '{0}' is out of bounds of the array size.</value>
   </data>
-  <data name="InvalidIndexForArrayProperty" xml:space="preserve">
-    <value>For operation '{0}' on array property at path '{1}', the index is larger than the array size.</value>
+  <data name="InvalidIndexValue" xml:space="preserve">
+    <value>The path segment '{0}' is invalid for an array index.</value>
   </data>
   <data name="InvalidJsonPatchDocument" xml:space="preserve">
     <value>The type '{0}' was malformed and could not be parsed.</value>
-  </data>
-  <data name="InvalidPathForArrayProperty" xml:space="preserve">
-    <value>For operation '{0}', the provided path is invalid for array property at path '{1}'.</value>
   </data>
   <data name="InvalidValueForPath" xml:space="preserve">
     <value>The provided string '{0}' is an invalid path.</value>
   </data>
   <data name="InvalidValueForProperty" xml:space="preserve">
-    <value>The value '{0}' is invalid for property at path '{1}'.</value>
-  </data>
-  <data name="NegativeIndexForArrayProperty" xml:space="preserve">
-    <value>For operation '{0}' on array property at path '{1}', the index is negative.</value>
+    <value>The value '{0}' is invalid for target location.</value>
   </data>
   <data name="ParameterMustMatchType" xml:space="preserve">
     <value>'{0}' must be of type '{1}'.</value>
   </data>
-  <data name="PropertyCannotBeAdded" xml:space="preserve">
-    <value>The property at path '{0}' could not be added.</value>
+  <data name="PatchNotSupportedForArrays" xml:space="preserve">
+    <value>The type '{0}' which is an array is not supported for json patch operations as it has a fixed size.</value>
   </data>
-  <data name="PropertyCannotBeRemoved" xml:space="preserve">
-    <value>The property at path '{0}' could not be removed.</value>
+  <data name="PatchNotSupportedForNonGenericLists" xml:space="preserve">
+    <value>The type '{0}' which is a non generic list is not supported for json patch operations. Only generic list types are supported.</value>
   </data>
-  <data name="PropertyDoesNotExist" xml:space="preserve">
-    <value>Property does not exist at path '{0}'.</value>
+  <data name="TargetLocationAtPathSegmentNotFound" xml:space="preserve">
+    <value>The target location specified by path segment '{0}' was not found.</value>
+  </data>
+  <data name="TargetLocationNotFound" xml:space="preserve">
+    <value>For operation '{0}', the target location specified by path '{1}' was not found.</value>
   </data>
   <data name="TestOperationNotSupported" xml:space="preserve">
     <value>The test operation is not supported.</value>

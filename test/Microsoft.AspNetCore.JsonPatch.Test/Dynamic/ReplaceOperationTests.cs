@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Dynamic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             JsonPatchDocument patchDoc = new JsonPatchDocument();
             patchDoc.Replace("GuidValue", newGuid);
 
-            // serialize & deserialize 
+            // serialize & deserialize
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserizalized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
 
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             JsonPatchDocument patchDoc = new JsonPatchDocument();
             patchDoc.Replace("GuidValue", newGuid);
 
-            // serialize & deserialize 
+            // serialize & deserialize
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserizalized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
 
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             JsonPatchDocument patchDoc = new JsonPatchDocument();
             patchDoc.Replace("nestedobject/GuidValue", newGuid);
 
-            // serialize & deserialize 
+            // serialize & deserialize
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserizalized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
 
@@ -98,7 +99,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             JsonPatchDocument patchDoc = new JsonPatchDocument();
             patchDoc.Replace("SimpleDTO", newDTO);
 
-            // serialize & deserialize 
+            // serialize & deserialize
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
 
@@ -201,6 +202,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
 
             deserialized.ApplyTo(doc);
+
             Assert.Equal(new List<int>() { 4, 5, 6 }, doc.IntegerList);
         }
 

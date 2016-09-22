@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.JsonPatch.Test
+namespace Microsoft.AspNetCore.JsonPatch
 {
     public class SimpleDTOWithNestedDTO
     {

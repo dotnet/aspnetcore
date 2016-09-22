@@ -22,14 +22,18 @@
   },
   "dependencies": {
     "NETStandard.Library": "1.6.1-*",
-    "Newtonsoft.Json": "9.0.1"
+    "Newtonsoft.Json": "9.0.1",
+    "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
+      "type": "build",
+      "version": "1.1.0-*"
+    }
   },
   "frameworks": {
-    "netstandard1.1": {
+    "net451": {},
+    "netstandard1.3": {
       "dependencies": {
         "Microsoft.CSharp": "4.3.0-*",
-        "System.ComponentModel.TypeConverter": "4.3.0-*",
-        "System.Runtime.Serialization.Primitives": "4.3.0-*"
+        "System.Reflection.TypeExtensions": "4.1.0-*"
       }
     }
   }

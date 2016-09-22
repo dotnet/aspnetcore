@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNetCore.JsonPatch.Test
+namespace Microsoft.AspNetCore.JsonPatch.Adapters
 {
     public class ObjectAdapterTests
     {
@@ -157,8 +157,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { patchDoc.ApplyTo(doc); });
             Assert.Equal(
-                "For operation 'add' on array property at path '/integerlist/4', the index is " +
-                    "larger than the array size.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "4"),
                 exception.Message);
         }
 
@@ -181,8 +180,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { deserialized.ApplyTo(doc); });
             Assert.Equal(
-                "For operation 'add' on array property at path '/integerlist/4', the index is " +
-                    "larger than the array size.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "4"),
                 exception.Message);
         }
 
@@ -206,52 +204,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
 
             // Assert
             Assert.Equal(
-                "For operation 'add' on array property at path '/integerlist/4', the index is " +
-                    "larger than the array size.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "4"),
                 logger.ErrorMessage);
-        }
-
-        [Fact]
-        public void AddToListAtEnd()
-        {
-            // Arrange
-            var doc = new SimpleDTO()
-            {
-                IntegerList = new List<int>() { 1, 2, 3 }
-            };
-
-            // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
-            patchDoc.Add<int>(o => o.IntegerList, 4, 3);
-
-            // Act
-            patchDoc.ApplyTo(doc);
-
-            // Assert
-            Assert.Equal(new List<int>() { 1, 2, 3, 4 }, doc.IntegerList);
-        }
-
-        [Fact]
-        public void AddToListAtEndWithSerialization()
-        {
-            // Arrange
-            var doc = new SimpleDTO()
-            {
-                IntegerList = new List<int>() { 1, 2, 3 }
-            };
-
-            // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
-            patchDoc.Add<int>(o => o.IntegerList, 4, 3);
-
-            var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
-
-            // Act
-            deserialized.ApplyTo(doc);
-
-            // Assert
-            Assert.Equal(new List<int>() { 1, 2, 3, 4 }, doc.IntegerList);
         }
 
         [Fact]
@@ -313,7 +267,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { patchDoc.ApplyTo(doc); });
             Assert.Equal(
-                "For operation 'add' on array property at path '/integerlist/-1', the index is negative.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
                 exception.Message);
         }
 
@@ -336,7 +290,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { deserialized.ApplyTo(doc); });
             Assert.Equal(
-                "For operation 'add' on array property at path '/integerlist/-1', the index is negative.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
                 exception.Message);
         }
 
@@ -359,7 +313,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
 
             // Assert
             Assert.Equal(
-                "For operation 'add' on array property at path '/integerlist/-1', the index is negative.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
                 logger.ErrorMessage);
         }
 
@@ -508,8 +462,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { patchDoc.ApplyTo(doc); });
             Assert.Equal(
-                "For operation 'remove' on array property at path '/integerlist/3', the index is " +
-                    "larger than the array size.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "3"),
                 exception.Message);
         }
 
@@ -532,8 +485,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { deserialized.ApplyTo(doc); });
             Assert.Equal(
-                "For operation 'remove' on array property at path '/integerlist/3', the index is " +
-                    "larger than the array size.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "3"),
                 exception.Message);
         }
 
@@ -557,8 +509,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
 
             // Assert
             Assert.Equal(
-                "For operation 'remove' on array property at path '/integerlist/3', the index is " +
-                    "larger than the array size.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "3"),
                 logger.ErrorMessage);
         }
 
@@ -577,7 +528,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { patchDoc.ApplyTo(doc); });
-            Assert.Equal("For operation 'remove' on array property at path '/integerlist/-1', the index is negative.", exception.Message);
+            Assert.Equal(
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
+                exception.Message);
         }
 
         [Fact]
@@ -598,7 +551,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { deserialized.ApplyTo(doc); });
-            Assert.Equal("For operation 'remove' on array property at path '/integerlist/-1', the index is negative.", exception.Message);
+            Assert.Equal(
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
+                exception.Message);
         }
 
         [Fact]
@@ -621,7 +576,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
 
 
             // Assert
-            Assert.Equal("For operation 'remove' on array property at path '/integerlist/-1', the index is negative.", logger.ErrorMessage);
+            Assert.Equal(
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
+                logger.ErrorMessage);
         }
 
         [Fact]
@@ -1123,8 +1080,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
                 patchDoc.ApplyTo(doc);
             });
             Assert.Equal(
-                "For operation 'replace' on array property at path '/integerlist/3', the index is " +
-                    "larger than the array size.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "3"),
                 exception.Message);
         }
 
@@ -1149,8 +1105,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "For operation 'replace' on array property at path '/integerlist/3', the index is " +
-                    "larger than the array size.",
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "3"),
                 exception.Message);
         }
 
@@ -1172,7 +1127,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             {
                 patchDoc.ApplyTo(doc);
             });
-            Assert.Equal("For operation 'replace' on array property at path '/integerlist/-1', the index is negative.", exception.Message);
+            Assert.Equal(
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
+                exception.Message);
         }
 
         [Fact]
@@ -1196,7 +1153,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             {
                 deserialized.ApplyTo(doc);
             });
-            Assert.Equal("For operation 'replace' on array property at path '/integerlist/-1', the index is negative.", exception.Message);
+            Assert.Equal(
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", "-1"),
+                exception.Message);
         }
 
         [Fact]
@@ -1732,6 +1691,578 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             // Assert
             Assert.Equal(0, doc.IntegerValue);
             Assert.Equal(new List<int>() { 1, 2, 3, 5 }, doc.IntegerList);
+        }
+
+        private class Class6
+        {
+            public IDictionary<string, int> DictionaryOfStringToInteger { get; } = new Dictionary<string, int>();
+        }
+
+        [Fact]
+        public void Add_WhenDictionary_ValueIsNonObject_Succeeds()
+        {
+            // Arrange
+            var model = new Class6();
+            model.DictionaryOfStringToInteger["one"] = 1;
+            model.DictionaryOfStringToInteger["two"] = 2;
+            var patchDocument = new JsonPatchDocument();
+            patchDocument.Add("/DictionaryOfStringToInteger/three", 3);
+
+            // Act
+            patchDocument.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(3, model.DictionaryOfStringToInteger.Count);
+            Assert.Equal(1, model.DictionaryOfStringToInteger["one"]);
+            Assert.Equal(2, model.DictionaryOfStringToInteger["two"]);
+            Assert.Equal(3, model.DictionaryOfStringToInteger["three"]);
+        }
+
+        [Fact]
+        public void Remove_WhenDictionary_ValueIsNonObject_Succeeds()
+        {
+            // Arrange
+            var model = new Class6();
+            model.DictionaryOfStringToInteger["one"] = 1;
+            model.DictionaryOfStringToInteger["two"] = 2;
+            var patchDocument = new JsonPatchDocument();
+            patchDocument.Remove("/DictionaryOfStringToInteger/two");
+
+            // Act
+            patchDocument.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(1, model.DictionaryOfStringToInteger.Count);
+            Assert.Equal(1, model.DictionaryOfStringToInteger["one"]);
+        }
+
+        [Fact]
+        public void Replace_WhenDictionary_ValueIsNonObject_Succeeds()
+        {
+            // Arrange
+            var model = new Class6();
+            model.DictionaryOfStringToInteger["one"] = 1;
+            model.DictionaryOfStringToInteger["two"] = 2;
+            var patchDocument = new JsonPatchDocument();
+            patchDocument.Replace("/DictionaryOfStringToInteger/two", 20);
+
+            // Act
+            patchDocument.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(2, model.DictionaryOfStringToInteger.Count);
+            Assert.Equal(1, model.DictionaryOfStringToInteger["one"]);
+            Assert.Equal(20, model.DictionaryOfStringToInteger["two"]);
+        }
+
+        private class Customer
+        {
+            public string Name { get; set; }
+            public Address Address { get; set; }
+        }
+
+        private class Address
+        {
+            public string City { get; set; }
+        }
+
+        private class Class8
+        {
+            public IDictionary<string, Customer> DictionaryOfStringToCustomer { get; } = new Dictionary<string, Customer>();
+        }
+
+        [Fact]
+        public void Replace_WhenDictionary_ValueAPocoType_Succeeds()
+        {
+            // Arrange
+            var key1 = "key1";
+            var value1 = new Customer() { Name = "Jamesss" };
+            var key2 = "key2";
+            var value2 = new Customer() { Name = "Mike" };
+            var model = new Class8();
+            model.DictionaryOfStringToCustomer[key1] = value1;
+            model.DictionaryOfStringToCustomer[key2] = value2;
+            var patchDocument = new JsonPatchDocument();
+            patchDocument.Replace($"/DictionaryOfStringToCustomer/{key1}/Name", "James");
+
+            // Act
+            patchDocument.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(2, model.DictionaryOfStringToCustomer.Count);
+            var actualValue1 = model.DictionaryOfStringToCustomer[key1];
+            Assert.NotNull(actualValue1);
+            Assert.Equal("James", actualValue1.Name);
+        }
+
+        [Fact]
+        public void Replace_WhenDictionary_ValueAPocoType_Succeeds_WithSerialization()
+        {
+            // Arrange
+            var key1 = "key1";
+            var value1 = new Customer() { Name = "Jamesss" };
+            var key2 = "key2";
+            var value2 = new Customer() { Name = "Mike" };
+            var model = new Class8();
+            model.DictionaryOfStringToCustomer[key1] = value1;
+            model.DictionaryOfStringToCustomer[key2] = value2;
+            var patchDocument = new JsonPatchDocument();
+            patchDocument.Replace($"/DictionaryOfStringToCustomer/{key1}/Name", "James");
+            var serialized = JsonConvert.SerializeObject(patchDocument);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<Class8>>(serialized);
+
+            // Act
+            patchDocument.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(2, model.DictionaryOfStringToCustomer.Count);
+            var actualValue1 = model.DictionaryOfStringToCustomer[key1];
+            Assert.NotNull(actualValue1);
+            Assert.Equal("James", actualValue1.Name);
+        }
+
+        [Fact]
+        public void Replace_DeepNested_DictionaryValue_Succeeds()
+        {
+            // Arrange
+            var key1 = "key1";
+            var value1 = new Customer() { Name = "Jamesss" };
+            var key2 = "key2";
+            var value2 = new Customer() { Name = "Mike" };
+            var model = new Class8();
+            model.DictionaryOfStringToCustomer[key1] = value1;
+            model.DictionaryOfStringToCustomer[key2] = value2;
+            var patchDocument = new JsonPatchDocument();
+            patchDocument.Replace($"/DictionaryOfStringToCustomer/{key1}/Name", "James");
+
+            // Act
+            patchDocument.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(2, model.DictionaryOfStringToCustomer.Count);
+            var actualValue1 = model.DictionaryOfStringToCustomer[key1];
+            Assert.NotNull(actualValue1);
+            Assert.Equal("James", actualValue1.Name);
+        }
+
+        [Fact]
+        public void Replace_DeepNested_DictionaryValue_Succeeds_WithSerialization()
+        {
+            // Arrange
+            var key1 = "key1";
+            var value1 = new Customer() { Name = "James", Address = new Address { City = "Redmond" } };
+            var key2 = "key2";
+            var value2 = new Customer() { Name = "Mike", Address = new Address { City = "Seattle" } };
+            var model = new Class8();
+            model.DictionaryOfStringToCustomer[key1] = value1;
+            model.DictionaryOfStringToCustomer[key2] = value2;
+            var patchDocument = new JsonPatchDocument();
+            patchDocument.Replace($"/DictionaryOfStringToCustomer/{key1}/Address/City", "Bellevue");
+            var serialized = JsonConvert.SerializeObject(patchDocument);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<Class8>>(serialized);
+
+            // Act
+            patchDocument.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(2, model.DictionaryOfStringToCustomer.Count);
+            var actualValue1 = model.DictionaryOfStringToCustomer[key1];
+            Assert.NotNull(actualValue1);
+            Assert.Equal("James", actualValue1.Name);
+            var address = actualValue1.Address;
+            Assert.NotNull(address);
+            Assert.Equal("Bellevue", address.City);
+        }
+
+        class Class9
+        {
+            public List<string> StringList { get; set; } = new List<string>();
+        }
+
+        [Fact]
+        public void AddToNonIntegerListAtEnd()
+        {
+            // Arrange
+            var model = new Class9()
+            {
+                StringList = new List<string>()
+            };
+            model.StringList.Add("string1");
+            model.StringList.Add("string2");
+            var patchDoc = new JsonPatchDocument();
+            patchDoc.Add("/StringList/0", "string3");
+
+            // Act
+            patchDoc.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(new List<string>() { "string3", "string1", "string2" }, model.StringList);
+        }
+
+        [Fact]
+        public void AddMember_OnPOCO_WithNullPropertyValue_ShouldAddPropertyValue()
+        {
+            // Arrange
+            var doc = new SimpleDTO()
+            {
+                StringProperty = null
+            };
+
+            // create patch
+            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            patchDoc.Add<string>(o => o.StringProperty, "B");
+
+            // Act
+            patchDoc.ApplyTo(doc);
+
+            // Assert
+            Assert.Equal("B", doc.StringProperty);
+        }
+
+        private class Class1
+        {
+            public IDictionary<string, string> USStates { get; set; } = new Dictionary<string, string>();
+        }
+
+        [Fact]
+        public void AddMember_OnDictionaryProperty_ShouldAddKeyValueMember()
+        {
+            // Arrange
+            var expected = "Washington";
+            var model = new Class1();
+            var patchDoc = new JsonPatchDocument();
+            patchDoc.Add("/USStates/WA", expected);
+
+            // Act
+            patchDoc.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(1, model.USStates.Count);
+            Assert.Equal(expected, model.USStates["WA"]);
+        }
+
+        [Fact]
+        public void AddMember_OnDictionaryProperty_ShouldAddKeyValueMember_WithSerialization()
+        {
+            // Arrange
+            var expected = "Washington";
+            var model = new Class1();
+            var patchDoc = new JsonPatchDocument();
+            patchDoc.Add("/USStates/WA", expected);
+            var serialized = JsonConvert.SerializeObject(patchDoc);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<Class1>>(serialized);
+
+            // Act
+            deserialized.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(1, model.USStates.Count);
+            Assert.Equal(expected, model.USStates["WA"]);
+        }
+
+        private class Class2
+        {
+            public Class1 Class1Property { get; set; } = new Class1();
+        }
+
+        [Fact]
+        public void AddMember_OnDictionaryPropertyDeeplyNested_ShouldAddKeyValueMember()
+        {
+            // Arrange
+            var expected = "Washington";
+            var model = new Class2();
+            var patchDoc = new JsonPatchDocument();
+            patchDoc.Add("/Class1Property/USStates/WA", expected);
+
+            // Act
+            patchDoc.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(1, model.Class1Property.USStates.Count);
+            Assert.Equal(expected, model.Class1Property.USStates["WA"]);
+        }
+
+        [Fact]
+        public void AddMember_OnDictionaryPropertyDeeplyNested_ShouldAddKeyValueMember_WithSerialization()
+        {
+            // Arrange
+            var expected = "Washington";
+            var model = new Class2();
+            var patchDoc = new JsonPatchDocument();
+            patchDoc.Add("/Class1Property/USStates/WA", expected);
+            var serialized = JsonConvert.SerializeObject(patchDoc);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<Class2>>(serialized);
+
+            // Act
+            deserialized.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(1, model.Class1Property.USStates.Count);
+            Assert.Equal(expected, model.Class1Property.USStates["WA"]);
+        }
+
+        [Fact]
+        public void AddMember_OnDictionaryObjectDirectly_ShouldAddKeyValueMember()
+        {
+            // Arrange
+            var expected = "Washington";
+            var model = new Dictionary<string, string>();
+            var patchDoc = new JsonPatchDocument();
+            patchDoc.Add("/WA", expected);
+
+            // Act
+            patchDoc.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(1, model.Count);
+            Assert.Equal(expected, model["WA"]);
+        }
+
+        [Fact]
+        public void AddMember_OnDictionaryObjectDirectly_ShouldAddKeyValueMember_WithSerialization()
+        {
+            // Arrange
+            var expected = "Washington";
+            var model = new Dictionary<string, string>();
+            var patchDoc = new JsonPatchDocument();
+            patchDoc.Add("/WA", expected);
+            var serialized = JsonConvert.SerializeObject(patchDoc);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<Dictionary<string, string>>>(serialized);
+
+            // Act
+            deserialized.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(1, model.Count);
+            Assert.Equal(expected, model["WA"]);
+        }
+
+        [Fact]
+        public void AddElement_ToListDirectly_ShouldAppendValue()
+        {
+            // Arrange
+            var model = new List<int>() { 1, 2, 3 };
+            var patchDoc = new JsonPatchDocument();
+            patchDoc.Add("/-", value: 4);
+            var serialized = JsonConvert.SerializeObject(patchDoc);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<List<int>>>(serialized);
+
+            // Act
+            deserialized.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(new List<int>() { 1, 2, 3, 4 }, model);
+        }
+
+        [Fact]
+        public void AddElement_ToListDirectly_ShouldAppendValue_WithSerialization()
+        {
+            // Arrange
+            var model = new List<int>() { 1, 2, 3 };
+            var patchDoc = new JsonPatchDocument();
+            patchDoc.Add("/-", value: 4);
+
+            // Act
+            patchDoc.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(new List<int>() { 1, 2, 3, 4 }, model);
+        }
+
+        [Fact]
+        public void AddElement_ToListDirectly_ShouldAddValue_AtSuppliedPosition()
+        {
+            // Arrange
+            var model = new List<int>() { 1, 2, 3 };
+            var patchDoc = new JsonPatchDocument();
+            patchDoc.Add("/0", value: 4);
+
+            // Act
+            patchDoc.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(new List<int>() { 4, 1, 2, 3 }, model);
+        }
+
+        [Fact]
+        public void AddElement_ToListDirectly_ShouldAddValue_AtSuppliedPosition_WithSerialization()
+        {
+            // Arrange
+            var model = new List<int>() { 1, 2, 3 };
+            var patchDoc = new JsonPatchDocument();
+            patchDoc.Add("/0", value: 4);
+            var serialized = JsonConvert.SerializeObject(patchDoc);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<List<int>>>(serialized);
+
+            // Act
+            deserialized.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(new List<int>() { 4, 1, 2, 3 }, model);
+        }
+
+        class ListOnDictionary
+        {
+            public IDictionary<string, List<int>> NamesAndBadgeIds { get; set; } = new Dictionary<string, List<int>>();
+        }
+
+        [Fact]
+        public void AddElement_ToList_OnDictionary_ShouldAddValue_AtSuppliedPosition()
+        {
+            // Arrange
+            var model = new ListOnDictionary();
+            model.NamesAndBadgeIds["James"] = new List<int>();
+            var patchDoc = new JsonPatchDocument();
+            patchDoc.Add("/NamesAndBadgeIds/James/-", 200);
+
+            // Act
+            patchDoc.ApplyTo(model);
+
+            // Assert
+            var list = model.NamesAndBadgeIds["James"];
+            Assert.NotNull(list);
+            Assert.Equal(new List<int>() { 200 }, list);
+        }
+
+        [Fact]
+        public void AddElement_ToList_OnPOCO_ShouldAddValue_AtSuppliedPosition()
+        {
+            // Arrange
+            var doc = new SimpleDTO()
+            {
+                IntegerIList = new List<int>() { 1, 2, 3 }
+            };
+
+            // create patch
+            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            patchDoc.Add<int>(o => o.IntegerIList, 4, 0);
+
+            // Act
+            patchDoc.ApplyTo(doc);
+
+            // Assert
+            Assert.Equal(new List<int>() { 4, 1, 2, 3 }, doc.IntegerIList);
+        }
+
+        class Class3
+        {
+            public SimpleDTO SimpleDTOProperty { get; set; } = new SimpleDTO();
+        }
+
+        [Fact]
+        public void AddElement_ToDeeplyNestedListProperty_OnPOCO_ShouldAddValue_AtSuppliedPosition()
+        {
+            // Arrange
+            var model = new Class3()
+            {
+                SimpleDTOProperty = new SimpleDTO()
+                {
+                    IntegerIList = new List<int>() { 1, 2, 3 }
+                }
+            };
+            var patchDoc = new JsonPatchDocument<Class3>();
+            patchDoc.Add<int>(o => o.SimpleDTOProperty.IntegerIList, value: 4, position: 0);
+
+            // Act
+            patchDoc.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(new List<int>() { 4, 1, 2, 3 }, model.SimpleDTOProperty.IntegerIList);
+        }
+
+        [Fact]
+        public void AddElement_ToDeeplyNestedListProperty_OnPOCO_ShouldAddValue_AtSuppliedPosition_WithSerialization()
+        {
+            // Arrange
+            var model = new Class3()
+            {
+                SimpleDTOProperty = new SimpleDTO()
+                {
+                    IntegerIList = new List<int>() { 1, 2, 3 }
+                }
+            };
+            var patchDoc = new JsonPatchDocument<Class3>();
+            patchDoc.Add<int>(o => o.SimpleDTOProperty.IntegerIList, value: 4, position: 0);
+            var serialized = JsonConvert.SerializeObject(patchDoc);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<Class3>>(serialized);
+
+            // Act
+            deserialized.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(new List<int>() { 4, 1, 2, 3 }, model.SimpleDTOProperty.IntegerIList);
+        }
+
+        class Class4
+        {
+            public int IntegerProperty { get; set; }
+        }
+
+        [Fact]
+        public void Remove_OnNonReferenceType_POCOProperty_ShouldSetDefaultValue()
+        {
+            // Arrange
+            var model = new Class4()
+            {
+                IntegerProperty = 10
+            };
+            var patchDoc = new JsonPatchDocument<Class4>();
+            patchDoc.Remove<int>(o => o.IntegerProperty);
+
+            // Act
+            patchDoc.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(0, model.IntegerProperty);
+        }
+
+        [Fact]
+        public void Remove_OnNonReferenceType_POCOProperty_ShouldSetDefaultValue_WithSerialization()
+        {
+            // Arrange
+            var doc = new SimpleDTO()
+            {
+                StringProperty = "A"
+            };
+
+            // create patch
+            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            patchDoc.Remove<string>(o => o.StringProperty);
+
+            var serialized = JsonConvert.SerializeObject(patchDoc);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+
+            // Act
+            deserialized.ApplyTo(doc);
+
+            // Assert
+            Assert.Equal(null, doc.StringProperty);
+        }
+
+        class ClassWithPrivateProperties
+        {
+            public string Name { get; set; }
+            private int Age { get; set; } = 45;
+        }
+
+        [Fact]
+        public void Add_OnPrivateProperties_FailesWithException()
+        {
+            // Arrange
+            var doc = new ClassWithPrivateProperties()
+            {
+                Name = "James"
+            };
+
+            // create patch
+            var patchDoc = new JsonPatchDocument();
+            patchDoc.Add("/Age", 30);
+
+            // Act & Assert
+            var exception = Assert.Throws<JsonPatchException>(() => patchDoc.ApplyTo(doc));
+            Assert.Equal(
+                string.Format("The target location specified by path segment '{0}' was not found.", "Age"), 
+                exception.Message);
         }
     }
 }

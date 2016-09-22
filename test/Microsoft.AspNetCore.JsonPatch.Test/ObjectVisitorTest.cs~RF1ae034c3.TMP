@@ -1,0 +1,131 @@
+﻿using System.Collections.Generic;
+using Newtonsoft.Json.Serialization;
+using Xunit;
+
+namespace Microsoft.AspNetCore.JsonPatch.Internal
+{
+    public class ObjectVisitorTest
+    {
+        private class Class1
+        {
+            public IList<string> States { get; set; } = new List<string>();
+            public IDictionary<string, string> Countries = new Dictionary<string, string>();
+        }
+
+        public static IEnumerable<object[]> ReturnsListAdapterData
+        {
+            get
+            {
+                var model = new Class1();
+                yield return new object[] { model, "/States/-", model.States };
+
+                yield return new object[] { model.States, "/-", model.States };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ReturnsListAdapterData))]
+        public void Visit_ValidPathToArray_ReturnsListAdapter(object targetObject, string path, object expectedTargetObject)
+        {
+            // Arrange
+            var visitor = new ObjectVisitor(new ParsedPath(path), new DefaultContractResolver());
+            IAdapter adapter = null;
+            string message = null;
+
+            // Act
+            var visitStatus = visitor.TryVisit(ref targetObject, out adapter, out message);
+
+            // Assert
+            Assert.True(visitStatus);
+            Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
+            Assert.Same(expectedTargetObject, targetObject);
+            Assert.IsType<ListAdapter>(adapter);
+        }
+
+        [Fact]
+        public void Visit_ValidPathToDictionary_ReturnsDictionaryAdapter()
+        {
+            // Arrange
+            var visitor = new ObjectVisitor(new ParsedPath("/Countries/USA"), new DefaultContractResolver());
+            var model = new Class1();
+            object targetObject = model;
+            IAdapter adapter = null;
+            string message = null;
+
+            // Act
+            var visitStatus = visitor.TryVisit(ref targetObject, out adapter, out message);
+
+            // Assert
+            Assert.True(visitStatus);
+            Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
+            Assert.Same(model.Countries, targetObject);
+            Assert.IsType<DictionaryAdapter>(adapter);
+        }
+
+        private class AutomobileDepartment
+        {
+            public List<Class1> Customers { get; set; } = new List<Class1>();
+        }
+
+        [Fact]
+        public void Visit_ValidPathToArray_ReturnsListAdapter_ForDeepNestedPath()
+        {
+            // Arrange
+            var visitor = new ObjectVisitor(new ParsedPath("/Customers/0/States/-"), new DefaultContractResolver());
+            var customer = new Class1();
+            var automobileDepartment = new AutomobileDepartment();
+            automobileDepartment.Customers.Add(customer);
+            object targetObject = automobileDepartment;
+            IAdapter adapter = null;
+            string message = null;
+
+            // Act
+            var visitStatus = visitor.TryVisit(ref targetObject, out adapter, out message);
+
+            // Assert
+            Assert.True(visitStatus);
+            Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
+            Assert.Same(customer.States, targetObject);
+            Assert.IsType<ListAdapter>(adapter);
+        }
+
+        [Fact]
+        public void Visit_InvalidPathToArray_Fails()
+        {
+            // Arrange
+            var invalidIndex = 2;
+            var visitor = new ObjectVisitor(new ParsedPath($"/Customers/{invalidIndex}/States/-"), new DefaultContractResolver());
+            var automobileDepartment = new AutomobileDepartment();
+            object targetObject = automobileDepartment;
+            IAdapter adapter = null;
+            string message = null;
+
+            // Act
+            var visitStatus = visitor.TryVisit(ref targetObject, out adapter, out message);
+
+            // Assert
+            Assert.False(visitStatus);
+            Assert.Equal(string.Format(ErrorMessageFormats.IndexOutOfBounds, invalidIndex), message);
+        }
+
+        // The adapter takes care of the responsibility of validating the final segment
+        [Fact]
+        public void Visit_DoesNotValidate_FinalPathSegment()
+        {
+            // Arrange
+            var visitor = new ObjectVisitor(new ParsedPath($"/NonExisting"), new DefaultContractResolver());
+            var model = new Class1();
+            object targetObject = model;
+            IAdapter adapter = null;
+            string message = null;
+
+            // Act
+            var visitStatus = visitor.TryVisit(ref targetObject, out adapter, out message);
+
+            // Assert
+            Assert.True(visitStatus);
+            Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
+            Assert.IsType<PocoAdapter>(adapter);
+        }
+    }
+}
