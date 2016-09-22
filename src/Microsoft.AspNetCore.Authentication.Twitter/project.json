@@ -1,6 +1,6 @@
 {
   "version": "1.1.0-*",
-  "description": "ASP.NET Core middleware that enables an application to support Twitter's OAuth 2.0 authentication workflow.",
+  "description": "ASP.NET Core middleware that enables an application to support Twitter's OAuth 1.0 authentication workflow.",
   "packOptions": {
     "repository": {
       "type": "git",
