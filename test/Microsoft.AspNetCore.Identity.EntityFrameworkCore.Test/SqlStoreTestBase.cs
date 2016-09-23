@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 Assert.True(VerifyColumns(db, "AspNetUserLogins", "UserId", "ProviderKey", "LoginProvider", "ProviderDisplayName"));
                 Assert.True(VerifyColumns(db, "AspNetUserTokens", "UserId", "LoginProvider", "Name", "Value"));
 
-                VerifyIndex(db, "AspNetRoles", "RoleNameIndex");
+                VerifyIndex(db, "AspNetRoles", "RoleNameIndex", isUnique: true);
                 VerifyIndex(db, "AspNetUsers", "UserNameIndex", isUnique: true);
                 VerifyIndex(db, "AspNetUsers", "EmailIndex");
                 db.Close();
