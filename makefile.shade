@@ -727,6 +727,7 @@ functions
                 "RazorTooling",
                 "Hosting",
                 "EntityFramework",
+                "EntityFramework.Tools",
                 "WebListener",
                 "KestrelHttpServer",
                 "IISIntegration",
