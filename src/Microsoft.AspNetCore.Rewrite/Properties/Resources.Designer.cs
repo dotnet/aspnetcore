@@ -154,6 +154,22 @@ namespace Microsoft.AspNetCore.Rewrite
             return GetString("Error_IntegerMatch_FormatExceptionMessage");
         }
 
+        /// <summary>
+        /// Error adding a mod_rewrite rule. The change environment flag is not supported.
+        /// </summary>
+        internal static string Error_ChangeEnvironmentNotSupported
+        {
+            get { return GetString("Error_ChangeEnvironmentNotSupported"); }
+        }
+
+        /// <summary>
+        /// Error adding a mod_rewrite rule. The change environment flag is not supported.
+        /// </summary>
+        internal static string FormatError_ChangeEnvironmentNotSupported()
+        {
+            return GetString("Error_ChangeEnvironmentNotSupported");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

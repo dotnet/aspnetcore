@@ -30,4 +30,5 @@ project.lock.json
 .testPublish/
 .idea/
 .vscode/
-
+*.nuget.props
+*.nuget.targets

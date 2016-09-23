@@ -178,8 +178,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
 
             if (flags.GetValue(FlagType.Env, out flag))
             {
-                // parse env
-                _actions.Add(new ChangeEnvironmentAction(flag));
+                throw new NotSupportedException(Resources.Error_ChangeEnvironmentNotSupported);
             }
 
             if (flags.HasFlag(FlagType.Forbidden))
