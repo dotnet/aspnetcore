@@ -66,6 +66,13 @@ public:
             delete m_pFileWatcher;
             m_pFileWatcher = NULL;
         }
+
+        if(m_pHttp502ErrorPage != NULL)
+        {
+            delete m_pHttp502ErrorPage;
+            m_pHttp502ErrorPage = NULL;
+        }
+
     }
 
     FILE_WATCHER*

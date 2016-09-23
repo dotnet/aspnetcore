@@ -151,6 +151,10 @@ APPLICATION_MANAGER::Get502ErrorPage(
             pHttp502ErrorPage->FromMemory.pBuffer = (PVOID)m_pstrErrorInfo;
 
             pHttp502ErrorPage->FromMemory.BufferLength = (ULONG)strnlen(m_pstrErrorInfo, maxsize); //(ULONG)(wcslen(m_pstrErrorInfo)); // *sizeof(WCHAR);
+            if(m_pHttp502ErrorPage != NULL)
+            {
+                delete m_pHttp502ErrorPage;
+            }
             m_pHttp502ErrorPage = pHttp502ErrorPage;
             *ppErrorPage = m_pHttp502ErrorPage;
         }

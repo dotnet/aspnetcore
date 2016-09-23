@@ -129,7 +129,7 @@ SERVER_PROCESS::StartProcess(
     WCHAR*                  pszPath = NULL;
     WCHAR                   pszFullPath[_MAX_PATH];
     LPCWSTR                 apsz[1];
-    PCWSTR pszAppPath = NULL;
+    PCWSTR                  pszAppPath = NULL;
 
     GetStartupInfoW(&startupInfo);
 
@@ -457,8 +457,11 @@ SERVER_PROCESS::StartProcess(
         while (*(pszCurrentEnvironment + dwCurrentEnvSize++) != 0);
     } while (*(pszCurrentEnvironment + dwCurrentEnvSize++) != 0);
 
-    mszNewEnvironment.Append(pszCurrentEnvironment, dwCurrentEnvSize + 1 );
-
+    DBG_ASSERT(dwCurrentEnvSize > 0);
+    //
+    // environment block ends with  \0\0, we don't want include the last \0 for appending
+    //
+    mszNewEnvironment.Append(pszCurrentEnvironment, dwCurrentEnvSize-1 );
 
     dwCreationFlags = CREATE_NO_WINDOW |
         CREATE_UNICODE_ENVIRONMENT |
