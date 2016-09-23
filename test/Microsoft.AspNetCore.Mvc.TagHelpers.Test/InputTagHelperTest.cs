@@ -489,7 +489,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             htmlGenerator.Verify();
 
             Assert.Equal(TagMode.StartTagOnly, output.TagMode);
-            Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Equal(expectedAttributes, output.Attributes, CaseSensitiveTagHelperAttributeComparer.Default);
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
             Assert.Equal(expectedPostContent, output.PostContent.GetContent());
@@ -590,7 +590,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             htmlGenerator.Verify();
 
             Assert.Equal(TagMode.StartTagOnly, output.TagMode);
-            Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Equal(expectedAttributes, output.Attributes, CaseSensitiveTagHelperAttributeComparer.Default);
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
             Assert.Equal(expectedPostContent, output.PostContent.GetContent());
@@ -684,7 +684,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             htmlGenerator.Verify();
 
             Assert.Equal(TagMode.StartTagOnly, output.TagMode);
-            Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Equal(expectedAttributes, output.Attributes, CaseSensitiveTagHelperAttributeComparer.Default);
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
             Assert.Equal(expectedPostContent, output.PostContent.GetContent());
@@ -801,7 +801,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             htmlGenerator.Verify();
 
             Assert.Equal(TagMode.StartTagOnly, output.TagMode);
-            Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Equal(expectedAttributes, output.Attributes, CaseSensitiveTagHelperAttributeComparer.Default);
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
             Assert.Equal(expectedPostContent, output.PostContent.GetContent());

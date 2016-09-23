@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -94,8 +93,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
                         try
                         {
-                            // The entry is set instead of assigning a value to the 
-                            // task so that the expiration options are are not impacted 
+                            // The entry is set instead of assigning a value to the
+                            // task so that the expiration options are are not impacted
                             // by the time it took to compute it.
 
                             using (var entry = MemoryCache.CreateEntry(cacheKey))
@@ -118,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         }
                         finally
                         {
-                            // If an exception occurs, ensure the other awaiters 
+                            // If an exception occurs, ensure the other awaiters
                             // render the output by themselves.
                             tcs.SetResult(null);
                         }

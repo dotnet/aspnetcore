@@ -3,7 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
@@ -90,9 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <param name="tagBuilder">The <see cref="TagBuilder"/> to merge attributes from.</param>
         /// <remarks>Existing <see cref="TagHelperOutput.Attributes"/> on the given <paramref name="tagHelperOutput"/>
         /// are not overridden; "class" attributes are merged with spaces.</remarks>
-        public static void MergeAttributes(
-            this TagHelperOutput tagHelperOutput,
-            TagBuilder tagBuilder)
+        public static void MergeAttributes(this TagHelperOutput tagHelperOutput, TagBuilder tagBuilder)
         {
             if (tagHelperOutput == null)
             {
@@ -110,18 +112,18 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 {
                     tagHelperOutput.Attributes.Add(attribute.Key, attribute.Value);
                 }
-                else if (attribute.Key.Equals("class", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(attribute.Key, "class", StringComparison.OrdinalIgnoreCase))
                 {
                     TagHelperAttribute classAttribute;
+                    var found = tagHelperOutput.Attributes.TryGetAttribute("class", out classAttribute);
+                    Debug.Assert(found);
 
-                    if (tagHelperOutput.Attributes.TryGetAttribute("class", out classAttribute))
-                    {
-                        tagHelperOutput.Attributes.SetAttribute("class", classAttribute.Value + " " + attribute.Value);
-                    }
-                    else
-                    {
-                        tagHelperOutput.Attributes.Add("class", attribute.Value);
-                    }
+                    var newAttribute = new TagHelperAttribute(
+                        classAttribute.Name,
+                        new ClassAttributeHtmlContent(classAttribute.Value, attribute.Value),
+                        classAttribute.ValueStyle);
+
+                    tagHelperOutput.Attributes.SetAttribute(newAttribute);
                 }
             }
         }
@@ -200,6 +202,64 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
 
             return -1;
+        }
+
+        private class ClassAttributeHtmlContent : IHtmlContent
+        {
+            private readonly object _left;
+            private readonly string _right;
+
+            public ClassAttributeHtmlContent(object left, string right)
+            {
+                _left = left;
+                _right = right;
+            }
+
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+            {
+                if (writer == null)
+                {
+                    throw new ArgumentNullException(nameof(writer));
+                }
+
+                if (encoder == null)
+                {
+                    throw new ArgumentNullException(nameof(encoder));
+                }
+
+                // Write out "{left} {right}" in the common nothing-empty case.
+                var wroteLeft = false;
+                if (_left != null)
+                {
+                    var htmlContent = _left as IHtmlContent;
+                    if (htmlContent != null)
+                    {
+                        // Ignore case where htmlContent is HtmlString.Empty. At worst, will add a leading space to the
+                        // generated attribute value.
+                        htmlContent.WriteTo(writer, encoder);
+                        wroteLeft = true;
+                    }
+                    else
+                    {
+                        var stringValue = _left.ToString();
+                        if (!string.IsNullOrEmpty(stringValue))
+                        {
+                            encoder.Encode(writer, stringValue);
+                            wroteLeft = true;
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(_right))
+                {
+                    if (wroteLeft)
+                    {
+                        writer.Write(' ');
+                    }
+
+                    encoder.Encode(writer, _right);
+                }
+            }
         }
     }
 }

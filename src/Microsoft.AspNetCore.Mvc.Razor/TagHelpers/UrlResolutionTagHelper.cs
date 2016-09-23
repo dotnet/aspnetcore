@@ -176,7 +176,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
                     string resolvedUrl;
                     if (TryResolveUrl(stringValue, resolvedUrl: out resolvedUrl))
                     {
-                        output.Attributes[i] = new TagHelperAttribute(attribute.Name, resolvedUrl);
+                        output.Attributes[i] = new TagHelperAttribute(
+                            attribute.Name,
+                            resolvedUrl,
+                            attribute.ValueStyle);
                     }
                 }
                 else
@@ -202,12 +205,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
                         IHtmlContent resolvedUrl;
                         if (TryResolveUrl(stringValue, resolvedUrl: out resolvedUrl))
                         {
-                            output.Attributes[i] = new TagHelperAttribute(attribute.Name, resolvedUrl);
+                            output.Attributes[i] = new TagHelperAttribute(
+                                attribute.Name,
+                                resolvedUrl,
+                                attribute.ValueStyle);
                         }
                         else if (htmlString == null)
                         {
                             // Not a ~/ URL. Just avoid re-encoding the attribute value later.
-                            output.Attributes[i] = new TagHelperAttribute(attribute.Name, new HtmlString(stringValue));
+                            output.Attributes[i] = new TagHelperAttribute(
+                                attribute.Name,
+                                new HtmlString(stringValue),
+                                attribute.ValueStyle);
                         }
                     }
                 }

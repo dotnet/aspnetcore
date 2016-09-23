@@ -268,9 +268,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 if (Href != null)
                 {
                     var index = output.Attributes.IndexOfName(HrefAttributeName);
+                    var existingAttribute = output.Attributes[index];
                     output.Attributes[index] = new TagHelperAttribute(
-                        HrefAttributeName,
-                        _fileVersionProvider.AddFileVersionToPath(Href));
+                        existingAttribute.Name,
+                        _fileVersionProvider.AddFileVersionToPath(Href),
+                        existingAttribute.ValueStyle);
                 }
             }
 

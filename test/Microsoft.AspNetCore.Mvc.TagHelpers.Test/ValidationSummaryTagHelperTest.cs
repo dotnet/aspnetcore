@@ -47,6 +47,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedTagName = "not-div";
             var metadataProvider = new TestModelMetadataProvider();
             var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
+            var expectedAttributes = new TagHelperAttributeList
+            {
+                new TagHelperAttribute("class", "form-control validation-summary-valid"),
+                new TagHelperAttribute("data-valmsg-summary", "true"),
+            };
 
             var expectedPreContent = "original pre-content";
             var expectedContent = "original content";
@@ -80,18 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             await validationSummaryTagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
-            Assert.Collection(
-                output.Attributes,
-                attribute =>
-                {
-                    Assert.Equal("class", attribute.Name);
-                    Assert.Equal("form-control validation-summary-valid", attribute.Value);
-                },
-                attribute =>
-                {
-                    Assert.Equal("data-valmsg-summary", attribute.Name);
-                    Assert.Equal("true", attribute.Value);
-                });
+            Assert.Equal(expectedAttributes, output.Attributes, CaseSensitiveTagHelperAttributeComparer.Default);
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
             Assert.Equal(
@@ -266,7 +260,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Assert
             Assert.InRange(output.Attributes.Count, low: 1, high: 2);
             var attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("class"));
-            Assert.Equal("form-control validation-summary-errors", attribute.Value);
+            Assert.Equal(
+                new TagHelperAttribute("class", "form-control validation-summary-errors"),
+                attribute,
+                CaseSensitiveTagHelperAttributeComparer.Default);
+
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
             Assert.Equal(
@@ -282,9 +280,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedError0 = "I am an error.";
             var expectedError2 = "I am also an error.";
             var expectedTagName = "not-div";
+            var expectedAttributes = new TagHelperAttributeList
+            {
+                new TagHelperAttribute("class", "form-control validation-summary-errors"),
+                new TagHelperAttribute("data-valmsg-summary", "true"),
+            };
+
             var metadataProvider = new TestModelMetadataProvider();
             var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
-
             var validationSummaryTagHelper = new ValidationSummaryTagHelper(htmlGenerator)
             {
                 ValidationSummary = ValidationSummary.All,
@@ -325,18 +328,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             await validationSummaryTagHelper.ProcessAsync(tagHelperContext, output);
 
             // Assert
-            Assert.Collection(
-                output.Attributes,
-                attribute =>
-                {
-                    Assert.Equal("class", attribute.Name);
-                    Assert.Equal("form-control validation-summary-errors", attribute.Value);
-                },
-                attribute =>
-                {
-                    Assert.Equal("data-valmsg-summary", attribute.Name);
-                    Assert.Equal("true", attribute.Value);
-                });
+            Assert.Equal(expectedAttributes, output.Attributes, CaseSensitiveTagHelperAttributeComparer.Default);
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
             Assert.Equal(
