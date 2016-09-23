@@ -39,7 +39,11 @@ namespace Microsoft.AspNetCore.Identity
         private TimeSpan _defaultLockout = TimeSpan.Zero;
         private bool _disposed;
         private readonly HttpContext _context;
-        private CancellationToken CancellationToken => _context?.RequestAborted ?? CancellationToken.None;
+
+        /// <summary>
+        /// The cancellation token assocated with the current HttpContext.RequestAborted or CancellationToken.None if unavailable.
+        /// </summary>
+        protected CancellationToken CancellationToken => _context?.RequestAborted ?? CancellationToken.None;
 
         /// <summary>
         /// Constructs a new instance of <see cref="UserManager{TUser}"/>.
@@ -110,24 +114,42 @@ namespace Microsoft.AspNetCore.Identity
         protected internal IUserStore<TUser> Store { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="ILogger"/> used to log messages from the manager.
+        /// The <see cref="ILogger"/> used to log messages from the manager.
         /// </summary>
         /// <value>
         /// The <see cref="ILogger"/> used to log messages from the manager.
         /// </value>
         protected internal virtual ILogger Logger { get; set; }
 
-        internal IPasswordHasher<TUser> PasswordHasher { get; set; }
+        /// <summary>
+        /// The <see cref="IPasswordHasher{TUser}"/> used to hash passwords.
+        /// </summary>
+        protected internal IPasswordHasher<TUser> PasswordHasher { get; set; }
 
-        internal IList<IUserValidator<TUser>> UserValidators { get; } = new List<IUserValidator<TUser>>();
+        /// <summary>
+        /// The <see cref="IUserValidator{TUser}"/> used to validate users.
+        /// </summary>
+        protected internal IList<IUserValidator<TUser>> UserValidators { get; } = new List<IUserValidator<TUser>>();
 
-        internal IList<IPasswordValidator<TUser>> PasswordValidators { get; } = new List<IPasswordValidator<TUser>>();
+        /// <summary>
+        /// The <see cref="IPasswordValidator{TUser}"/> used to validate passwords.
+        /// </summary>
+        protected internal IList<IPasswordValidator<TUser>> PasswordValidators { get; } = new List<IPasswordValidator<TUser>>();
 
-        internal ILookupNormalizer KeyNormalizer { get; set; }
+        /// <summary>
+        /// The <see cref="ILookupNormalizer"/> used to normalize things like user and role names.
+        /// </summary>
+        protected internal ILookupNormalizer KeyNormalizer { get; set; }
 
-        internal IdentityErrorDescriber ErrorDescriber { get; set; }
+        /// <summary>
+        /// The <see cref="IdentityErrorDescriber"/> used to generate error messages.
+        /// </summary>
+        protected internal IdentityErrorDescriber ErrorDescriber { get; set; }
 
-        internal IdentityOptions Options { get; set; }
+        /// <summary>
+        /// The <see cref="IdentityOptions"/> used to configure Identity.
+        /// </summary>
+        protected internal IdentityOptions Options { get; set; }
 
         /// <summary>
         /// Gets a flag indicating whether the backing user store supports authentication tokens.

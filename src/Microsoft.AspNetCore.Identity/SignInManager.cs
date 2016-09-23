@@ -76,10 +76,20 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         protected internal UserManager<TUser> UserManager { get; set; }
 
-        internal IUserClaimsPrincipalFactory<TUser> ClaimsFactory { get; set; }
-        internal IdentityOptions Options { get; set; }
+        /// <summary>
+        /// The <see cref="IUserClaimsPrincipalFactory{TUser}"/> used.
+        /// </summary>
+        protected internal IUserClaimsPrincipalFactory<TUser> ClaimsFactory { get; set; }
 
-        internal HttpContext Context { 
+        /// <summary>
+        /// The <see cref="IdentityOptions"/> used.
+        /// </summary>
+        protected internal IdentityOptions Options { get; set; }
+
+        /// <summary>
+        /// The <see cref="HttpContext"/> used.
+        /// </summary>
+        protected internal HttpContext Context { 
             get
             {
                 var context = _context ?? _contextAccessor?.HttpContext;
@@ -94,7 +104,6 @@ namespace Microsoft.AspNetCore.Identity
                 _context = value;
             }
         }
-
 
         /// <summary>
         /// Creates a <see cref="ClaimsPrincipal"/> for the specified <paramref name="user"/>, as an asynchronous operation.
@@ -633,18 +642,33 @@ namespace Microsoft.AspNetCore.Identity
             return null;
         }
 
-        private async Task<bool> IsLockedOut(TUser user)
+        /// <summary>
+        /// Used to determine if a user is considered locked out.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>Whether a user is considered locked out.</returns>
+        protected virtual async Task<bool> IsLockedOut(TUser user)
         {
             return UserManager.SupportsUserLockout && await UserManager.IsLockedOutAsync(user);
         }
 
-        private async Task<SignInResult> LockedOut(TUser user)
+        /// <summary>
+        /// Returns a locked out SignInResult.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>A locked out SignInResult</returns>
+        protected virtual async Task<SignInResult> LockedOut(TUser user)
         {
             Logger.LogWarning(3, "User {userId} is currently locked out.", await UserManager.GetUserIdAsync(user));
             return SignInResult.LockedOut;
         }
 
-        private async Task<SignInResult> PreSignInCheck(TUser user)
+        /// <summary>
+        /// Used to ensure that a user is allowed to sign in.
+        /// </summary>
+        /// <param name="user">The user</param>
+        /// <returns>Null if the user should be allowed to sign in, otherwise the SignInResult why they should be denied.</returns>
+        protected virtual async Task<SignInResult> PreSignInCheck(TUser user)
         {
             if (!await CanSignInAsync(user))
             {
@@ -657,7 +681,12 @@ namespace Microsoft.AspNetCore.Identity
             return null;
         }
 
-        private Task ResetLockout(TUser user)
+        /// <summary>
+        /// Used to reset a user's lockout count.
+        /// </summary>
+        /// <param name="user">The user</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the operation.</returns>
+        protected virtual Task ResetLockout(TUser user)
         {
             if (UserManager.SupportsUserLockout)
             {
