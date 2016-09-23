@@ -87,18 +87,20 @@ namespace Microsoft.AspNetCore.Authentication.Google
         // TODO: Abstract this properties override pattern into the base class?
         protected override string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)
         {
-            var scope = FormatScope();
+            // Google Identity Platform Manual:
+            // https://developers.google.com/identity/protocols/OAuth2WebServer
 
             var queryStrings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             queryStrings.Add("response_type", "code");
             queryStrings.Add("client_id", Options.ClientId);
             queryStrings.Add("redirect_uri", redirectUri);
 
-            AddQueryString(queryStrings, properties, "scope", scope);
-
+            AddQueryString(queryStrings, properties, "scope", FormatScope());
             AddQueryString(queryStrings, properties, "access_type", Options.AccessType);
             AddQueryString(queryStrings, properties, "approval_prompt");
+            AddQueryString(queryStrings, properties, "prompt");
             AddQueryString(queryStrings, properties, "login_hint");
+            AddQueryString(queryStrings, properties, "include_granted_scopes");
 
             var state = Options.StateDataFormat.Protect(properties);
             queryStrings.Add("state", state);

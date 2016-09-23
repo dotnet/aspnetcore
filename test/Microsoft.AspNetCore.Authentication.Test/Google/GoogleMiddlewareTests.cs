@@ -43,8 +43,10 @@ namespace Microsoft.AspNetCore.Authentication.Google
             Assert.Contains("&state=", location);
 
             Assert.DoesNotContain("access_type=", location);
+            Assert.DoesNotContain("prompt=", location);
             Assert.DoesNotContain("approval_prompt=", location);
             Assert.DoesNotContain("login_hint=", location);
+            Assert.DoesNotContain("include_granted_scopes=", location);
         }
 
         [Fact]
@@ -177,7 +179,9 @@ namespace Microsoft.AspNetCore.Authentication.Google
                                 { "scope", "https://www.googleapis.com/auth/plus.login" },
                                 { "access_type", "offline" },
                                 { "approval_prompt", "force" },
-                                { "login_hint", "test@example.com" }
+                                { "prompt", "consent" },
+                                { "login_hint", "test@example.com" },
+                                { "include_granted_scopes", "false" }
                             }));
                     }
 
@@ -189,6 +193,8 @@ namespace Microsoft.AspNetCore.Authentication.Google
             Assert.Contains("scope=" + UrlEncoder.Default.Encode("https://www.googleapis.com/auth/plus.login"), query);
             Assert.Contains("access_type=offline", query);
             Assert.Contains("approval_prompt=force", query);
+            Assert.Contains("prompt=consent", query);
+            Assert.Contains("include_granted_scopes=false", query);
             Assert.Contains("login_hint=" + UrlEncoder.Default.Encode("test@example.com"), query);
         }
 
