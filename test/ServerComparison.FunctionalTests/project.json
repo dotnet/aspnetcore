@@ -27,7 +27,6 @@
     ]
   },
   "frameworks": {
-    "net451": { },
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
@@ -35,6 +34,7 @@
           "type": "platform"
         }
       }
-    }
+    },
+    "net451": { }
   }
 }
