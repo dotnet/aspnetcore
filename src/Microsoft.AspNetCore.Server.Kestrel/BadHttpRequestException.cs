@@ -21,24 +21,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             BadHttpRequestException ex;
             switch (reason)
             {
-                case RequestRejectionReason.MissingMethod:
-                    ex = new BadHttpRequestException("Missing method.", 400);
-                    break;
-                case RequestRejectionReason.InvalidMethod:
-                    ex = new BadHttpRequestException("Invalid method.", 400);
-                    break;
-                case RequestRejectionReason.MissingRequestTarget:
-                    ex = new BadHttpRequestException("Missing request target.", 400);
-                    break;
-                case RequestRejectionReason.MissingHTTPVersion:
-                    ex = new BadHttpRequestException("Missing HTTP version.", 400);
-                    break;
-                case RequestRejectionReason.UnrecognizedHTTPVersion:
-                    ex = new BadHttpRequestException("Unrecognized HTTP version.", 505);
-                    break;
-                case RequestRejectionReason.MissingLFInRequestLine:
-                    ex = new BadHttpRequestException("Missing LF in request line.", 400);
-                    break;
                 case RequestRejectionReason.HeadersCorruptedInvalidHeaderSequence:
                     ex = new BadHttpRequestException("Headers corrupted, invalid header sequence.", 400);
                     break;
@@ -84,15 +66,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 case RequestRejectionReason.RequestLineTooLong:
                     ex = new BadHttpRequestException("Request line too long.", 414);
                     break;
-                case RequestRejectionReason.MissingSpaceAfterMethod:
-                    ex = new BadHttpRequestException("No space character found after method in request line.", 400);
-                    break;
-                case RequestRejectionReason.MissingSpaceAfterTarget:
-                    ex = new BadHttpRequestException("No space character found after target in request line.", 400);
-                    break;
-                case RequestRejectionReason.MissingCrAfterVersion:
-                    ex = new BadHttpRequestException("Missing CR in request line.", 400);
-                    break;
                 case RequestRejectionReason.HeadersExceedMaxTotalSize:
                     ex = new BadHttpRequestException("Request headers too long.", 431);
                     break;
@@ -117,11 +90,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             BadHttpRequestException ex;
             switch (reason)
             {
-                case RequestRejectionReason.MalformedRequestLineStatus:
+                case RequestRejectionReason.InvalidRequestLine:
                     ex = new BadHttpRequestException($"Invalid request line: {value}", 400);
                     break;
                 case RequestRejectionReason.InvalidContentLength:
                     ex = new BadHttpRequestException($"Invalid content length: {value}", 400);
+                    break;
+                case RequestRejectionReason.UnrecognizedHTTPVersion:
+                    ex = new BadHttpRequestException($"Unrecognized HTTP version: {value}", 505);
                     break;
                 default:
                     ex = new BadHttpRequestException("Bad request.", 400);

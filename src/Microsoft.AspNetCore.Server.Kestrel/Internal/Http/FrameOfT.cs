@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                             if (requestLineStatus != RequestLineStatus.Done)
                             {
-                                RejectRequest(RequestRejectionReason.MalformedRequestLineStatus, requestLineStatus.ToString());
+                                RejectRequest(RequestRejectionReason.InvalidRequestLine, requestLineStatus.ToString());
                             }
 
                             break;

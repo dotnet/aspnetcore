@@ -127,6 +127,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             return asciiString;
         }
 
+        public static string GetAsciiStringEscaped(this MemoryPoolIterator start, MemoryPoolIterator end, int maxChars)
+        {
+            var sb = new StringBuilder();
+            var scan = start;
+
+            while (maxChars > 0 && (scan.Block != end.Block || scan.Index != end.Index))
+            {
+                var ch = scan.Take();
+                sb.Append(ch < 0x20 || ch >= 0x7F ? $"<0x{ch.ToString("X2")}>" : ((char)ch).ToString());
+                maxChars--;
+            }
+
+            if (scan.Block != end.Block || scan.Index != end.Index)
+            {
+                sb.Append("...");
+            }
+
+            return sb.ToString();
+        }
+
         public static string GetUtf8String(this MemoryPoolIterator start, MemoryPoolIterator end)
         {
             if (start.IsDefault || end.IsDefault)
