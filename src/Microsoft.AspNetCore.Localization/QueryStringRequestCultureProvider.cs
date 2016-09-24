@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Localization
 {
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Localization
             var request = httpContext.Request;
             if (!request.QueryString.HasValue)
             {
-                return Task.FromResult((ProviderCultureResult)null);
+                return TaskCache<ProviderCultureResult>.DefaultCompletedTask;
             }
 
             string queryCulture = null;
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Localization
             if (queryCulture == null && queryUICulture == null)
             {
                 // No values specified for either so no match
-                return Task.FromResult((ProviderCultureResult)null);
+                return TaskCache<ProviderCultureResult>.DefaultCompletedTask;
             }
 
             if (queryCulture != null && queryUICulture == null)

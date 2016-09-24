@@ -1,0 +1,24 @@
+{
+  "buildOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "dotnet-test-xunit": "2.2.0-*",
+    "Microsoft.AspNetCore.Localization.Routing": "1.1.0-*",
+    "Microsoft.AspNetCore.Routing": "1.1.0-*",
+    "Microsoft.AspNetCore.TestHost": "1.1.0-*",
+    "xunit": "2.2.0-*"
+  },
+  "testRunner": "xunit",
+  "frameworks": {
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        }
+      }
+    },
+    "net451": {}
+  }
+}

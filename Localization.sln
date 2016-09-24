@@ -35,6 +35,10 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ResourcesClassLibraryWithAt
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ResourcesClassLibraryNoAttribute", "test\ResourcesClassLibraryNoAttribute\ResourcesClassLibraryNoAttribute.xproj", "{34740578-D5B5-4FB4-AFD4-5E87B5443E20}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Localization.Routing", "src\Microsoft.AspNetCore.Localization.Routing\Microsoft.AspNetCore.Localization.Routing.xproj", "{E1B8DA18-7885-40ED-94ED-881BB0804F23}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Localization.Routing.Tests", "test\Microsoft.AspNetCore.Localization.Routing.Tests\Microsoft.AspNetCore.Localization.Routing.Tests.xproj", "{375B000B-5DC0-4D16-AC0C-A5432D8E7581}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +89,14 @@ Global
 		{34740578-D5B5-4FB4-AFD4-5E87B5443E20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34740578-D5B5-4FB4-AFD4-5E87B5443E20}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34740578-D5B5-4FB4-AFD4-5E87B5443E20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1B8DA18-7885-40ED-94ED-881BB0804F23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1B8DA18-7885-40ED-94ED-881BB0804F23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1B8DA18-7885-40ED-94ED-881BB0804F23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1B8DA18-7885-40ED-94ED-881BB0804F23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{375B000B-5DC0-4D16-AC0C-A5432D8E7581}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{375B000B-5DC0-4D16-AC0C-A5432D8E7581}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{375B000B-5DC0-4D16-AC0C-A5432D8E7581}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{375B000B-5DC0-4D16-AC0C-A5432D8E7581}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -101,5 +113,7 @@ Global
 		{B1B441BA-3AC8-49F8-850D-E5A178E77DE2} = {B723DB83-A670-4BCB-95FB-195361331AD2}
 		{F27639B9-913E-43AF-9D64-BBD98D9A420A} = {B723DB83-A670-4BCB-95FB-195361331AD2}
 		{34740578-D5B5-4FB4-AFD4-5E87B5443E20} = {B723DB83-A670-4BCB-95FB-195361331AD2}
+		{E1B8DA18-7885-40ED-94ED-881BB0804F23} = {FB313677-BAB3-4E49-8CDB-4FA4A9564767}
+		{375B000B-5DC0-4D16-AC0C-A5432D8E7581} = {B723DB83-A670-4BCB-95FB-195361331AD2}
 	EndGlobalSection
 EndGlobal
