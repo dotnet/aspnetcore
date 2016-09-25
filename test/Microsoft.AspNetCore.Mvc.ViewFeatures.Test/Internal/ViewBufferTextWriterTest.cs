@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             writer.Write(2.718m);
 
             // Assert
-            Assert.Empty(buffer.Pages);
+            Assert.Equal(0, buffer.Count);
             foreach (var item in expected)
             {
                 inner.Verify(v => v.Write(item), Times.Once());
@@ -220,7 +220,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         private static object[] GetValues(ViewBuffer buffer)
         {
-            return buffer.Pages
+            var pages = new List<ViewBufferPage>();
+            for (var i = 0; i < buffer.Count; i++)
+            {
+                pages.Add(buffer[i]);
+            }
+
+            return pages
                 .SelectMany(c => c.Buffer)
                 .Select(d => d.Value)
                 .TakeWhile(d => d != null)
