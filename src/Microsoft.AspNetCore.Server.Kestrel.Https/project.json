@@ -6,6 +6,7 @@
     "nowarn": [
       "CS1591"
     ],
+    "warningsAsErrors": true,
     "xmlDoc": true
   },
   "packOptions": {
