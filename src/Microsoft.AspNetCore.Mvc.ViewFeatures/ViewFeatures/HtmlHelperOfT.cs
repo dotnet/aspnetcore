@@ -29,12 +29,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             UrlEncoder urlEncoder,
             ExpressionTextCache expressionTextCache)
             : base(
-                htmlGenerator,
-                viewEngine,
-                metadataProvider,
-                bufferScope,
-                htmlEncoder,
-                urlEncoder)
+                  htmlGenerator,
+                  viewEngine,
+                  metadataProvider,
+                  bufferScope,
+                  htmlEncoder,
+                  urlEncoder)
         {
             if (expressionTextCache == null)
             {

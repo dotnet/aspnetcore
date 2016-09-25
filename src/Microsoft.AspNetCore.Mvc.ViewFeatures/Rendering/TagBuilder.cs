@@ -109,7 +109,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <summary>
         /// Returns a valid HTML 4.01 "id" attribute value for an element with the given <paramref name="name"/>.
         /// </summary>
-        /// <param name="name">The original element name.</param>
+        /// <param name="name">
+        /// The fully-qualified expression name, ignoring the current model. Also the original HTML element name.
+        /// </param>
         /// <param name="invalidCharReplacement">
         /// The <see cref="string"/> (normally a single <see cref="char"/>) to substitute for invalid characters in
         /// <paramref name="name"/>.
@@ -159,7 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             stringBuffer.Append(firstChar);
 
             // Characters until 'firstIndexOfInvalidCharacter' have already been checked for validity.
-            // So just copying them. This avoids running them through Html401IdUtil.IsValidIdCharacter again.
+            // So just copy them. This avoids running them through Html401IdUtil.IsValidIdCharacter again.
             for (var index = 1; index < firstIndexOfInvalidCharacter; index++)
             {
                 stringBuffer.Append(name[index]);
@@ -182,13 +184,18 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         }
 
         /// <summary>
-        /// Generates a sanitized ID attribute for the tag by using the specified name.
+        /// Adds a valid HTML 4.01 "id" attribute for an element with the given <paramref name="name"/>. Does
+        /// nothing if <see cref="Attributes"/> already contains an "id" attribute or the <paramref name="name"/>
+        /// is <c>null</c> or empty.
         /// </summary>
-        /// <param name="name">The name to use to generate an ID attribute.</param>
+        /// <param name="name">
+        /// The fully-qualified expression name, ignoring the current model. Also the original HTML element name.
+        /// </param>
         /// <param name="invalidCharReplacement">
         /// The <see cref="string"/> (normally a single <see cref="char"/>) to substitute for invalid characters in
         /// <paramref name="name"/>.
         /// </param>
+        /// <seealso cref="CreateSanitizedId(string, string)"/>
         public void GenerateId(string name, string invalidCharReplacement)
         {
             if (invalidCharReplacement == null)
@@ -196,9 +203,17 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 throw new ArgumentNullException(nameof(invalidCharReplacement));
             }
 
+            if (string.IsNullOrEmpty(name))
+            {
+                return;
+            }
+
             if (!Attributes.ContainsKey("id"))
             {
                 var sanitizedId = CreateSanitizedId(name, invalidCharReplacement);
+
+                // Duplicate check for null or empty to cover the corner case where name contains only invalid
+                // characters and invalidCharReplacement is empty.
                 if (!string.IsNullOrEmpty(sanitizedId))
                 {
                     Attributes["id"] = sanitizedId;

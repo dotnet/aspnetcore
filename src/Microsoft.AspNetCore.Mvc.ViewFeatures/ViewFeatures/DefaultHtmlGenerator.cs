@@ -54,8 +54,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="metadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
-        /// <param name="clientValidatorCache">The <see cref="ClientValidatorCache"/> that provides
-        /// a list of <see cref="IClientModelValidator"/>s.</param>
+        /// <param name="clientValidatorCache">
+        /// The <see cref="ClientValidatorCache"/> that provides a list of <see cref="IClientModelValidator"/>s.
+        /// </param>
         [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended " +
             "alternative is to use the other public constructor.")]
         public DefaultHtmlGenerator(
@@ -64,14 +65,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             IModelMetadataProvider metadataProvider,
             IUrlHelperFactory urlHelperFactory,
             HtmlEncoder htmlEncoder,
-            ClientValidatorCache clientValidatorCache) : this(
-                antiforgery,
-                optionsAccessor,
-                metadataProvider,
-                urlHelperFactory,
-                htmlEncoder,
-                clientValidatorCache,
-                new DefaultValidationHtmlAttributeProvider(optionsAccessor, metadataProvider, clientValidatorCache))
+            ClientValidatorCache clientValidatorCache)
+            : this(
+                  antiforgery,
+                  optionsAccessor,
+                  metadataProvider,
+                  urlHelperFactory,
+                  htmlEncoder,
+                  clientValidatorCache,
+                  new DefaultValidationHtmlAttributeProvider(optionsAccessor, metadataProvider, clientValidatorCache))
         {
         }
 
@@ -84,8 +86,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="metadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
-        /// <param name="clientValidatorCache">The <see cref="ClientValidatorCache"/> that provides
-        /// a list of <see cref="IClientModelValidator"/>s.</param>
+        /// <param name="clientValidatorCache">
+        /// The <see cref="ClientValidatorCache"/> that provides a list of <see cref="IClientModelValidator"/>s.
+        /// </param>
         /// <param name="validationAttributeProvider">The <see cref="ValidationHtmlAttributeProvider"/>.</param>
         public DefaultHtmlGenerator(
             IAntiforgery antiforgery,
@@ -280,7 +283,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             tagBuilder.MergeAttribute("value", "false");
             tagBuilder.TagRenderMode = TagRenderMode.SelfClosing;
 
-            var fullName = GetFullHtmlFieldName(viewContext, expression);
+            var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
             tagBuilder.MergeAttribute("name", fullName);
 
             return tagBuilder;
@@ -424,8 +427,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             var tagBuilder = new TagBuilder("label");
-            var idString =
-                TagBuilder.CreateSanitizedId(GetFullHtmlFieldName(viewContext, expression), IdAttributeDotReplacement);
+            var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
+            var idString = NameAndIdProvider.CreateSanitizedId(viewContext, fullName, IdAttributeDotReplacement);
             tagBuilder.Attributes.Add("for", idString);
             tagBuilder.InnerHtml.SetContent(resolvedLabelText);
             tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes), replaceExisting: true);
@@ -599,7 +602,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(viewContext));
             }
 
-            var fullName = GetFullHtmlFieldName(viewContext, expression);
+            var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
             if (string.IsNullOrEmpty(fullName))
             {
                 throw new ArgumentException(
@@ -628,7 +631,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             tagBuilder.InnerHtml.SetHtmlContent(listItemBuilder);
             tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
             tagBuilder.MergeAttribute("name", fullName, true /* replaceExisting */);
-            tagBuilder.GenerateId(fullName, IdAttributeDotReplacement);
+            NameAndIdProvider.GenerateId(viewContext, tagBuilder, fullName, IdAttributeDotReplacement);
             if (allowMultiple)
             {
                 tagBuilder.MergeAttribute("multiple", "multiple");
@@ -675,7 +678,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     Resources.HtmlHelper_TextAreaParameterOutOfRange);
             }
 
-            var fullName = GetFullHtmlFieldName(viewContext, expression);
+            var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
             if (string.IsNullOrEmpty(fullName))
             {
                 throw new ArgumentException(
@@ -702,7 +705,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             var tagBuilder = new TagBuilder("textarea");
-            tagBuilder.GenerateId(fullName, IdAttributeDotReplacement);
+            NameAndIdProvider.GenerateId(viewContext, tagBuilder, fullName, IdAttributeDotReplacement);
             tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes), true);
             if (rows > 0)
             {
@@ -776,7 +779,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(viewContext));
             }
 
-            var fullName = GetFullHtmlFieldName(viewContext, expression);
+            var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
             if (string.IsNullOrEmpty(fullName))
             {
                 throw new ArgumentException(
@@ -967,7 +970,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(viewContext));
             }
 
-            var fullName = GetFullHtmlFieldName(viewContext, expression);
+            var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
             if (string.IsNullOrEmpty(fullName))
             {
                 throw new ArgumentException(
@@ -1135,12 +1138,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return tagBuilder;
         }
 
-        internal static string GetFullHtmlFieldName(ViewContext viewContext, string expression)
-        {
-            var fullName = viewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(expression);
-            return fullName;
-        }
-
         internal static object GetModelStateValue(ViewContext viewContext, string key, Type destinationType)
         {
             ModelStateEntry entry;
@@ -1216,7 +1213,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // Not valid to use TextBoxForModel() and so on in a top-level view; would end up with an unnamed input
             // elements. But we support the *ForModel() methods in any lower-level template, once HtmlFieldPrefix is
             // non-empty.
-            var fullName = GetFullHtmlFieldName(viewContext, expression);
+            var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
             if (string.IsNullOrEmpty(fullName))
             {
                 throw new ArgumentException(
@@ -1319,7 +1316,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             if (setId)
             {
-                tagBuilder.GenerateId(fullName, IdAttributeDotReplacement);
+                NameAndIdProvider.GenerateId(viewContext, tagBuilder, fullName, IdAttributeDotReplacement);
             }
 
             // If there are any errors for a named field, we add the CSS attribute.

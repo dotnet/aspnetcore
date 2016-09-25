@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(fullName));
             }
 
-            return TagBuilder.CreateSanitizedId(fullName, IdAttributeDotReplacement);
+            return NameAndIdProvider.CreateSanitizedId(ViewContext, fullName, IdAttributeDotReplacement);
         }
 
         /// <inheritdoc />
@@ -1001,10 +1001,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         protected virtual string GenerateId(string expression)
         {
-            var fullName = DefaultHtmlGenerator.GetFullHtmlFieldName(ViewContext, expression: expression);
-            var id = TagBuilder.CreateSanitizedId(fullName, IdAttributeDotReplacement);
+            var fullName = NameAndIdProvider.GetFullHtmlFieldName(ViewContext, expression);
 
-            return id;
+            return GenerateIdFromName(fullName);
         }
 
         protected virtual IHtmlContent GenerateLabel(
@@ -1056,7 +1055,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         protected virtual string GenerateName(string expression)
         {
-            var fullName = DefaultHtmlGenerator.GetFullHtmlFieldName(ViewContext, expression);
+            var fullName = NameAndIdProvider.GetFullHtmlFieldName(ViewContext, expression);
             return fullName;
         }
 
@@ -1190,7 +1189,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         protected virtual string GenerateValue(string expression, object value, string format, bool useViewData)
         {
-            var fullName = DefaultHtmlGenerator.GetFullHtmlFieldName(ViewContext, expression);
+            var fullName = NameAndIdProvider.GetFullHtmlFieldName(ViewContext, expression);
             var attemptedValue =
                 (string)DefaultHtmlGenerator.GetModelStateValue(ViewContext, fullName, typeof(string));
 
