@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -86,27 +87,189 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
         }
 
+        // label's IHtmlContent -> expected label text
+        public static TheoryData<IHtmlContent, string> ObjectTemplate_ChecksWriteTo_NotToStringData
+        {
+            get
+            {
+                // Similar to HtmlString.Empty today.
+                var noopContentWithEmptyToString = new Mock<IHtmlContent>(MockBehavior.Strict);
+                noopContentWithEmptyToString
+                    .Setup(c => c.ToString())
+                    .Returns(string.Empty);
+                noopContentWithEmptyToString.Setup(c => c.WriteTo(It.IsAny<TextWriter>(), It.IsAny<HtmlEncoder>()));
+
+                // Similar to an empty StringHtmlContent today.
+                var noopContentWithNonEmptyToString = new Mock<IHtmlContent>(MockBehavior.Strict);
+                noopContentWithNonEmptyToString
+                    .Setup(c => c.ToString())
+                    .Returns(typeof(StringHtmlContent).FullName);
+                noopContentWithNonEmptyToString.Setup(c => c.WriteTo(It.IsAny<TextWriter>(), It.IsAny<HtmlEncoder>()));
+
+                // Makes noop calls on the TextWriter.
+                var busyNoopContentWithNonEmptyToString = new Mock<IHtmlContent>(MockBehavior.Strict);
+                busyNoopContentWithNonEmptyToString
+                    .Setup(c => c.ToString())
+                    .Returns(typeof(StringHtmlContent).FullName);
+                busyNoopContentWithNonEmptyToString
+                    .Setup(c => c.WriteTo(It.IsAny<TextWriter>(), It.IsAny<HtmlEncoder>()))
+                    .Callback<TextWriter, HtmlEncoder>((writer, encoder) =>
+                    {
+                        writer.Write(string.Empty);
+                        writer.Write(new char[0]);
+                        writer.Write((char[])null);
+                        writer.Write((object)null);
+                        writer.Write((string)null);
+                        writer.Write(format: "{0}", arg0: null);
+                        writer.Write(new char[] { 'a', 'b', 'c' }, index: 1, count: 0);
+                    });
+
+                // Unrealistic but covers all the bases.
+                var writingContentWithEmptyToString = new Mock<IHtmlContent>(MockBehavior.Strict);
+                writingContentWithEmptyToString
+                    .Setup(c => c.ToString())
+                    .Returns(string.Empty);
+                writingContentWithEmptyToString
+                    .Setup(c => c.WriteTo(It.IsAny<TextWriter>(), It.IsAny<HtmlEncoder>()))
+                    .Callback<TextWriter, HtmlEncoder>((writer, encoder) => writer.Write("Some string"));
+
+                // Similar to TagBuilder today.
+                var writingContentWithNonEmptyToString = new Mock<IHtmlContent>(MockBehavior.Strict);
+                writingContentWithNonEmptyToString
+                    .Setup(c => c.ToString())
+                    .Returns(typeof(TagBuilder).FullName);
+                writingContentWithNonEmptyToString
+                    .Setup(c => c.WriteTo(It.IsAny<TextWriter>(), It.IsAny<HtmlEncoder>()))
+                    .Callback<TextWriter, HtmlEncoder>((writer, encoder) => writer.Write("Some string"));
+
+                // label's IHtmlContent -> expected label text
+                return new TheoryData<IHtmlContent, string>
+                {
+                    // Types HtmlHelper actually uses.
+                    { HtmlString.Empty, string.Empty },
+                    {
+                        new TagBuilder("label"),
+                        "<div class=\"HtmlEncode[[editor-label]]\"><label></label></div>" + Environment.NewLine
+                    },
+
+                    // Another IHtmlContent implementation that does not override ToString().
+                    { new StringHtmlContent(string.Empty), string.Empty },
+
+                    // Mocks
+                    { noopContentWithEmptyToString.Object, string.Empty },
+                    { noopContentWithNonEmptyToString.Object, string.Empty },
+                    { busyNoopContentWithNonEmptyToString.Object, string.Empty },
+                    {
+                        writingContentWithEmptyToString.Object,
+                        "<div class=\"HtmlEncode[[editor-label]]\">Some string</div>" + Environment.NewLine
+                    },
+                    {
+                        writingContentWithNonEmptyToString.Object,
+                        "<div class=\"HtmlEncode[[editor-label]]\">Some string</div>" + Environment.NewLine
+                    },
+                };
+            }
+        }
+
         [Fact]
         public void ObjectTemplateEditsSimplePropertiesOnObjectByDefault()
         {
-            var expected =
-                "<div class=\"HtmlEncode[[editor-label]]\"><label for=\"HtmlEncode[[Property1]]\">HtmlEncode[[Property1]]</label></div>" + Environment.NewLine
-              + "<div class=\"HtmlEncode[[editor-field]]\">Model = p1, ModelType = System.String, PropertyName = Property1," +
-                    " SimpleDisplayText = p1 " +
-                    "<span class=\"HtmlEncode[[field-validation-valid]]\" data-valmsg-for=\"HtmlEncode[[Property1]]\" data-valmsg-replace=\"HtmlEncode[[true]]\">" +
-                    "</span></div>" + Environment.NewLine
-              + "<div class=\"HtmlEncode[[editor-label]]\"><label for=\"HtmlEncode[[Property2]]\">HtmlEncode[[Prop2]]</label></div>" + Environment.NewLine
-              + "<div class=\"HtmlEncode[[editor-field]]\">Model = (null), ModelType = System.String, PropertyName = Property2," +
-                    " SimpleDisplayText = (null) " +
-                    "<span class=\"HtmlEncode[[field-validation-valid]]\" data-valmsg-for=\"HtmlEncode[[Property2]]\" data-valmsg-replace=\"HtmlEncode[[true]]\">" +
-                    "</span></div>" + Environment.NewLine;
-
             // Arrange
+            var expected =
+                "<div class=\"HtmlEncode[[editor-label]]\"><label for=\"HtmlEncode[[Property1]]\">HtmlEncode[[Property1]]</label></div>" +
+                Environment.NewLine +
+                "<div class=\"HtmlEncode[[editor-field]]\">Model = p1, ModelType = System.String, PropertyName = Property1, SimpleDisplayText = p1 " +
+                "<span class=\"HtmlEncode[[field-validation-valid]]\" data-valmsg-for=\"HtmlEncode[[Property1]]\" data-valmsg-replace=\"HtmlEncode[[true]]\">" +
+                "</span></div>" +
+                Environment.NewLine +
+                "<div class=\"HtmlEncode[[editor-label]]\"><label for=\"HtmlEncode[[Property2]]\">HtmlEncode[[Prop2]]</label></div>" +
+                Environment.NewLine +
+                "<div class=\"HtmlEncode[[editor-field]]\">Model = (null), ModelType = System.String, PropertyName = Property2, SimpleDisplayText = (null) " +
+                "<span class=\"HtmlEncode[[field-validation-valid]]\" data-valmsg-for=\"HtmlEncode[[Property2]]\" data-valmsg-replace=\"HtmlEncode[[true]]\">" +
+                "</span></div>" +
+                Environment.NewLine;
+
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "p1", Property2 = null };
             var html = DefaultTemplatesUtilities.GetHtmlHelper(model);
 
             // Act
             var result = DefaultEditorTemplates.ObjectTemplate(html);
+
+            // Assert
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
+        }
+
+        // Expect almost the same HTML as in ObjectTemplateEditsSimplePropertiesOnObjectByDefault(). Only difference is
+        // the <div class="editor-label">...</div> is not present for Property1.
+        [Fact]
+        public void ObjectTemplateSkipsLabel_IfDisplayNameIsEmpty()
+        {
+            // Arrange
+            var expected =
+                "<div class=\"HtmlEncode[[editor-field]]\">Model = p1, ModelType = System.String, PropertyName = Property1, SimpleDisplayText = p1 " +
+                "<span class=\"HtmlEncode[[field-validation-valid]]\" data-valmsg-for=\"HtmlEncode[[Property1]]\" data-valmsg-replace=\"HtmlEncode[[true]]\">" +
+                "</span></div>" +
+                Environment.NewLine +
+                "<div class=\"HtmlEncode[[editor-label]]\"><label for=\"HtmlEncode[[Property2]]\">HtmlEncode[[Prop2]]</label></div>" +
+                Environment.NewLine +
+                "<div class=\"HtmlEncode[[editor-field]]\">Model = (null), ModelType = System.String, PropertyName = Property2, SimpleDisplayText = (null) " +
+                "<span class=\"HtmlEncode[[field-validation-valid]]\" data-valmsg-for=\"HtmlEncode[[Property2]]\" data-valmsg-replace=\"HtmlEncode[[true]]\">" +
+                "</span></div>" +
+                Environment.NewLine;
+
+            var provider = new TestModelMetadataProvider();
+            provider
+                .ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>(
+                    nameof(DefaultTemplatesUtilities.ObjectTemplateModel.Property1))
+                .DisplayDetails(dd => dd.DisplayName = () => string.Empty);
+
+            var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "p1", Property2 = null };
+            var html = DefaultTemplatesUtilities.GetHtmlHelper(model, provider);
+
+            // Act
+            var result = DefaultEditorTemplates.ObjectTemplate(html);
+
+            // Assert
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
+        }
+
+        [Theory]
+        [MemberData(nameof(ObjectTemplate_ChecksWriteTo_NotToStringData))]
+        public void ObjectTemplate_ChecksWriteTo_NotToString(IHtmlContent labelContent, string expectedLabel)
+        {
+            // Arrange
+            var expected =
+                expectedLabel +
+                "<div class=\"HtmlEncode[[editor-field]]\">Model = (null), ModelType = System.String, PropertyName = Property1, SimpleDisplayText = (null) " +
+                "</div>" +
+                Environment.NewLine +
+                expectedLabel +
+                "<div class=\"HtmlEncode[[editor-field]]\">Model = (null), ModelType = System.String, PropertyName = Property2, SimpleDisplayText = (null) " +
+                "</div>" +
+                Environment.NewLine;
+
+            var helperToCopy = DefaultTemplatesUtilities.GetHtmlHelper();
+            var helperMock = new Mock<IHtmlHelper>(MockBehavior.Strict);
+            helperMock.SetupGet(h => h.ViewContext).Returns(helperToCopy.ViewContext);
+            helperMock.SetupGet(h => h.ViewData).Returns(helperToCopy.ViewData);
+            helperMock
+                .Setup(h => h.Label(
+                    It.Is<string>(s => string.Equals("Property1", s, StringComparison.Ordinal) ||
+                        string.Equals("Property2", s, StringComparison.Ordinal)),
+                    null,   // labelText
+                    null))  // htmlAttributes
+                .Returns(labelContent);
+            helperMock
+                .Setup(h => h.ValidationMessage(
+                    It.Is<string>(s => string.Equals("Property1", s, StringComparison.Ordinal) ||
+                        string.Equals("Property2", s, StringComparison.Ordinal)),
+                    null,   // message
+                    null,   // htmlAttributes
+                    null))  // tag
+                .Returns(HtmlString.Empty);
+
+            // Act
+            var result = DefaultEditorTemplates.ObjectTemplate(helperMock.Object);
 
             // Assert
             Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));

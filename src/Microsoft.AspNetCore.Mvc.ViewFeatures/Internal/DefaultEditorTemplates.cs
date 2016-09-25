@@ -6,6 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
+using System.Text;
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -272,12 +275,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 if (!propertyMetadata.HideSurroundingHtml)
                 {
                     var label = htmlHelper.Label(propertyMetadata.PropertyName, labelText: null, htmlAttributes: null);
-                    if (!string.IsNullOrEmpty(label.ToString()))
+                    using (var writer = new HasContentTextWriter())
                     {
-                        var labelTag = new TagBuilder("div");
-                        labelTag.AddCssClass("editor-label");
-                        labelTag.InnerHtml.SetHtmlContent(label);
-                        content.AppendLine(labelTag);
+                        label.WriteTo(writer, PassThroughHtmlEncoder.Default);
+                        if (writer.HasContent)
+                        {
+                            var labelTag = new TagBuilder("div");
+                            labelTag.AddCssClass("editor-label");
+                            labelTag.InnerHtml.SetHtmlContent(label);
+                            content.AppendLine(labelTag);
+                        }
                     }
 
                     var valueDivTag = new TagBuilder("div");
@@ -432,6 +439,112 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 value: value,
                 format: null,
                 htmlAttributes: htmlAttributes);
+        }
+
+        private class HasContentTextWriter : TextWriter
+        {
+            public HasContentTextWriter()
+            {
+            }
+
+            public bool HasContent { get; private set; }
+
+            public override Encoding Encoding => Null.Encoding;
+
+            public override void Write(char value)
+            {
+                HasContent = true;
+            }
+
+            public override void Write(char[] buffer, int index, int count)
+            {
+                if (count > 0)
+                {
+                    HasContent = true;
+                }
+            }
+
+            public override void Write(string value)
+            {
+                if (!string.IsNullOrEmpty(value))
+                {
+                    HasContent = true;
+                }
+            }
+        }
+
+        // An HTML encoder which passes through all input data. Does no encoding.
+        // Copied from Microsoft.AspNetCore.Razor.TagHelpers.NullHtmlEncoder.
+        private class PassThroughHtmlEncoder : HtmlEncoder
+        {
+            private PassThroughHtmlEncoder()
+            {
+            }
+
+            public static new PassThroughHtmlEncoder Default { get; } = new PassThroughHtmlEncoder();
+
+            public override int MaxOutputCharactersPerInputCharacter => 1;
+
+            public override string Encode(string value)
+            {
+                return value;
+            }
+
+            public override void Encode(TextWriter output, char[] value, int startIndex, int characterCount)
+            {
+                if (output == null)
+                {
+                    throw new ArgumentNullException(nameof(output));
+                }
+
+                if (characterCount == 0)
+                {
+                    return;
+                }
+
+                output.Write(value, startIndex, characterCount);
+            }
+
+            public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
+            {
+                if (output == null)
+                {
+                    throw new ArgumentNullException(nameof(output));
+                }
+
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                if (characterCount == 0)
+                {
+                    return;
+                }
+
+                output.Write(value.Substring(startIndex, characterCount));
+            }
+
+            public override unsafe int FindFirstCharacterToEncode(char* text, int textLength)
+            {
+                return -1;
+            }
+
+            public override unsafe bool TryEncodeUnicodeScalar(
+                int unicodeScalar,
+                char* buffer,
+                int bufferLength,
+                out int numberOfCharactersWritten)
+            {
+                numberOfCharactersWritten = 0;
+
+                return false;
+            }
+
+            public override bool WillEncode(int unicodeScalar)
+            {
+                return false;
+            }
         }
     }
 }
