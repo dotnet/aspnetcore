@@ -6,7 +6,8 @@
         "packages": {
             "Microsoft.AspNetCore.Buffering": { },
             "Microsoft.AspNetCore.HttpOverrides": { },
-            "Microsoft.AspNetCore.Rewrite": { }
+            "Microsoft.AspNetCore.Rewrite": { },
+            "Microsoft.AspNetCore.ResponseCompression": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.
