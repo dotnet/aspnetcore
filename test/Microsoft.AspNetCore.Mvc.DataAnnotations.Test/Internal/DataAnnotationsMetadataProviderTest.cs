@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -44,6 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                     { new DisplayFormatAttribute() { HtmlEncode = false }, d => d.HtmlEncode, false },
                     { new DisplayFormatAttribute() { NullDisplayText = "(null)" }, d => d.NullDisplayText, "(null)" },
 
+                    { new DisplayNameAttribute("DisplayNameValue"), d => d.DisplayName(), "DisplayNameValue"},
                     { new HiddenInputAttribute() { DisplayValue = false }, d => d.HideSurroundingHtml, true },
 
                     { new ScaffoldColumnAttribute(scaffold: false), d => d.ShowForDisplay, false },
@@ -164,6 +166,124 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             // Assert
             Assert.False(context.BindingMetadata.IsReadOnly);
+        }
+
+        [Fact]
+        public void CreateDisplayMetadata_DisplayAttribute_OverridesDisplayNameAttribute()
+        {
+            // Arrange
+            var localizationOptions = new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>();
+
+            var provider = new DataAnnotationsMetadataProvider(
+                localizationOptions,
+                stringLocalizerFactory: null);
+
+            var displayName = new DisplayNameAttribute("DisplayNameAttributeValue");
+            var display = new DisplayAttribute()
+            {
+                Name = "DisplayAttributeValue"
+            };
+
+            var attributes = new Attribute[] { display, displayName };
+            var key = ModelMetadataIdentity.ForType(typeof(string));
+            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes));
+
+            // Act
+            provider.CreateDisplayMetadata(context);
+
+            // Assert
+            Assert.Equal("DisplayAttributeValue", context.DisplayMetadata.DisplayName());
+        }
+
+        [Fact]
+        public void CreateDisplayMetadata_DisplayAttribute_OverridesDisplayNameAttribute_IfNameEmpty()
+        {
+            // Arrange
+            var localizationOptions = new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>();
+
+            var provider = new DataAnnotationsMetadataProvider(
+                localizationOptions,
+                stringLocalizerFactory: null);
+
+            var displayName = new DisplayNameAttribute("DisplayNameAttributeValue");
+            var display = new DisplayAttribute()
+            {
+                Name = string.Empty
+            };
+
+            var attributes = new Attribute[] { display, displayName };
+            var key = ModelMetadataIdentity.ForType(typeof(string));
+            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes));
+
+            // Act
+            provider.CreateDisplayMetadata(context);
+
+            // Assert
+            Assert.Equal(string.Empty, context.DisplayMetadata.DisplayName());
+        }
+
+        [Fact]
+        public void CreateDisplayMetadata_DisplayAttribute_DoesNotOverrideDisplayNameAttribute_IfNameNull()
+        {
+            // Arrange
+            var localizationOptions = new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>();
+
+            var provider = new DataAnnotationsMetadataProvider(
+                localizationOptions,
+                stringLocalizerFactory: null);
+
+            var displayName = new DisplayNameAttribute("DisplayNameAttributeValue");
+            var display = new DisplayAttribute()
+            {
+                Description = "This is a description"
+            };
+
+            var attributes = new Attribute[] { display, displayName };
+            var key = ModelMetadataIdentity.ForType(typeof(string));
+            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes));
+
+            // Act
+            provider.CreateDisplayMetadata(context);
+
+            // Assert
+            Assert.Equal("DisplayNameAttributeValue", context.DisplayMetadata.DisplayName());
+        }
+
+        [Fact]
+        public void CreateDisplayMetadata_DisplayNameAttribute_LocalizesDisplayName()
+        {
+            // Arrange
+            var sharedLocalizer = new Mock<IStringLocalizer>(MockBehavior.Strict);
+            sharedLocalizer
+                .Setup(s => s["DisplayNameValue"])
+                .Returns(new LocalizedString("DisplayNameValue", "Name from DisplayNameAttribute"));
+
+            var stringLocalizerFactoryMock = new Mock<IStringLocalizerFactory>(MockBehavior.Strict);
+            stringLocalizerFactoryMock
+                .Setup(s => s.Create(typeof(EmptyClass)))
+                .Returns(() => sharedLocalizer.Object);
+
+            var localizationOptions = new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>();
+            localizationOptions.Value.DataAnnotationLocalizerProvider = (type, stringLocalizerFactory) =>
+            {
+                return stringLocalizerFactory.Create(typeof(EmptyClass));
+            };
+
+            var provider = new DataAnnotationsMetadataProvider(
+                localizationOptions,
+                stringLocalizerFactory: stringLocalizerFactoryMock.Object);
+
+            var displayName = new DisplayNameAttribute("DisplayNameValue");
+
+            var attributes = new Attribute[] { displayName };
+            var key = ModelMetadataIdentity.ForType(typeof(string));
+            var context = new DisplayMetadataProviderContext(key, new ModelAttributes(attributes));
+
+            // Act
+            provider.CreateDisplayMetadata(context);
+
+            // Assert
+            Assert.Equal("Name from DisplayNameAttribute", context.DisplayMetadata.DisplayName());
         }
 
         [Fact]

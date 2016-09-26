@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
@@ -66,6 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var displayAttribute = attributes.OfType<DisplayAttribute>().FirstOrDefault();
             var displayColumnAttribute = attributes.OfType<DisplayColumnAttribute>().FirstOrDefault();
             var displayFormatAttribute = attributes.OfType<DisplayFormatAttribute>().FirstOrDefault();
+            var displayNameAttribute = attributes.OfType<DisplayNameAttribute>().FirstOrDefault();
             var hiddenInputAttribute = attributes.OfType<HiddenInputAttribute>().FirstOrDefault();
             var scaffoldColumnAttribute = attributes.OfType<ScaffoldColumnAttribute>().FirstOrDefault();
             var uiHintAttribute = attributes.OfType<UIHintAttribute>().FirstOrDefault();
@@ -127,7 +129,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             }
 
             // DisplayName
-            if (displayAttribute != null)
+            // DisplayAttribute has precendence over DisplayNameAttribute.
+            if (displayAttribute != null && displayAttribute.GetName() != null)
             {
                 if (localizer != null &&
                     !string.IsNullOrEmpty(displayAttribute.Name) &&
@@ -138,6 +141,18 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 else
                 {
                     displayMetadata.DisplayName = () => displayAttribute.GetName();
+                }
+            }
+            else if (displayNameAttribute != null)
+            {
+                if (localizer != null &&
+                    !string.IsNullOrEmpty(displayNameAttribute.DisplayName))
+                {
+                    displayMetadata.DisplayName = () => localizer[displayNameAttribute.DisplayName];
+                }
+                else
+                {
+                    displayMetadata.DisplayName = () => displayNameAttribute.DisplayName;
                 }
             }
 
