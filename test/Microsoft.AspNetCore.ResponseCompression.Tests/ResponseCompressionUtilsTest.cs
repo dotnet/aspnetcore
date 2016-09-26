@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
         [Theory]
         [InlineData("text/plain")]
+        [InlineData("text/PLAIN")]
         [InlineData("text/plain; charset=ISO-8859-4")]
         [InlineData("text/plain ; charset=ISO-8859-4")]
         public void CreateShouldCompressResponseDelegate_WithCharset_Compress(string contentType)
@@ -53,7 +54,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [Theory]
         [InlineData("")]
         [InlineData("text/plain2")]
-        [InlineData("text/PLAIN")]
         public void CreateShouldCompressResponseDelegate_OtherContentTypes_NoMatch(string contentType)
         {
             var httpContext = new DefaultHttpContext();

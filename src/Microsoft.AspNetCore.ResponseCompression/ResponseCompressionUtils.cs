@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 throw new ArgumentNullException(nameof(mimeTypes));
             }
 
-            var mimeTypeSet = new HashSet<string>(mimeTypes);
+            var mimeTypeSet = new HashSet<string>(mimeTypes, StringComparer.OrdinalIgnoreCase);
 
             return (httpContext) =>
             {
