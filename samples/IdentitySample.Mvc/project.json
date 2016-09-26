@@ -20,7 +20,7 @@
     "Microsoft.AspNetCore.StaticFiles": "1.1.0-*",
     "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
-    "Microsoft.EntityFrameworkCore.Tools.VisualStudio": {
+    "Microsoft.EntityFrameworkCore.Tools": {
       "version": "1.0.0-*",
       "type": "build"
     },
