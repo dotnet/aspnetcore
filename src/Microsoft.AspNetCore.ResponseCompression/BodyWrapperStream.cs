@@ -46,31 +46,21 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
         }
 
-        public override bool CanRead => _bodyOriginalStream.CanRead;
+        public override bool CanRead => false;
 
-        public override bool CanSeek => _bodyOriginalStream.CanSeek;
+        public override bool CanSeek => false;
 
         public override bool CanWrite => _bodyOriginalStream.CanWrite;
 
         public override long Length
         {
-            get
-            {
-                throw new NotSupportedException();
-            }
+            get { throw new NotSupportedException(); }
         }
 
         public override long Position
         {
-            get
-            {
-                throw new NotSupportedException();
-            }
-
-            set
-            {
-                throw new NotSupportedException();
-            }
+            get { throw new NotSupportedException(); }
+            set { throw new NotSupportedException(); }
         }
 
         public override void Flush()
@@ -169,16 +159,16 @@ namespace Microsoft.AspNetCore.ResponseCompression
         {
             if (!_compressionChecked)
             {
+                _compressionChecked = true;
+
                 if (IsCompressable())
                 {
-                    _response.Headers[HeaderNames.ContentEncoding] = _compressionProvider.EncodingName;
-                    _response.Headers.Remove(HeaderNames.ContentMD5);      // Reset the MD5 because the content changed.
+                    _response.Headers.Append(HeaderNames.ContentEncoding, _compressionProvider.EncodingName);
+                    _response.Headers.Remove(HeaderNames.ContentMD5); // Reset the MD5 because the content changed.
                     _response.Headers.Remove(HeaderNames.ContentLength);
 
                     _compressionStream = _compressionProvider.CreateStream(_bodyOriginalStream);
                 }
-
-                _compressionChecked = true;
             }
         }
 

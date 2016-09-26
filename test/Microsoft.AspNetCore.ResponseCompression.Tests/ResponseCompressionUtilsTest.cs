@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         private const string TextPlain = "text/plain";
 
         [Fact]
-        public void CreateShouldCompressResponseDelegate_NullMimeTypes()
+        public void CreateShouldCompressResponseDelegate_NullMimeTypes_Throws()
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         }
 
         [Fact]
-        public void CreateShouldCompressResponseDelegate_Empty()
+        public void CreateShouldCompressResponseDelegate_Empty_DontCompress()
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Response.ContentType = TextPlain;
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [InlineData("text/plain")]
         [InlineData("text/plain; charset=ISO-8859-4")]
         [InlineData("text/plain ; charset=ISO-8859-4")]
-        public void CreateShouldCompressResponseDelegate_True(string contentType)
+        public void CreateShouldCompressResponseDelegate_WithCharset_Compress(string contentType)
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Response.ContentType = contentType;
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [InlineData("")]
         [InlineData("text/plain2")]
         [InlineData("text/PLAIN")]
-        public void CreateShouldCompressResponseDelegate_False(string contentType)
+        public void CreateShouldCompressResponseDelegate_OtherContentTypes_NoMatch(string contentType)
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Response.ContentType = contentType;

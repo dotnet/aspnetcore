@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             {
                 throw new ArgumentException($"{nameof(options.Value.ShouldCompressResponse)} is not provided in argument {nameof(options)}");
             }
+
             _shouldCompressResponse = options.Value.ShouldCompressResponse;
 
             _next = next;
