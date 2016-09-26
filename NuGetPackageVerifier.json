@@ -18,6 +18,12 @@
             "Microsoft.Owin.Security.Interop": { }
         }
     },
+    "adx-nonshipping": {
+        "rules": [],
+        "packages": {
+            "Microsoft.AspNetCore.ChunkingCookieManager.Sources": { }
+        }
+    },
     "Default": { // Rules to run for packages not listed in any other set.
         "rules": [
             "DefaultCompositeRule"
