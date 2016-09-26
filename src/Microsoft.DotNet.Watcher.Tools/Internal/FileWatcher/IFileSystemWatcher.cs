@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.DotNet.Watcher.Core.Internal
+namespace Microsoft.DotNet.Watcher.Internal
 {
     public interface IFileSystemWatcher : IDisposable
     {

@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.DotNet.Watcher.Core.Internal
+namespace Microsoft.DotNet.Watcher.Internal
 {
     public interface IProject
     {

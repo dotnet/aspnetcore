@@ -8,7 +8,7 @@ using System.Linq;
 using Microsoft.DotNet.ProjectModel.Files;
 using Microsoft.DotNet.ProjectModel.Graph;
 
-namespace Microsoft.DotNet.Watcher.Core.Internal
+namespace Microsoft.DotNet.Watcher.Internal
 {
     internal class Project : IProject
     {

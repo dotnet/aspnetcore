@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Microsoft.DotNet.Watcher.Core.Internal
+namespace Microsoft.DotNet.Watcher.Internal
 {
     public class FileWatcher : IFileWatcher
     {

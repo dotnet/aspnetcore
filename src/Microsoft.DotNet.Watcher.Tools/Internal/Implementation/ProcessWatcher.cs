@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.DotNet.Watcher.Core.Internal
+namespace Microsoft.DotNet.Watcher.Internal
 {
     public class ProcessWatcher : IProcessWatcher
     {
@@ -55,6 +55,5 @@ namespace Microsoft.DotNet.Watcher.Core.Internal
                 return exitCode;
             });
         }
-
     }
 }

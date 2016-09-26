@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.DotNet.ProjectModel;
 
-namespace Microsoft.DotNet.Watcher.Core.Internal
+namespace Microsoft.DotNet.Watcher.Internal
 {
     public class ProjectProvider : IProjectProvider
     {

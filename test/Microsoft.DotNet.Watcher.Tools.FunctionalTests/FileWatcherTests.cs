@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Microsoft.DotNet.Watcher.Core.Internal;
+using Microsoft.DotNet.Watcher.Internal;
 using Xunit;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests

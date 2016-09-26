@@ -7,10 +7,10 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Watcher.Core.Internal;
+using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.DotNet.Watcher.Core
+namespace Microsoft.DotNet.Watcher
 {
     public class DotNetWatcher
     {

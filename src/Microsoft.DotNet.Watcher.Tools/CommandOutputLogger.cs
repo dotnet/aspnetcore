@@ -5,7 +5,7 @@ using System;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watcher
 {
     /// <summary>
     /// Logger to print formatted command output.

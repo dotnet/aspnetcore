@@ -5,10 +5,9 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.DotNet.Watcher.Core;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watcher
 {
     public class Program
     {

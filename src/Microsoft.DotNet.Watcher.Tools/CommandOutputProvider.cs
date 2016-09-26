@@ -4,7 +4,7 @@
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watcher
 {
     public class CommandOutputProvider : ILoggerProvider
     {

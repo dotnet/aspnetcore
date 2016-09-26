@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Threading;
-using Microsoft.DotNet.Watcher.Core.Internal;
+using Microsoft.DotNet.Watcher.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
