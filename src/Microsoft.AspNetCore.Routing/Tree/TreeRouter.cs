@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Logging;
 using Microsoft.AspNetCore.Routing.Template;
@@ -110,7 +109,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 if (_namedEntries.TryGetValue(entry.RouteName, out namedMatch) &&
                     !string.Equals(
                         namedMatch.Entry.RouteTemplate.TemplateText,
-                        entry.RouteTemplate.TemplateText, 
+                        entry.RouteTemplate.TemplateText,
                         StringComparison.OrdinalIgnoreCase))
                 {
                     throw new ArgumentException(
@@ -133,6 +132,8 @@ namespace Microsoft.AspNetCore.Routing.Tree
         /// Gets the version of this route.
         /// </summary>
         public int Version { get; }
+
+        internal IEnumerable<UrlMatchingTree> MatchingTrees => _trees;
 
         /// <inheritdoc />
         public VirtualPathData GetVirtualPath(VirtualPathContext context)

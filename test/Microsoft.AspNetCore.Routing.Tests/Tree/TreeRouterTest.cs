@@ -17,7 +17,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
-using Xunit.Extensions;
 
 namespace Microsoft.AspNetCore.Routing.Tree
 {
@@ -272,6 +271,71 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 var data = Assert.Single(context.RouteData.Values, v => v.Key == entry.Key);
                 Assert.Equal(entry.Value, data.Value);
             }
+        }
+
+        [Fact]
+        public async Task TreeRouter_RouteAsync_DoesNotMatchRoutesWithIntermediateDefaultRouteValues()
+        {
+            // Arrange
+            var url = "/a/b";
+
+            var builder = CreateBuilder();
+
+            MapInboundEntry(builder, "a/b/{parameter3=3}/d");
+
+            var route = builder.Build();
+
+            var context = CreateRouteContext(url);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Null(context.Handler);
+        }
+
+        [Theory]
+        [InlineData("a/{b=3}/c/{d?}/e/{*f}", "/a")]
+        [InlineData("a/{b=3}/c/{d?}/e/{*f}", "/a/b")]
+        [InlineData("a/{b=3}/c/{d?}/e/{*f}", "/a/b/c")]
+        [InlineData("a/{b=3}/c/{d?}/e/{*f}", "/a/b/c/d")]
+        public async Task TreeRouter_RouteAsync_DoesNotMatchRoutesWithMultipleIntermediateDefaultOrOptionalRouteValues(string template, string url)
+        {
+            // Arrange
+            var builder = CreateBuilder();
+
+            MapInboundEntry(builder, template);
+
+            var route = builder.Build();
+
+            var context = CreateRouteContext(url);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Null(context.Handler);
+        }
+
+        [Theory]
+        [InlineData("a/{b=3}/c/{d?}/e/{*f}", "/a/b/c/d/e")]
+        [InlineData("a/{b=3}/c/{d?}/e/{*f}", "/a/b/c/d/e/f")]
+        public async Task RouteAsync_MatchRoutesWithMultipleIntermediateDefaultOrOptionalRouteValues_WhenAllIntermediateValuesAreProvided(string template, string url)
+        {
+            // Arrange
+            var builder = CreateBuilder();
+
+            MapInboundEntry(builder, template);
+
+            var route = builder.Build();
+
+            var context = CreateRouteContext(url);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.NotNull(context.Handler);
         }
 
         [Fact]
@@ -1031,6 +1095,27 @@ namespace Microsoft.AspNetCore.Routing.Tree
             Assert.Same(route, result.Router);
             Assert.Empty(result.DataTokens);
         }
+
+        [Fact]
+        public void TreeRouter_GenerateLink_CreatesLinksForRoutesWithIntermediateDefaultRouteValues()
+        {
+            // Arrange
+            var builder = CreateBuilder();
+
+            MapOutboundEntry(builder, template: "a/b/{parameter3=3}/d", requiredValues: null, order: 0);
+
+            var route = builder.Build();
+
+            var context = CreateVirtualPathContext(values: null, ambientValues: null);
+
+            // Act
+            var result = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("/a/b/3/d", result.VirtualPath);
+        }
+
 
         [Fact]
         public void TreeRouter_GeneratesLink_ForMultipleNamedEntriesWithTheSameTemplate()

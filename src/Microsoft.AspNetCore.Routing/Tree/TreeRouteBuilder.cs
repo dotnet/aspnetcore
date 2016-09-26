@@ -333,7 +333,13 @@ namespace Microsoft.AspNetCore.Routing.Tree
                     continue;
                 }
 
-                if (part.IsParameter && (part.IsOptional || part.IsCatchAll || part.DefaultValue != null))
+                // We accept templates that have intermediate optional values, but we ignore
+                // those values for route matching. For that reason, we need to add the entry
+                // to the list of matches, only if the remaining segments are optional. For example:
+                // /{controller}/{action=Index}/{id} will be equivalent to /{controller}/{action}/{id}
+                // for the purposes of route matching.
+                if (part.IsParameter &&
+                    RemainingSegmentsAreOptional(entry.RouteTemplate.Segments, i))
                 {
                     current.Matches.Add(new InboundMatch() { Entry = entry, TemplateMatcher = matcher });
                 }
@@ -391,6 +397,37 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 var result = x.Entry.Precedence.CompareTo(y.Entry.Precedence);
                 return result == 0 ? x.Entry.RouteTemplate.TemplateText.CompareTo(y.Entry.RouteTemplate.TemplateText) : result;
             });
+        }
+
+        private static bool RemainingSegmentsAreOptional(IList<TemplateSegment> segments, int currentParameterIndex)
+        {
+            for (var i = currentParameterIndex; i < segments.Count; i++)
+            {
+                if (!segments[i].IsSimple)
+                {
+                    // /{complex}-{segment}
+                    return false;
+                }
+
+                var part = segments[i].Parts[0];
+                if (!part.IsParameter)
+                {
+                    // /literal
+                    return false;
+                }
+
+                var isOptionlCatchAllOrHasDefaultValue = part.IsOptional ||
+                    part.IsCatchAll ||
+                    part.DefaultValue != null;
+
+                if (!isOptionlCatchAllOrHasDefaultValue)
+                {
+                    // /{parameter}
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

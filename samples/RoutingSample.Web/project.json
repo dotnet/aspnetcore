@@ -5,7 +5,8 @@
     "Microsoft.AspNetCore.Routing": "1.1.0-*"
   },
   "buildOptions": {
-    "emitEntryPoint": true
+    "emitEntryPoint": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "frameworks": {
     "net451": {},
