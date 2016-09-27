@@ -56,8 +56,8 @@ function loadViaWebpackNoCache<T>(webpackConfigPath: string, modulePath: string)
         webpackConfig.output.libraryTarget = 'commonjs';
         const outputVirtualPath = path.join(webpackConfig.output.path, webpackConfig.output.filename);
 
-        // In Node, we want anything under /node_modules/ to be loaded natively and not bundled into the output
-        // (partly because it's faster, but also because otherwise there'd be different instances of modules
+        // In Node, we want any JavaScript modules under /node_modules/ to be loaded natively and not bundled into the
+        // output (partly because it's faster, but also because otherwise there'd be different instances of modules
         // depending on how they were loaded, which could lead to errors).
         // ---
         // NOTE: We have to use webpack-node-externals rather than webpack-externals-plugin because
@@ -70,7 +70,19 @@ function loadViaWebpackNoCache<T>(webpackConfigPath: string, modulePath: string)
             externalsArray = [externalsArray];
         }
         webpackConfig.externals = externalsArray;
-        externalsArray.push(nodeExternals());
+        externalsArray.push(nodeExternals({
+            // However, we do *not* want to treat non-JS files under /node_modules/ as externals (i.e., things
+            // that should be loaded via regular CommonJS 'require' statements). For example, if you reference
+            // a .css file inside an NPM module (e.g., require('somepackage/somefile.css')), then we do need to
+            // load that via Webpack rather than as a regular CommonJS module.
+            //
+            // So, configure webpack-externals-plugin to 'whitelist' (i.e., not treat as external) any file
+            // that has an extension other than .js.
+            //
+            // This regex looks for at least one dot character that is *not* followed by "js<end>", but
+            // is followed by some series of non-dot characters followed by <end>:
+            whitelist: [/\.(?!js$)([^.]+$)/]
+        }));
 
         // The CommonsChunkPlugin is not compatible with a CommonJS environment like Node, nor is it needed in that case
         webpackConfig.plugins = webpackConfig.plugins.filter(plugin => {
