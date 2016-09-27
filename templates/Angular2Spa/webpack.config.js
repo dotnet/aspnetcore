@@ -1,7 +1,6 @@
+var isDevBuild = process.argv.indexOf('--env.prod') < 0;
 var path = require('path');
 var webpack = require('webpack');
-
-var isDevBuild = process.env.ASPNETCORE_ENVIRONMENT === 'Development';
 
 module.exports = {
     devtool: isDevBuild ? 'inline-source-map' : null,
