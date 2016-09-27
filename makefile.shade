@@ -1,0 +1,20 @@
+default BASE_DIR_LOCAL='${Directory.GetCurrentDirectory()}'
+default BUILD_DIR_LOCAL='${Path.Combine(BASE_DIR_LOCAL, "artifacts", "build")}'
+var VERSION='0.1'
+var FULL_VERSION='0.1'
+
+use-standard-lifecycle
+k-standard-goals
+
+#make-nupkg target='package'
+    log info='Make nuget package containing ASP.NET Core Module'
+    @{
+        var nugetExePath = Environment.GetEnvironmentVariable("KOREBUILD_NUGET_EXE");
+        if (string.IsNullOrEmpty(nugetExePath))
+        {
+            nugetExePath = Path.Combine(BASE_DIR_LOCAL, ".build", "nuget.exe");
+        }
+
+        var nuspecPath = Path.Combine(BASE_DIR_LOCAL, "nuget", "AspNetCore.nuspec");
+        ExecClr(nugetExePath, "pack " + nuspecPath + " -OutputDirectory " + BUILD_DIR_LOCAL + " -prop VERSION=1.0.0-" + BuildNumber);
+    }
