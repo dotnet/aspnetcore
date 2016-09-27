@@ -376,11 +376,12 @@
 	                _this._sendFrame(header.connectionIdBinary, data, writeCompletedCallback);
 	            }
 	        };
-	        var newVirtualConnection = new VirtualConnection_1.VirtualConnection(beginWriteCallback)
-	            .on('end', function () {
+	        var newVirtualConnection = new VirtualConnection_1.VirtualConnection(beginWriteCallback);
+	        newVirtualConnection.on('end', function () {
 	            // The virtual connection was closed remotely. Clean up locally.
 	            _this._onVirtualConnectionWasClosed(header.connectionIdString);
-	        }).on('finish', function () {
+	        });
+	        newVirtualConnection.on('finish', function () {
 	            // The virtual connection was closed locally. Clean up locally, and notify the remote that we're done.
 	            _this._onVirtualConnectionWasClosed(header.connectionIdString);
 	            _this._sendFrame(header.connectionIdBinary, new Buffer(0));
