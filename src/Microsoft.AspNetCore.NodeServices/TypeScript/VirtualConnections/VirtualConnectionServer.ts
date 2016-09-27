@@ -105,15 +105,16 @@ class VirtualConnectionsCollection {
             }
         };
 
-        const newVirtualConnection = new VirtualConnection(beginWriteCallback)
-            .on('end', () => {
-                // The virtual connection was closed remotely. Clean up locally.
-                this._onVirtualConnectionWasClosed(header.connectionIdString);
-            }).on('finish', () => {
-                // The virtual connection was closed locally. Clean up locally, and notify the remote that we're done.
-                this._onVirtualConnectionWasClosed(header.connectionIdString);
-                this._sendFrame(header.connectionIdBinary, new Buffer(0));
-            });
+        const newVirtualConnection = new VirtualConnection(beginWriteCallback);
+        newVirtualConnection.on('end', () => {
+            // The virtual connection was closed remotely. Clean up locally.
+            this._onVirtualConnectionWasClosed(header.connectionIdString);
+        });
+        newVirtualConnection.on('finish', () => {
+            // The virtual connection was closed locally. Clean up locally, and notify the remote that we're done.
+            this._onVirtualConnectionWasClosed(header.connectionIdString);
+            this._sendFrame(header.connectionIdBinary, new Buffer(0));
+        });
 
         this._virtualConnections[header.connectionIdString] = newVirtualConnection;
         this._onVirtualConnectionCallback(newVirtualConnection);
