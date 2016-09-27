@@ -3,13 +3,18 @@ import * as webpack from 'webpack';
 import * as url from 'url';
 import { requireNewCopy } from './RequireNewCopy';
 
+export type CreateDevServerResult = {
+    Port: number,
+    PublicPaths: string[],
+    PublicPath: string // For backward compatibility with older verions of Microsoft.AspNetCore.SpaServices. Will be removed soon.
+};
+
 export interface CreateDevServerCallback {
-    (error: any, result: { Port: number, PublicPaths: string[] }): void;
+    (error: any, result: CreateDevServerResult): void;
 }
 
 // These are the options passed by WebpackDevMiddleware.cs
 interface CreateDevServerOptions {
-    understandsMultiplePublicPaths: boolean; // For checking that the NuGet package is recent enough. Can be removed when we no longer need back-compatibility.
     webpackConfigPath: string;
     suppliedOptions: DevServerOptions;
 }
@@ -89,11 +94,6 @@ function beginWebpackWatcher(webpackConfig: webpack.Configuration) {
 export function createWebpackDevServer(callback: CreateDevServerCallback, optionsJson: string) {
     const options: CreateDevServerOptions = JSON.parse(optionsJson);
 
-    if (!options.understandsMultiplePublicPaths) {
-        callback('To use Webpack dev server, you must update to a newer version of the Microsoft.AspNetCore.SpaServices package', null);
-        return;
-    }
-
     // Read the webpack config's export, and normalize it into the more general 'array of configs' format
     let webpackConfigArray: webpack.Configuration[] = requireNewCopy(options.webpackConfigPath);
     if (!(webpackConfigArray instanceof Array)) {
@@ -137,7 +137,11 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
             // Tell the ASP.NET app what addresses we're listening on, so that it can proxy requests here
             callback(null, {
                 Port: listener.address().port,
-                PublicPaths: normalizedPublicPaths
+                PublicPaths: normalizedPublicPaths,
+
+                // For back-compatibility with older versions of Microsoft.AspNetCore.SpaServices, in the case where
+                // you have exactly one webpackConfigArray entry. This will be removed soon.
+                PublicPath: normalizedPublicPaths[0]
             });
         } catch (ex) {
             callback(ex.stack, null);

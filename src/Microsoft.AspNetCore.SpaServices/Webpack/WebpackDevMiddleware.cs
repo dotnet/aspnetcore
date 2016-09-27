@@ -65,11 +65,11 @@ namespace Microsoft.AspNetCore.Builder
                 nodeServices.InvokeExportAsync<WebpackDevServerInfo>(nodeScript.FileName, "createWebpackDevServer",
                     JsonConvert.SerializeObject(devServerOptions)).Result;
 
-            // Older versions of aspnet-webpack just returned a single 'publicPath', but now we support multiple
+            // If we're talking to an older version of aspnet-webpack, it will return only a single PublicPath,
+            // not an array of PublicPaths. Handle that scenario.
             if (devServerInfo.PublicPaths == null)
             {
-                throw new InvalidOperationException(
-                    "To enable Webpack dev middleware, you must update to a newer version of the aspnet-webpack NPM package.");
+                devServerInfo.PublicPaths = new[] { devServerInfo.PublicPath };
             }
 
             // Proxy the corresponding requests through ASP.NET and into the Node listener
@@ -107,6 +107,10 @@ namespace Microsoft.AspNetCore.Builder
         {
             public int Port { get; set; }
             public string[] PublicPaths { get; set; }
+
+            // For back-compatibility with older versions of aspnet-webpack, in the case where your webpack
+            // configuration contains exactly one config entry. This will be removed soon.
+            public string PublicPath { get; set; }
         }
     }
 #pragma warning restore CS0649
