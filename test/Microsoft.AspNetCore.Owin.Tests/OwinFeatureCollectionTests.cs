@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Xunit;
 
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Owin
         {
             var env = new Dictionary<string, object>
             {
-                { "owin.RequestMethod", "POST" },
+                { "owin.RequestMethod", HttpMethod.Post },
                 { "owin.RequestPath", "/path" },
                 { "owin.RequestPathBase", "/pathBase" },
                 { "owin.RequestQueryString", "name=value" },
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Owin
             var features = new OwinFeatureCollection(env);
 
             var requestFeature = Get<IHttpRequestFeature>(features);
-            Assert.Equal(requestFeature.Method, "POST");
+            Assert.Equal(requestFeature.Method, HttpMethod.Post);
             Assert.Equal(requestFeature.Path, "/path");
             Assert.Equal(requestFeature.PathBase, "/pathBase");
             Assert.Equal(requestFeature.QueryString, "?name=value");
