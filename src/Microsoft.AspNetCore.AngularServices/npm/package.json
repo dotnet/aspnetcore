@@ -10,6 +10,13 @@
   "typings": "dist/Exports",
   "author": "Microsoft",
   "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/aspnet/JavaScriptServices/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aspnet/JavaScriptServices.git"
+  },
   "dependencies": {
     "angular2": "^2.0.0-beta.13",
     "rxjs": "5.0.0-beta.2"

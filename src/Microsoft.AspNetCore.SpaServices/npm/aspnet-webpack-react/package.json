@@ -9,6 +9,13 @@
   },
   "author": "Microsoft",
   "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/aspnet/JavaScriptServices/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aspnet/JavaScriptServices.git"
+  },
   "dependencies": {
     "babel-core": "^6.7.2",
     "babel-loader": "^6.2.4",
