@@ -62,7 +62,7 @@ namespace MusicStore
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory, IHostingEnvironment env)
         {
             app.UseDeveloperExceptionPage();
-            
+
             // Initialize the sample data
             SampleData.InitializeMusicStoreDatabaseAsync(app.ApplicationServices).Wait();
 
