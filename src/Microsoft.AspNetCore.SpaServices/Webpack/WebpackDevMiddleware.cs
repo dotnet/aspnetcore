@@ -58,11 +58,19 @@ namespace Microsoft.AspNetCore.Builder
             var devServerOptions = new
             {
                 webpackConfigPath = Path.Combine(nodeServicesOptions.ProjectPath, options.ConfigFile ?? DefaultConfigFile),
-                suppliedOptions = options
+                suppliedOptions = options,
+                understandsMultiplePublicPaths = true
             };
             var devServerInfo =
                 nodeServices.InvokeExportAsync<WebpackDevServerInfo>(nodeScript.FileName, "createWebpackDevServer",
                     JsonConvert.SerializeObject(devServerOptions)).Result;
+
+            // Older versions of aspnet-webpack just returned a single 'publicPath', but now we support multiple
+            if (devServerInfo.PublicPaths == null)
+            {
+                throw new InvalidOperationException(
+                    "To enable Webpack dev middleware, you must update to a newer version of the aspnet-webpack NPM package.");
+            }
 
             // Proxy the corresponding requests through ASP.NET and into the Node listener
             // Note that this is hardcoded to make requests to "localhost" regardless of the hostname of the
@@ -73,7 +81,10 @@ namespace Microsoft.AspNetCore.Builder
             // able to make outbound requests to it from here.
             var proxyOptions = new ConditionalProxyMiddlewareOptions(WebpackDevMiddlewareScheme,
                 "localhost", devServerInfo.Port.ToString());
-            appBuilder.UseMiddleware<ConditionalProxyMiddleware>(devServerInfo.PublicPath, proxyOptions);
+            foreach (var publicPath in devServerInfo.PublicPaths)
+            {
+                appBuilder.UseMiddleware<ConditionalProxyMiddleware>(publicPath, proxyOptions);
+            }
 
             // While it would be nice to proxy the /__webpack_hmr requests too, these return an EventStream,
             // and the Microsoft.AspNetCore.Proxy code doesn't handle that entirely - it throws an exception after
@@ -95,7 +106,7 @@ namespace Microsoft.AspNetCore.Builder
         class WebpackDevServerInfo
         {
             public int Port { get; set; }
-            public string PublicPath { get; set; }
+            public string[] PublicPaths { get; set; }
         }
     }
 #pragma warning restore CS0649

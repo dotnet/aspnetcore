@@ -4,11 +4,12 @@ import * as url from 'url';
 import { requireNewCopy } from './RequireNewCopy';
 
 export interface CreateDevServerCallback {
-    (error: any, result: { Port: number, PublicPath: string }): void;
+    (error: any, result: { Port: number, PublicPaths: string[] }): void;
 }
 
 // These are the options passed by WebpackDevMiddleware.cs
 interface CreateDevServerOptions {
+    understandsMultiplePublicPaths: boolean; // For checking that the NuGet package is recent enough. Can be removed when we no longer need back-compatibility.
     webpackConfigPath: string;
     suppliedOptions: DevServerOptions;
 }
@@ -20,11 +21,83 @@ interface DevServerOptions {
     ReactHotModuleReplacement: boolean;
 }
 
+function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configuration, enableHotModuleReplacement: boolean, enableReactHotModuleReplacement: boolean) {
+    // Build the final Webpack config based on supplied options
+    if (enableHotModuleReplacement) {
+        // For this, we only support the key/value config format, not string or string[], since
+        // those ones don't clearly indicate what the resulting bundle name will be
+        const entryPoints = webpackConfig.entry;
+        const isObjectStyleConfig = entryPoints
+                                && typeof entryPoints === 'object'
+                                && !(entryPoints instanceof Array);
+        if (!isObjectStyleConfig) {
+            throw new Error('To use HotModuleReplacement, your webpack config must specify an \'entry\' value as a key-value object (e.g., "entry: { main: \'ClientApp/boot-client.ts\' }")');
+        }
+
+        // Augment all entry points so they support HMR
+        Object.getOwnPropertyNames(entryPoints).forEach(entryPointName => {
+            if (typeof entryPoints[entryPointName] === 'string') {
+                entryPoints[entryPointName] = ['webpack-hot-middleware/client', entryPoints[entryPointName]];
+            } else {
+                entryPoints[entryPointName].unshift('webpack-hot-middleware/client');
+            }
+        });
+
+        webpackConfig.plugins = webpackConfig.plugins || [];
+        webpackConfig.plugins.push(
+            new webpack.HotModuleReplacementPlugin()
+        );
+
+        // Set up React HMR support if requested. This requires the 'aspnet-webpack-react' package.
+        if (enableReactHotModuleReplacement) {
+            let aspNetWebpackReactModule: any;
+            try {
+                aspNetWebpackReactModule = require('aspnet-webpack-react');
+            } catch(ex) {
+                throw new Error('ReactHotModuleReplacement failed because of an error while loading \'aspnet-webpack-react\'. Error was: ' + ex.stack);
+            }
+
+            aspNetWebpackReactModule.addReactHotModuleReplacementBabelTransform(webpackConfig);
+        }
+    }
+
+    // Attach Webpack dev middleware and optional 'hot' middleware
+    const compiler = webpack(webpackConfig);
+    app.use(require('webpack-dev-middleware')(compiler, {
+        noInfo: true,
+        publicPath: webpackConfig.output.publicPath
+    }));
+
+    if (enableHotModuleReplacement) {
+        let webpackHotMiddlewareModule;
+        try {
+            webpackHotMiddlewareModule = require('webpack-hot-middleware');
+        } catch (ex) {
+            throw new Error('HotModuleReplacement failed because of an error while loading \'webpack-hot-middleware\'. Error was: ' + ex.stack);
+        }
+        app.use(webpackHotMiddlewareModule(compiler));
+    }
+}
+
 export function createWebpackDevServer(callback: CreateDevServerCallback, optionsJson: string) {
     const options: CreateDevServerOptions = JSON.parse(optionsJson);
-    const webpackConfig: webpack.Configuration = requireNewCopy(options.webpackConfigPath);
-    const publicPath = (webpackConfig.output.publicPath || '').trim();
-    if (!publicPath) {
+
+    if (!options.understandsMultiplePublicPaths) {
+        callback('To use Webpack dev server, you must update to a newer version of the Microsoft.AspNetCore.SpaServices package', null);
+        return;
+    }
+
+    // Read the webpack config's export, and normalize it into the more general 'array of configs' format
+    let webpackConfigArray: webpack.Configuration[] = requireNewCopy(options.webpackConfigPath);
+    if (!(webpackConfigArray instanceof Array)) {
+        webpackConfigArray = [webpackConfigArray as webpack.Configuration];
+    }
+
+    // Check that at least one of the configurations specifies a publicPath. Those are the only ones we'll
+    // enable middleware for, and if there aren't any, you must be making a mistake.
+    const webpackConfigsWithPublicPath = webpackConfigArray
+        .filter(webpackConfig => (webpackConfig.output.publicPath || '').trim() !== '');
+    if (webpackConfigsWithPublicPath.length === 0) {
         callback('To use the Webpack dev server, you must specify a value for \'publicPath\' on the \'output\' section of your webpack.config.', null);
         return;
     }
@@ -41,69 +114,22 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
 
     const app = connect();
     const listener = app.listen(suggestedHMRPortOrZero, () => {
-        // Build the final Webpack config based on supplied options
-        if (enableHotModuleReplacement) {
-            // For this, we only support the key/value config format, not string or string[], since
-            // those ones don't clearly indicate what the resulting bundle name will be
-            const entryPoints = webpackConfig.entry;
-            const isObjectStyleConfig = entryPoints
-                                     && typeof entryPoints === 'object'
-                                     && !(entryPoints instanceof Array);
-            if (!isObjectStyleConfig) {
-                callback('To use HotModuleReplacement, your webpack config must specify an \'entry\' value as a key-value object (e.g., "entry: { main: \'ClientApp/boot-client.ts\' }")', null);
-                return;
-            }
-
-            // Augment all entry points so they support HMR
-            Object.getOwnPropertyNames(entryPoints).forEach(entryPointName => {
-                if (typeof entryPoints[entryPointName] === 'string') {
-                    entryPoints[entryPointName] = ['webpack-hot-middleware/client', entryPoints[entryPointName]];
-                } else {
-                    entryPoints[entryPointName].unshift('webpack-hot-middleware/client');
-                }
+        try {
+            // For each webpack config that specifies a public path, add webpack dev middleware for it
+            webpackConfigsWithPublicPath.forEach(webpackConfig => {
+                attachWebpackDevMiddleware(app, webpackConfig, enableHotModuleReplacement, enableReactHotModuleReplacement);
             });
 
-            webpackConfig.plugins.push(
-                new webpack.HotModuleReplacementPlugin()
-            );
-
-            // Set up React HMR support if requested. This requires the 'aspnet-webpack-react' package.
-            if (enableReactHotModuleReplacement) {
-                let aspNetWebpackReactModule: any;
-                try {
-                    aspNetWebpackReactModule = require('aspnet-webpack-react');
-                } catch(ex) {
-                    callback('ReactHotModuleReplacement failed because of an error while loading \'aspnet-webpack-react\'. Error was: ' + ex.stack, null);
-                    return;
-                }
-
-                aspNetWebpackReactModule.addReactHotModuleReplacementBabelTransform(webpackConfig);
-            }
+            // Tell the ASP.NET app what addresses we're listening on, so that it can proxy requests here
+            callback(null, {
+                Port: listener.address().port,
+                PublicPaths: webpackConfigsWithPublicPath.map(webpackConfig =>
+                    removeTrailingSlash(getPath(webpackConfig.output.publicPath))
+                )
+            });
+        } catch (ex) {
+            callback(ex.stack, null);
         }
-
-        // Attach Webpack dev middleware and optional 'hot' middleware
-        const compiler = webpack(webpackConfig);
-        app.use(require('webpack-dev-middleware')(compiler, {
-            noInfo: true,
-            publicPath: publicPath
-        }));
-
-        if (enableHotModuleReplacement) {
-            let webpackHotMiddlewareModule;
-            try {
-                webpackHotMiddlewareModule = require('webpack-hot-middleware');
-            } catch (ex) {
-                callback('HotModuleReplacement failed because of an error while loading \'webpack-hot-middleware\'. Error was: ' + ex.stack, null);
-                return;
-            }
-            app.use(webpackHotMiddlewareModule(compiler));
-        }
-
-        // Tell the ASP.NET app what addresses we're listening on, so that it can proxy requests here
-        callback(null, {
-            Port: listener.address().port,
-            PublicPath: removeTrailingSlash(getPath(publicPath))
-        });
     });
 }
 
