@@ -231,6 +231,11 @@
   <ItemGroup>
     <None Include="Source.def" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="aspnetcore_schema.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
