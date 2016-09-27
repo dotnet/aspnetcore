@@ -43,7 +43,7 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
             }
         });
 
-        webpackConfig.plugins = webpackConfig.plugins || [];
+        webpackConfig.plugins = [].concat(webpackConfig.plugins || []); // Be sure not to mutate the original array, as it might be shared
         webpackConfig.plugins.push(
             new webpack.HotModuleReplacementPlugin()
         );
@@ -79,6 +79,13 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
     }
 }
 
+function beginWebpackWatcher(webpackConfig: webpack.Configuration) {
+    const compiler = webpack(webpackConfig);
+    compiler.watch({ /* watchOptions */ }, (err, stats) => {
+        // The default error reporter is fine for now, but could be customized here in the future if desired
+    });
+}
+
 export function createWebpackDevServer(callback: CreateDevServerCallback, optionsJson: string) {
     const options: CreateDevServerOptions = JSON.parse(optionsJson);
 
@@ -91,15 +98,6 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
     let webpackConfigArray: webpack.Configuration[] = requireNewCopy(options.webpackConfigPath);
     if (!(webpackConfigArray instanceof Array)) {
         webpackConfigArray = [webpackConfigArray as webpack.Configuration];
-    }
-
-    // Check that at least one of the configurations specifies a publicPath. Those are the only ones we'll
-    // enable middleware for, and if there aren't any, you must be making a mistake.
-    const webpackConfigsWithPublicPath = webpackConfigArray
-        .filter(webpackConfig => (webpackConfig.output.publicPath || '').trim() !== '');
-    if (webpackConfigsWithPublicPath.length === 0) {
-        callback('To use the Webpack dev server, you must specify a value for \'publicPath\' on the \'output\' section of your webpack.config.', null);
-        return;
     }
 
     const enableHotModuleReplacement = options.suppliedOptions.HotModuleReplacement;
@@ -116,16 +114,30 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
     const listener = app.listen(suggestedHMRPortOrZero, () => {
         try {
             // For each webpack config that specifies a public path, add webpack dev middleware for it
-            webpackConfigsWithPublicPath.forEach(webpackConfig => {
-                attachWebpackDevMiddleware(app, webpackConfig, enableHotModuleReplacement, enableReactHotModuleReplacement);
+            const normalizedPublicPaths: string[] = [];
+            webpackConfigArray.forEach(webpackConfig => {
+                if (webpackConfig.target === 'node') {
+                    // For configs that target Node, it's meaningless to set up an HTTP listener, since
+                    // Node isn't going to load those modules over HTTP anyway. It just loads them directly
+                    // from disk. So the most relevant thing we can do with such configs is just write
+                    // updated builds to disk, just like "webpack --watch".
+                    beginWebpackWatcher(webpackConfig);
+                } else {
+                    // For configs that target browsers, we can set up an HTTP listener, and dynamically
+                    // modify the config to enable HMR etc. This just requires that we have a publicPath.
+                    const publicPath = (webpackConfig.output.publicPath || '').trim();
+                    if (!publicPath) {
+                        throw new Error('To use the Webpack dev server, you must specify a value for \'publicPath\' on the \'output\' section of your webpack config (for any configuration that targets browsers)');
+                    }
+                    normalizedPublicPaths.push(removeTrailingSlash(publicPath));
+                    attachWebpackDevMiddleware(app, webpackConfig, enableHotModuleReplacement, enableReactHotModuleReplacement);
+                }
             });
 
             // Tell the ASP.NET app what addresses we're listening on, so that it can proxy requests here
             callback(null, {
                 Port: listener.address().port,
-                PublicPaths: webpackConfigsWithPublicPath.map(webpackConfig =>
-                    removeTrailingSlash(getPath(webpackConfig.output.publicPath))
-                )
+                PublicPaths: normalizedPublicPaths
             });
         } catch (ex) {
             callback(ex.stack, null);
