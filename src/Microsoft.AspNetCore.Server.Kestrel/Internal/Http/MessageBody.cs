@@ -234,6 +234,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             var connection = headers.HeaderConnection.ToString();
             if (connection.Length > 0)
             {
+                if (connection.Equals("upgrade", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new ForRemainingData(context);
+                }
+
                 keepAlive = connection.Equals("keep-alive", StringComparison.OrdinalIgnoreCase);
             }
 
@@ -257,12 +262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
             }
 
-            if (keepAlive)
-            {
-                return new ForContentLength(true, 0, context);
-            }
-
-            return new ForRemainingData(context);
+            return new ForContentLength(keepAlive, 0, context);
         }
 
         private class ForRemainingData : MessageBody

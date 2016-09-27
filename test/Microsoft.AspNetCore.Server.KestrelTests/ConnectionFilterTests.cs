@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var filter = new RewritingConnectionFilter();
             var serviceContext = new TestServiceContext(filter);
 
-            var sendString = "POST / HTTP/1.0\r\n\r\nHello World?";
+            var sendString = "POST / HTTP/1.0\r\nContent-Length: 12\r\n\r\nHello World?";
 
             using (var server = new TestServer(App, serviceContext))
             {
@@ -66,6 +66,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     await connection.SendEnd(
                         "POST / HTTP/1.0",
+                        "Content-Length: 12",
                         "",
                         "Hello World?");
                     await connection.ReceiveEnd(
@@ -91,6 +92,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     {
                         await connection.SendEnd(
                             "POST / HTTP/1.0",
+                            "Content-Length: 12",
                             "",
                             "Hello World?");
                     }

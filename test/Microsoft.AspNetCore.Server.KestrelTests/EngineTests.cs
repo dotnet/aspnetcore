@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Xunit;
@@ -108,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var started = engine.CreateServer(address);
 
             var socket = TestConnection.CreateConnectedLoopbackSocket(address.Port);
-            socket.Send(Encoding.ASCII.GetBytes("POST / HTTP/1.0\r\n\r\nHello World"));
+            socket.Send(Encoding.ASCII.GetBytes("POST / HTTP/1.0\r\nContent-Length: 11\r\n\r\nHello World"));
             socket.Shutdown(SocketShutdown.Send);
             var buffer = new byte[8192];
             while (true)
@@ -131,6 +130,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     await connection.SendEnd(
                         "POST / HTTP/1.0",
+                        "Content-Length: 11",
                         "",
                         "Hello World");
                     await connection.ReceiveEnd(
@@ -156,6 +156,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "GET / HTTP/1.1",
                         "Connection: close",
+                        "Content-Length: 7",
                         "",
                         "Goodbye");
                     await connection.ReceiveEnd(
@@ -219,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     var requestData =
                         Enumerable.Repeat("GET / HTTP/1.1\r\n", loopCount)
-                            .Concat(new[] { "GET / HTTP/1.1\r\nConnection: close\r\n\r\nGoodbye" });
+                            .Concat(new[] { "GET / HTTP/1.1\r\nContent-Length: 7\r\nConnection: close\r\n\r\nGoodbye" });
 
                     var response = string.Join("\r\n", new string[] {
                         "HTTP/1.1 200 OK",
@@ -288,6 +289,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Connection: keep-alive",
                         "",
                         "POST / HTTP/1.0",
+                        "Content-Length: 7",
                         "",
                         "Goodbye");
                     await connection.Receive(
@@ -320,8 +322,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Connection: keep-alive",
                         "",
                         "POST / HTTP/1.0",
-                        "Content-Length: 7",
                         "Connection: keep-alive",
+                        "Content-Length: 7",
                         "",
                         "Goodbye");
                     await connection.Receive(
@@ -354,6 +356,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Connection: keep-alive",
                         "",
                         "Hello WorldPOST / HTTP/1.0",
+                        "Content-Length: 7",
                         "",
                         "Goodbye");
                     await connection.Receive(
@@ -461,11 +464,17 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [MemberData(nameof(ConnectionFilterData))]
         public async Task ZeroContentLengthSetAutomaticallyForNonKeepAliveRequests(TestServiceContext testContext)
         {
-            using (var server = new TestServer(EmptyApp, testContext))
+            using (var server = new TestServer(async httpContext =>
+            {
+                Assert.Equal(0, await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1).TimeoutAfter(TimeSpan.FromSeconds(10)));
+            }, testContext))
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    // Use Send instead of SendEnd to ensure the connection will remain open while
+                    // the app runs and reads 0 bytes from the body nonetheless. This checks that
+                    // https://github.com/aspnet/KestrelHttpServer/issues/1104 is not regressing.
+                    await connection.Send(
                         "GET / HTTP/1.1",
                         "Connection: close",
                         "",
@@ -481,7 +490,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         "GET / HTTP/1.0",
                         "",
                         "");

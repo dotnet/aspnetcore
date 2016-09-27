@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders(), input.FrameContext);
+                var body = MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders { HeaderContentLength = "5" }, input.FrameContext);
                 var stream = new FrameRequestStream();
                 stream.StartAcceptingReads(body);
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders(), input.FrameContext);
+                var body = MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders { HeaderContentLength = "5" }, input.FrameContext);
                 var stream = new FrameRequestStream();
                 stream.StartAcceptingReads(body);
 
@@ -65,11 +65,107 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Fact]
-        public async Task CanHandleLargeBlocks()
+        public void Http10NoContentLength()
         {
             using (var input = new TestInput())
             {
                 var body = MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders(), input.FrameContext);
+                var stream = new FrameRequestStream();
+                stream.StartAcceptingReads(body);
+
+                input.Add("Hello", true);
+
+                var buffer1 = new byte[1024];
+                Assert.Equal(0, stream.Read(buffer1, 0, 1024));
+            }
+        }
+
+        [Fact]
+        public async Task Http10NoContentLengthAsync()
+        {
+            using (var input = new TestInput())
+            {
+                var body = MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders(), input.FrameContext);
+                var stream = new FrameRequestStream();
+                stream.StartAcceptingReads(body);
+
+                input.Add("Hello", true);
+
+                var buffer1 = new byte[1024];
+                Assert.Equal(0, await stream.ReadAsync(buffer1, 0, 1024));
+            }
+        }
+
+        [Fact]
+        public void Http11NoContentLength()
+        {
+            using (var input = new TestInput())
+            {
+                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders(), input.FrameContext);
+                var stream = new FrameRequestStream();
+                stream.StartAcceptingReads(body);
+
+                input.Add("Hello", true);
+
+                var buffer1 = new byte[1024];
+                Assert.Equal(0, stream.Read(buffer1, 0, 1024));
+            }
+        }
+
+        [Fact]
+        public async Task Http11NoContentLengthAsync()
+        {
+            using (var input = new TestInput())
+            {
+                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders(), input.FrameContext);
+                var stream = new FrameRequestStream();
+                stream.StartAcceptingReads(body);
+
+                input.Add("Hello", true);
+
+                var buffer1 = new byte[1024];
+                Assert.Equal(0, await stream.ReadAsync(buffer1, 0, 1024));
+            }
+        }
+
+        [Fact]
+        public void Http11NoContentLengthConnectionClose()
+        {
+            using (var input = new TestInput())
+            {
+                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderConnection = "close" }, input.FrameContext);
+                var stream = new FrameRequestStream();
+                stream.StartAcceptingReads(body);
+
+                input.Add("Hello", true);
+
+                var buffer1 = new byte[1024];
+                Assert.Equal(0, stream.Read(buffer1, 0, 1024));
+            }
+        }
+
+        [Fact]
+        public async Task Http11NoContentLengthConnectionCloseAsync()
+        {
+            using (var input = new TestInput())
+            {
+                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderConnection = "close" }, input.FrameContext);
+                var stream = new FrameRequestStream();
+                stream.StartAcceptingReads(body);
+
+                input.Add("Hello", true);
+
+                var buffer1 = new byte[1024];
+                Assert.Equal(0, await stream.ReadAsync(buffer1, 0, 1024));
+            }
+        }
+
+        [Fact]
+        public async Task CanHandleLargeBlocks()
+        {
+            using (var input = new TestInput())
+            {
+                var body = MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders { HeaderContentLength = "8197" }, input.FrameContext);
                 var stream = new FrameRequestStream();
                 stream.StartAcceptingReads(body);
 
@@ -101,8 +197,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         public static IEnumerable<object[]> RequestData => new[]
         {
-            // Remaining Data
-            new object[] { new FrameRequestHeaders { HeaderConnection = "close" }, new[] { "Hello ", "World!" } },
             // Content-Length
             new object[] { new FrameRequestHeaders { HeaderContentLength = "12" }, new[] { "Hello ", "World!" } },
             // Chunked

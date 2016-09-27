@@ -102,6 +102,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "0",
                          "",
                         "POST / HTTP/1.0",
+                        "Content-Length: 7",
                         "",
                         "Goodbye");
                     await connection.Receive(

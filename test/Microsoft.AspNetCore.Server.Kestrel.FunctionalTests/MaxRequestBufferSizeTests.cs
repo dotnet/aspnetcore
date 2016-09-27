@@ -53,15 +53,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Disables all code related to computing and limiting the size of the input buffer.
                     Tuple.Create((long?)null, false)
                 };
-                var sendContentLengthHeaderValues = new[] { true, false };
                 var sslValues = new[] { true, false };
 
                 return from maxRequestBufferSize in maxRequestBufferSizeValues
-                       from sendContentLengthHeader in sendContentLengthHeaderValues
                        from ssl in sslValues
                        select new object[] {
                            maxRequestBufferSize.Item1,
-                           sendContentLengthHeader,
                            ssl,
                            maxRequestBufferSize.Item2
                        };
@@ -70,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [MemberData("LargeUploadData")]
-        public async Task LargeUpload(long? maxRequestBufferSize, bool sendContentLengthHeader, bool ssl, bool expectPause)
+        public async Task LargeUpload(long? maxRequestBufferSize, bool ssl, bool expectPause)
         {
             // Parameters
             var data = new byte[_dataLength];
@@ -91,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var socket = CreateSocket(port))
                 using (var stream = await CreateStreamAsync(socket, ssl, host.GetHost()))
                 {
-                    await WritePostRequestHeaders(stream, sendContentLengthHeader ? (int?)data.Length : null);
+                    await WritePostRequestHeaders(stream, data.Length);
 
                     var bytesWritten = 0;
 
@@ -236,15 +233,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             return socket;
         }
 
-        private static async Task WritePostRequestHeaders(Stream stream, int? contentLength)
+        private static async Task WritePostRequestHeaders(Stream stream, int contentLength)
         {
             using (var writer = new StreamWriter(stream, Encoding.ASCII, bufferSize: 1024, leaveOpen: true))
             {
                 await writer.WriteAsync("POST / HTTP/1.0\r\n");
-                if (contentLength.HasValue)
-                {
-                    await writer.WriteAsync($"Content-Length: {contentLength.Value}\r\n");
-                }
+                await writer.WriteAsync($"Content-Length: {contentLength}\r\n");
                 await writer.WriteAsync("\r\n");
             }
         }
