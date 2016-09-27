@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Http
 {
-    public static class HttpMethod
+    public static class HttpMethods
     {
         public static readonly string Connect = "CONNECT";
         public static readonly string Delete = "DELETE";
