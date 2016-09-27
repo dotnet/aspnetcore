@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.TestHost
             }));
 
             HttpMessageInvoker invoker = new HttpMessageInvoker(handler);
-            HttpRequestMessage message = new HttpRequestMessage(System.Net.Http.HttpMethod.Post, "https://example.com/");
+            HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
             message.Content = new StringContent("Hello World");
 
             HttpResponseMessage response = await invoker.SendAsync(message, CancellationToken.None);

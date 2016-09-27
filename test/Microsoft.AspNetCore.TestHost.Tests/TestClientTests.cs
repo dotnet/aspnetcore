@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.TestHost
         {
             // Arrange
             // This logger will attempt to access information from HttpRequest once the HttpContext is createds
-            var logger = new VerifierLogger();
+            var logger = new VerifierLogger(); 
             RequestDelegate appDelegate = async ctx =>
             {
                 if (ctx.WebSockets.IsWebSocketRequest)
@@ -356,7 +356,7 @@ namespace Microsoft.AspNetCore.TestHost
             var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
             var server = new TestServer(builder);
             var client = server.CreateClient();
-            var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "http://localhost:12345");
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:12345");
             var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
             // Abort Request
             response.Dispose();
