@@ -1,31 +1,28 @@
 {
-    "version": "0.1.0-*",
-    "buildOptions": {
-        "warningsAsErrors": true,
-        "keyFile": "../../tools/Key.snk",
-        "xmlDoc": true
+  "version": "0.1.0-*",
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk",
+    "xmlDoc": true
+  },
+  "description": "ASP.NET Core middleware for HTTP Response compression.",
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/basicmiddleware"
     },
-    "description": "ASP.NET Core middleware for HTTP Response compression.",
-    "packOptions": {
-        "repository": {
-            "type": "git",
-            "url": "git://github.com/aspnet/basicmiddleware"
-        },
-        "tags": [
-            "aspnetcore"
-        ]
-    },
-    "dependencies": {
-        "Microsoft.AspNetCore.Http.Abstractions": "1.1.0-*",
-        "Microsoft.Extensions.Options": "1.1.0-*",
-        "Microsoft.Net.Http.Headers": "1.1.0-*"
-    },
-    "frameworks": {
-        "net451": {},
-        "netstandard1.3": {
-            "dependencies": {
-                "System.IO.Compression": "4.1.0-*"
-            }
-        }
-    }
+    "tags": [
+      "aspnetcore"
+    ]
+  },
+  "dependencies": {
+    "Microsoft.AspNetCore.Http.Abstractions": "1.1.0-*",
+    "Microsoft.Extensions.Options": "1.1.0-*",
+    "Microsoft.Net.Http.Headers": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
+  },
+  "frameworks": {
+    "net451": {},
+    "netstandard1.3": {}
+  }
 }

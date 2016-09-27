@@ -1,29 +1,29 @@
-﻿{
-    "dependencies": {
-        "Microsoft.AspNetCore.ResponseCompression": "0.1.0-*",
-        "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*"
-    },
-    "buildOptions": {
-        "emitEntryPoint": true
-    },
-    "frameworks": {
-        "net451": {},
-        "netcoreapp1.0": {
-            "dependencies": {
-                "Microsoft.NETCore.App": {
-                    "version": "1.0.0-*",
-                    "type": "platform"
-                }
-            }
+{
+  "dependencies": {
+    "Microsoft.AspNetCore.ResponseCompression": "0.1.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*"
+  },
+  "buildOptions": {
+    "emitEntryPoint": true
+  },
+  "frameworks": {
+    "net451": {},
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.1.0-*",
+          "type": "platform"
         }
-    },
-    "publish": {
-        "exclude": [
-            "node_modules",
-            "bower_components",
-            "**.xproj",
-            "**.user",
-            "**.vspscc"
-        ]
+      }
     }
+  },
+  "publish": {
+    "exclude": [
+      "node_modules",
+      "bower_components",
+      "**.xproj",
+      "**.user",
+      "**.vspscc"
+    ]
+  }
 }
