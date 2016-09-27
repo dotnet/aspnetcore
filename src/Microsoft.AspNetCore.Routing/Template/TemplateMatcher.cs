@@ -82,12 +82,17 @@ namespace Microsoft.AspNetCore.Routing.Template
             //
             // On the second pass, we're almost certainly going to match the URL, so go ahead and allocate the 'values'
             // and start capturing strings. 
-            foreach (var requestSegment in pathTokenizer)
+            foreach (var pathSegment in pathTokenizer)
             {
-                var routeSegment = Template.GetSegment(i++);
-                if (routeSegment == null && requestSegment.Length > 0)
+                if (pathSegment.Length == 0)
                 {
-                    // If pathSegment is null, then we're out of route segments. All we can match is the empty
+                    return false;
+                }
+
+                var routeSegment = Template.GetSegment(i++);
+                if (routeSegment == null && pathSegment.Length > 0)
+                {
+                    // If routeSegment is null, then we're out of route segments. All we can match is the empty
                     // string.
                     return false;
                 }
@@ -95,7 +100,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 {
                     // This is a literal segment, so we need to match the text, or the route isn't a match.
                     var part = routeSegment.Parts[0];
-                    if (!requestSegment.Equals(part.Text, StringComparison.OrdinalIgnoreCase))
+                    if (!pathSegment.Equals(part.Text, StringComparison.OrdinalIgnoreCase))
                     {
                         return false;
                     }
@@ -111,7 +116,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 {
                     // For a parameter, validate that it's a has some length, or we have a default, or it's optional.
                     var part = routeSegment.Parts[0];
-                    if (requestSegment.Length == 0 &&
+                    if (pathSegment.Length == 0 &&
                         !_hasDefaultValue[i] &&
                         !part.IsOptional)
                     {
@@ -186,7 +191,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                     else
                     {
                         // It's ok for a catch-all to produce a null value, so we don't check _hasDefaultValue.
-                        values[part.Name] =_defaultValues[i];
+                        values[part.Name] = _defaultValues[i];
                     }
 
                     // A catch-all has to be the last part, so we're done.
@@ -228,7 +233,7 @@ namespace Microsoft.AspNetCore.Routing.Template
 
                 var part = routeSegment.Parts[0];
                 Debug.Assert(part.IsParameter);
-   
+
                 // It's ok for a catch-all to produce a null value
                 if (_hasDefaultValue[i] || part.IsCatchAll)
                 {

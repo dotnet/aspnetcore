@@ -991,6 +991,107 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             Assert.False(values.ContainsKey("id"));
         }
 
+        [Theory]
+        [InlineData("///")]
+        [InlineData("/a//")]
+        [InlineData("/a/b//")]
+        [InlineData("//b//")]
+        [InlineData("///c")]
+        [InlineData("///c/")]
+        public void TryMatch_MultipleOptionalParameters_WithEmptyIntermediateSegmentsDoesNotMatch(string url)
+        {
+            // Arrange
+            var route = CreateMatcher("{controller?}/{action?}/{id?}");
+
+            var values = new RouteValueDictionary();
+
+            // Act
+            var match = route.TryMatch(url, values);
+
+            // Assert
+            Assert.False(match);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("/")]
+        [InlineData("/a")]
+        [InlineData("/a/")]
+        [InlineData("/a/b")]
+        [InlineData("/a/b/")]
+        [InlineData("/a/b/c")]
+        [InlineData("/a/b/c/")]
+        public void TryMatch_MultipleOptionalParameters_WithIncrementalOptionalValues(string url)
+        {
+            // Arrange
+            var route = CreateMatcher("{controller?}/{action?}/{id?}");
+
+            var values = new RouteValueDictionary();
+
+            // Act
+            var match = route.TryMatch(url, values);
+
+            // Assert
+            Assert.True(match);
+        }
+
+        [Theory]
+        [InlineData("///")]
+        [InlineData("////")]
+        [InlineData("/a//")]
+        [InlineData("/a///")]
+        [InlineData("//b/")]
+        [InlineData("//b//")]
+        [InlineData("///c")]
+        [InlineData("///c/")]
+        public void TryMatch_MultipleParameters_WithEmptyValues(string url)
+        {
+            // Arrange
+            var route = CreateMatcher("{controller}/{action}/{id}");
+
+            var values = new RouteValueDictionary();
+
+            // Act
+            var match = route.TryMatch(url, values);
+
+            // Assert
+            Assert.False(match);
+        }
+
+        [Theory]
+        [InlineData("/a/b/c//")]
+        [InlineData("/a/b/c/////")]
+        public void TryMatch_CatchAllParameters_WithEmptyValuesAtTheEnd(string url)
+        {
+            // Arrange
+            var route = CreateMatcher("{controller}/{action}/{*id}");
+
+            var values = new RouteValueDictionary();
+
+            // Act
+            var match = route.TryMatch(url, values);
+
+            // Assert
+            Assert.True(match);
+        }
+
+        [Theory]
+        [InlineData("/a/b//")]
+        [InlineData("/a/b///c")]
+        public void TryMatch_CatchAllParameters_WithEmptyValues(string url)
+        {
+            // Arrange
+            var route = CreateMatcher("{controller}/{action}/{*id}");
+
+            var values = new RouteValueDictionary();
+
+            // Act
+            var match = route.TryMatch(url, values);
+
+            // Assert
+            Assert.False(match);
+        }
+
         private TemplateMatcher CreateMatcher(string template, object defaults = null)
         {
             return new TemplateMatcher(
@@ -1006,7 +1107,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         {
             // Arrange
             var matcher = new TemplateMatcher(
-                TemplateParser.Parse(template), 
+                TemplateParser.Parse(template),
                 defaults ?? new RouteValueDictionary());
 
             var values = new RouteValueDictionary();

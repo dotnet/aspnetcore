@@ -340,6 +340,127 @@ namespace Microsoft.AspNetCore.Routing.Tree
         }
 
         [Theory]
+        [InlineData("///")]
+        [InlineData("/a//")]
+        [InlineData("/a/b//")]
+        [InlineData("//b//")]
+        [InlineData("///c")]
+        [InlineData("///c/")]
+        public async Task TryMatch_MultipleOptionalParameters_WithEmptyIntermediateSegmentsDoesNotMatch(string url)
+        {
+            // Arrange
+            var builder = CreateBuilder();
+
+            MapInboundEntry(builder, "{controller?}/{action?}/{id?}");
+
+            var route = builder.Build();
+
+            var context = CreateRouteContext(url);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Null(context.Handler);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("/")]
+        [InlineData("/a")]
+        [InlineData("/a/")]
+        [InlineData("/a/b")]
+        [InlineData("/a/b/")]
+        [InlineData("/a/b/c")]
+        [InlineData("/a/b/c/")]
+        public async Task TryMatch_MultipleOptionalParameters_WithIncrementalOptionalValues(string url)
+        {
+            // Arrange
+            var builder = CreateBuilder();
+
+            MapInboundEntry(builder, "{controller?}/{action?}/{id?}");
+
+            var route = builder.Build();
+
+            var context = CreateRouteContext(url);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.NotNull(context.Handler);
+        }
+
+        [Theory]
+        [InlineData("///")]
+        [InlineData("////")]
+        [InlineData("/a//")]
+        [InlineData("/a///")]
+        [InlineData("//b/")]
+        [InlineData("//b//")]
+        [InlineData("///c")]
+        [InlineData("///c/")]
+        public async Task TryMatch_MultipleParameters_WithEmptyValues(string url)
+        {
+            // Arrange
+            var builder = CreateBuilder();
+
+            MapInboundEntry(builder, "{controller}/{action}/{id}");
+
+            var route = builder.Build();
+
+            var context = CreateRouteContext(url);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Null(context.Handler);
+        }
+
+        [Theory]
+        [InlineData("/a/b/c//")]
+        [InlineData("/a/b/c/////")]
+        public async Task TryMatch_CatchAllParameters_WithEmptyValuesAtTheEnd(string url)
+        {
+            // Arrange
+            var builder = CreateBuilder();
+
+            MapInboundEntry(builder, "{controller}/{action}/{*id}");
+
+            var route = builder.Build();
+
+            var context = CreateRouteContext(url);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.NotNull(context.Handler);
+        }
+
+        [Theory]
+        [InlineData("/a/b//")]
+        [InlineData("/a/b///c")]
+        public async Task TryMatch_CatchAllParameters_WithEmptyValues(string url)
+        {
+            // Arrange
+            var builder = CreateBuilder();
+
+            MapInboundEntry(builder, "{controller}/{action}/{*id}");
+
+            var route = builder.Build();
+
+            var context = CreateRouteContext(url);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Null(context.Handler);
+        }
+
+        [Theory]
         [InlineData("{*path}", "/a", "a")]
         [InlineData("{*path}", "/a/b/c", "a/b/c")]
         [InlineData("a/{*path}", "/a/b", "b")]

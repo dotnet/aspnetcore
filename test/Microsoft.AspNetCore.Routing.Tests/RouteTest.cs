@@ -1575,6 +1575,34 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Equal("RouteName", name);
         }
 
+        [Theory]
+        [InlineData("///")]
+        [InlineData("/a//")]
+        [InlineData("/a/b//")]
+        [InlineData("//b//")]
+        [InlineData("///c")]
+        [InlineData("///c/")]
+        public async Task RouteAsync_MultipleOptionalParameters_WithEmptyIntermediateSegmentsDoesNotMatch(string url)
+        {
+            // Arrange
+            var builder = CreateRouteBuilder();
+
+            builder.MapRoute(name: null,
+                    template: "{controller?}/{action?}/{id?}",
+                    defaults: null,
+                    constraints: null);
+
+            var route = builder.Build();
+
+            var context = CreateRouteContext(url);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Null(context.Handler);
+        }
+
         // DataTokens test data for TemplateRoute.GetVirtualPath
         public static IEnumerable<object[]> DataTokensTestData
         {
