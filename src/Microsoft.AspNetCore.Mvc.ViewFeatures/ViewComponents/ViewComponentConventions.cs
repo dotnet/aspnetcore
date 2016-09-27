@@ -3,6 +3,7 @@
 
 using System;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
@@ -82,7 +83,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             if (!typeInfo.IsClass ||
                 !typeInfo.IsPublic ||
                 typeInfo.IsAbstract ||
-                typeInfo.ContainsGenericParameters)
+                typeInfo.ContainsGenericParameters ||
+                typeInfo.IsDefined(typeof(NonViewComponentAttribute)))
             {
                 return false;
             }

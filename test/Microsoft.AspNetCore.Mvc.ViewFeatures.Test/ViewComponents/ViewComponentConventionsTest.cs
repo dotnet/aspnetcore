@@ -3,6 +3,7 @@
 
 using System;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ViewComponentConventionsTestClasses;
 using Xunit;
 
@@ -41,6 +42,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
 
         // Value types cannot be view components
         [InlineData(typeof(int), false)]
+
+        // If it has NonViewComponent it's not a view component
+        [InlineData(typeof(NonViewComponentAttributeViewComponent), false)]
+        [InlineData(typeof(ChildOfNonViewComponent), false)]
         public void IsComponent(Type type, bool expected)
         {
             // Arrange & Act
@@ -124,6 +129,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponentConventionsTestClasses
     public class Nada
     {
     }
+
+    [NonViewComponent]
+    public class NonViewComponentAttributeViewComponent
+    { }
+
+    public class ChildOfNonViewComponent : NonViewComponentAttributeViewComponent
+    { }
 
     public class NamingConventionViewComponent
     {
