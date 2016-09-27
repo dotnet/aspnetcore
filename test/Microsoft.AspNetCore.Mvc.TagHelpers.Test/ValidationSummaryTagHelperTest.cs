@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -96,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
         [Theory]
         [MemberData(nameof(ProcessAsync_GeneratesExpectedOutput_WithNoErrorsData))]
-        public async Task ProcessAsync_DoesNothingIfClientSideValiationDisabled_WithNoErrorsData(
+        public async Task ProcessAsync_SuppressesOutput_IfClientSideValiationDisabled_WithNoErrorsData(
             ModelStateDictionary modelStateDictionary)
         {
             // Arrange
@@ -128,16 +129,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             await validationSummaryTagHelper.ProcessAsync(context, output);
 
             // Assert
-            Assert.Equal("div", output.TagName);
+            Assert.Null(output.TagName);
             Assert.Empty(output.Attributes);
-            Assert.False(output.IsContentModified);
-            Assert.False(output.PreContent.IsModified);
-            Assert.False(output.PreElement.IsModified);
-            Assert.False(output.PostContent.IsModified);
-            Assert.False(output.PostElement.IsModified);
+            Assert.Empty(HtmlContentUtilities.HtmlContentToString(output));
         }
 
-        public static TheoryData<string, ModelStateDictionary> ProcessAsync_DoesNothingIfModelOnly_WithNoModelErrorData
+        public static TheoryData<string, ModelStateDictionary> ProcessAsync_SuppressesOutput_IfModelOnlyWithNoModelErrorData
         {
             get
             {
@@ -165,8 +162,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Theory]
-        [MemberData(nameof(ProcessAsync_DoesNothingIfModelOnly_WithNoModelErrorData))]
-        public async Task ProcessAsync_DoesNothingIfModelOnly_WithNoModelError(
+        [MemberData(nameof(ProcessAsync_SuppressesOutput_IfModelOnlyWithNoModelErrorData))]
+        public async Task ProcessAsync_SuppressesOutput_IfModelOnly_WithNoModelError(
             string prefix,
             ModelStateDictionary modelStateDictionary)
         {
@@ -199,13 +196,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             await validationSummaryTagHelper.ProcessAsync(context, output);
 
             // Assert
-            Assert.Equal("div", output.TagName);
+            Assert.Null(output.TagName);
             Assert.Empty(output.Attributes);
-            Assert.False(output.IsContentModified);
-            Assert.False(output.PreContent.IsModified);
-            Assert.False(output.PreElement.IsModified);
-            Assert.False(output.PostContent.IsModified);
-            Assert.False(output.PostElement.IsModified);
+            Assert.Empty(HtmlContentUtilities.HtmlContentToString(output));
         }
 
         [Theory]

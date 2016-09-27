@@ -104,11 +104,15 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 message: null,
                 headerTag: null,
                 htmlAttributes: null);
-            if (tagBuilder != null)
+            if (tagBuilder == null)
             {
-                output.MergeAttributes(tagBuilder);
-                output.PostContent.AppendHtml(tagBuilder.InnerHtml);
+                // The generator determined no element was necessary.
+                output.SuppressOutput();
+                return;
             }
+
+            output.MergeAttributes(tagBuilder);
+            output.PostContent.AppendHtml(tagBuilder.InnerHtml);
         }
     }
 }
