@@ -33,7 +33,7 @@ export const reducer: Reducer<CounterState> = (state, action) => {
     if (isActionType(action, IncrementCount)) {
         return { count: state.count + 1 };
     }
-    
+
     // For unrecognized actions (or in cases where actions have no effect), must return the existing state
     //  (or default initial state if none was supplied)
     return state || { count: 0 };

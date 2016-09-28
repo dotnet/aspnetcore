@@ -12,7 +12,6 @@
     "bootstrap": "^3.3.6",
     "css-loader": "^0.23.1",
     "domain-task": "^2.0.0",
-    "extendify": "^1.0.0",
     "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.8.5",
     "jquery": "^2.2.1",
@@ -28,8 +27,9 @@
     "ts-loader": "^0.8.1",
     "typescript": "^1.8.2",
     "url-loader": "^0.5.7",
-    "webpack-externals-plugin": "^1.0.0",
     "webpack": "^1.12.14",
-    "webpack-hot-middleware": "^2.10.0"
+    "webpack-externals-plugin": "^1.0.0",
+    "webpack-hot-middleware": "^2.10.0",
+    "webpack-merge": "^0.14.1"
   }
 }

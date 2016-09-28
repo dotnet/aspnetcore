@@ -51,16 +51,11 @@
 
   "publishOptions": {
     "include": [
-      ".babelrc",
       "appsettings.json",
-      "ClientApp",
+      "ClientApp/dist",
       "node_modules",
-      "typings",
       "Views",
-      "tsconfig.json",
-      "tsd.json",
       "web.config",
-      "webpack.*.js",
       "wwwroot"
     ]
   },
@@ -68,8 +63,8 @@
   "scripts": {
     "prepublish": [
       "npm install",
-      "node node_modules/webpack/bin/webpack.js --config webpack.config.vendor.js",
-      "node node_modules/webpack/bin/webpack.js"
+      "node node_modules/webpack/bin/webpack.js --config webpack.config.vendor.js --env.prod",
+      "node node_modules/webpack/bin/webpack.js --env.prod"
     ],
     "postpublish": [ "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%" ]
   },

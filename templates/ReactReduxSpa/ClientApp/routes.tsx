@@ -12,3 +12,9 @@ export default <Route component={ Layout }>
         <Route path='(:startDateIndex)' /> { /* Optional route segment that does not affect NavMenu highlighting */ }
     </Route>
 </Route>;
+
+// Allow Hot Module Reloading
+declare var module: any;
+if (module.hot) {
+    module.hot.accept();
+}
