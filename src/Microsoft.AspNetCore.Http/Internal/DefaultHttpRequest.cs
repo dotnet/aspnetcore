@@ -12,6 +12,12 @@ namespace Microsoft.AspNetCore.Http.Internal
 {
     public class DefaultHttpRequest : HttpRequest
     {
+        // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
+        private readonly static Func<IFeatureCollection, IHttpRequestFeature> _nullRequestFeature = f => null;
+        private readonly static Func<IFeatureCollection, IQueryFeature> _newQueryFeature = f => new QueryFeature(f);
+        private readonly static Func<HttpRequest, IFormFeature> _newFormFeature = r => new FormFeature(r);
+        private readonly static Func<IFeatureCollection, IRequestCookiesFeature> _newRequestCookiesFeature = f => new RequestCookiesFeature(f);
+
         private HttpContext _context;
         private FeatureReferences<FeatureInterfaces> _features;
 
@@ -35,16 +41,16 @@ namespace Microsoft.AspNetCore.Http.Internal
         public override HttpContext HttpContext => _context;
 
         private IHttpRequestFeature HttpRequestFeature =>
-            _features.Fetch(ref _features.Cache.Request, f => null);
+            _features.Fetch(ref _features.Cache.Request, _nullRequestFeature);
 
         private IQueryFeature QueryFeature =>
-            _features.Fetch(ref _features.Cache.Query, f => new QueryFeature(f));
+            _features.Fetch(ref _features.Cache.Query, _newQueryFeature);
 
         private IFormFeature FormFeature =>
-            _features.Fetch(ref _features.Cache.Form, this, f => new FormFeature(f));
+            _features.Fetch(ref _features.Cache.Form, this, _newFormFeature);
 
         private IRequestCookiesFeature RequestCookiesFeature =>
-            _features.Fetch(ref _features.Cache.Cookies, f => new RequestCookiesFeature(f));
+            _features.Fetch(ref _features.Cache.Cookies, _newRequestCookiesFeature);
 
         public override PathString PathBase
         {

@@ -12,6 +12,10 @@ namespace Microsoft.AspNetCore.Http.Internal
 {
     public class DefaultWebSocketManager : WebSocketManager
     {
+        // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
+        private readonly static Func<IFeatureCollection, IHttpRequestFeature> _nullRequestFeature = f => null;
+        private readonly static Func<IFeatureCollection, IHttpWebSocketFeature> _nullWebSocketFeature = f => null;
+
         private FeatureReferences<FeatureInterfaces> _features;
 
         public DefaultWebSocketManager(IFeatureCollection features)
@@ -30,10 +34,10 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
         private IHttpRequestFeature HttpRequestFeature =>
-            _features.Fetch(ref _features.Cache.Request, f => null);
+            _features.Fetch(ref _features.Cache.Request, _nullRequestFeature);
 
         private IHttpWebSocketFeature WebSocketFeature =>
-            _features.Fetch(ref _features.Cache.WebSockets, f => null);
+            _features.Fetch(ref _features.Cache.WebSockets, _nullWebSocketFeature);
 
         public override bool IsWebSocketRequest
         {

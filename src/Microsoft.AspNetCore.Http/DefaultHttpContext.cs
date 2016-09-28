@@ -15,6 +15,15 @@ namespace Microsoft.AspNetCore.Http
 {
     public class DefaultHttpContext : HttpContext
     {
+        // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
+        private readonly static Func<IFeatureCollection, IItemsFeature> _newItemsFeature = f => new ItemsFeature();
+        private readonly static Func<IFeatureCollection, IServiceProvidersFeature> _newServiceProvidersFeature = f => new ServiceProvidersFeature();
+        private readonly static Func<IFeatureCollection, IHttpAuthenticationFeature> _newHttpAuthenticationFeature = f => new HttpAuthenticationFeature();
+        private readonly static Func<IFeatureCollection, IHttpRequestLifetimeFeature> _newHttpRequestLifetimeFeature = f => new HttpRequestLifetimeFeature();
+        private readonly static Func<IFeatureCollection, ISessionFeature> _newSessionFeature = f => new DefaultSessionFeature();
+        private readonly static Func<IFeatureCollection, ISessionFeature> _nullSessionFeature = f => null;
+        private readonly static Func<IFeatureCollection, IHttpRequestIdentifierFeature> _newHttpRequestIdentifierFeature = f => new HttpRequestIdentifierFeature();
+
         private FeatureReferences<FeatureInterfaces> _features;
 
         private HttpRequest _request;
@@ -73,26 +82,26 @@ namespace Microsoft.AspNetCore.Http
         }
 
         private IItemsFeature ItemsFeature =>
-            _features.Fetch(ref _features.Cache.Items, f => new ItemsFeature());
+            _features.Fetch(ref _features.Cache.Items, _newItemsFeature);
 
         private IServiceProvidersFeature ServiceProvidersFeature =>
-            _features.Fetch(ref _features.Cache.ServiceProviders, f => new ServiceProvidersFeature());
+            _features.Fetch(ref _features.Cache.ServiceProviders, _newServiceProvidersFeature);
 
         private IHttpAuthenticationFeature HttpAuthenticationFeature =>
-            _features.Fetch(ref _features.Cache.Authentication, f => new HttpAuthenticationFeature());
+            _features.Fetch(ref _features.Cache.Authentication, _newHttpAuthenticationFeature);
 
         private IHttpRequestLifetimeFeature LifetimeFeature =>
-            _features.Fetch(ref _features.Cache.Lifetime, f => new HttpRequestLifetimeFeature());
+            _features.Fetch(ref _features.Cache.Lifetime, _newHttpRequestLifetimeFeature);
 
         private ISessionFeature SessionFeature =>
-            _features.Fetch(ref _features.Cache.Session, f => new DefaultSessionFeature());
+            _features.Fetch(ref _features.Cache.Session, _newSessionFeature);
 
         private ISessionFeature SessionFeatureOrNull =>
-            _features.Fetch(ref _features.Cache.Session, f => null);
+            _features.Fetch(ref _features.Cache.Session, _nullSessionFeature);
 
 
         private IHttpRequestIdentifierFeature RequestIdentifierFeature =>
-            _features.Fetch(ref _features.Cache.RequestIdentifier, f => new HttpRequestIdentifierFeature());
+            _features.Fetch(ref _features.Cache.RequestIdentifier, _newHttpRequestIdentifierFeature);
 
         public override IFeatureCollection Features => _features.Collection;
 

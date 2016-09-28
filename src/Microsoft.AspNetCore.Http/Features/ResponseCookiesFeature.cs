@@ -13,6 +13,9 @@ namespace Microsoft.AspNetCore.Http.Features
     /// </summary>
     public class ResponseCookiesFeature : IResponseCookiesFeature
     {
+        // Lambda hoisted to static readonly field to improve inlining https://github.com/dotnet/roslyn/issues/13624
+        private readonly static Func<IFeatureCollection, IHttpResponseFeature> _nullResponseFeature = f => null;
+
         // Object pool will be null only in test scenarios e.g. if code news up a DefaultHttpContext.
         private readonly ObjectPool<StringBuilder> _builderPool;
 
@@ -50,7 +53,7 @@ namespace Microsoft.AspNetCore.Http.Features
             _builderPool = builderPool;
         }
 
-        private IHttpResponseFeature HttpResponseFeature => _features.Fetch(ref _features.Cache, f => null);
+        private IHttpResponseFeature HttpResponseFeature => _features.Fetch(ref _features.Cache, _nullResponseFeature);
 
         /// <inheritdoc />
         public IResponseCookies Cookies

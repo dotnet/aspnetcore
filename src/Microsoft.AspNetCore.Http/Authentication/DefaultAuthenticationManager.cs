@@ -13,6 +13,9 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
 {
     public class DefaultAuthenticationManager : AuthenticationManager
     {
+        // Lambda hoisted to static readonly field to improve inlining https://github.com/dotnet/roslyn/issues/13624
+        private readonly static Func<IFeatureCollection, IHttpAuthenticationFeature> _newAuthenticationFeature = f => new HttpAuthenticationFeature();
+
         private HttpContext _context;
         private FeatureReferences<IHttpAuthenticationFeature> _features;
 
@@ -35,7 +38,7 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
         public override HttpContext HttpContext => _context;
 
         private IHttpAuthenticationFeature HttpAuthenticationFeature =>
-            _features.Fetch(ref _features.Cache, f => new HttpAuthenticationFeature());
+            _features.Fetch(ref _features.Cache, _newAuthenticationFeature);
 
         public override IEnumerable<AuthenticationDescription> GetAuthenticationSchemes()
         {

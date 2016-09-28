@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -11,6 +12,10 @@ namespace Microsoft.AspNetCore.Http.Internal
 {
     public class DefaultConnectionInfo : ConnectionInfo
     {
+        // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
+        private readonly static Func<IFeatureCollection, IHttpConnectionFeature> _newHttpConnectionFeature = f => new HttpConnectionFeature();
+        private readonly static Func<IFeatureCollection, ITlsConnectionFeature> _newTlsConnectionFeature = f => new TlsConnectionFeature();
+
         private FeatureReferences<FeatureInterfaces> _features;
 
         public DefaultConnectionInfo(IFeatureCollection features)
@@ -29,10 +34,10 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
         private IHttpConnectionFeature HttpConnectionFeature =>
-            _features.Fetch(ref _features.Cache.Connection, f => new HttpConnectionFeature());
+            _features.Fetch(ref _features.Cache.Connection, _newHttpConnectionFeature);
 
         private ITlsConnectionFeature TlsConnectionFeature=>
-            _features.Fetch(ref _features.Cache.TlsConnection, f => new TlsConnectionFeature());
+            _features.Fetch(ref _features.Cache.TlsConnection, _newTlsConnectionFeature);
 
         public override IPAddress RemoteIpAddress
         {

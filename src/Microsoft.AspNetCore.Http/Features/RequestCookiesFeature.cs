@@ -11,6 +11,9 @@ namespace Microsoft.AspNetCore.Http.Features
 {
     public class RequestCookiesFeature : IRequestCookiesFeature
     {
+        // Lambda hoisted to static readonly field to improve inlining https://github.com/dotnet/roslyn/issues/13624
+        private readonly static Func<IFeatureCollection, IHttpRequestFeature> _nullRequestFeature = f => null;
+
         private FeatureReferences<IHttpRequestFeature> _features;
         private StringValues _original;
         private IRequestCookieCollection _parsedValues;
@@ -36,7 +39,7 @@ namespace Microsoft.AspNetCore.Http.Features
         }
 
         private IHttpRequestFeature HttpRequestFeature =>
-            _features.Fetch(ref _features.Cache, f => null);
+            _features.Fetch(ref _features.Cache, _nullRequestFeature);
 
         public IRequestCookieCollection Cookies
         {

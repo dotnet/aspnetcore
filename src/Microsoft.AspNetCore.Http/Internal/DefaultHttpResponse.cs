@@ -11,6 +11,10 @@ namespace Microsoft.AspNetCore.Http.Internal
 {
     public class DefaultHttpResponse : HttpResponse
     {
+        // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
+        private readonly static Func<IFeatureCollection, IHttpResponseFeature> _nullResponseFeature = f => null;
+        private readonly static Func<IFeatureCollection, IResponseCookiesFeature> _newResponseCookiesFeature = f => new ResponseCookiesFeature(f);
+
         private HttpContext _context;
         private FeatureReferences<FeatureInterfaces> _features;
 
@@ -32,10 +36,10 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
         private IHttpResponseFeature HttpResponseFeature =>
-            _features.Fetch(ref _features.Cache.Response, f => null);
+            _features.Fetch(ref _features.Cache.Response, _nullResponseFeature);
 
         private IResponseCookiesFeature ResponseCookiesFeature =>
-            _features.Fetch(ref _features.Cache.Cookies, f => new ResponseCookiesFeature(f));
+            _features.Fetch(ref _features.Cache.Cookies, _newResponseCookiesFeature);
 
 
         public override HttpContext HttpContext { get { return _context; } }
