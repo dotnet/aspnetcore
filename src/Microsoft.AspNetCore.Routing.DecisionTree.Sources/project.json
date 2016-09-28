@@ -15,7 +15,9 @@
   "frameworks": {
     "net451": {},
     "netstandard1.3": {
-      "dependencies": {}
+      "dependencies": {
+        "NETStandard.Library": "1.6.1-*"
+      }
     }
   }
 }
