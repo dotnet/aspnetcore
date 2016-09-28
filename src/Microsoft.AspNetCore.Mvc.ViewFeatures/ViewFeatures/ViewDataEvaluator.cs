@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 return null;
             }
 
-            return new ViewDataInfo(container, propertyInfo, () => propertyInfo.GetValue(container));
+            return new ViewDataInfo(container, propertyInfo);
         }
 
         private struct ExpressionPair
