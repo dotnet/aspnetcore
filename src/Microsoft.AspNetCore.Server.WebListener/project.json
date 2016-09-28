@@ -9,12 +9,13 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Hosting": "1.1.0-*",
-    "Microsoft.Net.Http.Headers": "1.1.0-*",
-    "Microsoft.Net.Http.Server": "1.1.0-*",
     "Microsoft.Extensions.TaskCache.Sources": {
       "version": "1.1.0-*",
       "type": "build"
-    }
+    },
+    "Microsoft.Net.Http.Headers": "1.1.0-*",
+    "Microsoft.Net.Http.Server": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "buildOptions": {
     "allowUnsafe": true,
@@ -29,7 +30,7 @@
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "System.Security.Claims": "4.0.1-*"
+        "System.Security.Claims": "4.3.0-*"
       }
     }
   }
