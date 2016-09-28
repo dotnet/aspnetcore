@@ -23,5 +23,10 @@ namespace Microsoft.AspNetCore.Identity
         /// The type that will be used for this token provider.
         /// </summary>
         public Type ProviderType { get; }
+
+        /// <summary>
+        /// If specified, the instance to be used for the token provider.
+        /// </summary>
+        public object ProviderInstance { get; set; }
     }
 }

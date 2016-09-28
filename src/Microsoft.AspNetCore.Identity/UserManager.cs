@@ -98,7 +98,10 @@ namespace Microsoft.AspNetCore.Identity
                 _context = services.GetService<IHttpContextAccessor>()?.HttpContext;
                 foreach (var providerName in Options.Tokens.ProviderMap.Keys)
                 {
-                    var provider = services.GetRequiredService(Options.Tokens.ProviderMap[providerName].ProviderType) as IUserTwoFactorTokenProvider<TUser>;
+                    var description = Options.Tokens.ProviderMap[providerName];
+                    
+                    var provider = (description.ProviderInstance ?? services.GetRequiredService(description.ProviderType)) 
+                        as IUserTwoFactorTokenProvider<TUser>;
                     if (provider != null)
                     {
                         RegisterTokenProvider(providerName, provider);

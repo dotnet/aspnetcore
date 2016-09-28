@@ -623,6 +623,52 @@ namespace Microsoft.AspNetCore.Identity.Test
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetClaimsAsync(null));
         }
 
+        private class ATokenProvider : IUserTwoFactorTokenProvider<TestUser>
+        {
+            public Task<bool> CanGenerateTwoFactorTokenAsync(UserManager<TestUser> manager, TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<string> GenerateAsync(string purpose, UserManager<TestUser> manager, TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<bool> ValidateAsync(string purpose, string token, UserManager<TestUser> manager, TestUser user)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        [Fact]
+        public void UserManagerWillUseTokenProviderInstance()
+        {
+            var services = new ServiceCollection();
+            var provider = new ATokenProvider();
+            services.AddLogging()
+                .AddIdentity<TestUser, TestRole>(o => o.Tokens.ProviderMap.Add("A", new TokenProviderDescriptor(typeof(ATokenProvider))
+            {
+                ProviderInstance = provider
+            })).AddUserStore<NoopUserStore>();
+            var manager = services.BuildServiceProvider().GetService<UserManager<TestUser>>();
+            Assert.ThrowsAsync<NotImplementedException>(() => manager.GenerateUserTokenAsync(new TestUser(), "A", "purpose"));
+        }
+
+        [Fact]
+        public void UserManagerWillUseTokenProviderInstanceOverDefaults()
+        {
+            var services = new ServiceCollection();
+            var provider = new ATokenProvider();
+            services.AddLogging()
+                .AddIdentity<TestUser, TestRole>(o => o.Tokens.ProviderMap.Add(TokenOptions.DefaultProvider, new TokenProviderDescriptor(typeof(ATokenProvider))
+                {
+                    ProviderInstance = provider
+                })).AddUserStore<NoopUserStore>().AddDefaultTokenProviders();
+            var manager = services.BuildServiceProvider().GetService<UserManager<TestUser>>();
+            Assert.ThrowsAsync<NotImplementedException>(() => manager.GenerateUserTokenAsync(new TestUser(), TokenOptions.DefaultProvider, "purpose"));
+        }
+
         [Fact]
         public async Task TwoFactorStoreMethodsFailWhenStoreNotImplemented()
         {
