@@ -17,7 +17,8 @@
     "Microsoft.AspNetCore.Http.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.Caching.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
-    "Microsoft.Extensions.Options": "1.1.0-*"
+    "Microsoft.Extensions.Options": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "buildOptions": {
     "allowUnsafe": true,
@@ -30,10 +31,6 @@
   },
   "frameworks": {
     "net451": {},
-    "netstandard1.3": {
-      "dependencies": {
-        "System.Security.Cryptography.Algorithms": "4.2.0-*"
-      }
-    }
+    "netstandard1.3": {}
   }
 }
