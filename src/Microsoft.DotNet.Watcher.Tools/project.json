@@ -24,9 +24,8 @@
     },
     "Microsoft.NETCore.App": {
       "type": "platform",
-      "version": "1.0.0"
-    },
-    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0"
+      "version": "1.1.0-*"
+    }
   },
   "frameworks": {
     "netcoreapp1.0": {}

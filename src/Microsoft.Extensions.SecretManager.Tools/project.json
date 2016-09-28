@@ -19,16 +19,15 @@
     ]
   },
   "dependencies": {
-    "Microsoft.Extensions.Configuration.UserSecrets": "1.1.0-*",
     "Microsoft.Extensions.CommandLineUtils": "1.1.0-*",
+    "Microsoft.Extensions.Configuration.UserSecrets": "1.1.0-*",
     "Microsoft.Extensions.Logging": "1.1.0-*",
     "Microsoft.NETCore.App": {
-      "version": "1.0.0",
+      "version": "1.1.0-*",
       "type": "platform"
     },
     "Newtonsoft.Json": "9.0.1",
-    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0",
-    "System.Runtime.Serialization.Primitives": "4.1.1"
+    "System.Runtime.Serialization.Primitives": "4.3.0-*"
   },
   "frameworks": {
     "netcoreapp1.0": {}

@@ -19,7 +19,6 @@
         <dependency id="Microsoft.Extensions.Logging" version="$dep_3$" />
         <dependency id="Microsoft.Extensions.Logging.Console" version="$dep_4$" />
         <dependency id="Microsoft.NETCore.App" version="$dep_5$" />
-        <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="$dep_6$" />
       </group>
     </dependencies>
   </metadata>
