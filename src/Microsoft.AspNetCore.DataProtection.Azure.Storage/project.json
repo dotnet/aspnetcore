@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.DataProtection": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*",
     "WindowsAzure.Storage": "7.2.1"
   },
   "frameworks": {

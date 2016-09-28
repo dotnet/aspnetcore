@@ -3,7 +3,6 @@
   "buildOptions": {
     "emitEntryPoint": true
   },
-
   "dependencies": {
     "Microsoft.AspNetCore.DataProtection": "1.1.0-*",
     "Microsoft.AspNetCore.DataProtection.Azure.Storage": "1.0.0-*",
@@ -12,10 +11,9 @@
     "Microsoft.Extensions.Logging.Console": "1.1.0-*",
     "Microsoft.NETCore.App": {
       "type": "platform",
-      "version": "1.0.0"
+      "version": "1.1.0-*"
     }
   },
-
   "frameworks": {
     "netcoreapp1.0": {
       "imports": [

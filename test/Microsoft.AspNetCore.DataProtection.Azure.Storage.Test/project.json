@@ -5,18 +5,17 @@
     "Microsoft.AspNetCore.DataProtection.Azure.Storage": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
-    "xunit": "2.2.0-*",
-    "Moq": "4.6.36-*"
+    "Moq": "4.6.36-*",
+    "xunit": "2.2.0-*"
   },
   "frameworks": {
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
+          "version": "1.1.0-*",
           "type": "platform"
         },
-        "System.Diagnostics.Process": "4.1.0-*",
-        "System.Diagnostics.TraceSource": "4.0.0-*"
+        "System.Diagnostics.TraceSource": "4.3.0-*"
       },
       "imports": [
         "dnxcore50",

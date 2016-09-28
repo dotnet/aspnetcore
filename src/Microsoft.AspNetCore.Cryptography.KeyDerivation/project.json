@@ -12,17 +12,12 @@
     ]
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Cryptography.Internal": "1.1.0-*"
+    "Microsoft.AspNetCore.Cryptography.Internal": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {},
-    "netstandard1.3": {
-      "dependencies": {
-        "System.Runtime.Extensions": "4.1.0-*",
-        "System.Security.Cryptography.Algorithms": "4.2.0-*",
-        "System.Text.Encoding.Extensions": "4.0.11-*"
-      }
-    }
+    "netstandard1.3": {}
   },
   "buildOptions": {
     "allowUnsafe": true,
