@@ -77,11 +77,16 @@ function loadViaWebpackNoCache<T>(webpackConfigPath: string, modulePath: string)
             // load that via Webpack rather than as a regular CommonJS module.
             //
             // So, configure webpack-externals-plugin to 'whitelist' (i.e., not treat as external) any file
-            // that has an extension other than .js.
+            // that has an extension other than .js. Also, since some libraries such as font-awesome refer to
+            // their own files with cache-busting querystrings (e.g., (url('./something.css?v=4.1.2'))), we
+            // need to treat '?' as an alternative 'end of filename' marker.
             //
-            // This regex looks for at least one dot character that is *not* followed by "js<end>", but
-            // is followed by some series of non-dot characters followed by <end>:
-            whitelist: [/\.(?!js$)([^.]+$)/]
+            // The complex, awkward regex can be eliminated once webpack-externals-plugin merges
+            // https://github.com/liady/webpack-node-externals/pull/12
+            //
+            // This regex looks for at least one dot character that is *not* followed by "js<end-or-questionmark>", but
+            // is followed by some series of non-dot characters followed by <end-or-questionmark>:
+            whitelist: [/\.(?!js(\?|$))([^.]+(\?|$))/]
         }));
 
         // The CommonsChunkPlugin is not compatible with a CommonJS environment like Node, nor is it needed in that case
