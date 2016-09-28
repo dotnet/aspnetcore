@@ -52,14 +52,10 @@
   "publishOptions": {
     "include": [
       "appsettings.json",
-      "ClientApp",
+      "ClientApp/dist",
       "node_modules",
-      "typings",
       "Views",
-      "tsconfig.json",
-      "tsd.json",
       "web.config",
-      "webpack.*.js",
       "wwwroot"
     ]
   },
