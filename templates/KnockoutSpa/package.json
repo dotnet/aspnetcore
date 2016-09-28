@@ -7,7 +7,6 @@
     "bundle-loader": "^0.5.4",
     "crossroads": "^0.12.2",
     "css-loader": "^0.23.1",
-    "extendify": "^1.0.0",
     "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.8.5",
     "history": "^2.0.1",

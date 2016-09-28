@@ -1,5 +1,3 @@
-import 'bootstrap';
-import 'bootstrap/dist/css/bootstrap.css';
 import './css/site.css';
 import * as ko from 'knockout';
 import { createHistory } from 'history';
