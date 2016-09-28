@@ -10,3 +10,9 @@ export default <Route component={ Layout }>
     <Route path='/counter' components={{ body: Counter }} />
     <Route path='/fetchdata' components={{ body: FetchData }} />
 </Route>;
+
+// Allow Hot Module Reloading
+declare var module: any;
+if (module.hot) {
+    module.hot.accept();
+}
