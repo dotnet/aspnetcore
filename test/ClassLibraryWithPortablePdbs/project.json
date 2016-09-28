@@ -5,7 +5,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "System.Runtime": "4.1.0-*"
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "netstandard1.0": {}

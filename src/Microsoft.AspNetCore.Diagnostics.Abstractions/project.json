@@ -22,7 +22,7 @@
   "frameworks": {
     "netstandard1.0": {
       "dependencies": {
-        "System.Resources.ResourceManager": "4.0.1-*"
+        "NETStandard.Library": "1.6.1-*"
       }
     }
   }

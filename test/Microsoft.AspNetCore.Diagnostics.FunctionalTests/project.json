@@ -1,8 +1,8 @@
 {
   "dependencies": {
-    "dotnet-test-xunit": "2.2.0-*",
     "DatabaseErrorPageSample": "1.0.0",
     "DeveloperExceptionPageSample": "1.0.0",
+    "dotnet-test-xunit": "2.2.0-*",
     "ElmPageSample": "1.0.0",
     "ExceptionHandlerSample": "1.0.0",
     "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
@@ -17,7 +17,7 @@
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
+          "version": "1.1.0-*",
           "type": "platform"
         }
       }
