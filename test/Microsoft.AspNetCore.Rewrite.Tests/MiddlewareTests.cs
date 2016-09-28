@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         [Fact]
         public async Task CheckRewritePath()
         {
-            var options = new RewriteOptions().AddRewrite("(.*)", "http://example.com/$1");
+            var options = new RewriteOptions().AddRewrite("(.*)", "http://example.com/$1", skipRemainingRules: false);
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         [Fact]
         public async Task CheckIfEmptyStringRewriteCorrectly()
         {
-            var options = new RewriteOptions().AddRewrite("(.*)", "$1");
+            var options = new RewriteOptions().AddRewrite("(.*)", "$1", skipRemainingRules: false);
             var builder = new WebHostBuilder()
             .Configure(app =>
             {

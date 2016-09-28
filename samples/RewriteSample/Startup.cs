@@ -15,7 +15,7 @@ namespace RewriteSample
         {
             var options = new RewriteOptions()
                 .AddRedirect("(.*)/$", "$1")
-                .AddRewrite(@"app/(\d+)", "app?id=$1")
+                .AddRewrite(@"app/(\d+)", "app?id=$1", skipRemainingRules: false)
                 .AddRedirectToHttps(302, 5001)
                 .AddIISUrlRewrite(env.ContentRootFileProvider, "UrlRewrite.xml")
                 .AddApacheModRewrite(env.ContentRootFileProvider, "Rewrite.txt");
