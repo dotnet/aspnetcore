@@ -23,7 +23,8 @@
     "Microsoft.AspNetCore.DataProtection": "1.1.0-*",
     "Microsoft.AspNetCore.Http.Abstractions": "1.1.0-*",
     "Microsoft.AspNetCore.WebUtilities": "1.1.0-*",
-    "Microsoft.Extensions.ObjectPool": "1.1.0-*"
+    "Microsoft.Extensions.ObjectPool": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "netstandard1.3": {},
