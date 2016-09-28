@@ -1,9 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Newtonsoft.Json;
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.JsonPatch.Helpers
 {
@@ -51,11 +54,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Helpers
                     if (ContinueWithSubPath(memberExpression.Expression.NodeType, false))
                     {
                         var left = GetPath(memberExpression.Expression, false);
-                        return left + "/" + memberExpression.Member.Name;
+                        // Get property name, respecting JsonProperty attribute
+                        return left + "/" + GetPropertyNameFromMemberExpression(memberExpression);
                     }
                     else
                     {
-                        return memberExpression.Member.Name;
+                        // Get property name, respecting JsonProperty attribute                       
+                        return GetPropertyNameFromMemberExpression(memberExpression);
                     }
                 case ExpressionType.Parameter:
                     // Fits "x => x" (the whole document which is "" as JSON pointer)
@@ -63,6 +68,23 @@ namespace Microsoft.AspNetCore.JsonPatch.Helpers
                 default:
                     return string.Empty;
             }
+        }
+
+        private static string GetPropertyNameFromMemberExpression(MemberExpression memberExpression)
+        {
+            // if there's a JsonProperty attribute, we must return the PropertyName
+            // from the attribute rather than the member name 
+            var jsonPropertyAttribute =
+                memberExpression.Member.GetCustomAttribute(
+                typeof(JsonPropertyAttribute), true);
+
+            if (jsonPropertyAttribute == null)
+            {
+                return memberExpression.Member.Name;
+            }
+            // get value
+            var castedAttribute = (JsonPropertyAttribute)jsonPropertyAttribute;
+            return castedAttribute.PropertyName;
         }
 
         private static bool ContinueWithSubPath(ExpressionType expressionType, bool firstTime)
