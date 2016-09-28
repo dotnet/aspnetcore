@@ -19,14 +19,10 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "System.Text.Encodings.Web": "4.0.0-*"
+    "NETStandard.Library": "1.6.1-*",
+    "System.Text.Encodings.Web": "4.3.0-*"
   },
   "frameworks": {
-    "netstandard1.0": {
-      "dependencies": {
-        "System.Collections": "4.0.11-*",
-        "System.Resources.ResourceManager": "4.0.1-*"
-      }
-    }
+    "netstandard1.0": {}
   }
 }
