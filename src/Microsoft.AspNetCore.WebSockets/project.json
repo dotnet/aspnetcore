@@ -18,15 +18,11 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Http.Extensions": "1.1.0-*",
-    "Microsoft.Extensions.Options": "1.1.0-*"
+    "Microsoft.Extensions.Options": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {},
-    "netstandard1.3": {
-      "dependencies": {
-        "System.Text.Encoding.Extensions": "4.0.11",
-        "System.Threading.Timer": "4.0.1"
-      }
-    }
+    "netstandard1.3": {}
   }
 }

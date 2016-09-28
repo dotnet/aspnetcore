@@ -1,9 +1,9 @@
 {
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Microsoft.AspNetCore.WebSockets": "0.2.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
     "xunit": "2.2.0-*"
   },
   "testRunner": "xunit",
@@ -11,11 +11,11 @@
     "net451": {},
     "netcoreapp1.0": {
       "dependencies": {
-        "System.Net.WebSockets.Client": "4.0.0",
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
+          "version": "1.1.0-*",
           "type": "platform"
-        }
+        },
+        "System.Net.WebSockets.Client": "4.3.0-*"
       }
     }
   }

@@ -6,7 +6,7 @@
     "Microsoft.Extensions.Logging": "1.1.0-*",
     "Microsoft.Extensions.Logging.Console": "1.1.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.1.0-*",
-    "System.Diagnostics.FileVersionInfo": "4.0.0",
+    "System.Diagnostics.FileVersionInfo": "4.3.0-*",
     "xunit": "2.2.0-*"
   },
   "testRunner": "xunit",
@@ -14,7 +14,7 @@
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
+          "version": "1.1.0-*",
           "type": "platform"
         }
       }
