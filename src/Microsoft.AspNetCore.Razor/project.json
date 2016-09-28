@@ -24,19 +24,14 @@
     "Microsoft.Extensions.HashCodeCombiner.Sources": {
       "type": "build",
       "version": "1.1.0-*"
-    }
+    },
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "System.Diagnostics.Debug": "4.0.11-*",
-        "System.Linq": "4.1.0-*",
-        "System.Resources.ResourceManager": "4.0.1-*",
-        "System.Runtime.Extensions": "4.1.0-*",
-        "System.Security.Cryptography.Algorithms": "4.2.0-*",
-        "System.Threading": "4.0.11-*",
-        "System.Threading.Thread": "4.0.0-*"
+        "System.Threading.Thread": "4.3.0-*"
       }
     }
   }

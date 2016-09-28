@@ -8,8 +8,8 @@
       "type": "build"
     },
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
-    "Newtonsoft.Json": "9.0.1",
     "Moq": "4.6.36-*",
+    "Newtonsoft.Json": "9.0.1",
     "xunit": "2.2.0-*"
   },
   "testRunner": "xunit",
@@ -17,10 +17,10 @@
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
+          "version": "1.1.0-*",
           "type": "platform"
         },
-        "System.Diagnostics.TraceSource": "4.0.0-*"
+        "System.Diagnostics.TraceSource": "4.3.0-*"
       }
     },
     "net451": {
