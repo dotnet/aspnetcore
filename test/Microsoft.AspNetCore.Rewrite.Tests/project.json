@@ -13,11 +13,10 @@
   },
   "frameworks": {
     "netcoreapp1.0": {
-      "imports": "dnxcore50",
       "dependencies": {
         "Microsoft.CodeCoverage": {
           "type": "build",
-          "version": "1.0.1"
+          "version": "1.0.2"
         },
         "Microsoft.NETCore.App": {
           "version": "1.0.0-*",
