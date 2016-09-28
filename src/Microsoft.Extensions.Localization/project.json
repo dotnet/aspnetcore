@@ -22,15 +22,14 @@
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.Localization.Abstractions": "1.1.0-*",
-    "Microsoft.Extensions.Options": "1.1.0-*"
+    "Microsoft.Extensions.Options": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "System.Collections.Concurrent": "4.0.12-*",
-        "System.Reflection.Extensions": "4.0.1-*",
-        "System.Resources.Reader": "4.0.0-*"
+        "System.Resources.Reader": "4.3.0-*"
       }
     }
   }

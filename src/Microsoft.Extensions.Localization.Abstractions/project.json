@@ -21,9 +21,8 @@
   "frameworks": {
     "netstandard1.0": {
       "dependencies": {
-        "Microsoft.CSharp": "4.0.1-*",
-        "System.Globalization": "4.0.11-*",
-        "System.Resources.ResourceManager": "4.0.1-*"
+        "Microsoft.CSharp": "4.3.0-*",
+        "NETStandard.Library": "1.6.1-*"
       }
     }
   }

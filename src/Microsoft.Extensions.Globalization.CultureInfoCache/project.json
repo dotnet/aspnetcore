@@ -22,9 +22,7 @@
   "frameworks": {
     "netstandard1.1": {
       "dependencies": {
-        "System.Collections.Concurrent": "4.0.12-*",
-        "System.Linq": "4.1.0-*",
-        "System.Resources.ResourceManager": "4.0.1-*"
+        "NETStandard.Library": "1.6.1-*"
       }
     }
   }
