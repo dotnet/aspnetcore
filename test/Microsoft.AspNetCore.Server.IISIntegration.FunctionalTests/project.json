@@ -22,6 +22,7 @@
     "Microsoft.Extensions.Logging": "1.1.0-*",
     "Microsoft.Extensions.Logging.Console": "1.1.0-*",
     "Microsoft.Extensions.Logging.Debug": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*",
     "xunit": "2.2.0-*"
   },
   "frameworks": {

@@ -20,8 +20,7 @@
   "frameworks": {
     "netcoreapp1.0": {
       "dependencies": {
-        "Microsoft.NETCore.App": "1.0.0-*",
-        "System.Net.Primitives": "4.0.11-*"
+        "Microsoft.NETCore.App": "1.1.0-*"
       }
     },
     "net451": {}
