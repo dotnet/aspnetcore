@@ -141,8 +141,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         }
                     }
 
-                    // Don't lose request rejection state
-                    if (!_requestRejected)
+                    // Don't reset frame state if we're exiting the loop. This avoids losing request rejection
+                    // information (for 4xx response), and prevents ObjectDisposedException on HTTPS (ODEs
+                    // will be thrown if PrepareRequest is not null and references objects disposed on connection
+                    // close - see https://github.com/aspnet/KestrelHttpServer/issues/1103#issuecomment-250237677).
+                    if (!_requestProcessingStopping)
                     {
                         Reset();
                     }
