@@ -28,16 +28,14 @@
     "Microsoft.Extensions.PropertyHelper.Sources": {
       "version": "1.1.0-*",
       "type": "build"
-    }
+    },
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {},
     "netstandard1.6": {
       "dependencies": {
-        "System.Collections.Concurrent": "4.0.12-*",
-        "System.ComponentModel.TypeConverter": "4.1.0-*",
-        "System.Reflection.Extensions": "4.0.1-*",
-        "System.Text.Encoding.Extensions": "4.0.11-*"
+        "System.ComponentModel.TypeConverter": "4.3.0-*"
       }
     }
   }

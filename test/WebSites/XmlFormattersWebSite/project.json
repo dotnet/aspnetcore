@@ -16,10 +16,9 @@
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
+          "version": "1.1.0-*",
           "type": "platform"
-        },
-        "System.Linq.Queryable": "4.0.1-*"
+        }
       }
     }
   },

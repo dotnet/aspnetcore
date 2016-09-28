@@ -29,7 +29,8 @@
       "version": "1.1.0-*",
       "type": "build"
     },
-    "Microsoft.Extensions.Localization": "1.1.0-*"
+    "Microsoft.Extensions.Localization": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {
@@ -39,7 +40,7 @@
     },
     "netstandard1.6": {
       "dependencies": {
-        "System.ComponentModel.Annotations": "4.1.0-*"
+        "System.ComponentModel.Annotations": "4.3.0-*"
       }
     }
   }

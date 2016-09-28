@@ -5,7 +5,7 @@
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "System.Runtime": "4.1.0-*"
+        "NETStandard.Library": "1.6.1-*"
       }
     }
   }

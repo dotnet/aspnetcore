@@ -4,14 +4,11 @@
     "Microsoft.AspNetCore.Http.Extensions": "1.1.0-*",
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Microsoft.Extensions.Configuration": "1.1.0-*",
-    "Microsoft.Extensions.DependencyInjection": "1.1.0-*"
+    "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {},
-    "netstandard1.3": {
-      "dependencies": {
-        "NETStandard.Library": "1.6.0-*"
-      }
-    }
+    "netstandard1.3": {}
   }
 }

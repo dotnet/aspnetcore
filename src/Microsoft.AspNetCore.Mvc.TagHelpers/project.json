@@ -23,9 +23,13 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Mvc.Razor": "1.1.0-*",
-    "Microsoft.Extensions.Caching.Memory": "1.1.0-*",
     "Microsoft.AspNetCore.Routing.Abstractions": "1.1.0-*",
+    "Microsoft.Extensions.Caching.Memory": "1.1.0-*",
     "Microsoft.Extensions.FileSystemGlobbing": "1.1.0-*",
+    "Microsoft.Extensions.HashCodeCombiner.Sources": {
+      "version": "1.1.0-*",
+      "type": "build"
+    },
     "Microsoft.Extensions.Logging.Abstractions": {
       "version": "1.1.0-*",
       "type": "build"
@@ -35,10 +39,7 @@
       "version": "1.1.0-*",
       "type": "build"
     },
-    "Microsoft.Extensions.HashCodeCombiner.Sources": {
-      "version": "1.1.0-*",
-      "type": "build"
-    }
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {},

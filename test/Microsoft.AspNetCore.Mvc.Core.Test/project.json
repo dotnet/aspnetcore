@@ -20,8 +20,8 @@
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
     "Microsoft.Extensions.DiagnosticAdapter": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Testing": "1.1.0-*",
     "Microsoft.Extensions.Logging": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Testing": "1.1.0-*",
     "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"
   },
@@ -30,11 +30,10 @@
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
+          "version": "1.1.0-*",
           "type": "platform"
         },
-        "System.Diagnostics.TraceSource": "4.0.0-*",
-        "System.Xml.XmlDocument": "4.0.1-*"
+        "System.Diagnostics.TraceSource": "4.3.0-*"
       }
     },
     "net451": {}

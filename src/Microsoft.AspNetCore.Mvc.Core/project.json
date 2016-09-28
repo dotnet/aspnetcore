@@ -22,24 +22,24 @@
   "dependencies": {
     "Microsoft.AspNetCore.Authorization": "1.1.0-*",
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.1.0-*",
-    "Microsoft.AspNetCore.Mvc.Abstractions": "1.1.0-*",
     "Microsoft.AspNetCore.Http": "1.1.0-*",
+    "Microsoft.AspNetCore.Mvc.Abstractions": "1.1.0-*",
     "Microsoft.AspNetCore.Routing": "1.1.0-*",
     "Microsoft.AspNetCore.Routing.DecisionTree.Sources": {
       "type": "build",
       "version": "1.1.0-*"
     },
-    "Microsoft.Extensions.FileProviders.Abstractions": "1.1.0-*",
-    "Microsoft.Extensions.DependencyModel": "1.0.1-*",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "version": "1.1.0-*",
       "type": "build"
     },
-    "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
+    "Microsoft.Extensions.DependencyModel": "1.1.0-*",
+    "Microsoft.Extensions.FileProviders.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.HashCodeCombiner.Sources": {
       "type": "build",
       "version": "1.1.0-*"
     },
+    "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.1.0-*",
     "Microsoft.Extensions.PropertyActivator.Sources": {
       "version": "1.1.0-*",
@@ -53,15 +53,12 @@
       "version": "1.1.0-*",
       "type": "build"
     },
-    "System.Buffers": "4.0.0-*",
-    "System.Diagnostics.DiagnosticSource": "4.0.0-*"
+    "NETStandard.Library": "1.6.1-*",
+    "System.Buffers": "4.3.0-*",
+    "System.Diagnostics.DiagnosticSource": "4.3.0-*"
   },
   "frameworks": {
     "net451": {},
-    "netstandard1.6": {
-      "dependencies": {
-        "System.Text.Encoding": "4.0.11-*"
-      }
-    }
+    "netstandard1.6": {}
   }
 }

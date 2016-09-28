@@ -21,14 +21,15 @@
     "xmlDoc": true
   },
   "dependencies": {
+    "Microsoft.AspNet.WebApi.Client": "5.2.2",
     "Microsoft.AspNetCore.Mvc.Core": "1.1.0-*",
     "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.1.0-*",
-    "Microsoft.AspNet.WebApi.Client": "5.2.2",
     "Microsoft.AspNetCore.WebUtilities": "1.1.0-*",
     "Microsoft.Extensions.PropertyHelper.Sources": {
       "type": "build",
       "version": "1.1.0-*"
-    }
+    },
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {
@@ -43,9 +44,8 @@
         "portable-net451+win8"
       ],
       "dependencies": {
-        "System.Net.Http": "4.1.0-*",
-        "System.Runtime.Serialization.Xml": "4.1.1-*",
-        "System.Xml.XmlSerializer": "4.0.11-*"
+        "System.Runtime.Serialization.Xml": "4.3.0-*",
+        "System.Xml.XmlSerializer": "4.3.0-*"
       }
     }
   }

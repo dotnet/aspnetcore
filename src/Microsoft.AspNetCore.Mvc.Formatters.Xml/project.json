@@ -29,7 +29,8 @@
     "Microsoft.Extensions.PropertyHelper.Sources": {
       "version": "1.1.0-*",
       "type": "build"
-    }
+    },
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {
@@ -40,8 +41,8 @@
     },
     "netstandard1.6": {
       "dependencies": {
-        "System.Runtime.Serialization.Xml": "4.1.1-*",
-        "System.Xml.XmlSerializer": "4.0.11-*"
+        "System.Runtime.Serialization.Xml": "4.3.0-*",
+        "System.Xml.XmlSerializer": "4.3.0-*"
       }
     }
   }

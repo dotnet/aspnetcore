@@ -37,16 +37,15 @@
       "version": "1.1.0-*",
       "type": "build"
     },
-    "Microsoft.Net.Http.Headers": "1.1.0-*"
+    "Microsoft.Net.Http.Headers": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "Microsoft.CSharp": "4.0.1-*",
-        "System.ComponentModel.TypeConverter": "4.1.0-*",
-        "System.Reflection.Extensions": "4.0.1-*",
-        "System.Text.Encoding.Extensions": "4.0.11-*"
+        "Microsoft.CSharp": "4.3.0-*",
+        "System.ComponentModel.TypeConverter": "4.3.0-*"
       }
     }
   }
