@@ -1,16 +1,15 @@
-﻿{
+{
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Mvc.Razor.Precompilation.Tools": "1.0.0-*",
     "xunit": "2.2.0-*"
   },
-
   "frameworks": {
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
           "type": "platform",
-          "version": "1.0.0"
+          "version": "1.1.0-*"
         }
       },
       "net451": {}
