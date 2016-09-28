@@ -21,22 +21,15 @@
     ]
   },
   "dependencies": {
+    "NETStandard.Library": "1.6.1-*",
     "Newtonsoft.Json": "9.0.1"
   },
   "frameworks": {
     "netstandard1.1": {
       "dependencies": {
-        "Microsoft.CSharp": "4.0.1-*",
-        "System.Collections.Concurrent": "4.0.12-*",
-        "System.ComponentModel.TypeConverter": "4.1.0-*",
-        "System.Diagnostics.Debug": "4.0.11-*",
-        "System.Globalization": "4.0.11-*",
-        "System.Linq": "4.1.0-*",
-        "System.Reflection.Extensions": "4.0.1-*",
-        "System.Resources.ResourceManager": "4.0.1-*",
-        "System.Runtime.Extensions": "4.1.0-*",
-        "System.Runtime.Serialization.Primitives": "4.1.1-*",
-        "System.Text.Encoding.Extensions": "4.0.11-*"
+        "Microsoft.CSharp": "4.3.0-*",
+        "System.ComponentModel.TypeConverter": "4.3.0-*",
+        "System.Runtime.Serialization.Primitives": "4.3.0-*"
       }
     }
   }
