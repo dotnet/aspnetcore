@@ -1,32 +1,34 @@
+var isDevBuild = process.argv.indexOf('--env.prod') < 0;
 var path = require('path');
 var webpack = require('webpack');
-var merge = require('extendify')({ isDeep: true, arrays: 'concat' });
-var devConfig = require('./webpack.config.dev');
-var prodConfig = require('./webpack.config.prod');
-var isDevelopment = process.env.ASPNETCORE_ENVIRONMENT === 'Development';
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
-module.exports = merge({
-    resolve: {
-        extensions: [ '', '.js', '.jsx', '.ts', '.tsx' ]
+module.exports = {
+    devtool: isDevBuild ? 'inline-source-map' : null,
+    entry: { 'main': './ClientApp/boot.tsx' },
+    resolve: { extensions: [ '', '.js', '.jsx', '.ts', '.tsx' ] },
+    output: {
+        path: path.join(__dirname, './wwwroot/dist'),
+        filename: '[name].js',
+        publicPath: '/dist/'
     },
     module: {
         loaders: [
             { test: /\.ts(x?)$/, include: /ClientApp/, loader: 'babel-loader' },
-            { test: /\.ts(x?)$/, include: /ClientApp/, loader: 'ts-loader?silent=true' }
+            { test: /\.tsx?$/, include: /ClientApp/, loader: 'ts', query: { silent: true } },
+            { test: /\.css$/, loader: isDevBuild ? 'style!css' : ExtractTextPlugin.extract(['css']) },
+            { test: /\.(png|jpg|jpeg|gif|svg)$/, loader: 'url', query: { limit: 25000 } }
         ]
-    },
-    entry: {
-        main: ['./ClientApp/boot.tsx'],
-    },
-    output: {
-        path: path.join(__dirname, 'wwwroot', 'dist'),
-        filename: '[name].js',
-        publicPath: '/dist/'
     },
     plugins: [
         new webpack.DllReferencePlugin({
             context: __dirname,
             manifest: require('./wwwroot/dist/vendor-manifest.json')
         })
-    ]
-}, isDevelopment ? devConfig : prodConfig);
+    ].concat(isDevBuild ? [] : [
+        // Plugins that apply in production builds only
+        new webpack.optimize.OccurenceOrderPlugin(),
+        new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false } }),
+        new ExtractTextPlugin('site.css')
+    ])
+};

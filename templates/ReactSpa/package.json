@@ -10,7 +10,6 @@
     "babel-preset-react": "^6.5.0",
     "bootstrap": "^3.3.6",
     "css-loader": "^0.23.1",
-    "extendify": "^1.0.0",
     "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.8.5",
     "isomorphic-fetch": "^2.2.1",
