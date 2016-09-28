@@ -24,14 +24,11 @@
     "Microsoft.Extensions.TaskCache.Sources": {
       "version": "1.1.0-*",
       "type": "build"
-    }
+    },
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {},
-    "netstandard1.3": {
-      "dependencies": {
-        "System.Text.RegularExpressions": "4.1.0-*"
-      }
-    }
+    "netstandard1.3": {}
   }
 }
