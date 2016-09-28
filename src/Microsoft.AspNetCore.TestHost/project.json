@@ -21,7 +21,8 @@
     ]
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Hosting": "1.1.0-*"
+    "Microsoft.AspNetCore.Hosting": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {
@@ -31,8 +32,7 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "System.Diagnostics.Contracts": "4.0.1-*",
-        "System.Net.Http": "4.1.0-*"
+        "System.Diagnostics.Contracts": "4.3.0-*"
       }
     }
   }

@@ -20,12 +20,13 @@
     ]
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Http.Abstractions": "1.1.0-*",
     "Microsoft.AspNetCore.Hosting.Server.Abstractions": "1.1.0-*",
+    "Microsoft.AspNetCore.Http.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.Configuration.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.FileProviders.Abstractions": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*"
+    "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {},
