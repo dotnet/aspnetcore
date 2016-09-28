@@ -21,7 +21,8 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Authentication.OAuth": "1.1.0-*"
+    "Microsoft.AspNetCore.Authentication.OAuth": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {},

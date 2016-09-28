@@ -19,7 +19,9 @@
       "CS1591"
     ],
     "xmlDoc": true,
-    "define": [ "SECURITY" ]
+    "define": [
+      "SECURITY"
+    ]
   },
   "dependencies": {
     "Microsoft.AspNetCore.Authentication": "1.1.0-*",
@@ -32,7 +34,8 @@
       "version": "1.1.0-*",
       "type": "build"
     },
-    "Microsoft.Extensions.WebEncoders": "1.1.0-*"
+    "Microsoft.Extensions.WebEncoders": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {},

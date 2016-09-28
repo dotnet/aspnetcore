@@ -20,7 +20,8 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Http": "1.1.0-*",
-    "Microsoft.Extensions.Options": "1.1.0-*"
+    "Microsoft.Extensions.Options": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {},
