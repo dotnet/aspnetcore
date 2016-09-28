@@ -169,6 +169,9 @@ var buildTarget = "compile"
         var universeArtifacts = Path.Combine(Directory.GetCurrentDirectory(), "artifacts");
         var universeBuild = Path.Combine(universeArtifacts, "build");
         var packagesPublishDir = Path.Combine(Directory.GetCurrentDirectory(), ".nuget", "publishDir");
+        // Historically we've always produced coherent builds using this target. Unless specified otherwise,
+        // we'll continue to produce coherent builds here.
+        var createCoherentBuild = Environment.GetEnvironmentVariable("CREATE_COHERENT_BUILD") != "false";
 
         // Snapshot the .build folder
         if (!IsLinux)
@@ -193,18 +196,21 @@ var buildTarget = "compile"
         }
 
         Directory.CreateDirectory(universeBuild);
-        if (!IsLinux)
+        if (createCoherentBuild)
         {
-            // Publish to a directory and use that as a package source for later builds. This doesn't work in Linux due to
-            // https://github.com/NuGet/Home/issues/2383
+            if (!IsLinux)
+            {
+                // Publish to a directory and use that as a package source for later builds. This doesn't work in Linux due to
+                // https://github.com/NuGet/Home/issues/2383
 
-            Directory.CreateDirectory(packagesPublishDir);
-            Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ARTIFACTS", packagesPublishDir);
-            Environment.SetEnvironmentVariable("PACKAGES_PUBLISH_DIR", packagesPublishDir);
-        }
-        else
-        {
-            Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ARTIFACTS", universeBuild);
+                Directory.CreateDirectory(packagesPublishDir);
+                Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ARTIFACTS", packagesPublishDir);
+                Environment.SetEnvironmentVariable("PACKAGES_PUBLISH_DIR", packagesPublishDir);
+            }
+            else
+            {
+                Environment.SetEnvironmentVariable("NUGET_VOLATILE_FEED_ARTIFACTS", universeBuild);
+            }
         }
 
         foreach (var batch in batchedRepos)
