@@ -150,6 +150,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 HttpOnly = Options.CookieHttpOnly,
                 Path = Options.CookiePath ?? (OriginalPathBase.HasValue ? OriginalPathBase.ToString() : "/"),
             };
+
             if (Options.CookieSecure == CookieSecurePolicy.SameAsRequest)
             {
                 cookieOptions.Secure = Request.IsHttps;
@@ -158,6 +159,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 cookieOptions.Secure = Options.CookieSecure == CookieSecurePolicy.Always;
             }
+
             return cookieOptions;
         }
 
@@ -172,13 +174,16 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var ticket = (await HandleAuthenticateOnceSafeAsync())?.Ticket;
             if (ticket != null)
             {
+                var properties = ticket.Properties;
+
                 if (_refreshIssuedUtc.HasValue)
                 {
-                    ticket.Properties.IssuedUtc = _refreshIssuedUtc;
+                    properties.IssuedUtc = _refreshIssuedUtc;
                 }
+
                 if (_refreshExpiresUtc.HasValue)
                 {
-                    ticket.Properties.ExpiresUtc = _refreshExpiresUtc;
+                    properties.ExpiresUtc = _refreshExpiresUtc;
                 }
 
                 if (Options.SessionStore != null && _sessionKey != null)
@@ -194,7 +199,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 var cookieValue = Options.TicketDataFormat.Protect(ticket, GetTlsTokenBinding());
 
                 var cookieOptions = BuildCookieOptions();
-                if (ticket.Properties.IsPersistent && _refreshExpiresUtc.HasValue)
+                if (properties.IsPersistent && _refreshExpiresUtc.HasValue)
                 {
                     cookieOptions.Expires = _refreshExpiresUtc.Value.ToUniversalTime();
                 }
@@ -205,7 +210,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                     cookieValue,
                     cookieOptions);
 
-                await ApplyHeaders(shouldRedirectToReturnUrl: false, properties: ticket.Properties);
+                await ApplyHeaders(shouldRedirectToReturnUrl: false, properties: properties);
             }
         }
 
@@ -261,6 +266,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                         Options.ClaimsIssuer));
                 ticket = new AuthenticationTicket(principal, null, Options.AuthenticationScheme);
             }
+
             var cookieValue = Options.TicketDataFormat.Protect(ticket, GetTlsTokenBinding());
 
             Options.CookieManager.AppendResponseCookie(
