@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "0.1.0-*",
   "buildOptions": {
     "warningsAsErrors": true,
@@ -28,7 +28,8 @@
     "Microsoft.Extensions.TaskCache.Sources": {
       "version": "1.1.0-*",
       "type": "build"
-    }
+    },
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {},
