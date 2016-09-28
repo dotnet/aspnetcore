@@ -22,14 +22,11 @@
     "Microsoft.AspNetCore.Http.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.FileProviders.Abstractions": "1.1.0-*",
     "Microsoft.Net.Http.Headers": "1.1.0-*",
-    "System.Buffers": "4.0.0-*"
+    "NETStandard.Library": "1.6.1-*",
+    "System.Buffers": "4.3.0-*"
   },
   "frameworks": {
     "net451": {},
-    "netstandard1.3": {
-      "dependencies": {
-        "System.IO.FileSystem": "4.0.1-*"
-      }
-    }
+    "netstandard1.3": {}
   }
 }

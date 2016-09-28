@@ -18,18 +18,14 @@
     ],
     "xmlDoc": true
   },
-  "dependencies": {},
+  "dependencies": {
+    "NETStandard.Library": "1.6.1-*"
+  },
   "frameworks": {
     "netstandard1.1": {
       "dependencies": {
-        "System.Collections": "4.0.11-*",
-        "System.Diagnostics.Contracts": "4.0.1-*",
-        "System.Globalization": "4.0.11-*",
-        "System.Linq": "4.1.0-*",
-        "System.Resources.ResourceManager": "4.0.1-*",
-        "System.Runtime.Extensions": "4.1.0-*",
-        "System.Text.Encoding": "4.0.11-*",
-        "System.Buffers": "4.0.0-*"
+        "System.Buffers": "4.3.0-*",
+        "System.Diagnostics.Contracts": "4.3.0-*"
       }
     }
   }

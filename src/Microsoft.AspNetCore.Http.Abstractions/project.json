@@ -28,7 +28,8 @@
       "version": "1.1.0-*",
       "type": "build"
     },
-    "System.Text.Encodings.Web": "4.0.0-*"
+    "NETStandard.Library": "1.6.1-*",
+    "System.Text.Encodings.Web": "4.3.0-*"
   },
   "frameworks": {
     "net451": {
@@ -40,10 +41,8 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "System.Globalization.Extensions": "4.0.1-*",
-        "System.Linq.Expressions": "4.1.0-*",
-        "System.Reflection.TypeExtensions": "4.1.0-*",
-        "System.Runtime.InteropServices": "4.1.0-*"
+        "System.Globalization.Extensions": "4.3.0-*",
+        "System.Reflection.TypeExtensions": "4.3.0-*"
       }
     }
   }
