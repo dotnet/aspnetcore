@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.ResponseCaching
+namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    public class CachedResponse : IResponseCacheEntry
+    internal class MemoryCachedResponse
     {
         public DateTimeOffset Created { get; set; }
 
@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         public IHeaderDictionary Headers { get; set; } = new HeaderDictionary();
 
-        public Stream Body { get; set; }
+        public List<byte[]> BodySegments { get; set; }
+
+        public long BodyLength { get; set; }
     }
 }

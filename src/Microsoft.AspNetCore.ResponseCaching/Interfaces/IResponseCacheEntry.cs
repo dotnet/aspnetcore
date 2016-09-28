@@ -3,8 +3,7 @@
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
-    public class CachedResponseBody
+    public interface IResponseCacheEntry
     {
-        public byte[] Body { get; set; }
     }
 }

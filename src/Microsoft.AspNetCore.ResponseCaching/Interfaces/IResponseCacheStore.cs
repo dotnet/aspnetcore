@@ -8,8 +8,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 {
     public interface IResponseCacheStore
     {
-        Task<object> GetAsync(string key);
-        Task SetAsync(string key, object entry, TimeSpan validFor);
-        Task RemoveAsync(string key);
+        Task<IResponseCacheEntry> GetAsync(string key);
+        Task SetAsync(string key, IResponseCacheEntry entry, TimeSpan validFor);
     }
 }

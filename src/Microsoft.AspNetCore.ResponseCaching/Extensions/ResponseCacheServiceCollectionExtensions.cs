@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ResponseCacheServiceCollectionExtensions
     {
-        public static IServiceCollection AddMemoryResponseCache(this IServiceCollection services)
+        public static IServiceCollection AddMemoryResponseCacheStore(this IServiceCollection services)
         {
             if (services == null)
             {
@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection AddDistributedResponseCache(this IServiceCollection services)
+        public static IServiceCollection AddDistributedResponseCacheStore(this IServiceCollection services)
         {
             if (services == null)
             {

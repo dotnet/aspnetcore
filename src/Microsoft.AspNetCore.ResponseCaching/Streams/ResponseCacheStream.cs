@@ -12,16 +12,18 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
     {
         private readonly Stream _innerStream;
         private readonly long _maxBufferSize;
+        private readonly int _segmentSize;
+        private SegmentWriteStream _segmentWriteStream;
 
-        public ResponseCacheStream(Stream innerStream, long maxBufferSize)
+        internal ResponseCacheStream(Stream innerStream, long maxBufferSize, int segmentSize)
         {
             _innerStream = innerStream;
             _maxBufferSize = maxBufferSize;
+            _segmentSize = segmentSize;
+            _segmentWriteStream = new SegmentWriteStream(_segmentSize);
         }
 
-        public MemoryStream BufferedStream { get; } = new MemoryStream();
-
-        public bool BufferingEnabled { get; set; } = true;
+        internal bool BufferingEnabled { get; private set; } = true;
 
         public override bool CanRead => _innerStream.CanRead;
 
@@ -34,15 +36,26 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         public override long Position
         {
             get { return _innerStream.Position; }
-            set { _innerStream.Position = value; }
+            set
+            {
+                DisableBuffering();
+                _innerStream.Position = value;
+            }
         }
 
-        public void DisableBuffering()
+        internal Stream GetBufferStream()
+        {
+            if (!BufferingEnabled)
+            {
+                throw new InvalidOperationException("Buffer stream cannot be retrieved since buffering is disabled.");
+            }
+            return new SegmentReadStream(_segmentWriteStream.GetSegments(), _segmentWriteStream.Length);
+        }
+
+        internal void DisableBuffering()
         {
             BufferingEnabled = false;
-            BufferedStream.SetLength(0);
-            BufferedStream.Capacity = 0;
-            BufferedStream.Dispose();
+            _segmentWriteStream.Dispose();
         }
 
         public override void SetLength(long value)
@@ -81,13 +94,13 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
             if (BufferingEnabled)
             {
-                if (BufferedStream.Length + count > _maxBufferSize)
+                if (_segmentWriteStream.Length + count > _maxBufferSize)
                 {
                     DisableBuffering();
                 }
                 else
                 {
-                    BufferedStream.Write(buffer, offset, count);
+                    _segmentWriteStream.Write(buffer, offset, count);
                 }
             }
         }
@@ -106,13 +119,13 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
             if (BufferingEnabled)
             {
-                if (BufferedStream.Length + count > _maxBufferSize)
+                if (_segmentWriteStream.Length + count > _maxBufferSize)
                 {
                     DisableBuffering();
                 }
                 else
                 {
-                    await BufferedStream.WriteAsync(buffer, offset, count, cancellationToken);
+                    await _segmentWriteStream.WriteAsync(buffer, offset, count, cancellationToken);
                 }
             }
         }
@@ -131,13 +144,13 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
             if (BufferingEnabled)
             {
-                if (BufferedStream.Length + 1 > _maxBufferSize)
+                if (_segmentWriteStream.Length + 1 > _maxBufferSize)
                 {
                     DisableBuffering();
                 }
                 else
                 {
-                    BufferedStream.WriteByte(value);
+                    _segmentWriteStream.WriteByte(value);
                 }
             }
         }
@@ -148,7 +161,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
 #endif
         {
-            return ToIAsyncResult(WriteAsync(buffer, offset, count), callback, state);
+            return StreamUtilities.ToIAsyncResult(WriteAsync(buffer, offset, count), callback, state);
         }
 #if NETSTANDARD1_3
         public void EndWrite(IAsyncResult asyncResult)
@@ -161,29 +174,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 throw new ArgumentNullException(nameof(asyncResult));
             }
             ((Task)asyncResult).GetAwaiter().GetResult();
-        }
-
-        private static IAsyncResult ToIAsyncResult(Task task, AsyncCallback callback, object state)
-        {
-            var tcs = new TaskCompletionSource<int>(state);
-            task.ContinueWith(t =>
-            {
-                if (t.IsFaulted)
-                {
-                    tcs.TrySetException(t.Exception.InnerExceptions);
-                }
-                else if (t.IsCanceled)
-                {
-                    tcs.TrySetCanceled();
-                }
-                else
-                {
-                    tcs.TrySetResult(0);
-                }
-
-                callback?.Invoke(tcs.Task);
-            }, CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
-            return tcs.Task;
         }
     }
 }

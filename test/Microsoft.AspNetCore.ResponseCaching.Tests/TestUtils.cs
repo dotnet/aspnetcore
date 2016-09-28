@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.ObjectPool;
@@ -20,6 +21,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 {
     internal class TestUtils
     {
+        static TestUtils()
+        {
+            // Force sharding in tests
+            StreamUtilities.BodySegmentSize = 10;
+        }
+
         internal static RequestDelegate TestRequestDelegate = async (context) =>
         {
             var uniqueId = Guid.NewGuid().ToString();
@@ -44,7 +51,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             return new ResponseCacheKeyProvider(new DefaultObjectPoolProvider(), Options.Create(options));
         }
 
-        internal static IWebHostBuilder CreateBuilderWithResponseCache(
+        internal static IEnumerable<IWebHostBuilder> CreateBuildersWithResponseCache(
             Action<IApplicationBuilder> configureDelegate = null,
             ResponseCacheOptions options = null,
             RequestDelegate requestDelegate = null)
@@ -62,10 +69,24 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 requestDelegate = TestRequestDelegate;
             }
 
-            return new WebHostBuilder()
+            // Test with MemoryResponseCacheStore
+            yield return new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddDistributedResponseCache();
+                    services.AddMemoryResponseCacheStore();
+                })
+                .Configure(app =>
+                {
+                    configureDelegate(app);
+                    app.UseResponseCache(options);
+                    app.Run(requestDelegate);
+                });
+
+            // Test with DistributedResponseCacheStore
+            yield return new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddDistributedResponseCacheStore();
                 })
                 .Configure(app =>
                 {
@@ -167,11 +188,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
     internal class TestResponseCacheStore : IResponseCacheStore
     {
-        private readonly IDictionary<string, object> _storage = new Dictionary<string, object>();
+        private readonly IDictionary<string, IResponseCacheEntry> _storage = new Dictionary<string, IResponseCacheEntry>();
         public int GetCount { get; private set; }
         public int SetCount { get; private set; }
 
-        public Task<object> GetAsync(string key)
+        public Task<IResponseCacheEntry> GetAsync(string key)
         {
             GetCount++;
             try
@@ -180,16 +201,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             }
             catch
             {
-                return Task.FromResult<object>(null);
+                return Task.FromResult<IResponseCacheEntry>(null);
             }
         }
 
-        public Task RemoveAsync(string key)
-        {
-            return TaskCache.CompletedTask;
-        }
-
-        public Task SetAsync(string key, object entry, TimeSpan validFor)
+        public Task SetAsync(string key, IResponseCacheEntry entry, TimeSpan validFor)
         {
             SetCount++;
             _storage[key] = entry;

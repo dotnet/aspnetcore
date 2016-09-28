@@ -21,11 +21,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             _cache = cache;
         }
 
-        public async Task<object> GetAsync(string key)
+        public async Task<IResponseCacheEntry> GetAsync(string key)
         {
             try
             {
-                return CacheEntrySerializer.Deserialize(await _cache.GetAsync(key));
+                return ResponseCacheEntrySerializer.Deserialize(await _cache.GetAsync(key));
             }
             catch
             {
@@ -33,22 +33,13 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             }
         }
 
-        public async Task RemoveAsync(string key)
-        {
-            try
-            {
-                await _cache.RemoveAsync(key);
-            }
-            catch { }
-        }
-
-        public async Task SetAsync(string key, object entry, TimeSpan validFor)
+        public async Task SetAsync(string key, IResponseCacheEntry entry, TimeSpan validFor)
         {
             try
             {
                 await _cache.SetAsync(
                     key,
-                    CacheEntrySerializer.Serialize(entry),
+                    ResponseCacheEntrySerializer.Serialize(entry),
                     new DistributedCacheEntryOptions()
                     {
                         AbsoluteExpirationRelativeToNow = validFor

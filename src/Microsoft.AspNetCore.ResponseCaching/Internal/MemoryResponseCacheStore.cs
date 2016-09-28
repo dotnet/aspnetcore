@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
@@ -22,27 +21,60 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             _cache = cache;
         }
 
-        public Task<object> GetAsync(string key)
+        public Task<IResponseCacheEntry> GetAsync(string key)
         {
-            return Task.FromResult(_cache.Get(key));
-        }
+            var entry = _cache.Get(key);
 
-        public Task RemoveAsync(string key)
-        {
-            _cache.Remove(key);
-            return TaskCache.CompletedTask;
-        }
-
-        public Task SetAsync(string key, object entry, TimeSpan validFor)
-        {
-            _cache.Set(
-                key,
-                entry,
-                new MemoryCacheEntryOptions()
+            if (entry is MemoryCachedResponse)
+            {
+                var memoryCachedResponse = (MemoryCachedResponse)entry;
+                return Task.FromResult<IResponseCacheEntry>(new CachedResponse()
                 {
-                    AbsoluteExpirationRelativeToNow = validFor
+                    Created = memoryCachedResponse.Created,
+                    StatusCode = memoryCachedResponse.StatusCode,
+                    Headers = memoryCachedResponse.Headers,
+                    Body = new SegmentReadStream(memoryCachedResponse.BodySegments, memoryCachedResponse.BodyLength)
                 });
-            return TaskCache.CompletedTask;
+            }
+            else
+            {
+                return Task.FromResult(entry as IResponseCacheEntry);
+            }
+        }
+
+        public async Task SetAsync(string key, IResponseCacheEntry entry, TimeSpan validFor)
+        {
+            if (entry is CachedResponse)
+            {
+                var cachedResponse = (CachedResponse)entry;
+                var segmentStream = new SegmentWriteStream(StreamUtilities.BodySegmentSize);
+                await cachedResponse.Body.CopyToAsync(segmentStream);
+
+                _cache.Set(
+                    key,
+                    new MemoryCachedResponse()
+                    {
+                        Created = cachedResponse.Created,
+                        StatusCode = cachedResponse.StatusCode,
+                        Headers = cachedResponse.Headers,
+                        BodySegments = segmentStream.GetSegments(),
+                        BodyLength = segmentStream.Length
+                    },
+                    new MemoryCacheEntryOptions()
+                    {
+                        AbsoluteExpirationRelativeToNow = validFor
+                    });
+            }
+            else
+            {
+                _cache.Set(
+                    key,
+                    entry,
+                    new MemoryCacheEntryOptions()
+                    {
+                        AbsoluteExpirationRelativeToNow = validFor
+                    });
+            }
         }
     }
 }

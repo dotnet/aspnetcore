@@ -15,7 +15,7 @@ namespace ResponseCachingSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDistributedResponseCache();
+            services.AddDistributedResponseCacheStore();
         }
 
         public void Configure(IApplicationBuilder app)
