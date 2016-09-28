@@ -12,17 +12,17 @@
     ]
   },
   "dependencies": {
-    "System.Buffers": "4.0.0-*",
-    "System.Numerics.Vectors": "4.1.1-*",
-    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-*",
-    "System.Threading.Tasks.Extensions": "4.0.0-*",
     "Libuv": "1.9.0-*",
     "Microsoft.AspNetCore.Hosting": "1.1.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.TaskCache.Sources": {
       "version": "1.1.0-*",
       "type": "build"
-    }
+    },
+    "NETStandard.Library": "1.6.1-*",
+    "System.Buffers": "4.3.0-*",
+    "System.Numerics.Vectors": "4.3.0-*",
+    "System.Threading.Tasks.Extensions": "4.3.0-*"
   },
   "frameworks": {
     "net451": {
@@ -37,20 +37,8 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "System.Collections": "4.0.11-*",
-        "System.Diagnostics.Debug": "4.0.11-*",
-        "System.Globalization": "4.0.11-*",
-        "System.IO": "4.1.0-*",
-        "System.Linq": "4.1.0-*",
-        "System.Net.Primitives": "4.0.11-*",
-        "System.Runtime.Extensions": "4.1.0-*",
-        "System.Runtime.InteropServices": "4.1.0-*",
-        "System.Text.Encoding": "4.0.11-*",
-        "System.Threading": "4.0.11-*",
-        "System.Threading.Tasks": "4.0.11-*",
-        "System.Threading.Thread": "4.0.0-*",
-        "System.Threading.ThreadPool": "4.0.10-*",
-        "System.Threading.Timer": "4.0.1-*"
+        "System.Threading.Thread": "4.3.0-*",
+        "System.Threading.ThreadPool": "4.3.0-*"
       }
     }
   },
