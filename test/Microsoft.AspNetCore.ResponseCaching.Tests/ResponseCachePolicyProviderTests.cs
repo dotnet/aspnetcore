@@ -11,9 +11,20 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 {
     public class ResponseCachePolicyProviderTests
     {
+        public static TheoryData<string> CacheableMethods
+        {
+            get
+            {
+                return new TheoryData<string>
+                {
+                    HttpMethods.Get,
+                    HttpMethods.Head
+                };
+            }
+        }
+
         [Theory]
-        [InlineData("GET")]
-        [InlineData("HEAD")]
+        [MemberData(nameof(CacheableMethods))]
         public void IsRequestCacheable_CacheableMethods_Allowed(string method)
         {
             var context = TestUtils.CreateTestContext();
@@ -21,16 +32,26 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             Assert.True(new ResponseCachePolicyProvider().IsRequestCacheable(context));
         }
+        public static TheoryData<string> NonCacheableMethods
+        {
+            get
+            {
+                return new TheoryData<string>
+                {
+                    HttpMethods.Post,
+                    HttpMethods.Put,
+                    HttpMethods.Delete,
+                    HttpMethods.Trace,
+                    HttpMethods.Connect,
+                    HttpMethods.Options,
+                    "",
+                    null
+                };
+            }
+        }
 
         [Theory]
-        [InlineData("POST")]
-        [InlineData("OPTIONS")]
-        [InlineData("PUT")]
-        [InlineData("DELETE")]
-        [InlineData("TRACE")]
-        [InlineData("CONNECT")]
-        [InlineData("")]
-        [InlineData(null)]
+        [MemberData(nameof(NonCacheableMethods))]
         public void IsRequestCacheable_UncacheableMethods_NotAllowed(string method)
         {
             var context = TestUtils.CreateTestContext();
@@ -43,7 +64,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public void IsRequestCacheable_AuthorizationHeaders_NotAllowed()
         {
             var context = TestUtils.CreateTestContext();
-            context.HttpContext.Request.Method = "GET";
+            context.HttpContext.Request.Method = HttpMethods.Get;
             context.HttpContext.Request.Headers[HeaderNames.Authorization] = "Basic plaintextUN:plaintextPW";
 
             Assert.False(new ResponseCachePolicyProvider().IsRequestCacheable(context));
@@ -53,7 +74,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public void IsRequestCacheable_NoCache_NotAllowed()
         {
             var context = TestUtils.CreateTestContext();
-            context.HttpContext.Request.Method = "GET";
+            context.HttpContext.Request.Method = HttpMethods.Get;
             context.TypedRequestHeaders.CacheControl = new CacheControlHeaderValue()
             {
                 NoCache = true
@@ -66,7 +87,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public void IsRequestCacheable_NoStore_Allowed()
         {
             var context = TestUtils.CreateTestContext();
-            context.HttpContext.Request.Method = "GET";
+            context.HttpContext.Request.Method = HttpMethods.Get;
             context.TypedRequestHeaders.CacheControl = new CacheControlHeaderValue()
             {
                 NoStore = true
@@ -79,7 +100,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public void IsRequestCacheable_LegacyDirectives_NotAllowed()
         {
             var context = TestUtils.CreateTestContext();
-            context.HttpContext.Request.Method = "GET";
+            context.HttpContext.Request.Method = HttpMethods.Get;
             context.HttpContext.Request.Headers[HeaderNames.Pragma] = "no-cache";
 
             Assert.False(new ResponseCachePolicyProvider().IsRequestCacheable(context));
@@ -89,7 +110,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public void IsRequestCacheable_LegacyDirectives_OverridenByCacheControl()
         {
             var context = TestUtils.CreateTestContext();
-            context.HttpContext.Request.Method = "GET";
+            context.HttpContext.Request.Method = HttpMethods.Get;
             context.HttpContext.Request.Headers[HeaderNames.Pragma] = "no-cache";
             context.HttpContext.Request.Headers[HeaderNames.CacheControl] = "max-age=10";
 

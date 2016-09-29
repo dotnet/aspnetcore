@@ -36,10 +36,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 UseCaseSensitivePaths = false
             });
             var context = TestUtils.CreateTestContext();
-            context.HttpContext.Request.Method = "GET";
+            context.HttpContext.Request.Method = HttpMethods.Get;
             context.HttpContext.Request.Path = "/Path";
 
-            Assert.Equal($"GET{KeyDelimiter}/PATH", cacheKeyProvider.CreateBaseKey(context));
+            Assert.Equal($"{HttpMethods.Get}{KeyDelimiter}/PATH", cacheKeyProvider.CreateBaseKey(context));
         }
 
         [Fact]
@@ -50,10 +50,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 UseCaseSensitivePaths = true
             });
             var context = TestUtils.CreateTestContext();
-            context.HttpContext.Request.Method = "GET";
+            context.HttpContext.Request.Method = HttpMethods.Get;
             context.HttpContext.Request.Path = "/Path";
 
-            Assert.Equal($"GET{KeyDelimiter}/Path", cacheKeyProvider.CreateBaseKey(context));
+            Assert.Equal($"{HttpMethods.Get}{KeyDelimiter}/Path", cacheKeyProvider.CreateBaseKey(context));
         }
 
         [Fact]

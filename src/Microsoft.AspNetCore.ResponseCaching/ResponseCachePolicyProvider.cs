@@ -16,8 +16,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         {
             // Verify the method
             var request = context.HttpContext.Request;
-            if (!string.Equals("GET", request.Method, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals("HEAD", request.Method, StringComparison.OrdinalIgnoreCase))
+            if (!HttpMethods.IsGet(request.Method) && !HttpMethods.IsHead(request.Method))
             {
                 return false;
             }
