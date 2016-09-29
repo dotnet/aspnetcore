@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
@@ -206,8 +207,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             var scope = FormatScope();
 
             var state = Options.StateDataFormat.Protect(properties);
-
-            var queryBuilder = new QueryBuilder()
+            var parameters = new Dictionary<string, string>
             {
                 { "client_id", Options.ClientId },
                 { "scope", scope },
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 { "redirect_uri", redirectUri },
                 { "state", state },
             };
-            return Options.AuthorizationEndpoint + queryBuilder.ToString();
+            return QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, parameters);
         }
 
         protected virtual string FormatScope()
