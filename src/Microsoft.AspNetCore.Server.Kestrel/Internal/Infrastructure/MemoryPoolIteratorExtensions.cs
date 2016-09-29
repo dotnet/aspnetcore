@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
@@ -11,16 +12,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
     public static class MemoryPoolIteratorExtensions
     {
         private static readonly Encoding _utf8 = Encoding.UTF8;
-
-        public const string HttpConnectMethod = "CONNECT";
-        public const string HttpDeleteMethod = "DELETE";
-        public const string HttpGetMethod = "GET";
-        public const string HttpHeadMethod = "HEAD";
-        public const string HttpPatchMethod = "PATCH";
-        public const string HttpPostMethod = "POST";
-        public const string HttpPutMethod = "PUT";
-        public const string HttpOptionsMethod = "OPTIONS";
-        public const string HttpTraceMethod = "TRACE";
 
         public const string Http10Version = "HTTP/1.0";
         public const string Http11Version = "HTTP/1.1";
@@ -49,14 +40,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         static MemoryPoolIteratorExtensions()
         {
-            _knownMethods[0] = Tuple.Create(_mask4Chars, _httpPutMethodLong, HttpPutMethod);
-            _knownMethods[1] = Tuple.Create(_mask5Chars, _httpPostMethodLong, HttpPostMethod);
-            _knownMethods[2] = Tuple.Create(_mask5Chars, _httpHeadMethodLong, HttpHeadMethod);
-            _knownMethods[3] = Tuple.Create(_mask6Chars, _httpTraceMethodLong, HttpTraceMethod);
-            _knownMethods[4] = Tuple.Create(_mask6Chars, _httpPatchMethodLong, HttpPatchMethod);
-            _knownMethods[5] = Tuple.Create(_mask7Chars, _httpDeleteMethodLong, HttpDeleteMethod);
-            _knownMethods[6] = Tuple.Create(_mask8Chars, _httpConnectMethodLong, HttpConnectMethod);
-            _knownMethods[7] = Tuple.Create(_mask8Chars, _httpOptionsMethodLong, HttpOptionsMethod);
+            _knownMethods[0] = Tuple.Create(_mask4Chars, _httpPutMethodLong, HttpMethods.Put);
+            _knownMethods[1] = Tuple.Create(_mask5Chars, _httpPostMethodLong, HttpMethods.Post);
+            _knownMethods[2] = Tuple.Create(_mask5Chars, _httpHeadMethodLong, HttpMethods.Head);
+            _knownMethods[3] = Tuple.Create(_mask6Chars, _httpTraceMethodLong, HttpMethods.Trace);
+            _knownMethods[4] = Tuple.Create(_mask6Chars, _httpPatchMethodLong, HttpMethods.Patch);
+            _knownMethods[5] = Tuple.Create(_mask7Chars, _httpDeleteMethodLong, HttpMethods.Delete);
+            _knownMethods[6] = Tuple.Create(_mask8Chars, _httpConnectMethodLong, HttpMethods.Connect);
+            _knownMethods[7] = Tuple.Create(_mask8Chars, _httpOptionsMethodLong, HttpMethods.Options);
         }
 
         private unsafe static long GetAsciiStringAsLong(string str)
@@ -279,7 +270,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
             if ((value & _mask4Chars) == _httpGetMethodLong)
             {
-                knownMethod = HttpGetMethod;
+                knownMethod = HttpMethods.Get;
                 return true;
             }
             foreach (var x in _knownMethods)
