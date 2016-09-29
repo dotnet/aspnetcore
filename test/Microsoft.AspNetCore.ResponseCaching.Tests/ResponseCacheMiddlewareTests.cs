@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public async Task TryServeFromCacheAsync_VaryByRuleFound_CachedResponseNotFound_Fails()
         {
             var store = new TestResponseCacheStore();
-            var middleware = TestUtils.CreateTestMiddleware(store: store, keyProvider: new TestResponseCacheKeyProvider("BaseKey"));
+            var middleware = TestUtils.CreateTestMiddleware(store: store, keyProvider: new TestResponseCacheKeyProvider("BaseKey", "VaryKey"));
             var context = TestUtils.CreateTestContext();
 
             await store.SetAsync(
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 TimeSpan.Zero);
 
             Assert.False(await middleware.TryServeFromCacheAsync(context));
-            Assert.Equal(1, store.GetCount);
+            Assert.Equal(2, store.GetCount);
         }
 
         [Fact]

@@ -10,9 +10,9 @@ using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.ResponseCaching
+namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    public class ResponseCacheKeyProvider : IResponseCacheKeyProvider
+    internal class ResponseCacheKeyProvider : IResponseCacheKeyProvider
     {
         // Use the record separator for delimiting components of the cache key to avoid possible collisions
         private static readonly char KeyDelimiter = '\x1e';
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         private readonly ObjectPool<StringBuilder> _builderPool;
         private readonly ResponseCacheOptions _options;
 
-        public ResponseCacheKeyProvider(ObjectPoolProvider poolProvider, IOptions<ResponseCacheOptions> options)
+        internal ResponseCacheKeyProvider(ObjectPoolProvider poolProvider, IOptions<ResponseCacheOptions> options)
         {
             if (poolProvider == null)
             {
@@ -35,13 +35,13 @@ namespace Microsoft.AspNetCore.ResponseCaching
             _options = options.Value;
         }
 
-        public virtual IEnumerable<string> CreateLookupVaryByKeys(ResponseCacheContext context)
+        public IEnumerable<string> CreateLookupVaryByKeys(ResponseCacheContext context)
         {
             return new string[] { CreateStorageVaryByKey(context) };
         }
 
         // GET<delimiter>/PATH
-        public virtual string CreateBaseKey(ResponseCacheContext context)
+        public string CreateBaseKey(ResponseCacheContext context)
         {
             if (context == null)
             {
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
         }
 
         // BaseKey<delimiter>H<delimiter>HeaderName=HeaderValue<delimiter>Q<delimiter>QueryName=QueryValue
-        public virtual string CreateStorageVaryByKey(ResponseCacheContext context)
+        public string CreateStorageVaryByKey(ResponseCacheContext context)
         {
             if (context == null)
             {

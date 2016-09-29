@@ -3,9 +3,9 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.ResponseCaching
+namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    public interface IResponseCacheKeyProvider
+    internal interface IResponseCacheKeyProvider
     {
         /// <summary>
         /// Create a base key for a response cache entry.

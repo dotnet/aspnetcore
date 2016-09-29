@@ -40,7 +40,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static IServiceCollection AddResponseCacheServices(this IServiceCollection services)
         {
-            services.TryAdd(ServiceDescriptor.Singleton<IResponseCacheKeyProvider, ResponseCacheKeyProvider>());
             services.TryAdd(ServiceDescriptor.Singleton<IResponseCachePolicyProvider, ResponseCachePolicyProvider>());
 
             return services;

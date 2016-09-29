@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -28,6 +29,17 @@ namespace Microsoft.AspNetCore.ResponseCaching
         private readonly Func<object, Task> _onStartingCallback;
 
         public ResponseCacheMiddleware(
+            RequestDelegate next,
+            IResponseCacheStore store,
+            IOptions<ResponseCacheOptions> options,
+            IResponseCachePolicyProvider policyProvider,
+            ObjectPoolProvider poolProvider)
+            :this (next, store, options, policyProvider, new ResponseCacheKeyProvider(poolProvider, options))
+        {
+        }
+
+        // Internal for testing
+        internal ResponseCacheMiddleware(
             RequestDelegate next,
             IResponseCacheStore store,
             IOptions<ResponseCacheOptions> options,
