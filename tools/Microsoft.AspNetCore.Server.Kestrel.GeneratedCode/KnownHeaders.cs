@@ -19,6 +19,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
             return condition ? formatter() : "";
         }
 
+        static string AppendSwitch(IEnumerable<IGrouping<int, KnownHeader>> values, string className, bool handleUnknown = false) => 
+            $@"fixed (byte* ptr = &keyBytes[keyOffset])
+            {{
+                var pUB = ptr;
+                var pUL = (ulong*)pUB;
+                var pUI = (uint*)pUB;
+                var pUS = (ushort*)pUB;
+                switch (keyLength)
+                {{{Each(values, byLength => $@"
+                    case {byLength.Key}:
+                        {{{Each(byLength, header => $@"
+                            if ({header.EqualIgnoreCaseBytes()})
+                            {{
+                                if ({header.TestBit()})
+                                {{
+                                    _headers._{header.Identifier} = AppendValue(_headers._{header.Identifier}, value);
+                                }}
+                                else
+                                {{{If(className == "FrameResponseHeaders" && header.Identifier == "ContentLength", () => @"
+                                    _contentLength = ParseContentLength(value);")}
+                                    {header.SetBit()};
+                                    _headers._{header.Identifier} = new StringValues(value);{(header.EnhancedSetter == false ? "" : $@"
+                                    _headers._raw{header.Identifier} = null;")}
+                                }}
+                                return;
+
+                            }}
+                        ")}}}
+                        break;
+
+                        
+                ")}}}
+
+                {(handleUnknown ? $@"
+                    key = new string('\0', keyLength);
+                    fixed(char *keyBuffer = key)
+                    {{
+                        if (!AsciiUtilities.TryGetAsciiString(ptr, keyBuffer, keyLength))
+                        {{
+                            throw BadHttpRequestException.GetException(RequestRejectionReason.InvalidCharactersInHeaderName);
+                        }}
+                    }}
+                ": "")}
+            }}";
+
         class KnownHeader
         {
             public string Name { get; set; }
@@ -29,9 +74,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
             public int BytesOffset { get; set; }
             public int BytesCount { get; set; }
             public bool EnhancedSetter { get; set; }
+            public bool PrimaryHeader { get; set; }
             public string TestBit() => $"((_bits & {1L << Index}L) != 0)";
             public string SetBit() => $"_bits |= {1L << Index}L";
             public string ClearBit() => $"_bits &= ~{1L << Index}L";
+            
             public string EqualIgnoreCaseBytes()
             {
                 var result = "";
@@ -80,6 +127,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
 
         public static string GeneratedFile()
         {
+            var requestPrimaryHeaders = new[]
+            {
+                "Accept",
+                "Host",
+                "User-Agent"
+
+            };
+            var responsePrimaryHeaders = new[]
+            {
+                "Connection",
+                "Date",
+                "Content-Length",
+                "Content-Type",
+                "Server",
+            };
             var commonHeaders = new[]
             {
                 "Cache-Control",
@@ -136,7 +198,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
             }).Concat(corsRequestHeaders).Select((header, index) => new KnownHeader
             {
                 Name = header,
-                Index = index
+                Index = index,
+                PrimaryHeader = requestPrimaryHeaders.Contains(header)
             }).ToArray();
             var enhancedHeaders = new[]
             {
@@ -172,7 +235,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
             {
                 Name = header,
                 Index = index,
-                EnhancedSetter = enhancedHeaders.Contains(header)
+                EnhancedSetter = enhancedHeaders.Contains(header),
+                PrimaryHeader = responsePrimaryHeaders.Contains(header)
             }).ToArray();
             var loops = new[]
             {
@@ -377,11 +441,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return MaybeUnknown?.Remove(key) ?? false;
         }}
         protected override void ClearFast()
-        {{
-            _bits = 0;
-            _headers = default(HeaderReferences);
-            {(loop.ClassName == "FrameResponseHeaders" ? "_contentLength = null;" : "")}
+        {{            
             MaybeUnknown?.Clear();
+            {(loop.ClassName == "FrameResponseHeaders" ? "_contentLength = null;" : "")}
+            if(FrameHeaders.BitCount(_bits) > 12)
+            {{
+                _headers = default(HeaderReferences);
+                _bits = 0;
+                return;
+            }}
+
+            {Each(loop.Headers.OrderBy(h => !h.PrimaryHeader), header => $@"
+                if ({header.TestBit()})
+                {{
+                    _headers._{header.Identifier} = default(StringValues);
+                    {header.ClearBit()};
+                    if(_bits == 0)
+                    {{
+                        return;
+                    }}
+                }}
+            ")}
         }}
 
         protected override void CopyToFast(KeyValuePair<string, StringValues>[] array, int arrayIndex)
@@ -407,7 +487,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {(loop.ClassName == "FrameResponseHeaders" ? $@"
         protected void CopyToFast(ref MemoryPoolIterator output)
         {{
-            {Each(loop.Headers, header => $@"
+            var tempBits = _bits;
+            {Each(loop.Headers.OrderBy(h => !h.PrimaryHeader), header => $@"
                 if ({header.TestBit()})
                 {{ {(header.EnhancedSetter == false ? "" : $@"
                     if (_headers._raw{header.Identifier} != null)
@@ -423,51 +504,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                                 output.CopyFromAscii(value);
                             }}
                         }}
+
+                    tempBits &= ~{1L << header.Index}L;
+                    if(tempBits == 0)
+                    {{
+                        return;
+                    }}
                 }}
             ")}
-        }}" : "")}
+        }}
+        
+        " : "")}
         {(loop.ClassName == "FrameRequestHeaders" ? $@"
         public unsafe void Append(byte[] keyBytes, int keyOffset, int keyLength, string value)
         {{
+            {AppendSwitch(loop.Headers.Where(h => h.PrimaryHeader).GroupBy(x => x.Name.Length), loop.ClassName)}
+            
+            AppendNonPrimaryHeaders(keyBytes, keyOffset, keyLength, value);
+        }}
+        
+        private unsafe void AppendNonPrimaryHeaders(byte[] keyBytes, int keyOffset, int keyLength, string value)
+        {{
             string key;
-            fixed (byte* ptr = &keyBytes[keyOffset])
-            {{
-                var pUB = ptr;
-                var pUL = (ulong*)pUB;
-                var pUI = (uint*)pUB;
-                var pUS = (ushort*)pUB;
-                switch (keyLength)
-                {{{Each(loop.HeadersByLength, byLength => $@"
-                    case {byLength.Key}:
-                        {{{Each(byLength, header => $@"
-                            if ({header.EqualIgnoreCaseBytes()})
-                            {{
-                                if ({header.TestBit()})
-                                {{
-                                    _headers._{header.Identifier} = AppendValue(_headers._{header.Identifier}, value);
-                                }}
-                                else
-                                {{{If(loop.ClassName == "FrameResponseHeaders" && header.Identifier == "ContentLength", () => @"
-                                    _contentLength = ParseContentLength(value);")}
-                                    {header.SetBit()};
-                                    _headers._{header.Identifier} = new StringValues(value);{(header.EnhancedSetter == false ? "" : $@"
-                                    _headers._raw{header.Identifier} = null;")}
-                                }}
-                                return;
-                            }}
-                        ")}}}
-                        break;
-                ")}}}
-
-                key = new string('\0', keyLength);
-                fixed(char *keyBuffer = key)
-                {{
-                    if (!AsciiUtilities.TryGetAsciiString(ptr, keyBuffer, keyLength))
-                    {{
-                        throw BadHttpRequestException.GetException(RequestRejectionReason.InvalidCharactersInHeaderName);
-                    }}
-                }}
-            }}
+            {AppendSwitch(loop.Headers.Where(h => !h.PrimaryHeader).GroupBy(x => x.Name.Length), loop.ClassName, true)}
 
             StringValues existing;
             Unknown.TryGetValue(key, out existing);
