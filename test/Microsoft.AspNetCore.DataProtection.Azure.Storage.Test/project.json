@@ -2,7 +2,7 @@
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.DataProtection": "1.1.0-*",
-    "Microsoft.AspNetCore.DataProtection.Azure.Blob": "0.1.0-*",
+    "Microsoft.AspNetCore.DataProtection.Azure.Storage": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
     "xunit": "2.2.0-*",

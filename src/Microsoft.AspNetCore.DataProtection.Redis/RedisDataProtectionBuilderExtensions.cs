@@ -4,7 +4,6 @@
 using System;
 using StackExchange.Redis;
 using Microsoft.AspNetCore.DataProtection.Repositories;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.AspNetCore.DataProtection

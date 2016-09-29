@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0-*",
+  "version": "1.0.0-*",
   "description": "Microsoft Azure Blob storrage support as key store.",
   "packOptions": {
     "repository": {
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.DataProtection": "1.1.0-*",
-    "WindowsAzure.Storage": "7.0.2-preview"
+    "WindowsAzure.Storage": "7.2.1"
   },
   "frameworks": {
     "net451": {},

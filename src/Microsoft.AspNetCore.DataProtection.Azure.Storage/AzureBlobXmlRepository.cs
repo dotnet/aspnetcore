@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 
-namespace Microsoft.AspNetCore.DataProtection.Azure.Blob
+namespace Microsoft.AspNetCore.DataProtection.Azure.Storage
 {
     /// <summary>
     /// An <see cref="IXmlRepository"/> which is backed by Azure Blob Storage.

@@ -7,7 +7,7 @@
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>8c41240e-48f8-402f-9388-74cfe27f4d76</ProjectGuid>
-    <RootNamespace>Microsoft.AspNetCore.DataProtection.Azure.Test</RootNamespace>
+    <RootNamespace>Microsoft.AspNetCore.DataProtection.Azure.Storage.Test</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
   </PropertyGroup>

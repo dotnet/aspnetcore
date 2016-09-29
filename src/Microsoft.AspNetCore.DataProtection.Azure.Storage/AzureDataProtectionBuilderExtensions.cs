@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.DataProtection.Azure.Storage;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Auth;
 using Microsoft.WindowsAzure.Storage.Blob;
 
-namespace Microsoft.AspNetCore.DataProtection.Azure.Blob
+namespace Microsoft.AspNetCore.DataProtection
 {
     /// <summary>
     /// Contains Azure-specific extension methods for modifying a
