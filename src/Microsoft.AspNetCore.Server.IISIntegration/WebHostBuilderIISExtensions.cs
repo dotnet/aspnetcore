@@ -30,12 +30,21 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(hostBuilder));
             }
 
+            // Check if `UseIISIntegration` was called already
+            if (hostBuilder.GetSetting(nameof(UseIISIntegration)) != null)
+            {
+                return hostBuilder;
+            }
+
             var port = hostBuilder.GetSetting(ServerPort) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{ServerPort}");
             var path = hostBuilder.GetSetting(ServerPath) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{ServerPath}");
             var pairingToken = hostBuilder.GetSetting(PairingToken) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{PairingToken}");
 
             if (!string.IsNullOrEmpty(port) && !string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(pairingToken))
             {
+                // Set flag to prevent double service configuration
+                hostBuilder.UseSetting(nameof(UseIISIntegration), true.ToString());
+
                 var address = "http://localhost:" + port;
                 hostBuilder.CaptureStartupErrors(true);
 
