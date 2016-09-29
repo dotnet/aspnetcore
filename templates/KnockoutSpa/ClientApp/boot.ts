@@ -2,9 +2,10 @@ import './css/site.css';
 import * as ko from 'knockout';
 import { createHistory } from 'history';
 import './webpack-component-loader';
+import AppRootComponent from './components/app-root/app-root';
 
 // Load and register the <app-root> component
-ko.components.register('app-root', require('./components/app-root/app-root').default);
+ko.components.register('app-root', AppRootComponent);
 
 // Tell Knockout to start up an instance of your application
 ko.applyBindings({ history: createHistory() });
