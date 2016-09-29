@@ -6,3 +6,4 @@
 /// <reference path="crossroads/crossroads.d.ts" />
 /// <reference path="js-signals/js-signals.d.ts" />
 /// <reference path="isomorphic-fetch/isomorphic-fetch.d.ts" />
+/// <reference path="jquery/jquery.d.ts" />

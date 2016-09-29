@@ -28,6 +28,9 @@
     },
     "isomorphic-fetch/isomorphic-fetch.d.ts": {
       "commit": "57ec5fbb76060329c10959d449eb1d4e70b15a65"
+    },
+    "jquery/jquery.d.ts": {
+      "commit": "f470e7569e7046c62866f57bc4fea56ba79975d5"
     }
   }
 }

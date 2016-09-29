@@ -1,4 +1,5 @@
 import * as ko from 'knockout';
+import * as $ from 'jquery';
 import crossroads = require('crossroads');
 
 // This module configures crossroads.js, a routing library. If you prefer, you
@@ -28,7 +29,7 @@ export class Router {
         // Make history.js watch for navigation and notify Crossroads
         this.disposeHistory = history.listen(location => crossroads.parse(location.pathname));
         this.clickEventListener = evt => {
-            let target: any = evt.target;
+            let target: any = evt.currentTarget;
             if (target && target.tagName === 'A') {
                 let href = target.getAttribute('href');
                 if (href && href.charAt(0) == '/') {
@@ -38,12 +39,12 @@ export class Router {
             }
         };
 
-        document.addEventListener('click', this.clickEventListener);
+        $(document).on('click', 'a', this.clickEventListener);
     }
 
     public dispose() {
         this.disposeHistory();
-        document.removeEventListener('click', this.clickEventListener);
+        $(document).off('click', 'a', this.clickEventListener);
     }
 }
 
