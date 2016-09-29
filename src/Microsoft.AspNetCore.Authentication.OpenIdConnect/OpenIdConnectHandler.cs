@@ -806,12 +806,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             }
 
             // adding remaining unique claims from userinfo endpoint to the identity
-            foreach (var pair in user)
-            {
-                JToken value;
-                var claimValue = user.TryGetValue(pair.Key, out value) ? value.ToString() : null;
-                identity.AddClaim(new Claim(pair.Key, claimValue, ClaimValueTypes.String, jwt.Issuer));
-            }
+            ClaimsHelper.AddClaimsToIdentity(user, identity, jwt.Issuer);
 
             return AuthenticateResult.Success(ticket);
         }
