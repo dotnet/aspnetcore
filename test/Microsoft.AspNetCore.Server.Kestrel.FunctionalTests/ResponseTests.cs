@@ -5,13 +5,17 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
@@ -211,6 +215,116 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "");
                 }
             }
+        }
+
+        [Fact]
+        public async Task TransferEncodingChunkedSetOnUnknownLengthHttp11Response()
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.WriteAsync("hello, ");
+                await httpContext.Response.WriteAsync("world");
+            }, new TestServiceContext()))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "7",
+                        "hello, ",
+                        "5",
+                        "world",
+                        "0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(204)]
+        [InlineData(205)]
+        [InlineData(304)]
+        public async Task TransferEncodingChunkedNotSetOnNonBodyResponse(int statusCode)
+        {
+            using (var server = new TestServer(httpContext =>
+            {
+                httpContext.Response.StatusCode = statusCode;
+                return TaskCache.CompletedTask;
+            }, new TestServiceContext()))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.Receive(
+                        $"HTTP/1.1 {Encoding.ASCII.GetString(ReasonPhrases.ToStatusBytes(statusCode))}",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task TransferEncodingNotSetOnHeadResponse()
+        {
+            using (var server = new TestServer(httpContext =>
+            {
+                return TaskCache.CompletedTask;
+            }, new TestServiceContext()))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "HEAD / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.Receive(
+                        $"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ResponseBodyNotWrittenOnHeadResponse()
+        {
+            var mockKestrelTrace = new Mock<IKestrelTrace>();
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.WriteAsync("hello, world");
+                await httpContext.Response.Body.FlushAsync();
+            }, new TestServiceContext { Log = mockKestrelTrace.Object }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "HEAD / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.Receive(
+                        $"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+                }
+            }
+
+            mockKestrelTrace.Verify(kestrelTrace =>
+                kestrelTrace.ConnectionHeadResponseBodyWrite(It.IsAny<string>(), "hello, world".Length));
         }
 
         public static TheoryData<string, StringValues, string> NullHeaderData

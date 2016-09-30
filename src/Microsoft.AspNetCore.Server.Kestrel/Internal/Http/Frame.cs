@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -73,6 +74,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         protected readonly long _keepAliveMilliseconds;
         private readonly long _requestHeadersTimeoutMilliseconds;
+
+        private int _responseBytesWritten;
 
         public Frame(ConnectionContext context)
         {
@@ -172,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 if (HasResponseStarted)
                 {
-                    BadHttpResponse.ThrowException(ResponseRejectionReasons.ValueCannotBeSetResponseStarted, ResponseRejectionParameter.StatusCode);
+                    ThrowResponseAlreadyStartedException(nameof(StatusCode));
                 }
 
                 _statusCode = value;
@@ -190,7 +193,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 if (HasResponseStarted)
                 {
-                    BadHttpResponse.ThrowException(ResponseRejectionReasons.ValueCannotBeSetResponseStarted, ResponseRejectionParameter.ReasonPhrase);
+                    ThrowResponseAlreadyStartedException(nameof(ReasonPhrase));
                 }
 
                 _reasonPhrase = value;
@@ -346,6 +349,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             _remainingRequestHeadersBytesAllowed = ServerOptions.Limits.MaxRequestHeadersTotalSize;
             _requestHeadersParsed = 0;
+
+            _responseBytesWritten = 0;
         }
 
         /// <summary>
@@ -426,7 +431,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 if (HasResponseStarted)
                 {
-                    BadHttpResponse.ThrowException(ResponseRejectionReasons.OnStartingCannotBeSetResponseStarted, ResponseRejectionParameter.OnStarting);
+                    ThrowResponseAlreadyStartedException(nameof(OnStarting));
                 }
 
                 if (_onStarting == null)
@@ -512,6 +517,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public void Write(ArraySegment<byte> data)
         {
             ProduceStartAndFireOnStarting().GetAwaiter().GetResult();
+            _responseBytesWritten += data.Count;
 
             if (_canHaveBody)
             {
@@ -530,7 +536,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
             else
             {
-                HandleNonBodyResponseWrite(data.Count);
+                HandleNonBodyResponseWrite();
             }
         }
 
@@ -540,6 +546,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 return WriteAsyncAwaited(data, cancellationToken);
             }
+
+            _responseBytesWritten += data.Count;
 
             if (_canHaveBody)
             {
@@ -558,7 +566,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
             else
             {
-                HandleNonBodyResponseWrite(data.Count);
+                HandleNonBodyResponseWrite();
                 return TaskCache.CompletedTask;
             }
         }
@@ -566,6 +574,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public async Task WriteAsyncAwaited(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
             await ProduceStartAndFireOnStarting();
+            _responseBytesWritten += data.Count;
 
             if (_canHaveBody)
             {
@@ -584,10 +593,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
             else
             {
-                HandleNonBodyResponseWrite(data.Count);
+                HandleNonBodyResponseWrite();
                 return;
             }
-
         }
 
         private void WriteChunked(ArraySegment<byte> data)
@@ -700,11 +708,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     return TaskCache.CompletedTask;
                 }
 
-                // If the request was rejected, StatusCode has already been set by SetBadRequestState
+                // If the request was rejected, the error state has already been set by SetBadRequestState
                 if (!_requestRejected)
                 {
                     // 500 Internal Server Error
-                    ErrorResetHeadersToDefaults(statusCode: 500);
+                    SetErrorResponseHeaders(statusCode: 500);
                 }
             }
 
@@ -740,6 +748,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 ConnectionControl.End(ProduceEndType.ConnectionKeepAlive);
             }
 
+            if (HttpMethods.IsHead(Method) && _responseBytesWritten > 0)
+            {
+                Log.ConnectionHeadResponseBodyWrite(ConnectionId, _responseBytesWritten);
+            }
+
             return TaskCache.CompletedTask;
         }
 
@@ -758,24 +771,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             bool appCompleted)
         {
             var responseHeaders = FrameResponseHeaders;
-
             var hasConnection = responseHeaders.HasConnection;
 
-            // Set whether response can have body
-            _canHaveBody = StatusCanHaveBody(StatusCode) && Method != "HEAD";
-
             var end = SocketOutput.ProducingStart();
+
             if (_keepAlive && hasConnection)
             {
                 var connectionValue = responseHeaders.HeaderConnection.ToString();
                 _keepAlive = connectionValue.Equals("keep-alive", StringComparison.OrdinalIgnoreCase);
             }
-            
+
+            // Set whether response can have body
+            _canHaveBody = StatusCanHaveBody(StatusCode) && Method != "HEAD";
+
+            // Don't set the Content-Length or Transfer-Encoding headers
+            // automatically for HEAD requests or 204, 205, 304 responses.
             if (_canHaveBody)
             {
                 if (!responseHeaders.HasTransferEncoding && !responseHeaders.HasContentLength)
                 {
-                    if (appCompleted)
+                    if (appCompleted && StatusCode != 101)
                     {
                         // Since the app has completed and we are only now generating
                         // the headers we can safely set the Content-Length to 0.
@@ -790,7 +805,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         //
                         // A server MUST NOT send a response containing Transfer-Encoding unless the corresponding
                         // request indicates HTTP/1.1 (or later).
-                        if (_httpVersion == Http.HttpVersion.Http11)
+                        if (_httpVersion == Http.HttpVersion.Http11 && StatusCode != 101)
                         {
                             _autoChunk = true;
                             responseHeaders.SetRawTransferEncoding("chunked", _bytesTransferEncodingChunked);
@@ -804,8 +819,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
             else
             {
-                // Don't set the Content-Length or Transfer-Encoding headers
-                // automatically for HEAD requests or 101, 204, 205, 304 responses.
                 if (responseHeaders.HasTransferEncoding)
                 {
                     RejectNonBodyTransferEncodingResponse(appCompleted);
@@ -1271,15 +1284,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public bool StatusCanHaveBody(int statusCode)
         {
             // List of status codes taken from Microsoft.Net.Http.Server.Response
-            return statusCode != 101 &&
-                   statusCode != 204 &&
+            return statusCode != 204 &&
                    statusCode != 205 &&
                    statusCode != 304;
         }
 
+        private void ThrowResponseAlreadyStartedException(string value)
+        {
+            throw new InvalidOperationException($"{value} cannot be set, response has already started.");
+        }
+
         private void RejectNonBodyTransferEncodingResponse(bool appCompleted)
         {
-            var ex = BadHttpResponse.GetException(ResponseRejectionReasons.TransferEncodingSetOnNonBodyResponse, StatusCode);
+            var ex = new InvalidOperationException($"Transfer-Encoding set on a {StatusCode} non-body request.");
             if (!appCompleted)
             {
                 // Back out of header creation surface exeception in user code
@@ -1289,18 +1306,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             else
             {
                 ReportApplicationError(ex);
+
                 // 500 Internal Server Error
-                ErrorResetHeadersToDefaults(statusCode: 500);
+                SetErrorResponseHeaders(statusCode: 500);
             }
         }
 
-        private void ErrorResetHeadersToDefaults(int statusCode)
+        private void SetErrorResponseHeaders(int statusCode)
         {
-            // Setting status code will throw if response has already started
-            if (!HasResponseStarted)
+            Debug.Assert(!HasResponseStarted, $"{nameof(SetErrorResponseHeaders)} called after response had already started.");
+
+            StatusCode = statusCode;
+            ReasonPhrase = null;
+
+            if (FrameResponseHeaders == null)
             {
-                StatusCode = statusCode;
-                ReasonPhrase = null;
+                InitializeHeaders();
             }
 
             var responseHeaders = FrameResponseHeaders;
@@ -1316,17 +1337,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
         }
 
-        public void HandleNonBodyResponseWrite(int count)
+        public void HandleNonBodyResponseWrite()
         {
-            if (Method == "HEAD")
+            // Writes to HEAD response are ignored and logged at the end of the request
+            if (Method != "HEAD")
             {
-                // Don't write to body for HEAD requests.
-                Log.ConnectionHeadResponseBodyWrite(ConnectionId, count);
-            }
-            else
-            {
-                // Throw Exception for 101, 204, 205, 304 responses.
-                BadHttpResponse.ThrowException(ResponseRejectionReasons.WriteToNonBodyResponse, StatusCode);
+                // Throw Exception for 204, 205, 304 responses.
+                throw new InvalidOperationException($"Write to non-body {StatusCode} response.");
             }
         }
 
@@ -1365,7 +1382,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public void SetBadRequestState(BadHttpRequestException ex)
         {
-            ErrorResetHeadersToDefaults(statusCode: ex.StatusCode);
+            // Setting status code will throw if response has already started
+            if (!HasResponseStarted)
+            {
+                SetErrorResponseHeaders(statusCode: ex.StatusCode);
+            }
 
             _keepAlive = false;
             _requestProcessingStopping = true;

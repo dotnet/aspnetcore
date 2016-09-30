@@ -5,6 +5,7 @@ using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -63,13 +64,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ResponsesAreNotChunkedAutomaticallyForHttp10RequestsAndHttp11NonKeepAliveRequests(TestServiceContext testContext)
+        public async Task ResponsesAreNotChunkedAutomaticallyForHttp10Requests(TestServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>
             {
-                var response = httpContext.Response;
-                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
-                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
+                await httpContext.Response.WriteAsync("Hello ");
+                await httpContext.Response.WriteAsync("World!");
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -86,7 +86,19 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "Hello World!");
                 }
+            }
+        }
 
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task ResponsesAreChunkedAutomaticallyForHttp11NonKeepAliveRequests(TestServiceContext testContext)
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.WriteAsync("Hello ");
+                await httpContext.Response.WriteAsync("World!");
+            }, testContext))
+            {
                 using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
@@ -98,23 +110,28 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "HTTP/1.1 200 OK",
                         "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
                         "",
-                        "Hello World!");
+                        "6",
+                        "Hello ",
+                        "6",
+                        "World!",
+                        "0",
+                        "",
+                        "");
                 }
             }
         }
 
-
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task SettingConnectionCloseHeaderInAppDisablesChunking(TestServiceContext testContext)
+        public async Task SettingConnectionCloseHeaderInAppDoesNotDisableChunking(TestServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>
             {
-                var response = httpContext.Response;
-                response.Headers["Connection"] = "close";
-                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
-                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
+                httpContext.Response.Headers["Connection"] = "close";
+                await httpContext.Response.WriteAsync("Hello ");
+                await httpContext.Response.WriteAsync("World!");
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -127,8 +144,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "HTTP/1.1 200 OK",
                         "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
                         "",
-                        "Hello World!");
+                        "6",
+                        "Hello ",
+                        "6",
+                        "World!",
+                        "0",
+                        "",
+                        "");
                 }
             }
         }
