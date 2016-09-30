@@ -1,0 +1,55 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script>
+
+        var connectionId;
+
+        function send() {
+            var body = document.getElementById('data').value;
+
+            var xhr = new XMLHttpRequest();
+            var url = '/send?id=' + connectionId;
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader('Content-type', 'application/json');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                }
+            }
+            var data = JSON.stringify(body);
+            xhr.send(data);
+        }
+
+        var source = new EventSource('/sse');
+
+        source.onopen = function () {
+            console.log('Opened!');
+        };
+
+        source.onerror = function (err) {
+            console.log('Error: ' + err.type);
+        };
+
+        source.onmessage = function (data) {
+            if (!connectionId) {
+                connectionId = data.data;
+                return;
+            }
+            var child = document.createElement('li');
+            child.innerText = data.data;
+            document.getElementById('messages').appendChild(child);
+        };
+    </script>
+</head>
+<body>
+    <h1>Server Sent Events</h1>
+    <input type="text" id="data" />
+    <input type="button" value="Send" onclick="send()" />
+
+    <ul id="messages">
+
+    </ul>
+</body>
+</html>

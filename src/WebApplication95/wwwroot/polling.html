@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script>
+
+        var connectionId;
+
+        function send() {
+            var body = document.getElementById('data').value;
+
+            var xhr = new XMLHttpRequest();
+            var url = '/send?id=' + connectionId;
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader('Content-type', 'application/json');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                }
+            }
+            var data = JSON.stringify(body);
+            xhr.send(data);
+        }
+
+
+        function poll(id) {
+            var xhr = new XMLHttpRequest();
+            var url = '/poll' + (id == null ? '' : '?id=' + id);
+            xhr.open("POST", url, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var json = JSON.parse(xhr.responseText);
+                    var id = json.c;
+                    var data = json.d;
+                    if (data) {
+                        var child = document.createElement('li');
+                        child.innerText = data;
+                        document.getElementById('messages').appendChild(child);
+                    }
+
+                    if (!connectionId) {
+                        connectionId = id;
+                    }
+
+                    poll(id);
+                }
+            }
+            xhr.send(null);
+        }
+
+        poll();
+    </script>
+</head>
+<body>
+    <h1>Long Polling</h1>
+    <input type="text" id="data" />
+    <input type="button" value="Send" onclick="send()" />
+
+    <ul id="messages"></ul>
+</body>
+</html>
