@@ -2,12 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCompression
@@ -21,19 +19,19 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
         private readonly Stream _bodyOriginalStream;
 
-        private readonly Func<HttpContext, bool> _shouldCompressResponse;
+        private readonly IResponseCompressionProvider _provider;
 
-        private readonly IResponseCompressionProvider _compressionProvider;
+        private readonly ICompressionProvider _compressionProvider;
 
         private bool _compressionChecked = false;
 
         private Stream _compressionStream = null;
 
-        internal BodyWrapperStream(HttpResponse response, Stream bodyOriginalStream, Func<HttpContext, bool> shouldCompressResponse, IResponseCompressionProvider compressionProvider)
+        internal BodyWrapperStream(HttpResponse response, Stream bodyOriginalStream, IResponseCompressionProvider provider, ICompressionProvider compressionProvider)
         {
             _response = response;
             _bodyOriginalStream = bodyOriginalStream;
-            _shouldCompressResponse = shouldCompressResponse;
+            _provider = provider;
             _compressionProvider = compressionProvider;
         }
 
@@ -174,9 +172,8 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
         private bool IsCompressable()
         {
-            return _response.Headers[HeaderNames.ContentRange] == StringValues.Empty &&     // The response is not partial
-                _response.Headers[HeaderNames.ContentEncoding] == StringValues.Empty &&    // Not specific encoding already set
-                _shouldCompressResponse(_response.HttpContext);
+            return !_response.Headers.ContainsKey(HeaderNames.ContentRange) &&     // The response is not partial
+                _provider.ShouldCompressResponse(_response.HttpContext);
         }
     }
 }

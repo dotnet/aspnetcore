@@ -1,9 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.ResponseCompression
 {
@@ -13,19 +11,13 @@ namespace Microsoft.AspNetCore.ResponseCompression
     public class ResponseCompressionOptions
     {
         /// <summary>
-        /// Called when an HTTP request accepts a compatible compression algorithm, and returns True
-        /// if the response should be compressed.
+        /// Response Content-Type MIME types to compress.
         /// </summary>
-        public Func<HttpContext, bool> ShouldCompressResponse { get; set; }
+        public IEnumerable<string> MimeTypes { get; set; }
 
         /// <summary>
-        /// The compression providers. If 'null', the GZIP provider is set as default.
-        /// </summary>
-        public IEnumerable<IResponseCompressionProvider> Providers { get; set; }
-
-        /// <summary>
-        /// 'False' to enable compression only on HTTP requests. Enable compression on HTTPS requests
-        /// may lead to security problems.
+        /// Indicates if responses over HTTPS connections should be compressed. The default is 'false'.
+        /// Enable compression on HTTPS connections may expose security problems.
         /// </summary>
         public bool EnableHttps { get; set; } = false;
     }

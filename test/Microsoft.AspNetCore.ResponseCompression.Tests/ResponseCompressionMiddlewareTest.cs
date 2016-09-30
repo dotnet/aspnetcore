@@ -3,15 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -22,36 +19,11 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         private const string TextPlain = "text/plain";
 
         [Fact]
-        public void Options_NullShouldCompressResponse_Throws()
-        {
-            Assert.Throws<ArgumentException>(() =>
-            {
-                new ResponseCompressionMiddleware(null, Options.Create(new ResponseCompressionOptions()
-                {
-                    ShouldCompressResponse = null
-                }));
-            });
-        }
-
-        [Fact]
         public void Options_HttpsDisabledByDefault()
         {
             var options = new ResponseCompressionOptions();
 
             Assert.False(options.EnableHttps);
-        }
-
-        [Fact]
-        public void Options_EmptyProviderList_Throws()
-        {
-            Assert.Throws<ArgumentException>(() =>
-            {
-                new ResponseCompressionMiddleware(null, Options.Create(new ResponseCompressionOptions()
-                {
-                    ShouldCompressResponse = _ => true,
-                    Providers = new IResponseCompressionProvider[0]
-                }));
-            });
         }
 
         [Fact]
@@ -76,6 +48,91 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var response = await InvokeMiddleware(100, requestAcceptEncodings: new string[] { "unknown" }, responseType: TextPlain);
 
             CheckResponseNotCompressed(response, expectedBodyLength: 100);
+        }
+
+        [Fact]
+        public void NoMimeTypes_Throws()
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddResponseCompression();
+                })
+                .Configure(app =>
+                {
+                    app.UseResponseCompression();
+                    app.Run(context =>
+                    {
+                        context.Response.ContentType = TextPlain;
+                        return context.Response.WriteAsync(new string('a', 100));
+                    });
+                });
+
+            Assert.Throws<InvalidOperationException>(() => new TestServer(builder));
+        }
+
+        [Theory]
+        [InlineData("text/plain")]
+        [InlineData("text/PLAIN")]
+        [InlineData("text/plain; charset=ISO-8859-4")]
+        [InlineData("text/plain ; charset=ISO-8859-4")]
+        public async Task ContentType_WithCharset_Compress(string contentType)
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddResponseCompression(TextPlain);
+                })
+                .Configure(app =>
+                {
+                    app.UseResponseCompression();
+                    app.Run(context =>
+                    {
+                        context.Response.ContentType = contentType;
+                        return context.Response.WriteAsync(new string('a', 100));
+                    });
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd("gzip");
+
+            var response = await client.SendAsync(request);
+
+            Assert.Equal(24, response.Content.ReadAsByteArrayAsync().Result.Length);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("text/plain2")]
+        public async Task MimeTypes_OtherContentTypes_NoMatch(string contentType)
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddResponseCompression(TextPlain);
+                })
+                .Configure(app =>
+                {
+                    app.UseResponseCompression();
+                    app.Run(context =>
+                    {
+                        context.Response.ContentType = contentType;
+                        return context.Response.WriteAsync(new string('a', 100));
+                    });
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd("gzip");
+
+            var response = await client.SendAsync(request);
+
+            Assert.Equal(100, response.Content.ReadAsByteArrayAsync().Result.Length);
         }
 
         [Fact]
@@ -134,7 +191,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         }
 
         [Fact]
-        public async Task Response_WithContentEncodingAlreadySet_NotCompressed()
+        public async Task Response_WithContentEncodingAlreadySet_Stacked()
         {
             var otherContentEncoding = "something";
 
@@ -143,9 +200,9 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 r.Headers[HeaderNames.ContentEncoding] = otherContentEncoding;
             });
 
-            Assert.NotNull(response.Headers.GetValues(HeaderNames.ContentMD5));
-            Assert.Single(response.Content.Headers.ContentEncoding, otherContentEncoding);
-            Assert.Equal(50, response.Content.Headers.ContentLength);
+            Assert.True(response.Content.Headers.ContentEncoding.Contains(otherContentEncoding));
+            Assert.True(response.Content.Headers.ContentEncoding.Contains("gzip"));
+            Assert.Equal(24, response.Content.Headers.ContentLength);
         }
 
         [Theory]
@@ -153,52 +210,47 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [InlineData(true, 24)]
         public async Task Request_Https_CompressedIfEnabled(bool enableHttps, int expectedLength)
         {
-            var options = new ResponseCompressionOptions()
-            {
-                ShouldCompressResponse = _ => true,
-                Providers = new IResponseCompressionProvider[]
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
                 {
-                    new GzipResponseCompressionProvider(CompressionLevel.Optimal)
-                },
-                EnableHttps = enableHttps
-            };
+                    services.AddResponseCompression(options =>
+                    {
+                        options.EnableHttps = enableHttps;
+                        options.MimeTypes = new[] { TextPlain };
+                    });
+                })
+                .Configure(app =>
+                {
+                    app.UseResponseCompression();
+                    app.Run(context =>
+                    {
+                        context.Response.ContentType = TextPlain;
+                        return context.Response.WriteAsync(new string('a', 100));
+                    });
+                });
 
-            var middleware = new ResponseCompressionMiddleware(async context =>
-            {
-                context.Response.ContentType = TextPlain;
-                await context.Response.WriteAsync(new string('a', 100));
-            }, Options.Create(options));
+            var server = new TestServer(builder);
+            server.BaseAddress = new Uri("https://localhost/");
+            var client = server.CreateClient();
 
-            var httpContext = new DefaultHttpContext();
-            httpContext.Request.Headers[HeaderNames.AcceptEncoding] = "gzip";
-            httpContext.Request.IsHttps = true;
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd("gzip");
 
-            httpContext.Response.Body = new MemoryStream();
+            var response = await client.SendAsync(request);
 
-            await middleware.Invoke(httpContext);
-
-            Assert.Equal(expectedLength, httpContext.Response.Body.Length);
+            Assert.Equal(expectedLength, response.Content.ReadAsByteArrayAsync().Result.Length);
         }
 
         private Task<HttpResponseMessage> InvokeMiddleware(int uncompressedBodyLength, string[] requestAcceptEncodings, string responseType, Action<HttpResponse> addResponseAction = null)
         {
-            var options = new ResponseCompressionOptions()
-            {
-                ShouldCompressResponse = ctx =>
-                {
-                    var contentType = ctx.Response.Headers[HeaderNames.ContentType];
-                    return contentType.ToString().IndexOf(TextPlain) >= 0;
-                },
-                Providers = new IResponseCompressionProvider[]
-                {
-                    new GzipResponseCompressionProvider(CompressionLevel.Optimal)
-                }
-            };
-
             var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddResponseCompression(TextPlain);
+                })
                 .Configure(app =>
                 {
-                    app.UseResponseCompression(options);
+                    app.UseResponseCompression();
                     app.Run(context =>
                     {
                         context.Response.Headers[HeaderNames.ContentMD5] = "MD5";

@@ -1,25 +1,27 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.ResponseCompression
 {
     /// <summary>
-    /// Provides methods to be able to compress HTTP responses.
+    /// Used to examine requests and responses to see if compression should be enabled.
     /// </summary>
     public interface IResponseCompressionProvider
     {
         /// <summary>
-        /// The name that will be searched in the 'Accept-Encoding' request header.
+        /// Examines the request and selects an acceptable compression provider, if any.
         /// </summary>
-        string EncodingName { get; }
+        /// <param name="context"></param>
+        /// <returns>A compression provider or null if compression should not be used.</returns>
+        ICompressionProvider GetCompressionProvider(HttpContext context);
 
         /// <summary>
-        /// Create a new compression stream.
+        /// Examines the response on first write to see if compression should be used.
         /// </summary>
-        /// <param name="outputStream">The stream where the compressed data have to be written.</param>
-        /// <returns>The new stream.</returns>
-        Stream CreateStream(Stream outputStream);
+        /// <param name="context"></param>
+        /// <returns></returns>
+        bool ShouldCompressResponse(HttpContext context);
     }
 }

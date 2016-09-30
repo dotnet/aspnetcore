@@ -9,26 +9,27 @@ namespace Microsoft.AspNetCore.ResponseCompression
     /// <summary>
     /// GZIP compression provider.
     /// </summary>
-    public class GzipResponseCompressionProvider : IResponseCompressionProvider
+    public class GzipCompressionProvider : ICompressionProvider
     {
-        private readonly CompressionLevel _level;
-
         /// <summary>
-        /// Initialize a new <see cref="GzipResponseCompressionProvider"/>.
+        /// Initialize a new <see cref="GzipCompressionProvider"/>.
         /// </summary>
-        /// <param name="level">The compression level.</param>
-        public GzipResponseCompressionProvider(CompressionLevel level)
+        public GzipCompressionProvider()
         {
-            _level = level;
         }
 
         /// <inheritdoc />
-        public string EncodingName { get; } = "gzip";
+        public string EncodingName => "gzip";
+
+        /// <summary>
+        /// What level of compression to use for the stream.
+        /// </summary>
+        public CompressionLevel Level { get; set; } = CompressionLevel.Fastest;
 
         /// <inheritdoc />
         public Stream CreateStream(Stream outputStream)
         {
-            return new GZipStream(outputStream, _level, true);
+            return new GZipStream(outputStream, Level, leaveOpen: true);
         }
     }
 }

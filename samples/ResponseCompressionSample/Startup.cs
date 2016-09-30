@@ -5,21 +5,26 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ResponseCompressionSample
 {
     public class Startup
     {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddTransient<ICompressionProvider, GzipCompressionProvider>();
+            services.AddTransient<ICompressionProvider, CustomCompressionProvider>();
+            services.AddResponseCompression("text/plain", "text/html");
+        }
+
         public void Configure(IApplicationBuilder app)
         {
-            app.UseResponseCompression(new ResponseCompressionOptions()
-            {
-                ShouldCompressResponse = ResponseCompressionUtils.CreateShouldCompressResponseDelegate(new string[] { "text/plain" })
-            });
+            app.UseResponseCompression();
 
             app.Run(async context =>
             {
-                context.Response.Headers["Content-Type"] = "text/plain";
+                context.Response.ContentType = "text/plain";
                 await context.Response.WriteAsync(LoremIpsum.Text);
             });
         }
