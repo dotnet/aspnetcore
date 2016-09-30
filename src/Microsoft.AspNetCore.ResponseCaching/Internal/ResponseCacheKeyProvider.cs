@@ -12,7 +12,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    internal class ResponseCacheKeyProvider : IResponseCacheKeyProvider
+    public class ResponseCacheKeyProvider : IResponseCacheKeyProvider
     {
         // Use the record separator for delimiting components of the cache key to avoid possible collisions
         private static readonly char KeyDelimiter = '\x1e';
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         private readonly ObjectPool<StringBuilder> _builderPool;
         private readonly ResponseCacheOptions _options;
 
-        internal ResponseCacheKeyProvider(ObjectPoolProvider poolProvider, IOptions<ResponseCacheOptions> options)
+        public ResponseCacheKeyProvider(ObjectPoolProvider poolProvider, IOptions<ResponseCacheOptions> options)
         {
             if (poolProvider == null)
             {

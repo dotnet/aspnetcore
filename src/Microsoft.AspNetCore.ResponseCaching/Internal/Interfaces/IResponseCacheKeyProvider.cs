@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    internal interface IResponseCacheKeyProvider
+    public interface IResponseCacheKeyProvider
     {
         /// <summary>
         /// Create a base key for a response cache entry.

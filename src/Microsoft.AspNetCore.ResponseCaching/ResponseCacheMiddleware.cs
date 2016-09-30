@@ -30,20 +30,9 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         public ResponseCacheMiddleware(
             RequestDelegate next,
-            IResponseCacheStore store,
             IOptions<ResponseCacheOptions> options,
             IResponseCachePolicyProvider policyProvider,
-            ObjectPoolProvider poolProvider)
-            :this (next, store, options, policyProvider, new ResponseCacheKeyProvider(poolProvider, options))
-        {
-        }
-
-        // Internal for testing
-        internal ResponseCacheMiddleware(
-            RequestDelegate next,
             IResponseCacheStore store,
-            IOptions<ResponseCacheOptions> options,
-            IResponseCachePolicyProvider policyProvider,
             IResponseCacheKeyProvider keyProvider)
         {
             if (next == null)

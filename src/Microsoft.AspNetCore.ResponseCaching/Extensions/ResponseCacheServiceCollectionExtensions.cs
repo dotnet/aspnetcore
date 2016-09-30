@@ -18,29 +18,9 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddMemoryCache();
-            services.AddResponseCacheServices();
-            services.TryAdd(ServiceDescriptor.Singleton<IResponseCacheStore, MemoryResponseCacheStore>());
-
-            return services;
-        }
-
-        public static IServiceCollection AddDistributedResponseCacheStore(this IServiceCollection services)
-        {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            services.AddDistributedMemoryCache();
-            services.AddResponseCacheServices();
-            services.TryAdd(ServiceDescriptor.Singleton<IResponseCacheStore, DistributedResponseCacheStore>());
-
-            return services;
-        }
-
-        private static IServiceCollection AddResponseCacheServices(this IServiceCollection services)
-        {
             services.TryAdd(ServiceDescriptor.Singleton<IResponseCachePolicyProvider, ResponseCachePolicyProvider>());
+            services.TryAdd(ServiceDescriptor.Singleton<IResponseCacheKeyProvider, ResponseCacheKeyProvider>());
+            services.TryAdd(ServiceDescriptor.Singleton<IResponseCacheStore, MemoryResponseCacheStore>());
 
             return services;
         }

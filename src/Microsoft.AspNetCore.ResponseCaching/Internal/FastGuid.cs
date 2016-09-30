@@ -54,7 +54,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         private static unsafe string GenerateGuidString(FastGuid guid)
         {
-
             // stackalloc to allocate array on stack rather than heap
             char* charBuffer = stackalloc char[13];
 

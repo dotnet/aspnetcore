@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Headers;
+using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 

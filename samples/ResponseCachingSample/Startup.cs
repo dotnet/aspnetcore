@@ -15,7 +15,7 @@ namespace ResponseCachingSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDistributedResponseCacheStore();
+            services.AddMemoryResponseCacheStore();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -23,7 +23,6 @@ namespace ResponseCachingSample
             app.UseResponseCache();
             app.Run(async (context) =>
             {
-                // These settings should be configured by context.Response.Cache.*
                 context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
                 {
                     Public = true,
