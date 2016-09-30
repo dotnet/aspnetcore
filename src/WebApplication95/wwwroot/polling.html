@@ -11,7 +11,7 @@
             var body = document.getElementById('data').value;
 
             var xhr = new XMLHttpRequest();
-            var url = '/send?id=' + connectionId;
+            var url = '/chat/send?id=' + connectionId;
             xhr.open("POST", url, true);
             xhr.setRequestHeader('Content-type', 'application/json');
             xhr.onreadystatechange = function () {
@@ -25,7 +25,7 @@
 
         function poll(id) {
             var xhr = new XMLHttpRequest();
-            var url = '/poll' + (id == null ? '' : '?id=' + id);
+            var url = '/chat/poll' + (id == null ? '' : '?id=' + id);
             xhr.open("POST", url, true);
             xhr.onreadystatechange = function () {
                 if (xhr.readyState == 4 && xhr.status == 200) {

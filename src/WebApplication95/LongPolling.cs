@@ -75,8 +75,10 @@ namespace WebApplication95
                 if (memory.TryGetArray(out data))
                 {
                     await Send(data);
+
                     // Advance the buffer one block of memory
-                    _state.Connection.Output.Advance(buffer.Slice(memory.Length).Start);
+                    buffer = buffer.Slice(memory.Length);
+                    _state.Connection.Output.Advance(buffer.Start);
                     break;
                 }
             }

@@ -1,22 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Channels;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
+using WebApplication95.Routing;
 
 namespace WebApplication95
 {
+    public static class DispatcherExtensions
+    {
+        public static IApplicationBuilder UseRealTimeConnections(this IApplicationBuilder app, Action<Dispatcher> callback)
+        {
+            var dispatcher = new Dispatcher(app);
+            callback(dispatcher);
+            app.UseRouter(dispatcher.GetRouter());
+            return app;
+        }
+    }
+
     public class Dispatcher
     {
         private readonly ConnectionManager _manager = new ConnectionManager();
-        private readonly EndPoint _endpoint = new EndPoint();
+        private readonly RouteBuilder _routes;
 
-        public async Task Execute(HttpContext context)
+        public Dispatcher(IApplicationBuilder app)
         {
-            if (context.Request.Path.StartsWithSegments("/send"))
+            _routes = new RouteBuilder(app);
+        }
+
+        public void MapEndPoint<TEndPoint>(string path) where TEndPoint : EndPoint
+        {
+            _routes.AddPrefixRoute(path, new RouteHandler(c => Execute<TEndPoint>(path, c)));
+        }
+
+        public IRouter GetRouter() => _routes.Build();
+
+        public async Task Execute<TEndPoint>(string path, HttpContext context) where TEndPoint : EndPoint
+        {
+            if (context.Request.Path.StartsWithSegments(path + "/send"))
             {
                 var connectionId = context.Request.Query["id"];
 
@@ -34,17 +59,19 @@ namespace WebApplication95
             }
             else
             {
+                var endpoint = (EndPoint)context.RequestServices.GetRequiredService<TEndPoint>();
+
                 var connectionId = _manager.GetConnectionId(context);
 
                 // Outgoing channels
-                if (context.Request.Path.StartsWithSegments("/sse"))
+                if (context.Request.Path.StartsWithSegments(path + "/sse"))
                 {
                     ConnectionState state;
                     _manager.AddConnection(connectionId, out state);
 
                     var sse = new ServerSentEvents(state);
 
-                    var ignore = _endpoint.OnConnected(state.Connection);
+                    var ignore = endpoint.OnConnected(state.Connection);
 
                     state.Connection.TransportType = TransportType.ServerSentEvents;
 
@@ -54,14 +81,14 @@ namespace WebApplication95
 
                     _manager.RemoveConnection(connectionId);
                 }
-                else if (context.Request.Path.StartsWithSegments("/ws"))
+                else if (context.Request.Path.StartsWithSegments(path + "/ws"))
                 {
                     ConnectionState state;
                     _manager.AddConnection(connectionId, out state);
 
                     var ws = new WebSockets(state);
 
-                    var ignore = _endpoint.OnConnected(state.Connection);
+                    var ignore = endpoint.OnConnected(state.Connection);
 
                     state.Connection.TransportType = TransportType.WebSockets;
 
@@ -71,14 +98,15 @@ namespace WebApplication95
 
                     _manager.RemoveConnection(connectionId);
                 }
-                else if (context.Request.Path.StartsWithSegments("/poll"))
+                else if (context.Request.Path.StartsWithSegments(path + "/poll"))
                 {
                     ConnectionState state;
                     bool newConnection = false;
                     if (_manager.AddConnection(connectionId, out state))
                     {
                         newConnection = true;
-                        var ignore = _endpoint.OnConnected(state.Connection);
+                        var ignore = endpoint.OnConnected(state.Connection);
+
                         state.Connection.TransportType = TransportType.LongPolling;
                     }
 
@@ -89,54 +117,6 @@ namespace WebApplication95
                     _manager.MarkConnectionDead(connectionId);
                 }
 
-            }
-        }
-    }
-
-    public class EndPoint
-    {
-        private List<Connection> _connections = new List<Connection>();
-
-        public virtual async Task OnConnected(Connection connection)
-        {
-            lock (_connections)
-            {
-                _connections.Add(connection);
-            }
-
-            // Echo server
-            while (true)
-            {
-                var input = await connection.Input.ReadAsync();
-                try
-                {
-                    if (input.IsEmpty && connection.Input.Reading.IsCompleted)
-                    {
-                        break;
-                    }
-
-                    List<Connection> connections = null;
-                    lock (_connections)
-                    {
-                        connections = _connections;
-                    }
-
-                    foreach (var c in connections)
-                    {
-                        var output = c.Output.Alloc();
-                        output.Append(ref input);
-                        await output.FlushAsync();
-                    }
-                }
-                finally
-                {
-                    connection.Input.Advance(input.End);
-                }
-            }
-
-            lock (_connections)
-            {
-                _connections.Remove(connection);
             }
         }
     }

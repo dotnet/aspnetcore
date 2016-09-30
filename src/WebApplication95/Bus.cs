@@ -4,22 +4,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Channels;
 
 namespace WebApplication95
 {
     public class Message
     {
-        public string ContentType { get; set; }
-        public ArraySegment<byte> Payload { get; set; }
+        public ReadableBuffer Payload { get; set; }
     }
 
     public class Bus
     {
-        private readonly ConcurrentDictionary<string, List<IObserver<Message>>> _subscriptions = new ConcurrentDictionary<string, List<IObserver<Message>>>();
+        private readonly ConcurrentDictionary<string, List<Func<Message, Task>>> _subscriptions = new ConcurrentDictionary<string, List<Func<Message, Task>>>();
 
-        public IDisposable Subscribe(string key, IObserver<Message> observer)
+        public IDisposable Subscribe(string key, Func<Message, Task> observer)
         {
-            var connections = _subscriptions.GetOrAdd(key, _ => new List<IObserver<Message>>());
+            var connections = _subscriptions.GetOrAdd(key, _ => new List<Func<Message, Task>>());
             connections.Add(observer);
 
             return new DisposableAction(() =>
@@ -28,14 +28,14 @@ namespace WebApplication95
             });
         }
 
-        public void Publish(string key, Message message)
+        public async Task Publish(string key, Message message)
         {
-            List<IObserver<Message>> connections;
+            List<Func<Message, Task>> connections;
             if (_subscriptions.TryGetValue(key, out connections))
             {
                 foreach (var c in connections)
                 {
-                    c.OnNext(message);
+                    await c(message);
                 }
             }
         }

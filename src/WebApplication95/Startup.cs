@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using WebApplication95.EndPoints;
+using WebApplication95.Routing;
 
 namespace WebApplication95
 {
@@ -11,6 +14,9 @@ namespace WebApplication95
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddRouting();
+
+            services.AddSingleton<ChatEndPoint>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -25,11 +31,9 @@ namespace WebApplication95
                 app.UseDeveloperExceptionPage();
             }
 
-            var dispatcher = new Dispatcher();
-
-            app.Run(async (context) =>
+            app.UseRealTimeConnections(d =>
             {
-                await dispatcher.Execute(context);
+                d.MapEndPoint<ChatEndPoint>("/chat");
             });
         }
     }

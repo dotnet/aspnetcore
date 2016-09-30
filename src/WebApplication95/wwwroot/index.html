@@ -11,7 +11,7 @@
             var body = document.getElementById('data').value;
 
             var xhr = new XMLHttpRequest();
-            var url = '/send?id=' + connectionId;
+            var url = '/chat/send?id=' + connectionId;
             xhr.open("POST", url, true);
             xhr.setRequestHeader('Content-type', 'application/json');
             xhr.onreadystatechange = function () {
@@ -22,7 +22,7 @@
             xhr.send(data);
         }
 
-        var source = new EventSource('/sse');
+        var source = new EventSource('/chat/sse');
 
         source.onopen = function () {
             console.log('Opened!');
