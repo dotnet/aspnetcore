@@ -5,7 +5,7 @@
         ],
         "packages": {
             "Microsoft.EntityFrameworkCore.Tools.DotNet": {
-                "nowarn": {
+                "exclusions": {
                     "DOC_MISSING": {
                         "lib/netcoreapp1.0/dotnet-ef.dll": "Not a class library. Docs not required for CLI tools"
                     }
