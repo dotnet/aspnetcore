@@ -56,8 +56,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         public Task ChallengeAsync(ChallengeContext context)
         {
-            bool handled = false;
-            if (ShouldHandleScheme(context.AuthenticationScheme))
+            // Some other provider may have already accepted this challenge. Having multiple providers with
+            // AutomaticChallenge = true is considered invalid, but changing the default would breaking
+            // normal Windows auth users.
+            if (!context.Accepted && ShouldHandleScheme(context.AuthenticationScheme))
             {
                 switch (context.Behavior)
                 {
@@ -77,13 +79,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                         break;
                     case ChallengeBehavior.Forbidden:
                         HttpContext.Response.StatusCode = 403;
-                        handled = true; // No other handlers need to consider this challenge.
                         break;
                 }
                 context.Accept();
             }
 
-            if (!handled && PriorHandler != null)
+            if (PriorHandler != null)
             {
                 return PriorHandler.ChallengeAsync(context);
             }
