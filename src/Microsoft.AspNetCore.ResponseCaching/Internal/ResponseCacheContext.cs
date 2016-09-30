@@ -6,6 +6,7 @@ using System.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Headers;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
@@ -23,10 +24,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         private DateTimeOffset? _responseExpires;
         private bool _parsedResponseExpires;
 
-        internal ResponseCacheContext(
-            HttpContext httpContext)
+        internal ResponseCacheContext(HttpContext httpContext, ILogger logger)
         {
             HttpContext = httpContext;
+            Logger = logger;
         }
 
         public HttpContext HttpContext { get; }
@@ -36,6 +37,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         public TimeSpan? CachedEntryAge { get; internal set; }
 
         public CachedVaryByRules CachedVaryByRules { get; internal set; }
+
+        internal ILogger Logger { get; }
 
         internal bool ShouldCacheResponse { get;  set; }
 

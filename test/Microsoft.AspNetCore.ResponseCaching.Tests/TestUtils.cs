@@ -12,10 +12,13 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using Xunit;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Tests
 {
@@ -86,6 +89,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         internal static ResponseCacheMiddleware CreateTestMiddleware(
             IResponseCacheStore store = null,
             ResponseCacheOptions options = null,
+            TestSink testSink = null,
             IResponseCacheKeyProvider keyProvider = null,
             IResponseCachePolicyProvider policyProvider = null)
         {
@@ -109,6 +113,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             return new ResponseCacheMiddleware(
                 httpContext => TaskCache.CompletedTask,
                 Options.Create(options),
+                testSink == null ? (ILoggerFactory)NullLoggerFactory.Instance : new TestLoggerFactory(testSink, true),
                 policyProvider,
                 store,
                 keyProvider);
@@ -116,11 +121,70 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
         internal static ResponseCacheContext CreateTestContext()
         {
-            return new ResponseCacheContext(new DefaultHttpContext())
+            return new ResponseCacheContext(new DefaultHttpContext(), NullLogger.Instance)
             {
                 ResponseTime = DateTimeOffset.UtcNow
             };
         }
+
+        internal static ResponseCacheContext CreateTestContext(ITestSink testSink)
+        {
+            return new ResponseCacheContext(new DefaultHttpContext(), new TestLogger("ResponseCachingTests", testSink, true))
+            {
+                ResponseTime = DateTimeOffset.UtcNow
+            };
+        }
+
+        internal static void AssertLoggedMessages(List<WriteContext> messages, params LoggedMessage[] expectedMessages)
+        {
+            Assert.Equal(messages.Count, expectedMessages.Length);
+            for (var i = 0; i < messages.Count; i++)
+            {
+                Assert.Equal(expectedMessages[i].EventId, messages[i].EventId);
+                Assert.Equal(expectedMessages[i].LogLevel, messages[i].LogLevel);
+            }
+        }
+    }
+
+    internal class LoggedMessage
+    {
+        internal static LoggedMessage RequestMethodNotCacheable => new LoggedMessage(1, LogLevel.Debug);
+        internal static LoggedMessage RequestWithAuthorizationNotCacheable => new LoggedMessage(2, LogLevel.Debug);
+        internal static LoggedMessage RequestWithNoCacheNotCacheable => new LoggedMessage(3, LogLevel.Debug);
+        internal static LoggedMessage RequestWithPragmaNoCacheNotCacheable => new LoggedMessage(4, LogLevel.Debug);
+        internal static LoggedMessage ExpirationMinFreshAdded => new LoggedMessage(5, LogLevel.Debug);
+        internal static LoggedMessage ExpirationSharedMaxAgeExceeded => new LoggedMessage(6, LogLevel.Debug);
+        internal static LoggedMessage ExpirationMustRevalidate => new LoggedMessage(7, LogLevel.Debug);
+        internal static LoggedMessage ExpirationMaxStaleSatisfied => new LoggedMessage(8, LogLevel.Debug);
+        internal static LoggedMessage ExpirationMaxAgeExceeded => new LoggedMessage(9, LogLevel.Debug);
+        internal static LoggedMessage ExpirationExpiresExceeded => new LoggedMessage(10, LogLevel.Debug);
+        internal static LoggedMessage ResponseWithoutPublicNotCacheable => new LoggedMessage(11, LogLevel.Debug);
+        internal static LoggedMessage ResponseWithNoStoreNotCacheable => new LoggedMessage(12, LogLevel.Debug);
+        internal static LoggedMessage ResponseWithNoCacheNotCacheable => new LoggedMessage(13, LogLevel.Debug);
+        internal static LoggedMessage ResponseWithSetCookieNotCacheable => new LoggedMessage(14, LogLevel.Debug);
+        internal static LoggedMessage ResponseWithVaryStarNotCacheable => new LoggedMessage(15, LogLevel.Debug);
+        internal static LoggedMessage ResponseWithPrivateNotCacheable => new LoggedMessage(16, LogLevel.Debug);
+        internal static LoggedMessage ResponseWithUnsuccessfulStatusCodeNotCacheable => new LoggedMessage(17, LogLevel.Debug);
+        internal static LoggedMessage NotModifiedIfNoneMatchStar => new LoggedMessage(18, LogLevel.Debug);
+        internal static LoggedMessage NotModifiedIfNoneMatchMatched => new LoggedMessage(19, LogLevel.Debug);
+        internal static LoggedMessage NotModifiedIfUnmodifiedSinceSatisfied => new LoggedMessage(20, LogLevel.Debug);
+        internal static LoggedMessage NotModifiedServed => new LoggedMessage(21, LogLevel.Information);
+        internal static LoggedMessage CachedResponseServed => new LoggedMessage(22, LogLevel.Information);
+        internal static LoggedMessage GatewayTimeoutServed => new LoggedMessage(23, LogLevel.Information);
+        internal static LoggedMessage NoResponseServed => new LoggedMessage(24, LogLevel.Information);
+        internal static LoggedMessage VaryByRulesUpdated => new LoggedMessage(25, LogLevel.Debug);
+        internal static LoggedMessage ResponseCached => new LoggedMessage(26, LogLevel.Information);
+        internal static LoggedMessage ResponseNotCached => new LoggedMessage(27, LogLevel.Information);
+        internal static LoggedMessage ResponseContentLengthMismatchNotCached => new LoggedMessage(28, LogLevel.Warning);
+
+        private LoggedMessage(int evenId, LogLevel logLevel)
+        {
+            EventId = evenId;
+            LogLevel = logLevel;
+        }
+
+        internal int EventId { get; }
+        internal LogLevel LogLevel { get; }
     }
 
     internal class DummySendFileFeature : IHttpSendFileFeature
