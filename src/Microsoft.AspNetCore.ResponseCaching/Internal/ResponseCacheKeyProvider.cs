@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -54,11 +55,19 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             try
             {
                 builder
-                    .Append(request.Method.ToUpperInvariant())
-                    .Append(KeyDelimiter)
-                    .Append(_options.UseCaseSensitivePaths ? request.Path.Value : request.Path.Value.ToUpperInvariant());
+                    .AppendUpperInvariant(request.Method)
+                    .Append(KeyDelimiter);
 
-                return builder.ToString();;
+                if (_options.UseCaseSensitivePaths)
+                {
+                    builder.Append(request.Path.Value);
+                }
+                else
+                {
+                    builder.AppendUpperInvariant(request.Path.Value);
+                }
+
+                return builder.ToString();
             }
             finally
             {
@@ -123,7 +132,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                         foreach (var query in context.HttpContext.Request.Query.OrderBy(q => q.Key, StringComparer.OrdinalIgnoreCase))
                         {
                             builder.Append(KeyDelimiter)
-                                .Append(query.Key.ToUpperInvariant())
+                                .AppendUpperInvariant(query.Key)
                                 .Append("=")
                                 .Append(query.Value);
                         }
