@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0-*",
+  "description": "ASP.NET Core integration with Azure AppServices.",
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/azureintegration"
+    },
+    "tags": [
+      "aspnetcore",
+      "azure",
+      "appservices"
+    ]
+  },
+  "dependencies": {
+    "Microsoft.AspNetCore.Hosting.Abstractions": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics": "1.0.0-*"
+  },
+  "frameworks": {
+    "net451": {
+      "frameworkAssemblies": { }
+    },
+    "netstandard1.3": {
+      "imports": [ "portable-net40+sl5+win8+wp8+wpa81", "portable-net45+win8+wp8+wpa81" ]
+    }
+  },
+  "buildOptions": {
+    "allowUnsafe": true,
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk",
+    "nowarn": [
+      "CS1591"
+    ],
+    "xmlDoc": true
+  }
+}

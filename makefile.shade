@@ -1,0 +1,64 @@
+use import="Environment"
+
+var VERSION='0.1'
+var FULL_VERSION='0.1'
+var AUTHORS='Microsoft Open Technologies, Inc.'
+
+use-standard-lifecycle
+k-standard-goals
+
+var Configuration_Local = '${E("Configuration")}'
+default BASE_DIR_LOCAL='${Directory.GetCurrentDirectory()}'
+default TARGET_DIR_LOCAL='${Path.Combine(BASE_DIR_LOCAL, "artifacts")}'
+default BUILD_DIR_LOCAL='${Path.Combine(TARGET_DIR_LOCAL, "build")}'
+default SRC_PROJECT_GLOB_LOCAL="src/*/project.json"
+default TEST_PROJECT_GLOB_LOCAL="test/*/project.json"
+
+#build-compile target='compile' if='Directory.Exists("src")'
+  @{
+    // Don't remove the if clause in the target above - removing it will break CI test runs.
+
+    Directory.CreateDirectory(TARGET_DIR_LOCAL);
+
+    string commitHash = null;
+    if (AddAssemblyInfo)
+    {
+      var commitHashFile = Path.Combine(TARGET_DIR_LOCAL, "commit");
+      GitCommand("rev-parse HEAD >> " + commitHashFile);
+      commitHash = File.ReadAllLines(commitHashFile)[0];
+    }
+
+    var srcProjects = Files.Include(SRC_PROJECT_GLOB_LOCAL).ToList();
+    if (IsLinux)
+    {
+        srcProjects.Remove("src/Microsoft.AspNetCore.DataProtection.SystemWeb/project.json");
+    }
+    srcProjects.ForEach(projectFile =>
+    {
+        if (AddAssemblyInfo)
+        {
+            var projectText = File.ReadAllText(projectFile);
+            var project = (JsonObject)Json.Deserialize(projectText);
+            var isSharedProject = project.Keys.Contains("shared");
+
+            // We don't want to embed the commit hash in it because 
+            // the consumers would get that file
+            if (!isSharedProject)
+            {
+              Console.WriteLine("Embedding commit hash in assembly");
+              var projectFolder = Path.GetDirectoryName(projectFile);
+              var commitHashAttribute = String.Format("[assembly: System.Reflection.AssemblyMetadata(\"CommitHash\", \"{0}\")]", commitHash);
+
+              var buildInfoFile = Path.Combine(projectFolder, "BuildInfo.generated.cs");
+              File.WriteAllText(buildInfoFile, commitHashAttribute);
+            }
+        }
+        DotnetPack(projectFile, BUILD_DIR_LOCAL, Configuration_Local, "");
+    });
+    DotnetBuild(TEST_PROJECT_GLOB_LOCAL, Configuration_Local, BuildFramework);
+
+    foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR_LOCAL, "*/" + Configuration_Local + "/*.nupkg")))
+    {
+        File.Copy(nupkg, Path.Combine(BUILD_DIR_LOCAL, Path.GetFileName(nupkg)), true);
+    }
+  }
