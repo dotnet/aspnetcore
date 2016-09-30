@@ -58,6 +58,7 @@ namespace WebApplication95
                 if (context.Request.Path.StartsWithSegments(path + "/sse"))
                 {
                     var connectionState = GetOrCreateConnection(context);
+                    connectionState.IsReservation = false;
                     var sse = new ServerSentEvents(connectionState);
 
                     var ignore = endpoint.OnConnected(connectionState.Connection);
@@ -73,6 +74,8 @@ namespace WebApplication95
                 else if (context.Request.Path.StartsWithSegments(path + "/ws"))
                 {
                     var connectionState = GetOrCreateConnection(context);
+                    connectionState.IsReservation = false;
+
                     var ws = new WebSockets(connectionState);
 
                     var ignore = endpoint.OnConnected(connectionState.Connection);
@@ -89,18 +92,17 @@ namespace WebApplication95
                 {
                     var connectionId = context.Request.Query["id"];
                     ConnectionState connectionState;
-                    bool newConnection = false;
-                    if (_manager.AddConnection(connectionId, out connectionState))
-                    {
-                        newConnection = true;
-                        var ignore = endpoint.OnConnected(connectionState.Connection);
 
+                    if (_manager.AddConnection(connectionId, out connectionState) || connectionState.IsReservation)
+                    {
                         connectionState.Connection.TransportType = TransportType.LongPolling;
+                        connectionState.IsReservation = false;
+                        var ignore = endpoint.OnConnected(connectionState.Connection);
                     }
 
                     var longPolling = new LongPolling(connectionState);
 
-                    await longPolling.ProcessRequest(newConnection, context);
+                    await longPolling.ProcessRequest(context);
 
                     _manager.MarkConnectionDead(connectionState.Connection.ConnectionId);
                 }
@@ -112,6 +114,7 @@ namespace WebApplication95
             var connectionId = _manager.GetConnectionId(context);
             ConnectionState state;
             _manager.AddConnection(connectionId, out state);
+            state.IsReservation = true;
             context.Response.Headers["X-SignalR-ConnectionId"] = connectionId;
             await context.Response.WriteAsync($"{{ \"connectionId\": \"{connectionId}\" }}");
             return;

@@ -4,57 +4,75 @@
     <meta charset="utf-8" />
     <title></title>
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
 
-        var connectionId;
+            function xhr(method, url) {
+                return new Promise((resolve, reject) => {
+                    let xhr = new XMLHttpRequest();
+                    xhr.open(method, url, true);
+                    xhr.send();
+                    xhr.onload = () => {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            resolve(xhr.response);
+                        } else {
+                            reject({
+                                status: xhr.status,
+                                statusText: xhr.statusText
+                            });
+                        }
+                    };
 
-        function send() {
-            var body = document.getElementById('data').value;
-
-            var xhr = new XMLHttpRequest();
-            var url = '/chat/send?id=' + connectionId;
-            xhr.open("POST", url, true);
-            xhr.setRequestHeader('Content-type', 'application/json');
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                }
+                    xhr.onerror = () => {
+                        reject({
+                            status: xhr.status,
+                            statusText: xhr.statusText
+                        });
+                    };
+                });
             }
-            var data = JSON.stringify(body);
-            xhr.send(data);
-        }
 
+            function send(connectionId, data) {
+                var xhr = new XMLHttpRequest();
+                var url = '/chat/send?id=' + connectionId;
+                xhr.open("POST", url, true);
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                    }
+                }
+                xhr.send(data);
+            }
 
-        function poll(id) {
-            var xhr = new XMLHttpRequest();
-            var url = '/chat/poll' + (id == null ? '' : '?id=' + id);
-            xhr.open("POST", url, true);
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    var json = JSON.parse(xhr.responseText);
-                    var id = json.c;
-                    var data = json.d;
-                    if (data) {
+            function poll(connectionId, xhr) {
+                var url = `/chat/poll?id=${connectionId}`;
+                xhr.open("POST", url, true);
+                xhr.onreadystatechange = () => {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
                         var child = document.createElement('li');
-                        child.innerText = data;
+                        child.innerText = xhr.response;
                         document.getElementById('messages').appendChild(child);
+                        poll(connectionId, xhr);
                     }
-
-                    if (!connectionId) {
-                        connectionId = id;
-                    }
-
-                    poll(id);
                 }
+                xhr.send(null);
             }
-            xhr.send(null);
-        }
 
-        poll();
+            xhr('GET', '/chat/getid').then(getidPayload => {
+                let connectionId = JSON.parse(getidPayload).connectionId;
+
+                document.getElementById('sendmessage').addEventListener('click', () => {
+                    let data = document.getElementById('data').value;
+                    send(connectionId, data);
+                });
+
+                poll(connectionId, new XMLHttpRequest());
+            });
+        });
     </script>
 </head>
 <body>
     <h1>Long Polling</h1>
     <input type="text" id="data" />
-    <input type="button" value="Send" onclick="send()" />
+    <input type="button" id="sendmessage" value="Send" />
 
     <ul id="messages"></ul>
 </body>

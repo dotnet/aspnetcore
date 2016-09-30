@@ -37,10 +37,8 @@ namespace WebApplication95
             return _lastTask;
         }
 
-        public async Task ProcessRequest(bool newConnection, HttpContext context)
+        public async Task ProcessRequest(HttpContext context)
         {
-            context.Response.ContentType = "application/json";
-
             // End the connection if the client goes away
             context.RequestAborted.Register(state => OnConnectionAborted(state), this);
 
@@ -48,17 +46,8 @@ namespace WebApplication95
 
             _initTcs.TrySetResult(null);
 
-            if (newConnection)
-            {
-                // Flush the connection id to the connection
-                var ignore = Send(default(ArraySegment<byte>));
-            }
-            else
-            {
-                // Send queue messages to the connection
-                var ignore = ProcessMessages(context);
-            }
-
+            // Send queue messages to the connection
+            var ignore = ProcessMessages(context);
 
             await _lifetime.Task;
 
@@ -106,7 +95,7 @@ namespace WebApplication95
                 var data = ((ArraySegment<byte>)state);
                 _context.Response.Headers["X-SignalR-ConnectionId"] = _state.Connection.ConnectionId;
                 _context.Response.ContentLength = data.Count;
-                await _context.Response.Body.WriteAsync(data.Array, 0, data.Count);
+                await _context.Response.Body.WriteAsync(data.Array, data.Offset, data.Count);
             },
             value);
 

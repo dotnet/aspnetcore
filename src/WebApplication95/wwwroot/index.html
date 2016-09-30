@@ -9,19 +9,17 @@
                 var xhr = new XMLHttpRequest();
                 var url = '/chat/send?id=' + connectionId;
                 xhr.open("POST", url, true);
-                xhr.setRequestHeader('Content-type', 'application/json');
                 xhr.onreadystatechange = function () {
                     if (xhr.readyState == 4 && xhr.status == 200) {
                     }
                 }
-                var data = JSON.stringify(data);
                 xhr.send(data);
             }
 
             function xhr(method, url) {
                 return new Promise((resolve, reject) => {
                     let xhr = new XMLHttpRequest();
-                    xhr.open(method, url);
+                    xhr.open(method, url, true);
                     xhr.send();
                     xhr.onload = () => {
                         if (xhr.status >= 200 && xhr.status < 300) {
