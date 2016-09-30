@@ -35,6 +35,11 @@ namespace NuGetPackager
                     : "Debug";
                 var output = optOutput.Value() ?? Directory.GetCurrentDirectory();
 
+                if (!Path.IsPathRooted(output))
+                {
+                    output = Path.Combine(Directory.GetCurrentDirectory(), output);
+                }
+
                 var packer = new PackCommand(Directory.GetCurrentDirectory());
                 foreach (var nuspec in optsNuspec.Values)
                 {
