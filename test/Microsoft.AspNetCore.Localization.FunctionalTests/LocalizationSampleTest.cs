@@ -11,36 +11,30 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
 {
     public class LocalizationSampleTest
     {
-        private static readonly string _applicationPath =  Path.Combine("samples", "LocalizationSample");
+        private static readonly string _applicationPath = Path.Combine("samples", "LocalizationSample");
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.Clr, "http://localhost:5080/", RuntimeArchitecture.x64)]
-        [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5081/", RuntimeArchitecture.x64)]
-        public Task RunSite_WindowsOnly(RuntimeFlavor runtimeFlavor, string applicationBaseUrl, RuntimeArchitecture runtimeArchitecture)
+        public Task RunSite_WindowsOnly()
         {
             var testRunner = new TestRunner(_applicationPath);
             return testRunner.RunTestAndVerifyResponseHeading(
-                runtimeFlavor,
-                runtimeArchitecture,
-                applicationBaseUrl,
+                RuntimeFlavor.Clr,
+                RuntimeArchitecture.x64,
+                "http://localhost:5080",
                 "My/Resources",
                 "fr-FR",
                 "<h1>Bonjour</h1>");
         }
-
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Windows)]
-        //[InlineData(RuntimeFlavor.Clr, "http://localhost:5080/", RuntimeArchitecture.x64)] // Disabled due to https://github.com/dotnet/corefx/issues/9012
-        [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5081/", RuntimeArchitecture.x64)]
-        public Task RunSite_NonWindowsOnly(RuntimeFlavor runtimeFlavor, string applicationBaseUrl, RuntimeArchitecture runtimeArchitecture)
+        [Fact]
+        public Task RunSite_AnyOS()
         {
             var testRunner = new TestRunner(_applicationPath);
             return testRunner.RunTestAndVerifyResponseHeading(
-                runtimeFlavor,
-                runtimeArchitecture,
-                applicationBaseUrl,
+                RuntimeFlavor.CoreClr,
+                RuntimeArchitecture.x64,
+                "http://localhost:5081/",
                 "My/Resources",
                 "fr-FR",
                 "<h1>Bonjour</h1>");
