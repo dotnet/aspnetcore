@@ -41,83 +41,117 @@ namespace WebApplication95
 
         public async Task Execute<TEndPoint>(string path, HttpContext context) where TEndPoint : EndPoint
         {
-            if (context.Request.Path.StartsWithSegments(path + "/send"))
+            if (context.Request.Path.StartsWithSegments(path + "/getid"))
             {
-                var connectionId = context.Request.Query["id"];
-
-                if (StringValues.IsNullOrEmpty(connectionId))
-                {
-                    throw new InvalidOperationException("Missing connection id");
-                }
-
-                ConnectionState state;
-                if (_manager.TryGetConnection(connectionId, out state))
-                {
-                    // Write the message length
-                    await context.Request.Body.CopyToAsync(state.Connection.Input);
-                }
+                await ProcessGetId(context);
+            }
+            else if (context.Request.Path.StartsWithSegments(path + "/send"))
+            {
+                await ProcessSend(context);
             }
             else
             {
-                var endpoint = (EndPoint)context.RequestServices.GetRequiredService<TEndPoint>();
 
-                var connectionId = _manager.GetConnectionId(context);
+                var endpoint = (EndPoint)context.RequestServices.GetRequiredService<TEndPoint>();
 
                 // Outgoing channels
                 if (context.Request.Path.StartsWithSegments(path + "/sse"))
                 {
-                    ConnectionState state;
-                    _manager.AddConnection(connectionId, out state);
+                    var connectionState = GetOrCreateConnection(context);
+                    var sse = new ServerSentEvents(connectionState);
 
-                    var sse = new ServerSentEvents(state);
+                    var ignore = endpoint.OnConnected(connectionState.Connection);
 
-                    var ignore = endpoint.OnConnected(state.Connection);
-
-                    state.Connection.TransportType = TransportType.ServerSentEvents;
+                    connectionState.Connection.TransportType = TransportType.ServerSentEvents;
 
                     await sse.ProcessRequest(context);
 
-                    state.Connection.Complete();
+                    connectionState.Connection.Complete();
 
-                    _manager.RemoveConnection(connectionId);
+                    _manager.RemoveConnection(connectionState.Connection.ConnectionId);
                 }
                 else if (context.Request.Path.StartsWithSegments(path + "/ws"))
                 {
-                    ConnectionState state;
-                    _manager.AddConnection(connectionId, out state);
+                    var connectionState = GetOrCreateConnection(context);
+                    var ws = new WebSockets(connectionState);
 
-                    var ws = new WebSockets(state);
+                    var ignore = endpoint.OnConnected(connectionState.Connection);
 
-                    var ignore = endpoint.OnConnected(state.Connection);
-
-                    state.Connection.TransportType = TransportType.WebSockets;
+                    connectionState.Connection.TransportType = TransportType.WebSockets;
 
                     await ws.ProcessRequest(context);
 
-                    state.Connection.Complete();
+                    connectionState.Connection.Complete();
 
-                    _manager.RemoveConnection(connectionId);
+                    _manager.RemoveConnection(connectionState.Connection.ConnectionId);
                 }
                 else if (context.Request.Path.StartsWithSegments(path + "/poll"))
                 {
-                    ConnectionState state;
+                    var connectionId = context.Request.Query["id"];
+                    ConnectionState connectionState;
                     bool newConnection = false;
-                    if (_manager.AddConnection(connectionId, out state))
+                    if (_manager.AddConnection(connectionId, out connectionState))
                     {
                         newConnection = true;
-                        var ignore = endpoint.OnConnected(state.Connection);
+                        var ignore = endpoint.OnConnected(connectionState.Connection);
 
-                        state.Connection.TransportType = TransportType.LongPolling;
+                        connectionState.Connection.TransportType = TransportType.LongPolling;
                     }
 
-                    var longPolling = new LongPolling(state);
+                    var longPolling = new LongPolling(connectionState);
 
                     await longPolling.ProcessRequest(newConnection, context);
 
-                    _manager.MarkConnectionDead(connectionId);
+                    _manager.MarkConnectionDead(connectionState.Connection.ConnectionId);
                 }
-
             }
+        }
+
+        private async Task ProcessGetId(HttpContext context)
+        {
+            var connectionId = _manager.GetConnectionId(context);
+            ConnectionState state;
+            _manager.AddConnection(connectionId, out state);
+            context.Response.Headers["X-SignalR-ConnectionId"] = connectionId;
+            await context.Response.WriteAsync($"{{ \"connectionId\": \"{connectionId}\" }}");
+            return;
+        }
+
+        private async Task ProcessSend(HttpContext context)
+        {
+            var connectionId = context.Request.Query["id"];
+            if (StringValues.IsNullOrEmpty(connectionId))
+            {
+                throw new InvalidOperationException("Missing connection id");
+            }
+
+            ConnectionState state;
+            if (_manager.TryGetConnection(connectionId, out state))
+            {
+                // Write the message length
+                await context.Request.Body.CopyToAsync(state.Connection.Input);
+            }
+        }
+
+        private ConnectionState GetOrCreateConnection(HttpContext context)
+        {
+            var connectionId = context.Request.Query["id"];
+            ConnectionState connectionState;
+
+            if (StringValues.IsNullOrEmpty(connectionId))
+            {
+                connectionId = _manager.GetConnectionId(context);
+                _manager.AddConnection(connectionId, out connectionState);
+            }
+            else
+            {
+                if (!_manager.TryGetConnection(connectionId, out connectionState))
+                {
+                    throw new InvalidOperationException("Unknown connection id");
+                }
+            }
+
+            return connectionState;
         }
     }
 }

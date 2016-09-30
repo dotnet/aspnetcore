@@ -78,6 +78,7 @@ namespace WebApplication95
                 else if (result.MessageType == WebSocketMessageType.Close)
                 {
                     await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    // TODO: needs to remove itself from connection mamanger?
                     break;
                 }
             }

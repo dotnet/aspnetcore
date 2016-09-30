@@ -45,9 +45,10 @@ namespace WebApplication95
             }
         }
 
+
+        // TODO: don't leak HttpContext to ConnectionManager
         public string GetConnectionId(HttpContext context)
         {
-            // REVIEW: Only check the query string for longpolling
             var id = context.Request.Query["id"];
 
             if (!StringValues.IsNullOrEmpty(id))

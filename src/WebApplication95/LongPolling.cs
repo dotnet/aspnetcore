@@ -104,33 +104,9 @@ namespace WebApplication95
             await Post(async state =>
             {
                 var data = ((ArraySegment<byte>)state);
-                // + 100 = laziness
-                var buffer = new byte[data.Count + _state.Connection.ConnectionId.Length + 100];
-                var at = 0;
-                buffer[at++] = (byte)'{';
-                buffer[at++] = (byte)'"';
-                buffer[at++] = (byte)'c';
-                buffer[at++] = (byte)'"';
-                buffer[at++] = (byte)':';
-                buffer[at++] = (byte)'"';
-                int count = Encoding.UTF8.GetBytes(_state.Connection.ConnectionId, 0, _state.Connection.ConnectionId.Length, buffer, at);
-                at += count;
-                buffer[at++] = (byte)'"';
-                if (data.Array != null)
-                {
-                    buffer[at++] = (byte)',';
-                    buffer[at++] = (byte)'"';
-                    buffer[at++] = (byte)'d';
-                    buffer[at++] = (byte)'"';
-                    buffer[at++] = (byte)':';
-                    //buffer[at++] = (byte)'"';
-                    Buffer.BlockCopy(data.Array, data.Offset, buffer, at, data.Count);
-                }
-                at += data.Count;
-                //buffer[at++] = (byte)'"';
-                buffer[at++] = (byte)'}';
-                _context.Response.ContentLength = at;
-                await _context.Response.Body.WriteAsync(buffer, 0, at);
+                _context.Response.Headers["X-SignalR-ConnectionId"] = _state.Connection.ConnectionId;
+                _context.Response.ContentLength = data.Count;
+                await _context.Response.Body.WriteAsync(data.Array, 0, data.Count);
             },
             value);
 

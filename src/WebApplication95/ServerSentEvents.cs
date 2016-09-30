@@ -40,13 +40,11 @@ namespace WebApplication95
         public async Task ProcessRequest(HttpContext context)
         {
             context.Response.ContentType = "text/event-stream";
+            context.Response.Headers["Cache-Control"] = "no-cache";
 
             // End the connection if the client goes away
             context.RequestAborted.Register(state => OnConnectionAborted(state), this);
-
             _context = context;
-
-            await _context.Response.WriteAsync($"data: {_state.Connection.ConnectionId}\n\n");
 
             // Set the initial TCS when everything is setup
             _initTcs.TrySetResult(null);
