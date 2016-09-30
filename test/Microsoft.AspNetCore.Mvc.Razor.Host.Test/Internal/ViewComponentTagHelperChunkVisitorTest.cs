@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host.Test.Internal
             var resultOutput = writer.GenerateCode();
 
 #if GENERATE_BASELINES
-            if (!string.Equals(expectedOutput, resultOutput, StringComparison.Ordinal))
+            if (!string.Equals(expectedOutput, resultOutput, System.StringComparison.Ordinal))
             {
                 ResourceFile.UpdateFile(assembly, path, expectedOutput, resultOutput);
             }

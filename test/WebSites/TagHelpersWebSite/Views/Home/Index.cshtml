@@ -43,6 +43,11 @@
     }
 </div>
 
+<div>
+    <h3>Dictionary Valued Model Expression</h3>
+    <div prefix-test1="@Model.TagsToShow" prefix-test2="@Model.Version.Build"></div>
+</div>
+
 @section footerContent {
     <p condition="Model.Approved" bold surround="section">&copy; @Model.CopyrightYear - My ASP.NET Application</p>
 }
