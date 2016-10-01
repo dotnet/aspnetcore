@@ -15,5 +15,6 @@
   </metadata>
   <files>
     <file src="..\artifacts\build\AspNetCore\bin\**" target="ancm\" />
+    <file src="..\tools\installancm.ps1"  />
   </files>
 </package>
