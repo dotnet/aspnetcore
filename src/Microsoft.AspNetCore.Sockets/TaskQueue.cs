@@ -41,7 +41,15 @@ namespace Microsoft.AspNetCore.Sockets
                     return _lastQueuedTask;
                 }
 
-                var newTask = _lastQueuedTask.ContinueWith((t, s1) => taskFunc(s1), state).Unwrap();
+                var newTask = _lastQueuedTask.ContinueWith((t, s1) =>
+                {
+                    if (t.IsFaulted || t.IsCanceled)
+                    {
+                        return t;
+                    }
+                    return taskFunc(s1);
+                }, 
+                state).Unwrap();
                 _lastQueuedTask = newTask;
                 return newTask;
             }
