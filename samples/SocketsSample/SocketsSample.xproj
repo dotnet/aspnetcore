@@ -7,8 +7,8 @@
 
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>52ed8b3a-2dbb-448a-a708-faa0783b7917</ProjectGuid>
-    <RootNamespace>WebApplication95</RootNamespace>
+    <ProjectGuid>c4aeab04-f341-4539-b6c0-52368fb4bf9e</ProjectGuid>
+    <RootNamespace>SocketsSample</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>

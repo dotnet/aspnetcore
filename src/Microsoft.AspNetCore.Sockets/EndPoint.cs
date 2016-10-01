@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Channels;
+﻿using System.Threading.Tasks;
 
-namespace WebApplication95
+namespace Microsoft.AspNetCore.Sockets
 {
     /// <summary>
     /// Represents an end point that multiple connections connect to. For HTTP, endpoints are URLs, for non HTTP it can be a TCP listener (or similar)

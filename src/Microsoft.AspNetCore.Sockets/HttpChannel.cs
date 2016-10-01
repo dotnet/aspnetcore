@@ -1,7 +1,7 @@
 ﻿using System;
 using Channels;
 
-namespace WebApplication95
+namespace Microsoft.AspNetCore.Sockets
 {
     public class HttpChannel : IChannel
     {

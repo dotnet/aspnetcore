@@ -6,11 +6,11 @@ using Channels;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Sockets.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
-using WebApplication95.Routing;
 
-namespace WebApplication95
+namespace Microsoft.AspNetCore.Sockets
 {
     public class HttpConnectionDispatcher
     {

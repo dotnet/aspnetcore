@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using Channels;
 
-namespace WebApplication95
+namespace Microsoft.AspNetCore.Sockets
 {
     public class ConnectionManager
     {

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing;
 
-namespace WebApplication95.Routing
+namespace Microsoft.AspNetCore.Sockets.Routing
 {
-    public class PrefixRoute : IRouter
+    internal class PrefixRoute : IRouter
     {
         private readonly IRouteHandler _target;
         private readonly string _prefix;

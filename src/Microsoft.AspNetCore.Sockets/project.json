@@ -1,0 +1,11 @@
+﻿{
+  "version": "0.1.0-*",
+  "dependencies": {
+    "Channels": "0.2.0-beta-*",
+    "Microsoft.AspNetCore.Routing": "1.0.0"
+  },
+  "frameworks": {
+    "netstandard1.3": {
+    }
+  }
+}

@@ -1,14 +1,14 @@
 ﻿{
   "dependencies": {
-    "Channels": "0.2.0-beta-*",
+    "Microsoft.AspNetCore.Sockets": {
+      "target": "project"
+    },
     "Microsoft.NETCore.App": {
       "version": "1.0.0",
       "type": "platform"
     },
-    "Microsoft.AspNetCore.Routing": "1.0.0",
     "Microsoft.AspNetCore.Diagnostics": "1.0.0",
     "Microsoft.AspNetCore.StaticFiles": "1.0.0",
-
     "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0",
     "Microsoft.Extensions.Logging.Console": "1.0.0"

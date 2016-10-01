@@ -3,10 +3,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using WebApplication95.EndPoints;
-using WebApplication95.Routing;
 
-namespace WebApplication95
+namespace SocketsSample
 {
     public class Startup
     {

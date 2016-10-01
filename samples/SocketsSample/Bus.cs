@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Channels;
 
-namespace WebApplication95
+namespace Microsoft.AspNetCore.Sockets
 {
     public class Message
     {

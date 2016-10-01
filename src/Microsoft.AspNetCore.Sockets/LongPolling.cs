@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Channels;
 using Microsoft.AspNetCore.Http;
 
-namespace WebApplication95
+namespace Microsoft.AspNetCore.Sockets
 {
     public class LongPolling
     {

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Channels;
 using Microsoft.AspNetCore.Http;
 
-namespace WebApplication95
+namespace Microsoft.AspNetCore.Sockets
 {
     public class ServerSentEvents
     {
@@ -94,7 +94,7 @@ namespace WebApplication95
         {
             return Post(async state =>
             {
-                var data = ((ReadableBuffer)state);
+                var data = (ReadableBuffer)state;
                 // TODO: Pooled buffers
                 // 8 = 6(data: ) + 2 (\n\n)
                 var buffer = new byte[8 + data.Length];

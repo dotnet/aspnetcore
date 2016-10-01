@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Sockets;
 
-namespace WebApplication95
+namespace Microsoft.AspNetCore.Builder
 {
     public static class HttpDispatcherAppBuilderExtensions
     {
@@ -16,5 +13,4 @@ namespace WebApplication95
             return app;
         }
     }
-
 }

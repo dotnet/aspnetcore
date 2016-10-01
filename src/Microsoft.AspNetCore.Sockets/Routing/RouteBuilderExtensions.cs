@@ -4,10 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing;
 
-namespace WebApplication95.Routing
+namespace Microsoft.AspNetCore.Sockets.Routing
 {
-
-    public static class RouteBuilderExtensions
+    internal static class RouteBuilderExtensions
     {
         public static IRouteBuilder AddPrefixRoute(
             this IRouteBuilder routeBuilder,

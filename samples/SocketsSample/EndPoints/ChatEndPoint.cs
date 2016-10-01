@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Channels;
+using Microsoft.AspNetCore.Sockets;
 
-namespace WebApplication95.EndPoints
+namespace SocketsSample
 {
     public class ChatEndPoint : EndPoint
     {
