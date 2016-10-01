@@ -7,44 +7,16 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public class WebSockets
+    public class WebSockets : IHttpTransport
     {
+        private readonly HttpChannel _channel;
+        private readonly TaskCompletionSource<object> _tcs = new TaskCompletionSource<object>();
         private WebSocket _ws;
-        private HttpChannel _channel;
-        private TaskCompletionSource<object> _tcs = new TaskCompletionSource<object>();
 
         public WebSockets(HttpChannel channel)
         {
             _channel = channel;
             var ignore = StartSending();
-        }
-
-        private async Task StartSending()
-        {
-            await _tcs.Task;
-
-            while (true)
-            {
-                var buffer = await _channel.Output.ReadAsync();
-
-                if (buffer.IsEmpty && _channel.Output.Reading.IsCompleted)
-                {
-                    break;
-                }
-
-                foreach (var memory in buffer)
-                {
-                    ArraySegment<byte> data;
-                    if (memory.TryGetArray(out data))
-                    {
-                        await _ws.SendAsync(data, WebSocketMessageType.Text, endOfMessage: true, cancellationToken: CancellationToken.None);
-                    }
-                }
-
-                _channel.Output.Advance(buffer.End);
-            }
-
-            _channel.Output.CompleteReader();
         }
 
         public async Task ProcessRequest(HttpContext context)
@@ -82,6 +54,41 @@ namespace Microsoft.AspNetCore.Sockets
                     break;
                 }
             }
+        }
+
+        public async void Abort()
+        {
+            await _tcs.Task;
+
+            await _ws.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+        }
+
+        private async Task StartSending()
+        {
+            await _tcs.Task;
+
+            while (true)
+            {
+                var buffer = await _channel.Output.ReadAsync();
+
+                if (buffer.IsEmpty && _channel.Output.Reading.IsCompleted)
+                {
+                    break;
+                }
+
+                foreach (var memory in buffer)
+                {
+                    ArraySegment<byte> data;
+                    if (memory.TryGetArray(out data))
+                    {
+                        await _ws.SendAsync(data, WebSocketMessageType.Text, endOfMessage: true, cancellationToken: CancellationToken.None);
+                    }
+                }
+
+                _channel.Output.Advance(buffer.End);
+            }
+
+            _channel.Output.CompleteReader();
         }
     }
 }

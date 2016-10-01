@@ -51,6 +51,8 @@ namespace Microsoft.AspNetCore.Sockets
                     var connectionState = GetOrCreateConnection(context);
                     var sse = new ServerSentEvents((HttpChannel)connectionState.Connection.Channel);
 
+                    RegisterDisconnect(context, sse);
+
                     var ignore = endpoint.OnConnected(connectionState.Connection);
 
                     await sse.ProcessRequest(context);
@@ -63,6 +65,8 @@ namespace Microsoft.AspNetCore.Sockets
                 {
                     var connectionState = GetOrCreateConnection(context);
                     var ws = new WebSockets((HttpChannel)connectionState.Connection.Channel);
+
+                    RegisterDisconnect(context, ws);
 
                     var ignore = endpoint.OnConnected(connectionState.Connection);
 
@@ -107,11 +111,18 @@ namespace Microsoft.AspNetCore.Sockets
 
                     var longPolling = new LongPolling((HttpChannel)connectionState.Connection.Channel);
 
+                    RegisterDisconnect(context, longPolling);
+
                     await longPolling.ProcessRequest(context);
 
                     _manager.MarkConnectionInactive(connectionState.Connection.ConnectionId);
                 }
             }
+        }
+
+        private static void RegisterDisconnect(HttpContext context, IHttpTransport transport)
+        {
+            context.RequestAborted.Register(state => ((IHttpTransport)state).Abort(), transport);
         }
 
         private Task ProcessGetId(HttpContext context)

@@ -5,36 +5,20 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public class ServerSentEvents
+    public class ServerSentEvents : IHttpTransport
     {
-        private Task _lastTask;
-        private object _lockObj = new object();
-        private bool _completed;
-        private TaskCompletionSource<object> _initTcs = new TaskCompletionSource<object>();
-        private TaskCompletionSource<object> _lifetime = new TaskCompletionSource<object>();
-        private HttpContext _context;
+        private readonly TaskQueue _queue;
+        private readonly TaskCompletionSource<object> _initTcs = new TaskCompletionSource<object>();
+        private readonly TaskCompletionSource<object> _lifetime = new TaskCompletionSource<object>();
         private readonly HttpChannel _channel;
+
+        private HttpContext _context;
 
         public ServerSentEvents(HttpChannel channel)
         {
+            _queue = new TaskQueue(_initTcs.Task);
             _channel = channel;
-            _lastTask = _initTcs.Task;
             var ignore = StartSending();
-        }
-
-        private Task Post(Func<object, Task> work, object state)
-        {
-            if (_completed)
-            {
-                return _lastTask;
-            }
-
-            lock (_lockObj)
-            {
-                _lastTask = _lastTask.ContinueWith((t, s1) => work(s1), state).Unwrap();
-            }
-
-            return _lastTask;
         }
 
         public async Task ProcessRequest(HttpContext context)
@@ -42,31 +26,21 @@ namespace Microsoft.AspNetCore.Sockets
             context.Response.ContentType = "text/event-stream";
             context.Response.Headers["Cache-Control"] = "no-cache";
 
-            // End the connection if the client goes away
-            context.RequestAborted.Register(state => OnConnectionAborted(state), this);
             _context = context;
 
             // Set the initial TCS when everything is setup
             _initTcs.TrySetResult(null);
 
             await _lifetime.Task;
-
-            _completed = true;
         }
 
-        private static void OnConnectionAborted(object state)
+        public async void Abort()
         {
-            ((ServerSentEvents)state).OnConnectedAborted();
-        }
+            // Drain the queue so no new work can enter
+            await _queue.Drain();
 
-        private void OnConnectedAborted()
-        {
-            Post(state =>
-            {
-                ((TaskCompletionSource<object>)state).TrySetResult(null);
-                return Task.CompletedTask;
-            },
-            _lifetime);
+            // Complete the lifetime task
+            _lifetime.TrySetResult(null);
         }
 
         private async Task StartSending()
@@ -92,7 +66,7 @@ namespace Microsoft.AspNetCore.Sockets
 
         private Task Send(ReadableBuffer value)
         {
-            return Post(async state =>
+            return _queue.Enqueue(state =>
             {
                 var data = (ReadableBuffer)state;
                 // TODO: Pooled buffers
@@ -109,7 +83,7 @@ namespace Microsoft.AspNetCore.Sockets
                 at += data.Length;
                 buffer[at++] = (byte)'\n';
                 buffer[at++] = (byte)'\n';
-                await _context.Response.Body.WriteAsync(buffer, 0, at);
+                return _context.Response.Body.WriteAsync(buffer, 0, at);
             },
             value);
         }
