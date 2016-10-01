@@ -10,12 +10,12 @@ namespace WebApplication95
     public class WebSockets
     {
         private WebSocket _ws;
-        private ConnectionState _state;
+        private HttpChannel _channel;
         private TaskCompletionSource<object> _tcs = new TaskCompletionSource<object>();
 
-        public WebSockets(ConnectionState state)
+        public WebSockets(HttpChannel channel)
         {
-            _state = state;
+            _channel = channel;
             var ignore = StartSending();
         }
 
@@ -25,9 +25,9 @@ namespace WebApplication95
 
             while (true)
             {
-                var buffer = await _state.Connection.Output.ReadAsync();
+                var buffer = await _channel.Output.ReadAsync();
 
-                if (buffer.IsEmpty && _state.Connection.Output.Reading.IsCompleted)
+                if (buffer.IsEmpty && _channel.Output.Reading.IsCompleted)
                 {
                     break;
                 }
@@ -41,10 +41,10 @@ namespace WebApplication95
                     }
                 }
 
-                _state.Connection.Output.Advance(buffer.End);
+                _channel.Output.Advance(buffer.End);
             }
 
-            _state.Connection.Output.CompleteReader();
+            _channel.Output.CompleteReader();
         }
 
         public async Task ProcessRequest(HttpContext context)
@@ -69,11 +69,11 @@ namespace WebApplication95
                 // TODO: Fragments
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
-                    await _state.Connection.Input.WriteAsync(new Span<byte>(buffer, 0, result.Count));
+                    await _channel.Input.WriteAsync(new Span<byte>(buffer, 0, result.Count));
                 }
                 else if (result.MessageType == WebSocketMessageType.Binary)
                 {
-                    await _state.Connection.Input.WriteAsync(new Span<byte>(buffer, 0, result.Count));
+                    await _channel.Input.WriteAsync(new Span<byte>(buffer, 0, result.Count));
                 }
                 else if (result.MessageType == WebSocketMessageType.Close)
                 {

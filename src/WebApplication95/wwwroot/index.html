@@ -7,7 +7,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             function send(connectionId, data) {
                 var xhr = new XMLHttpRequest();
-                var url = '/chat/send?id=' + connectionId;
+                var url = `/chat/send?id=${connectionId}`;
                 xhr.open("POST", url, true);
                 xhr.onreadystatechange = function () {
                     if (xhr.readyState == 4 && xhr.status == 200) {
@@ -41,9 +41,7 @@
                 });
             }
 
-            xhr('GET', '/chat/getid').then(getidPayload => {
-                let connectionId = JSON.parse(getidPayload).connectionId;
-
+            xhr('GET', '/chat/getid').then(connectionId => {
                 let source = new EventSource(`/chat/sse?id=${connectionId}`);
 
                 source.onopen = function () {

@@ -16,10 +16,10 @@ namespace WebApplication95.EndPoints
             {
                 while (true)
                 {
-                    var input = await connection.Input.ReadAsync();
+                    var input = await connection.Channel.Input.ReadAsync();
                     try
                     {
-                        if (input.IsEmpty && connection.Input.Reading.IsCompleted)
+                        if (input.IsEmpty && connection.Channel.Input.Reading.IsCompleted)
                         {
                             break;
                         }
@@ -31,17 +31,17 @@ namespace WebApplication95.EndPoints
                     }
                     finally
                     {
-                        connection.Input.Advance(input.End);
+                        connection.Channel.Input.Advance(input.End);
                     }
                 }
             }
 
-            connection.Input.CompleteReader();
+            connection.Channel.Input.Complete();
         }
 
         private async Task OnMessage(Message message, Connection connection)
         {
-            var buffer = connection.Output.Alloc();
+            var buffer = connection.Channel.Output.Alloc();
             var payload = message.Payload;
             buffer.Append(ref payload);
             await buffer.FlushAsync();

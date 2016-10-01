@@ -13,11 +13,11 @@ namespace WebApplication95
         private TaskCompletionSource<object> _initTcs = new TaskCompletionSource<object>();
         private TaskCompletionSource<object> _lifetime = new TaskCompletionSource<object>();
         private HttpContext _context;
-        private readonly ConnectionState _state;
+        private readonly HttpChannel _channel;
 
-        public ServerSentEvents(ConnectionState state)
+        public ServerSentEvents(HttpChannel channel)
         {
-            _state = state;
+            _channel = channel;
             _lastTask = _initTcs.Task;
             var ignore = StartSending();
         }
@@ -75,36 +75,29 @@ namespace WebApplication95
 
             while (true)
             {
-                var buffer = await _state.Connection.Output.ReadAsync();
+                var buffer = await _channel.Output.ReadAsync();
 
-                if (buffer.IsEmpty && _state.Connection.Output.Reading.IsCompleted)
+                if (buffer.IsEmpty && _channel.Output.Reading.IsCompleted)
                 {
                     break;
                 }
 
-                foreach (var memory in buffer)
-                {
-                    ArraySegment<byte> data;
-                    if (memory.TryGetArray(out data))
-                    {
-                        await Send(data);
-                    }
-                }
+                await Send(buffer);
 
-                _state.Connection.Output.Advance(buffer.End);
+                _channel.Output.Advance(buffer.End);
             }
 
-            _state.Connection.Output.CompleteReader();
+            _channel.Output.CompleteReader();
         }
 
-        private Task Send(ArraySegment<byte> value)
+        private Task Send(ReadableBuffer value)
         {
             return Post(async state =>
             {
-                var data = ((ArraySegment<byte>)state);
+                var data = ((ReadableBuffer)state);
                 // TODO: Pooled buffers
                 // 8 = 6(data: ) + 2 (\n\n)
-                var buffer = new byte[8 + data.Count];
+                var buffer = new byte[8 + data.Length];
                 var at = 0;
                 buffer[at++] = (byte)'d';
                 buffer[at++] = (byte)'a';
@@ -112,8 +105,8 @@ namespace WebApplication95
                 buffer[at++] = (byte)'a';
                 buffer[at++] = (byte)':';
                 buffer[at++] = (byte)' ';
-                Buffer.BlockCopy(data.Array, data.Offset, buffer, at, data.Count);
-                at += data.Count;
+                data.CopyTo(new Span<byte>(buffer, at, buffer.Length - at));
+                at += data.Length;
                 buffer[at++] = (byte)'\n';
                 buffer[at++] = (byte)'\n';
                 await _context.Response.Body.WriteAsync(buffer, 0, at);

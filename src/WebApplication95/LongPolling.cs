@@ -14,12 +14,12 @@ namespace WebApplication95
         private TaskCompletionSource<object> _initTcs = new TaskCompletionSource<object>();
         private TaskCompletionSource<object> _lifetime = new TaskCompletionSource<object>();
         private HttpContext _context;
-        private readonly ConnectionState _state;
+        private readonly HttpChannel _channel;
 
-        public LongPolling(ConnectionState state)
+        public LongPolling(HttpChannel channel)
         {
             _lastTask = _initTcs.Task;
-            _state = state;
+            _channel = channel;
         }
 
         private Task Post(Func<object, Task> work, object state)
@@ -56,21 +56,25 @@ namespace WebApplication95
 
         private async Task ProcessMessages(HttpContext context)
         {
-            var buffer = await _state.Connection.Output.ReadAsync();
+            var buffer = await _channel.Output.ReadAsync();
 
-            foreach (var memory in buffer)
+            if (buffer.IsEmpty && _channel.Output.Reading.IsCompleted)
             {
-                ArraySegment<byte> data;
-                if (memory.TryGetArray(out data))
-                {
-                    await Send(data);
-
-                    // Advance the buffer one block of memory
-                    buffer = buffer.Slice(memory.Length);
-                    _state.Connection.Output.Advance(buffer.Start);
-                    break;
-                }
+                CompleteRequest();
+                return;
             }
+
+            try
+            {
+                await Send(buffer);
+            }
+            finally
+            {
+                _channel.Output.Advance(buffer.End);
+            }
+
+
+            CompleteRequest();
         }
 
         private static void OnConnectionAborted(object state)
@@ -88,18 +92,22 @@ namespace WebApplication95
             _lifetime);
         }
 
-        public async Task Send(ArraySegment<byte> value)
+        public Task Send(ReadableBuffer value)
         {
-            await Post(async state =>
+            return Post(async state =>
             {
-                var data = ((ArraySegment<byte>)state);
-                _context.Response.Headers["X-SignalR-ConnectionId"] = _state.Connection.ConnectionId;
-                _context.Response.ContentLength = data.Count;
-                await _context.Response.Body.WriteAsync(data.Array, data.Offset, data.Count);
+                var data = ((ReadableBuffer)state);
+                _context.Response.ContentLength = data.Length;
+                foreach (var memory in data)
+                {
+                    ArraySegment<byte> segment;
+                    if (memory.TryGetArray(out segment))
+                    {
+                        await _context.Response.Body.WriteAsync(segment.Array, segment.Offset, segment.Count);
+                    }
+                }
             },
             value);
-
-            CompleteRequest();
         }
     }
 }

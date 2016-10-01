@@ -1,24 +1,84 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Channels;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
 
 namespace WebApplication95
 {
     public class ConnectionManager
     {
         private ConcurrentDictionary<string, ConnectionState> _connections = new ConcurrentDictionary<string, ConnectionState>();
-        private readonly ChannelFactory _channelFactory = new ChannelFactory();
         private Timer _timer;
 
         public ConnectionManager()
         {
             _timer = new Timer(Scan, this, 0, 1000);
+        }
+
+        public bool TryGetConnection(string id, out ConnectionState state)
+        {
+            return _connections.TryGetValue(id, out state);
+        }
+
+        public ConnectionState ReserveConnection()
+        {
+            string id = MakeNewConnectionId();
+
+            // REVIEW: Should we create state for this?
+            var state = _connections.GetOrAdd(id, connectionId => new ConnectionState());
+
+            // Mark it as a reservation
+            state.Connection = new Connection
+            {
+                ConnectionId = id
+            };
+            return state;
+        }
+
+        public ConnectionState AddNewConnection(IChannel channel)
+        {
+            string id = MakeNewConnectionId();
+
+            var state = _connections.GetOrAdd(id, connectionId => new ConnectionState());
+
+            // If there's no connection object then it's a new connection
+            if (state.Connection == null)
+            {
+                state.Connection = new Connection
+                {
+                    Channel = channel,
+                    ConnectionId = id
+                };
+            }
+
+            // Update the last seen and mark the connection as active
+            state.LastSeen = DateTimeOffset.UtcNow;
+            state.Active = true;
+            return state;
+        }
+
+        public void MarkConnectionInactive(string id)
+        {
+            ConnectionState state;
+            if (_connections.TryGetValue(id, out state))
+            {
+                // Mark the connection as active so the background thread can look at it
+                state.Active = false;
+            }
+        }
+
+        public void RemoveConnection(string id)
+        {
+            ConnectionState state;
+            _connections.TryRemove(id, out state);
+
+            // Remove the connection completely
+        }
+
+        private static string MakeNewConnectionId()
+        {
+            // TODO: We need to sign and encyrpt this
+            return Guid.NewGuid().ToString();
         }
 
         private static void Scan(object state)
@@ -28,75 +88,21 @@ namespace WebApplication95
 
         private void Scan()
         {
+            // Scan the registered connections looking for ones that have timed out
             foreach (var c in _connections)
             {
-                if (!c.Value.Alive && (DateTimeOffset.UtcNow - c.Value.LastSeen).TotalSeconds > 30)
+                if (!c.Value.Active && (DateTimeOffset.UtcNow - c.Value.LastSeen).TotalSeconds > 30)
                 {
                     ConnectionState s;
                     if (_connections.TryRemove(c.Key, out s))
                     {
-                        s.Connection.Complete();
+                        s.Connection.Channel.Dispose();
                     }
                     else
                     {
 
                     }
                 }
-            }
-        }
-
-
-        // TODO: don't leak HttpContext to ConnectionManager
-        public string GetConnectionId(HttpContext context)
-        {
-            var id = context.Request.Query["id"];
-
-            if (!StringValues.IsNullOrEmpty(id))
-            {
-                return id.ToString();
-            }
-
-            return Guid.NewGuid().ToString();
-        }
-
-        public bool TryGetConnection(string id, out ConnectionState state)
-        {
-            return _connections.TryGetValue(id, out state);
-        }
-
-        public bool AddConnection(string id, out ConnectionState state)
-        {
-            state = _connections.GetOrAdd(id, connectionId => new ConnectionState());
-            var isNew = state.Connection == null;
-            if (isNew)
-            {
-                state.Connection = new Connection
-                {
-                    ConnectionId = id,
-                    Input = _channelFactory.CreateChannel(),
-                    Output = _channelFactory.CreateChannel()
-                };
-            }
-            state.LastSeen = DateTimeOffset.UtcNow;
-            state.Alive = true;
-            return isNew;
-        }
-
-        public void MarkConnectionDead(string id)
-        {
-            ConnectionState state;
-            if (_connections.TryGetValue(id, out state))
-            {
-                state.Alive = false;
-            }
-        }
-
-        public void RemoveConnection(string id)
-        {
-            ConnectionState state;
-            if (_connections.TryRemove(id, out state))
-            {
-
             }
         }
     }

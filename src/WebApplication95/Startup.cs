@@ -31,9 +31,9 @@ namespace WebApplication95
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseRealTimeConnections(d =>
+            app.UseSockets(d =>
             {
-                d.MapEndPoint<ChatEndPoint>("/chat");
+                d.MapSocketEndpoint<ChatEndPoint>("/chat");
             });
         }
     }
