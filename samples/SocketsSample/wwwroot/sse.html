@@ -4,17 +4,9 @@
     <meta charset="utf-8" />
     <title></title>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            function send(connectionId, data) {
-                var xhr = new XMLHttpRequest();
-                var url = `/chat/send?id=${connectionId}`;
-                xhr.open("POST", url, true);
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState == 4 && xhr.status == 200) {
-                    }
-                }
-                xhr.send(data);
-            }
+        function socket(url) {
+            var sock = this;
+            sock.url = url;
 
             function xhr(method, url) {
                 return new Promise((resolve, reject) => {
@@ -41,27 +33,61 @@
                 });
             }
 
-            xhr('GET', '/chat/getid').then(connectionId => {
-                let source = new EventSource(`/chat/sse?id=${connectionId}`);
+            this.onopen = function () { };
+            this.onmessage = function () { };
+            this.onerror = function (evt) { };
+            this.send = function (data) {
+                if (!sock.connectionId) {
+                    throw "Not connected";
+                }
+
+                var xhr = new XMLHttpRequest();
+                var url = `${sock.url}/send?id=${sock.connectionId}`;
+                xhr.open('POST', url, true);
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                    }
+                }
+                xhr.send(data);
+            };
+
+            // Start the connection
+            xhr('GET', `${sock.url}/getid`).then(connectionId => {
+                sock.connectionId = connectionId;
+
+                let source = new EventSource(`${sock.url}/sse?id=${connectionId}`);
 
                 source.onopen = function () {
-                    console.log('Opened!');
+                    sock.onopen();
                 };
 
                 source.onerror = function (err) {
-                    console.log('Error: ' + err.type);
+                    sock.onerror(err);
                 };
 
                 source.onmessage = function (data) {
-                    var child = document.createElement('li');
-                    child.innerText = data.data;
-                    document.getElementById('messages').appendChild(child);
+                    sock.onmessage(data);
                 };
+            });
+        };
 
-                document.getElementById('sendmessage').addEventListener('click', () => {
-                    let data = document.getElementById('data').value;
-                    send(connectionId, data);
-                });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            var sock = new socket('/chat');
+
+            sock.onopen = function () {
+                console.log('Opened!');
+            };
+
+            sock.onmessage = function (evt) {
+                var child = document.createElement('li');
+                child.innerText = evt.data;
+                document.getElementById('messages').appendChild(child);
+            };
+
+            document.getElementById('sendmessage').addEventListener('click', () => {
+                let data = document.getElementById('data').value;
+                sock.send(data);
             });
         });
 
@@ -72,8 +98,6 @@
     <input type="text" id="data" />
     <input type="button" id="sendmessage" value="Send" />
 
-    <ul id="messages">
-
-    </ul>
+    <ul id="messages"></ul>
 </body>
 </html>

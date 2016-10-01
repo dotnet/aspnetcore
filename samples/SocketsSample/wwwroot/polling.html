@@ -4,7 +4,9 @@
     <meta charset="utf-8" />
     <title></title>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        function socket(url) {
+            var sock = this;
+            sock.url = url;
 
             function xhr(method, url) {
                 return new Promise((resolve, reject) => {
@@ -31,38 +33,62 @@
                 });
             }
 
-            function send(connectionId, data) {
-                var xhr = new XMLHttpRequest();
-                var url = `/chat/send?id=${connectionId}`;
-                xhr.open("POST", url, true);
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState == 4 && xhr.status == 200) {
-                    }
-                }
-                xhr.send(data);
-            }
-
-            function poll(connectionId, xhr) {
-                var url = `/chat/poll?id=${connectionId}`;
-                xhr.open("POST", url, true);
+            function poll(xhr) {
+                var url = `${sock.url}/poll?id=${sock.connectionId}`;
+                xhr.open('POST', url, true);
                 xhr.onreadystatechange = () => {
                     if (xhr.readyState == 4 && xhr.status == 200) {
-                        var child = document.createElement('li');
-                        child.innerText = xhr.response;
-                        document.getElementById('messages').appendChild(child);
-                        poll(connectionId, xhr);
+                        sock.onmessage(xhr.responseText);
+                        poll(xhr);
                     }
                 }
                 xhr.send(null);
             }
 
-            xhr('GET', '/chat/getid').then(connectionId => {
-                document.getElementById('sendmessage').addEventListener('click', () => {
-                    let data = document.getElementById('data').value;
-                    send(connectionId, data);
-                });
+            this.onopen = function () { };
+            this.onmessage = function () { };
+            this.onerror = function (evt) { };
+            this.send = function (data) {
+                if (!sock.connectionId) {
+                    throw "Not connected";
+                }
+
+                var xhr = new XMLHttpRequest();
+                var url = `${sock.url}/send?id=${sock.connectionId}`;
+                xhr.open('POST', url, true);
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        // Do something useful here
+                    }
+                }
+                xhr.send(data);
+            };
+
+            xhr('GET', `${sock.url}/getid`).then(connectionId => {
+                sock.connectionId = connectionId;
+
+                sock.onopen();
 
                 poll(connectionId, new XMLHttpRequest());
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            var sock = new socket('/chat');
+
+            sock.onopen = function () {
+                console.log('Opened!');
+            };
+
+            sock.onmessage = function (evt) {
+                var child = document.createElement('li');
+                child.innerText = evt.data;
+                document.getElementById('messages').appendChild(child);
+            };
+
+            document.getElementById('sendmessage').addEventListener('click', () => {
+                let data = document.getElementById('data').value;
+                sock.send(data);
             });
         });
     </script>
