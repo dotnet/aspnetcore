@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Sockets
             _lifetime.TrySetResult(null);
         }
 
-        public Task Send(ReadableBuffer value)
+        private Task Send(ReadableBuffer value)
         {
             return _queue.Enqueue(state =>
             {

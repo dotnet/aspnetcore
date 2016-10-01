@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Sockets
                 buffer[at++] = (byte)'a';
                 buffer[at++] = (byte)':';
                 buffer[at++] = (byte)' ';
-                data.CopyTo(new Span<byte>(buffer, at, buffer.Length - at));
+                data.CopyTo(new Span<byte>(buffer, at, data.Length));
                 at += data.Length;
                 buffer[at++] = (byte)'\n';
                 buffer[at++] = (byte)'\n';
