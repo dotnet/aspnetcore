@@ -38,7 +38,7 @@
                 xhr.open('POST', url, true);
                 xhr.onreadystatechange = () => {
                     if (xhr.readyState == 4 && xhr.status == 200) {
-                        sock.onmessage(xhr.responseText);
+                        sock.onmessage({ data: xhr.responseText });
                         poll(xhr);
                     }
                 }
@@ -69,7 +69,7 @@
 
                 sock.onopen();
 
-                poll(connectionId, new XMLHttpRequest());
+                poll(new XMLHttpRequest());
             });
         }
 
