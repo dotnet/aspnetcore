@@ -9,6 +9,9 @@ namespace Microsoft.AspNetCore.Builder
         {
             var dispatcher = new HttpConnectionDispatcher(app);
             callback(dispatcher);
+
+            // TODO: Use new low allocating websocket API
+            app.UseWebSockets();
             app.UseRouter(dispatcher.GetRouter());
             return app;
         }
