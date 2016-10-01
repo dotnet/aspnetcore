@@ -208,6 +208,7 @@ namespace Microsoft.AspNetCore.Sockets
                 if (connectionState.Connection.Channel == null)
                 {
                     connectionState.Connection.Channel = new HttpChannel(_channelFactory);
+                    connectionState.LastSeen = DateTimeOffset.UtcNow;
                 }
             }
 
