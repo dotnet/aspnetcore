@@ -10,12 +10,14 @@ namespace Microsoft.AspNetCore.Sockets
     public class WebSockets : IHttpTransport
     {
         private readonly HttpChannel _channel;
+        private readonly Connection _connection;
         private readonly TaskCompletionSource<object> _tcs = new TaskCompletionSource<object>();
         private WebSocket _ws;
 
-        public WebSockets(HttpChannel channel)
+        public WebSockets(Connection connection)
         {
-            _channel = channel;
+            _connection = connection;
+            _channel = (HttpChannel)connection.Channel;
             var ignore = StartSending();
         }
 
@@ -34,7 +36,8 @@ namespace Microsoft.AspNetCore.Sockets
             _tcs.TrySetResult(null);
 
             var buffer = new byte[2048];
-            while (true)
+
+            while (!_channel.Input.Writing.IsCompleted)
             {
                 var result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
 
@@ -49,17 +52,18 @@ namespace Microsoft.AspNetCore.Sockets
                 }
                 else if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                    await ws.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
                     // TODO: needs to remove itself from connection mamanger?
                     break;
                 }
             }
         }
 
-        public async void Abort()
+        public async Task CloseAsync()
         {
             await _tcs.Task;
 
+            // REVIEW: Close output vs Close?
             await _ws.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
         }
 

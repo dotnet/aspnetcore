@@ -10,14 +10,16 @@ namespace Microsoft.AspNetCore.Sockets
         private readonly TaskCompletionSource<object> _initTcs = new TaskCompletionSource<object>();
         private readonly TaskCompletionSource<object> _lifetime = new TaskCompletionSource<object>();
         private readonly HttpChannel _channel;
+        private readonly Connection _connection;
         private readonly TaskQueue _queue;
 
         private HttpContext _context;
 
-        public LongPolling(HttpChannel channel)
+        public LongPolling(Connection connection)
         {
             _queue = new TaskQueue(_initTcs.Task);
-            _channel = channel;
+            _connection = connection;
+            _channel = (HttpChannel)connection.Channel;
         }
 
         public async Task ProcessRequest(HttpContext context)
@@ -38,7 +40,7 @@ namespace Microsoft.AspNetCore.Sockets
 
             if (buffer.IsEmpty && _channel.Output.Reading.IsCompleted)
             {
-                Abort();
+                await CloseAsync();
                 return;
             }
 
@@ -51,11 +53,24 @@ namespace Microsoft.AspNetCore.Sockets
                 _channel.Output.Advance(buffer.End);
             }
 
-
-            Abort();
+            await EndRequest();
         }
 
-        public async void Abort()
+        public async Task CloseAsync()
+        {
+            await _queue.Enqueue(state =>
+            {
+                var context = (HttpContext)state;
+                // REVIEW: What happens if header was already?
+                context.Response.Headers["X-ASPNET-SOCKET-DISCONNECT"] = "1";
+                return Task.CompletedTask;
+            },
+            _context);
+
+            await EndRequest();
+        }
+
+        private async Task EndRequest()
         {
             // Drain the queue and don't let any new work enter
             await _queue.Drain();
@@ -66,6 +81,7 @@ namespace Microsoft.AspNetCore.Sockets
 
         private Task Send(ReadableBuffer value)
         {
+            // REVIEW: Can we avoid the closure here?
             return _queue.Enqueue(state =>
             {
                 var data = (ReadableBuffer)state;

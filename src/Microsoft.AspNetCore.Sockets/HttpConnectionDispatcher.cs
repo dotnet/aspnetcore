@@ -52,8 +52,7 @@ namespace Microsoft.AspNetCore.Sockets
                 {
                     // Get the connection state for the current http context
                     var connectionState = GetOrCreateConnection(context);
-                    var channel = (HttpChannel)connectionState.Connection.Channel;
-                    var sse = new ServerSentEvents(channel);
+                    var sse = new ServerSentEvents(connectionState.Connection);
 
                     // Register this transport for disconnect
                     RegisterDisconnect(context, sse);
@@ -76,8 +75,7 @@ namespace Microsoft.AspNetCore.Sockets
                 {
                     // Get the connection state for the current http context
                     var connectionState = GetOrCreateConnection(context);
-                    var channel = (HttpChannel)connectionState.Connection.Channel;
-                    var ws = new WebSockets(channel);
+                    var ws = new WebSockets(connectionState.Connection);
 
                     // Register this transport for disconnect
                     RegisterDisconnect(context, ws);
@@ -128,8 +126,7 @@ namespace Microsoft.AspNetCore.Sockets
                         var ignore = endpoint.OnConnected(connectionState.Connection);
                     }
 
-                    var channel = (HttpChannel)connectionState.Connection.Channel;
-                    var longPolling = new LongPolling(channel);
+                    var longPolling = new LongPolling(connectionState.Connection);
 
                     // Register this transport for disconnect
                     RegisterDisconnect(context, longPolling);
@@ -144,7 +141,7 @@ namespace Microsoft.AspNetCore.Sockets
 
         private static void RegisterDisconnect(HttpContext context, IHttpTransport transport)
         {
-            context.RequestAborted.Register(state => ((IHttpTransport)state).Abort(), transport);
+            context.RequestAborted.Register(state => ((IHttpTransport)state).CloseAsync(), transport);
         }
 
         private Task ProcessGetId(HttpContext context)

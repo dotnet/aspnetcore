@@ -7,17 +7,19 @@ namespace Microsoft.AspNetCore.Sockets
 {
     public class ServerSentEvents : IHttpTransport
     {
-        private readonly TaskQueue _queue;
         private readonly TaskCompletionSource<object> _initTcs = new TaskCompletionSource<object>();
         private readonly TaskCompletionSource<object> _lifetime = new TaskCompletionSource<object>();
         private readonly HttpChannel _channel;
+        private readonly Connection _connection;
+        private readonly TaskQueue _queue;
 
         private HttpContext _context;
 
-        public ServerSentEvents(HttpChannel channel)
+        public ServerSentEvents(Connection connection)
         {
             _queue = new TaskQueue(_initTcs.Task);
-            _channel = channel;
+            _connection = connection;
+            _channel = (HttpChannel)connection.Channel;
             var ignore = StartSending();
         }
 
@@ -34,7 +36,7 @@ namespace Microsoft.AspNetCore.Sockets
             await _lifetime.Task;
         }
 
-        public async void Abort()
+        public async Task CloseAsync()
         {
             // Drain the queue so no new work can enter
             await _queue.Drain();
@@ -66,7 +68,7 @@ namespace Microsoft.AspNetCore.Sockets
 
         private Task Send(ReadableBuffer value)
         {
-            return _queue.Enqueue(state =>
+            return _queue.Enqueue(async state =>
             {
                 var data = (ReadableBuffer)state;
                 // TODO: Pooled buffers
@@ -83,7 +85,8 @@ namespace Microsoft.AspNetCore.Sockets
                 at += data.Length;
                 buffer[at++] = (byte)'\n';
                 buffer[at++] = (byte)'\n';
-                return _context.Response.Body.WriteAsync(buffer, 0, at);
+                await _context.Response.Body.WriteAsync(buffer, 0, at);
+                await _context.Response.Body.FlushAsync();
             },
             value);
         }
