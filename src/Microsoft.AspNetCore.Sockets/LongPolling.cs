@@ -96,16 +96,9 @@ namespace Microsoft.AspNetCore.Sockets
         {
             return Post(async state =>
             {
-                var data = ((ReadableBuffer)state);
+                var data = (ReadableBuffer)state;
                 _context.Response.ContentLength = data.Length;
-                foreach (var memory in data)
-                {
-                    ArraySegment<byte> segment;
-                    if (memory.TryGetArray(out segment))
-                    {
-                        await _context.Response.Body.WriteAsync(segment.Array, segment.Offset, segment.Count);
-                    }
-                }
+                await data.CopyToAsync(_context.Response.Body);
             },
             value);
         }
