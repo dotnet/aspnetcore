@@ -39,21 +39,18 @@ namespace Microsoft.AspNetCore.Sockets
         {
             string id = MakeNewConnectionId();
 
-            var state = _connections.GetOrAdd(id, connectionId => new ConnectionState());
-
-            // If there's no connection object then it's a new connection
-            if (state.Connection == null)
+            var state = new ConnectionState
             {
-                state.Connection = new Connection
+                Connection = new Connection
                 {
                     Channel = channel,
                     ConnectionId = id
-                };
-            }
+                },
+                LastSeen = DateTimeOffset.UtcNow,
+                Active = true
+            };
 
-            // Update the last seen and mark the connection as active
-            state.LastSeen = DateTimeOffset.UtcNow;
-            state.Active = true;
+            _connections.TryAdd(id, state);
             return state;
         }
 
