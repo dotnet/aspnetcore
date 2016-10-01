@@ -881,21 +881,20 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 return null;
             }
 
-            var wrappedMessage = new HtmlContentBuilder();
-            if (!string.IsNullOrEmpty(message))
+            TagBuilder messageTag;
+            if (string.IsNullOrEmpty(message))
+            {
+                messageTag = null;
+            }
+            else
             {
                 if (string.IsNullOrEmpty(headerTag))
                 {
                     headerTag = viewContext.ValidationSummaryMessageElement;
                 }
 
-                var messageTag = new TagBuilder(headerTag);
+                messageTag = new TagBuilder(headerTag);
                 messageTag.InnerHtml.SetContent(message);
-                wrappedMessage.AppendLine(messageTag);
-            }
-            else
-            {
-                wrappedMessage = null;
             }
 
             // If excludePropertyErrors is true, describe any validation issue with the current model in a single item.
@@ -940,7 +939,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 tagBuilder.AddCssClass(HtmlHelper.ValidationSummaryCssClassName);
             }
 
-            tagBuilder.InnerHtml.AppendHtml(wrappedMessage);
+            if (messageTag != null)
+            {
+                tagBuilder.InnerHtml.AppendLine(messageTag);
+            }
+
             tagBuilder.InnerHtml.AppendHtml(htmlSummary);
 
             if (viewContext.ClientValidationEnabled && !excludePropertyErrors)
@@ -1518,7 +1521,25 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             IEnumerable<SelectListItem> selectList,
             ICollection<string> currentValues)
         {
-            var listItemBuilder = new HtmlContentBuilder();
+            var itemsList = selectList as IList<SelectListItem>;
+            if (itemsList == null)
+            {
+                itemsList = selectList.ToList();
+            }
+
+            var count = itemsList.Count;
+            if (optionLabel != null)
+            {
+                count++;
+            }
+
+            // Short-circuit work below if there's nothing to add.
+            if (count == 0)
+            {
+                return HtmlString.Empty;
+            }
+
+            var listItemBuilder = new HtmlContentBuilder(count);
 
             // Make optionLabel the first item that gets rendered.
             if (optionLabel != null)
@@ -1531,12 +1552,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                         Selected = false,
                     },
                     currentValues: null));
-            }
-
-            var itemsList = selectList as IList<SelectListItem>;
-            if (itemsList == null)
-            {
-                itemsList = selectList.ToList();
             }
 
             // Group items in the SelectList if requested.

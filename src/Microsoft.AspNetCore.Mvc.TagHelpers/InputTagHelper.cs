@@ -218,10 +218,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             if (tagBuilder != null)
             {
-                // This TagBuilder contains the one <input/> element of interest. Since this is not the "checkbox"
-                // special-case, output is a self-closing element no longer guaranteed.
+                // This TagBuilder contains the one <input/> element of interest.
                 output.MergeAttributes(tagBuilder);
-                output.Content.AppendHtml(tagBuilder.InnerHtml);
+                if (tagBuilder.HasInnerHtml)
+                {
+                    // Since this is not the "checkbox" special-case, no guarantee that output is a self-closing
+                    // element. A later tag helper targeting this element may change output.TagMode.
+                    output.Content.AppendHtml(tagBuilder.InnerHtml);
+                }
             }
         }
 

@@ -147,7 +147,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             if (tagBuilder != null)
             {
                 output.MergeAttributes(tagBuilder);
-                output.PostContent.AppendHtml(tagBuilder.InnerHtml);
+                if (tagBuilder.HasInnerHtml)
+                {
+                    output.PostContent.AppendHtml(tagBuilder.InnerHtml);
+                }
             }
         }
     }

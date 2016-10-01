@@ -76,17 +76,20 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 {
                     output.MergeAttributes(tagBuilder);
 
-                    // We check for whitespace to detect scenarios such as:
-                    // <span validation-for="Name">
-                    // </span>
+                    // Do not update the content if another tag helper targeting this element has already done so.
                     if (!output.IsContentModified)
                     {
+                        // We check for whitespace to detect scenarios such as:
+                        // <span validation-for="Name">
+                        // </span>
                         var childContent = await output.GetChildContentAsync();
-
                         if (childContent.IsEmptyOrWhiteSpace)
                         {
-                            // Provide default label text since there was nothing useful in the Razor source.
-                            output.Content.SetHtmlContent(tagBuilder.InnerHtml);
+                            // Provide default message text (if any) since there was nothing useful in the Razor source.
+                            if (tagBuilder.HasInnerHtml)
+                            {
+                                output.Content.SetHtmlContent(tagBuilder.InnerHtml);
+                            }
                         }
                         else
                         {

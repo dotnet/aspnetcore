@@ -769,24 +769,21 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 isChecked,
                 htmlAttributes);
 
-            var hiddenForCheckboxTag = _htmlGenerator.GenerateHiddenForCheckbox(ViewContext, modelExplorer, expression);
-            if (checkbox == null || hiddenForCheckboxTag == null)
+            var hiddenForCheckbox = _htmlGenerator.GenerateHiddenForCheckbox(ViewContext, modelExplorer, expression);
+            if (checkbox == null || hiddenForCheckbox == null)
             {
                 return HtmlString.Empty;
             }
 
-            var checkboxContent = new HtmlContentBuilder().AppendHtml(checkbox);
-
             if (ViewContext.FormContext.CanRenderAtEndOfForm)
             {
-                ViewContext.FormContext.EndOfFormContent.Add(hiddenForCheckboxTag);
-            }
-            else
-            {
-                checkboxContent.AppendHtml(hiddenForCheckboxTag);
+                ViewContext.FormContext.EndOfFormContent.Add(hiddenForCheckbox);
+                return checkbox;
             }
 
-            return checkboxContent;
+            return new HtmlContentBuilder(capacity: 2)
+                .AppendHtml(checkbox)
+                .AppendHtml(hiddenForCheckbox);
         }
 
         protected virtual string GenerateDisplayName(ModelExplorer modelExplorer, string expression)

@@ -60,8 +60,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 return HtmlString.Empty;
             }
 
-            var collection = model as IEnumerable;
-            if (collection == null)
+            var enumerable = model as IEnumerable;
+            if (enumerable == null)
             {
                 // Only way we could reach here is if user passed templateName: "Collection" to an Editor() overload.
                 throw new InvalidOperationException(Resources.FormatTemplates_TypeMustImplementIEnumerable(
@@ -86,12 +86,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             {
                 viewData.TemplateInfo.HtmlFieldPrefix = string.Empty;
 
-                var result = new HtmlContentBuilder();
+                var collection = model as ICollection;
+                var result = collection == null ? new HtmlContentBuilder() : new HtmlContentBuilder(collection.Count);
                 var viewEngine = serviceProvider.GetRequiredService<ICompositeViewEngine>();
                 var viewBufferScope = serviceProvider.GetRequiredService<IViewBufferScope>();
 
                 var index = 0;
-                foreach (var item in collection)
+                foreach (var item in enumerable)
                 {
                     var itemMetadata = elementMetadata;
                     if (item != null && !typeInCollectionIsNullableValueType)
@@ -143,24 +144,26 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var viewData = htmlHelper.ViewData;
             var model = viewData.Model;
 
-            var result = new HtmlContentBuilder();
-            if (!viewData.ModelMetadata.HideSurroundingHtml)
+            IHtmlContent display;
+            if (viewData.ModelMetadata.HideSurroundingHtml)
             {
-                result.AppendHtml(DefaultDisplayTemplates.StringTemplate(htmlHelper));
+                display = null;
             }
-
-            // Special-case opaque values and arbitrary binary data.
-            var modelAsByteArray = model as byte[];
-            if (modelAsByteArray != null)
+            else
             {
-                model = Convert.ToBase64String(modelAsByteArray);
+                display = DefaultDisplayTemplates.StringTemplate(htmlHelper);
             }
 
             var htmlAttributesObject = viewData[HtmlAttributeKey];
-            var hiddenResult = htmlHelper.Hidden(expression: null, value: model, htmlAttributes: htmlAttributesObject);
-            result.AppendHtml(hiddenResult);
+            var hidden = htmlHelper.Hidden(expression: null, value: model, htmlAttributes: htmlAttributesObject);
+            if (viewData.ModelMetadata.HideSurroundingHtml)
+            {
+                return hidden;
+            }
 
-            return result;
+            return new HtmlContentBuilder(capacity: 2)
+                .AppendHtml(display)
+                .AppendHtml(hidden);
         }
 
         private static IDictionary<string, object> CreateHtmlAttributes(
@@ -250,7 +253,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var viewEngine = serviceProvider.GetRequiredService<ICompositeViewEngine>();
             var viewBufferScope = serviceProvider.GetRequiredService<IViewBufferScope>();
 
-            var content = new HtmlContentBuilder();
+            var content = new HtmlContentBuilder(modelExplorer.Metadata.Properties.Count);
             foreach (var propertyExplorer in modelExplorer.Properties)
             {
                 var propertyMetadata = propertyExplorer.Metadata;

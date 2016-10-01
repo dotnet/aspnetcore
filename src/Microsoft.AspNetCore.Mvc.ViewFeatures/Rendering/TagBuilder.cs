@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     public class TagBuilder : IHtmlContent
     {
         private AttributeDictionary _attributes;
+        private HtmlContentBuilder _innerHtml;
 
         /// <summary>
         /// Creates a new HTML tag that has the specified tag name.
@@ -34,7 +35,6 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             }
 
             TagName = tagName;
-            InnerHtml = new HtmlContentBuilder();
         }
 
         /// <summary>
@@ -57,7 +57,23 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <summary>
         /// Gets the inner HTML content of the element.
         /// </summary>
-        public IHtmlContentBuilder InnerHtml { get; }
+        public IHtmlContentBuilder InnerHtml
+        {
+            get
+            {
+                if (_innerHtml == null)
+                {
+                    _innerHtml = new HtmlContentBuilder();
+                }
+
+                return _innerHtml;
+            }
+        }
+
+        /// <summary>
+        /// Gets an indication <see cref="InnerHtml"/> is not empty.
+        /// </summary>
+        public bool HasInnerHtml => _innerHtml?.Count > 0;
 
         /// <summary>
         /// Gets the tag name for this tag.
@@ -291,7 +307,11 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                     writer.Write(TagName);
                     AppendAttributes(writer, encoder);
                     writer.Write(">");
-                    InnerHtml.WriteTo(writer, encoder);
+                    if (_innerHtml != null)
+                    {
+                        _innerHtml.WriteTo(writer, encoder);
+                    }
+
                     writer.Write("</");
                     writer.Write(TagName);
                     writer.Write(">");

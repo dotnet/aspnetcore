@@ -117,7 +117,10 @@ namespace Microsoft.AspNetCore.Mvc.Core.Rendering
         [InlineData("attribute", "value", "<p attribute=\"HtmlEncode[[value]]\"></p>")]
         [InlineData("attribute", null, "<p attribute=\"\"></p>")]
         [InlineData("attribute", "", "<p attribute=\"\"></p>")]
-        public void WriteTo_WriteEmptyAttribute_WhenValueIsNullOrEmpty(string attributeKey, string attributeValue, string expectedOutput)
+        public void WriteTo_WriteEmptyAttribute_WhenValueIsNullOrEmpty(
+            string attributeKey,
+            string attributeValue,
+            string expectedOutput)
         {
             // Arrange
             var tagBuilder = new TagBuilder("p");
@@ -149,6 +152,22 @@ namespace Microsoft.AspNetCore.Mvc.Core.Rendering
                 // Assert
                 Assert.Equal("<p><span>Hello</span>HtmlEncode[[, World!]]</p>", writer.ToString());
             }
+
+            Assert.True(tagBuilder.HasInnerHtml);
+        }
+
+        [Fact]
+        public void ReadingInnerHtml_LeavesHasInnerHtmlFalse()
+        {
+            // Arrange
+            var tagBuilder = new TagBuilder("p");
+
+            // Act
+            var innerHtml = tagBuilder.InnerHtml;
+
+            // Assert
+            Assert.False(tagBuilder.HasInnerHtml);
+            Assert.NotNull(innerHtml);
         }
     }
 }
