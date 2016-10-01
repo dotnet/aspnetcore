@@ -26,9 +26,9 @@ Example:
 [cmdletbinding()]
 param(
    [Parameter(Mandatory=$false, Position = 0)]
-   [string]  $ExtractFilesTo="$PSScriptRoot\..\artifacts",
+   [string]  $ExtractFilesTo="$PSScriptRoot\..\artifacts\build\AspNetCore\bin\Debug",
    [Parameter(Mandatory=$false, Position = 1)]
-   [string]  $PackagePath="$PSScriptRoot\..\artifacts",
+   [string]  $PackagePath="$PSScriptRoot\..\artifacts\build",
    [Parameter(Mandatory=$false)]
    [switch] $Rollback=$false,
    [Parameter(Mandatory=$false)]
@@ -235,12 +235,12 @@ function Update-ANCM() {
     }
 }
 
-function Update-File([string]$SourceFilePath, [string]$DestineFilePath) { 
+function Update-File([string]$SourceFilePath, [string]$DestinationFilePath) { 
 
     $Source = $SourceFilePath
-    $Destine = $DestineFilePath
+    $Destination = $DestinationFilePath
 
-    $BackupFilePath = $Destine + ".ancm_backup"
+    $BackupFilePath = $Destination + ".ancm_backup"
     if ($Rollback)
     {
         $Source = $BackupFilePath
@@ -266,12 +266,12 @@ function Update-File([string]$SourceFilePath, [string]$DestineFilePath) {
     if (-Not (Test-Path $BackupFilePath))
     {
         Say ("    Create a backup $BackupFilePath")
-        Copy-Item $Destine $BackupFilePath  -Force
+        Copy-Item $Destination $BackupFilePath  -Force
 
-        $fileMatched = $null -eq (Compare-Object -ReferenceObject $(Get-Content $Destine) -DifferenceObject $(Get-Content $BackupFilePath))
+        $fileMatched = $null -eq (Compare-Object -ReferenceObject $(Get-Content $Destination) -DifferenceObject $(Get-Content $BackupFilePath))
         if (-not $fileMatched)
         {
-            throw ("$LogHeader File not matched!!! $Destine $BackupFilePath")
+            throw ("$LogHeader File not matched!!! $Destination $BackupFilePath")
         }
     }
     if (-Not (Test-Path $BackupFilePath))
@@ -279,31 +279,31 @@ function Update-File([string]$SourceFilePath, [string]$DestineFilePath) {
         throw ("$LogHeader Can't backup $Source to $BackupFilePath")
     }  
 
-    # Copy file from Source to Destine if those files are different each other
-    if (-Not (Test-Path $Destine))
+    # Copy file from Source to Destination if those files are different each other
+    if (-Not (Test-Path $Destination))
     {
-        throw ("$LogHeader Can't find $Destine")
+        throw ("$LogHeader Can't find $Destination")
     }
-    $fileMatched = $null -eq (Compare-Object -ReferenceObject $(Get-Content $Source) -DifferenceObject $(Get-Content $Destine))
+    $fileMatched = $null -eq (Compare-Object -ReferenceObject $(Get-Content $Source) -DifferenceObject $(Get-Content $Destination))
     if (-not $fileMatched)
     {
         Say ("    Copying $Source to $Desting...")
-        Copy-Item $Source $Destine -Force
+        Copy-Item $Source $Destination -Force
 
         # check file is correctly copied
-        $fileMatched = $null -eq (Compare-Object -ReferenceObject $(Get-Content $Source) -DifferenceObject $(Get-Content $Destine))
+        $fileMatched = $null -eq (Compare-Object -ReferenceObject $(Get-Content $Source) -DifferenceObject $(Get-Content $Destination))
         if (-not $fileMatched)
         {
-            throw ("$LogHeader File not matched!!! $Source $Destine")
+            throw ("$LogHeader File not matched!!! $Source $Destination")
         }
         else
         {
-            Say-Verbose ("$LogHeader File matched!!! $Source to $Destine")
+            Say-Verbose ("$LogHeader File matched!!! $Source to $Destination")
         }
     }
     else
     {
-        Say ("    Skipping the file $Destine that is already identical to $Source ")
+        Say ("    Skipping the file $Destination that is already identical to $Source ")
     }
 }
 
