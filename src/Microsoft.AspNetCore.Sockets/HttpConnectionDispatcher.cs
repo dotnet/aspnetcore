@@ -52,6 +52,7 @@ namespace Microsoft.AspNetCore.Sockets
                 {
                     // Get the connection state for the current http context
                     var connectionState = GetOrCreateConnection(context);
+                    connectionState.Connection.Metadata["transport"] = "sse";
                     var sse = new ServerSentEvents(connectionState.Connection);
 
                     // Register this transport for disconnect
@@ -75,6 +76,7 @@ namespace Microsoft.AspNetCore.Sockets
                 {
                     // Get the connection state for the current http context
                     var connectionState = GetOrCreateConnection(context);
+                    connectionState.Connection.Metadata["transport"] = "websockets";
                     var ws = new WebSockets(connectionState.Connection);
 
                     // Register this transport for disconnect
@@ -122,6 +124,8 @@ namespace Microsoft.AspNetCore.Sockets
                     // Raise OnConnected for new connections only since polls happen all the time
                     if (isNewConnection)
                     {
+                        connectionState.Connection.Metadata["transport"] = "poll";
+
                         // REVIEW: We should await this task after disposing the connection
                         var ignore = endpoint.OnConnected(connectionState.Connection);
                     }

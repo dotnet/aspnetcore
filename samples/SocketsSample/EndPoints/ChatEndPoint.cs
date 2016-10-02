@@ -16,7 +16,7 @@ namespace SocketsSample
         {
             await bus.Publish(nameof(ChatEndPoint), new Message
             {
-                Payload = Encoding.UTF8.GetBytes($"{connection.ConnectionId} connected")
+                Payload = Encoding.UTF8.GetBytes($"{connection.ConnectionId} connected ({connection.Metadata["transport"]})")
             });
 
             using (bus.Subscribe(nameof(ChatEndPoint), message => OnMessage(message, connection)))
@@ -45,7 +45,7 @@ namespace SocketsSample
 
             await bus.Publish(nameof(ChatEndPoint), new Message
             {
-                Payload = Encoding.UTF8.GetBytes($"{connection.ConnectionId} disconnected")
+                Payload = Encoding.UTF8.GetBytes($"{connection.ConnectionId} disconnected ({connection.Metadata["transport"]})")
             });
 
             connection.Channel.Input.Complete();
