@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script>
+        function jsonRpc(url) {
+            var ws = new WebSocket(url);
+            var id = 0;
+            var calls = {};
+
+            ws.onopen = function () {
+                console.log('Opened!');
+            };
+
+            ws.onmessage = function (evt) {
+                var response = JSON.parse(evt.data);
+
+                var cb = calls[response.id];
+
+                delete calls[response.id];
+
+                if (response.error) {
+                    cb.error(response.error);
+                }
+                else {
+                    cb.success(response.result);
+                }
+            };
+
+            ws.onclose = function (evt) {
+                console.log('Closed!');
+            };
+
+            this.invoke = function (method, args) {
+                return new Promise((resolve, reject) => {
+                    calls[id] = { success: resolve, error: reject };
+                    ws.send(JSON.stringify({ method: method, params: args, id: id }));
+                    id++;
+                });
+            };
+        }
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            var rpc = new jsonRpc('ws://localhost:5000/jsonrpc/ws');
+
+            document.getElementById('sendmessage').addEventListener('click', () => {
+                let data = document.getElementById('data').value;
+
+                rpc.invoke('SocketsSample.Echo.Send', [data]).then(result => {
+                    var child = document.createElement('li');
+                    child.innerText = result;
+                    document.getElementById('messages').appendChild(child);
+                })
+                .catch(err => {
+                    var child = document.createElement('li');
+                    child.style.color = 'red';
+                    child.innerText = err;
+                    document.getElementById('messages').appendChild(child);
+                });
+            });
+        });
+
+    </script>
+</head>
+<body>
+    <h1>WebSockets</h1>
+    <input type="text" id="data" />
+    <input type="button" id="sendmessage" value="Send" />
+
+    <ul id="messages"></ul>
+</body>
+</html>
