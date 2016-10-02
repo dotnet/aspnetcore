@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Channels;
 using Microsoft.AspNetCore.Sockets;
@@ -13,6 +14,11 @@ namespace SocketsSample
 
         public override async Task OnConnected(Connection connection)
         {
+            await bus.Publish(nameof(ChatEndPoint), new Message
+            {
+                Payload = Encoding.UTF8.GetBytes($"{connection.ConnectionId} connected")
+            });
+
             using (bus.Subscribe(nameof(ChatEndPoint), message => OnMessage(message, connection)))
             {
                 while (true)
@@ -27,7 +33,7 @@ namespace SocketsSample
 
                         await bus.Publish(nameof(ChatEndPoint), new Message()
                         {
-                            Payload = input
+                            Payload = input.ToArray()
                         });
                     }
                     finally
@@ -37,6 +43,11 @@ namespace SocketsSample
                 }
             }
 
+            await bus.Publish(nameof(ChatEndPoint), new Message
+            {
+                Payload = Encoding.UTF8.GetBytes($"{connection.ConnectionId} disconnected")
+            });
+
             connection.Channel.Input.Complete();
         }
 
@@ -44,7 +55,7 @@ namespace SocketsSample
         {
             var buffer = connection.Channel.Output.Alloc();
             var payload = message.Payload;
-            buffer.Append(ref payload);
+            buffer.Write(payload);
             await buffer.FlushAsync();
         }
     }

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Sockets
 {
     public class Message
     {
-        public ReadableBuffer Payload { get; set; }
+        public byte[] Payload { get; set; }
     }
 
     public class Bus
