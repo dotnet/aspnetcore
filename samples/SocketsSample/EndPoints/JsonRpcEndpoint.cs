@@ -26,6 +26,11 @@ namespace SocketsSample
             _logger = logger;
             _serviceProvider = serviceProvider;
 
+            DiscoverEndpoints();
+        }
+
+        protected virtual void DiscoverEndpoints()
+        {
             RegisterJsonRPCEndPoint(typeof(Echo));
         }
 
@@ -81,15 +86,28 @@ namespace SocketsSample
                     response["error"] = string.Format("Unknown method '{0}'", request.Value<string>("method"));
                 }
 
-                _logger.LogDebug("Sending JSON RPC response: {data}", response);
+                if (!HandleResponse(connection.ConnectionId, response))
+                {
+                    _logger.LogDebug("Sending JSON RPC response: {data}", response);
 
-                var writer = new JsonTextWriter(new StreamWriter(stream));
-                response.WriteTo(writer);
-                writer.Flush();
+                    var writer = new JsonTextWriter(new StreamWriter(stream));
+                    response.WriteTo(writer);
+                    writer.Flush();
+                }
             }
         }
 
-        private void RegisterJsonRPCEndPoint(Type type)
+        protected virtual bool HandleResponse(string connectionId, JObject response)
+        {
+            return false;
+        }
+
+        protected virtual void Initialize(object endpoint)
+        {
+
+        }
+
+        protected void RegisterJsonRPCEndPoint(Type type)
         {
             var methods = new List<string>();
 
@@ -122,6 +140,8 @@ namespace SocketsSample
                     using (var scope = scopeFactory.CreateScope())
                     {
                         object value = scope.ServiceProvider.GetService(type) ?? Activator.CreateInstance(type);
+
+                        Initialize(value);
 
                         try
                         {

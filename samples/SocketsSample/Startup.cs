@@ -14,6 +14,7 @@ namespace SocketsSample
         {
             services.AddRouting();
 
+            services.AddSingleton<HubEndpoint>();
             services.AddSingleton<JsonRpcEndpoint>();
             services.AddSingleton<ChatEndPoint>();
         }
@@ -32,6 +33,7 @@ namespace SocketsSample
 
             app.UseSockets(d =>
             {
+                d.MapSocketEndpoint<HubEndpoint>("/hubs");
                 d.MapSocketEndpoint<ChatEndPoint>("/chat");
                 d.MapSocketEndpoint<JsonRpcEndpoint>("/jsonrpc");
             });
