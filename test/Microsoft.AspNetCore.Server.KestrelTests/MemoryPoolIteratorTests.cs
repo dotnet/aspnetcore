@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             for (int i = 0; i < Vector<byte>.Count; i++)
             {
                 Vector<byte> vector = new Vector<byte>(bytes);
-                Assert.Equal(i, MemoryPoolIterator.FindFirstEqualByte(ref vector));
+                Assert.Equal(i, MemoryPoolIterator.LocateFirstFoundByte(ref vector));
                 bytes[i] = 0;
             }
 
@@ -40,27 +40,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 bytes[i] = 1;
                 Vector<byte> vector = new Vector<byte>(bytes);
-                Assert.Equal(i, MemoryPoolIterator.FindFirstEqualByte(ref vector));
-                bytes[i] = 0;
-            }
-        }
-
-        [Fact]
-        public void TestFindFirstEqualByteSlow()
-        {
-            var bytes = Enumerable.Repeat<byte>(0xff, Vector<byte>.Count).ToArray();
-            for (int i = 0; i < Vector<byte>.Count; i++)
-            {
-                Vector<byte> vector = new Vector<byte>(bytes);
-                Assert.Equal(i, MemoryPoolIterator.FindFirstEqualByteSlow(ref vector));
-                bytes[i] = 0;
-            }
-
-            for (int i = 0; i < Vector<byte>.Count; i++)
-            {
-                bytes[i] = 1;
-                Vector<byte> vector = new Vector<byte>(bytes);
-                Assert.Equal(i, MemoryPoolIterator.FindFirstEqualByteSlow(ref vector));
+                Assert.Equal(i, MemoryPoolIterator.LocateFirstFoundByte(ref vector));
                 bytes[i] = 0;
             }
         }
