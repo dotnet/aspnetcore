@@ -52,6 +52,7 @@ namespace Microsoft.AspNetCore.Sockets
                 {
                     // Get the connection state for the current http context
                     var connectionState = GetOrCreateConnection(context);
+                    connectionState.Connection.User = context.User;
                     connectionState.Connection.Metadata["transport"] = "sse";
                     var sse = new ServerSentEvents(connectionState.Connection);
 
@@ -76,6 +77,7 @@ namespace Microsoft.AspNetCore.Sockets
                 {
                     // Get the connection state for the current http context
                     var connectionState = GetOrCreateConnection(context);
+                    connectionState.Connection.User = context.User;
                     connectionState.Connection.Metadata["transport"] = "websockets";
                     var ws = new WebSockets(connectionState.Connection);
 
@@ -126,7 +128,7 @@ namespace Microsoft.AspNetCore.Sockets
                     if (isNewConnection)
                     {
                         connectionState.Connection.Metadata["transport"] = "poll";
-
+                        connectionState.Connection.User = context.User;
                         // REVIEW: We should await this task after disposing the connection
                         var ignore = endpoint.OnConnected(connectionState.Connection);
                     }
