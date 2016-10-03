@@ -6,8 +6,8 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>8a2e6961-6b12-4a8e-8215-3e7301d52eac</ProjectGuid>
-    <RootNamespace>Microsoft.DotNet.Watcher.Tools.Tests</RootNamespace>
+    <ProjectGuid>1a66a831-4f06-46d9-b483-70a4e75a2f7f</ProjectGuid>
+    <RootNamespace>Microsoft.Extensions.ProjectModel</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
   </PropertyGroup>
