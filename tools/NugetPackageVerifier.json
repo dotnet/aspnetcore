@@ -7,9 +7,34 @@
             "Microsoft.EntityFrameworkCore.Tools.DotNet": {
                 "exclusions": {
                     "DOC_MISSING": {
-                        "lib/netcoreapp1.0/dotnet-ef.dll": "Not a class library. Docs not required for CLI tools"
+                        "lib/netcoreapp1.0/dotnet-ef.dll": "Not a class library. Docs not required for CLI tools."
                     }
-                }
+                },
+                "packageTypes": [ "DotnetCliTool" ]
+            },
+            "Microsoft.DotNet.Watcher.Tools": {
+                "Exclusions": {
+                    "DOC_MISSING": {
+                        "lib/netcoreapp1.0/dotnet-watch.dll": "Not a class library. Docs not required for CLI tools."
+                    }
+                },
+                "packageTypes": [ "DotnetCliTool" ]
+            },
+            "Microsoft.Extensions.Caching.SqlConfig.Tools": {
+                "Exclusions": {
+                    "DOC_MISSING": {
+                        "lib/netcoreapp1.0/dotnet-sql-cache.dll": "Not a class library. Docs not required for CLI tools."
+                    }
+                },
+                "packageTypes": [ "DotnetCliTool" ]
+            },
+            "Microsoft.Extensions.SecretManager.Tools": {
+                "Exclusions": {
+                    "DOC_MISSING": {
+                        "lib/netcoreapp1.0/dotnet-user-secrets.dll": "Not a class library. Docs not required for CLI tools."
+                    }
+                },
+                "packageTypes": [ "DotnetCliTool" ]
             }
         }
     },
