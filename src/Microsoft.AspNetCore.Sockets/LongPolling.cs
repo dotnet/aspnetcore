@@ -22,7 +22,8 @@ namespace Microsoft.AspNetCore.Sockets
 
             if (buffer.IsEmpty && _channel.Output.Reading.IsCompleted)
             {
-                // REVIEW: Set the status code here so the client doesn't reconnect
+                // Client should stop if it receives a 204
+                context.Response.StatusCode = 204;
                 return;
             }
 
