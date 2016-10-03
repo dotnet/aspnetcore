@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -98,6 +99,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
+        public void ThrowsWhenBindingToIPv4AddressInUse()
+        {
+            using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+            {
+                var port = GetNextPort();
+                socket.Bind(new IPEndPoint(IPAddress.Loopback, port));
+
+                var hostBuilder = new WebHostBuilder()
+                    .UseKestrel()
+                    .UseUrls($"http://127.0.0.1:{port}")
+                    .Configure(ConfigureEchoAddress);
+
+                using (var host = hostBuilder.Build())
+                {
+                    var exception = Assert.Throws<IOException>(() => host.Start());
+                    Assert.Equal($"Failed to bind to address http://127.0.0.1:{port}: address already in use.", exception.Message);
+                }
+            }
+        }
+
+        [ConditionalFact]
+        [IPv6SupportedCondition]
+        public void ThrowsWhenBindingToIPv6AddressInUse()
+        {
+            using (var socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp))
+            {
+                var port = GetNextPort();
+                socket.Bind(new IPEndPoint(IPAddress.IPv6Loopback, port));
+
+                var hostBuilder = new WebHostBuilder()
+                    .UseKestrel()
+                    .UseUrls($"http://[::1]:{port}")
+                    .Configure(ConfigureEchoAddress);
+
+                using (var host = hostBuilder.Build())
+                {
+                    var exception = Assert.Throws<IOException>(() => host.Start());
+                    Assert.Equal($"Failed to bind to address http://[::1]:{port}: address already in use.", exception.Message);
+                }
+            }
+        }
+
+        [Fact]
         public void ThrowsWhenBindingLocalhostToIPv4AddressInUse()
         {
             ThrowsWhenBindingLocalhostToAddressInUse(AddressFamily.InterNetwork, IPAddress.Loopback);
@@ -138,8 +182,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var host = hostBuilder.Build())
                 {
-                    var exception = Assert.Throws<AggregateException>(() => host.Start());
-                    Assert.Contains(exception.InnerExceptions, ex => ex is UvException);
+                    var exception = Assert.Throws<IOException>(() => host.Start());
+                    Assert.Equal(
+                        $"Failed to bind to address http://localhost:{port} on the {(addressFamily == AddressFamily.InterNetwork ? "IPv4" : "IPv6")} loopback interface: port already in use.",
+                        exception.Message);
                 }
             }
         }

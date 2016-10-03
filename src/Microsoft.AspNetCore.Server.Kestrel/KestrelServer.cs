@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
@@ -109,8 +110,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
                     if (!parsedAddress.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase))
                     {
-                        _disposables.Push(engine.CreateServer(
-                            parsedAddress));
+                        try
+                        {
+                            _disposables.Push(engine.CreateServer(parsedAddress));
+                        }
+                        catch (AggregateException ex)
+                        {
+                            if ((ex.InnerException as UvException)?.StatusCode == Constants.EADDRINUSE)
+                            {
+                                throw new IOException($"Failed to bind to address {parsedAddress}: address already in use.", ex);
+                            }
+
+                            throw;
+                        }
                     }
                     else
                     {
@@ -120,24 +132,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                         }
 
                         var ipv4Address = parsedAddress.WithHost("127.0.0.1");
-                        var exceptions = new List<UvException>();
+                        var exceptions = new List<Exception>();
 
                         try
                         {
                             _disposables.Push(engine.CreateServer(ipv4Address));
                         }
-                        catch (AggregateException ex)
+                        catch (AggregateException ex) when (ex.InnerException is UvException)
                         {
-                            var uvException = ex.InnerException as UvException;
-
-                            if (uvException != null && uvException.StatusCode != Constants.EADDRINUSE)
+                            if ((ex.InnerException as UvException).StatusCode == Constants.EADDRINUSE)
                             {
-                                _logger.LogWarning(0, ex, $"Unable to bind to {parsedAddress.ToString()} on the IPv4 loopback interface.");
-                                exceptions.Add(uvException);
+                                throw new IOException($"Failed to bind to address {parsedAddress.ToString()} on the IPv4 loopback interface: port already in use.", ex);
                             }
                             else
                             {
-                                throw;
+                                _logger.LogWarning(0, ex, $"Unable to bind to {parsedAddress.ToString()} on the IPv4 loopback interface.");
+                                exceptions.Add(ex.InnerException);
                             }
                         }
 
@@ -147,26 +157,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                         {
                             _disposables.Push(engine.CreateServer(ipv6Address));
                         }
-                        catch (AggregateException ex)
+                        catch (AggregateException ex) when (ex.InnerException is UvException)
                         {
-                            var uvException = ex.InnerException as UvException;
-
-                            if (uvException != null && uvException.StatusCode != Constants.EADDRINUSE)
+                            if ((ex.InnerException as UvException).StatusCode == Constants.EADDRINUSE)
                             {
-                                _logger.LogWarning(0, ex, $"Unable to bind to {parsedAddress.ToString()} on the IPv6 loopback interface.");
-                                exceptions.Add(uvException);
+                                throw new IOException($"Failed to bind to address {parsedAddress.ToString()} on the IPv6 loopback interface: port already in use.", ex);
                             }
                             else
                             {
-                                throw;
+                                _logger.LogWarning(0, ex, $"Unable to bind to {parsedAddress.ToString()} on the IPv6 loopback interface.");
+                                exceptions.Add(ex.InnerException);
                             }
                         }
 
                         if (exceptions.Count == 2)
                         {
-                            var ex = new AggregateException(exceptions);
-                            _logger.LogError(0, ex, $"Unable to bind to {parsedAddress.ToString()} on any loopback interface.");
-                            throw ex;
+                            throw new IOException($"Failed to bind to address {parsedAddress.ToString()}.", new AggregateException(exceptions));
                         }
                     }
 
