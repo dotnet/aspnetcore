@@ -1534,16 +1534,17 @@ namespace Microsoft.AspNetCore.Identity.Test
                 IdentityResultAssert.IsSuccess(await userManager.CreateAsync(u));
             }
             var r = CreateTestRole("r1");
+            var roleName = await roleManager.GetRoleNameAsync(r);
             IdentityResultAssert.IsSuccess(await roleManager.CreateAsync(r));
             foreach (var u in users)
             {
-                IdentityResultAssert.IsSuccess(await userManager.AddToRoleAsync(u, await roleManager.GetRoleNameAsync(r)));
-                Assert.True(await userManager.IsInRoleAsync(u, await roleManager.GetRoleNameAsync(r)));
+                IdentityResultAssert.IsSuccess(await userManager.AddToRoleAsync(u, roleName));
+                Assert.True(await userManager.IsInRoleAsync(u, roleName));
             }
             foreach (var u in users)
             {
-                IdentityResultAssert.IsSuccess(await userManager.RemoveFromRoleAsync(u, await roleManager.GetRoleNameAsync(r)));
-                Assert.False(await userManager.IsInRoleAsync(u, await roleManager.GetRoleNameAsync(r)));
+                IdentityResultAssert.IsSuccess(await userManager.RemoveFromRoleAsync(u, roleName));
+                Assert.False(await userManager.IsInRoleAsync(u, roleName));
             }
         }
 

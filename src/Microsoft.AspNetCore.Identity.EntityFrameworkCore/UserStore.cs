@@ -239,6 +239,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// </summary>
         public IdentityErrorDescriber ErrorDescriber { get; set; }
 
+        private DbSet<TUser> UsersSet { get { return Context.Set<TUser>(); } }
         private DbSet<TRole> Roles { get { return Context.Set<TRole>(); } }
         private DbSet<TUserClaim> UserClaims { get { return Context.Set<TUserClaim>(); } }
         private DbSet<TUserRole> UserRoles { get { return Context.Set<TUserRole>(); } }
@@ -472,7 +473,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
             var id = ConvertIdFromString(userId);
-            return Users.FirstOrDefaultAsync(u => u.Id.Equals(id), cancellationToken);
+            return UsersSet.FindAsync(new object[] { id }, cancellationToken);
         }
 
         /// <summary>
@@ -496,7 +497,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <returns>An <see cref="string"/> representation of the provided <paramref name="id"/>.</returns>
         public virtual string ConvertIdToString(TKey id)
         {
-            if (Object.Equals(id, default(TKey)))
+            if (object.Equals(id, default(TKey)))
             {
                 return null;
             }
@@ -523,7 +524,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// </summary>
         public virtual IQueryable<TUser> Users
         {
-            get { return Context.Set<TUser>(); }
+            get { return UsersSet; }
         }
 
         /// <summary>
@@ -624,7 +625,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             var roleEntity = await Roles.SingleOrDefaultAsync(r => r.NormalizedName == normalizedRoleName, cancellationToken);
             if (roleEntity != null)
             {
-                var userRole = await UserRoles.FirstOrDefaultAsync(r => roleEntity.Id.Equals(r.RoleId) && r.UserId.Equals(user.Id), cancellationToken);
+                var userRole = await UserRoles.FindAsync(new object[] { user.Id, roleEntity.Id }, cancellationToken);
                 if (userRole != null)
                 {
                     UserRoles.Remove(userRole);
@@ -677,9 +678,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             var role = await Roles.SingleOrDefaultAsync(r => r.NormalizedName == normalizedRoleName, cancellationToken);
             if (role != null)
             {
-                var userId = user.Id;
-                var roleId = role.Id;
-                return await UserRoles.AnyAsync(ur => ur.RoleId.Equals(roleId) && ur.UserId.Equals(userId));
+                var userRole = await UserRoles.FindAsync(new object[] { user.Id, role.Id }, cancellationToken);
+                return userRole != null;
             }
             return false;
         }
@@ -888,8 +888,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            var userLogin = await
-                UserLogins.FirstOrDefaultAsync(l => l.LoginProvider == loginProvider && l.ProviderKey == providerKey, cancellationToken);
+            var userLogin = await UserLogins.FindAsync(new object[] { loginProvider, providerKey }, cancellationToken);
             if (userLogin != null)
             {
                 return await Users.FirstOrDefaultAsync(u => u.Id.Equals(userLogin.UserId), cancellationToken);
@@ -1348,7 +1347,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            if (String.IsNullOrEmpty(normalizedRoleName))
+            if (string.IsNullOrEmpty(normalizedRoleName))
             {
                 throw new ArgumentNullException(nameof(normalizedRoleName));
             }
@@ -1368,10 +1367,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         }
 
         private Task<TUserToken> FindToken(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
-        {
-            var userId = user.Id;
-            return UserTokens.SingleOrDefaultAsync(l => l.UserId.Equals(userId) && l.LoginProvider == loginProvider && l.Name == name, cancellationToken);
-        }
+            => UserTokens.FindAsync(new object[] { user.Id, loginProvider, name }, cancellationToken);
 
         /// <summary>
         /// Sets the token value for a particular user.
@@ -1420,8 +1416,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             {
                 throw new ArgumentNullException(nameof(user));
             }
-            var userId = user.Id;
-            var entry = await UserTokens.SingleOrDefaultAsync(l => l.UserId.Equals(userId) && l.LoginProvider == loginProvider && l.Name == name, cancellationToken);
+            var entry = await FindToken(user, loginProvider, name, cancellationToken);
             if (entry != null)
             {
                 UserTokens.Remove(entry);
