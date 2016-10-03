@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -13,16 +12,14 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
     public class ResponseCachingContext
     {
-        private static readonly CacheControlHeaderValue EmptyCacheControl = new CacheControlHeaderValue();
-
-        private RequestHeaders _requestHeaders;
-        private ResponseHeaders _responseHeaders;
-        private CacheControlHeaderValue _requestCacheControl;
-        private CacheControlHeaderValue _responseCacheControl;
         private DateTimeOffset? _responseDate;
         private bool _parsedResponseDate;
         private DateTimeOffset? _responseExpires;
         private bool _parsedResponseExpires;
+        private TimeSpan? _responseSharedMaxAge;
+        private bool _parsedResponseSharedMaxAge;
+        private TimeSpan? _responseMaxAge;
+        private bool _parsedResponseMaxAge;
 
         internal ResponseCachingContext(HttpContext httpContext, ILogger logger)
         {
@@ -58,55 +55,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         internal IHttpSendFileFeature OriginalSendFileFeature { get; set; }
 
-        internal ResponseHeaders CachedResponseHeaders { get; set; }
-
-        internal RequestHeaders TypedRequestHeaders
-        {
-            get
-            {
-                if (_requestHeaders == null)
-                {
-                    _requestHeaders = HttpContext.Request.GetTypedHeaders();
-                }
-                return _requestHeaders;
-            }
-        }
-
-        internal ResponseHeaders TypedResponseHeaders
-        {
-            get
-            {
-                if (_responseHeaders == null)
-                {
-                    _responseHeaders = HttpContext.Response.GetTypedHeaders();
-                }
-                return _responseHeaders;
-            }
-        }
-
-        internal CacheControlHeaderValue RequestCacheControlHeaderValue
-        {
-            get
-            {
-                if (_requestCacheControl == null)
-                {
-                    _requestCacheControl = TypedRequestHeaders.CacheControl ?? EmptyCacheControl;
-                }
-                return _requestCacheControl;
-            }
-        }
-
-        internal CacheControlHeaderValue ResponseCacheControlHeaderValue
-        {
-            get
-            {
-                if (_responseCacheControl == null)
-                {
-                    _responseCacheControl = TypedResponseHeaders.CacheControl ?? EmptyCacheControl;
-                }
-                return _responseCacheControl;
-            }
-        }
+        internal IHeaderDictionary CachedResponseHeaders { get; set; }
 
         internal DateTimeOffset? ResponseDate
         {
@@ -115,7 +64,15 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 if (!_parsedResponseDate)
                 {
                     _parsedResponseDate = true;
-                    _responseDate = TypedResponseHeaders.Date;
+                    DateTimeOffset date;
+                    if (HttpHeaderParsingHelpers.TryParseHeaderDate(HttpContext.Response.Headers[HeaderNames.Date], out date))
+                    {
+                        _responseDate = date;
+                    }
+                    else
+                    {
+                        _responseDate = null;
+                    }
                 }
                 return _responseDate;
             }
@@ -134,9 +91,43 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 if (!_parsedResponseExpires)
                 {
                     _parsedResponseExpires = true;
-                    _responseExpires = TypedResponseHeaders.Expires;
+                    DateTimeOffset expires;
+                    if (HttpHeaderParsingHelpers.TryParseHeaderDate(HttpContext.Response.Headers[HeaderNames.Expires], out expires))
+                    {
+                        _responseExpires = expires;
+                    }
+                    else
+                    {
+                        _responseExpires = null;
+                    }
                 }
                 return _responseExpires;
+            }
+        }
+
+        internal TimeSpan? ResponseSharedMaxAge
+        {
+            get
+            {
+                if (!_parsedResponseSharedMaxAge)
+                {
+                    _parsedResponseSharedMaxAge = true;
+                    HttpHeaderParsingHelpers.TryParseHeaderTimeSpan(HttpContext.Response.Headers[HeaderNames.CacheControl], CacheControlValues.SharedMaxAgeString, out _responseSharedMaxAge);
+                }
+                return _responseSharedMaxAge;
+            }
+        }
+
+        internal TimeSpan? ResponseMaxAge
+        {
+            get
+            {
+                if (!_parsedResponseMaxAge)
+                {
+                    _parsedResponseMaxAge = true;
+                    HttpHeaderParsingHelpers.TryParseHeaderTimeSpan(HttpContext.Response.Headers[HeaderNames.CacheControl], CacheControlValues.MaxAgeString, out _responseMaxAge);
+                }
+                return _responseMaxAge;
             }
         }
     }

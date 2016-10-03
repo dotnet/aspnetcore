@@ -10,8 +10,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
     public class ResponseCachingPolicyProvider : IResponseCachingPolicyProvider
     {
-        private static readonly CacheControlHeaderValue EmptyCacheControl = new CacheControlHeaderValue();
-
         public virtual bool IsRequestCacheable(ResponseCachingContext context)
         {
             // Verify the method
@@ -32,7 +30,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             // Verify request cache-control parameters
             if (!StringValues.IsNullOrEmpty(request.Headers[HeaderNames.CacheControl]))
             {
-                if (context.RequestCacheControlHeaderValue.NoCache)
+                if (HttpHeaderParsingHelpers.HeaderContains(request.Headers[HeaderNames.CacheControl], CacheControlValues.NoCacheString))
                 {
                     context.Logger.LogRequestWithNoCacheNotCacheable();
                     return false;
@@ -42,13 +40,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             {
                 // Support for legacy HTTP 1.0 cache directive
                 var pragmaHeaderValues = request.Headers[HeaderNames.Pragma];
-                foreach (var directive in pragmaHeaderValues)
+                if (HttpHeaderParsingHelpers.HeaderContains(request.Headers[HeaderNames.Pragma], CacheControlValues.NoCacheString))
                 {
-                    if (string.Equals("no-cache", directive, StringComparison.OrdinalIgnoreCase))
-                    {
-                        context.Logger.LogRequestWithPragmaNoCacheNotCacheable();
-                        return false;
-                    }
+                    context.Logger.LogRequestWithPragmaNoCacheNotCacheable();
+                    return false;
                 }
             }
 
@@ -57,22 +52,30 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         public virtual bool IsResponseCacheable(ResponseCachingContext context)
         {
+            var responseCacheControlHeader = context.HttpContext.Response.Headers[HeaderNames.CacheControl];
+
             // Only cache pages explicitly marked with public
-            if (!context.ResponseCacheControlHeaderValue.Public)
+            if (!HttpHeaderParsingHelpers.HeaderContains(responseCacheControlHeader, CacheControlValues.PublicString))
             {
                 context.Logger.LogResponseWithoutPublicNotCacheable();
                 return false;
             }
 
             // Check no-store
-            if (context.RequestCacheControlHeaderValue.NoStore || context.ResponseCacheControlHeaderValue.NoStore)
+            if (HttpHeaderParsingHelpers.HeaderContains(context.HttpContext.Request.Headers[HeaderNames.CacheControl], CacheControlValues.NoStoreString))
+            {
+                context.Logger.LogResponseWithNoStoreNotCacheable();
+                return false;
+            }
+
+            if (HttpHeaderParsingHelpers.HeaderContains(responseCacheControlHeader, CacheControlValues.NoStoreString))
             {
                 context.Logger.LogResponseWithNoStoreNotCacheable();
                 return false;
             }
 
             // Check no-cache
-            if (context.ResponseCacheControlHeaderValue.NoCache)
+            if (HttpHeaderParsingHelpers.HeaderContains(responseCacheControlHeader, CacheControlValues.NoCacheString))
             {
                 context.Logger.LogResponseWithNoCacheNotCacheable();
                 return false;
@@ -96,7 +99,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             }
 
             // Check private
-            if (context.ResponseCacheControlHeaderValue.Private)
+            if (HttpHeaderParsingHelpers.HeaderContains(responseCacheControlHeader, CacheControlValues.PrivateString))
             {
                 context.Logger.LogResponseWithPrivateNotCacheable();
                 return false;
@@ -112,8 +115,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             // Check response freshness
             if (!context.ResponseDate.HasValue)
             {
-                if (!context.ResponseCacheControlHeaderValue.SharedMaxAge.HasValue &&
-                    !context.ResponseCacheControlHeaderValue.MaxAge.HasValue &&
+                if (!context.ResponseSharedMaxAge.HasValue &&
+                    !context.ResponseMaxAge.HasValue &&
                     context.ResponseTime.Value >= context.ResponseExpires)
                 {
                     context.Logger.LogExpirationExpiresExceeded(context.ResponseTime.Value, context.ResponseExpires.Value);
@@ -125,22 +128,20 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 var age = context.ResponseTime.Value - context.ResponseDate.Value;
 
                 // Validate shared max age
-                var sharedMaxAge = context.ResponseCacheControlHeaderValue.SharedMaxAge;
-                if (age >= sharedMaxAge)
+                if (age >= context.ResponseSharedMaxAge)
                 {
-                    context.Logger.LogExpirationSharedMaxAgeExceeded(age, sharedMaxAge.Value);
+                    context.Logger.LogExpirationSharedMaxAgeExceeded(age, context.ResponseSharedMaxAge.Value);
                     return false;
                 }
-                else if (!sharedMaxAge.HasValue)
+                else if (!context.ResponseSharedMaxAge.HasValue)
                 {
                     // Validate max age
-                    var maxAge = context.ResponseCacheControlHeaderValue.MaxAge;
-                    if (age >= maxAge)
+                    if (age >= context.ResponseMaxAge)
                     {
-                        context.Logger.LogExpirationMaxAgeExceeded(age, maxAge.Value);
+                        context.Logger.LogExpirationMaxAgeExceeded(age, context.ResponseMaxAge.Value);
                         return false;
                     }
-                    else if (!maxAge.HasValue)
+                    else if (!context.ResponseMaxAge.HasValue)
                     {
                         // Validate expiration
                         if (context.ResponseTime.Value >= context.ResponseExpires)
@@ -158,44 +159,53 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         public virtual bool IsCachedEntryFresh(ResponseCachingContext context)
         {
             var age = context.CachedEntryAge.Value;
-            var cachedControlHeaders = context.CachedResponseHeaders.CacheControl ?? EmptyCacheControl;
+            var cachedControlHeaders = context.CachedResponseHeaders[HeaderNames.CacheControl];
+            var requestCacheControlHeaders = context.HttpContext.Request.Headers[HeaderNames.CacheControl];
 
             // Add min-fresh requirements
-            var minFresh = context.RequestCacheControlHeaderValue.MinFresh;
-            if (minFresh.HasValue)
+            TimeSpan? minFresh;
+            if (HttpHeaderParsingHelpers.TryParseHeaderTimeSpan(requestCacheControlHeaders, CacheControlValues.MinFreshString, out minFresh))
             {
                 age += minFresh.Value;
                 context.Logger.LogExpirationMinFreshAdded(minFresh.Value);
             }
 
             // Validate shared max age, this overrides any max age settings for shared caches
-            var sharedMaxAge = cachedControlHeaders.SharedMaxAge;
-            if (age >= sharedMaxAge)
+            TimeSpan? cachedSharedMaxAge;
+            HttpHeaderParsingHelpers.TryParseHeaderTimeSpan(cachedControlHeaders, CacheControlValues.SharedMaxAgeString, out cachedSharedMaxAge);
+
+            if (age >= cachedSharedMaxAge)
             {
                 // shared max age implies must revalidate
-                context.Logger.LogExpirationSharedMaxAgeExceeded(age, sharedMaxAge.Value);
+                context.Logger.LogExpirationSharedMaxAgeExceeded(age, cachedSharedMaxAge.Value);
                 return false;
             }
-            else if (!sharedMaxAge.HasValue)
+            else if (!cachedSharedMaxAge.HasValue)
             {
-                var cachedMaxAge = cachedControlHeaders.MaxAge;
-                var requestMaxAge = context.RequestCacheControlHeaderValue.MaxAge;
+                TimeSpan? requestMaxAge;
+                HttpHeaderParsingHelpers.TryParseHeaderTimeSpan(requestCacheControlHeaders, CacheControlValues.MaxAgeString, out requestMaxAge);
+
+                TimeSpan? cachedMaxAge;
+                HttpHeaderParsingHelpers.TryParseHeaderTimeSpan(cachedControlHeaders, CacheControlValues.MaxAgeString, out cachedMaxAge);
+
                 var lowestMaxAge = cachedMaxAge < requestMaxAge ? cachedMaxAge : requestMaxAge ?? cachedMaxAge;
                 // Validate max age
                 if (age >= lowestMaxAge)
                 {
                     // Must revalidate
-                    if (cachedControlHeaders.MustRevalidate)
+                    if (HttpHeaderParsingHelpers.HeaderContains(cachedControlHeaders, CacheControlValues.MustRevalidateString))
                     {
                         context.Logger.LogExpirationMustRevalidate(age, lowestMaxAge.Value);
                         return false;
                     }
 
+                    TimeSpan? requestMaxStale;
+                    HttpHeaderParsingHelpers.TryParseHeaderTimeSpan(requestCacheControlHeaders, CacheControlValues.MaxStaleString, out requestMaxStale);
+
                     // Request allows stale values
-                    var maxStaleLimit = context.RequestCacheControlHeaderValue.MaxStaleLimit;
-                    if (maxStaleLimit.HasValue && age - lowestMaxAge < maxStaleLimit)
+                    if (requestMaxStale.HasValue && age - lowestMaxAge < requestMaxStale)
                     {
-                        context.Logger.LogExpirationMaxStaleSatisfied(age, lowestMaxAge.Value, maxStaleLimit.Value);
+                        context.Logger.LogExpirationMaxStaleSatisfied(age, lowestMaxAge.Value, requestMaxStale.Value);
                         return true;
                     }
 
@@ -205,11 +215,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 else if (!cachedMaxAge.HasValue && !requestMaxAge.HasValue)
                 {
                     // Validate expiration
-                    var responseTime = context.ResponseTime.Value;
-                    var expires = context.CachedResponseHeaders.Expires;
-                    if (responseTime >= expires)
+                    DateTimeOffset expires;
+                    if (HttpHeaderParsingHelpers.TryParseHeaderDate(context.CachedResponseHeaders[HeaderNames.Expires], out expires) &&
+                        context.ResponseTime.Value >= expires)
                     {
-                        context.Logger.LogExpirationExpiresExceeded(responseTime, expires.Value);
+                        context.Logger.LogExpirationExpiresExceeded(context.ResponseTime.Value, expires);
                         return false;
                     }
                 }

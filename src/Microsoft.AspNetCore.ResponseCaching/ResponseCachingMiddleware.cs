@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
 
             context.CachedResponse = cachedResponse;
-            context.CachedResponseHeaders = new ResponseHeaders(cachedResponse.Headers);
+            context.CachedResponseHeaders = cachedResponse.Headers;
             context.ResponseTime = _options.SystemClock.UtcNow;
             var cachedEntryAge = context.ResponseTime.Value - context.CachedResponse.Created;
             context.CachedEntryAge = cachedEntryAge > TimeSpan.Zero ? cachedEntryAge : TimeSpan.Zero;
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 }
             }
 
-            if (context.RequestCacheControlHeaderValue.OnlyIfCached)
+            if (HttpHeaderParsingHelpers.HeaderContains(context.HttpContext.Request.Headers[HeaderNames.CacheControl], CacheControlValues.OnlyIfCachedString))
             {
                 _logger.LogGatewayTimeoutServed();
                 context.HttpContext.Response.StatusCode = StatusCodes.Status504GatewayTimeout;
@@ -219,8 +219,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 var response = context.HttpContext.Response;
                 var varyHeaders = new StringValues(response.Headers.GetCommaSeparatedValues(HeaderNames.Vary));
                 var varyQueryKeys = new StringValues(context.HttpContext.Features.Get<IResponseCachingFeature>()?.VaryByQueryKeys);
-                context.CachedResponseValidFor = context.ResponseCacheControlHeaderValue.SharedMaxAge ??
-                    context.ResponseCacheControlHeaderValue.MaxAge ??
+                context.CachedResponseValidFor = context.ResponseSharedMaxAge ??
+                    context.ResponseMaxAge ??
                     (context.ResponseExpires - context.ResponseTime.Value) ??
                     DefaultExpirationTimeSpan;
 
@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 {
                     context.ResponseDate = context.ResponseTime.Value;
                     // Setting the date on the raw response headers.
-                    context.TypedResponseHeaders.Date = context.ResponseDate;
+                    context.HttpContext.Response.Headers[HeaderNames.Date] = HeaderUtilities.FormatDate(context.ResponseDate.Value);
                 }
 
                 // Store the response on the state
@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     StatusCode = context.HttpContext.Response.StatusCode
                 };
 
-                foreach (var header in context.TypedResponseHeaders.Headers)
+                foreach (var header in context.HttpContext.Response.Headers)
                 {
                     if (!string.Equals(header.Key, HeaderNames.Age, StringComparison.OrdinalIgnoreCase))
                     {
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         internal async Task FinalizeCacheBodyAsync(ResponseCachingContext context)
         {
-            var contentLength = context.TypedResponseHeaders.ContentLength;
+            var contentLength = context.HttpContext.Response.ContentLength;
             if (context.ShouldCacheResponse && context.ResponseCachingStream.BufferingEnabled)
             {
                 var bufferStream = context.ResponseCachingStream.GetBufferStream();
@@ -355,37 +355,51 @@ namespace Microsoft.AspNetCore.ResponseCaching
         internal static bool ContentIsNotModified(ResponseCachingContext context)
         {
             var cachedResponseHeaders = context.CachedResponseHeaders;
-            var ifNoneMatchHeader = context.TypedRequestHeaders.IfNoneMatch;
+            var ifNoneMatchHeader = context.HttpContext.Request.Headers[HeaderNames.IfNoneMatch];
 
-            if (ifNoneMatchHeader != null)
+            if (!StringValues.IsNullOrEmpty(ifNoneMatchHeader))
             {
-                if (ifNoneMatchHeader.Count == 1 && ifNoneMatchHeader[0].Equals(EntityTagHeaderValue.Any))
+                if (ifNoneMatchHeader.Count == 1 && ifNoneMatchHeader[0].Equals(EntityTagHeaderValue.Any.Tag))
                 {
                     context.Logger.LogNotModifiedIfNoneMatchStar();
                     return true;
                 }
 
-                if (cachedResponseHeaders.ETag != null)
+                if (!StringValues.IsNullOrEmpty(cachedResponseHeaders[HeaderNames.ETag]))
                 {
-                    foreach (var tag in ifNoneMatchHeader)
+                    EntityTagHeaderValue eTag;
+                    if (EntityTagHeaderValue.TryParse(cachedResponseHeaders[HeaderNames.ETag], out eTag))
                     {
-                        if (cachedResponseHeaders.ETag.Compare(tag, useStrongComparison: false))
+                        foreach (var tag in ifNoneMatchHeader)
                         {
-                            context.Logger.LogNotModifiedIfNoneMatchMatched(tag);
-                            return true;
+                            EntityTagHeaderValue requestETag;
+                            if (EntityTagHeaderValue.TryParse(tag, out requestETag) &&
+                                eTag.Compare(requestETag, useStrongComparison: false))
+                            {
+                                context.Logger.LogNotModifiedIfNoneMatchMatched(requestETag);
+                                return true;
+                            }
                         }
                     }
                 }
             }
             else
             {
-                var ifUnmodifiedSince = context.TypedRequestHeaders.IfUnmodifiedSince;
-                if (ifUnmodifiedSince != null)
+                var ifUnmodifiedSince = context.HttpContext.Request.Headers[HeaderNames.IfUnmodifiedSince];
+                if (!StringValues.IsNullOrEmpty(ifUnmodifiedSince))
                 {
-                    var lastModified = cachedResponseHeaders.LastModified ?? cachedResponseHeaders.Date;
-                    if (lastModified <= ifUnmodifiedSince)
+                    DateTimeOffset modified;
+                    if (!HttpHeaderParsingHelpers.TryParseHeaderDate(cachedResponseHeaders[HeaderNames.LastModified], out modified) &&
+                        !HttpHeaderParsingHelpers.TryParseHeaderDate(cachedResponseHeaders[HeaderNames.Date], out modified))
                     {
-                        context.Logger.LogNotModifiedIfUnmodifiedSinceSatisfied(lastModified.Value, ifUnmodifiedSince.Value);
+                        return false;
+                    }
+
+                    DateTimeOffset unmodifiedSince;
+                    if (HttpHeaderParsingHelpers.TryParseHeaderDate(ifUnmodifiedSince, out unmodifiedSince) &&
+                        modified <= unmodifiedSince)
+                    {
+                        context.Logger.LogNotModifiedIfUnmodifiedSinceSatisfied(modified, unmodifiedSince);
                         return true;
                     }
                 }
