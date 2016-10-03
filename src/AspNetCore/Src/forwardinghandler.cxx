@@ -1080,8 +1080,43 @@ VOID
 
     if (m_pApplication->AppOfflineFound() && m_pAppOfflineHtm != NULL)
     {
+		HTTP_DATA_CHUNK DataChunk;
+		PCSTR pszANCMHeader;
+		DWORD cchANCMHeader;
+		BOOL  fCompletionExpected = FALSE;
 
-        HTTP_DATA_CHUNK DataChunk;
+		if (FAILED(m_pW3Context->GetServerVariable(STR_ANCM_CHILDREQUEST,
+			&pszANCMHeader,
+			&cchANCMHeader))) // first time failure
+		{
+			if (SUCCEEDED(hr = m_pW3Context->CloneContext(
+				CLONE_FLAG_BASICS | CLONE_FLAG_HEADERS | CLONE_FLAG_ENTITY,
+				&m_pChildRequestContext
+			)) &&
+				SUCCEEDED(hr = m_pChildRequestContext->SetServerVariable(
+					STR_ANCM_CHILDREQUEST,
+					L"1")) &&
+				SUCCEEDED(hr = m_pW3Context->ExecuteRequest(
+					TRUE,    // fAsync
+					m_pChildRequestContext,
+					EXECUTE_FLAG_DISABLE_CUSTOM_ERROR,    // by pass Custom Error module
+					NULL, // pHttpUser
+					&fCompletionExpected)))
+			{
+				if (!fCompletionExpected)
+				{
+					retVal = RQ_NOTIFICATION_CONTINUE;
+				}
+				else
+				{
+					retVal = RQ_NOTIFICATION_PENDING;
+				}
+				goto Finished;
+			}
+			//
+			// fail to create child request, fall back to default 502 error 
+			//
+		}
 
         DataChunk.DataChunkType             = HttpDataChunkFromMemory;
         DataChunk.FromMemory.pBuffer        = (PVOID)m_pAppOfflineHtm->m_Contents.QueryStr();
