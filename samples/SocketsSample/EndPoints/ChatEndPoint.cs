@@ -47,8 +47,6 @@ namespace SocketsSample
             {
                 Payload = Encoding.UTF8.GetBytes($"{connection.ConnectionId} disconnected ({connection.Metadata["transport"]})")
             });
-
-            connection.Channel.Input.Complete();
         }
 
         private async Task OnMessage(Message message, Connection connection)

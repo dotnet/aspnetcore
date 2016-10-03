@@ -54,16 +54,6 @@ namespace Microsoft.AspNetCore.Sockets
             return state;
         }
 
-        public void MarkConnectionInactive(string id)
-        {
-            ConnectionState state;
-            if (_connections.TryGetValue(id, out state))
-            {
-                // Mark the connection as active so the background thread can look at it
-                state.Active = false;
-            }
-        }
-
         public void RemoveConnection(string id)
         {
             ConnectionState state;
@@ -88,7 +78,7 @@ namespace Microsoft.AspNetCore.Sockets
             // Scan the registered connections looking for ones that have timed out
             foreach (var c in _connections)
             {
-                if (!c.Value.Active && (DateTimeOffset.UtcNow - c.Value.LastSeen).TotalSeconds > 30)
+                if (!c.Value.Active && (DateTimeOffset.UtcNow - c.Value.LastSeen).TotalSeconds > 5)
                 {
                     ConnectionState s;
                     if (_connections.TryRemove(c.Key, out s))

@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Sockets
                     var sse = new ServerSentEvents(connectionState.Connection);
 
                     // Register this transport for disconnect
-                    RegisterDisconnect(context, sse);
+                    RegisterDisconnect(context, connectionState.Connection);
 
                     // Call into the end point passing the connection
                     var endpointTask = endpoint.OnConnected(connectionState.Connection);
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Sockets
                     var ws = new WebSockets(connectionState.Connection);
 
                     // Register this transport for disconnect
-                    RegisterDisconnect(context, ws);
+                    RegisterDisconnect(context, connectionState.Connection);
 
                     // Call into the end point passing the connection
                     var endpointTask = endpoint.OnConnected(connectionState.Connection);
@@ -108,8 +108,6 @@ namespace Microsoft.AspNetCore.Sockets
                         if (connectionState.Connection.Channel == null)
                         {
                             // REVIEW: The connection manager should encapsulate this...
-                            connectionState.Active = true;
-                            connectionState.LastSeen = DateTimeOffset.UtcNow;
                             connectionState.Connection.Channel = new HttpChannel(_channelFactory);
                             isNewConnection = true;
                         }
@@ -121,6 +119,9 @@ namespace Microsoft.AspNetCore.Sockets
                         isNewConnection = true;
                     }
 
+                    // Mark the connection as active
+                    connectionState.Active = true;
+
                     // Raise OnConnected for new connections only since polls happen all the time
                     if (isNewConnection)
                     {
@@ -130,22 +131,30 @@ namespace Microsoft.AspNetCore.Sockets
                         var ignore = endpoint.OnConnected(connectionState.Connection);
                     }
 
-                    var longPolling = new LongPolling(connectionState.Connection);
+                    RegisterLongPollingDisconnect(context, connectionState.Connection);
 
-                    // Register this transport for disconnect
-                    RegisterDisconnect(context, longPolling);
+                    var longPolling = new LongPolling(connectionState.Connection);
 
                     // Start the transport
                     await longPolling.ProcessRequest(context);
 
-                    _manager.MarkConnectionInactive(connectionState.Connection.ConnectionId);
+                    // Mark the connection as inactive
+                    connectionState.LastSeen = DateTimeOffset.UtcNow;
+                    connectionState.Active = false;
                 }
             }
         }
 
-        private static void RegisterDisconnect(HttpContext context, IHttpTransport transport)
+        private static void RegisterLongPollingDisconnect(HttpContext context, Connection connection)
         {
-            context.RequestAborted.Register(state => ((IHttpTransport)state).CloseAsync(), transport);
+            // For long polling, we need to end the transport but not the overall connection so we write 0 bytes
+            context.RequestAborted.Register(state => ((HttpChannel)state).Output.WriteAsync(Span<byte>.Empty), connection.Channel);
+        }
+
+        private static void RegisterDisconnect(HttpContext context, Connection connection)
+        {
+            // We just kill the output writing as a signal to the transport that it is done
+            context.RequestAborted.Register(state => ((HttpChannel)state).Output.CompleteWriter(), connection.Channel);
         }
 
         private Task ProcessGetId(HttpContext context)

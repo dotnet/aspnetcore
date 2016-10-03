@@ -11,14 +11,11 @@ namespace Microsoft.AspNetCore.Sockets
     {
         private readonly HttpChannel _channel;
         private readonly Connection _connection;
-        private readonly TaskCompletionSource<object> _tcs = new TaskCompletionSource<object>();
-        private WebSocket _ws;
 
         public WebSockets(Connection connection)
         {
             _connection = connection;
             _channel = (HttpChannel)connection.Channel;
-            var ignore = StartSending();
         }
 
         public async Task ProcessRequest(HttpContext context)
@@ -31,9 +28,11 @@ namespace Microsoft.AspNetCore.Sockets
 
             var ws = await context.WebSockets.AcceptWebSocketAsync();
 
-            _ws = ws;
-
-            _tcs.TrySetResult(null);
+            // REVIEW: Should we track this task? Leaving things like this alive usually causes memory leaks :)
+            // The reason we don't await this is because the channel is disposed after this loop returns
+            // and the sending loop is waiting for the channel to end before doing anything
+            // We could do a 2 stage shutdown but that could complicate the code...
+            var sending = StartSending(ws);
 
             var outputBuffer = _channel.Input.Alloc();
 
@@ -66,46 +65,81 @@ namespace Microsoft.AspNetCore.Sockets
                 }
                 else
                 {
-                    await ws.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
                     break;
                 }
             }
+
+            await ws.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
         }
 
-        public async Task CloseAsync()
+        private async Task StartSending(WebSocket ws)
         {
-            await _tcs.Task;
-
-            // REVIEW: Close output vs Close?
-            await _ws.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
-        }
-
-        private async Task StartSending()
-        {
-            await _tcs.Task;
-
             while (true)
             {
                 var buffer = await _channel.Output.ReadAsync();
 
-                if (buffer.IsEmpty && _channel.Output.Reading.IsCompleted)
+                try
                 {
+                    if (buffer.IsEmpty && _channel.Output.Reading.IsCompleted)
+                    {
+                        break;
+                    }
+
+                    foreach (var memory in buffer)
+                    {
+                        ArraySegment<byte> data;
+                        if (memory.TryGetArray(out data))
+                        {
+                            if (IsClosedOrClosedSent(ws))
+                            {
+                                break;
+                            }
+
+                            await ws.SendAsync(data, WebSocketMessageType.Text, endOfMessage: true, cancellationToken: CancellationToken.None);
+                        }
+                    }
+
+                }
+                catch (Exception)
+                {
+                    // Error writing, probably closed
                     break;
                 }
-
-                foreach (var memory in buffer)
+                finally
                 {
-                    ArraySegment<byte> data;
-                    if (memory.TryGetArray(out data))
-                    {
-                        await _ws.SendAsync(data, WebSocketMessageType.Text, endOfMessage: true, cancellationToken: CancellationToken.None);
-                    }
+                    _channel.Output.Advance(buffer.End);
                 }
-
-                _channel.Output.Advance(buffer.End);
             }
 
             _channel.Output.CompleteReader();
+
+            // REVIEW: Should this ever happen?
+            if (!IsClosedOrClosedSent(ws))
+            {
+                // Close the output
+                await ws.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+            }
+        }
+
+        private static bool IsClosedOrClosedSent(WebSocket webSocket)
+        {
+            var webSocketState = GetWebSocketState(webSocket);
+
+            return webSocketState == WebSocketState.Closed ||
+                   webSocketState == WebSocketState.CloseSent ||
+                   webSocketState == WebSocketState.Aborted;
+        }
+
+        private static WebSocketState GetWebSocketState(WebSocket webSocket)
+        {
+            try
+            {
+                return webSocket.State;
+            }
+            catch (ObjectDisposedException)
+            {
+                return WebSocketState.Closed;
+            }
         }
     }
 }

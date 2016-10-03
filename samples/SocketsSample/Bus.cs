@@ -20,11 +20,17 @@ namespace Microsoft.AspNetCore.Sockets
         public IDisposable Subscribe(string key, Func<Message, Task> observer)
         {
             var connections = _subscriptions.GetOrAdd(key, _ => new List<Func<Message, Task>>());
-            connections.Add(observer);
+            lock (connections)
+            {
+                connections.Add(observer);
+            }
 
             return new DisposableAction(() =>
             {
-                connections.Remove(observer);
+                lock (connections)
+                {
+                    connections.Remove(observer);
+                }
             });
         }
 
@@ -33,10 +39,17 @@ namespace Microsoft.AspNetCore.Sockets
             List<Func<Message, Task>> connections;
             if (_subscriptions.TryGetValue(key, out connections))
             {
-                foreach (var c in connections)
+                Task[] tasks = null;
+                lock (connections)
                 {
-                    await c(message);
+                    tasks = new Task[connections.Count];
+                    for (int i = 0; i < connections.Count; i++)
+                    {
+                        tasks[i] = connections[i](message);
+                    }
                 }
+
+                await Task.WhenAll(tasks);
             }
         }
 

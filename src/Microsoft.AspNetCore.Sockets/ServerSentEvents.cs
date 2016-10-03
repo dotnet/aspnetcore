@@ -7,47 +7,19 @@ namespace Microsoft.AspNetCore.Sockets
 {
     public class ServerSentEvents : IHttpTransport
     {
-        private readonly TaskCompletionSource<object> _initTcs = new TaskCompletionSource<object>();
-        private readonly TaskCompletionSource<object> _lifetime = new TaskCompletionSource<object>();
         private readonly HttpChannel _channel;
         private readonly Connection _connection;
-        private readonly TaskQueue _queue;
-
-        private HttpContext _context;
 
         public ServerSentEvents(Connection connection)
         {
-            _queue = new TaskQueue(_initTcs.Task);
             _connection = connection;
             _channel = (HttpChannel)connection.Channel;
-            var ignore = StartSending();
         }
 
         public async Task ProcessRequest(HttpContext context)
         {
             context.Response.ContentType = "text/event-stream";
             context.Response.Headers["Cache-Control"] = "no-cache";
-
-            _context = context;
-
-            // Set the initial TCS when everything is setup
-            _initTcs.TrySetResult(null);
-
-            await _lifetime.Task;
-        }
-
-        public async Task CloseAsync()
-        {
-            // Drain the queue so no new work can enter
-            await _queue.Drain();
-
-            // Complete the lifetime task
-            _lifetime.TrySetResult(null);
-        }
-
-        private async Task StartSending()
-        {
-            await _initTcs.Task;
 
             while (true)
             {
@@ -58,7 +30,7 @@ namespace Microsoft.AspNetCore.Sockets
                     break;
                 }
 
-                await Send(buffer);
+                await Send(context, buffer);
 
                 _channel.Output.Advance(buffer.End);
             }
@@ -66,29 +38,24 @@ namespace Microsoft.AspNetCore.Sockets
             _channel.Output.CompleteReader();
         }
 
-        private Task Send(ReadableBuffer value)
+        private async Task Send(HttpContext context, ReadableBuffer data)
         {
-            return _queue.Enqueue(async state =>
-            {
-                var data = (ReadableBuffer)state;
-                // TODO: Pooled buffers
-                // 8 = 6(data: ) + 2 (\n\n)
-                var buffer = new byte[8 + data.Length];
-                var at = 0;
-                buffer[at++] = (byte)'d';
-                buffer[at++] = (byte)'a';
-                buffer[at++] = (byte)'t';
-                buffer[at++] = (byte)'a';
-                buffer[at++] = (byte)':';
-                buffer[at++] = (byte)' ';
-                data.CopyTo(new Span<byte>(buffer, at, data.Length));
-                at += data.Length;
-                buffer[at++] = (byte)'\n';
-                buffer[at++] = (byte)'\n';
-                await _context.Response.Body.WriteAsync(buffer, 0, at);
-                await _context.Response.Body.FlushAsync();
-            },
-            value);
+            // TODO: Pooled buffers
+            // 8 = 6(data: ) + 2 (\n\n)
+            var buffer = new byte[8 + data.Length];
+            var at = 0;
+            buffer[at++] = (byte)'d';
+            buffer[at++] = (byte)'a';
+            buffer[at++] = (byte)'t';
+            buffer[at++] = (byte)'a';
+            buffer[at++] = (byte)':';
+            buffer[at++] = (byte)' ';
+            data.CopyTo(new Span<byte>(buffer, at, data.Length));
+            at += data.Length;
+            buffer[at++] = (byte)'\n';
+            buffer[at++] = (byte)'\n';
+            await context.Response.Body.WriteAsync(buffer, 0, at);
+            await context.Response.Body.FlushAsync();
         }
     }
 }
