@@ -10,6 +10,42 @@ namespace Microsoft.AspNetCore.Builder
     public class ForwardedHeadersOptions
     {
         /// <summary>
+        /// Use this header instead of <see cref="ForwardedHeadersDefaults.XForwardedForHeaderName"/>
+        /// </summary>
+        /// <seealso cref="Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults"/>
+        public string ForwardedForHeaderName { get; set; } = ForwardedHeadersDefaults.XForwardedForHeaderName;
+
+        /// <summary>
+        /// Use this header instead of <see cref="ForwardedHeadersDefaults.XForwardedHostHeaderName"/>
+        /// </summary>
+        /// <seealso cref="ForwardedHeadersDefaults"/>
+        public string ForwardedHostHeaderName { get; set; } = ForwardedHeadersDefaults.XForwardedHostHeaderName;
+
+        /// <summary>
+        /// Use this header instead of <see cref="ForwardedHeadersDefaults.XForwardedProtoHeaderName"/>
+        /// </summary>
+        /// <seealso cref="ForwardedHeadersDefaults"/>
+        public string ForwardedProtoHeaderName { get; set; } = ForwardedHeadersDefaults.XForwardedProtoHeaderName;
+
+        /// <summary>
+        /// Use this header instead of <see cref="ForwardedHeadersDefaults.XOriginalForHeaderName"/>
+        /// </summary>
+        /// <seealso cref="ForwardedHeadersDefaults"/>
+        public string OriginalForHeaderName { get; set; } = ForwardedHeadersDefaults.XOriginalForHeaderName;
+
+        /// <summary>
+        /// Use this header instead of <see cref="ForwardedHeadersDefaults.XOriginalHostHeaderName"/>
+        /// </summary>
+        /// <seealso cref="ForwardedHeadersDefaults"/>
+        public string OriginalHostHeaderName { get; set; } = ForwardedHeadersDefaults.XOriginalHostHeaderName;
+
+        /// <summary>
+        /// Use this header instead of <see cref="ForwardedHeadersDefaults.XOriginalProtoHeaderName"/>
+        /// </summary>
+        /// <seealso cref="ForwardedHeadersDefaults"/>
+        public string OriginalProtoHeaderName { get; set; } = ForwardedHeadersDefaults.XOriginalProtoHeaderName;
+
+        /// <summary>
         /// Identifies which forwarders should be processed.
         /// </summary>
         public ForwardedHeaders ForwardedHeaders { get; set; }

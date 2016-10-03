@@ -17,13 +17,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
 {
     public class ForwardedHeadersMiddleware
     {
-        private const string XForwardedForHeaderName = "X-Forwarded-For";
-        private const string XForwardedHostHeaderName = "X-Forwarded-Host";
-        private const string XForwardedProtoHeaderName = "X-Forwarded-Proto";
-        private const string XOriginalForName = "X-Original-For";
-        private const string XOriginalHostName = "X-Original-Host";
-        private const string XOriginalProtoName = "X-Original-Proto";
-
         private readonly ForwardedHeadersOptions _options;
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
@@ -43,9 +36,25 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 throw new ArgumentNullException(nameof(options));
             }
 
+            // Make sure required options is not null or whitespace
+            EnsureOptionNotNullorWhitespace(options.Value.ForwardedForHeaderName, nameof(options.Value.ForwardedForHeaderName));
+            EnsureOptionNotNullorWhitespace(options.Value.ForwardedHostHeaderName, nameof(options.Value.ForwardedHostHeaderName));
+            EnsureOptionNotNullorWhitespace(options.Value.ForwardedProtoHeaderName, nameof(options.Value.ForwardedProtoHeaderName));
+            EnsureOptionNotNullorWhitespace(options.Value.OriginalForHeaderName, nameof(options.Value.OriginalForHeaderName));
+            EnsureOptionNotNullorWhitespace(options.Value.OriginalHostHeaderName, nameof(options.Value.OriginalHostHeaderName));
+            EnsureOptionNotNullorWhitespace(options.Value.OriginalProtoHeaderName, nameof(options.Value.OriginalProtoHeaderName));
+
             _options = options.Value;
             _logger = loggerFactory.CreateLogger<ForwardedHeadersMiddleware>();
             _next = next;
+        }
+
+        private static void EnsureOptionNotNullorWhitespace(string value, string propertyName)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                throw new ArgumentException($"options.{propertyName} is required", "options");
+            }
         }
 
         public Task Invoke(HttpContext context)
@@ -64,14 +73,14 @@ namespace Microsoft.AspNetCore.HttpOverrides
             if ((_options.ForwardedHeaders & ForwardedHeaders.XForwardedFor) == ForwardedHeaders.XForwardedFor)
             {
                 checkFor = true;
-                forwardedFor = context.Request.Headers.GetCommaSeparatedValues(XForwardedForHeaderName);
+                forwardedFor = context.Request.Headers.GetCommaSeparatedValues(_options.ForwardedForHeaderName);
                 entryCount = Math.Max(forwardedFor.Length, entryCount);
             }
 
             if ((_options.ForwardedHeaders & ForwardedHeaders.XForwardedProto) == ForwardedHeaders.XForwardedProto)
             {
                 checkProto = true;
-                forwardedProto = context.Request.Headers.GetCommaSeparatedValues(XForwardedProtoHeaderName);
+                forwardedProto = context.Request.Headers.GetCommaSeparatedValues(_options.ForwardedProtoHeaderName);
                 if (_options.RequireHeaderSymmetry && checkFor && forwardedFor.Length != forwardedProto.Length)
                 {
                     _logger.LogWarning(1, "Parameter count mismatch between X-Forwarded-For and X-Forwarded-Proto.");
@@ -83,7 +92,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
             if ((_options.ForwardedHeaders & ForwardedHeaders.XForwardedHost) == ForwardedHeaders.XForwardedHost)
             {
                 checkHost = true;
-                forwardedHost = context.Request.Headers.GetCommaSeparatedValues(XForwardedHostHeaderName);
+                forwardedHost = context.Request.Headers.GetCommaSeparatedValues(_options.ForwardedHostHeaderName);
                 if (_options.RequireHeaderSymmetry
                     && ((checkFor && forwardedFor.Length != forwardedHost.Length)
                         || (checkProto && forwardedProto.Length != forwardedHost.Length)))
@@ -198,17 +207,17 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     if (connection.RemoteIpAddress != null)
                     {
                         // Save the original
-                        request.Headers[XOriginalForName] = new IPEndPoint(connection.RemoteIpAddress, connection.RemotePort).ToString();
+                        request.Headers[_options.OriginalForHeaderName] = new IPEndPoint(connection.RemoteIpAddress, connection.RemotePort).ToString();
                     }
                     if (forwardedFor.Length > entriesConsumed)
                     {
                         // Truncate the consumed header values
-                        request.Headers[XForwardedForHeaderName] = forwardedFor.Take(forwardedFor.Length - entriesConsumed).ToArray();
+                        request.Headers[_options.ForwardedForHeaderName] = forwardedFor.Take(forwardedFor.Length - entriesConsumed).ToArray();
                     }
                     else
                     {
                         // All values were consumed
-                        request.Headers.Remove(XForwardedForHeaderName);
+                        request.Headers.Remove(_options.ForwardedForHeaderName);
                     }
                     connection.RemoteIpAddress = currentValues.RemoteIpAndPort.Address;
                     connection.RemotePort = currentValues.RemoteIpAndPort.Port;
@@ -217,16 +226,16 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 if (checkProto && currentValues.Scheme != null)
                 {
                     // Save the original
-                    request.Headers[XOriginalProtoName] = request.Scheme;
+                    request.Headers[_options.OriginalProtoHeaderName] = request.Scheme;
                     if (forwardedProto.Length > entriesConsumed)
                     {
                         // Truncate the consumed header values
-                        request.Headers[XForwardedProtoHeaderName] = forwardedProto.Take(forwardedProto.Length - entriesConsumed).ToArray();
+                        request.Headers[_options.ForwardedProtoHeaderName] = forwardedProto.Take(forwardedProto.Length - entriesConsumed).ToArray();
                     }
                     else
                     {
                         // All values were consumed
-                        request.Headers.Remove(XForwardedProtoHeaderName);
+                        request.Headers.Remove(_options.ForwardedProtoHeaderName);
                     }
                     request.Scheme = currentValues.Scheme;
                 }
@@ -234,16 +243,16 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 if (checkHost && currentValues.Host != null)
                 {
                     // Save the original
-                    request.Headers[XOriginalHostName] = request.Host.ToString();
+                    request.Headers[_options.OriginalHostHeaderName] = request.Host.ToString();
                     if (forwardedHost.Length > entriesConsumed)
                     {
                         // Truncate the consumed header values
-                        request.Headers[XForwardedHostHeaderName] = forwardedHost.Take(forwardedHost.Length - entriesConsumed).ToArray();
+                        request.Headers[_options.ForwardedHostHeaderName] = forwardedHost.Take(forwardedHost.Length - entriesConsumed).ToArray();
                     }
                     else
                     {
                         // All values were consumed
-                        request.Headers.Remove(XForwardedHostHeaderName);
+                        request.Headers.Remove(_options.ForwardedHostHeaderName);
                     }
                     request.Host = HostString.FromUriComponent(currentValues.Host);
                 }
