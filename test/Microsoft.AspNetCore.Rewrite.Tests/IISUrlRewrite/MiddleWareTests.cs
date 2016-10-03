@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetAsync("article/10/hey");
 
-            Assert.Equal(response.Headers.Location.OriginalString, "/article.aspx?id=10&title=hey");
+            Assert.Equal("/article.aspx?id=10&title=hey", response.Headers.Location.OriginalString);
         }
 
         [Fact]
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetStringAsync("/article/10/hey");
 
-            Assert.Equal(response, "/article.aspx?id=10&title=hey");
+            Assert.Equal("/article.aspx?id=10&title=hey", response);
         }
 
         [Fact]
@@ -68,14 +68,14 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
-                <rule name=""Query String Rewrite"">  
-                <match url=""page\.asp$"" />  
-                <conditions>  
-                <add input=""{QUERY_STRING}"" pattern=""p1=(\d+)"" />  
-                <add input=""##{C:1}##_{QUERY_STRING}"" pattern=""##([^#]+)##_.*p2=(\d+)"" />  
-                </conditions>  
-                <action type=""Rewrite"" url=""newpage.aspx?param1={C:1}&amp;param2={C:2}"" appendQueryString=""false""/>  
-                </rule>  
+                <rule name=""Query String Rewrite"">
+                <match url=""page\.asp$"" />
+                <conditions>
+                <add input=""{QUERY_STRING}"" pattern=""p1=(\d+)"" />
+                <add input=""##{C:1}##_{QUERY_STRING}"" pattern=""##([^#]+)##_.*p2=(\d+)"" />
+                </conditions>
+                <action type=""Rewrite"" url=""newpage.aspx?param1={C:1}&amp;param2={C:2}"" appendQueryString=""false""/>
+                </rule>
                 </rules>
                 </rewrite>"));
             var builder = new WebHostBuilder()
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetStringAsync("page.asp?p2=321&p1=123");
 
-            Assert.Equal(response, "/newpage.aspx?param1=123&param2=321");
+            Assert.Equal("/newpage.aspx?param1=123&param2=321", response);
         }
 
         [Fact]
@@ -96,10 +96,10 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
-                <rule name=""Convert to lower case"" stopProcessing=""true"">  
-                <match url="".*[A-Z].*"" ignoreCase=""false"" />  
-                <action type=""Redirect"" url=""{ToLower:{R:0}}"" redirectType=""Permanent"" />  
-                </rule>  
+                <rule name=""Convert to lower case"" stopProcessing=""true"">
+                <match url="".*[A-Z].*"" ignoreCase=""false"" />
+                <action type=""Redirect"" url=""{ToLower:{R:0}}"" redirectType=""Permanent"" />
+                </rule>
                 </rules>
                 </rewrite>"));
             var builder = new WebHostBuilder()
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetAsync("HElLo");
 
-            Assert.Equal(response.Headers.Location.OriginalString, "/hello");
+            Assert.Equal("/hello", response.Headers.Location.OriginalString);
         }
 
         [Fact]
@@ -120,14 +120,14 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
-                <rule name=""Remove trailing slash"" stopProcessing=""true"">  
-                <match url=""(.*)/$"" />  
-                <conditions>  
-                <add input=""{REQUEST_FILENAME}"" matchType=""IsFile"" negate=""true"" />  
-                <add input=""{REQUEST_FILENAME}"" matchType=""IsDirectory"" negate=""true"" />  
-                </conditions>  
-                <action type=""Redirect"" redirectType=""Permanent"" url=""{R:1}"" />  
-                </rule>    
+                <rule name=""Remove trailing slash"" stopProcessing=""true"">
+                <match url=""(.*)/$"" />
+                <conditions>
+                <add input=""{REQUEST_FILENAME}"" matchType=""IsFile"" negate=""true"" />
+                <add input=""{REQUEST_FILENAME}"" matchType=""IsDirectory"" negate=""true"" />
+                </conditions>
+                <action type=""Redirect"" redirectType=""Permanent"" url=""{R:1}"" />
+                </rule>
                 </rules>
                 </rewrite>"));
             var builder = new WebHostBuilder()
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetAsync("hey/hello/");
 
-            Assert.Equal(response.Headers.Location.OriginalString, "/hey/hello");
+            Assert.Equal("/hey/hello", response.Headers.Location.OriginalString);
         }
 
         [Fact]
@@ -147,14 +147,14 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
-                <rule name=""Add trailing slash"" stopProcessing=""true"">  
-                <match url=""(.*[^/])$"" />  
-                <conditions>  
-                <add input=""{REQUEST_FILENAME}"" matchType=""IsFile"" negate=""true"" />  
-                <add input=""{REQUEST_FILENAME}"" matchType=""IsDirectory"" negate=""true"" />  
-                </conditions>  
-                <action type=""Redirect"" redirectType=""Permanent"" url=""{R:1}/"" />  
-                </rule>    
+                <rule name=""Add trailing slash"" stopProcessing=""true"">
+                <match url=""(.*[^/])$"" />
+                <conditions>
+                <add input=""{REQUEST_FILENAME}"" matchType=""IsFile"" negate=""true"" />
+                <add input=""{REQUEST_FILENAME}"" matchType=""IsDirectory"" negate=""true"" />
+                </conditions>
+                <action type=""Redirect"" redirectType=""Permanent"" url=""{R:1}/"" />
+                </rule>
                 </rules>
                 </rewrite>"));
             var builder = new WebHostBuilder()
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetAsync("hey/hello");
 
-            Assert.Equal(response.Headers.Location.OriginalString, "/hey/hello/");
+            Assert.Equal("/hey/hello/", response.Headers.Location.OriginalString);
         }
 
         [Fact]
@@ -174,13 +174,13 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
-                <rule name=""Redirect to HTTPS"" stopProcessing=""true"">  
-                <match url=""(.*)"" />  
-                <conditions>  
-                <add input=""{HTTPS}"" pattern=""^OFF$"" />  
-                </conditions>  
-                <action type=""Redirect"" url=""https://{HTTP_HOST}/{R:1}"" redirectType=""Permanent"" />  
-                </rule>  
+                <rule name=""Redirect to HTTPS"" stopProcessing=""true"">
+                <match url=""(.*)"" />
+                <conditions>
+                <add input=""{HTTPS}"" pattern=""^OFF$"" />
+                </conditions>
+                <action type=""Redirect"" url=""https://{HTTP_HOST}/{R:1}"" redirectType=""Permanent"" />
+                </rule>
                 </rules>
                 </rewrite>"));
             var builder = new WebHostBuilder()
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetAsync(new Uri("http://example.com"));
 
-            Assert.Equal(response.Headers.Location.OriginalString, "https://example.com/");
+            Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
         }
 
         [Fact]
@@ -200,13 +200,13 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
-                <rule name=""Rewrite to HTTPS"" stopProcessing=""true"">  
-                <match url=""(.*)"" />  
-                <conditions>  
-                <add input=""{HTTPS}"" pattern=""^OFF$"" />  
-                </conditions>  
-                <action type=""Rewrite"" url=""https://{HTTP_HOST}/{R:1}"" />  
-                </rule>  
+                <rule name=""Rewrite to HTTPS"" stopProcessing=""true"">
+                <match url=""(.*)"" />
+                <conditions>
+                <add input=""{HTTPS}"" pattern=""^OFF$"" />
+                </conditions>
+                <action type=""Rewrite"" url=""https://{HTTP_HOST}/{R:1}"" />
+                </rule>
                 </rules>
                 </rewrite>"));
             var builder = new WebHostBuilder()
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetStringAsync(new Uri("http://example.com"));
 
-            Assert.Equal(response, "https://example.com/");
+            Assert.Equal("https://example.com/", response);
         }
 
         [Fact]
@@ -232,10 +232,10 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
-                <rule name=""Proxy"">  
-                <match url=""(.*)"" />  
-                <action type=""Rewrite"" url=""http://internalserver/{R:1}"" />  
-                </rule>  
+                <rule name=""Proxy"">
+                <match url=""(.*)"" />
+                <action type=""Rewrite"" url=""http://internalserver/{R:1}"" />
+                </rule>
                 </rules>
                 </rewrite>"));
             var builder = new WebHostBuilder()
@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetStringAsync(new Uri("http://example.com/"));
 
-            Assert.Equal(response, "http://internalserver/");
+            Assert.Equal("http://internalserver/", response);
         }
 
         [Fact]
@@ -261,10 +261,10 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
-                <rule name=""Test"">  
-                <match url=""(.*)"" />  
-                <action type=""Redirect"" url=""{R:1}"" />  
-                </rule>  
+                <rule name=""Test"">
+                <match url=""(.*)"" />
+                <action type=""Redirect"" url=""{R:1}"" />
+                </rule>
                 </rules>
                 </rewrite>"));
             var builder = new WebHostBuilder()
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetAsync(new Uri("http://example.com/"));
 
-            Assert.Equal(response.Headers.Location.OriginalString, "/");
+            Assert.Equal("/", response.Headers.Location.OriginalString);
         }
 
         [Fact]
@@ -290,10 +290,10 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
-                <rule name=""Test"">  
-                <match url=""(.*)"" />  
-                <action type=""Rewrite"" url=""{R:1}"" />  
-                </rule>  
+                <rule name=""Test"">
+                <match url=""(.*)"" />
+                <action type=""Rewrite"" url=""{R:1}"" />
+                </rule>
                 </rules>
                 </rewrite>"));
             var builder = new WebHostBuilder()
@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetStringAsync(new Uri("http://example.com/"));
 
-            Assert.Equal(response, "/");
+            Assert.Equal("/", response);
         }
 
         [Fact]
@@ -316,10 +316,10 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
                 <rules>
-                <rule name=""Test"">  
-                <match url=""(.*)"" />  
-                <action type=""Redirect"" url=""{R:1}"" />  
-                </rule>  
+                <rule name=""Test"">
+                <match url=""(.*)"" />
+                <action type=""Redirect"" url=""{R:1}"" />
+                </rule>
                 </rules>
                 </rewrite>"));
             var builder = new WebHostBuilder()

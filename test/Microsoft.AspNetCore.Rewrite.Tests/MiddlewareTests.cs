@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
                 .Configure(app =>
                 {
                     app.UseRewriter(options);
-                    app.UseRewriter(options);
                     app.Run(context => context.Response.WriteAsync(
                         context.Request.Scheme +
                         "://" +
@@ -33,7 +32,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             var response = await server.CreateClient().GetStringAsync("foo");
 
-            Assert.Equal(response, "http://example.com/foo");
+            Assert.Equal("http://example.com/foo", response);
         }
 
         [Fact]
@@ -49,7 +48,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             var response = await server.CreateClient().GetAsync("foo");
 
-            Assert.Equal(response.Headers.Location.OriginalString, "http://example.com/foo");
+            Assert.Equal("http://example.com/foo", response.Headers.Location.OriginalString);
         }
 
         [Fact]
@@ -65,7 +64,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             var response = await server.CreateClient().GetAsync(new Uri("http://example.com"));
 
-            Assert.Equal(response.Headers.Location.OriginalString, "https://example.com/");
+            Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
         }
 
 

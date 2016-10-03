@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         {
             var results = new RuleRegexParser().ParseRuleRegex("(.*)");
             Assert.False(results.Invert);
-            Assert.Equal(results.Operand, "(.*)");
+            Assert.Equal("(.*)", results.Operand);
         }
     }
 }

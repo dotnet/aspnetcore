@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         {
             // Arrange, Act, Assert
             var ex = Assert.Throws<FormatException>(() => new FileParser().Parse(new StringReader(input)));
-            Assert.Equal(ex.Message, expected);
+            Assert.Equal(expected, ex.Message);
         }
     }
 }

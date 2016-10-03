@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             dict.Add(FlagType.NoCase, string.Empty);
             var expected = new Flags(dict);
 
-            Assert.True(DictionaryContentsEqual(results.FlagDictionary, expected.FlagDictionary));
+            Assert.True(DictionaryContentsEqual(expected.FlagDictionary, results.FlagDictionary));
         }
 
         [Fact]
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             dict.Add(FlagType.Last, string.Empty);
             var expected = new Flags(dict);
 
-            Assert.True(DictionaryContentsEqual(results.FlagDictionary, expected.FlagDictionary));
+            Assert.True(DictionaryContentsEqual(expected.FlagDictionary, results.FlagDictionary));
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             dict.Add(FlagType.Redirect, "301");
             var expected = new Flags(dict);
 
-            Assert.True(DictionaryContentsEqual(results.FlagDictionary, expected.FlagDictionary));
+            Assert.True(DictionaryContentsEqual(expected.FlagDictionary, results.FlagDictionary));
         }
 
         [Theory]

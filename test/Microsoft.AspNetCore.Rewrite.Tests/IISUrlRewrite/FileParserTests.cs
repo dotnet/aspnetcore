@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var res = new UrlRewriteFileParser().Parse(new StringReader(xml));
 
             // assert
-            AssertUrlRewriteRuleEquality(res, expected);
+            AssertUrlRewriteRuleEquality(expected, res);
         }
 
         [Fact]
@@ -50,9 +50,9 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                             <rules>
                                 <rule name=""Rewrite to article.aspx"">
                                     <match url = ""^article/([0-9]+)/([_0-9a-z-]+)"" />
-                                    <conditions>  
-                                        <add input=""{HTTPS}"" pattern=""^OFF$"" />  
-                                    </conditions>  
+                                    <conditions>
+                                        <add input=""{HTTPS}"" pattern=""^OFF$"" />
+                                    </conditions>
                                     <action type=""Rewrite"" url =""article.aspx?id={R:1}&amp;title={R:2}"" />
                                 </rule>
                             </rules>
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var res = new UrlRewriteFileParser().Parse(new StringReader(xml));
 
             // assert
-            AssertUrlRewriteRuleEquality(res, expected);
+            AssertUrlRewriteRuleEquality(expected, res);
         }
 
         [Fact]
@@ -87,16 +87,16 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                             <rules>
                                 <rule name=""Rewrite to article.aspx"">
                                     <match url = ""^article/([0-9]+)/([_0-9a-z-]+)"" />
-                                    <conditions>  
-                                        <add input=""{HTTPS}"" pattern=""^OFF$"" />  
-                                    </conditions>  
+                                    <conditions>
+                                        <add input=""{HTTPS}"" pattern=""^OFF$"" />
+                                    </conditions>
                                     <action type=""Rewrite"" url =""article.aspx?id={R:1}&amp;title={R:2}"" />
                                 </rule>
                                 <rule name=""Rewrite to another article.aspx"">
                                     <match url = ""^article/([0-9]+)/([_0-9a-z-]+)"" />
-                                    <conditions>  
-                                        <add input=""{HTTPS}"" pattern=""^OFF$"" />  
-                                    </conditions>  
+                                    <conditions>
+                                        <add input=""{HTTPS}"" pattern=""^OFF$"" />
+                                    </conditions>
                                     <action type=""Rewrite"" url =""article.aspx?id={R:1}&amp;title={R:2}"" />
                                 </rule>
                             </rules>
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var res = new UrlRewriteFileParser().Parse(new StringReader(xml));
 
             // assert
-            AssertUrlRewriteRuleEquality(res, expected);
+            AssertUrlRewriteRuleEquality(expected, res);
         }
 
         // Creates a rule with appropriate default values of the url rewrite rule.
@@ -163,11 +163,11 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
                 if (r1.Conditions == null)
                 {
-                    Assert.Equal(r2.Conditions.Count, 0);
+                    Assert.Equal(0, r2.Conditions.Count);
                 }
                 else if (r2.Conditions == null)
                 {
-                    Assert.Equal(r1.Conditions.Count, 0);
+                    Assert.Equal(0, r1.Conditions.Count);
                 }
                 else
                 {

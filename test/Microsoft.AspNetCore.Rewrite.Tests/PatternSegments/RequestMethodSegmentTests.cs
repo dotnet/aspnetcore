@@ -15,12 +15,12 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments
             // Arrange
             var segement = new RequestMethodSegment();
             var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
-            context.HttpContext.Request.Method = "GET";
+            context.HttpContext.Request.Method = HttpMethods.Get;
             // Act
             var results = segement.Evaluate(context, null, null);
 
             // Assert
-            Assert.Equal("GET", results);
+            Assert.Equal(HttpMethods.Get, results);
         }
     }
 }

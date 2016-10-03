@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
     {
         [Fact]
         public async Task Invoke_RewritePathWhenMatching()
-        {   
+        {
             var options = new RewriteOptions().AddApacheModRewrite(new StringReader("RewriteRule /hey/(.*) /$1 "));
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
 
             var response = await server.CreateClient().GetStringAsync("/hey/hello");
 
-            Assert.Equal(response, "/hello");
+            Assert.Equal("/hello", response);
         }
 
         [Fact]
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
 
             var response = await server.CreateClient().GetStringAsync("/hey/hello");
 
-            Assert.Equal(response, "/hello");
+            Assert.Equal("/hello", response);
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
 
             var response = await server.CreateClient().GetStringAsync("/hey/hello");
 
-            Assert.Equal(response, "/what");
+            Assert.Equal("/what", response);
         }
 
         [Fact]
@@ -82,9 +82,9 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
 
             var response = await server.CreateClient().GetStringAsync("/hey/hello");
 
-            Assert.Equal(response, "/hey/hello");
+            Assert.Equal("/hey/hello", response);
         }
-        
+
         [Fact]
         public async Task Invoke_ShouldRewriteHomepage()
         {
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
 
             var response = await server.CreateClient().GetStringAsync("http://www.foo.org/");
 
-            Assert.Equal(response, "/homepage.html");
+            Assert.Equal("/homepage.html", response);
         }
 
         [Fact]
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
 
             var response = await server.CreateClient().GetStringAsync("http://www.foo.org:42/");
 
-            Assert.Equal(response, "/homepage.html");
+            Assert.Equal("/homepage.html", response);
         }
 
         [Fact]
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
 
             var response = await server.CreateClient().GetStringAsync("http://www.foo.org/");
 
-            Assert.Equal(response, "/");
+            Assert.Equal("/", response);
         }
 
         [Fact]
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
 
             var response = await server.CreateClient().GetStringAsync("http://www.foo.org/homepage.aspx");
 
-            Assert.Equal(response, "/homepage.php");
+            Assert.Equal("/homepage.php", response);
         }
 
         [Theory]
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
 
             var response = await server.CreateClient().GetStringAsync(url);
 
-            Assert.Equal(response, expected);
+            Assert.Equal(expected, response);
         }
 
         [Fact]
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
 
             var response = await server.CreateClient().GetStringAsync("http://www.foo.org/blog/2016-jun");
 
-            Assert.Equal(response, @"/blog/2016-jun/");
+            Assert.Equal(@"/blog/2016-jun/", response);
         }
 
         [Fact]
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
 
             var response = await server.CreateClient().GetStringAsync("http://www.foo.org/blog/2016-jun");
 
-            Assert.Equal(response, @"http://www.example.com/blog/2016-jun/");
+            Assert.Equal(@"http://www.example.com/blog/2016-jun/", response);
         }
 
         [Fact]
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
 
             var response = await server.CreateClient().GetStringAsync("http://www.foo.org/blog/2016-jun");
 
-            Assert.Equal(response, @"http://www.example.com/blog/2016-jun/");
+            Assert.Equal(@"http://www.example.com/blog/2016-jun/", response);
         }
 
         [Theory]
@@ -266,8 +266,8 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
 
             var response = await server.CreateClient().GetAsync(input);
 
-            Assert.Equal(response.StatusCode, (HttpStatusCode)301);
-            Assert.Equal(response.Headers.Location.OriginalString, "/");
+            Assert.Equal(HttpStatusCode.MovedPermanently, response.StatusCode);
+            Assert.Equal("/", response.Headers.Location.OriginalString);
         }
 
         [Theory]
@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             var server = new TestServer(builder);
 
             var response = await server.CreateClient().GetStringAsync(input);
-            Assert.Equal(response, "/");
+            Assert.Equal("/", response);
         }
 
         [Fact]
@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
 
             var response = await server.CreateClient().GetAsync("");
 
-            Assert.Equal(response.Headers.Location.OriginalString, "/foo");
+            Assert.Equal("/foo", response.Headers.Location.OriginalString);
         }
     }
 }

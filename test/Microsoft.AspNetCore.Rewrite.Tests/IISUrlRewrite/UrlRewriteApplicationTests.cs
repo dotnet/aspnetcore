@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             Assert.Equal(rules.Count, 1);
             var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
             rules.FirstOrDefault().ApplyRule(context);
-            Assert.Equal(context.Result, RuleResult.SkipRemainingRules);
+            Assert.Equal(RuleResult.SkipRemainingRules, context.Result);
         }
 
         [Fact]
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             Assert.Equal(rules.Count, 1);
             var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
             rules.FirstOrDefault().ApplyRule(context);
-            Assert.Equal(context.Result, RuleResult.ContinueRules);
+            Assert.Equal(RuleResult.ContinueRules, context.Result);
         }
     }
 }

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             <action type=""Rewrite"" url =""{"" />
         </rule>
     </rules>
-</rewrite>", 
+</rewrite>",
             "Could not parse the UrlRewrite file. Message: 'Missing close brace for parameter at string index: '1''. Line number '5': '14'.")]
         [InlineData(
 @"<rewrite>
@@ -37,16 +37,16 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             <action type=""Rewrite"" url=""foo"" />
         </rule>
     </rules>
-</rewrite>", 
+</rewrite>",
             "Could not parse the UrlRewrite file. Message: 'Match must have Url Attribute'. Line number '4': '14'.")]
         [InlineData(
 @"<rewrite>
     <rules>
         <rule name=""Rewrite to article.aspx"">
             <match url = ""(.*)"" />
-            <conditions>  
-                <add input=""{HTTPS"" pattern=""^OFF$"" />  
-            </conditions>  
+            <conditions>
+                <add input=""{HTTPS"" pattern=""^OFF$"" />
+            </conditions>
             <action type=""Rewrite"" url =""foo"" />
         </rule>
     </rules>
@@ -57,39 +57,39 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
     <rules>
         <rule name=""Rewrite to article.aspx"">
             <match url = ""(.*)"" />
-            <conditions>  
-                <add pattern=""^OFF$"" />  
-            </conditions>  
+            <conditions>
+                <add pattern=""^OFF$"" />
+            </conditions>
             <action type=""Rewrite"" url =""foo"" />
         </rule>
     </rules>
-</rewrite>", 
+</rewrite>",
             "Could not parse the UrlRewrite file. Message: 'Conditions must have an input attribute'. Line number '6': '18'.")]
         [InlineData(
 @"<rewrite>
     <rules>
         <rule name=""Rewrite to article.aspx"">
             <match url = ""(.*)"" />
-            <conditions>  
-                <add input=""{HTTPS}"" />  
-            </conditions>  
+            <conditions>
+                <add input=""{HTTPS}"" />
+            </conditions>
             <action type=""Rewrite"" url =""foo"" />
         </rule>
     </rules>
-</rewrite>", 
+</rewrite>",
             "Could not parse the UrlRewrite file. Message: 'Match does not have an associated pattern attribute in condition'. Line number '6': '18'.")]
         [InlineData(
 @"<rewrite>
     <rules>
         <rule name=""Rewrite to article.aspx"">
             <match url = ""(.*)"" />
-            <conditions>  
-                <add input=""{HTTPS}"" patternSyntax=""ExactMatch""/>  
-            </conditions>  
+            <conditions>
+                <add input=""{HTTPS}"" patternSyntax=""ExactMatch""/>
+            </conditions>
             <action type=""Rewrite"" url =""foo"" />
         </rule>
     </rules>
-</rewrite>", 
+</rewrite>",
             "Could not parse the UrlRewrite file. Message: 'Match does not have an associated pattern attribute in condition'. Line number '6': '18'.")]
         [InlineData(
 @"<rewrite>
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             // Arrange, Act, Assert
             var ex = Assert.Throws<FormatException>(() => new UrlRewriteFileParser().Parse(new StringReader(input)));
-            Assert.Equal(ex.Message, expected);
+            Assert.Equal(expected, ex.Message);
         }
     }
 }

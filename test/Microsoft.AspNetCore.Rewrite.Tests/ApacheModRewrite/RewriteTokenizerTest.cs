@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             expected.Add("RewriteCond");
             expected.Add("%{HTTPS}");
             expected.Add("!-f");
-            Assert.Equal(tokens, expected);
+            Assert.Equal(expected, tokens);
         }
 
         [Fact]
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             expected.Add("RewriteCond");
             expected.Add(@"%{HTTPS} what");
             expected.Add("!-f");
-            Assert.Equal(tokens, expected);
+            Assert.Equal(expected, tokens);
         }
 
         [Fact]
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             expected.Add(@"%{HTTPS}");
             expected.Add(@" what");
             expected.Add(@"!-f");
-            Assert.Equal(tokens, expected);
+            Assert.Equal(expected, tokens);
         }
 
         [Fact]

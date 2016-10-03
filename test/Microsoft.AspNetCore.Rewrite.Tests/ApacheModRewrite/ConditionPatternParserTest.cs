@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             var results = new ConditionPatternParser().ParseActionCondition(condition);
 
             var expected = new ParsedModRewriteInput { OperationType = operation, ConditionType = conditionType, Operand = variable, Invert = false };
-            Assert.True(CompareConditions(results, expected));
+            Assert.True(CompareConditions(expected, results));
         }
 
         [Fact]
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             var results = new ConditionPatternParser().ParseActionCondition(condition);
 
             var expected = new ParsedModRewriteInput { ConditionType = ConditionType.Regex, Operand = "(.*)", Invert = false };
-            Assert.True(CompareConditions(results, expected));
+            Assert.True(CompareConditions(expected, results));
         }
 
         [Theory]
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             var results = new ConditionPatternParser().ParseActionCondition(condition);
 
             var expected = new ParsedModRewriteInput { ConditionType = cond, OperationType = operation, Invert = false };
-            Assert.True(CompareConditions(results, expected));
+            Assert.True(CompareConditions(expected, results));
         }
 
         [Theory]
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             var results = new ConditionPatternParser().ParseActionCondition(condition);
 
             var expected = new ParsedModRewriteInput { ConditionType = cond, OperationType = operation, Invert = true };
-            Assert.True(CompareConditions(results, expected));
+            Assert.True(CompareConditions(expected, results));
         }
 
         [Theory]
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             var results = new ConditionPatternParser().ParseActionCondition(condition);
 
             var expected = new ParsedModRewriteInput { ConditionType = cond, OperationType = operation, Invert = false, Operand = variable };
-            Assert.True(CompareConditions(results, expected));
+            Assert.True(CompareConditions(expected, results));
         }
 
         [Theory]

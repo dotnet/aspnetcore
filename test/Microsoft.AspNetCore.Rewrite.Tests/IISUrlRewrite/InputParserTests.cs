@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             var testString = "hello/hey/what";
             var result = new InputParser().ParseInputString(testString);
-            Assert.Equal(result.PatternSegments.Count, 1);
+            Assert.Equal(1, result.PatternSegments.Count);
         }
 
         [Theory]
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         public void InputParser_ParseStringWithBackReference(string testString, int expected)
         {
             var result = new InputParser().ParseInputString(testString);
-            Assert.Equal(result.PatternSegments.Count, expected);
+            Assert.Equal(expected, result.PatternSegments.Count);
         }
 
         // Test actual evaluation of the types, verifying the correct string comes from the evalation
@@ -46,9 +46,9 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             var middle = new InputParser().ParseInputString(testString);
             var result = middle.Evaluate(CreateTestRewriteContext(), CreateTestRuleMatch(), CreateTestCondMatch());
-            Assert.Equal(result, expected);
+            Assert.Equal(expected, result);
         }
-        
+
         [Theory]
         [InlineData("hey/{ToLower:HEY}", "hey/hey")]
         [InlineData("hey/{ToLower:{R:1}}", "hey/foo")]
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             var middle = new InputParser().ParseInputString(testString);
             var result = middle.Evaluate(CreateTestRewriteContext(), CreateTestRuleMatch(), CreateTestCondMatch());
-            Assert.Equal(result, expected);
+            Assert.Equal(expected, result);
         }
 
         [Theory]
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         {
             var middle = new InputParser().ParseInputString(testString);
             var result = middle.Evaluate(CreateTestRewriteContext(), CreateTestRuleMatch(), CreateTestCondMatch());
-            Assert.Equal(result, expected);
+            Assert.Equal(expected, result);
         }
 
         [Theory]

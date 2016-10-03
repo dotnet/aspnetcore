@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments
 
             // Act
             var results = segement.Evaluate(context, null, null);
-            
+
             // Assert
             Assert.Equal(expected, results);
         }

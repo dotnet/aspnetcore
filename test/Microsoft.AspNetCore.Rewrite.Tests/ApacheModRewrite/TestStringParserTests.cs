@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         public void ConditionParser_InvalidInput(string testString, string expected)
         {
             var ex = Assert.Throws<FormatException>(() => new TestStringParser().Parse(testString));
-            Assert.Equal(ex.Message, expected);
+            Assert.Equal(expected, ex.Message);
         }
 
         private void AssertPatternsEqual(Pattern p1, Pattern p2)

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlMatches
             var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
             var stringMatch = new StringMatch(value, operation, ignoreCase);
             var matchResult = stringMatch.Evaluate(input, context);
-            Assert.Equal(matchResult.Success, expectedResult);
+            Assert.Equal(expectedResult, matchResult.Success);
         }
     }
 }

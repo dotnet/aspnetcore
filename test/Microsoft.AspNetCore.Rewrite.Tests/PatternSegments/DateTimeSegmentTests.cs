@@ -35,10 +35,9 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments
         [InlineData("wow", "Unsupported segment: 'wow'")]
         public void DateTime_AssertThrowsOnInvalidInput(string input, string expected)
         {
-
             // Act And Assert
             var ex = Assert.Throws<FormatException>(() => new DateTimeSegment(input));
-            Assert.Equal(ex.Message, expected);
+            Assert.Equal(expected, ex.Message);
         }
     }
 }
