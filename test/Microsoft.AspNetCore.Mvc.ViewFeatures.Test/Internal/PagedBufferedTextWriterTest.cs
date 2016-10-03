@@ -265,6 +265,66 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             Assert.Equal(3, pool.Returned.Count);
         }
 
+        [Fact]
+        public async Task FlushAsync_FlushesContent()
+        {
+            // Arrange
+            var pool = new TestArrayPool();
+            var inner = new StringWriter();
+
+            var writer = new PagedBufferedTextWriter(pool, inner);
+            for (var i = 0; i < Content.Length; i++)
+            {
+                writer.Write(Content[i]);
+            }
+
+            // Act
+            await writer.FlushAsync();
+
+            // Assert
+            Assert.Equal<char>(Content, inner.ToString().ToCharArray());
+        }
+
+        [Fact]
+        public async Task FlushAsync_WritesContentToInner()
+        {
+            // Arrange
+            var pool = new TestArrayPool();
+            var inner = new StringWriter();
+
+            var writer = new PagedBufferedTextWriter(pool, inner);
+            for (var i = 0; i < Content.Length; i++)
+            {
+                writer.Write(Content[i]);
+            }
+
+            // Act
+            await writer.FlushAsync();
+
+            // Assert
+            Assert.Equal<char>(Content, inner.ToString().ToCharArray());
+        }
+
+        [Fact]
+        public async Task FlushAsync_WritesContentToInner_WithLargeArrays()
+        {
+            // Arrange
+            var pool = new RentMoreArrayPool();
+            var inner = new StringWriter();
+
+            var writer = new PagedBufferedTextWriter(pool, inner);
+            for (var i = 0; i < Content.Length; i++)
+            {
+                writer.Write(Content[i]);
+            }
+
+            // Act
+            await writer.FlushAsync();
+
+            // Assert
+            Assert.Equal<char>(Content, inner.ToString().ToCharArray());
+        }
+
         private class TestArrayPool : ArrayPool<char>
         {
             public IList<char[]> Returned { get; } = new List<char[]>();
@@ -272,6 +332,21 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             public override char[] Rent(int minimumLength)
             {
                 return new char[minimumLength];
+            }
+
+            public override void Return(char[] buffer, bool clearArray = false)
+            {
+                Returned.Add(buffer);
+            }
+        }
+
+        private class RentMoreArrayPool : ArrayPool<char>
+        {
+            public IList<char[]> Returned { get; } = new List<char[]>();
+
+            public override char[] Rent(int minimumLength)
+            {
+                return new char[2 * minimumLength];
             }
 
             public override void Return(char[] buffer, bool clearArray = false)

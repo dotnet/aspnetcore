@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -228,10 +229,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
                 for (var i = 0; i < _buffer.Pages.Count; i++)
                 {
-                    var pageLength = Math.Min(length, PagedCharBuffer.PageSize);
-                    writer.Write(_buffer.Pages[i], 0, pageLength);
+                    var page = _buffer.Pages[i];
+                    var pageLength = Math.Min(length, page.Length);
+                    writer.Write(page, index: 0, count: pageLength);
                     length -= pageLength;
                 }
+
+                Debug.Assert(length == 0);
             }
         }
     }

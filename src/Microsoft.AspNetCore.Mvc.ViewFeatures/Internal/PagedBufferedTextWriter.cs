@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,15 +40,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             for (var i = 0; i < pages.Count; i++)
             {
                 var page = pages[i];
-
-                var pageLength = Math.Min(length, PagedCharBuffer.PageSize);
+                var pageLength = Math.Min(length, page.Length);
                 if (pageLength != 0)
                 {
-                    await _inner.WriteAsync(page, 0, pageLength);
+                    await _inner.WriteAsync(page, index: 0, count: pageLength);
                 }
+
                 length -= pageLength;
             }
 
+            Debug.Assert(length == 0);
             _charBuffer.Clear();
         }
 

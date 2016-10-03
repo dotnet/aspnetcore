@@ -26,9 +26,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             get
             {
                 var length = _charIndex;
-                if (Pages.Count > 1)
+                for (var i = 0; i < Pages.Count - 1; i++)
                 {
-                    length += PageSize * (Pages.Count - 1);
+                    length += Pages[i].Length;
                 }
 
                 return length;
@@ -120,8 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         private char[] GetCurrentPage()
         {
-            if (CurrentPage == null ||
-                _charIndex == PageSize)
+            if (CurrentPage == null || _charIndex == CurrentPage.Length)
             {
                 CurrentPage = NewPage();
                 _charIndex = 0;
