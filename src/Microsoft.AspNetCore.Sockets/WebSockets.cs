@@ -35,25 +35,38 @@ namespace Microsoft.AspNetCore.Sockets
 
             _tcs.TrySetResult(null);
 
-            var buffer = new byte[2048];
+            var outputBuffer = _channel.Input.Alloc();
 
             while (!_channel.Input.Writing.IsCompleted)
             {
-                var result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                // Make sure there's room to read (at least 2k)
+                outputBuffer.Ensure(2048);
 
-                // TODO: Fragments
-                if (result.MessageType == WebSocketMessageType.Text)
+                ArraySegment<byte> segment;
+                if (!outputBuffer.Memory.TryGetArray(out segment))
                 {
-                    await _channel.Input.WriteAsync(new Span<byte>(buffer, 0, result.Count));
+                    // REVIEW: Do we care about native buffers here?
+                    throw new InvalidOperationException("Managed buffers are required for Web Socket API");
                 }
-                else if (result.MessageType == WebSocketMessageType.Binary)
+
+                var result = await ws.ReceiveAsync(segment, CancellationToken.None);
+
+                if (result.MessageType != WebSocketMessageType.Close)
                 {
-                    await _channel.Input.WriteAsync(new Span<byte>(buffer, 0, result.Count));
+                    outputBuffer.Advance(result.Count);
+
+                    if (result.EndOfMessage)
+                    {
+                        // Flush when we get an entire message
+                        await outputBuffer.FlushAsync();
+
+                        // Allocate a new buffer to further writing
+                        outputBuffer = _channel.Input.Alloc();
+                    }
                 }
-                else if (result.MessageType == WebSocketMessageType.Close)
+                else
                 {
                     await ws.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
-                    // TODO: needs to remove itself from connection mamanger?
                     break;
                 }
             }
