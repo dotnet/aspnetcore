@@ -12,6 +12,6 @@ namespace Microsoft.AspNetCore.Sockets
         public string ConnectionId { get; set; }
         public ClaimsPrincipal User { get; set; }
         public IChannel Channel { get; set; }
-        public IDictionary<string, object> Metadata { get; } = new Dictionary<string, object>();
+        public ConnectionMetadata Metadata { get; } = new ConnectionMetadata();
     }
 }

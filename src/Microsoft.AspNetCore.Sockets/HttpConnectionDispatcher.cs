@@ -46,6 +46,10 @@ namespace Microsoft.AspNetCore.Sockets
 
                 // Get the end point mapped to this http connection
                 var endpoint = (EndPoint)context.RequestServices.GetRequiredService<TEndPoint>();
+                var format =
+                    string.Equals(context.Request.Query["format"], "binary", StringComparison.OrdinalIgnoreCase)
+                        ? Format.Binary
+                        : Format.Text;
 
                 // Server sent events transport
                 if (context.Request.Path.StartsWithSegments(path + "/sse"))
@@ -54,6 +58,7 @@ namespace Microsoft.AspNetCore.Sockets
                     var connectionState = GetOrCreateConnection(context);
                     connectionState.Connection.User = context.User;
                     connectionState.Connection.Metadata["transport"] = "sse";
+                    connectionState.Connection.Metadata.Format = format;
                     var sse = new ServerSentEvents(connectionState.Connection);
 
                     // Register this transport for disconnect
@@ -82,6 +87,7 @@ namespace Microsoft.AspNetCore.Sockets
                     var connectionState = GetOrCreateConnection(context);
                     connectionState.Connection.User = context.User;
                     connectionState.Connection.Metadata["transport"] = "websockets";
+                    connectionState.Connection.Metadata.Format = format;
                     var ws = new WebSockets(connectionState.Connection);
 
                     // Register this transport for disconnect
@@ -136,6 +142,7 @@ namespace Microsoft.AspNetCore.Sockets
                     if (isNewConnection)
                     {
                         connectionState.Connection.Metadata["transport"] = "poll";
+                        connectionState.Connection.Metadata.Format = format;
                         connectionState.Connection.User = context.User;
                         endpointTask = endpoint.OnConnected(connectionState.Connection);
                         connectionState.Connection.Metadata["endpoint"] = endpointTask;
