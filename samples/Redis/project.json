@@ -11,6 +11,14 @@
     "Microsoft.Extensions.Logging.Console": "1.1.0-*"
   },
   "frameworks": {
-    "net451": { }
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        }
+      }
+    },
+    "net451": {}
   }
 }

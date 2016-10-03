@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.DataProtection": "1.1.0-*",
-    "StackExchange.Redis.StrongName": "1.1.604-alpha"
+    "StackExchange.Redis.StrongName": "1.1.605"
   },
   "frameworks": {
     "net451": {},
