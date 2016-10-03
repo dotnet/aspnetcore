@@ -9,7 +9,7 @@
     "xmlDoc": true,
     "allowUnsafe": true
   },
-  "description": "ASP.NET 5 web socket middleware for use on top of opaque servers.",
+  "description": "ASP.NET Core web socket middleware for use on top of opaque servers.",
   "packOptions": {
     "repository": {
       "type": "git",
