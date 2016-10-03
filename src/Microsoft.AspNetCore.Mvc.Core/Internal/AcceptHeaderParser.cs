@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Internal
             {
                 throw new ArgumentNullException(nameof(parsedValues));
             }
-
             for (var i = 0; i < acceptHeaders.Count; i++)
             {
                 var charIndex = 0;
@@ -45,13 +44,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Internal
                         {
                             parsedValues.Add(output);
                         }
-                    }
-                    else
-                    {
-                        var invalidValuesError = Resources.FormatAcceptHeaderParser_ParseAcceptHeader_InvalidValues(
-                            value.Substring(charIndex));
-
-                        throw new FormatException(invalidValuesError);
                     }
                 }
             }
@@ -80,11 +72,34 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Internal
                 return true;
             }
 
-            MediaTypeSegmentWithQuality result;
-            var length = GetMediaTypeWithQualityLength(value, currentIndex, out result);
+            // We deliberately want to ignore media types that we are not capable of parsing.
+            // This is due to the fact that some browsers will send invalid media types like 
+            // ; q=0.9 or */;q=0.2, etc.
+            // In this scenario, our recovery action consists of advancing the pointer to the
+            // next separator and moving on.
+            // In case we don't find the next separator, we simply advance the cursor to the
+            // end of the string to signal that we are done parsing.
+            var result = default(MediaTypeSegmentWithQuality);
+            var length = 0;
+            try
+            {
+                length = GetMediaTypeWithQualityLength(value, currentIndex, out result);
+            }
+            catch
+            {
+                length = 0;
+            }
 
             if (length == 0)
             {
+                // The parsing failed.
+                currentIndex = value.IndexOf(',', currentIndex);
+                if (currentIndex == -1)
+                {
+                    index = value.Length;
+                    return false;
+                }
+                index = currentIndex;
                 return false;
             }
 
