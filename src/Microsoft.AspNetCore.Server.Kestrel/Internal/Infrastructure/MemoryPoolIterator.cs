@@ -395,7 +395,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                             _block = block;
 
                             var firstEqualByteIndex = FindFirstEqualByte(ref byte0Equals);
-                            var vectorBytesScanned = firstEqualByteIndex + 1;
 
                             if (_block == limit.Block && index + firstEqualByteIndex > limit.Index)
                             {
