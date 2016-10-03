@@ -23,6 +23,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6A35B453-5
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Sockets.Tests", "test\Microsoft.AspNetCore.Sockets.Tests\Microsoft.AspNetCore.Sockets.Tests.xproj", "{AAD719D5-5E31-4ED1-A60F-6EB92EFA66D9}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.WebSockets", "src\Microsoft.Extensions.WebSockets\Microsoft.Extensions.WebSockets.xproj", "{5D9DA986-2EAB-4C6D-BF15-9A4BDD4DE775}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.WebSockets.Tests", "test\Microsoft.Extensions.WebSockets.Tests\Microsoft.Extensions.WebSockets.Tests.xproj", "{8FA6BE8F-B5EB-42F9-9B16-101917CC45E2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +49,14 @@ Global
 		{AAD719D5-5E31-4ED1-A60F-6EB92EFA66D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AAD719D5-5E31-4ED1-A60F-6EB92EFA66D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AAD719D5-5E31-4ED1-A60F-6EB92EFA66D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D9DA986-2EAB-4C6D-BF15-9A4BDD4DE775}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D9DA986-2EAB-4C6D-BF15-9A4BDD4DE775}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D9DA986-2EAB-4C6D-BF15-9A4BDD4DE775}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D9DA986-2EAB-4C6D-BF15-9A4BDD4DE775}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FA6BE8F-B5EB-42F9-9B16-101917CC45E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FA6BE8F-B5EB-42F9-9B16-101917CC45E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FA6BE8F-B5EB-42F9-9B16-101917CC45E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FA6BE8F-B5EB-42F9-9B16-101917CC45E2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -54,5 +66,7 @@ Global
 		{1715EA8D-8E13-4ACF-8BCA-57D048E55ED8} = {DA69F624-5398-4884-87E4-B816698CDE65}
 		{BA99C2A1-48F9-4FA5-B95A-9687A73B7CC9} = {C4BC9889-B49F-41B6-806B-F84941B2549B}
 		{AAD719D5-5E31-4ED1-A60F-6EB92EFA66D9} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
+		{5D9DA986-2EAB-4C6D-BF15-9A4BDD4DE775} = {DA69F624-5398-4884-87E4-B816698CDE65}
+		{8FA6BE8F-B5EB-42F9-9B16-101917CC45E2} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
 	EndGlobalSection
 EndGlobal
