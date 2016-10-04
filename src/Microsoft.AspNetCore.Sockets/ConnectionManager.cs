@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Sockets
                     ConnectionState s;
                     if (_connections.TryRemove(c.Key, out s))
                     {
-                        s.Connection.Channel.Dispose();
+                        s?.Close();
                     }
                     else
                     {

@@ -7,8 +7,16 @@ namespace Microsoft.AspNetCore.Sockets
     /// </summary>
     public class EndPoint
     {
-        // This is a stream based API, we might just want to change to a message based API or invent framing
-        // over this stream based API to do a message based API
+        /// <summary>
+        /// Live list of connections for this <see cref="EndPoint"/>
+        /// </summary>
+        public ConnectionList Connections { get; } = new ConnectionList();
+
+        /// <summary>
+        /// Called when a new connection is accepted to the endpoint
+        /// </summary>
+        /// <param name="connection">The new <see cref="Connection"/></param>
+        /// <returns>A <see cref="Task"/> that represents the connection lifetime. When the task completes, the connection is complete.</returns>
         public virtual Task OnConnected(Connection connection)
         {
             return Task.CompletedTask;

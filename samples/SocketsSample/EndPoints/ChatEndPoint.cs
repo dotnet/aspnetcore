@@ -10,51 +10,48 @@ namespace SocketsSample
 {
     public class ChatEndPoint : EndPoint
     {
-        private Bus bus = new Bus();
-
         public override async Task OnConnected(Connection connection)
         {
-            await bus.Publish(nameof(ChatEndPoint), new Message
-            {
-                Payload = Encoding.UTF8.GetBytes($"{connection.ConnectionId} connected ({connection.Metadata["transport"]})")
-            });
+            await Broadcast($"{connection.ConnectionId} connected ({connection.Metadata["transport"]})");
 
-            using (bus.Subscribe(nameof(ChatEndPoint), message => OnMessage(message, connection)))
+
+            while (true)
             {
-                while (true)
+                var input = await connection.Channel.Input.ReadAsync();
+                try
                 {
-                    var input = await connection.Channel.Input.ReadAsync();
-                    try
+                    if (input.IsEmpty && connection.Channel.Input.Reading.IsCompleted)
                     {
-                        if (input.IsEmpty && connection.Channel.Input.Reading.IsCompleted)
-                        {
-                            break;
-                        }
+                        break;
+                    }
 
-                        await bus.Publish(nameof(ChatEndPoint), new Message()
-                        {
-                            Payload = input.ToArray()
-                        });
-                    }
-                    finally
-                    {
-                        connection.Channel.Input.Advance(input.End);
-                    }
+                    // We can avoid the copy here but we'll deal with that later
+                    await Broadcast(input.ToArray());
+                }
+                finally
+                {
+                    connection.Channel.Input.Advance(input.End);
                 }
             }
 
-            await bus.Publish(nameof(ChatEndPoint), new Message
-            {
-                Payload = Encoding.UTF8.GetBytes($"{connection.ConnectionId} disconnected ({connection.Metadata["transport"]})")
-            });
+            await Broadcast($"{connection.ConnectionId} disconnected ({connection.Metadata["transport"]})");
         }
 
-        private async Task OnMessage(Message message, Connection connection)
+        private Task Broadcast(string text)
         {
-            var buffer = connection.Channel.Output.Alloc();
-            var payload = message.Payload;
-            buffer.Write(payload);
-            await buffer.FlushAsync();
+            return Broadcast(Encoding.UTF8.GetBytes(text));
+        }
+
+        private Task Broadcast(byte[] payload)
+        {
+            var tasks = new List<Task>(Connections.Count);
+
+            foreach (var c in Connections)
+            {
+                tasks.Add(c.Channel.Output.WriteAsync(payload));
+            }
+
+            return Task.WhenAll(tasks);
         }
     }
 

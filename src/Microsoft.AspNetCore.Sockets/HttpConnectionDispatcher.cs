@@ -64,6 +64,9 @@ namespace Microsoft.AspNetCore.Sockets
                     // Register this transport for disconnect
                     RegisterDisconnect(context, connectionState.Connection);
 
+                    // Add the connection to the list
+                    endpoint.Connections.Add(connectionState.Connection);
+
                     // Call into the end point passing the connection
                     var endpointTask = endpoint.OnConnected(connectionState.Connection);
 
@@ -80,6 +83,8 @@ namespace Microsoft.AspNetCore.Sockets
                     await Task.WhenAll(endpointTask, transportTask);
 
                     _manager.RemoveConnection(connectionState.Connection.ConnectionId);
+
+                    endpoint.Connections.Remove(connectionState.Connection);
                 }
                 else if (context.Request.Path.StartsWithSegments(path + "/ws"))
                 {
@@ -92,6 +97,8 @@ namespace Microsoft.AspNetCore.Sockets
 
                     // Register this transport for disconnect
                     RegisterDisconnect(context, connectionState.Connection);
+
+                    endpoint.Connections.Add(connectionState.Connection);
 
                     // Call into the end point passing the connection
                     var endpointTask = endpoint.OnConnected(connectionState.Connection);
@@ -109,6 +116,8 @@ namespace Microsoft.AspNetCore.Sockets
                     await Task.WhenAll(endpointTask, transportTask);
 
                     _manager.RemoveConnection(connectionState.Connection.ConnectionId);
+
+                    endpoint.Connections.Remove(connectionState.Connection);
                 }
                 else if (context.Request.Path.StartsWithSegments(path + "/poll"))
                 {
@@ -144,6 +153,19 @@ namespace Microsoft.AspNetCore.Sockets
                         connectionState.Connection.Metadata["transport"] = "poll";
                         connectionState.Connection.Metadata.Format = format;
                         connectionState.Connection.User = context.User;
+
+                        // REVIEW: This is super gross, this all needs to be cleaned up...
+                        connectionState.Close = async () =>
+                        {
+                            connectionState.Connection.Channel.Dispose();
+
+                            await endpointTask;
+
+                            endpoint.Connections.Remove(connectionState.Connection);
+                        };
+
+                        endpoint.Connections.Add(connectionState.Connection);
+
                         endpointTask = endpoint.OnConnected(connectionState.Connection);
                         connectionState.Connection.Metadata["endpoint"] = endpointTask;
                     }
@@ -168,6 +190,8 @@ namespace Microsoft.AspNetCore.Sockets
                         connectionState.Connection.Channel.Dispose();
 
                         await transportTask;
+
+                        endpoint.Connections.Remove(connectionState.Connection);
                     }
 
                     // Mark the connection as inactive
