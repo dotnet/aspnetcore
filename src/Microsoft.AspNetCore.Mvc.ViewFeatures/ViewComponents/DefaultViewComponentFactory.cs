@@ -59,11 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         {
             var propertiesToActivate = _injectActions.GetOrAdd(
                 viewComponent.GetType(),
-                type =>
-                PropertyActivator<ViewComponentContext>.GetPropertiesToActivate(
-                    type,
-                    typeof(ViewComponentContextAttribute),
-                    CreateActivateInfo));
+                _getPropertiesToActivate);
 
             for (var i = 0; i < propertiesToActivate.Length; i++)
             {
