@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCompression
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
     /// <summary>
     /// Stream wrapper that create specific compression stream only if necessary.
     /// </summary>
-    internal class BodyWrapperStream : Stream
+    internal class BodyWrapperStream : Stream, IHttpBufferingFeature
     {
         private readonly HttpResponse _response;
 
@@ -23,16 +24,20 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
         private readonly ICompressionProvider _compressionProvider;
 
+        private readonly IHttpBufferingFeature _innerBufferFeature;
+
         private bool _compressionChecked = false;
 
         private Stream _compressionStream = null;
 
-        internal BodyWrapperStream(HttpResponse response, Stream bodyOriginalStream, IResponseCompressionProvider provider, ICompressionProvider compressionProvider)
+        internal BodyWrapperStream(HttpResponse response, Stream bodyOriginalStream, IResponseCompressionProvider provider, ICompressionProvider compressionProvider,
+            IHttpBufferingFeature innerBufferFeature)
         {
             _response = response;
             _bodyOriginalStream = bodyOriginalStream;
             _provider = provider;
             _compressionProvider = compressionProvider;
+            _innerBufferFeature = innerBufferFeature;
         }
 
         protected override void Dispose(bool disposing)
@@ -63,7 +68,14 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
         public override void Flush()
         {
-            OnWrite();
+            if (!_compressionChecked)
+            {
+                OnWrite();
+                // Flush the original stream to send the headers. Flushing the compression stream won't
+                // flush the original stream if no data has been written yet.
+                _bodyOriginalStream.Flush();
+                return;
+            }
 
             if (_compressionStream != null)
             {
@@ -77,12 +89,19 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            OnWrite();
+            if (!_compressionChecked)
+            {
+                OnWrite();
+                // Flush the original stream to send the headers. Flushing the compression stream won't
+                // flush the original stream if no data has been written yet.
+                return _bodyOriginalStream.FlushAsync(cancellationToken);
+            }
 
             if (_compressionStream != null)
             {
                 return _compressionStream.FlushAsync(cancellationToken);
             }
+
             return _bodyOriginalStream.FlushAsync(cancellationToken);
         }
 
@@ -129,7 +148,10 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
         public override void EndWrite(IAsyncResult asyncResult)
         {
-            OnWrite();
+            if (!_compressionChecked)
+            {
+                throw new InvalidOperationException("BeginWrite was not called before EndWrite");
+            }
 
             if (_compressionStream != null)
             {
@@ -174,6 +196,25 @@ namespace Microsoft.AspNetCore.ResponseCompression
         {
             return !_response.Headers.ContainsKey(HeaderNames.ContentRange) &&     // The response is not partial
                 _provider.ShouldCompressResponse(_response.HttpContext);
+        }
+
+        public void DisableRequestBuffering()
+        {
+            // Unrelated
+            _innerBufferFeature?.DisableRequestBuffering();
+        }
+
+        // For this to be effective it needs to be called before the first write.
+        public void DisableResponseBuffering()
+        {
+            if (!_compressionProvider.SupportsFlush)
+            {
+                // Don't compress, some of the providers don't implement Flush (e.g. .NET 4.5.1 GZip/Deflate stream)
+                // which would block real-time responses like SignalR.
+                _compressionChecked = true;
+            }
+
+            _innerBufferFeature?.DisableResponseBuffering();
         }
     }
 }

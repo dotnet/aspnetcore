@@ -1,7 +1,8 @@
 {
   "dependencies": {
     "Microsoft.AspNetCore.ResponseCompression": "0.1.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*"
+    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.1.0-*"
   },
   "buildOptions": {
     "emitEntryPoint": true

@@ -4,10 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -35,7 +37,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         }
 
         [Fact]
-        public async Task Request_AcceptGzipDeflate_ComrpessedGzip()
+        public async Task Request_AcceptGzipDeflate_CompressedGzip()
         {
             var response = await InvokeMiddleware(100, requestAcceptEncodings: new string[] { "gzip", "deflate" }, responseType: TextPlain);
 
@@ -88,6 +90,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                     app.UseResponseCompression();
                     app.Run(context =>
                     {
+                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
                         context.Response.ContentType = contentType;
                         return context.Response.WriteAsync(new string('a', 100));
                     });
@@ -101,7 +104,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             var response = await client.SendAsync(request);
 
-            Assert.Equal(24, response.Content.ReadAsByteArrayAsync().Result.Length);
+            CheckResponseCompressed(response, expectedBodyLength: 24);
         }
 
         [Theory]
@@ -119,6 +122,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                     app.UseResponseCompression();
                     app.Run(context =>
                     {
+                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
                         context.Response.ContentType = contentType;
                         return context.Response.WriteAsync(new string('a', 100));
                     });
@@ -132,7 +136,43 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             var response = await client.SendAsync(request);
 
-            Assert.Equal(100, response.Content.ReadAsByteArrayAsync().Result.Length);
+            CheckResponseNotCompressed(response, expectedBodyLength: 100);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("text/plain")]
+        [InlineData("text/PLAIN")]
+        [InlineData("text/plain; charset=ISO-8859-4")]
+        [InlineData("text/plain ; charset=ISO-8859-4")]
+        [InlineData("text/plain2")]
+        public async Task NoBody_NotCompressed(string contentType)
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddResponseCompression(TextPlain);
+                })
+                .Configure(app =>
+                {
+                    app.UseResponseCompression();
+                    app.Run(context =>
+                    {
+                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                        context.Response.ContentType = contentType;
+                        return Task.FromResult(0);
+                    });
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd("gzip");
+
+            var response = await client.SendAsync(request);
+
+            CheckResponseNotCompressed(response, expectedBodyLength: 0);
         }
 
         [Fact]
@@ -239,6 +279,304 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var response = await client.SendAsync(request);
 
             Assert.Equal(expectedLength, response.Content.ReadAsByteArrayAsync().Result.Length);
+        }
+
+        [Fact]
+        public async Task FlushHeaders_SendsHeaders_Compresses()
+        {
+            var responseReceived = new ManualResetEvent(false);
+
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddResponseCompression(TextPlain);
+                })
+                .Configure(app =>
+                {
+                    app.UseResponseCompression();
+                    app.Run(context =>
+                    {
+                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                        context.Response.ContentType = TextPlain;
+                        context.Response.Body.Flush();
+                        Assert.True(responseReceived.WaitOne(TimeSpan.FromSeconds(3)));
+                        return context.Response.WriteAsync(new string('a', 100));
+                    });
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd("gzip");
+
+            var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            responseReceived.Set();
+
+            await response.Content.LoadIntoBufferAsync();
+
+            CheckResponseCompressed(response, expectedBodyLength: 24);
+        }
+
+        [Fact]
+        public async Task FlushAsyncHeaders_SendsHeaders_Compresses()
+        {
+            var responseReceived = new ManualResetEvent(false);
+
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddResponseCompression(TextPlain);
+                })
+                .Configure(app =>
+                {
+                    app.UseResponseCompression();
+                    app.Run(async context =>
+                    {
+                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                        context.Response.ContentType = TextPlain;
+                        await context.Response.Body.FlushAsync();
+                        Assert.True(responseReceived.WaitOne(TimeSpan.FromSeconds(3)));
+                        await context.Response.WriteAsync(new string('a', 100));
+                    });
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd("gzip");
+
+            var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            responseReceived.Set();
+
+            await response.Content.LoadIntoBufferAsync();
+
+            CheckResponseCompressed(response, expectedBodyLength: 24);
+        }
+
+        [Fact]
+        public async Task FlushBody_CompressesAndFlushes()
+        {
+            var responseReceived = new ManualResetEvent(false);
+
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddResponseCompression(TextPlain);
+                })
+                .Configure(app =>
+                {
+                    app.UseResponseCompression();
+                    app.Run(context =>
+                    {
+                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                        context.Response.ContentType = TextPlain;
+                        context.Response.Body.Write(new byte[10], 0, 10);
+                        context.Response.Body.Flush();
+                        Assert.True(responseReceived.WaitOne(TimeSpan.FromSeconds(3)));
+                        context.Response.Body.Write(new byte[90], 0, 90);
+                        return Task.FromResult(0);
+                    });
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd("gzip");
+
+            var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+            IEnumerable<string> contentMD5 = null;
+            Assert.False(response.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
+            Assert.Single(response.Content.Headers.ContentEncoding, "gzip");
+
+            var body = await response.Content.ReadAsStreamAsync();
+            var read = await body.ReadAsync(new byte[100], 0, 100);
+            Assert.True(read > 0);
+
+            responseReceived.Set();
+
+            read = await body.ReadAsync(new byte[100], 0, 100);
+            Assert.True(read > 0);
+        }
+
+        [Fact]
+        public async Task FlushAsyncBody_CompressesAndFlushes()
+        {
+            var responseReceived = new ManualResetEvent(false);
+
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddResponseCompression(TextPlain);
+                })
+                .Configure(app =>
+                {
+                    app.UseResponseCompression();
+                    app.Run(async context =>
+                    {
+                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                        context.Response.ContentType = TextPlain;
+                        await context.Response.WriteAsync(new string('a', 10));
+                        await context.Response.Body.FlushAsync();
+                        Assert.True(responseReceived.WaitOne(TimeSpan.FromSeconds(3)));
+                        await context.Response.WriteAsync(new string('a', 90));
+                    });
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd("gzip");
+
+            var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            
+            IEnumerable<string> contentMD5 = null;
+            Assert.False(response.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
+            Assert.Single(response.Content.Headers.ContentEncoding, "gzip");
+
+            var body = await response.Content.ReadAsStreamAsync();
+            var read = await body.ReadAsync(new byte[100], 0, 100);
+            Assert.True(read > 0);
+
+            responseReceived.Set();
+
+            read = await body.ReadAsync(new byte[100], 0, 100);
+            Assert.True(read > 0);
+        }
+
+        [Fact]
+        public async Task TrickleWriteAndFlush_FlushesEachWrite()
+        {
+            var responseReceived = new[]
+            {
+                new ManualResetEvent(false),
+                new ManualResetEvent(false),
+                new ManualResetEvent(false),
+                new ManualResetEvent(false),
+                new ManualResetEvent(false),
+            };
+
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddResponseCompression(TextPlain);
+                })
+                .Configure(app =>
+                {
+                    app.UseResponseCompression();
+                    app.Run(context =>
+                    {
+                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                        context.Response.ContentType = TextPlain;
+                        context.Features.Get<IHttpBufferingFeature>()?.DisableResponseBuffering();
+
+                        foreach (var signal in responseReceived)
+                        {
+                            context.Response.Body.Write(new byte[1], 0, 1);
+                            context.Response.Body.Flush();
+                            Assert.True(signal.WaitOne(TimeSpan.FromSeconds(3)));
+                        }
+                        return Task.FromResult(0);
+                    });
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd("gzip");
+
+            var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+#if NET451 // Flush not supported, compression disabled
+            Assert.NotNull(response.Headers.GetValues(HeaderNames.ContentMD5));
+            Assert.Empty(response.Content.Headers.ContentEncoding);
+#elif NETCOREAPP1_0 // Flush supported, compression enabled
+            IEnumerable<string> contentMD5 = null;
+            Assert.False(response.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
+            Assert.Single(response.Content.Headers.ContentEncoding, "gzip");
+#else
+            Not implemented, compiler break
+#endif
+
+            var body = await response.Content.ReadAsStreamAsync();
+
+            foreach (var signal in responseReceived)
+            {
+                var read = await body.ReadAsync(new byte[100], 0, 100);
+                Assert.True(read > 0);
+
+                signal.Set();
+            }
+        }
+
+        [Fact]
+        public async Task TrickleWriteAndFlushAsync_FlushesEachWrite()
+        {
+            var responseReceived = new[]
+            {
+                new ManualResetEvent(false),
+                new ManualResetEvent(false),
+                new ManualResetEvent(false),
+                new ManualResetEvent(false),
+                new ManualResetEvent(false),
+            };
+
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddResponseCompression(TextPlain);
+                })
+                .Configure(app =>
+                {
+                    app.UseResponseCompression();
+                    app.Run(async context =>
+                    {
+                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                        context.Response.ContentType = TextPlain;
+                        context.Features.Get<IHttpBufferingFeature>()?.DisableResponseBuffering();
+
+                        foreach (var signal in responseReceived)
+                        {
+                            await context.Response.WriteAsync("a");
+                            await context.Response.Body.FlushAsync();
+                            Assert.True(signal.WaitOne(TimeSpan.FromSeconds(3)));
+                        }
+                    });
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd("gzip");
+
+            var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+#if NET451 // Flush not supported, compression disabled
+            Assert.NotNull(response.Headers.GetValues(HeaderNames.ContentMD5));
+            Assert.Empty(response.Content.Headers.ContentEncoding);
+#elif NETCOREAPP1_0 // Flush supported, compression enabled
+            IEnumerable<string> contentMD5 = null;
+            Assert.False(response.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
+            Assert.Single(response.Content.Headers.ContentEncoding, "gzip");
+#else
+            Not implemented, compiler break
+#endif
+
+            var body = await response.Content.ReadAsStreamAsync();
+
+            foreach (var signal in responseReceived)
+            {
+                var read = await body.ReadAsync(new byte[100], 0, 100);
+                Assert.True(read > 0);
+
+                signal.Set();
+            }
         }
 
         private Task<HttpResponseMessage> InvokeMiddleware(int uncompressedBodyLength, string[] requestAcceptEncodings, string responseType, Action<HttpResponse> addResponseAction = null)

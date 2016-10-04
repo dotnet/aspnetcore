@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ResponseCompression
@@ -39,6 +40,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             {
                 throw new ArgumentNullException(nameof(options));
             }
+
             _next = next;
             _provider = provider;
             _enableHttps = options.Value.EnableHttps;
@@ -65,19 +67,23 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
 
             var bodyStream = context.Response.Body;
+            var originalBufferFeature = context.Features.Get<IHttpBufferingFeature>();
 
-            using (var bodyWrapperStream = new BodyWrapperStream(context.Response, bodyStream, _provider, compressionProvider))
+            var bodyWrapperStream = new BodyWrapperStream(context.Response, bodyStream, _provider, compressionProvider, originalBufferFeature);
+            context.Response.Body = bodyWrapperStream;
+            context.Features.Set<IHttpBufferingFeature>(bodyWrapperStream);
+
+            try
             {
-                context.Response.Body = bodyWrapperStream;
-
-                try
-                {
-                    await _next(context);
-                }
-                finally
-                {
-                    context.Response.Body = bodyStream;
-                }
+                await _next(context);
+                // This is not disposed via a using statement because we don't want to flush the compression buffer for unhandled exceptions,
+                // that may cause secondary exceptions.
+                bodyWrapperStream.Dispose();
+            }
+            finally
+            {
+                context.Response.Body = bodyStream;
+                context.Features.Set(originalBufferFeature);
             }
         }
     }

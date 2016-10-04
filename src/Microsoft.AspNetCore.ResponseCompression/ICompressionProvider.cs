@@ -16,6 +16,11 @@ namespace Microsoft.AspNetCore.ResponseCompression
         string EncodingName { get; }
 
         /// <summary>
+        /// Indicates if the given provider supports Flush and FlushAsync. If not, compression may be disabled in some scenarios.
+        /// </summary>
+        bool SupportsFlush { get; }
+
+        /// <summary>
         /// Create a new compression stream.
         /// </summary>
         /// <param name="outputStream">The stream where the compressed data have to be written.</param>

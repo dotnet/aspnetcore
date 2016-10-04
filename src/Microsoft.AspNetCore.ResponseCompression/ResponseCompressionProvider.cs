@@ -108,6 +108,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 mimeType = mimeType.Trim();
             }
 
+            // TODO PERF: StringSegments?
             return _mimeTypes.Contains(mimeType);
         }
     }

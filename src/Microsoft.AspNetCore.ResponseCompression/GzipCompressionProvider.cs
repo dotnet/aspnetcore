@@ -11,15 +11,23 @@ namespace Microsoft.AspNetCore.ResponseCompression
     /// </summary>
     public class GzipCompressionProvider : ICompressionProvider
     {
-        /// <summary>
-        /// Initialize a new <see cref="GzipCompressionProvider"/>.
-        /// </summary>
-        public GzipCompressionProvider()
-        {
-        }
-
         /// <inheritdoc />
         public string EncodingName => "gzip";
+
+        /// <inheritdoc />
+        public bool SupportsFlush
+        {
+            get
+            {
+#if NET451
+                return false;
+#elif NETSTANDARD1_3
+                return true;
+#else
+                // Not implemented, compiler break
+#endif
+            }
+        }
 
         /// <summary>
         /// What level of compression to use for the stream.
