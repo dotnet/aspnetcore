@@ -7,6 +7,7 @@
     "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
     "Microsoft.AspNetCore.Session": "1.1.0-*",
     "Microsoft.Extensions.Caching.Memory": "1.1.0-*",
+    "Microsoft.Extensions.Caching.Redis": "1.1.0-*",
     "Microsoft.Extensions.Caching.SqlServer": "1.1.0-*",
     "Microsoft.Extensions.Logging.Console": "1.1.0-*"
   },
@@ -16,11 +17,7 @@
     ]
   },
   "frameworks": {
-    "net451": {
-      "dependencies": {
-        "Microsoft.Extensions.Caching.Redis": "1.1.0-*"
-      }
-    },
+    "net451": {},
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
