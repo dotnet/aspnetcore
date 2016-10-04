@@ -336,7 +336,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 {
                     foreach (var tag in ifNoneMatchHeader)
                     {
-                        if (cachedResponseHeaders.ETag.Compare(tag, useStrongComparison: true))
+                        if (cachedResponseHeaders.ETag.Compare(tag, useStrongComparison: false))
                         {
                             return true;
                         }

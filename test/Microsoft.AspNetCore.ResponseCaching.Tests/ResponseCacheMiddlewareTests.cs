@@ -196,16 +196,31 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             Assert.False(ResponseCacheMiddleware.ConditionalRequestSatisfied(context));
         }
 
-        [Fact]
-        public void ConditionalRequestSatisfied_IfNoneMatch_ExplicitWithMatch_Passes()
+        public static TheoryData<EntityTagHeaderValue, EntityTagHeaderValue> EquivalentWeakETags
+        {
+            get
+            {
+                return new TheoryData<EntityTagHeaderValue, EntityTagHeaderValue>
+                {
+                    { new EntityTagHeaderValue("\"tag\""), new EntityTagHeaderValue("\"tag\"") },
+                    { new EntityTagHeaderValue("\"tag\"", true), new EntityTagHeaderValue("\"tag\"") },
+                    { new EntityTagHeaderValue("\"tag\""), new EntityTagHeaderValue("\"tag\"", true) },
+                    { new EntityTagHeaderValue("\"tag\"", true), new EntityTagHeaderValue("\"tag\"", true) }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(EquivalentWeakETags))]
+        public void ConditionalRequestSatisfied_IfNoneMatch_ExplicitWithMatch_Passes(EntityTagHeaderValue responseETag, EntityTagHeaderValue requestETag)
         {
             var context = TestUtils.CreateTestContext();
             context.CachedResponseHeaders = new ResponseHeaders(new HeaderDictionary())
             {
-                ETag = new EntityTagHeaderValue("\"E1\"")
+                ETag = responseETag
             };
 
-            context.TypedRequestHeaders.IfNoneMatch = new List<EntityTagHeaderValue>(new[] { new EntityTagHeaderValue("\"E1\"") });
+            context.TypedRequestHeaders.IfNoneMatch = new List<EntityTagHeaderValue>(new[] { requestETag });
 
             Assert.True(ResponseCacheMiddleware.ConditionalRequestSatisfied(context));
         }
