@@ -15,7 +15,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.1.0-*",
     "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics": "1.0.0-*"
+    "Microsoft.Extensions.Logging.AzureAppServices": "1.0.0-*"
   },
   "frameworks": {
     "net451": {
