@@ -57,12 +57,14 @@ SERVER_PROCESS::Initialize(
     {
         m_hJobObject = CreateJobObject(NULL,   // LPSECURITY_ATTRIBUTES
             NULL); // LPCTSTR lpName
+#pragma warning( disable : 4312)
+		// 0xdeadbeef is used by Antares
         if (m_hJobObject == NULL || m_hJobObject == (HANDLE)0xdeadbeef)
         {
             m_hJobObject = NULL;
             // ignore job object creation error.
         }
-
+#pragma warning( error : 4312) 
         if (m_hJobObject != NULL)
         {
             jobInfo.BasicLimitInformation.LimitFlags =

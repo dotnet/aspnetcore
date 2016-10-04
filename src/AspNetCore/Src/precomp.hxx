@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #pragma once
+#pragma warning( disable : 4091)
 
 //
 // System related headers
@@ -134,3 +135,4 @@ extern BOOL     g_fWebSocketSupported;
 extern BOOL     g_fEnableReferenceCountTracing;
 extern DWORD    g_dwActiveServerProcesses;
 extern DWORD    g_OptionalWinHttpFlags;
+#pragma warning( error : 4091)
