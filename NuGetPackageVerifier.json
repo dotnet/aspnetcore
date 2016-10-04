@@ -8,7 +8,7 @@
             "Microsoft.AspNetCore.Cryptography.KeyDerivation": { },
             "Microsoft.AspNetCore.DataProtection": { },
             "Microsoft.AspNetCore.DataProtection.Abstractions": { },
-            "Microsoft.AspNetCore.DataProtection.Azure.Storage": { },
+            "Microsoft.AspNetCore.DataProtection.AzureStorage": { },
             "Microsoft.AspNetCore.DataProtection.Extensions": { },
             "Microsoft.AspNetCore.DataProtection.Redis": { },
             "Microsoft.AspNetCore.DataProtection.SystemWeb": { }

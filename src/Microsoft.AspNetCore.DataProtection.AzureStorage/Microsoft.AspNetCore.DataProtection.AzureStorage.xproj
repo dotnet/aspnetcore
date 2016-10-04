@@ -6,16 +6,13 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>8c41240e-48f8-402f-9388-74cfe27f4d76</ProjectGuid>
-    <RootNamespace>Microsoft.AspNetCore.DataProtection.Azure.Storage.Test</RootNamespace>
+    <ProjectGuid>cc799b57-81e2-4f45-8a32-0d5f49753c3f</ProjectGuid>
+    <RootNamespace>Microsoft.AspNetCore.DataProtection.AzureStorage</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
   </PropertyGroup>
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

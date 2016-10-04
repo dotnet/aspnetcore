@@ -6,13 +6,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.DataProtection.Azure.Storage;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.DataProtection.Azure.Storage.Test
+namespace Microsoft.AspNetCore.DataProtection.AzureStorage.Test
 {
     public class AzureBlobXmlRepositoryTests
     {

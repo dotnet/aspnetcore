@@ -34,7 +34,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.DataPr
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.DataProtection.Redis", "src\Microsoft.AspNetCore.DataProtection.Redis\Microsoft.AspNetCore.DataProtection.Redis.xproj", "{0508ADB0-9D2E-4506-9AA3-C15D7BEAE7C9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.DataProtection.Azure.Storage", "src\Microsoft.AspNetCore.DataProtection.Azure.Storage\Microsoft.AspNetCore.DataProtection.Azure.Storage.xproj", "{CC799B57-81E2-4F45-8A32-0D5F49753C3F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.DataProtection.AzureStorage", "src\Microsoft.AspNetCore.DataProtection.AzureStorage\Microsoft.AspNetCore.DataProtection.AzureStorage.xproj", "{CC799B57-81E2-4F45-8A32-0D5F49753C3F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{5A3A5DE3-49AD-431C-971D-B01B62D94AE2}"
 EndProject
@@ -48,7 +48,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		NuGet.config = NuGet.config
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.DataProtection.Azure.Storage.Test", "test\Microsoft.AspNetCore.DataProtection.Azure.Storage.Test\Microsoft.AspNetCore.DataProtection.Azure.Storage.Test.xproj", "{8C41240E-48F8-402F-9388-74CFE27F4D76}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.DataProtection.AzureStorage.Test", "test\Microsoft.AspNetCore.DataProtection.AzureStorage.Test\Microsoft.AspNetCore.DataProtection.AzureStorage.Test.xproj", "{8C41240E-48F8-402F-9388-74CFE27F4D76}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Redis", "samples\Redis\Redis.xproj", "{24AAEC96-DF46-4F61-B2FF-3D5E056685D9}"
 EndProject
