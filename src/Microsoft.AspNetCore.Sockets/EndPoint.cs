@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Sockets
     /// <summary>
     /// Represents an end point that multiple connections connect to. For HTTP, endpoints are URLs, for non HTTP it can be a TCP listener (or similar)
     /// </summary>
-    public class EndPoint
+    public abstract class EndPoint
     {
         /// <summary>
         /// Live list of connections for this <see cref="EndPoint"/>
@@ -17,9 +17,6 @@ namespace Microsoft.AspNetCore.Sockets
         /// </summary>
         /// <param name="connection">The new <see cref="Connection"/></param>
         /// <returns>A <see cref="Task"/> that represents the connection lifetime. When the task completes, the connection is complete.</returns>
-        public virtual Task OnConnected(Connection connection)
-        {
-            return Task.CompletedTask;
-        }
+        public abstract Task OnConnected(Connection connection);
     }
 }

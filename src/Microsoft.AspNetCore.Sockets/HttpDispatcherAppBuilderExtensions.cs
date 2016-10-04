@@ -1,4 +1,5 @@
 ﻿using System;
+using Channels;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Routing;
@@ -9,7 +10,9 @@ namespace Microsoft.AspNetCore.Builder
     {
         public static IApplicationBuilder UseSockets(this IApplicationBuilder app, Action<SocketRouteBuilder> callback)
         {
-            var dispatcher = new HttpConnectionDispatcher();
+            var manager = new ConnectionManager();
+            var factory = new ChannelFactory();
+            var dispatcher = new HttpConnectionDispatcher(manager, factory);
             var routes = new RouteBuilder(app);
 
             callback(new SocketRouteBuilder(routes, dispatcher));

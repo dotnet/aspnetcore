@@ -10,8 +10,14 @@ namespace Microsoft.AspNetCore.Sockets
 {
     public class HttpConnectionDispatcher
     {
-        private readonly ConnectionManager _manager = new ConnectionManager();
-        private readonly ChannelFactory _channelFactory = new ChannelFactory();
+        private readonly ConnectionManager _manager;
+        private readonly ChannelFactory _channelFactory;
+
+        public HttpConnectionDispatcher(ConnectionManager manager, ChannelFactory factory)
+        {
+            _manager = manager;
+            _channelFactory = factory;
+        }
 
         public async Task Execute<TEndPoint>(string path, HttpContext context) where TEndPoint : EndPoint
         {
@@ -201,7 +207,7 @@ namespace Microsoft.AspNetCore.Sockets
                 return context.Request.Body.CopyToAsync(httpChannel.Input);
             }
 
-            return Task.CompletedTask;
+            throw new InvalidOperationException("Unknown connection id");
         }
 
         private ConnectionState GetOrCreateConnection(HttpContext context)
