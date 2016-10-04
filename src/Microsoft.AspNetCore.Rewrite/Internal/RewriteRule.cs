@@ -18,12 +18,12 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
         {
             if (string.IsNullOrEmpty(regex))
             {
-                throw new ArgumentNullException(nameof(regex));
+                throw new ArgumentException(nameof(regex));
             }
 
             if (string.IsNullOrEmpty(replacement))
             {
-                throw new ArgumentNullException(nameof(replacement));
+                throw new ArgumentException(nameof(replacement));
             }
 
             InitialMatch = new Regex(regex, RegexOptions.Compiled | RegexOptions.CultureInvariant, _regexTimeout);

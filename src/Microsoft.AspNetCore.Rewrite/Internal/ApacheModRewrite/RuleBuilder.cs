@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
         private IList<Condition> _conditions;
         private IList<UrlAction> _actions = new List<UrlAction>();
         private UrlMatch _match;
+        private CookieActionFactory _cookieActionFactory = new CookieActionFactory();
 
         private readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(1);
 
@@ -172,8 +173,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
             string flag;
             if (flags.GetValue(FlagType.Cookie, out flag))
             {
-                // parse cookie
-                _actions.Add(new ChangeCookieAction(flag));
+                var action = _cookieActionFactory.Create(flag);
+                _actions.Add(action);
             }
 
             if (flags.GetValue(FlagType.Env, out flag))

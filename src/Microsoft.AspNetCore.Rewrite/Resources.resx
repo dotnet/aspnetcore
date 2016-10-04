@@ -117,8 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Error_UrlRewriteParseError" xml:space="preserve">
-    <value>Could not parse the UrlRewrite file. Message: '{0}'. Line number '{1}': '{2}'.</value>
+  <data name="Error_ChangeEnvironmentNotSupported" xml:space="preserve">
+    <value>Error adding a mod_rewrite rule. The change environment flag is not supported.</value>
+  </data>
+  <data name="Error_CouldNotParseInteger" xml:space="preserve">
+    <value>Could not parse integer from value '{0}'.</value>
   </data>
   <data name="Error_InputParserIndexOutOfRange" xml:space="preserve">
     <value>Index out of range for backreference: '{0}' at string index: '{1}'</value>
@@ -135,16 +138,19 @@
   <data name="Error_InputParserUnrecognizedParameter" xml:space="preserve">
     <value>Unrecognized parameter type: '{0}', terminated at string index: '{1}'</value>
   </data>
+  <data name="Error_IntegerMatch_FormatExceptionMessage" xml:space="preserve">
+    <value>Syntax error for integers in comparison.</value>
+  </data>
+  <data name="Error_InvalidChangeCookieFlag" xml:space="preserve">
+    <value>Error parsing the mod_rewrite rule. The cookie flag (CO) has an incorrect format '{0}'.</value>
+  </data>
   <data name="Error_ModRewriteParseError" xml:space="preserve">
     <value>Could not parse the mod_rewrite file. Message: '{0}'.  Line number '{1}'.</value>
   </data>
   <data name="Error_ModRewriteGeneralParseError" xml:space="preserve">
     <value>Could not parse the mod_rewrite file.  Line number '{0}'.</value>
   </data>
-  <data name="Error_IntegerMatch_FormatExceptionMessage" xml:space="preserve">
-    <value>Syntax error for integers in comparison.</value>
-  </data>
-  <data name="Error_ChangeEnvironmentNotSupported" xml:space="preserve">
-    <value>Error adding a mod_rewrite rule. The change environment flag is not supported.</value>
+  <data name="Error_UrlRewriteParseError" xml:space="preserve">
+    <value>Could not parse the UrlRewrite file. Message: '{0}'. Line number '{1}': '{2}'.</value>
   </data>
 </root>

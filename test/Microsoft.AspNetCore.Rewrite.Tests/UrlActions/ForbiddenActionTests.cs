@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlActions
         public void Forbidden_Verify403IsInStatusCode()
         {
 
-            var context = new RewriteContext {HttpContext = new DefaultHttpContext()};
+            var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
             var action = new ForbiddenAction();
 
             action.ApplyAction(context, null, null);

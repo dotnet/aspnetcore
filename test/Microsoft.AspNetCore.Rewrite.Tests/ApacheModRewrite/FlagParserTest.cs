@@ -62,8 +62,20 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         [Fact]
         public void FlagParser_AssertArgumentExceptionWhenFlagsAreNullOrEmpty()
         {
-            Assert.Throws<ArgumentNullException>(() => new FlagParser().Parse(null));
-            Assert.Throws<ArgumentNullException>(() => new FlagParser().Parse(string.Empty));
+            Assert.Throws<ArgumentException>(() => new FlagParser().Parse(null));
+            Assert.Throws<ArgumentException>(() => new FlagParser().Parse(string.Empty));
+        }
+
+        [Theory]
+        [InlineData("[CO=VAR:VAL]", "VAR:VAL")]
+        [InlineData("[CO=!VAR]", "!VAR")]
+        [InlineData("[CO=;NAME:VALUE;ABC:123]", ";NAME:VALUE;ABC:123")]
+        public void Flag_ParserHandlesComplexFlags(string flagString, string expected)
+        {
+            var results = new FlagParser().Parse(flagString);
+            string value;
+            Assert.True(results.GetValue(FlagType.Cookie, out value));
+            Assert.Equal(expected, value);
         }
 
         public bool DictionaryContentsEqual<TKey, TValue>(IDictionary<TKey, TValue> dictionary, IDictionary<TKey, TValue> other)

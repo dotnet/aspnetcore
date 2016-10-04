@@ -11,19 +11,35 @@ namespace Microsoft.AspNetCore.Rewrite
             = new ResourceManager("Microsoft.AspNetCore.Rewrite.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// Could not parse the UrlRewrite file. Message: '{0}'. Line number '{1}': '{2}'.
+        /// Error adding a mod_rewrite rule. The change environment flag is not supported.
         /// </summary>
-        internal static string Error_UrlRewriteParseError
+        internal static string Error_ChangeEnvironmentNotSupported
         {
-            get { return GetString("Error_UrlRewriteParseError"); }
+            get { return GetString("Error_ChangeEnvironmentNotSupported"); }
         }
 
         /// <summary>
-        /// Could not parse the UrlRewrite file. Message: '{0}'. Line number '{1}': '{2}'.
+        /// Error adding a mod_rewrite rule. The change environment flag is not supported.
         /// </summary>
-        internal static string FormatError_UrlRewriteParseError(object p0, object p1, object p2)
+        internal static string FormatError_ChangeEnvironmentNotSupported()
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_UrlRewriteParseError"), p0, p1, p2);
+            return GetString("Error_ChangeEnvironmentNotSupported");
+        }
+
+        /// <summary>
+        /// Could not parse integer from value '{0}'.
+        /// </summary>
+        internal static string Error_CouldNotParseInteger
+        {
+            get { return GetString("Error_CouldNotParseInteger"); }
+        }
+
+        /// <summary>
+        /// Could not parse integer from value '{0}'.
+        /// </summary>
+        internal static string FormatError_CouldNotParseInteger(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_CouldNotParseInteger"), p0);
         }
 
         /// <summary>
@@ -107,6 +123,38 @@ namespace Microsoft.AspNetCore.Rewrite
         }
 
         /// <summary>
+        /// Syntax error for integers in comparison.
+        /// </summary>
+        internal static string Error_IntegerMatch_FormatExceptionMessage
+        {
+            get { return GetString("Error_IntegerMatch_FormatExceptionMessage"); }
+        }
+
+        /// <summary>
+        /// Syntax error for integers in comparison.
+        /// </summary>
+        internal static string FormatError_IntegerMatch_FormatExceptionMessage()
+        {
+            return GetString("Error_IntegerMatch_FormatExceptionMessage");
+        }
+
+        /// <summary>
+        /// Error parsing the mod_rewrite rule. The cookie flag (CO) has an incorrect format '{0}'.
+        /// </summary>
+        internal static string Error_InvalidChangeCookieFlag
+        {
+            get { return GetString("Error_InvalidChangeCookieFlag"); }
+        }
+
+        /// <summary>
+        /// Error parsing the mod_rewrite rule. The cookie flag (CO) has an incorrect format '{0}'.
+        /// </summary>
+        internal static string FormatError_InvalidChangeCookieFlag(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_InvalidChangeCookieFlag"), p0);
+        }
+
+        /// <summary>
         /// Could not parse the mod_rewrite file. Message: '{0}'.  Line number '{1}'.
         /// </summary>
         internal static string Error_ModRewriteParseError
@@ -139,35 +187,19 @@ namespace Microsoft.AspNetCore.Rewrite
         }
 
         /// <summary>
-        /// Syntax error for integers in comparison.
+        /// Could not parse the UrlRewrite file. Message: '{0}'. Line number '{1}': '{2}'.
         /// </summary>
-        internal static string Error_IntegerMatch_FormatExceptionMessage
+        internal static string Error_UrlRewriteParseError
         {
-            get { return GetString("Error_IntegerMatch_FormatExceptionMessage"); }
+            get { return GetString("Error_UrlRewriteParseError"); }
         }
 
         /// <summary>
-        /// Syntax error for integers in comparison.
+        /// Could not parse the UrlRewrite file. Message: '{0}'. Line number '{1}': '{2}'.
         /// </summary>
-        internal static string FormatError_IntegerMatch_FormatExceptionMessage()
+        internal static string FormatError_UrlRewriteParseError(object p0, object p1, object p2)
         {
-            return GetString("Error_IntegerMatch_FormatExceptionMessage");
-        }
-
-        /// <summary>
-        /// Error adding a mod_rewrite rule. The change environment flag is not supported.
-        /// </summary>
-        internal static string Error_ChangeEnvironmentNotSupported
-        {
-            get { return GetString("Error_ChangeEnvironmentNotSupported"); }
-        }
-
-        /// <summary>
-        /// Error adding a mod_rewrite rule. The change environment flag is not supported.
-        /// </summary>
-        internal static string FormatError_ChangeEnvironmentNotSupported()
-        {
-            return GetString("Error_ChangeEnvironmentNotSupported");
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_UrlRewriteParseError"), p0, p1, p2);
         }
 
         private static string GetString(string name, params string[] formatterNames)
