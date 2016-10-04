@@ -4,7 +4,7 @@
             "AdxVerificationCompositeRule"
         ],
         "packages": {
-            "Microsoft.AspNetCore.Hosting.Azure.AppServices": { }
+            "Microsoft.AspNetCore.AzureAppServicesIntegration": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.
