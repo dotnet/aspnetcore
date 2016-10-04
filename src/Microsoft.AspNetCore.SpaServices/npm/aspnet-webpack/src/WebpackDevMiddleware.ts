@@ -26,6 +26,10 @@ interface DevServerOptions {
     ReactHotModuleReplacement: boolean;
 }
 
+function arrayContainsStringStartingWith(array: string[], prefixToFind: string) {
+    return array.some(item => item.substring(0, prefixToFind.length) === prefixToFind);
+}
+
 function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configuration, enableHotModuleReplacement: boolean, enableReactHotModuleReplacement: boolean) {
     // Build the final Webpack config based on supplied options
     if (enableHotModuleReplacement) {
@@ -39,12 +43,13 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
             throw new Error('To use HotModuleReplacement, your webpack config must specify an \'entry\' value as a key-value object (e.g., "entry: { main: \'ClientApp/boot-client.ts\' }")');
         }
 
-        // Augment all entry points so they support HMR
+        // Augment all entry points so they support HMR (unless they already do)
         Object.getOwnPropertyNames(entryPoints).forEach(entryPointName => {
+            const webpackHotMiddlewareEntryPoint = 'webpack-hot-middleware/client';
             if (typeof entryPoints[entryPointName] === 'string') {
-                entryPoints[entryPointName] = ['webpack-hot-middleware/client', entryPoints[entryPointName]];
-            } else {
-                entryPoints[entryPointName].unshift('webpack-hot-middleware/client');
+                entryPoints[entryPointName] = [webpackHotMiddlewareEntryPoint, entryPoints[entryPointName]];
+            } else if (!arrayContainsStringStartingWith(entryPoints[entryPointName], webpackHotMiddlewareEntryPoint)) {
+                entryPoints[entryPointName].unshift(webpackHotMiddlewareEntryPoint);
             }
         });
 
