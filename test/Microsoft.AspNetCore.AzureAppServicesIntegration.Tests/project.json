@@ -1,0 +1,26 @@
+{
+  "version": "1.1.0-*",
+  "buildOptions": {
+    "keyFile": "../../tools/Key.snk"
+  },
+  "dependencies": {
+    "dotnet-test-xunit": "2.2.0-*",
+    "Microsoft.AspNetCore.AzureAppServicesIntegration": "1.0.0-*",
+    "Microsoft.AspNetCore.TestHost": "1.1.0-*",
+    "xunit": "2.2.0-*",
+    "Moq": "4.6.36-*"
+  },
+  "frameworks": {
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        }
+      },
+      "imports": [ "portable-net40+sl5+win8+wp8+wpa81", "portable-net45+win8+wp8+wpa81" ]
+    },
+    "net451": {}
+  },
+  "testRunner": "xunit"
+}
