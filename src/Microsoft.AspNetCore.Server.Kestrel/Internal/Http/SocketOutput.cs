@@ -378,6 +378,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 _lastWriteError = error;
             }
 
+            PoolWriteContext(writeContext);
+
             // _numBytesPreCompleted can temporarily go negative in the event there are
             // completed writes that we haven't triggered callbacks for yet.
             _numBytesPreCompleted -= bytesWritten;
@@ -501,6 +503,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
         }
 
+        private void PoolWriteContext(WriteContext writeContext)
+        {
+            // Called inside _contextLock
+            if (_writeContextPool.Count < _maxPooledWriteContexts)
+            {
+                writeContext.Reset();
+                _writeContextPool.Enqueue(writeContext);
+            }
+        }
+
         void ISocketOutput.Write(ArraySegment<byte> buffer, bool chunk)
         {
             WriteAsync(buffer, default(CancellationToken), chunk, isSync: true).GetAwaiter().GetResult();
@@ -546,7 +558,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private class WriteContext
         {
-            private static readonly WaitCallback _returnWrittenBlocks = (state) => ((WriteContext)state).ReturnWrittenBlocks();
+            private static readonly WaitCallback _returnWrittenBlocks = (state) => ReturnWrittenBlocks((MemoryPoolBlock)state);
             private static readonly WaitCallback _completeWrite = (state) => ((WriteContext)state).CompleteOnThreadPool();
 
             private SocketOutput Self;
@@ -554,11 +566,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             private MemoryPoolIterator _lockedStart;
             private MemoryPoolIterator _lockedEnd;
             private int _bufferCount;
-
-            // _returnBlocksCompleted and _writeCompleted help determine when it's safe to pool the WriteContext
-            // These are both guarded by the _contextLock.
-            private bool _returnBlocksCompleted;
-            private bool _writeCompleted;
 
             public int ByteCount;
             public bool SocketShutdownSend;
@@ -656,8 +663,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     try
                     {
                         Self.OnWriteCompleted(this);
-                        _writeCompleted = true;
-                        TryPool();
                     }
                     finally
                     {
@@ -677,8 +682,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     try
                     {
                         Self.OnWriteCompleted(this);
-                        _writeCompleted = true;
-                        TryPool();
                     }
                     catch (Exception ex)
                     {
@@ -694,23 +697,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             private void ScheduleReturnWrittenBlocks()
             {
-                Self._threadPool.UnsafeRun(_returnWrittenBlocks, this);
-            }
-
-            private void ReturnWrittenBlocks()
-            {
-                var block = _lockedStart.Block;
-                while (block != _lockedEnd.Block)
-                {
-                    var returnBlock = block;
-                    block = block.Next;
-
-                    returnBlock.Pool.Return(returnBlock);
-                }
+                var returnAll = false;
 
                 lock (Self._returnLock)
                 {
-                    // If everything has been fully written, return _tail.
+                    // If everything has been fully written, return _tail/_lockedEnd.
                     if (_lockedEnd.Block == Self._tail &&
                         _lockedEnd.Index == Self._tail.End &&
                         Self._lastStart.IsDefault)
@@ -718,16 +709,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         Debug.Assert(Self._head == Self._tail);
                         Debug.Assert(Self._tail.Start == Self._tail.End);
 
-                        _lockedEnd.Block.Pool.Return(_lockedEnd.Block);
                         Self._head = null;
                         Self._tail = null;
+                        returnAll = true;
                     }
                 }
 
-                lock (Self._contextLock)
+                if (!returnAll)
                 {
-                    _returnBlocksCompleted = true;
-                    TryPool();
+                    var block = _lockedStart.Block;
+                    var end = _lockedEnd.Block;
+                    if (block == end)
+                    {
+                        return;
+                    }
+
+                    while (block.Next != end)
+                    {
+                        block = block.Next;
+                    }
+
+                    // Set the Next pointer in the block before _lockedEnd.Block to null.
+                    // This prevents _lockedEnd.Block from being returned if it isn't fully
+                    // written, or it's still being written to.
+                    block.Next = null;
+                }
+
+                Self._threadPool.UnsafeRun(_returnWrittenBlocks, _lockedStart.Block);
+            }
+
+            private static void ReturnWrittenBlocks(MemoryPoolBlock block)
+            {
+                while (block != null)
+                {
+                    var returnBlock = block;
+                    block = block.Next;
+
+                    returnBlock.Pool.Return(returnBlock);
                 }
             }
 
@@ -749,26 +767,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 BytesBetween(_lockedStart, _lockedEnd, out ByteCount, out _bufferCount);
             }
 
-            private void TryPool()
-            {
-                // Called inside _contextLock
-                if (_writeCompleted &&
-                    _returnBlocksCompleted &&
-                    Self._writeContextPool.Count < _maxPooledWriteContexts)
-                {
-                    Reset();
-                    Self._writeContextPool.Enqueue(this);
-                }
-            }
-
-            private void Reset()
+            public void Reset()
             {
                 _lockedStart = default(MemoryPoolIterator);
                 _lockedEnd = default(MemoryPoolIterator);
                 _bufferCount = 0;
                 ByteCount = 0;
-                _writeCompleted = false;
-                _returnBlocksCompleted = false;
 
                 SocketShutdownSend = false;
                 SocketDisconnect = false;
