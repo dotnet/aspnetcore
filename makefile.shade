@@ -732,6 +732,7 @@ functions
                 "Razor",
                 "RazorTooling",
                 "Hosting",
+                "AzureIntegration",
                 "EntityFramework",
                 "EntityFramework.Tools",
                 "WebListener",
