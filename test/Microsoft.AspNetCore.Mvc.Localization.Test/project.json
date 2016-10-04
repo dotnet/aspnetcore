@@ -12,6 +12,7 @@
       "type": "build"
     },
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
+    "Microsoft.DotNet.InternalAbstractions": "1.0.0",
     "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"
   },

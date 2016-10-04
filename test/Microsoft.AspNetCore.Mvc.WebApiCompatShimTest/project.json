@@ -7,6 +7,7 @@
     "Microsoft.AspNetCore.Http": "1.1.0-*",
     "Microsoft.AspNetCore.Mvc.WebApiCompatShim": "1.1.0-*",
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
+    "Microsoft.DotNet.InternalAbstractions": "1.0.0",
     "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
     "Microsoft.Extensions.Logging.Testing": "1.1.0-*",
     "Moq": "4.6.36-*",

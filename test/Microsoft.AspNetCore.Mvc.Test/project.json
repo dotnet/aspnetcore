@@ -6,6 +6,7 @@
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Mvc": "1.1.0-*",
     "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.1.0-*",
+    "Microsoft.DotNet.InternalAbstractions": "1.0.0",
     "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
     "Microsoft.Extensions.Logging": "1.1.0-*",
     "Moq": "4.6.36-*",

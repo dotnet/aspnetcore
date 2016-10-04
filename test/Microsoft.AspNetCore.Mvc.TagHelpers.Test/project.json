@@ -14,6 +14,7 @@
       "type": "build"
     },
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
+    "Microsoft.DotNet.InternalAbstractions": "1.0.0",
     "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.Logging.Testing": "1.1.0-*",
     "Moq": "4.6.36-*",

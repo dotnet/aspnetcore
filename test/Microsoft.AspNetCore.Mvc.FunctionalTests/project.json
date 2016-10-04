@@ -30,6 +30,7 @@
     "Microsoft.AspNetCore.Mvc.TestConfiguration": "1.0.0",
     "Microsoft.AspNetCore.TestHost": "1.1.0-*",
     "Microsoft.AspNetCore.WebUtilities": "1.1.0-*",
+    "Microsoft.DotNet.InternalAbstractions": "1.0.0",
     "Microsoft.Extensions.Configuration.Json": "1.1.0-*",
     "Microsoft.Extensions.Logging.Testing": "1.1.0-*",
     "MvcSandbox": "1.0.0",
