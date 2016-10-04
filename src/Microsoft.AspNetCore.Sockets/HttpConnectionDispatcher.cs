@@ -2,10 +2,7 @@
 using System.Text;
 using System.Threading.Tasks;
 using Channels;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Sockets.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 
@@ -15,19 +12,6 @@ namespace Microsoft.AspNetCore.Sockets
     {
         private readonly ConnectionManager _manager = new ConnectionManager();
         private readonly ChannelFactory _channelFactory = new ChannelFactory();
-        private readonly RouteBuilder _routes;
-
-        public HttpConnectionDispatcher(IApplicationBuilder app)
-        {
-            _routes = new RouteBuilder(app);
-        }
-
-        public void MapSocketEndpoint<TEndPoint>(string path) where TEndPoint : EndPoint
-        {
-            _routes.AddPrefixRoute(path, new RouteHandler(c => Execute<TEndPoint>(path, c)));
-        }
-
-        public IRouter GetRouter() => _routes.Build();
 
         public async Task Execute<TEndPoint>(string path, HttpContext context) where TEndPoint : EndPoint
         {

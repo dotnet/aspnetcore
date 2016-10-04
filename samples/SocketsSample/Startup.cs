@@ -31,11 +31,11 @@ namespace SocketsSample
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseSockets(d =>
+            app.UseSockets(routes =>
             {
-                d.MapSocketEndpoint<HubEndpoint>("/hubs");
-                d.MapSocketEndpoint<ChatEndPoint>("/chat");
-                d.MapSocketEndpoint<JsonRpcEndpoint>("/jsonrpc");
+                routes.MapSocketEndpoint<HubEndpoint>("/hubs");
+                routes.MapSocketEndpoint<ChatEndPoint>("/chat");
+                routes.MapSocketEndpoint<JsonRpcEndpoint>("/jsonrpc");
             });
         }
     }
