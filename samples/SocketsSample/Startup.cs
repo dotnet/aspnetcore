@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -15,8 +15,10 @@ namespace SocketsSample
             services.AddRouting();
 
             services.AddSingleton<HubEndpoint>();
-            services.AddSingleton<JsonRpcEndpoint>();
+            services.AddSingleton<RpcEndpoint>();
             services.AddSingleton<ChatEndPoint>();
+
+            services.AddSingleton<IFormatterFactory, RpcFormatterFactory>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -35,7 +37,7 @@ namespace SocketsSample
             {
                 routes.MapSocketEndpoint<HubEndpoint>("/hubs");
                 routes.MapSocketEndpoint<ChatEndPoint>("/chat");
-                routes.MapSocketEndpoint<JsonRpcEndpoint>("/jsonrpc");
+                routes.MapSocketEndpoint<RpcEndpoint>("/jsonrpc");
             });
         }
     }

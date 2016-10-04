@@ -1,0 +1,14 @@
+﻿syntax = "proto3";
+
+message RpcInvocationHeader {
+  string Name = 1;
+  int32 Id = 2;
+  int32 NumArgs = 3;
+}
+
+message PrimitiveValue {
+    oneof oneof_ {
+        int32 Int32Value = 1;
+        string StringValue = 2;
+    }
+}

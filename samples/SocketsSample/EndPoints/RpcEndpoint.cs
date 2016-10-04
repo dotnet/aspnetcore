@@ -14,13 +14,15 @@ using Newtonsoft.Json.Linq;
 namespace SocketsSample
 {
     // This end point implementation is used for framing JSON objects from the stream
-    public class JsonRpcEndpoint : EndPoint
+    public class RpcEndpoint : EndPoint
     {
-        private readonly Dictionary<string, Func<JObject, JObject>> _callbacks = new Dictionary<string, Func<JObject, JObject>>(StringComparer.OrdinalIgnoreCase);
-        private readonly ILogger<JsonRpcEndpoint> _logger;
+        private readonly Dictionary<string, Func<InvocationDescriptor, InvocationResultDescriptor>> _callbacks
+            = new Dictionary<string, Func<InvocationDescriptor, InvocationResultDescriptor>>(StringComparer.OrdinalIgnoreCase);
+
+        private readonly ILogger<RpcEndpoint> _logger;
         private readonly IServiceProvider _serviceProvider;
 
-        public JsonRpcEndpoint(ILogger<JsonRpcEndpoint> logger, IServiceProvider serviceProvider)
+        public RpcEndpoint(ILogger<RpcEndpoint> logger, IServiceProvider serviceProvider)
         {
             // TODO: Discover end points
             _logger = logger;
@@ -31,7 +33,7 @@ namespace SocketsSample
 
         protected virtual void DiscoverEndpoints()
         {
-            RegisterJsonRPCEndPoint(typeof(Echo));
+            RegisterRPCEndPoint(typeof(Echo));
         }
 
         public override async Task OnConnected(Connection connection)
@@ -39,10 +41,9 @@ namespace SocketsSample
             // TODO: Dispatch from the caller
             await Task.Yield();
 
-            // DO real async reads
-            var stream = connection.Channel.GetStream();
-            var reader = new JsonTextReader(new StreamReader(stream));
-            reader.SupportMultipleContent = true;
+            var formatterFactory = _serviceProvider.GetRequiredService<IFormatterFactory>();
+            var formatType = (string)connection.Metadata["formatType"];
+            var formatter = formatterFactory.CreateFormatter(connection.Metadata.Format, formatType);
 
             while (true)
             {
@@ -74,38 +75,34 @@ namespace SocketsSample
 
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
-                    _logger.LogDebug("Received JSON RPC request: {request}", request);
+                    _logger.LogDebug("Received JSON RPC request: {request}", invocationDescriptor.ToString());
                 }
 
-                JObject response = null;
-
-                Func<JObject, JObject> callback;
-                if (_callbacks.TryGetValue(request.Value<string>("method"), out callback))
+                InvocationResultDescriptor result;
+                Func<InvocationDescriptor, InvocationResultDescriptor> callback;
+                if (_callbacks.TryGetValue(invocationDescriptor.Method, out callback))
                 {
-                    response = callback(request);
+                    result = callback(invocationDescriptor);
                 }
                 else
                 {
                     // If there's no method then return a failed response for this request
-                    response = new JObject();
-                    response["id"] = request["id"];
-                    response["error"] = string.Format("Unknown method '{0}'", request.Value<string>("method"));
+                    result = new InvocationResultDescriptor
+                    {
+                        Id = invocationDescriptor.Id,
+                        Error = $"Unknown method '{invocationDescriptor.Method}'"
+                    };
                 }
 
-                _logger.LogDebug("Sending JSON RPC response: {data}", response);
-
-                var writer = new JsonTextWriter(new StreamWriter(stream));
-                response.WriteTo(writer);
-                writer.Flush();
+                await formatter.WriteAsync(result, connection.Channel.GetStream());
             }
         }
 
         protected virtual void Initialize(object endpoint)
         {
-
         }
 
-        protected void RegisterJsonRPCEndPoint(Type type)
+        protected void RegisterRPCEndPoint(Type type)
         {
             var methods = new List<string>();
 
@@ -127,10 +124,10 @@ namespace SocketsSample
                     _logger.LogDebug("RPC method '{methodName}' is bound", methodName);
                 }
 
-                _callbacks[methodName] = request =>
+                _callbacks[methodName] = invocationDescriptor =>
                 {
-                    var response = new JObject();
-                    response["id"] = request["id"];
+                    var invocationResult = new InvocationResultDescriptor();
+                    invocationResult.Id = invocationDescriptor.Id;
 
                     var scopeFactory = _serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
@@ -143,27 +140,23 @@ namespace SocketsSample
 
                         try
                         {
-                            var args = request.Value<JArray>("params").Zip(parameters, (a, p) => a.ToObject(p.ParameterType))
-                                                                      .ToArray();
+                            var args = invocationDescriptor.Arguments
+                                .Zip(parameters, (a, p) => Convert.ChangeType(a, p.ParameterType))
+                                .ToArray();
 
-                            var result = m.Invoke(value, args);
-
-                            if (result != null)
-                            {
-                                response["result"] = JToken.FromObject(result);
-                            }
+                            invocationResult.Result = m.Invoke(value, args);
                         }
                         catch (TargetInvocationException ex)
                         {
-                            response["error"] = ex.InnerException.Message;
+                            invocationResult.Error = ex.InnerException.Message;
                         }
                         catch (Exception ex)
                         {
-                            response["error"] = ex.Message;
+                            invocationResult.Error = ex.Message;
                         }
                     }
 
-                    return response;
+                    return invocationResult;
                 };
             };
         }

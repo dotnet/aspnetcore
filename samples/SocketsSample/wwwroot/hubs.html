@@ -15,13 +15,33 @@
             };
 
             ws.onmessage = function (event) {
-                var response = JSON.parse(event.data);
+
+                let response = {};
+
+                if (document.getElementById('formatType').value == 'line')
+                {
+                    let parts = evt.data.split(',');
+                    if (evt.data[0] == 'R')
+                    {
+                        response.Id = parts[0].slice(2);
+                        response.Result = parts[1].slice(1);
+                    }
+                    else
+                    {
+                        response.Method = parts[1].slice(1);
+                        response.Arguments = parts.slice(2).join();
+                    }
+                }
+                else
+                {
+                    response = JSON.parse(evt.data);
+                }
 
                 // Response
                 if (typeof response.id === "number") {
-                    var cb = calls[response.id];
+                    var cb = calls[response.Id];
 
-                    delete calls[response.id];
+                    delete calls[response.Id];
 
                     if (response.error) {
                         cb.error(response.error);
@@ -32,7 +52,7 @@
                 }
                 else {
                     // Reverse JSON RPC
-                    methods[response.method](response.params);
+                    methods[response.Method](response.Arguments);
                 }
             };
 
@@ -40,10 +60,15 @@
                 console.log('Closed!');
             };
 
-            this.invoke = function (method, args) {
+            this.invoke = function (method, args, formatType) {
                 return new Promise((resolve, reject) => {
                     calls[id] = { success: resolve, error: reject };
-                    ws.send(JSON.stringify({ method: method, params: args, id: id }));
+                    if (formatType == 'line') {
+                        ws.send(`CI${id},M${method},${args.join()}\n`);
+                    }
+                    else {
+                        ws.send(JSON.stringify({ method: method, arguments: args, id: id }));
+                    }
                     id++;
                 });
             };
@@ -55,7 +80,15 @@
 
 
         document.addEventListener('DOMContentLoaded', () => {
-            var conn = new hubConnection(`ws://${document.location.host}/hubs/ws`);
+            let connectButton = document.getElementById('connect');
+            connectButton.addEventListener('click', () => {
+                run(document.getElementById('format').value, document.getElementById('formatType').value);
+                connectButton.disabled = true;
+            });
+        });
+
+        function run(format, formatType) {
+            var conn = new hubConnection(`ws://${document.location.host}/hubs/ws?format=${format}&formatType=${formatType}`);
 
             conn.on('Send', function (message) {
                 var child = document.createElement('li');
@@ -66,7 +99,7 @@
             document.getElementById('sendmessage').addEventListener('submit', event => {
                 let data = document.getElementById('data').value;
 
-                conn.invoke('SocketsSample.Hubs.Chat.Send', [data]).catch(err => {
+                conn.invoke('SocketsSample.Hubs.Chat.Send', [data], formatType).catch(err => {
                     var child = document.createElement('li');
                     child.style.color = 'red';
                     child.innerText = err;
@@ -75,16 +108,29 @@
 
                 event.preventDefault();
             });
-        });
+        };
 
     </script>
 </head>
 <body>
     <h1>WebSockets</h1>
+    <div>
+        <select id="format">
+            <option value="text">text</option>
+            <option value="binary">binary</option>
+        </select>
+
+        <select id="formatType">
+            <option value="json">json</option>
+            <option value="line">line</option>
+        </select>
+
+        <input type="button" id="connect" value="Connect" />
+    </div>
 
     <form id="sendmessage">
-        <input type="text" id="data" />
-        <input type="submit" value="Send" />
+      <input type="text" id="data" />
+      <input type="submit" value="Send" />
     </form>
 
     <ul id="messages"></ul>

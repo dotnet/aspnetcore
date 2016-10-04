@@ -4,20 +4,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Channels;
+using Microsoft.AspNetCore.Sockets;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using SocketsSample.Hubs;
 
 namespace SocketsSample
 {
-    public class HubEndpoint : JsonRpcEndpoint, IHubConnectionContext
+    public class HubEndpoint : RpcEndpoint, IHubConnectionContext
     {
         private readonly ILogger<HubEndpoint> _logger;
+        private readonly IServiceProvider _serviceProvider;
 
-        public HubEndpoint(ILogger<HubEndpoint> logger, ILogger<JsonRpcEndpoint> jsonRpcLogger, IServiceProvider serviceProvider)
+        public HubEndpoint(ILogger<HubEndpoint> logger, ILogger<RpcEndpoint> jsonRpcLogger, IServiceProvider serviceProvider)
             : base(jsonRpcLogger, serviceProvider)
         {
             _logger = logger;
+            _serviceProvider = serviceProvider;
             All = new AllClientProxy(this);
         }
 
@@ -51,7 +55,7 @@ namespace SocketsSample
         protected override void DiscoverEndpoints()
         {
             // Register the chat hub
-            RegisterJsonRPCEndPoint(typeof(Chat));
+            RegisterRPCEndPoint(typeof(Chat));
         }
 
         private class AllClientProxy : IClientProxy
@@ -67,17 +71,19 @@ namespace SocketsSample
             {
                 // REVIEW: Thread safety
                 var tasks = new List<Task>(_endPoint.Connections.Count);
+                var message = new InvocationDescriptor
+                {
+                    Method = method,
+                    Arguments = args
+                };
 
-                byte[] message = null;
+                var formatterFactory = _endPoint._serviceProvider.GetRequiredService<IFormatterFactory>();
 
                 foreach (var connection in _endPoint.Connections)
                 {
-                    if (message == null)
-                    {
-                        message = _endPoint.Pack(method, args);
-                    }
-
-                    tasks.Add(connection.Channel.Output.WriteAsync(message));
+                    // TODO: separate serialization from writing to stream
+                    var formatter = formatterFactory.CreateFormatter(connection.Metadata.Format, (string)connection.Metadata["formatType"]);
+                    tasks.Add(formatter.WriteAsync(message, connection.Channel.GetStream()));
                 }
 
                 return Task.WhenAll(tasks);

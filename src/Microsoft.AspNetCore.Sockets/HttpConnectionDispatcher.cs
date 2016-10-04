@@ -61,6 +61,10 @@ namespace Microsoft.AspNetCore.Sockets
                     state.Connection.Metadata["transport"] = "websockets";
                     state.Connection.Metadata.Format = format;
 
+                    // TODO: this is wrong. + how does the user add their own metadata based on HttpContext
+                    var formatType = (string)context.Request.Query["formatType"];
+                    state.Connection.Metadata["formatType"] = string.IsNullOrEmpty(formatType) ? "json" : formatType;
+
                     var ws = new WebSockets(state.Connection);
 
                     await DoPersistentConnection(endpoint, ws, context, state.Connection);
