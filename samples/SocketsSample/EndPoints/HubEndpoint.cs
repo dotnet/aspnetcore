@@ -4,8 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Channels;
-using Microsoft.AspNetCore.Sockets;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using SocketsSample.Hubs;
@@ -77,12 +75,10 @@ namespace SocketsSample
                     Arguments = args
                 };
 
-                var formatterFactory = _endPoint._serviceProvider.GetRequiredService<IFormatterFactory>();
-
                 foreach (var connection in _endPoint.Connections)
                 {
                     // TODO: separate serialization from writing to stream
-                    var formatter = formatterFactory.CreateFormatter(connection.Metadata.Format, (string)connection.Metadata["formatType"]);
+                    var formatter = _endPoint.GetFormatter<InvocationDescriptor>((string)connection.Metadata["formatType"]);
                     tasks.Add(formatter.WriteAsync(message, connection.Channel.GetStream()));
                 }
 

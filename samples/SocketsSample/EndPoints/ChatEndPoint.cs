@@ -10,6 +10,11 @@ namespace SocketsSample
 {
     public class ChatEndPoint : EndPoint
     {
+        public ChatEndPoint()
+        {
+            Console.Write(0);
+        }
+
         public override async Task OnConnected(Connection connection)
         {
             await Broadcast($"{connection.ConnectionId} connected ({connection.Metadata["transport"]})");

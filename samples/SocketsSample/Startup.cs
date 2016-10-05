@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +20,11 @@ namespace SocketsSample
             services.AddSingleton<RpcEndpoint>();
             services.AddSingleton<ChatEndPoint>();
 
-            services.AddSingleton<IFormatterFactory, RpcFormatterFactory>();
+            services.AddSingleton<SocketFormatters>();
+            services.AddSingleton<InvocationDescriptorLineFormatter>();
+            services.AddSingleton<InvocationResultDescriptorLineFormatter>();
+            services.AddSingleton<RpcJSonFormatter<InvocationDescriptor>>();
+            services.AddSingleton<RpcJSonFormatter<InvocationResultDescriptor>>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -33,11 +39,17 @@ namespace SocketsSample
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseSockets(routes =>
+            app.UseSockets(endpoints =>
             {
-                routes.MapSocketEndpoint<HubEndpoint>("/hubs");
-                routes.MapSocketEndpoint<ChatEndPoint>("/chat");
-                routes.MapSocketEndpoint<RpcEndpoint>("/jsonrpc");
+                endpoints.Configure<HubEndpoint>()
+                    .MapRoute("/hubs")
+                        .MapFormatter<InvocationDescriptor, InvocationDescriptorLineFormatter>("line")
+                        .MapFormatter<InvocationResultDescriptor, InvocationResultDescriptorLineFormatter>("line")
+                        .MapFormatter<InvocationDescriptor, RpcJSonFormatter<InvocationDescriptor>>("json")
+                        .MapFormatter<InvocationResultDescriptor, RpcJSonFormatter<InvocationResultDescriptor>>("json");
+
+                endpoints.Configure<ChatEndPoint>().MapRoute("/chat");
+                endpoints.Configure<RpcEndpoint>().MapRoute("/jsonrpc");
             });
         }
     }

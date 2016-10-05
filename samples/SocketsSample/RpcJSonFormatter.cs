@@ -6,17 +6,17 @@ using Newtonsoft.Json;
 
 namespace SocketsSample
 {
-    public class RpcJSonFormatter : IFormatter
+    public class RpcJSonFormatter<T>: IFormatter<T>
     {
         private JsonSerializer _serializer = new JsonSerializer();
 
-        public async Task<T> ReadAsync<T>(Stream stream)
+        public async Task<T> ReadAsync(Stream stream)
         {
             var reader = new JsonTextReader(new StreamReader(stream));
             return await Task.Run(() => _serializer.Deserialize<T>(reader));
         }
 
-        public Task WriteAsync<T>(T value, Stream stream)
+        public Task WriteAsync(T value, Stream stream)
         {
             var writer = new JsonTextWriter(new StreamWriter(stream));
             _serializer.Serialize(writer, value);

@@ -18,22 +18,21 @@
 
                 let response = {};
 
-                if (document.getElementById('formatType').value == 'line')
-                {
+                if (document.getElementById('formatType').value == 'line') {
                     let parts = evt.data.split(',');
-                    if (evt.data[0] == 'R')
-                    {
+                    if (evt.data[0] == 'R') {
                         response.Id = parts[0].slice(2);
                         response.Result = parts[1].slice(1);
                     }
-                    else
-                    {
+                    else if (evt.data[0] == 'C') {
                         response.Method = parts[1].slice(1);
                         response.Arguments = parts.slice(2).join();
                     }
+                    else {
+                        response.error = parts[0].slice(1);
+                    }
                 }
-                else
-                {
+                else {
                     response = JSON.parse(evt.data);
                 }
 

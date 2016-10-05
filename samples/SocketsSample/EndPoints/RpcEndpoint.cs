@@ -36,14 +36,18 @@ namespace SocketsSample
             RegisterRPCEndPoint(typeof(Echo));
         }
 
+        protected IFormatter<T> GetFormatter<T>(string format)
+        {
+            return _serviceProvider
+                .GetRequiredService<SocketFormatters>().GetEndPointFormatters(GetType())
+                .GetFormatter<T>(format);
+        }
+
         public override async Task OnConnected(Connection connection)
         {
             // TODO: Dispatch from the caller
             await Task.Yield();
-
-            var formatterFactory = _serviceProvider.GetRequiredService<IFormatterFactory>();
-            var formatType = (string)connection.Metadata["formatType"];
-            var formatter = formatterFactory.CreateFormatter(connection.Metadata.Format, formatType);
+            var formatter = GetFormatter<InvocationDescriptor>((string)connection.Metadata["formatType"]);
 
             while (true)
             {
@@ -94,7 +98,8 @@ namespace SocketsSample
                     };
                 }
 
-                await formatter.WriteAsync(result, connection.Channel.GetStream());
+                var resultFormatter = GetFormatter<InvocationResultDescriptor>((string)connection.Metadata["formatType"]);
+                await resultFormatter.WriteAsync(result, connection.Channel.GetStream());
             }
         }
 
