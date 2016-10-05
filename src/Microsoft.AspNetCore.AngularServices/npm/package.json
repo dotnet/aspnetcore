@@ -5,7 +5,7 @@
   "main": "./dist/Exports",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepublish": "rimraf *.d.ts dist/*.d.ts && tsd install && tsc && node build.js"
+    "prepublish": "node node_modules/.bin/rimraf *.d.ts dist/*.d.ts && tsd install && tsc && node build.js"
   },
   "typings": "dist/Exports",
   "author": "Microsoft",
