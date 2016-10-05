@@ -509,13 +509,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                         if (following >= _vectorSpan)
                         {
                             var data = new Vector<byte>(array, index);
-                            var byte0Equals = Vector.Equals(data, byte0Vector);
-                            var byte1Equals = Vector.Equals(data, byte1Vector);
 
+                            var byte0Equals = Vector.Equals(data, byte0Vector);
                             if (!byte0Equals.Equals(Vector<byte>.Zero))
                             {
                                 byte0Index = LocateFirstFoundByte(ref byte0Equals);
                             }
+
+                            var byte1Equals = Vector.Equals(data, byte1Vector);
                             if (!byte1Equals.Equals(Vector<byte>.Zero))
                             {
                                 byte1Index = LocateFirstFoundByte(ref byte1Equals);
@@ -652,18 +653,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                         if (following >= _vectorSpan)
                         {
                             var data = new Vector<byte>(array, index);
-                            var byte0Equals = Vector.Equals(data, byte0Vector);
-                            var byte1Equals = Vector.Equals(data, byte1Vector);
-                            var byte2Equals = Vector.Equals(data, byte2Vector);
 
+                            var byte0Equals = Vector.Equals(data, byte0Vector);
                             if (!byte0Equals.Equals(Vector<byte>.Zero))
                             {
                                 byte0Index = LocateFirstFoundByte(ref byte0Equals);
                             }
+
+                            var byte1Equals = Vector.Equals(data, byte1Vector);
                             if (!byte1Equals.Equals(Vector<byte>.Zero))
                             {
                                 byte1Index = LocateFirstFoundByte(ref byte1Equals);
                             }
+
+                            var byte2Equals = Vector.Equals(data, byte2Vector);
                             if (!byte2Equals.Equals(Vector<byte>.Zero))
                             {
                                 byte2Index = LocateFirstFoundByte(ref byte2Equals);
