@@ -453,14 +453,14 @@ namespace Microsoft.Net.Http.Server
                 _boundaryType = BoundaryType.ContentLength;
                 _expectedBodyLength = 0;
             }
-            else if (keepConnectionAlive && requestVersion == Constants.V1_1)
+            else if (requestVersion == Constants.V1_1)
             {
                 _boundaryType = BoundaryType.Chunked;
                 Headers[HttpKnownHeaderNames.TransferEncoding] = Constants.Chunked;
             }
             else
             {
-                // The length cannot be determined, so we must close the connection
+                // v1.0 and the length cannot be determined, so we must close the connection after writing data
                 keepConnectionAlive = false;
                 _boundaryType = BoundaryType.Close;
             }
