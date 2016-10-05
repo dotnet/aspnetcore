@@ -14,11 +14,11 @@
                 console.log('Opened!');
             };
 
-            ws.onmessage = function (evt) {
-                var response = JSON.parse(evt.data);
+            ws.onmessage = function (event) {
+                var response = JSON.parse(event.data);
 
                 // Response
-                if (response.id) {
+                if (typeof response.id === "number") {
                     var cb = calls[response.id];
 
                     delete calls[response.id];
@@ -36,7 +36,7 @@
                 }
             };
 
-            ws.onclose = function (evt) {
+            ws.onclose = function (event) {
                 console.log('Closed!');
             };
 
@@ -55,7 +55,7 @@
 
 
         document.addEventListener('DOMContentLoaded', () => {
-            var conn = new hubConnection('ws://localhost:5000/hubs/ws');
+            var conn = new hubConnection(`ws://${document.location.host}/hubs/ws`);
 
             conn.on('Send', function (message) {
                 var child = document.createElement('li');
@@ -63,7 +63,7 @@
                 document.getElementById('messages').appendChild(child);
             });
 
-            document.getElementById('sendmessage').addEventListener('click', () => {
+            document.getElementById('sendmessage').addEventListener('submit', event => {
                 let data = document.getElementById('data').value;
 
                 conn.invoke('SocketsSample.Hubs.Chat.Send', [data]).catch(err => {
@@ -72,6 +72,8 @@
                     child.innerText = err;
                     document.getElementById('messages').appendChild(child);
                 });
+
+                event.preventDefault();
             });
         });
 
@@ -79,8 +81,11 @@
 </head>
 <body>
     <h1>WebSockets</h1>
-    <input type="text" id="data" />
-    <input type="button" id="sendmessage" value="Send" />
+
+    <form id="sendmessage">
+        <input type="text" id="data" />
+        <input type="submit" value="Send" />
+    </form>
 
     <ul id="messages"></ul>
 </body>

@@ -16,7 +16,8 @@
                     xhr.onload = () => {
                         if (xhr.status >= 200 && xhr.status < 300) {
                             resolve(xhr.response);
-                        } else {
+                        }
+                        else {
                             reject({
                                 status: xhr.status,
                                 statusText: xhr.statusText
@@ -47,7 +48,7 @@
 
             this.onopen = function () { };
             this.onmessage = function () { };
-            this.onerror = function (evt) { };
+            this.onerror = function (event) { };
             this.send = function (data) {
                 if (!sock.connectionId) {
                     throw "Not connected";
@@ -80,23 +81,27 @@
                 console.log('Opened!');
             };
 
-            sock.onmessage = function (evt) {
+            sock.onmessage = function (event) {
                 var child = document.createElement('li');
-                child.innerText = evt.data;
+                child.innerText = event.data;
                 document.getElementById('messages').appendChild(child);
             };
 
-            document.getElementById('sendmessage').addEventListener('click', () => {
+            document.getElementById('sendmessage').addEventListener('submit', event => {
                 let data = document.getElementById('data').value;
                 sock.send(data);
+                event.preventDefault();
             });
         });
     </script>
 </head>
 <body>
     <h1>Long Polling</h1>
-    <input type="text" id="data" />
-    <input type="button" id="sendmessage" value="Send" />
+
+    <form id="sendmessage">
+        <input type="text" id="data" />
+        <input type="submit" value="Send" />
+    </form>
 
     <ul id="messages"></ul>
 </body>
