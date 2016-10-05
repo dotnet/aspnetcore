@@ -471,10 +471,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    // Use Send instead of SendEnd to ensure the connection will remain open while
-                    // the app runs and reads 0 bytes from the body nonetheless. This checks that
-                    // https://github.com/aspnet/KestrelHttpServer/issues/1104 is not regressing.
-                    await connection.Send(
+                    await connection.SendEnd(
                         "GET / HTTP/1.1",
                         "Connection: close",
                         "",
@@ -490,7 +487,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.Send(
+                    await connection.SendEnd(
                         "GET / HTTP/1.0",
                         "",
                         "");
@@ -569,6 +566,51 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         $"Date: {testContext.DateHeaderValue}",
                         "",
                         "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task ZeroContentLengthAssumedOnNonKeepAliveRequestsWithoutContentLengthOrTransferEncodingHeader(TestServiceContext testContext)
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                Assert.Equal(0, await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1).TimeoutAfter(TimeSpan.FromSeconds(10)));
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    // Use Send instead of SendEnd to ensure the connection will remain open while
+                    // the app runs and reads 0 bytes from the body nonetheless. This checks that
+                    // https://github.com/aspnet/KestrelHttpServer/issues/1104 is not regressing.
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Connection: close",
+                        "",
+                        "a");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.0",
+                        "",
+                        "a");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
                         "",

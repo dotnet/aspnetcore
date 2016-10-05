@@ -199,40 +199,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
         {
             handle.Validate();
             ThrowIfErrored(_uv_tcp_bind(handle, ref addr, flags));
-            if (PlatformApis.IsWindows)
-            {
-                tcp_bind_windows_extras(handle);
-            }
-        }
-
-        private unsafe void tcp_bind_windows_extras(UvTcpHandle handle)
-        {
-            const int SIO_LOOPBACK_FAST_PATH = -1744830448; // IOC_IN | IOC_WS2 | 16;
-            const int WSAEOPNOTSUPP = 10000 + 45; // (WSABASEERR+45)
-            const int SOCKET_ERROR = -1;
-
-            var socket = IntPtr.Zero;
-            ThrowIfErrored(_uv_fileno(handle, ref socket));
-
-            // Enable loopback fast-path for lower latency for localhost comms, like HttpPlatformHandler fronting
-            // http://blogs.technet.com/b/wincat/archive/2012/12/05/fast-tcp-loopback-performance-and-low-latency-with-windows-server-2012-tcp-loopback-fast-path.aspx
-            // https://github.com/libuv/libuv/issues/489
-            var optionValue = 1;
-            uint dwBytes = 0u;
-
-            var result = NativeMethods.WSAIoctl(socket, SIO_LOOPBACK_FAST_PATH, &optionValue, sizeof(int), null, 0, out dwBytes, IntPtr.Zero, IntPtr.Zero);
-            if (result == SOCKET_ERROR)
-            {
-                var errorId = NativeMethods.WSAGetLastError();
-                if (errorId == WSAEOPNOTSUPP)
-                {
-                    // This system is not >= Windows Server 2012, and the call is not supported.
-                }
-                else
-                {
-                    ThrowIfErrored(errorId);
-                }
-            }
         }
 
         protected Func<UvTcpHandle, IntPtr, int> _uv_tcp_open;
