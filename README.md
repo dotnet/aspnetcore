@@ -33,11 +33,6 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 
 **NOTE:** Since on Mono SQL client is not available the sample uses an InMemoryStore to run the application. So the changes that you make will not be persisted.
 
-### Deploy on Heroku
-To deploy MusicStore on Heroku, click the button below:
-
-[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
-
 ###NTLM authentication
 More information at [src/MusicStore/StartupNtlmAuthentication.cs](src/MusicStore/StartupNtlmAuthentication.cs).
 
