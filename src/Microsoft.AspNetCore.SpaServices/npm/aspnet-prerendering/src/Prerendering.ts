@@ -174,7 +174,7 @@ function findBootFunc(applicationBasePath: string, bootModule: BootModuleInfo, c
 
 function bindPromiseContinuationsToDomain(promise: Promise<any>, domainInstance: domain.Domain) {
     const originalThen = promise.then;
-    promise.then = function then(resolve, reject) {
+    promise.then = (function then(resolve, reject) {
         if (typeof resolve === 'function') {
             resolve = domainInstance.bind(resolve);
         }
@@ -184,5 +184,5 @@ function bindPromiseContinuationsToDomain(promise: Promise<any>, domainInstance:
         }
 
         return originalThen.call(this, resolve, reject);
-    };
+    }) as any;
 }

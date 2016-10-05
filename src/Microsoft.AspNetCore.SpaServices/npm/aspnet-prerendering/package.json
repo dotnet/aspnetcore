@@ -4,7 +4,7 @@
   "description": "Helpers for server-side rendering of JavaScript applications in ASP.NET Core projects. Works in conjunction with the Microsoft.AspNetCore.SpaServices NuGet package.",
   "main": "index.js",
   "scripts": {
-    "prepublish": "rimraf *.d.ts && tsd update && tsc && echo 'Finished building NPM package \"aspnet-prerendering\"'",
+    "prepublish": "rimraf *.d.ts && tsc && echo 'Finished building NPM package \"aspnet-prerendering\"'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Microsoft",
@@ -21,6 +21,8 @@
     "es6-promise": "^3.1.2"
   },
   "devDependencies": {
+    "@types/node": "^6.0.42",
+    "@types/whatwg-fetch": "0.0.31",
     "rimraf": "^2.5.4",
     "typescript": "^2.0.0"
   }
