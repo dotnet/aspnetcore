@@ -133,7 +133,8 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 response.EnsureSuccessStatusCode();
                 Assert.True(response.Headers.ConnectionClose.Value);
                 Assert.Equal(new string[] { "close" }, response.Headers.GetValues("Connection"));
-                Assert.False(response.Headers.TransferEncodingChunked.HasValue);
+                Assert.True(response.Headers.TransferEncodingChunked.HasValue);
+                Assert.True(response.Headers.TransferEncodingChunked);
                 IEnumerable<string> values;
                 var result = response.Content.Headers.TryGetValues("Content-Length", out values);
                 Assert.False(result);
