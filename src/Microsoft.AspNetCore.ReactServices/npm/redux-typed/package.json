@@ -5,7 +5,7 @@
   "main": "main.js",
   "typings": "main.d.ts",
   "scripts": {
-    "prepublish": "rimraf *.d.ts && tsd update && tsc && echo 'Finished building NPM package \"redux-typed\"'",
+    "prepublish": "rimraf *.d.ts && tsc && echo 'Finished building NPM package \"redux-typed\"'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Microsoft",
@@ -18,7 +18,10 @@
     "url": "https://github.com/aspnet/JavaScriptServices.git"
   },
   "devDependencies": {
+    "@types/react": "^0.14.38",
+    "@types/react-redux": "^4.4.32",
+    "@types/redux": "^3.5.30",
     "rimraf": "^2.5.4",
-    "typescript": "^1.8.10"
+    "typescript": "^2.0.0"
   }
 }
