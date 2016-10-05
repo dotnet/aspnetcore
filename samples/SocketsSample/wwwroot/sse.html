@@ -34,10 +34,10 @@
                 });
             }
 
-            this.onopen = function () { };
-            this.onmessage = function () { };
-            this.onerror = function (event) { };
-            this.send = function (data) {
+            sock.onopen = function () { };
+            sock.onmessage = function () { };
+            sock.onerror = function (event) { };
+            sock.send = function (data) {
                 if (!sock.connectionId) {
                     throw "Not connected";
                 }
