@@ -48,19 +48,37 @@ namespace ServerComparison.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        // [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5086/", ApplicationType.Portable)] // https://github.com/aspnet/IISIntegration/issues/7
         [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5087/", ApplicationType.Portable)]
-        public Task ResponseFormats_Windows_ConnectionClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        // IIS will remove the "Connection: close" header https://github.com/aspnet/IISIntegration/issues/7
+        public Task ResponseFormats_Windows_Http10ConnectionClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
-            return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckConnectionCloseAsync, applicationType);
+            return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckHttp10ConnectionCloseAsync, applicationType);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5087/", ApplicationType.Portable)] // https://github.com/aspnet/WebListener/issues/259
+        // IIS will remove the "Connection: close" header https://github.com/aspnet/IISIntegration/issues/7
+        public Task ResponseFormats_Windows_Http11ConnectionClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        {
+            return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckHttp11ConnectionCloseAsync, applicationType);
         }
 
         [Theory]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5088/", ApplicationType.Portable)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5089/", ApplicationType.Standalone)]
-        public Task ResponseFormats_Kestrel_ConnectionClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        public Task ResponseFormats_Kestrel_Http10ConnectionClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
-            return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckConnectionCloseAsync, applicationType);
+            return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckHttp10ConnectionCloseAsync, applicationType);
+        }
+
+        [Theory]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5088/", ApplicationType.Portable)]
+        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5089/", ApplicationType.Standalone)]
+        public Task ResponseFormats_Kestrel_Http11ConnectionClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
+        {
+            return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckHttp11ConnectionCloseAsync, applicationType);
         }
 
         [ConditionalTheory]
@@ -201,9 +219,33 @@ namespace ServerComparison.FunctionalTests
             }
         }
 
-        private static async Task CheckConnectionCloseAsync(HttpClient client, ILogger logger)
+        private static async Task CheckHttp11ConnectionCloseAsync(HttpClient client, ILogger logger)
         {
             var response = await client.GetAsync("connectionclose");
+            var responseText = await response.Content.ReadAsStringAsync();
+            try
+            {
+                Assert.Equal("Connnection Close", responseText);
+                Assert.True(response.Headers.ConnectionClose, "/connectionclose, closed?");
+                Assert.True(response.Headers.TransferEncodingChunked);
+                Assert.Null(GetContentLength(response));
+            }
+            catch (XunitException)
+            {
+                logger.LogWarning(response.ToString());
+                logger.LogWarning(responseText);
+                throw;
+            }
+        }
+
+        private static async Task CheckHttp10ConnectionCloseAsync(HttpClient client, ILogger logger)
+        {
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, "connectionclose")
+            {
+                Version = new Version(1, 0)
+            };
+
+            var response = await client.SendAsync(requestMessage);
             var responseText = await response.Content.ReadAsStringAsync();
             try
             {
