@@ -2,9 +2,13 @@
   "dependencies": {
     "Microsoft.AspNetCore.ResponseCompression": "0.1.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.WebListener": "1.1.0-*",
     "Microsoft.Extensions.Logging.Console": "1.1.0-*"
   },
   "buildOptions": {
+    "copyToOutput": [
+      "testfile1kb.txt"
+    ],
     "emitEntryPoint": true
   },
   "frameworks": {

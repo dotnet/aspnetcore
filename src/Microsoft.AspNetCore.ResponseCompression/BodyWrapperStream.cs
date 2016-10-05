@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Net.Http.Headers;
 
@@ -14,30 +15,27 @@ namespace Microsoft.AspNetCore.ResponseCompression
     /// <summary>
     /// Stream wrapper that create specific compression stream only if necessary.
     /// </summary>
-    internal class BodyWrapperStream : Stream, IHttpBufferingFeature
+    internal class BodyWrapperStream : Stream, IHttpBufferingFeature, IHttpSendFileFeature
     {
         private readonly HttpResponse _response;
-
         private readonly Stream _bodyOriginalStream;
-
         private readonly IResponseCompressionProvider _provider;
-
         private readonly ICompressionProvider _compressionProvider;
-
         private readonly IHttpBufferingFeature _innerBufferFeature;
+        private readonly IHttpSendFileFeature _innerSendFileFeature;
 
         private bool _compressionChecked = false;
-
         private Stream _compressionStream = null;
 
         internal BodyWrapperStream(HttpResponse response, Stream bodyOriginalStream, IResponseCompressionProvider provider, ICompressionProvider compressionProvider,
-            IHttpBufferingFeature innerBufferFeature)
+            IHttpBufferingFeature innerBufferFeature, IHttpSendFileFeature innerSendFileFeature)
         {
             _response = response;
             _bodyOriginalStream = bodyOriginalStream;
             _provider = provider;
             _compressionProvider = compressionProvider;
             _innerBufferFeature = innerBufferFeature;
+            _innerSendFileFeature = innerSendFileFeature;
         }
 
         protected override void Dispose(bool disposing)
@@ -215,6 +213,51 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
 
             _innerBufferFeature?.DisableResponseBuffering();
+        }
+
+        // The IHttpSendFileFeature feature will only be registered if _innerSendFileFeature exists.
+        public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
+        {
+            OnWrite();
+
+            if (_compressionStream != null)
+            {
+                return InnerSendFileAsync(path, offset, count, cancellation);
+            }
+
+            return _innerSendFileFeature.SendFileAsync(path, offset, count, cancellation);
+        }
+
+        private async Task InnerSendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
+        {
+            cancellation.ThrowIfCancellationRequested();
+
+            var fileInfo = new FileInfo(path);
+            if (offset < 0 || offset > fileInfo.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
+            }
+            if (count.HasValue &&
+                (count.Value < 0 || count.Value > fileInfo.Length - offset))
+            {
+                throw new ArgumentOutOfRangeException(nameof(count), count, string.Empty);
+            }
+
+            int bufferSize = 1024 * 16;
+
+            var fileStream = new FileStream(
+                path,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite,
+                bufferSize: bufferSize,
+                options: FileOptions.Asynchronous | FileOptions.SequentialScan);
+
+            using (fileStream)
+            {
+                fileStream.Seek(offset, SeekOrigin.Begin);
+                await StreamCopyOperation.CopyToAsync(fileStream, _compressionStream, count, cancellation);
+            }
         }
     }
 }

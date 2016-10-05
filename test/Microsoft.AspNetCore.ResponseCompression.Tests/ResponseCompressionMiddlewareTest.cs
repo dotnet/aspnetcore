@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -579,6 +580,168 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             }
         }
 
+        [Fact]
+        public async Task SendFileAsync_OnlySetIfFeatureAlreadyExists()
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddResponseCompression(TextPlain);
+                })
+                .Configure(app =>
+                {
+                    app.UseResponseCompression();
+                    app.Run(context =>
+                    {
+                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                        context.Response.ContentType = TextPlain;
+                        context.Response.ContentLength = 1024;
+                        var sendFile = context.Features.Get<IHttpSendFileFeature>();
+                        Assert.Null(sendFile);
+                        return Task.FromResult(0);
+                    });
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd("gzip");
+
+            var response = await client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+        }
+
+        [Fact]
+        public async Task SendFileAsync_DifferentContentType_NotBypassed()
+        {
+            FakeSendFileFeature fakeSendFile = null;
+
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddResponseCompression(TextPlain);
+                })
+                .Configure(app =>
+                {
+                    app.Use((context, next) =>
+                    {
+                        fakeSendFile = new FakeSendFileFeature(context.Response.Body);
+                        context.Features.Set<IHttpSendFileFeature>(fakeSendFile);
+                        return next();
+                    });
+                    app.UseResponseCompression();
+                    app.Run(context =>
+                    {
+                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                        context.Response.ContentType = "custom/type";
+                        context.Response.ContentLength = 1024;
+                        var sendFile = context.Features.Get<IHttpSendFileFeature>();
+                        Assert.NotNull(sendFile);
+                        return sendFile.SendFileAsync("testfile1kb.txt", 0, null, CancellationToken.None);
+                    });
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd("gzip");
+
+            var response = await client.SendAsync(request);
+
+            CheckResponseNotCompressed(response, expectedBodyLength: 1024);
+
+            Assert.True(fakeSendFile.Invoked);
+        }
+
+        [Fact]
+        public async Task SendFileAsync_FirstWrite_CompressesAndFlushes()
+        {
+            FakeSendFileFeature fakeSendFile = null;
+
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddResponseCompression(TextPlain);
+                })
+                .Configure(app =>
+                {
+                    app.Use((context, next) =>
+                    {
+                        fakeSendFile = new FakeSendFileFeature(context.Response.Body);
+                        context.Features.Set<IHttpSendFileFeature>(fakeSendFile);
+                        return next();
+                    });
+                    app.UseResponseCompression();
+                    app.Run(context =>
+                    {
+                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                        context.Response.ContentType = TextPlain;
+                        context.Response.ContentLength = 1024;
+                        var sendFile = context.Features.Get<IHttpSendFileFeature>();
+                        Assert.NotNull(sendFile);
+                        return sendFile.SendFileAsync("testfile1kb.txt", 0, null, CancellationToken.None);
+                    });
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd("gzip");
+
+            var response = await client.SendAsync(request);
+
+            CheckResponseCompressed(response, expectedBodyLength: 34);
+
+            Assert.False(fakeSendFile.Invoked);
+        }
+
+        [Fact]
+        public async Task SendFileAsync_AfterFirstWrite_CompressesAndFlushes()
+        {
+            FakeSendFileFeature fakeSendFile = null;
+
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddResponseCompression(TextPlain);
+                })
+                .Configure(app =>
+                {
+                    app.Use((context, next) =>
+                    {
+                        fakeSendFile = new FakeSendFileFeature(context.Response.Body);
+                        context.Features.Set<IHttpSendFileFeature>(fakeSendFile);
+                        return next();
+                    });
+                    app.UseResponseCompression();
+                    app.Run(async context =>
+                    {
+                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                        context.Response.ContentType = TextPlain;
+                        var sendFile = context.Features.Get<IHttpSendFileFeature>();
+                        Assert.NotNull(sendFile);
+
+                        await context.Response.WriteAsync(new string('a', 100));
+                        await sendFile.SendFileAsync("testfile1kb.txt", 0, null, CancellationToken.None);
+                    });
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd("gzip");
+
+            var response = await client.SendAsync(request);
+
+            CheckResponseCompressed(response, expectedBodyLength: 40);
+
+            Assert.False(fakeSendFile.Invoked);
+        }
+
         private Task<HttpResponseMessage> InvokeMiddleware(int uncompressedBodyLength, string[] requestAcceptEncodings, string responseType, Action<HttpResponse> addResponseAction = null)
         {
             var builder = new WebHostBuilder()
@@ -593,6 +756,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                     {
                         context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
                         context.Response.ContentType = responseType;
+                        Assert.Null(context.Features.Get<IHttpSendFileFeature>());
                         if (addResponseAction != null)
                         {
                             addResponseAction(context.Response);
@@ -627,6 +791,33 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             Assert.NotNull(response.Headers.GetValues(HeaderNames.ContentMD5));
             Assert.Empty(response.Content.Headers.ContentEncoding);
             Assert.Equal(expectedBodyLength, response.Content.Headers.ContentLength);
+        }
+
+        private class FakeSendFileFeature : IHttpSendFileFeature
+        {
+            private readonly Stream _innerBody;
+
+            public FakeSendFileFeature(Stream innerBody)
+            {
+                _innerBody = innerBody;
+            }
+
+            public bool Invoked { get; set; }
+
+            public async Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
+            {
+                // This implementation should only be delegated to if compression is disabled.
+                Invoked = true;
+                using (var file = new FileStream(path, FileMode.Open))
+                {
+                    file.Seek(offset, SeekOrigin.Begin);
+                    if (count.HasValue)
+                    {
+                        throw new NotImplementedException("Not implemented for testing");
+                    }
+                    await file.CopyToAsync(_innerBody, 81920, cancellation);
+                }
+            }
         }
     }
 }

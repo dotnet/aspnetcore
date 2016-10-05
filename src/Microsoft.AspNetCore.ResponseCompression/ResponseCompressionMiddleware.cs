@@ -68,10 +68,16 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
             var bodyStream = context.Response.Body;
             var originalBufferFeature = context.Features.Get<IHttpBufferingFeature>();
+            var originalSendFileFeature = context.Features.Get<IHttpSendFileFeature>();
 
-            var bodyWrapperStream = new BodyWrapperStream(context.Response, bodyStream, _provider, compressionProvider, originalBufferFeature);
+            var bodyWrapperStream = new BodyWrapperStream(context.Response, bodyStream, _provider, compressionProvider,
+                originalBufferFeature, originalSendFileFeature);
             context.Response.Body = bodyWrapperStream;
             context.Features.Set<IHttpBufferingFeature>(bodyWrapperStream);
+            if (originalSendFileFeature != null)
+            {
+                context.Features.Set<IHttpSendFileFeature>(bodyWrapperStream);
+            }
 
             try
             {
@@ -84,6 +90,10 @@ namespace Microsoft.AspNetCore.ResponseCompression
             {
                 context.Response.Body = bodyStream;
                 context.Features.Set(originalBufferFeature);
+                if (originalSendFileFeature != null)
+                {
+                    context.Features.Set(originalSendFileFeature);
+                }
             }
         }
     }

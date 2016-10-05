@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -25,6 +26,15 @@ namespace ResponseCompressionSample
         public void Configure(IApplicationBuilder app)
         {
             app.UseResponseCompression();
+
+            app.Map("/testfile1kb.txt", fileApp =>
+            {
+                fileApp.Run(context =>
+                {
+                    context.Response.ContentType = "text/plain";
+                    return context.Response.SendFileAsync("testfile1kb.txt");
+                });
+            });
 
             app.Map("/trickle", trickleApp =>
             {
@@ -57,6 +67,7 @@ namespace ResponseCompressionSample
                 {
                     options.UseConnectionLogging();
                 })
+                // .UseWebListener()
                 .ConfigureLogging(factory =>
                 {
                     factory.AddConsole(LogLevel.Debug);

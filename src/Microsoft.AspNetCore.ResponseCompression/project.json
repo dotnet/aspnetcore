@@ -16,9 +16,8 @@
     ]
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Http.Abstractions": "1.1.0-*",
+    "Microsoft.AspNetCore.Http.Extensions": "1.1.0-*",
     "Microsoft.Extensions.Options": "1.1.0-*",
-    "Microsoft.Net.Http.Headers": "1.1.0-*",
     "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
