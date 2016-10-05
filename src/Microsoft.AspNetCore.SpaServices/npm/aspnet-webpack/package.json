@@ -25,9 +25,12 @@
     "webpack-node-externals": "^1.4.3"
   },
   "devDependencies": {
-    "tsd": "0.6.5",
+    "@types/connect": "^3.4.30",
+    "@types/node": "^6.0.42",
+    "@types/webpack": "^1.12.34",
     "rimraf": "^2.5.4",
-    "typescript": "^1.8.10"
+    "typescript": "^2.0.0",
+    "webpack": "^1.13.2"
   },
   "peerDependencies": {
     "webpack": "^1.13.2"
