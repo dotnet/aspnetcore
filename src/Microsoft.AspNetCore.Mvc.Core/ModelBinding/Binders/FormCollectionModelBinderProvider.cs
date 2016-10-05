@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Reflection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -19,7 +21,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.Metadata.ModelType == typeof(IFormCollection))
+            var modelType = context.Metadata.ModelType;
+
+            if (typeof(FormCollection).GetTypeInfo().IsAssignableFrom(modelType))
+            {
+                throw new InvalidOperationException(
+                    Resources.FormatFormCollectionModelBinder_CannotBindToFormCollection(
+                        typeof(FormCollectionModelBinder).FullName,
+                        modelType.FullName,
+                        typeof(IFormCollection).FullName));
+            }
+
+            if (modelType == typeof(IFormCollection))
             {
                 return new FormCollectionModelBinder();
             }

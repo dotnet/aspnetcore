@@ -1322,6 +1322,22 @@ namespace Microsoft.AspNetCore.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("AuthorizeFilter_AuthorizationPolicyCannotBeCreated"), p0, p1);
         }
 
+        /// <summary>
+        /// The '{0}' cannot bind to a model of type '{1}'. Change the model type to '{2}' instead.
+        /// </summary>
+        internal static string FormCollectionModelBinder_CannotBindToFormCollection
+        {
+            get { return GetString("FormCollectionModelBinder_CannotBindToFormCollection"); }
+        }
+
+        /// <summary>
+        /// The '{0}' cannot bind to a model of type '{1}'. Change the model type to '{2}' instead.
+        /// </summary>
+        internal static string FormatFormCollectionModelBinder_CannotBindToFormCollection(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("FormCollectionModelBinder_CannotBindToFormCollection"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

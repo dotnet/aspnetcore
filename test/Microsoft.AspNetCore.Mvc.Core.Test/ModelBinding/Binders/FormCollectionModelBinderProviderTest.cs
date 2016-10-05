@@ -12,6 +12,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     {
         [Theory]
         [InlineData(typeof(FormCollection))]
+        [InlineData(typeof(DerviedFormCollection))]
+        public void Create_ThrowsException_ForFormCollectionModelType(Type modelType)
+        {
+            // Arrange
+            var provider = new FormCollectionModelBinderProvider();
+            var context = new TestModelBinderProviderContext(modelType);
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => provider.GetBinder(context));
+
+            Assert.Equal(
+                $"The '{typeof(FormCollectionModelBinder).FullName}' cannot bind to a model of type '{modelType.FullName}'. Change the model type to '{typeof(IFormCollection).FullName}' instead.",
+                exception.Message);
+        }
+
+        [Theory]
         [InlineData(typeof(TestClass))]
         [InlineData(typeof(IList<int>))]
         [InlineData(typeof(int[]))]
@@ -44,6 +60,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private class TestClass
         {
+        }
+
+        private class DerviedFormCollection : FormCollection
+        {
+            public DerviedFormCollection() : base(fields: null, files: null) { }
         }
     }
 }
