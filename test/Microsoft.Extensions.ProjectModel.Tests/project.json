@@ -1,7 +1,10 @@
 {
   "buildOptions": {
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "compile": {
+      "include": "../Shared/*.cs"
+    }
   },
   "dependencies": {
     "NuGet.Frameworks": "3.5.0-*",
@@ -13,7 +16,6 @@
         "type": "build",
         "version": "1.0.0-*"
     },
-    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0",
     "dotnet-test-xunit": "2.2.0-*",
     "xunit": "2.2.0-*"
   },

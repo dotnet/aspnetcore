@@ -6,12 +6,14 @@ using System.IO;
 using Microsoft.Extensions.ProjectModel.Internal;
 using NuGet.Versioning;
 
-namespace Microsoft.Extensions.ProjectModel
+namespace Microsoft.Extensions.ProjectModel.Tests
 {
     public class MsBuildFixture
     {
-        private readonly SemanticVersion _minMsBuildVersion = SemanticVersion.Parse("1.0.0-preview3-00000");
+        // TODO remove this when preview3 stabilizies
+        private readonly SemanticVersion _minMsBuildVersion = SemanticVersion.Parse("1.0.0-preview3-003748");
 
+        // TODO remove when our CI updates to using MSBuild or when Microsoft/msbuild#4213 is resolved
         internal MsBuildContext GetMsBuildContext()
         {
             // for CI

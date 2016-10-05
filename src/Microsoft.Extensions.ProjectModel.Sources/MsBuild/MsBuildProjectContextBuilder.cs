@@ -9,9 +9,10 @@ using System.Xml;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+using Microsoft.Build.Framework;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.FileProviders.Physical;
-using Microsoft.Build.Framework;
+using Microsoft.Extensions.ProjectModel.Internal;
 using NuGet.Frameworks;
 
 namespace Microsoft.Extensions.ProjectModel
@@ -22,6 +23,7 @@ namespace Microsoft.Extensions.ProjectModel
         private IFileInfo _fileInfo;
         private string[] _buildTargets;
         private Dictionary<string, string> _globalProperties = new Dictionary<string, string>();
+        private bool _explicitMsBuild;
 
         public MsBuildProjectContextBuilder()
         {
@@ -46,7 +48,7 @@ namespace Microsoft.Extensions.ProjectModel
             return this;
         }
 
-        public MsBuildProjectContextBuilder WithDesignTimeBuild()
+        public MsBuildProjectContextBuilder AsDesignTimeBuild()
         {
             // don't to expensive things
             WithProperty("DesignTimeBuild", "true");
@@ -55,16 +57,12 @@ namespace Microsoft.Extensions.ProjectModel
             return this;
         }
 
-        public MsBuildProjectContextBuilder WithMsBuild(MsBuildContext context)
+        // should be needed in most cases, but can be used to override
+        public MsBuildProjectContextBuilder UseMsBuild(MsBuildContext context)
         {
-            /*
-            Workaround https://github.com/Microsoft/msbuild/issues/999
-            Error: System.TypeInitializationException : The type initializer for 'BuildEnvironmentHelperSingleton' threw an exception.
-            Could not determine a valid location to MSBuild. Try running this process from the Developer Command Prompt for Visual Studio.
-            */
-
-            Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", context.MsBuildExecutableFullPath);
-            return WithProperty("MSBuildExtensionsPath", context.ExtensionsPath);
+            _explicitMsBuild = true;
+            SetMsBuildContext(context);
+            return this;
         }
 
         public MsBuildProjectContextBuilder WithProperty(string property, string value)
@@ -86,6 +84,13 @@ namespace Microsoft.Extensions.ProjectModel
 
         public MsBuildProjectContextBuilder WithProjectFile(IFileInfo fileInfo)
         {
+            if (!_explicitMsBuild)
+            {
+                var projectDir = Path.GetDirectoryName(fileInfo.PhysicalPath);
+                var sdk = DotNetCoreSdkResolver.DefaultResolver.ResolveProjectSdk(projectDir);
+                SetMsBuildContext(MsBuildContext.FromDotNetSdk(sdk));
+            }
+
             _fileInfo = fileInfo;
             return this;
         }
@@ -109,7 +114,6 @@ namespace Microsoft.Extensions.ProjectModel
         protected virtual void Initialize()
         {
             WithBuildTargets(new[] { "ResolveReferences" });
-            WithMsBuild(MsBuildContext.FromCurrentDotNetSdk());
             WithProperty("_ResolveReferenceDependencies", "true");
         }
 
@@ -161,6 +165,18 @@ namespace Microsoft.Extensions.ProjectModel
             }
 
             throw new InvalidOperationException(sb.ToString());
+        }
+
+        private void SetMsBuildContext(MsBuildContext context)
+        {
+            /*
+            Workaround https://github.com/Microsoft/msbuild/issues/999
+            Error: System.TypeInitializationException : The type initializer for 'BuildEnvironmentHelperSingleton' threw an exception.
+            Could not determine a valid location to MSBuild. Try running this process from the Developer Command Prompt for Visual Studio.
+            */
+
+            Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", context.MsBuildExecutableFullPath);
+            WithProperty("MSBuildExtensionsPath", context.ExtensionsPath);
         }
 
         private class InMemoryLogger : ILogger
