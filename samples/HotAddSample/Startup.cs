@@ -2,6 +2,8 @@ using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.WebListener;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Server;
 
@@ -12,11 +14,21 @@ namespace HotAddSample
     // will be reset before the end of the request.
     public class Startup
     {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.Configure<WebListenerOptions>(options =>
+            {
+                ListenerSettings = options.ListenerSettings;
+            });
+        }
+
+        public WebListenerSettings ListenerSettings { get; set; }
+
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
             loggerfactory.AddConsole(LogLevel.Information);
 
-            var addresses = app.ServerFeatures.Get<WebListener>().Settings.UrlPrefixes;
+            var addresses = ListenerSettings.UrlPrefixes;
             addresses.Add("http://localhost:12346/pathBase/");
 
             app.Use(async (context, next) =>

@@ -1,7 +1,7 @@
 {
   "profiles": {
-    "sample": {
-      "commandName": "sample",
+    "HelloWorld": {
+      "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "http://localhost:8080"
     }

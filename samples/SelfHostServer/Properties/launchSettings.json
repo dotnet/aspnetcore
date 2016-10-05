@@ -1,9 +1,13 @@
 {
   "profiles": {
-    "web": {
-      "commandName": "web",
+    "SelfHostServer": {
+      "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "http://localhost:8080"
+      "launchUrl": "http://localhost:8080/",
+      "environmentVariables": {
+        "ASPNETCORE_URLS": "http://localhost:8080/",
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
     }
   }
 }
