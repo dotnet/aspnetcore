@@ -4,7 +4,7 @@
   "description": "Tracks outstanding operations for a logical thread of execution",
   "main": "index.js",
   "scripts": {
-    "prepublish": "rimraf *.d.ts && tsd update && tsc && echo 'Finished building NPM package \"domain-task\"'",
+    "prepublish": "rimraf *.d.ts && tsc && echo 'Finished building NPM package \"domain-task\"'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Microsoft",
@@ -21,6 +21,8 @@
     "isomorphic-fetch": "^2.2.1"
   },
   "devDependencies": {
+    "@types/node": "^6.0.42",
+    "@types/whatwg-fetch": "0.0.31",
     "rimraf": "^2.5.4",
     "typescript": "^2.0.0"
   }
