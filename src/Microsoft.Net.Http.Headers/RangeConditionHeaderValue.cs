@@ -53,7 +53,7 @@ namespace Microsoft.Net.Http.Headers
         {
             if (_entityTag == null)
             {
-                return HttpRuleParser.DateToString(_lastModified.Value);
+                return HeaderUtilities.FormatDate(_lastModified.Value);
             }
             return _entityTag.ToString();
         }

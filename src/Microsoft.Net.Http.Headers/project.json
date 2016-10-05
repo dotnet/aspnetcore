@@ -19,14 +19,12 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "NETStandard.Library": "1.6.1-*"
+    "Microsoft.Extensions.Primitives": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*",
+    "System.Buffers": "4.3.0-*",
+    "System.Diagnostics.Contracts": "4.3.0-*"
   },
   "frameworks": {
-    "netstandard1.1": {
-      "dependencies": {
-        "System.Buffers": "4.3.0-*",
-        "System.Diagnostics.Contracts": "4.3.0-*"
-      }
-    }
+    "netstandard1.1": {}
   }
 }

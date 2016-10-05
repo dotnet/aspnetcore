@@ -233,12 +233,6 @@ namespace Microsoft.Net.Http.Headers
             return HttpParseResult.Parsed;
         }
 
-        internal static string DateToString(DateTimeOffset dateTime)
-        {
-            // Format according to RFC1123; 'r' uses invariant info (DateTimeFormatInfo.InvariantInfo)
-            return dateTime.ToUniversalTime().ToString("r", CultureInfo.InvariantCulture);
-        }
-
         internal static bool TryStringToDate(string input, out DateTimeOffset result)
         {
             // Try the various date formats in the order listed above.

@@ -321,7 +321,7 @@ namespace Microsoft.Net.Http.Headers
             else
             {
                 // Must always be quoted
-                var dateString = string.Format(CultureInfo.InvariantCulture, "\"{0}\"", HttpRuleParser.DateToString(date.Value));
+                var dateString = HeaderUtilities.FormatDate(date.Value, quoted: true);
                 if (dateParameter != null)
                 {
                     dateParameter.Value = dateString;
