@@ -4,7 +4,7 @@
   "description": "Helpers for using Webpack with React in ASP.NET Core projects. Works in conjunction with the Microsoft.AspNetCore.SpaServices NuGet package.",
   "main": "index.js",
   "scripts": {
-    "prepublish": "node node_modules/.bin/rimraf *.d.ts && tsd update && tsc && echo 'Finished building NPM package \"aspnet-webpack-react\"'",
+    "prepublish": "rimraf *.d.ts && tsd update && tsc && echo 'Finished building NPM package \"aspnet-webpack-react\"'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Microsoft",

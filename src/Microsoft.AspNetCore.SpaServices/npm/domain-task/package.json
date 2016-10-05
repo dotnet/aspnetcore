@@ -4,7 +4,7 @@
   "description": "Tracks outstanding operations for a logical thread of execution",
   "main": "index.js",
   "scripts": {
-    "prepublish": "node node_modules/.bin/rimraf *.d.ts && tsd update && tsc && echo 'Finished building NPM package \"domain-task\"'",
+    "prepublish": "rimraf *.d.ts && tsd update && tsc && echo 'Finished building NPM package \"domain-task\"'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Microsoft",
