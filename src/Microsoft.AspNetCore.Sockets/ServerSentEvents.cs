@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Sockets
         {
             context.Response.ContentType = "text/event-stream";
             context.Response.Headers["Cache-Control"] = "no-cache";
+            context.Response.Headers["Content-Encoding"] = "identity";
 
             while (true)
             {
