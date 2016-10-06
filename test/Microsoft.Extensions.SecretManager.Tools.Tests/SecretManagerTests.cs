@@ -26,11 +26,16 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
 
         private string GetTempSecretProject()
         {
-            var projectPath = UserSecretHelper.GetTempSecretProject();
+            string id;
+            return GetTempSecretProject(out id);
+        }
+
+        private string GetTempSecretProject(out string userSecretsId)
+        {
+            var projectPath = UserSecretHelper.GetTempSecretProject(out userSecretsId);
             _disposables.Push(() => UserSecretHelper.DeleteTempSecretProject(projectPath));
             return projectPath;
         }
-
         public void Dispose()
         {
             while (_disposables.Count > 0)
@@ -156,14 +161,15 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         [Fact]
         public void SetSecret_With_Verbose_Flag()
         {
-            var projectPath = GetTempSecretProject();
+            string id;
+            var projectPath = GetTempSecretProject(out id);
             _logger.SetLevel(LogLevel.Debug);
             var secretManager = new Program() { Logger = _logger };
 
             secretManager.RunInternal("-v", "set", "secret1", "value1", "-p", projectPath);
             Assert.Equal(3, _logger.Messages.Count);
             Assert.Contains(string.Format("Project file path {0}.", Path.Combine(projectPath, "project.json")), _logger.Messages);
-            Assert.Contains(string.Format("Secrets file path {0}.", PathHelper.GetSecretsPath(projectPath)), _logger.Messages);
+            Assert.Contains(string.Format("Secrets file path {0}.", PathHelper.GetSecretsPathFromSecretsId(id)), _logger.Messages);
             Assert.Contains("Successfully saved secret1 = value1 to the secret store.", _logger.Messages);
             _logger.Messages.Clear();
 
@@ -171,7 +177,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
 
             Assert.Equal(3, _logger.Messages.Count);
             Assert.Contains(string.Format("Project file path {0}.", Path.Combine(projectPath, "project.json")), _logger.Messages);
-            Assert.Contains(string.Format("Secrets file path {0}.", PathHelper.GetSecretsPath(projectPath)), _logger.Messages);
+            Assert.Contains(string.Format("Secrets file path {0}.", PathHelper.GetSecretsPathFromSecretsId(id)), _logger.Messages);
             Assert.Contains("secret1 = value1", _logger.Messages);
         }
 
@@ -205,8 +211,9 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         [Fact]
         public void List_Flattens_Nested_Objects()
         {
-            var projectPath = GetTempSecretProject();
-            var secretsFile = PathHelper.GetSecretsPath(projectPath);
+            string id;
+            var projectPath = GetTempSecretProject(out id);
+            var secretsFile = PathHelper.GetSecretsPathFromSecretsId(id);
             Directory.CreateDirectory(Path.GetDirectoryName(secretsFile));
             File.WriteAllText(secretsFile, @"{ ""AzureAd"": { ""ClientSecret"": ""abcdéƒ©˙î""} }", Encoding.UTF8);
             var secretManager = new Program() { Logger = _logger };
@@ -218,8 +225,9 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         [Fact]
         public void Set_Flattens_Nested_Objects()
         {
-            var projectPath = GetTempSecretProject();
-            var secretsFile = PathHelper.GetSecretsPath(projectPath);
+            string id;
+            var projectPath = GetTempSecretProject(out id);
+            var secretsFile = PathHelper.GetSecretsPathFromSecretsId(id);
             Directory.CreateDirectory(Path.GetDirectoryName(secretsFile));
             File.WriteAllText(secretsFile, @"{ ""AzureAd"": { ""ClientSecret"": ""abcdéƒ©˙î""} }", Encoding.UTF8);
             var secretManager = new Program() { Logger = _logger };
