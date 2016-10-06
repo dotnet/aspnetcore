@@ -19,12 +19,12 @@
                 let response = {};
 
                 if (document.getElementById('formatType').value == 'line') {
-                    let parts = evt.data.split(',');
-                    if (evt.data[0] == 'R') {
+                    let parts = event.data.split(',');
+                    if (event.data[0] == 'R') {
                         response.Id = parts[0].slice(2);
                         response.Result = parts[1].slice(1);
                     }
-                    else if (evt.data[0] == 'C') {
+                    else if (event.data[0] == 'C') {
                         response.Method = parts[1].slice(1);
                         response.Arguments = parts.slice(2).join();
                     }
@@ -33,7 +33,7 @@
                     }
                 }
                 else {
-                    response = JSON.parse(evt.data);
+                    response = JSON.parse(event.data);
                 }
 
                 // Response
