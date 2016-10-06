@@ -1338,6 +1338,22 @@ namespace Microsoft.AspNetCore.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("FormCollectionModelBinder_CannotBindToFormCollection"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// VaryByQueryKeys requires the response cache middleware.
+        /// </summary>
+        internal static string VaryByQueryKeys_Requires_ResponseCachingMiddleware
+        {
+            get { return GetString("VaryByQueryKeys_Requires_ResponseCachingMiddleware"); }
+        }
+
+        /// <summary>
+        /// VaryByQueryKeys requires the response cache middleware.
+        /// </summary>
+        internal static string FormatVaryByQueryKeys_Requires_ResponseCachingMiddleware(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("VaryByQueryKeys_Requires_ResponseCachingMiddleware"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -3,10 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.ResponseCaching;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
@@ -64,86 +67,113 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 ex.Message);
         }
 
-        public static IEnumerable<object[]> CacheControlData
+        public static TheoryData<ResponseCacheFilter, string> CacheControlData
         {
             get
             {
-                yield return new object[] {
-                    new ResponseCacheFilter(
-                        new CacheProfile
-                        {
-                            Duration = 0, Location = ResponseCacheLocation.Any, NoStore = true, VaryByHeader = null
-                        }),
-                    "no-store"
-                };
-                // If no-store is set, then location is ignored.
-                yield return new object[] {
-                    new ResponseCacheFilter(
-                        new CacheProfile
-                        {
-                            Duration = 0, Location = ResponseCacheLocation.Client, NoStore = true, VaryByHeader = null
-                        }),
-                    "no-store"
-                };
-                yield return new object[] {
-                    new ResponseCacheFilter(
-                        new CacheProfile
-                        {
-                            Duration = 0, Location = ResponseCacheLocation.Any, NoStore = true, VaryByHeader = null
-                        }),
-                    "no-store"
-                };
-                // If no-store is set, then duration is ignored.
-                yield return new object[] {
-                    new ResponseCacheFilter(
-                        new CacheProfile
-                        {
-                            Duration = 100, Location = ResponseCacheLocation.Any, NoStore = true, VaryByHeader = null
-                        }),
-                    "no-store"
-                };
-
-                yield return new object[] {
-                    new ResponseCacheFilter(
-                        new CacheProfile
-                        {
-                            Duration = 10, Location = ResponseCacheLocation.Client,
-                            NoStore = false, VaryByHeader = null
-                        }),
-                    "private,max-age=10"
-                };
-                yield return new object[] {
-                    new ResponseCacheFilter(
-                        new CacheProfile
-                        {
-                            Duration = 10, Location = ResponseCacheLocation.Any, NoStore = false, VaryByHeader = null
-                        }),
-                    "public,max-age=10"
-                };
-                yield return new object[] {
-                    new ResponseCacheFilter(
-                        new CacheProfile
-                        {
-                            Duration = 10, Location = ResponseCacheLocation.None, NoStore = false, VaryByHeader = null
-                        }),
-                    "no-cache,max-age=10"
-                };
-                yield return new object[] {
-                    new ResponseCacheFilter(
-                        new CacheProfile
-                        {
-                            Duration = 31536000, Location = ResponseCacheLocation.Any,
-                            NoStore = false, VaryByHeader = null
-                        }),
-                    "public,max-age=31536000"
-                };
-                yield return new object[] {
-                    new ResponseCacheFilter(
-                        new CacheProfile
-                        {
-                            Duration = 20, Location = ResponseCacheLocation.Any, NoStore = false, VaryByHeader = null
-                        }),
-                    "public,max-age=20"
+                return new TheoryData<ResponseCacheFilter, string>
+                {
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 0,
+                                Location = ResponseCacheLocation.Any,
+                                NoStore = true,
+                                VaryByHeader = null
+                            }),
+                        "no-store"
+                    },
+                    // If no-store is set, then location is ignored.
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 0,
+                                Location = ResponseCacheLocation.Client,
+                                NoStore = true,
+                                VaryByHeader = null
+                            }),
+                        "no-store"
+                    },
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 0,
+                                Location = ResponseCacheLocation.Any,
+                                NoStore = true,
+                                VaryByHeader = null
+                            }),
+                        "no-store"
+                    },
+                    // If no-store is set, then duration is ignored.
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 100,
+                                Location = ResponseCacheLocation.Any,
+                                NoStore = true,
+                                VaryByHeader = null
+                            }),
+                        "no-store"
+                    },
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 10,
+                                Location = ResponseCacheLocation.Client,
+                                NoStore = false,
+                                VaryByHeader = null
+                            }),
+                        "private,max-age=10"
+                    },
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 10,
+                                Location = ResponseCacheLocation.Any,
+                                NoStore = false,
+                                VaryByHeader = null
+                            }),
+                        "public,max-age=10"
+                    },
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 10,
+                                Location = ResponseCacheLocation.None,
+                                NoStore = false,
+                                VaryByHeader = null
+                            }),
+                        "no-cache,max-age=10"
+                    },
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 31536000,
+                                Location = ResponseCacheLocation.Any,
+                                NoStore = false,
+                                VaryByHeader = null
+                            }),
+                        "public,max-age=31536000"
+                    },
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 20,
+                                Location = ResponseCacheLocation.Any,
+                                NoStore = false,
+                                VaryByHeader = null
+                            }),
+                        "public,max-age=20"
+                    }
                 };
             }
         }
@@ -162,35 +192,47 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal(output, context.HttpContext.Response.Headers["Cache-control"]);
         }
 
-        public static IEnumerable<object[]> NoStoreData
+        public static TheoryData<ResponseCacheFilter, string> NoStoreData
         {
             get
             {
-                // If no-store is set, then location is ignored.
-                yield return new object[] {
-                    new ResponseCacheFilter(
-                        new CacheProfile
-                        {
-                            Duration = 0, Location = ResponseCacheLocation.Client, NoStore = true, VaryByHeader = null
-                        }),
-                    "no-store"
-                };
-                yield return new object[] {
-                    new ResponseCacheFilter(
-                        new CacheProfile
-                        {
-                            Duration = 0, Location = ResponseCacheLocation.Any, NoStore = true, VaryByHeader = null
-                        }),
-                    "no-store"
-                };
-                // If no-store is set, then duration is ignored.
-                yield return new object[] {
-                    new ResponseCacheFilter(
-                        new CacheProfile
-                        {
-                            Duration = 100, Location = ResponseCacheLocation.Any, NoStore = true, VaryByHeader = null
-                        }),
-                    "no-store"
+                return new TheoryData<ResponseCacheFilter, string>
+                {
+                    // If no-store is set, then location is ignored.
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 0,
+                                Location = ResponseCacheLocation.Client,
+                                NoStore = true,
+                                VaryByHeader = null
+                            }),
+                        "no-store"
+                    },
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 0,
+                                Location = ResponseCacheLocation.Any,
+                                NoStore = true,
+                                VaryByHeader = null
+                            }),
+                        "no-store"
+                    },
+                    // If no-store is set, then duration is ignored.
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 100,
+                                Location = ResponseCacheLocation.Any,
+                                NoStore = true,
+                                VaryByHeader = null
+                            }),
+                        "no-store"
+                    }
                 };
             }
         }
@@ -210,65 +252,79 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal(output, context.HttpContext.Response.Headers["Cache-control"]);
         }
 
-        public static IEnumerable<object[]> VaryData
+        public static TheoryData<ResponseCacheFilter, string, string> VaryByHeaderData
         {
             get
             {
-                yield return new object[] {
-                    new ResponseCacheFilter(
-                        new CacheProfile
-                        {
-                            Duration = 10, Location = ResponseCacheLocation.Any,
-                            NoStore = false, VaryByHeader = "Accept"
-                        }),
-                    "Accept",
-                    "public,max-age=10" };
-                yield return new object[] {
-                    new ResponseCacheFilter(
-                        new CacheProfile
-                        {
-                            Duration = 0, Location= ResponseCacheLocation.Any,
-                            NoStore = true, VaryByHeader = "Accept"
-                        }),
-                    "Accept",
-                    "no-store"
-                };
-                yield return new object[] {
-                    new ResponseCacheFilter(
-                        new CacheProfile
-                        {
-                            Duration = 10, Location = ResponseCacheLocation.Client,
-                            NoStore = false, VaryByHeader = "Accept"
-                        }),
-                    "Accept",
-                    "private,max-age=10"
-                };
-                yield return new object[] {
-                    new ResponseCacheFilter(
-                        new CacheProfile
-                        {
-                            Duration = 10, Location = ResponseCacheLocation.Client,
-                            NoStore = false, VaryByHeader = "Test"
-                        }),
-                    "Test",
-                    "private,max-age=10"
-                };
-                yield return new object[] {
-                    new ResponseCacheFilter(
-                        new CacheProfile
-                        {
-                            Duration = 31536000, Location = ResponseCacheLocation.Any,
-                            NoStore = false, VaryByHeader = "Test"
-                        }),
-                    "Test",
-                    "public,max-age=31536000"
+                return new TheoryData<ResponseCacheFilter, string, string>
+                {
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 10,
+                                Location = ResponseCacheLocation.Any,
+                                NoStore = false,
+                                VaryByHeader = "Accept"
+                            }),
+                        "Accept",
+                        "public,max-age=10"
+                    },
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 0,
+                                Location = ResponseCacheLocation.Any,
+                                NoStore = true,
+                                VaryByHeader = "Accept"
+                            }),
+                        "Accept",
+                        "no-store"
+                    },
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 10,
+                                Location = ResponseCacheLocation.Client,
+                                NoStore = false,
+                                VaryByHeader = "Accept"
+                            }),
+                        "Accept",
+                        "private,max-age=10"
+                    },
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 10,
+                                Location = ResponseCacheLocation.Client,
+                                NoStore = false,
+                                VaryByHeader = "Test"
+                            }),
+                        "Test",
+                        "private,max-age=10"
+                    },
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 31536000,
+                                Location = ResponseCacheLocation.Any,
+                                NoStore = false,
+                                VaryByHeader = "Test"
+                            }),
+                        "Test",
+                        "public,max-age=31536000"
+                    }
                 };
             }
         }
 
         [Theory]
-        [MemberData(nameof(VaryData))]
-        public void ResponseCacheCanSetVary(ResponseCacheFilter cache, string varyOutput, string cacheControlOutput)
+        [MemberData(nameof(VaryByHeaderData))]
+        public void ResponseCacheCanSetVaryByHeader(ResponseCacheFilter cache, string varyOutput, string cacheControlOutput)
         {
             // Arrange
             var context = GetActionExecutingContext(new List<IFilterMetadata> { cache });
@@ -281,6 +337,112 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal(cacheControlOutput, context.HttpContext.Response.Headers["Cache-control"]);
         }
 
+        public static TheoryData<ResponseCacheFilter, string[], string> VaryByQueryKeyData
+        {
+            get
+            {
+                return new TheoryData<ResponseCacheFilter, string[], string>
+                {
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 10,
+                                Location = ResponseCacheLocation.Any,
+                                NoStore = false,
+                                VaryByQueryKeys = new[] { "Accept" }
+                            }),
+                        new[] { "Accept" },
+                        "public,max-age=10"
+                    },
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 0,
+                                Location = ResponseCacheLocation.Any,
+                                NoStore = true,
+                                VaryByQueryKeys = new[] { "Accept" }
+                            }),
+                        new[] { "Accept" },
+                        "no-store"
+                    },
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 10,
+                                Location = ResponseCacheLocation.Client,
+                                NoStore = false,
+                                VaryByQueryKeys = new[] { "Accept" }
+                            }),
+                        new[] { "Accept" },
+                        "private,max-age=10"
+                    },
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 10,
+                                Location = ResponseCacheLocation.Client,
+                                NoStore = false,
+                                VaryByQueryKeys = new[] { "Accept", "Test" }
+                            }),
+                        new[] { "Accept", "Test" },
+                        "private,max-age=10"
+                    },
+                    {
+                        new ResponseCacheFilter(
+                            new CacheProfile
+                            {
+                                Duration = 31536000,
+                                Location = ResponseCacheLocation.Any,
+                                NoStore = false,
+                                VaryByQueryKeys = new[] { "Accept", "Test" }
+                            }),
+                        new[] { "Accept", "Test" },
+                        "public,max-age=31536000"
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(VaryByQueryKeyData))]
+        public void ResponseCacheCanSetVaryByQueryKeys(ResponseCacheFilter cache, string[] varyOutput, string cacheControlOutput)
+        {
+            // Arrange
+            var context = GetActionExecutingContext(new List<IFilterMetadata> { cache });
+            context.HttpContext.Features.Set<IResponseCachingFeature>(new ResponseCachingFeature());
+
+            // Act
+            cache.OnActionExecuting(context);
+
+            // Assert
+            Assert.Equal(varyOutput, context.HttpContext.Features.Get<IResponseCachingFeature>().VaryByQueryKeys);
+            Assert.Equal(cacheControlOutput, context.HttpContext.Response.Headers[HeaderNames.CacheControl]);
+        }
+
+        [Fact]
+        public void NonEmptyVaryByQueryKeys_WithoutConfiguringMiddleware_Throws()
+        {
+            // Arrange
+            var cache = new ResponseCacheFilter(
+                new CacheProfile
+                {
+                    Duration = 0,
+                    Location = ResponseCacheLocation.None,
+                    NoStore = true,
+                    VaryByHeader = null,
+                    VaryByQueryKeys = new[] { "Test" }
+                });
+            var context = GetActionExecutingContext(new List<IFilterMetadata> { cache });
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => cache.OnActionExecuting(context));
+            Assert.Equal("'VaryByQueryKeys' requires the response cache middleware.", exception.Message);
+        }
+
         [Fact]
         public void SetsPragmaOnNoCache()
         {
@@ -288,7 +450,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var cache = new ResponseCacheFilter(
                 new CacheProfile
                 {
-                    Duration = 0, Location = ResponseCacheLocation.None, NoStore = true, VaryByHeader = null
+                    Duration = 0,
+                    Location = ResponseCacheLocation.None,
+                    NoStore = true,
+                    VaryByHeader = null
                 });
             var context = GetActionExecutingContext(new List<IFilterMetadata> { cache });
 
@@ -308,12 +473,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             caches.Add(new ResponseCacheFilter(
                 new CacheProfile
                 {
-                    Duration = 0, Location = ResponseCacheLocation.Any, NoStore = false, VaryByHeader = null
+                    Duration = 0,
+                    Location = ResponseCacheLocation.Any,
+                    NoStore = false,
+                    VaryByHeader = null
                 }));
             caches.Add(new ResponseCacheFilter(
                 new CacheProfile
                 {
-                    Duration = 0, Location = ResponseCacheLocation.Any, NoStore = false, VaryByHeader = null
+                    Duration = 0,
+                    Location = ResponseCacheLocation.Any,
+                    NoStore = false,
+                    VaryByHeader = null
                 }));
 
             var context = GetActionExecutingContext(caches);

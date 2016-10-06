@@ -376,4 +376,7 @@
   <data name="FormCollectionModelBinder_CannotBindToFormCollection" xml:space="preserve">
     <value>The '{0}' cannot bind to a model of type '{1}'. Change the model type to '{2}' instead.</value>
   </data>
+  <data name="VaryByQueryKeys_Requires_ResponseCachingMiddleware" xml:space="preserve">
+    <value>'{0}' requires the response cache middleware.</value>
+  </data>
 </root>

@@ -17,6 +17,7 @@
       "version": "1.1.0-*",
       "type": "build"
     },
+    "Microsoft.AspNetCore.ResponseCaching": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Microsoft.DotNet.InternalAbstractions": "1.0.0",
     "Microsoft.Extensions.DependencyInjection": "1.1.0-*",

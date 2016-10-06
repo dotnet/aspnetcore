@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the duration in seconds for which the response is cached.
         /// If this property is set to a non null value,
-        /// the "max-age" in "Cache-control" header is set in the 
+        /// the "max-age" in "Cache-control" header is set in the
         /// <see cref="Microsoft.AspNetCore.Http.HttpContext.Response" />.
         /// </summary>
         public int? Duration { get; set; }
@@ -36,5 +36,13 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets or sets the value for the Vary header in <see cref="Microsoft.AspNetCore.Http.HttpContext.Response" />.
         /// </summary>
         public string VaryByHeader { get; set; }
+
+        /// <summary>
+        /// Gets or sets the query keys to vary by.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="VaryByQueryKeys"/> requires the response cache middleware.
+        /// </remarks>
+        public string[] VaryByQueryKeys { get; set; }
     }
 }
