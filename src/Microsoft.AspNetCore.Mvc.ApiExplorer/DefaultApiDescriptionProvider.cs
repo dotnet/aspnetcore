@@ -377,8 +377,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             // Set the default status only when no status has already been set explicitly
             if (objectTypes.Count == 0
-                && type != null
-                && type != typeof(void))
+                && type != null)
             {
                 objectTypes[StatusCodes.Status200OK] = type;
             }

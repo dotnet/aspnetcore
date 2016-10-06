@@ -11,6 +11,12 @@ namespace ApiExplorerWebSite
     public class ApiExplorerResponseTypeWithAttributeController : Controller
     {
         [HttpGet]
+        [ProducesResponseType(typeof(void), 204)]
+        public void GetVoidWithExplicitResponseTypeStatusCode()
+        {
+        }
+
+        [HttpGet]
         [Produces(typeof(Customer))]
         public void GetVoid()
         {
@@ -28,6 +34,13 @@ namespace ApiExplorerWebSite
         public IActionResult GetIActionResult()
         {
             return new EmptyResult();
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(void), 204)]
+        public Task GetTaskWithExplicitResponseTypeStatusCode()
+        {
+            return Task.FromResult(true);
         }
 
         [HttpGet]

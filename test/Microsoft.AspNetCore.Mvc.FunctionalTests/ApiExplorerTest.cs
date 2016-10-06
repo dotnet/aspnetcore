@@ -394,9 +394,29 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Theory]
+        [InlineData("GetVoidWithExplicitResponseTypeStatusCode")]
+        [InlineData("GetTaskWithExplicitResponseTypeStatusCode")]
+        public async Task ApiExplorer_ResponseType_VoidWithResponseTypeAttributeStatusCode(string action)
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync(
+                "http://localhost/ApiExplorerResponseTypeWithAttribute/" + action);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            var responseType = Assert.Single(description.SupportedResponseTypes);
+            Assert.Equal(typeof(void).FullName, responseType.ResponseType);
+            Assert.Equal(204, responseType.StatusCode);
+            Assert.Empty(responseType.ResponseFormats);
+        }
+
+        [Theory]
         [InlineData("GetVoid")]
         [InlineData("GetTask")]
-        public async Task ApiExplorer_ResponseType_VoidWithoutAttribute(string action)
+        public async Task ApiExplorer_ResponseType_VoidWithoutAttributeDefaultStatusCode(string action)
         {
             // Arrange & Act
             var response = await Client.GetAsync(
@@ -409,7 +429,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var description = Assert.Single(result);
             var responseType = Assert.Single(description.SupportedResponseTypes);
             Assert.Equal(typeof(void).FullName, responseType.ResponseType);
-            Assert.Equal(204, responseType.StatusCode);
+            Assert.Equal(200, responseType.StatusCode);
             Assert.Empty(responseType.ResponseFormats);
         }
 
