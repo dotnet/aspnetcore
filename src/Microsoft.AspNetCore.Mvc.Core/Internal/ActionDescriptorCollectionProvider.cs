@@ -1,31 +1,55 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
     /// <summary>
     /// Default implementation of <see cref="IActionDescriptorCollectionProvider"/>.
-    /// This implementation caches the results at first call, and is not responsible for updates.
     /// </summary>
     public class ActionDescriptorCollectionProvider : IActionDescriptorCollectionProvider
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IActionDescriptorProvider[] _actionDescriptorProviders;
+        private readonly IActionDescriptorChangeProvider[] _actionDescriptorChangeProviders;
         private ActionDescriptorCollection _collection;
+        private int _version = -1;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ActionDescriptorCollectionProvider" /> class.
         /// </summary>
-        /// <param name="serviceProvider">The application IServiceProvider.</param>
-        public ActionDescriptorCollectionProvider(IServiceProvider serviceProvider)
+        /// <param name="actionDescriptorProviders">The sequence of <see cref="IActionDescriptorProvider"/>.</param>
+        /// <param name="actionDescriptorChangeProviders">The sequence of <see cref="IActionDescriptorChangeProvider"/>.</param>
+        public ActionDescriptorCollectionProvider(
+            IEnumerable<IActionDescriptorProvider> actionDescriptorProviders,
+            IEnumerable<IActionDescriptorChangeProvider> actionDescriptorChangeProviders)
         {
-            _serviceProvider = serviceProvider;
+            _actionDescriptorProviders = actionDescriptorProviders
+                .OrderBy(p => p.Order)
+                .ToArray();
+
+            _actionDescriptorChangeProviders = actionDescriptorChangeProviders.ToArray();
+
+            ChangeToken.OnChange(
+                GetCompositeChangeToken,
+                UpdateCollection);
+        }
+
+        private IChangeToken GetCompositeChangeToken()
+        {
+            var changeTokens = new IChangeToken[_actionDescriptorChangeProviders.Length];
+            for (var i = 0; i < _actionDescriptorChangeProviders.Length; i++)
+            {
+                changeTokens[i] = _actionDescriptorChangeProviders[i].GetChangeToken();
+            }
+
+            return new CompositeChangeToken(changeTokens);
         }
 
         /// <summary>
@@ -37,34 +61,30 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 if (_collection == null)
                 {
-                    _collection = GetCollection();
+                    UpdateCollection();
                 }
 
                 return _collection;
             }
         }
 
-        private ActionDescriptorCollection GetCollection()
+        private void UpdateCollection()
         {
-            var providers =
-                _serviceProvider.GetServices<IActionDescriptorProvider>()
-                                .OrderBy(p => p.Order)
-                                .ToArray();
-
             var context = new ActionDescriptorProviderContext();
 
-            foreach (var provider in providers)
+            for (var i = 0; i < _actionDescriptorProviders.Length; i++)
             {
-                provider.OnProvidersExecuting(context);
+                _actionDescriptorProviders[i].OnProvidersExecuting(context);
             }
 
-            for (var i = providers.Length - 1; i >= 0; i--)
+            for (var i = _actionDescriptorProviders.Length - 1; i >= 0; i--)
             {
-                providers[i].OnProvidersExecuted(context);
+                _actionDescriptorProviders[i].OnProvidersExecuted(context);
             }
 
-            return new ActionDescriptorCollection(
-                new ReadOnlyCollection<ActionDescriptor>(context.Results), 0);
+            _collection = new ActionDescriptorCollection(
+                new ReadOnlyCollection<ActionDescriptor>(context.Results),
+                Interlocked.Increment(ref _version));
         }
     }
 }

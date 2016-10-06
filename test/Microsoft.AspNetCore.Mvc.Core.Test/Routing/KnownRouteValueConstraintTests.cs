@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -172,14 +173,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 .Setup(p => p.OnProvidersExecuted(It.IsAny<ActionDescriptorProviderContext>()))
                 .Verifiable();
 
+            var descriptorCollectionProvider = new ActionDescriptorCollectionProvider(
+                new[] { actionProvider.Object },
+                Enumerable.Empty<IActionDescriptorChangeProvider>());
+
             var context = new Mock<HttpContext>();
             context.Setup(o => o.RequestServices
-                                .GetService(typeof(IEnumerable<IActionDescriptorProvider>)))
-                   .Returns(new[] { actionProvider.Object });
-
-            context.Setup(o => o.RequestServices
-                               .GetService(typeof(IActionDescriptorCollectionProvider)))
-                   .Returns(new ActionDescriptorCollectionProvider(context.Object.RequestServices));
+                .GetService(typeof(IActionDescriptorCollectionProvider)))
+                .Returns(descriptorCollectionProvider);
             return context.Object;
         }
 

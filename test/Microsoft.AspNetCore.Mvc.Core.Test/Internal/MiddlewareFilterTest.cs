@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -400,8 +401,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private static ControllerActionInvokerCache CreateFilterCache(IFilterProvider[] filterProviders = null)
         {
-            var services = new ServiceCollection().BuildServiceProvider();
-            var descriptorProvider = new ActionDescriptorCollectionProvider(services);
+            var descriptorProvider = new ActionDescriptorCollectionProvider(
+                Enumerable.Empty<IActionDescriptorProvider>(),
+                Enumerable.Empty<IActionDescriptorChangeProvider>());
             return new ControllerActionInvokerCache(
                 descriptorProvider,
                 filterProviders.AsEnumerable() ?? new List<IFilterProvider>());

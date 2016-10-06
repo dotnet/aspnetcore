@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Testing.xunit;
 using Newtonsoft.Json;
 using Xunit;
+using Microsoft.AspNetCore.Http;
+using System.Net;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
@@ -974,6 +976,40 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var feedback = Assert.Single(parameters, p => p.Name == "Comments.Feedback");
             Assert.Equal(BindingSource.Form.Id, feedback.Source);
             Assert.Equal(typeof(string).FullName, feedback.Type);
+        }
+
+        [Fact]
+        public async Task ApiExplorer_Updates_WhenActionDescriptorCollectionIsUpdated()
+        {
+            // Act - 1
+            var body = await Client.GetStringAsync("ApiExplorerReload/Index");
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert - 1
+            var description = Assert.Single(result);
+            Assert.Empty(description.ParameterDescriptions);
+            Assert.Equal("ApiExplorerReload/Index", description.RelativePath);
+
+            // Act - 2
+            var response = await Client.GetAsync("ApiExplorerReload/Reload");
+
+            // Assert - 2
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            // Act - 3
+            response = await Client.GetAsync("ApiExplorerReload/Index");
+
+            // Assert - 3
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+            // Act - 4
+            body = await Client.GetStringAsync("ApiExplorerReload/NewIndex");
+            result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert - 4
+            description = Assert.Single(result);
+            Assert.Empty(description.ParameterDescriptions);
+            Assert.Equal("ApiExplorerReload/NewIndex", description.RelativePath);
         }
 
         private IEnumerable<string> GetSortedMediaTypes(ApiExplorerResponseType apiResponseType)

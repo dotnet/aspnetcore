@@ -657,17 +657,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private ControllerActionDescriptor InvokeActionSelector(RouteContext context)
         {
             var actionDescriptorProvider = GetActionDescriptorProvider();
-
-            var serviceContainer = new ServiceCollection();
-            var list = new List<IActionDescriptorProvider>()
-            {
-                actionDescriptorProvider,
-            };
-
-            serviceContainer.AddSingleton(typeof(IEnumerable<IActionDescriptorProvider>), list);
-
             var actionDescriptorCollectionProvider = new ActionDescriptorCollectionProvider(
-                serviceContainer.BuildServiceProvider());
+                new[] { actionDescriptorProvider },
+                Enumerable.Empty<IActionDescriptorChangeProvider>());
             var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionDescriptorCollectionProvider);
 
             var actionConstraintProviders = new[]
@@ -827,8 +819,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private static ActionConstraintCache GetActionConstraintCache(IActionConstraintProvider[] actionConstraintProviders = null)
         {
-            var services = new ServiceCollection().BuildServiceProvider();
-            var descriptorProvider = new ActionDescriptorCollectionProvider(services);
+            var descriptorProvider = new ActionDescriptorCollectionProvider(
+                Enumerable.Empty<IActionDescriptorProvider>(),
+                Enumerable.Empty<IActionDescriptorChangeProvider>());
             return new ActionConstraintCache(descriptorProvider, actionConstraintProviders.AsEnumerable() ?? new List<IActionConstraintProvider>());
         }
 

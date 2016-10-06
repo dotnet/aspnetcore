@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-
 namespace ApplicationModelWebSite
 {
     public class ControllerDescriptionAttribute : Attribute, IControllerModelConvention

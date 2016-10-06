@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -33,8 +34,9 @@ namespace ApiExplorerWebSite
             });
 
             services.AddSingleton<ApiExplorerDataFilter>();
+            services.AddSingleton<IActionDescriptorChangeProvider>(ActionDescriptorChangeProvider.Instance);
+            services.AddSingleton(ActionDescriptorChangeProvider.Instance);
         }
-
 
         public void Configure(IApplicationBuilder app)
         {

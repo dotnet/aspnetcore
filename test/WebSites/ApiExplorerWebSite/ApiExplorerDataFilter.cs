@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace ApiExplorerWebSite
@@ -26,6 +28,12 @@ namespace ApiExplorerWebSite
 
         public void OnResourceExecuting(ResourceExecutingContext context)
         {
+            var controllerActionDescriptor = context.ActionDescriptor as ControllerActionDescriptor;
+            if (controllerActionDescriptor != null && controllerActionDescriptor.MethodInfo.IsDefined(typeof(PassThruAttribute)))
+            {
+                return;
+            }
+
             var descriptions = new List<ApiExplorerData>();
             foreach (var group in _descriptionProvider.ApiDescriptionGroups.Items)
             {
@@ -43,7 +51,6 @@ namespace ApiExplorerWebSite
 
         public void OnResourceExecuted(ResourceExecutedContext context)
         {
-            throw new NotImplementedException();
         }
 
         private ApiExplorerData CreateSerializableData(ApiDescription description)

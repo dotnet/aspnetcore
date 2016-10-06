@@ -7,10 +7,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     /// Provides the currently cached collection of <see cref="Abstractions.ActionDescriptor"/>.
     /// </summary>
     /// <remarks>
-    /// The default implementation, does not update the cache, it is up to the user
-    /// to create or use an implementation that can update the available actions in
-    /// the application. The implementor is also responsible for updating the
-    /// <see cref="ActionDescriptorCollection.Version"/> in a thread safe way.
+    /// The default implementation internally caches the collection and uses
+    /// <see cref="IActionDescriptorChangeProvider"/> to invalidate this cache, incrementing
+    /// <see cref="ActionDescriptorCollection.Version"/> the collection is reconstructed.
     ///
     /// Default consumers of this service, are aware of the version and will recache
     /// data as appropriate, but rely on the version being unique.

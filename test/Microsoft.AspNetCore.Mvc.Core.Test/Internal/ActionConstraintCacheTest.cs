@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -156,8 +159,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private static ActionConstraintCache CreateCache(params IActionConstraintProvider[] providers)
         {
-            var services = CreateServices();
-            var descriptorProvider = new ActionDescriptorCollectionProvider(services);
+            var descriptorProvider = new ActionDescriptorCollectionProvider(
+                Enumerable.Empty<IActionDescriptorProvider>(),
+                Enumerable.Empty<IActionDescriptorChangeProvider>());
             return new ActionConstraintCache(descriptorProvider, providers);
         }
     }
