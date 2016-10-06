@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         public static readonly int DefaultOrder = 10000;
 
+        private int? _hashCode;
+
         /// <summary>
         /// Creates a new <see cref="ModelMetadata"/>.
         /// </summary>
@@ -405,7 +407,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return Identity.GetHashCode();
+            // Normaly caching the hashcode would be dangerous, but Identity is deeply immutable so this is safe.
+            if (_hashCode == null)
+            {
+                _hashCode = Identity.GetHashCode();
+            }
+
+            return _hashCode.Value;
         }
 
         private void InitializeTypeInformation()
