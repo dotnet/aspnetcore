@@ -5,6 +5,7 @@ using System;
 using System.Text;
 using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
@@ -170,8 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         /// <param name="value">A DateTimeOffset value</param>
         private void SetDateValues(DateTimeOffset value)
         {
-            // See http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.18 for required format of Date header
-            var dateValue = value.ToString(Constants.RFC1123DateFormat);
+            var dateValue = HeaderUtilities.FormatDate(value);
             var dateBytes = new byte[_datePreambleBytes.Length + dateValue.Length];
             Buffer.BlockCopy(_datePreambleBytes, 0, dateBytes, 0, _datePreambleBytes.Length);
             Encoding.ASCII.GetBytes(dateValue, 0, dateValue.Length, dateBytes, _datePreambleBytes.Length);

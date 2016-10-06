@@ -17,12 +17,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         /// </summary>
         public const string UnixPipeHostPrefix = "unix:/";
 
-        /// <summary>
-        /// DateTime format string for RFC1123. See  https://msdn.microsoft.com/en-us/library/az4se3k1(v=vs.110).aspx#RFC1123
-        /// for info on the format.
-        /// </summary>
-        public const string RFC1123DateFormat = "r";
-
         public const string ServerName = "Kestrel";
 
         private static int? GetEADDRINUSE()
