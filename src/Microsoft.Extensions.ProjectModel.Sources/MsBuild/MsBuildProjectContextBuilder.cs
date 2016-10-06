@@ -14,6 +14,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.FileProviders.Physical;
 using Microsoft.Extensions.ProjectModel.Internal;
 using NuGet.Frameworks;
+using System.Linq;
 
 namespace Microsoft.Extensions.ProjectModel
 {
@@ -23,11 +24,35 @@ namespace Microsoft.Extensions.ProjectModel
         private IFileInfo _fileInfo;
         private string[] _buildTargets;
         private Dictionary<string, string> _globalProperties = new Dictionary<string, string>();
-        private bool _explicitMsBuild;
+        private MsBuildContext _msbuildContext;
 
         public MsBuildProjectContextBuilder()
         {
             Initialize();
+        }
+
+        public virtual MsBuildProjectContextBuilder Clone()
+        {
+            var builder = new MsBuildProjectContextBuilder()
+                .WithProperties(_globalProperties)
+                .WithBuildTargets(_buildTargets);
+
+            if (_msbuildContext != null)
+            {
+                builder.UseMsBuild(_msbuildContext);
+            }
+
+            if (_fileInfo != null)
+            {
+                builder.WithProjectFile(_fileInfo);
+            }
+
+            if (_configuration != null)
+            {
+                builder.WithConfiguration(_configuration);
+            }
+
+            return builder;
         }
 
         public MsBuildProjectContextBuilder WithBuildTargets(string[] targets)
@@ -60,8 +85,27 @@ namespace Microsoft.Extensions.ProjectModel
         // should be needed in most cases, but can be used to override
         public MsBuildProjectContextBuilder UseMsBuild(MsBuildContext context)
         {
-            _explicitMsBuild = true;
-            SetMsBuildContext(context);
+            _msbuildContext = context;
+
+            /*
+            Workaround https://github.com/Microsoft/msbuild/issues/999
+            Error: System.TypeInitializationException : The type initializer for 'BuildEnvironmentHelperSingleton' threw an exception.
+            Could not determine a valid location to MSBuild. Try running this process from the Developer Command Prompt for Visual Studio.
+            */
+
+            Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", context.MsBuildExecutableFullPath);
+            WithProperty("MSBuildExtensionsPath", context.ExtensionsPath);
+
+            return this;
+        }
+
+        public MsBuildProjectContextBuilder WithProperties(IDictionary<string, string> properties)
+        {
+            foreach (var prop in properties)
+            {
+                _globalProperties[prop.Key] = prop.Value;
+            }
+
             return this;
         }
 
@@ -84,11 +128,11 @@ namespace Microsoft.Extensions.ProjectModel
 
         public MsBuildProjectContextBuilder WithProjectFile(IFileInfo fileInfo)
         {
-            if (!_explicitMsBuild)
+            if (_msbuildContext == null)
             {
                 var projectDir = Path.GetDirectoryName(fileInfo.PhysicalPath);
                 var sdk = DotNetCoreSdkResolver.DefaultResolver.ResolveProjectSdk(projectDir);
-                SetMsBuildContext(MsBuildContext.FromDotNetSdk(sdk));
+                UseMsBuild(MsBuildContext.FromDotNetSdk(sdk));
             }
 
             _fileInfo = fileInfo;
@@ -105,10 +149,39 @@ namespace Microsoft.Extensions.ProjectModel
         {
             var projectCollection = CreateProjectCollection();
             var project = CreateProject(_fileInfo, _configuration, _globalProperties, projectCollection);
+            if (project.GetProperty("TargetFramework") == null)
+            {
+                var frameworks = GetAvailableTargetFrameworks(project).ToList();
+                if (frameworks.Count > 1)
+                {
+                    throw new InvalidOperationException($"Multiple frameworks are available. Either use {nameof(WithTargetFramework)} or {nameof(BuildAllTargetFrameworks)}");
+                }
+
+                if (frameworks.Count == 0)
+                {
+                    throw new InvalidOperationException($"No frameworks are available. Either use {nameof(WithTargetFramework)} or {nameof(BuildAllTargetFrameworks)}");
+                }
+
+                project.SetGlobalProperty("TargetFramework", frameworks.Single());
+            }
+
             var projectInstance = CreateProjectInstance(project, _buildTargets, ignoreBuildErrors);
 
             var name = Path.GetFileNameWithoutExtension(_fileInfo.Name);
             return new MsBuildProjectContext(name, _configuration, projectInstance);
+        }
+
+        public IEnumerable<MsBuildProjectContext> BuildAllTargetFrameworks()
+        {
+            var projectCollection = CreateProjectCollection();
+            var project = CreateProject(_fileInfo, _configuration, _globalProperties, projectCollection);
+
+            foreach (var framework in GetAvailableTargetFrameworks(project))
+            {
+                var builder = Clone();
+                builder.WithTargetFramework(framework);
+                yield return builder.Build();
+            }
         }
 
         protected virtual void Initialize()
@@ -167,22 +240,20 @@ namespace Microsoft.Extensions.ProjectModel
             throw new InvalidOperationException(sb.ToString());
         }
 
-        private void SetMsBuildContext(MsBuildContext context)
+        private IEnumerable<string> GetAvailableTargetFrameworks(Project project)
         {
-            /*
-            Workaround https://github.com/Microsoft/msbuild/issues/999
-            Error: System.TypeInitializationException : The type initializer for 'BuildEnvironmentHelperSingleton' threw an exception.
-            Could not determine a valid location to MSBuild. Try running this process from the Developer Command Prompt for Visual Studio.
-            */
-
-            Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", context.MsBuildExecutableFullPath);
-            WithProperty("MSBuildExtensionsPath", context.ExtensionsPath);
+            var frameworks = project.GetProperty("TargetFrameworks")?.EvaluatedValue;
+            if (string.IsNullOrEmpty(frameworks))
+            {
+                return Enumerable.Empty<string>();
+            }
+            return frameworks.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         private class InMemoryLogger : ILogger
         {
             private readonly Stack<Action> _onShutdown = new Stack<Action>();
-            
+
             internal IList<BuildErrorEventArgs> Errors = new List<BuildErrorEventArgs>();
 
             public string Parameters { get; set; }

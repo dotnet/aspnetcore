@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
@@ -11,26 +12,59 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.ProjectModel
 {
-    public class MsBuildProjectContextBuilderTest : IClassFixture<MsBuildFixture>
+    public class MsBuildProjectContextBuilderTest : IClassFixture<MsBuildFixture>, IDisposable
     {
         private const string SkipReason = "CI doesn't yet have a new enough version of .NET Core SDK";
 
         private readonly MsBuildFixture _fixture;
         private readonly ITestOutputHelper _output;
+        private readonly TemporaryFileProvider _files;
 
         public MsBuildProjectContextBuilderTest(MsBuildFixture fixture, ITestOutputHelper output)
         {
             _fixture = fixture;
             _output = output;
+            _files = new TemporaryFileProvider();
+        }
+
+        public void Dispose()
+        {
+            _files.Dispose();
+        }
+
+        [Fact(Skip = SkipReason)]
+        public void BuildsAllTargetFrameworks()
+        {
+
+            _files.Add("test.proj", @"
+<Project ToolsVersion=""14.0"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+  <PropertyGroup>
+    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+  </PropertyGroup>
+</Project>
+");
+            var contexts = new MsBuildProjectContextBuilder()
+                .WithBuildTargets(Array.Empty<string>())
+                .WithProjectFile(_files.GetFileInfo("test.proj"))
+                .BuildAllTargetFrameworks()
+                .ToList();
+
+            Assert.Collection(contexts,
+                context =>
+                {
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net451, context.TargetFramework);
+                },
+                context =>
+                {
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard13, context.TargetFramework);
+                });
         }
 
         [Fact(Skip = SkipReason)]
         public void ExecutesDesignTimeBuild()
         {
-            using (var fileProvider = new TemporaryFileProvider())
-            {
-                // TODO remove when SDK becomes available on other feeds
-                fileProvider.Add("NuGet.config", @"
+            // TODO remove when SDK becomes available on other feeds
+            _files.Add("NuGet.config", @"
 <configuration>
     <packageSources>
         <clear />
@@ -40,7 +74,7 @@ namespace Microsoft.Extensions.ProjectModel
     </packageSources>
 </configuration>");
 
-                fileProvider.Add("test.csproj", @"
+            _files.Add("test.csproj", @"
 <Project ToolsVersion=""14.0"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
   <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" />
 
@@ -68,39 +102,37 @@ namespace Microsoft.Extensions.ProjectModel
   <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
 </Project>
 ");
-                fileProvider.Add("One.cs", "public class Abc {}");
-                fileProvider.Add("Two.cs", "public class Abc2 {}");
-                fileProvider.Add("Excluded.cs", "public class Abc {}");
+            _files.Add("One.cs", "public class Abc {}");
+            _files.Add("Two.cs", "public class Abc2 {}");
+            _files.Add("Excluded.cs", "public class Abc {}");
 
-                var testContext = _fixture.GetMsBuildContext();
+            var testContext = _fixture.GetMsBuildContext();
 
-                var muxer = Path.Combine(testContext.ExtensionsPath, "../..", "dotnet.exe");
-                var result = Command
-                    .Create(muxer, new[] { "restore3", Path.Combine(fileProvider.Root, "test.csproj") })
-                    .OnErrorLine(l => _output.WriteLine(l))
-                    .OnOutputLine(l => _output.WriteLine(l))
-                    .Execute();
-                Assert.Equal(0, result.ExitCode);
+            var muxer = Path.Combine(testContext.ExtensionsPath, "../..", "dotnet.exe");
+            var result = Command
+                .Create(muxer, new[] { "restore3", Path.Combine(_files.Root, "test.csproj") })
+                .OnErrorLine(l => _output.WriteLine(l))
+                .OnOutputLine(l => _output.WriteLine(l))
+                .Execute();
+            Assert.Equal(0, result.ExitCode);
 
-                var expectedCompileItems = new[] { "One.cs", "Two.cs" }.Select(p => Path.Combine(fileProvider.Root, p)).ToArray();
-                var builder = new MsBuildProjectContextBuilder()
-                    .AsDesignTimeBuild()
-                    .UseMsBuild(testContext)
-                    .WithTargetFramework(FrameworkConstants.CommonFrameworks.NetCoreApp10)
-                    .WithConfiguration("Debug")
-                    .WithProjectFile(fileProvider.GetFileInfo("test.csproj"));
+            var expectedCompileItems = new[] { "One.cs", "Two.cs" }.Select(p => Path.Combine(_files.Root, p)).ToArray();
 
-                var context = builder.Build();
+            var context = new MsBuildProjectContextBuilder()
+                .AsDesignTimeBuild()
+                .UseMsBuild(testContext)
+                .WithConfiguration("Debug")
+                .WithProjectFile(_files.GetFileInfo("test.csproj"))
+                .Build();
 
-                Assert.False(fileProvider.GetFileInfo("bin").Exists);
-                Assert.False(fileProvider.GetFileInfo("obj").Exists);
-                Assert.Equal(expectedCompileItems, context.CompilationItems.OrderBy(i => i).ToArray());
-                Assert.Equal(Path.Combine(fileProvider.Root, "bin", "Debug", "netcoreapp1.0", "test.dll"), context.AssemblyFullPath);
-                Assert.True(context.IsClassLibrary);
-                Assert.Equal("TestProject", context.ProjectName);
-                Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp10, context.TargetFramework);
-                Assert.Equal("Microsoft.TestProject", context.RootNamespace);
-            }
+            Assert.False(_files.GetFileInfo("bin").Exists);
+            Assert.False(_files.GetFileInfo("obj").Exists);
+            Assert.Equal(expectedCompileItems, context.CompilationItems.OrderBy(i => i).ToArray());
+            Assert.Equal(Path.Combine(_files.Root, "bin", "Debug", "netcoreapp1.0", "test.dll"), context.AssemblyFullPath);
+            Assert.True(context.IsClassLibrary);
+            Assert.Equal("TestProject", context.ProjectName);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp10, context.TargetFramework);
+            Assert.Equal("Microsoft.TestProject", context.RootNamespace);
         }
     }
 }

@@ -35,7 +35,19 @@ namespace Microsoft.Extensions.ProjectModel
         public string ProjectName => FindProperty("ProjectName") ?? _name;
         public string Configuration { get; }
 
-        public NuGetFramework TargetFramework => NuGetFramework.Parse(FindProperty("NuGetTargetMoniker"));
+        public NuGetFramework TargetFramework
+        {
+            get
+            {
+                var tfm = FindProperty("NuGetTargetMoniker") ?? FindProperty("TargetFramework");
+                if (tfm == null)
+                {
+                    return null;
+                }
+                return NuGetFramework.Parse(tfm);
+            }
+        }
+
         public bool IsClassLibrary => FindProperty("OutputType").Equals("Library", StringComparison.OrdinalIgnoreCase);
 
         // TODO get from actual properties according to TFM
