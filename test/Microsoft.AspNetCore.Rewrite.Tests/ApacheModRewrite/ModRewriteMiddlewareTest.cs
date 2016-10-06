@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             var response = await server.CreateClient().GetAsync(input);
 
             Assert.Equal(response.StatusCode, (HttpStatusCode)301);
-            Assert.Equal(response.Headers.Location.AbsoluteUri, @"https://www.example.com/foo/");
+            Assert.Equal(@"https://www.example.com/foo/", response.Headers.Location.AbsoluteUri);
         }
 
         [Theory]

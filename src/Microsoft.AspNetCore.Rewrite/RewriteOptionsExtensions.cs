@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Rewrite.Internal;
 
 namespace Microsoft.AspNetCore.Rewrite
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <returns>The Rewrite options.</returns>
         public static RewriteOptions AddRedirect(this RewriteOptions options, string regex, string replacement)
         {
-            return AddRedirect(options, regex, replacement, statusCode: 302);
+            return AddRedirect(options, regex, replacement, statusCode: StatusCodes.Status302Found);
         }
 
         /// <summary>
@@ -83,7 +84,7 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <returns></returns>
         public static RewriteOptions AddRedirectToHttpsPermanent(this RewriteOptions options)
         {
-            return AddRedirectToHttps(options, statusCode: 301, sslPort: null);
+            return AddRedirectToHttps(options, statusCode: StatusCodes.Status301MovedPermanently, sslPort: null);
         }
 
         /// <summary>
@@ -92,7 +93,7 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <param name="options">The <see cref="RewriteOptions"/>.</param>
         public static RewriteOptions AddRedirectToHttps(this RewriteOptions options)
         {
-            return AddRedirectToHttps(options, statusCode: 302, sslPort: null);
+            return AddRedirectToHttps(options, statusCode: StatusCodes.Status302Found, sslPort: null);
         }
 
         /// <summary>
