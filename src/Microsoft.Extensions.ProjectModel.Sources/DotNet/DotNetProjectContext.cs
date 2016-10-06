@@ -82,7 +82,6 @@ namespace Microsoft.Extensions.ProjectModel
         /// Returns string values of top-level keys in the project.json file
         /// </summary>
         /// <param name="propertyName"></param>
-        /// <param name="propertyNameComparer"></param>
         /// <returns></returns>
         public string FindProperty(string propertyName) => FindProperty<string>(propertyName);
 
