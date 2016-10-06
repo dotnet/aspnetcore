@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
@@ -158,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
 
             // No requests since the last timer tick, we need to check if we're beyond the idle threshold
-            if ((now.Ticks - Interlocked.Read(ref _lastRequestSeenTicks)) >= _timeWithoutRequestsUntilIdle.Ticks)
+            if ((now.Ticks - PlatformApis.VolatileRead(ref _lastRequestSeenTicks)) >= _timeWithoutRequestsUntilIdle.Ticks)
             {
                 // No requests since idle threshold so stop the timer if it's still running
                 StopTimer();

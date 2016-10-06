@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         // Called on Libuv thread
         public void Tick(long timestamp)
         {
-            if (timestamp > Interlocked.Read(ref _timeoutTimestamp))
+            if (timestamp > PlatformApis.VolatileRead(ref _timeoutTimestamp))
             {
                 ConnectionControl.CancelTimeout();
 
