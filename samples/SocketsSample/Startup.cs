@@ -39,17 +39,20 @@ namespace SocketsSample
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseSockets(endpoints =>
-            {
-                endpoints.Configure<HubEndpoint>()
-                    .MapRoute("/hubs")
-                        .MapFormatter<InvocationDescriptor, InvocationDescriptorLineFormatter>("line")
-                        .MapFormatter<InvocationResultDescriptor, InvocationResultDescriptorLineFormatter>("line")
-                        .MapFormatter<InvocationDescriptor, RpcJSonFormatter<InvocationDescriptor>>("json")
-                        .MapFormatter<InvocationResultDescriptor, RpcJSonFormatter<InvocationResultDescriptor>>("json");
 
-                endpoints.Configure<ChatEndPoint>().MapRoute("/chat");
-                endpoints.Configure<RpcEndpoint>().MapRoute("/jsonrpc");
+            app.UseSockets(routes =>
+            {
+                routes.MapSocketEndpoint<HubEndpoint>("/hubs");
+                routes.MapSocketEndpoint<ChatEndPoint>("/chat");
+                routes.MapSocketEndpoint<RpcEndpoint>("/jsonrpc");
+            });
+
+            app.UseFormatters(formatters=>
+            {
+                formatters.MapFormatter<InvocationDescriptor, InvocationDescriptorLineFormatter>("line");
+                formatters.MapFormatter<InvocationResultDescriptor, InvocationResultDescriptorLineFormatter>("line");
+                formatters.MapFormatter<InvocationDescriptor, RpcJSonFormatter<InvocationDescriptor>>("json");
+                formatters.MapFormatter<InvocationResultDescriptor, RpcJSonFormatter<InvocationResultDescriptor>>("json");
             });
         }
     }

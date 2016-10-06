@@ -12,7 +12,6 @@ namespace SocketsSample
     {
         public ChatEndPoint()
         {
-            Console.Write(0);
         }
 
         public override async Task OnConnected(Connection connection)

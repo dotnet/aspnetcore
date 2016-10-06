@@ -81,13 +81,13 @@
         document.addEventListener('DOMContentLoaded', () => {
             let connectButton = document.getElementById('connect');
             connectButton.addEventListener('click', () => {
-                run(document.getElementById('format').value, document.getElementById('formatType').value);
+                run(document.getElementById('formatType').value);
                 connectButton.disabled = true;
             });
         });
 
-        function run(format, formatType) {
-            var conn = new hubConnection(`ws://${document.location.host}/hubs/ws?format=${format}&formatType=${formatType}`);
+        function run(formatType) {
+            var conn = new hubConnection(`ws://${document.location.host}/hubs/ws?formatType=${formatType}`);
 
             conn.on('Send', function (message) {
                 var child = document.createElement('li');
@@ -114,11 +114,6 @@
 <body>
     <h1>WebSockets</h1>
     <div>
-        <select id="format">
-            <option value="text">text</option>
-            <option value="binary">binary</option>
-        </select>
-
         <select id="formatType">
             <option value="json">json</option>
             <option value="line">line</option>

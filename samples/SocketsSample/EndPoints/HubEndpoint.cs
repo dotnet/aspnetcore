@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Channels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using SocketsSample.Hubs;
@@ -78,7 +79,9 @@ namespace SocketsSample
                 foreach (var connection in _endPoint.Connections)
                 {
                     // TODO: separate serialization from writing to stream
-                    var formatter = _endPoint.GetFormatter<InvocationDescriptor>((string)connection.Metadata["formatType"]);
+                    var formatter = _endPoint._serviceProvider.GetRequiredService<SocketFormatters>()
+                        .GetFormatter<InvocationDescriptor>((string)connection.Metadata["formatType"]);
+
                     tasks.Add(formatter.WriteAsync(message, connection.Channel.GetStream()));
                 }
 
