@@ -433,8 +433,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var context = TestUtils.CreateTestContext();
 
             context.HttpContext.Response.Headers[HeaderNames.Vary] = new StringValues(new[] { "headerA", "HEADERB", "HEADERc" });
-            context.HttpContext.AddResponseCacheFeature();
-            context.HttpContext.GetResponseCacheFeature().VaryByQueryKeys = new StringValues(new[] { "queryB", "QUERYA" });
+            context.HttpContext.Features.Set<IResponseCacheFeature>(new ResponseCacheFeature()
+            {
+                VaryByQueryKeys = new StringValues(new[] { "queryB", "QUERYA" })
+            });
             var cachedVaryByRules = new CachedVaryByRules()
             {
                 Headers = new StringValues(new[] { "HeaderA", "HeaderB" }),
@@ -462,8 +464,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var context = TestUtils.CreateTestContext();
 
             context.HttpContext.Response.Headers[HeaderNames.Vary] = new StringValues(new[] { "headerA", "HEADERB" });
-            context.HttpContext.AddResponseCacheFeature();
-            context.HttpContext.GetResponseCacheFeature().VaryByQueryKeys = new StringValues(new[] { "queryB", "QUERYA" });
+            context.HttpContext.Features.Set<IResponseCacheFeature>(new ResponseCacheFeature()
+            {
+                VaryByQueryKeys = new StringValues(new[] { "queryB", "QUERYA" })
+            });
             var cachedVaryByRules = new CachedVaryByRules()
             {
                 VaryByKeyPrefix = FastGuid.NewGuid().IdString,
@@ -667,6 +671,19 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ResponseNotCached);
+        }
+
+        [Fact]
+        public void ShimResponseStream_SecondInvocation_Throws()
+        {
+            var middleware = TestUtils.CreateTestMiddleware();
+            var context = TestUtils.CreateTestContext();
+
+            // Should not throw
+            middleware.ShimResponseStream(context);
+
+            // Should throw
+            Assert.ThrowsAny<InvalidOperationException>(() => middleware.ShimResponseStream(context));
         }
 
         [Fact]

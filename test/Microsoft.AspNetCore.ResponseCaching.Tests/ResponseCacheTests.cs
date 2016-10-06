@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var builders = TestUtils.CreateBuildersWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCacheFeature().VaryByQueryKeys = "query";
+                context.Features.Get<IResponseCacheFeature>().VaryByQueryKeys = "query";
                 await TestUtils.TestRequestDelegate(context);
             });
 
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var builders = TestUtils.CreateBuildersWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCacheFeature().VaryByQueryKeys = new[] { "QueryA", "queryb" };
+                context.Features.Get<IResponseCacheFeature>().VaryByQueryKeys = new[] { "QueryA", "queryb" };
                 await TestUtils.TestRequestDelegate(context);
             });
 
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var builders = TestUtils.CreateBuildersWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCacheFeature().VaryByQueryKeys = new[] { "*" };
+                context.Features.Get<IResponseCacheFeature>().VaryByQueryKeys = new[] { "*" };
                 await TestUtils.TestRequestDelegate(context);
             });
 
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var builders = TestUtils.CreateBuildersWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCacheFeature().VaryByQueryKeys = new[] { "QueryB", "QueryA" };
+                context.Features.Get<IResponseCacheFeature>().VaryByQueryKeys = new[] { "QueryB", "QueryA" };
                 await TestUtils.TestRequestDelegate(context);
             });
 
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var builders = TestUtils.CreateBuildersWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCacheFeature().VaryByQueryKeys = new[] { "*" };
+                context.Features.Get<IResponseCacheFeature>().VaryByQueryKeys = new[] { "*" };
                 await TestUtils.TestRequestDelegate(context);
             });
 
@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var builders = TestUtils.CreateBuildersWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCacheFeature().VaryByQueryKeys = "query";
+                context.Features.Get<IResponseCacheFeature>().VaryByQueryKeys = "query";
                 await TestUtils.TestRequestDelegate(context);
             });
 
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var builders = TestUtils.CreateBuildersWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCacheFeature().VaryByQueryKeys = new[] { "QueryA", "QueryB" };
+                context.Features.Get<IResponseCacheFeature>().VaryByQueryKeys = new[] { "QueryA", "QueryB" };
                 await TestUtils.TestRequestDelegate(context);
             });
 
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var builders = TestUtils.CreateBuildersWithResponseCache(requestDelegate: async (context) =>
             {
-                context.GetResponseCacheFeature().VaryByQueryKeys = new[] { "*" };
+                context.Features.Get<IResponseCacheFeature>().VaryByQueryKeys = new[] { "*" };
                 await TestUtils.TestRequestDelegate(context);
             });
 

@@ -1,0 +1,31 @@
+﻿{
+  "version": "1.0.0-*",
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk",
+    "xmlDoc": true
+  },
+  "description": "ASP.NET Core response caching middleware abstractions and feature interface definitions.",
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/ResponseCaching"
+    },
+    "tags": [
+      "aspnetcore",
+      "cache",
+      "caching"
+    ]
+  },
+  "dependencies": {
+    "Microsoft.Extensions.Primitives": "1.1.0-*"
+  },
+  "frameworks": {
+    "net451": {},
+    "netstandard1.3": {
+      "dependencies": {
+        "NETStandard.Library": "1.6.1-*"
+      }
+    }
+  }
+}

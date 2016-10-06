@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 // Create the cache entry now
                 var response = context.HttpContext.Response;
                 var varyHeaders = new StringValues(response.Headers.GetCommaSeparatedValues(HeaderNames.Vary));
-                var varyQueryKeys = context.HttpContext.GetResponseCacheFeature()?.VaryByQueryKeys ?? StringValues.Empty;
+                var varyQueryKeys = context.HttpContext.Features.Get<IResponseCacheFeature>()?.VaryByQueryKeys ?? StringValues.Empty;
                 context.CachedResponseValidFor = context.ResponseCacheControlHeaderValue.SharedMaxAge ??
                     context.ResponseCacheControlHeaderValue.MaxAge ??
                     (context.ResponseExpires - context.ResponseTime.Value) ??
@@ -325,7 +325,12 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 context.HttpContext.Features.Set<IHttpSendFileFeature>(new SendFileFeatureWrapper(context.OriginalSendFileFeature, context.ResponseCacheStream));
             }
 
-            context.HttpContext.AddResponseCacheFeature();
+            // Add IResponseCacheFeature
+            if (context.HttpContext.Features.Get<IResponseCacheFeature>() != null)
+            {
+                throw new InvalidOperationException($"Another instance of {nameof(ResponseCacheFeature)} already exists. Only one instance of {nameof(ResponseCacheMiddleware)} can be configured for an application.");
+            }
+            context.HttpContext.Features.Set<IResponseCacheFeature>(new ResponseCacheFeature());
         }
 
         internal static void UnshimResponseStream(ResponseCacheContext context)
@@ -336,7 +341,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
             // Unshim IHttpSendFileFeature
             context.HttpContext.Features.Set(context.OriginalSendFileFeature);
 
-            context.HttpContext.RemoveResponseCacheFeature();
+            // Remove IResponseCacheFeature
+            context.HttpContext.Features.Set<IResponseCacheFeature>(null);
         }
 
         internal static bool ContentIsNotModified(ResponseCacheContext context)
