@@ -102,6 +102,7 @@ namespace Microsoft.Extensions.ProjectModel
   <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
 </Project>
 ");
+
             _files.Add("One.cs", "public class Abc {}");
             _files.Add("Two.cs", "public class Abc2 {}");
             _files.Add("Excluded.cs", "public class Abc {}");

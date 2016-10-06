@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.DotNet.ProjectModel;
+using Microsoft.Extensions.ProjectModel.Resolution;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
@@ -17,6 +18,10 @@ namespace Microsoft.Extensions.ProjectModel
         private readonly OutputPaths _paths;
         private readonly Lazy<JObject> _rawProject;
         private readonly CommonCompilerOptions _compilerOptions;
+        private readonly Lazy<DotNetDependencyProvider> _dependencyProvider;
+
+        private IEnumerable<DependencyDescription> _packageDependencies;
+        private IEnumerable<ResolvedReference> _compilationAssemblies;
 
         public DotNetProjectContext(ProjectContext projectContext, string configuration, string outputPath)
         {
@@ -49,6 +54,8 @@ namespace Microsoft.Extensions.ProjectModel
             // Workaround https://github.com/dotnet/cli/issues/3164
             IsClassLibrary = !(_compilerOptions.EmitEntryPoint
                     ?? projectContext.ProjectFile.GetCompilerOptions(null, configuration).EmitEntryPoint.GetValueOrDefault());
+
+            _dependencyProvider = new Lazy<DotNetDependencyProvider>(() => new DotNetDependencyProvider(_projectContext));
         }
 
         public bool IsClassLibrary { get; }
@@ -78,6 +85,32 @@ namespace Microsoft.Extensions.ProjectModel
 
         public IEnumerable<string> EmbededItems
             => _compilerOptions.EmbedInclude.ResolveFiles();
+
+        public IEnumerable<DependencyDescription> PackageDependencies
+        {
+            get
+            {
+                if (_packageDependencies == null)
+                {
+                    _packageDependencies = _dependencyProvider.Value.GetPackageDependencies();
+                }
+
+                return _packageDependencies;
+            }
+        }
+
+        public IEnumerable<ResolvedReference> CompilationAssemblies
+        {
+            get
+            {
+                if (_compilationAssemblies == null)
+                {
+                    _compilationAssemblies = _dependencyProvider.Value.GetResolvedReferences();
+                }
+
+                return _compilationAssemblies;
+            }
+        }
 
         /// <summary>
         /// Returns string values of top-level keys in the project.json file

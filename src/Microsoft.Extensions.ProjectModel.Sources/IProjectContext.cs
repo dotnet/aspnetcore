@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.Extensions.ProjectModel.Resolution;
 using NuGet.Frameworks;
 
 namespace Microsoft.Extensions.ProjectModel
@@ -25,5 +26,7 @@ namespace Microsoft.Extensions.ProjectModel
         IEnumerable<string> CompilationItems { get; }
         IEnumerable<string> EmbededItems { get; }
         string FindProperty(string propertyName);
+        IEnumerable<DependencyDescription> PackageDependencies { get;}
+        IEnumerable<ResolvedReference> CompilationAssemblies { get; }
     }
 }

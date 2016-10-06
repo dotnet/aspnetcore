@@ -20,10 +20,10 @@ namespace Microsoft.Extensions.ProjectModel
 {
     internal class MsBuildProjectContextBuilder
     {
-        private string _configuration;
-        private IFileInfo _fileInfo;
-        private string[] _buildTargets;
-        private Dictionary<string, string> _globalProperties = new Dictionary<string, string>();
+        protected string _configuration;
+        protected IFileInfo _fileInfo;
+        protected string[] _buildTargets;
+        protected Dictionary<string, string> _globalProperties = new Dictionary<string, string>();
         private MsBuildContext _msbuildContext;
 
         public MsBuildProjectContextBuilder()
@@ -186,7 +186,7 @@ namespace Microsoft.Extensions.ProjectModel
 
         protected virtual void Initialize()
         {
-            WithBuildTargets(new[] { "ResolveReferences" });
+            WithBuildTargets(new[] { "ResolveReferences", "ResolvePackageDependenciesDesignTime" });
             WithProperty("_ResolveReferenceDependencies", "true");
         }
 

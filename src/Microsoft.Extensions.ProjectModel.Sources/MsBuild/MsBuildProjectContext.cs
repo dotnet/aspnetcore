@@ -7,6 +7,7 @@ using System.IO;
 using Microsoft.Build.Execution;
 using NuGet.Frameworks;
 using System.Linq;
+using Microsoft.Extensions.ProjectModel.Resolution;
 
 namespace Microsoft.Extensions.ProjectModel
 {
@@ -16,23 +17,28 @@ namespace Microsoft.Extensions.ProjectModel
         private const string EmbedItemName = "EmbeddedResource";
         private const string FullPathMetadataName = "FullPath";
 
-        private readonly ProjectInstance _project;
-        private readonly string _name;
+        private readonly MsBuildProjectDependencyProvider _dependencyProvider;
+        private IEnumerable<DependencyDescription> _packageDependencies;
+        private IEnumerable<ResolvedReference> _compilationAssemblies;
+
+        protected ProjectInstance Project { get; }
+        protected string Name { get; }
 
         public MsBuildProjectContext(string name, string configuration, ProjectInstance project)
         {
-            _project = project;
+            Project = project;
 
             Configuration = configuration;
-            _name = name;
+            Name = name;
+            _dependencyProvider = new MsBuildProjectDependencyProvider(Project);
         }
 
         public string FindProperty(string propertyName)
         {
-            return _project.GetProperty(propertyName)?.EvaluatedValue;
+            return Project.GetProperty(propertyName)?.EvaluatedValue;
         }
 
-        public string ProjectName => FindProperty("ProjectName") ?? _name;
+        public string ProjectName => FindProperty("ProjectName") ?? Name;
         public string Configuration { get; }
 
         public NuGetFramework TargetFramework
@@ -69,14 +75,41 @@ namespace Microsoft.Extensions.ProjectModel
         }
         public string AssemblyFullPath => FindProperty("TargetPath");
         public string Platform => FindProperty("Platform");
-        public string ProjectFullPath => _project.FullPath;
+        public string ProjectFullPath => Project.FullPath;
         public string RootNamespace => FindProperty("RootNamespace") ?? ProjectName;
         public string TargetDirectory => FindProperty("TargetDir");
 
         public IEnumerable<string> CompilationItems
-            => _project.GetItems(CompileItemName).Select(i => i.GetMetadataValue(FullPathMetadataName));
+            => Project.GetItems(CompileItemName).Select(i => i.GetMetadataValue(FullPathMetadataName));
 
         public IEnumerable<string> EmbededItems
-             => _project.GetItems(EmbedItemName).Select(i => i.GetMetadataValue(FullPathMetadataName));
+             => Project.GetItems(EmbedItemName).Select(i => i.GetMetadataValue(FullPathMetadataName));
+
+        public IEnumerable<DependencyDescription> PackageDependencies
+        {
+            get
+            {
+                if (_packageDependencies == null)
+                {
+                    _packageDependencies = _dependencyProvider.GetPackageDependencies();
+                }
+
+                return _packageDependencies;
+            }
+        }
+
+        public IEnumerable<ResolvedReference> CompilationAssemblies
+        {
+            get
+            {
+                if (_compilationAssemblies == null)
+                {
+                    _compilationAssemblies = _dependencyProvider.GetResolvedReferences();
+                }
+
+                return _compilationAssemblies;
+            }
+        }
+
     }
 }
