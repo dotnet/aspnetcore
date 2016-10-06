@@ -6,7 +6,11 @@
     "Microsoft.AspNetCore.Server.Kestrel.Https": "1.1.0-*",
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Moq": "4.6.36-*",
-    "xunit": "2.2.0-*"
+    "xunit": "2.2.0-*",
+    "Microsoft.CodeCoverage": {
+      "type": "build",
+      "version": "1.0.1"
+    }
   },
   "frameworks": {
     "netcoreapp1.0": {
@@ -17,12 +21,14 @@
         },
         "System.Diagnostics.TraceSource": "4.3.0-*",
         "System.Net.Http.WinHttpHandler": "4.3.0-*"
-      }
+      },
+      "imports": "dnxcore50"
     },
     "net451": {
       "frameworkAssemblies": {
         "System.Net.Http": "4.0.0.0"
-      }
+      },
+      "imports": "dnx451"
     }
   },
   "buildOptions": {
