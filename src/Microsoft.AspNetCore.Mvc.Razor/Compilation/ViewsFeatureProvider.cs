@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -56,6 +57,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         /// <returns>The <see cref="ViewInfoContainer"/> <see cref="Type"/>.</returns>
         protected virtual Type GetViewInfoContainerType(AssemblyPart assemblyPart)
         {
+#if NETSTANDARD1_6
+            if (assemblyPart.Assembly.Location != null)
+            {
+                var precompiledAssemblyFileName = assemblyPart.Assembly.GetName().Name
+                    + PrecompiledViewsAssemblySuffix
+                    + ".dll";
+                var precompiledAssemblyFilePath = Path.Combine(
+                    assemblyPart.Assembly.Location,
+                    precompiledAssemblyFileName);
+
+                if (File.Exists(precompiledAssemblyFilePath))
+                {
+                    System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(precompiledAssemblyFilePath);
+                }
+            }
+#endif
+
             var precompiledAssemblyName = new AssemblyName(assemblyPart.Assembly.FullName);
             precompiledAssemblyName.Name = precompiledAssemblyName.Name + PrecompiledViewsAssemblySuffix;
 
