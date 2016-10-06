@@ -28,11 +28,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
             _secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
             logger.LogDebug(Resources.Message_Secret_File_Path, _secretsFilePath);
 
-            // workaround https://github.com/aspnet/Configuration/issues/478
-            // TODO remove when tool upgrades to use 1.1.0
-            Directory.CreateDirectory(Path.GetDirectoryName(_secretsFilePath));
-            //end workaround
-
             _secrets = new ConfigurationBuilder()
                 .AddJsonFile(_secretsFilePath, optional: true)
                 .Build()
