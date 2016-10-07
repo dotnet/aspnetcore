@@ -18,9 +18,10 @@ namespace Microsoft.AspNetCore.Sockets
 
         public async Task ProcessRequest(HttpContext context)
         {
-            var buffer = await _channel.Output.ReadAsync();
+            var result = await _channel.Output.ReadAsync();
+            var buffer = result.Buffer;
 
-            if (buffer.IsEmpty && _channel.Output.Reading.IsCompleted)
+            if (buffer.IsEmpty && result.IsCompleted)
             {
                 // Client should stop if it receives a 204
                 context.Response.StatusCode = 204;

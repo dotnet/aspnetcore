@@ -24,9 +24,10 @@ namespace Microsoft.AspNetCore.Sockets
 
             while (true)
             {
-                var buffer = await _channel.Output.ReadAsync();
+                var result = await _channel.Output.ReadAsync();
+                var buffer = result.Buffer;
 
-                if (buffer.IsEmpty && _channel.Output.Reading.IsCompleted)
+                if (buffer.IsEmpty && result.IsCompleted)
                 {
                     break;
                 }

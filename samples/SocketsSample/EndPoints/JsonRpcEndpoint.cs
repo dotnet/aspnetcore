@@ -58,7 +58,8 @@ namespace SocketsSample
                 }
                 catch (Exception)
                 {
-                    if (connection.Channel.Input.Reading.IsCompleted)
+                    var result = await connection.Channel.Input.ReadAsync();
+                    if (result.IsCompleted)
                     {
                         break;
                     }

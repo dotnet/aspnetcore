@@ -17,10 +17,11 @@ namespace SocketsSample
 
             while (true)
             {
-                var input = await connection.Channel.Input.ReadAsync();
+                var result = await connection.Channel.Input.ReadAsync();
+                var input = result.Buffer;
                 try
                 {
-                    if (input.IsEmpty && connection.Channel.Input.Reading.IsCompleted)
+                    if (input.IsEmpty && result.IsCompleted)
                     {
                         break;
                     }
