@@ -36,13 +36,15 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
             _application = new IISApplication(DeploymentParameters, Logger);
 
-            // Publish to IIS root\application folder.
-            DotnetPublish(publishRoot: _application.WebSiteRootFolder);
+            if (DeploymentParameters.PublishApplicationBeforeDeployment)
+            {
+                DotnetPublish(publishRoot: _application.WebSiteRootFolder);
+            }
 
             // Drop a json file instead of setting environment variable.
             SetAspEnvironmentWithJson();
 
-            var uri = TestUriHelper.BuildTestUri();
+            var uri = TestUriHelper.BuildTestUri(DeploymentParameters.ApplicationBaseUriHint);
 
             lock (_syncObject)
             {
@@ -112,7 +114,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
             public void Deploy(Uri uri)
             {
-                _serverManager.Sites.Add(WebSiteName, _deploymentParameters.ApplicationPath, uri.Port);
+                var contentRoot = _deploymentParameters.PublishApplicationBeforeDeployment ? _deploymentParameters.PublishedApplicationRootPath : _deploymentParameters.ApplicationPath;
+                _serverManager.Sites.Add(WebSiteName, contentRoot, uri.Port);
                 _serverManager.CommitChanges();
             }
 
