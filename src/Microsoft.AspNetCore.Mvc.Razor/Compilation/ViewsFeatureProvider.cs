@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
                     + PrecompiledViewsAssemblySuffix
                     + ".dll";
                 var precompiledAssemblyFilePath = Path.Combine(
-                    assemblyPart.Assembly.Location,
+                    Path.GetDirectoryName(assemblyPart.Assembly.Location),
                     precompiledAssemblyFileName);
 
                 if (File.Exists(precompiledAssemblyFilePath))
