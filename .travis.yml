@@ -1,0 +1,34 @@
+language: csharp
+sudo: required
+dist: trusty
+addons:
+  apt:
+    packages:
+    - gettext
+    - libcurl4-openssl-dev
+    - libicu-dev
+    - libssl-dev
+    - libunwind8
+    - zlib1g
+mono:
+  - 4.0.5
+os:
+  - linux
+  - osx
+osx_image: xcode7.1
+branches:
+  only:
+    - master
+    - release
+    - dev
+    - /^(.*\/)?ci-.*$/
+before_install:
+  - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install openssl; brew link --force openssl; fi
+script:
+  - ./build.sh --quiet verify
+notifications:
+  webhooks:
+    secure: "XshregcmoXywFrrlIk7MLluUV2Pd8Z/VftrviVZjRL5+3akix2QnP15eT2E13yNtyS1yIc3lWfrVrLLf+H5bN9dUSzxIMNoJQ/S18F/AO5VD5ewd6pLC0uYhUcHdTRQuzjLGVPlt2suKpPllV2SsGlAdGatdCfj5zM6eOG31jaA="
+  on_success: always
+  on_failure: always
+  on_start: always
