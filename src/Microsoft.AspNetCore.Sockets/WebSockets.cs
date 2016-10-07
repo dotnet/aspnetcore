@@ -54,14 +54,11 @@ namespace Microsoft.AspNetCore.Sockets
                 {
                     outputBuffer.Advance(result.Count);
 
-                    if (result.EndOfMessage)
-                    {
-                        // Flush when we get an entire message
-                        await outputBuffer.FlushAsync();
+                    // Flush the written data to the channel
+                    await outputBuffer.FlushAsync();
 
-                        // Allocate a new buffer to further writing
-                        outputBuffer = _channel.Input.Alloc();
-                    }
+                    // Allocate a new buffer to further writing
+                    outputBuffer = _channel.Input.Alloc();
                 }
                 else
                 {
