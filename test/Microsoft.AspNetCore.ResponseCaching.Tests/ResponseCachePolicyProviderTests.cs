@@ -295,7 +295,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [InlineData(StatusCodes.Status204NoContent)]
         [InlineData(StatusCodes.Status205ResetContent)]
         [InlineData(StatusCodes.Status206PartialContent)]
-        [InlineData(StatusCodes.Status207MultiStatus)]
         [InlineData(StatusCodes.Status300MultipleChoices)]
         [InlineData(StatusCodes.Status301MovedPermanently)]
         [InlineData(StatusCodes.Status302Found)]
@@ -304,7 +303,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [InlineData(StatusCodes.Status305UseProxy)]
         [InlineData(StatusCodes.Status306SwitchProxy)]
         [InlineData(StatusCodes.Status307TemporaryRedirect)]
-        [InlineData(StatusCodes.Status308PermanentRedirect)]
         [InlineData(StatusCodes.Status400BadRequest)]
         [InlineData(StatusCodes.Status401Unauthorized)]
         [InlineData(StatusCodes.Status402PaymentRequired)]
@@ -325,10 +323,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [InlineData(StatusCodes.Status417ExpectationFailed)]
         [InlineData(StatusCodes.Status418ImATeapot)]
         [InlineData(StatusCodes.Status419AuthenticationTimeout)]
-        [InlineData(StatusCodes.Status422UnprocessableEntity)]
-        [InlineData(StatusCodes.Status423Locked)]
-        [InlineData(StatusCodes.Status424FailedDependency)]
-        [InlineData(StatusCodes.Status451UnavailableForLegalReasons)]
         [InlineData(StatusCodes.Status500InternalServerError)]
         [InlineData(StatusCodes.Status501NotImplemented)]
         [InlineData(StatusCodes.Status502BadGateway)]
@@ -336,7 +330,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [InlineData(StatusCodes.Status504GatewayTimeout)]
         [InlineData(StatusCodes.Status505HttpVersionNotsupported)]
         [InlineData(StatusCodes.Status506VariantAlsoNegotiates)]
-        [InlineData(StatusCodes.Status507InsufficientStorage)]
         public void IsResponseCacheable_NonSuccessStatusCodes_NotAllowed(int statusCode)
         {
             var sink = new TestSink();

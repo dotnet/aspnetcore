@@ -4,20 +4,24 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.AspNetCore.ResponseCaching": "1.0.0-*",
-    "Microsoft.AspNetCore.TestHost": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Testing": "1.1.0-*",
-    "xunit": "2.2.0-*"
+    "dotnet-test-xunit": "1.0.0-rc3-000000-01",
+    "Microsoft.AspNetCore.ResponseCaching": "1.0.0",
+    "Microsoft.AspNetCore.TestHost": "1.0.0",
+    "Microsoft.Extensions.Logging.Testing": "1.0.0",
+    "xunit": "2.1.0"
   },
   "frameworks": {
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.1.0-*",
+          "version": "1.0.0",
           "type": "platform"
         }
-      }
+      },
+      "imports": [
+        "dnxcore50",
+        "portable-net451+win8"
+      ]
     },
     "net451": {}
   },

@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             };
         }
 
-        internal static ResponseCacheContext CreateTestContext(ITestSink testSink)
+        internal static ResponseCacheContext CreateTestContext(TestSink testSink)
         {
             return new ResponseCacheContext(new DefaultHttpContext(), new TestLogger("ResponseCachingTests", testSink, true))
             {
@@ -144,6 +144,19 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Assert.Equal(expectedMessages[i].LogLevel, messages[i].LogLevel);
             }
         }
+    }
+
+    internal static class HttpMethods
+    {
+        public static readonly string Connect = "CONNECT";
+        public static readonly string Delete = "DELETE";
+        public static readonly string Get = "GET";
+        public static readonly string Head = "HEAD";
+        public static readonly string Options = "OPTIONS";
+        public static readonly string Patch = "PATCH";
+        public static readonly string Post = "POST";
+        public static readonly string Put = "PUT";
+        public static readonly string Trace = "TRACE";
     }
 
     internal class LoggedMessage

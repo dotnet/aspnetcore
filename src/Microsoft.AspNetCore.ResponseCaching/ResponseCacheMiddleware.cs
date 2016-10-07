@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 {
                     foreach (var tag in ifNoneMatchHeader)
                     {
-                        if (cachedResponseHeaders.ETag.Compare(tag, useStrongComparison: false))
+                        if (string.Equals(cachedResponseHeaders.ETag.Tag, tag.Tag, StringComparison.Ordinal))
                         {
                             context.Logger.LogNotModifiedIfNoneMatchMatched(tag);
                             return true;
