@@ -5,13 +5,14 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Net.Http.Server
 {
     public class ResponseTests
     {
-        [Fact]
+        [ConditionalFact]
         public async Task Response_ServerSendsDefaultResponse_ServerProvidesStatusCodeAndReasonPhrase()
         {
             string address;
@@ -31,7 +32,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Response_ServerSendsSpecificStatus_ServerProvidesReasonPhrase()
         {
             string address;
@@ -52,7 +53,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Response_ServerSendsSpecificStatusAndReasonPhrase_PassedThrough()
         {
             string address;
@@ -74,7 +75,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Response_ServerSendsCustomStatus_NoReasonPhrase()
         {
             string address;
@@ -93,7 +94,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Response_100_Throws()
         {
             string address;
@@ -109,7 +110,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Response_0_Throws()
         {
             string address;

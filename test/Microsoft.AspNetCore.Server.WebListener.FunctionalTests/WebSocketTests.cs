@@ -13,10 +13,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.WebListener
 {
+    [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
     public class WebSocketTests
     {
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task WebSocketTests_SupportKeys_Present()
         {
             string address;
@@ -43,7 +43,6 @@ namespace Microsoft.AspNetCore.Server.WebListener
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task WebSocketTests_AfterHeadersSent_Throws()
         {
             bool? upgradeThrew = null;
@@ -71,7 +70,6 @@ namespace Microsoft.AspNetCore.Server.WebListener
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task WebSocketAccept_Success()
         {
             ManualResetEvent waitHandle = new ManualResetEvent(false);
@@ -97,7 +95,6 @@ namespace Microsoft.AspNetCore.Server.WebListener
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task WebSocketAccept_WithOnStarting_CallbackCalled()
         {
             var callbackCalled = false;
@@ -130,7 +127,6 @@ namespace Microsoft.AspNetCore.Server.WebListener
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task WebSocketAccept_SendAndReceive_Success()
         {
             byte[] clientBuffer = new byte[] { 0x00, 0x01, 0xFF, 0x00, 0x00 };

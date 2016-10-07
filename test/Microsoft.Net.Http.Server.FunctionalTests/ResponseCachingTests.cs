@@ -23,7 +23,7 @@ namespace Microsoft.Net.Http.Server
             _fileLength = new FileInfo(_absoluteFilePath).Length;
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_SetTtlWithoutContentType_NotCached()
         {
             string address;
@@ -57,7 +57,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_SetTtlWithContentType_Cached()
         {
             string address;
@@ -84,7 +84,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         // Http.Sys does not set the optional Age header for cached content.
         // http://tools.ietf.org/html/rfc7234#section-5.1
         public async Task Caching_CheckAge_NotSentWithCachedContent()
@@ -115,7 +115,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         // Http.Sys does not update the optional Age header for cached content.
         // http://tools.ietf.org/html/rfc7234#section-5.1
         public async Task Caching_SetAge_AgeHeaderCachedAndNotUpdated()
@@ -149,7 +149,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_SetTtlZeroSeconds_NotCached()
         {
             string address;
@@ -183,7 +183,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_SetTtlMiliseconds_NotCached()
         {
             string address;
@@ -217,7 +217,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_SetTtlNegative_NotCached()
         {
             string address;
@@ -251,7 +251,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_SetTtlHuge_Cached()
         {
             string address;
@@ -278,7 +278,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_SetTtlAndWriteBody_Cached()
         {
             string address;
@@ -309,7 +309,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_SetTtlAndWriteAsyncBody_Cached()
         {
             string address;
@@ -340,7 +340,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_Flush_NotCached()
         {
             string address;
@@ -373,7 +373,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_WriteFlush_NotCached()
         {
             string address;
@@ -407,7 +407,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_WriteFullContentLength_Cached()
         {
             string address;
@@ -438,7 +438,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_SendFileNoContentLength_NotCached()
         {
             string address;
@@ -471,7 +471,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_SendFileWithFullContentLength_Cached()
         {
             string address;
@@ -502,7 +502,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_SetTtlAndStatusCode_Cached()
         {
             string address;
@@ -542,7 +542,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         // Only GET requests can have cached responses.
-        [Theory]
+        [ConditionalTheory]
         // See HTTP_VERB for known verbs
         [InlineData("HEAD")]
         [InlineData("UNKNOWN")]
@@ -600,7 +600,7 @@ namespace Microsoft.Net.Http.Server
         // RFC violation. http://tools.ietf.org/html/rfc7234#section-4.4 
         // "A cache MUST invalidate the effective Request URI ... when a non-error status code
         // is received in response to an unsafe request method."
-        [Theory]
+        [ConditionalTheory]
         // See HTTP_VERB for known verbs
         [InlineData("HEAD")]
         [InlineData("UNKNOWN")]
@@ -667,7 +667,7 @@ namespace Microsoft.Net.Http.Server
 
         // RFC violation / implementation limiation, Vary is not respected.
         // http://tools.ietf.org/html/rfc7234#section-4.1
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_SetVary_NotRespected()
         {
             string address;
@@ -698,7 +698,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         // http://tools.ietf.org/html/rfc7234#section-3.2
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_RequestAuthorization_NotCached()
         {
             string address;
@@ -732,7 +732,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_RequestAuthorization_NotServedFromCache()
         {
             string address;
@@ -768,7 +768,7 @@ namespace Microsoft.Net.Http.Server
 
         // Responses can be cached for requests with Pragma: no-cache.
         // http://tools.ietf.org/html/rfc7234#section-5.2.1.4
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_RequestPragmaNoCache_Cached()
         {
             string address;
@@ -797,7 +797,7 @@ namespace Microsoft.Net.Http.Server
         // RFC violation, Requests with Pragma: no-cache should not be served from cache.
         // http://tools.ietf.org/html/rfc7234#section-5.4
         // http://tools.ietf.org/html/rfc7234#section-5.2.1.4
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_RequestPragmaNoCache_NotRespectedAndServedFromCache()
         {
             string address;
@@ -825,7 +825,7 @@ namespace Microsoft.Net.Http.Server
 
         // Responses can be cached for requests with cache-control: no-cache.
         // http://tools.ietf.org/html/rfc7234#section-5.2.1.4
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_RequestCacheControlNoCache_Cached()
         {
             string address;
@@ -853,7 +853,7 @@ namespace Microsoft.Net.Http.Server
 
         // RFC violation, Requests with Cache-Control: no-cache should not be served from cache.
         // http://tools.ietf.org/html/rfc7234#section-5.2.1.4
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_RequestCacheControlNoCache_NotRespectedAndServedFromCache()
         {
             string address;
@@ -881,7 +881,7 @@ namespace Microsoft.Net.Http.Server
 
         // RFC violation
         // http://tools.ietf.org/html/rfc7234#section-5.2.1.1
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_RequestCacheControlMaxAgeZero_NotRespectedAndServedFromCache()
         {
             string address;
@@ -909,7 +909,7 @@ namespace Microsoft.Net.Http.Server
 
         // RFC violation
         // http://tools.ietf.org/html/rfc7234#section-5.2.1.3
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_RequestCacheControlMinFreshOutOfRange_NotRespectedAndServedFromCache()
         {
             string address;
@@ -936,7 +936,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         // Http.Sys limitation, partial responses are not cached.
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_CacheRange_NotCached()
         {
             string address;
@@ -980,7 +980,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         // http://tools.ietf.org/html/rfc7233#section-4.1
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_RequestRangeFromCache_RangeServedFromCache()
         {
             string address;
@@ -1010,7 +1010,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         // http://tools.ietf.org/html/rfc7233#section-4.1
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_RequestMultipleRangesFromCache_RangesServedFromCache()
         {
             string address;
@@ -1038,7 +1038,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_RequestRangeFromCachedFile_ServedFromCache()
         {
             string address;
@@ -1070,7 +1070,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_RequestMultipleRangesFromCachedFile_ServedFromCache()
         {
             string address;

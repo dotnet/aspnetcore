@@ -12,10 +12,10 @@ using Xunit;
 
 namespace Microsoft.Net.Http.Server
 {
+    [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
     public class WebSocketTests
     {
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task WebSocketAccept_AfterHeadersSent_Throws()
         {
             string address;
@@ -36,7 +36,6 @@ namespace Microsoft.Net.Http.Server
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task WebSocketAccept_Success()
         {
             string address;
@@ -54,7 +53,6 @@ namespace Microsoft.Net.Http.Server
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task WebSocketAccept_SendAndReceive_Success()
         {
             string address;

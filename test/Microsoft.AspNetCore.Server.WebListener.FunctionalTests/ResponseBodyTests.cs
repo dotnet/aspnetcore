@@ -9,13 +9,14 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.WebListener
 {
     public class ResponseBodyTests
     {
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseBody_WriteNoHeaders_SetsChunked()
         {
             string address;
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseBody_WriteNoHeadersAndFlush_DefaultsToChunked()
         {
             string address;
@@ -56,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseBody_WriteChunked_ManuallyChunked()
         {
             string address;
@@ -78,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseBody_WriteContentLength_PassedThrough()
         {
             string address;
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseBody_WriteContentLengthNoneWritten_Throws()
         {
             string address;
@@ -120,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void ResponseBody_WriteContentLengthNotEnoughWritten_Throws()
         {
             string address;
@@ -135,7 +136,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseBody_WriteContentLengthTooMuchWritten_Throws()
         {
             var completed = false;
@@ -154,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseBody_WriteContentLengthExtraWritten_Throws()
         {
             var waitHandle = new ManualResetEvent(false);
@@ -193,7 +194,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseBody_Write_TriggersOnStarting()
         {
             var onStartingCalled = false;
@@ -221,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 #if NET451
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseBody_BeginWrite_TriggersOnStarting()
         {
             var onStartingCalled = false;
@@ -249,7 +250,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 #endif
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseBody_WriteAsync_TriggersOnStarting()
         {
             var onStartingCalled = false;

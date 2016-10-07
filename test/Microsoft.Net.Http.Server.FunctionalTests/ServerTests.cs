@@ -16,7 +16,7 @@ namespace Microsoft.Net.Http.Server
 {
     public class ServerTests
     {
-        [Fact]
+        [ConditionalFact]
         public async Task Server_200OK_Success()
         {
             string address;
@@ -32,7 +32,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Server_SendHelloWorld_Success()
         {
             string address;
@@ -52,7 +52,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Server_EchoHelloWorld_Success()
         {
             string address;
@@ -74,7 +74,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Server_ClientDisconnects_CallCanceled()
         {
             var interval = TimeSpan.FromSeconds(1);
@@ -105,7 +105,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Server_TokenRegisteredAfterClientDisconnects_CallCanceled()
         {
             var interval = TimeSpan.FromSeconds(1);
@@ -136,7 +136,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Server_TokenRegisteredAfterResponseSent_Success()
         {
             var interval = TimeSpan.FromSeconds(1);
@@ -167,7 +167,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Server_Abort_CallCanceled()
         {
             var interval = TimeSpan.FromSeconds(1);
@@ -195,7 +195,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Server_ConnectionCloseHeader_CancellationTokenFires()
         {
             var interval = TimeSpan.FromSeconds(1);
@@ -228,7 +228,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Server_SetQueueLimit_Success()
         {
             string address;
@@ -245,7 +245,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Server_HotAddPrefix_Success()
         {
             string address;
@@ -276,7 +276,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Server_HotRemovePrefix_Success()
         {
             string address;

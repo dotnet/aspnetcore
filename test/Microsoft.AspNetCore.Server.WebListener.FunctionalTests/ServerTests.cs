@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Server;
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
 {
     public class ServerTests
     {
-        [Fact]
+        [ConditionalFact]
         public async Task Server_200OK_Success()
         {
             string address;
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Server_SendHelloWorld_Success()
         {
             string address;
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Server_EchoHelloWorld_Success()
         {
             string address;
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Server_ShutdownDurringRequest_Success()
         {
             Task<string> responseTask;
@@ -87,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             Assert.Equal("Hello World", response);
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Server_AppException_ClientReset()
         {
             string address;
@@ -105,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Server_MultipleOutstandingSyncRequests_Success()
         {
             int requestLimit = 10;
@@ -138,7 +139,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Server_MultipleOutstandingAsyncRequests_Success()
         {
             int requestLimit = 10;
@@ -168,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Server_ClientDisconnects_CallCanceled()
         {
             TimeSpan interval = TimeSpan.FromSeconds(1);
@@ -204,7 +205,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Server_Abort_CallCanceled()
         {
             TimeSpan interval = TimeSpan.FromSeconds(100);
@@ -234,7 +235,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Server_SetQueueLimit_Success()
         {
             // This is just to get a dynamic port

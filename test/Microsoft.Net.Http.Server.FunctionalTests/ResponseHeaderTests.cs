@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -15,7 +16,7 @@ namespace Microsoft.Net.Http.Server
 {
     public class ResponseHeaderTests
     {
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_11Request_ServerSendsDefaultHeaders()
         {
             string address;
@@ -37,7 +38,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_10Request_ServerSendsDefaultHeaders()
         {
             string address;
@@ -60,7 +61,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_11HeadRequest_ServerSendsDefaultHeaders()
         {
             string address;
@@ -82,7 +83,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_10HeadRequest_ServerSendsDefaultHeaders()
         {
             string address;
@@ -105,7 +106,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_11HeadRequestWithContentLength_Success()
         {
             string address;
@@ -128,7 +129,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_11RequestStatusCodeWithoutBody_NoContentLengthOrChunkedOrClose()
         {
             string address;
@@ -151,7 +152,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_11HeadRequestStatusCodeWithoutBody_NoContentLengthOrChunkedOrClose()
         {
             string address;
@@ -174,7 +175,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_ServerSendsSingleValueKnownHeaders_Success()
         {
             string address;
@@ -199,7 +200,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_ServerSendsMultiValueKnownHeaders_Success()
         {
             string address;
@@ -228,7 +229,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_ServerSendsCustomHeaders_Success()
         {
             string address;
@@ -257,7 +258,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_ServerSendsConnectionClose_Closed()
         {
             string address;
@@ -277,7 +278,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_HTTP10Request_Gets11Close()
         {
             string address;
@@ -296,7 +297,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_HTTP10Request_AllowsManualChunking()
         {
             string address;
@@ -327,7 +328,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_HTTP10KeepAliveRequest_Gets11Close()
         {
             string address;
@@ -346,7 +347,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Headers_FlushSendsHeaders_Success()
         {
             string address;
@@ -382,7 +383,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Headers_FlushAsyncSendsHeaders_Success()
         {
             string address;
@@ -418,7 +419,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("Server", "\r\nData")]
         [InlineData("Server", "\0Data")]
         [InlineData("Server", "Data\r")]

@@ -5,13 +5,14 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
 {
     public class ResponseCachingTests
     {
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_NoCacheControl_NotCached()
         {
             var requestCount = 1;
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_JustPublic_NotCached()
         {
             var requestCount = 1;
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_MaxAge_Cached()
         {
             var requestCount = 1;
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_SMaxAge_Cached()
         {
             var requestCount = 1;
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_SMaxAgeAndMaxAge_SMaxAgePreferredCached()
         {
             var requestCount = 1;
@@ -105,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_Expires_Cached()
         {
             var requestCount = 1;
@@ -125,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("Set-cookie")]
         [InlineData("vary")]
         [InlineData("pragma")]
@@ -148,7 +149,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("0")]
         [InlineData("-1")]
         public async Task Caching_InvalidExpires_NotCached(string expiresValue)
@@ -170,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_ExpiresWithoutPublic_NotCached()
         {
             var requestCount = 1;
@@ -189,7 +190,7 @@ namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Caching_MaxAgeAndExpires_MaxAgePreferred()
         {
             var requestCount = 1;

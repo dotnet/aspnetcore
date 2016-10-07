@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         private static bool AllowAnoymous = true;
         private static bool DenyAnoymous = false;
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(AuthenticationSchemes.None)]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // TODO: Not implemented
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // TODO: Not implemented
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(AuthenticationSchemes.None)]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task AuthTypes_GetMultipleDescriptions()
         {
             string address;
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)]
@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)]
@@ -364,7 +364,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)]
@@ -389,7 +389,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)]
@@ -412,7 +412,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // Not implemented
@@ -435,7 +435,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // Not implemented
@@ -458,7 +458,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // Not implemented

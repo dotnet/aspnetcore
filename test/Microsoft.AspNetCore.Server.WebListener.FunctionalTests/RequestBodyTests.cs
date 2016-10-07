@@ -9,13 +9,14 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.WebListener
 {
     public class RequestBodyTests
     {
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_ReadSync_Success()
         {
             string address;
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_ReadAync_Success()
         {
             string address;
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 #if !NETCOREAPP1_0
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_ReadBeginEnd_Success()
         {
             string address;
@@ -69,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         }
 #endif
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_InvalidBuffer_ArgumentException()
         {
             string address;
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_ReadSyncPartialBody_Success()
         {
             StaggardContent content = new StaggardContent();
@@ -112,7 +113,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_ReadAsyncPartialBody_Success()
         {
             StaggardContent content = new StaggardContent();
@@ -132,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_PostWithImidateBody_Success()
         {
             string address;

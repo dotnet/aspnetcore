@@ -15,7 +15,7 @@ namespace Microsoft.Net.Http.Server
         private static bool AllowAnoymous = true;
         private static bool DenyAnoymous = false;
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(AuthenticationSchemes.None)]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
@@ -114,7 +114,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // TODO: Not implemented
@@ -145,7 +145,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // TODO: Not implemented

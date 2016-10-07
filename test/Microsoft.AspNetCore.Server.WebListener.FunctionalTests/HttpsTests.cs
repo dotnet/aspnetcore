@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.WebListener
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
     {
         private const string Address = "https://localhost:9090/";
 
-        [Fact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
+        [ConditionalFact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
         public async Task Https_200OK_Success()
         {
             using (Utilities.CreateHttpsServer(httpContext =>
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
+        [ConditionalFact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
         public async Task Https_SendHelloWorld_Success()
         {
             using (Utilities.CreateHttpsServer(httpContext =>
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
+        [ConditionalFact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
         public async Task Https_EchoHelloWorld_Success()
         {
             using (Utilities.CreateHttpsServer(httpContext =>
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
+        [ConditionalFact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
         public async Task Https_ClientCertNotSent_ClientCertNotPresent()
         {
             using (Utilities.CreateHttpsServer(async httpContext =>
@@ -79,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
+        [ConditionalFact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
         public async Task Https_ClientCertRequested_ClientCertPresent()
         {
             using (Utilities.CreateHttpsServer(async httpContext =>

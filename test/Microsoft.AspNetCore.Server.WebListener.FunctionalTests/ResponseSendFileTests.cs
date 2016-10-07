@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.WebListener
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             FileLength = new FileInfo(AbsoluteFilePath).Length;
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_SupportKeys_Present()
         {
             string address;
@@ -69,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_MissingFile_Throws()
         {
             var waitHandle = new ManualResetEvent(false);
@@ -103,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
         
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_NoHeaders_DefaultsToChunked()
         {
             string address;
@@ -122,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_RelativeFile_Success()
         {
             string address;
@@ -141,7 +142,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_Unspecified_Chunked()
         {
             string address;
@@ -160,7 +161,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_MultipleWrites_Chunked()
         {
             string address;
@@ -180,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_HalfOfFile_Chunked()
         {
             string address;
@@ -199,7 +200,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_OffsetOutOfRange_Throws()
         {
             var completed = false;
@@ -218,7 +219,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_CountOutOfRange_Throws()
         {
             var completed = false;
@@ -237,7 +238,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_Count0_Chunked()
         {
             string address;
@@ -256,7 +257,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_ContentLength_PassedThrough()
         {
             string address;
@@ -277,7 +278,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_ContentLengthSpecific_PassedThrough()
         {
             string address;
@@ -298,7 +299,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_ContentLength0_PassedThrough()
         {
             string address;
@@ -319,7 +320,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_TriggersOnStarting()
         {
             var onStartingCalled = false;

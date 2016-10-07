@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
 {
     public class RequestHeaderTests
     {
-        [Fact]
+        [ConditionalFact]
         public async Task RequestHeaders_ClientSendsDefaultHeaders_Success()
         {
             string address;
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestHeaders_ClientSendsCustomHeaders_Success()
         {
             string address;

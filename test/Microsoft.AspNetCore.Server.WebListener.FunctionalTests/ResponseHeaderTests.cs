@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
 {
     public class ResponseHeaderTests
     {
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_ServerSendsDefaultHeaders_Success()
         {
             string address;
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_ServerSendsSingleValueKnownHeaders_Success()
         {
             string address;
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_ServerSendsMultiValueKnownHeaders_Success()
         {
             string address;
@@ -88,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_ServerSendsCustomHeaders_Success()
         {
             string address;
@@ -116,7 +117,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_ServerSendsConnectionClose_Closed()
         {
             string address;
@@ -141,7 +142,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_HTTP10Request_Gets11Close()
         {
             string address;
@@ -164,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseHeaders_HTTP10RequestWithChunkedHeader_ManualChunking()
         {
             string address;
@@ -193,7 +194,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Headers_FlushSendsHeaders_Success()
         {
             string address;
@@ -224,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Headers_FlushAsyncSendsHeaders_Success()
         {
             string address;

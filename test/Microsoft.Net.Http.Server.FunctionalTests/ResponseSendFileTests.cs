@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Net.Http.Server
@@ -25,7 +26,7 @@ namespace Microsoft.Net.Http.Server
             FileLength = new FileInfo(AbsoluteFilePath).Length;
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_MissingFile_Throws()
         {
             string address;
@@ -43,7 +44,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
         
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_NoHeaders_DefaultsToChunked()
         {
             string address;
@@ -64,7 +65,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_RelativeFile_Success()
         {
             string address;
@@ -85,7 +86,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_Unspecified_Chunked()
         {
             string address;
@@ -106,7 +107,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_MultipleWrites_Chunked()
         {
             string address;
@@ -128,7 +129,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_HalfOfFile_Chunked()
         {
             string address;
@@ -149,7 +150,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_OffsetOutOfRange_Throws()
         {
             string address;
@@ -167,7 +168,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_CountOutOfRange_Throws()
         {
             string address;
@@ -185,7 +186,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_Count0_Chunked()
         {
             string address;
@@ -206,7 +207,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_EmptyFileCountUnspecified_SetsChunkedAndFlushesHeaders()
         {
             var emptyFilePath = Path.Combine(Directory.GetCurrentDirectory(), "zz_" + Guid.NewGuid().ToString() + "EmptyTestFile.txt");
@@ -234,7 +235,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_ContentLength_PassedThrough()
         {
             string address;
@@ -256,7 +257,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_ContentLengthSpecific_PassedThrough()
         {
             string address;
@@ -279,7 +280,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_ContentLength0_PassedThrough()
         {
             string address;
@@ -302,7 +303,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_WithActiveCancellationToken_Success()
         {
             string address;
@@ -323,7 +324,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_WithTimerCancellationToken_Success()
         {
             string address;
@@ -345,7 +346,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFileWriteExceptions_FirstCallWithCanceledCancellationToken_CancelsAndAborts()
         {
             string address;
@@ -375,7 +376,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_FirstSendWithCanceledCancellationToken_CancelsAndAborts()
         {
             string address;
@@ -404,7 +405,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFileExceptions_SecondSendWithCanceledCancellationToken_CancelsAndAborts()
         {
             string address;
@@ -426,7 +427,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_SecondSendWithCanceledCancellationToken_CancelsAndAborts()
         {
             string address;
@@ -447,7 +448,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFileExceptions_ClientDisconnectsBeforeFirstSend_SendThrows()
         {
             string address;
@@ -480,7 +481,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_ClientDisconnectsBeforeFirstSend_SendCompletesSilently()
         {
             string address;
@@ -503,7 +504,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFileExceptions_ClientDisconnectsBeforeSecondSend_SendThrows()
         {
             string address;
@@ -537,7 +538,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseSendFile_ClientDisconnectsBeforeSecondSend_SendCompletesSilently()
         {
             string address;

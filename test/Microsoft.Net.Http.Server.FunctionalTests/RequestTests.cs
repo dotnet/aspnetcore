@@ -7,13 +7,14 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Net.Http.Server
 {
     public class RequestTests
     {
-        [Fact]
+        [ConditionalFact]
         public async Task Request_SimpleGet_Success()
         {
             string root;
@@ -50,7 +51,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("/", "/", "", "/")]
         [InlineData("/basepath/", "/basepath", "/basepath", "")]
         [InlineData("/basepath/", "/basepath/", "/basepath", "/")]
@@ -82,7 +83,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("/path%")]
         [InlineData("/path%XY")]
         [InlineData("/path%F")]
@@ -100,7 +101,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Request_DoubleEscapingAllowed()
         {
             string root;
@@ -112,7 +113,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Request_OptionsStar_EmptyPath()
         {
             string root;
@@ -127,7 +128,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         // The test server defines these prefixes: "/", "/11", "/2/3", "/2", "/11/2"
         [InlineData("/", "", "/")]
         [InlineData("/random", "", "/random")]
@@ -171,7 +172,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("%D0%A4", "Ф")]
         [InlineData("%d0%a4", "Ф")]
         [InlineData("%E0%A4%AD", "भ")]
@@ -212,7 +213,7 @@ namespace Microsoft.Net.Http.Server
             Assert.Equal(expect, actualPath.TrimStart('/'));
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("/%%32")]
         [InlineData("/%%20")]
         [InlineData("/%F0%8F%8F%BF")]
@@ -233,7 +234,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         // Overlong ASCII
         [InlineData("/%C0%A4", "/%C0%A4")]
         [InlineData("/%C1%BF", "/%C1%BF")]

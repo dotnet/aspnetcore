@@ -9,13 +9,14 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Net.Http.Server
 {
     public class RequestBodyTests
     {
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_ReadSync_Success()
         {
             string address;
@@ -34,7 +35,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_ReadAync_Success()
         {
             string address;
@@ -53,7 +54,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 #if NET451
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_ReadBeginEnd_Success()
         {
             string address;
@@ -73,7 +74,7 @@ namespace Microsoft.Net.Http.Server
         }
 #endif
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_InvalidBuffer_ArgumentException()
         {
             string address;
@@ -97,7 +98,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_ReadSyncPartialBody_Success()
         {
             StaggardContent content = new StaggardContent();
@@ -120,7 +121,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_ReadAsyncPartialBody_Success()
         {
             StaggardContent content = new StaggardContent();
@@ -143,7 +144,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_PostWithImidateBody_Success()
         {
             string address;
@@ -169,7 +170,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_ReadAsyncAlreadyCanceled_ReturnsCanceledTask()
         {
             string address;
@@ -193,7 +194,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_ReadAsyncPartialBodyWithCancellationToken_Success()
         {
             StaggardContent content = new StaggardContent();
@@ -217,7 +218,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_ReadAsyncPartialBodyWithTimeout_Success()
         {
             StaggardContent content = new StaggardContent();
@@ -242,7 +243,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_ReadAsyncPartialBodyAndCancel_Canceled()
         {
             StaggardContent content = new StaggardContent();
@@ -267,7 +268,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_ReadAsyncPartialBodyAndExpiredTimeout_Canceled()
         {
             StaggardContent content = new StaggardContent();
@@ -294,7 +295,7 @@ namespace Microsoft.Net.Http.Server
 
         // Make sure that using our own disconnect token as a read cancellation token doesn't
         // cause recursion problems when it fires and calls Abort.
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBody_ReadAsyncPartialBodyAndDisconnectedClient_Canceled()
         {
             StaggardContent content = new StaggardContent();

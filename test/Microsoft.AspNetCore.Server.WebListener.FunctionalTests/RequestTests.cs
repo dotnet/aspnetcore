@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Server;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
 {
     public class RequestTests
     {
-        [Fact]
+        [ConditionalFact]
         public async Task Request_SimpleGet_ExpectedFieldsSet()
         {
             string root;
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Request_FieldsCanBeSet_Set()
         {
             string root;
@@ -132,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Request_FieldsCanBeSetToNull_Set()
         {
             string root;
@@ -195,7 +196,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("/", "/", "", "/")]
         [InlineData("/basepath/", "/basepath", "/basepath", "")]
         [InlineData("/basepath/", "/basepath/", "/basepath", "/")]
@@ -238,7 +239,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Request_DoubleEscapingAllowed()
         {
             string root;
@@ -256,7 +257,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         // The test server defines these prefixes: "/", "/11", "/2/3", "/2", "/11/2"
         [InlineData("/", "", "/")]
         [InlineData("/random", "", "/random")]
