@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc
         public void ApplyTo_JsonPatchDocument_ModelState()
         {
             // Arrange
-            var operation = new Operation<Customer>("add", "Customer/CustomerId", from: null, value: "TestName");
+            var operation = new Operation<Customer>("add", "CustomerId", from: null, value: "TestName");
             var patchDoc = new JsonPatchDocument<Customer>();
             patchDoc.Operations.Add(operation);
 
@@ -25,14 +25,14 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             var error = Assert.Single(modelState["Customer"].Errors);
-            Assert.Equal("The property at path 'Customer/CustomerId' could not be added.", error.ErrorMessage);
+            Assert.Equal("The target location specified by path segment 'CustomerId' was not found.", error.ErrorMessage);
         }
 
         [Fact]
         public void ApplyTo_JsonPatchDocument_PrefixModelState()
         {
             // Arrange
-            var operation = new Operation<Customer>("add", "Customer/CustomerId", from: null, value: "TestName");
+            var operation = new Operation<Customer>("add", "CustomerId", from: null, value: "TestName");
             var patchDoc = new JsonPatchDocument<Customer>();
             patchDoc.Operations.Add(operation);
 
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             var error = Assert.Single(modelState["jsonpatch.Customer"].Errors);
-            Assert.Equal("The property at path 'Customer/CustomerId' could not be added.", error.ErrorMessage);
+            Assert.Equal("The target location specified by path segment 'CustomerId' was not found.", error.ErrorMessage);
         }
 
         public class Customer
