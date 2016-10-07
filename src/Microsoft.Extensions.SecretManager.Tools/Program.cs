@@ -2,15 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.FileProviders.Physical;
 using Microsoft.Extensions.SecretManager.Tools.Internal;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Extensions.SecretManager.Tools
 {
@@ -21,12 +16,16 @@ namespace Microsoft.Extensions.SecretManager.Tools
         private readonly IConsole _console;
         private readonly string _workingDirectory;
 
-        public Program()
-            : this(PhysicalConsole.Singleton, Directory.GetCurrentDirectory())
+        public static int Main(string[] args)
         {
+            DebugHelper.HandleDebugSwitch(ref args);
+
+            int rc;
+            new Program(PhysicalConsole.Singleton, Directory.GetCurrentDirectory()).TryRun(args, out rc);
+            return rc;
         }
 
-        internal Program(IConsole console, string workingDirectory)
+        public Program(IConsole console, string workingDirectory)
         {
             _console = console;
             _workingDirectory = workingDirectory;
@@ -65,33 +64,6 @@ namespace Microsoft.Extensions.SecretManager.Tools
             }
         }
 
-        public static int Main(string[] args)
-        {
-            HandleDebugFlag(ref args);
-
-            int rc;
-            new Program().TryRun(args, out rc);
-            return rc;
-        }
-
-        [Conditional("DEBUG")]
-        private static void HandleDebugFlag(ref string[] args)
-        {
-            for (var i = 0; i < args.Length; ++i)
-            {
-                if (args[i] == "--debug")
-                {
-                    Console.WriteLine("Process ID " + Process.GetCurrentProcess().Id);
-                    Console.WriteLine("Paused for debugger. Press ENTER to continue");
-                    Console.ReadLine();
-
-                    args = args.Take(i).Concat(args.Skip(i + 1)).ToArray();
-
-                    return;
-                }
-            }
-        }
-
         public bool TryRun(string[] args, out int returnCode)
         {
             try
@@ -103,6 +75,11 @@ namespace Microsoft.Extensions.SecretManager.Tools
             {
                 if (exception is GracefulException)
                 {
+                    if (exception.InnerException != null)
+                    {
+                        Logger.LogInformation(exception.InnerException.Message);
+                    }
+
                     Logger.LogError(exception.Message);
                 }
                 else
@@ -134,65 +111,23 @@ namespace Microsoft.Extensions.SecretManager.Tools
                 CommandOutputProvider.LogLevel = LogLevel.Debug;
             }
 
-            var userSecretsId = ResolveUserSecretsId(options);
+            var userSecretsId = ResolveId(options);
             var store = new SecretsStore(userSecretsId, Logger);
-            var context = new CommandContext(store, Logger, _console);
+            var context = new Internal.CommandContext(store, Logger, _console);
             options.Command.Execute(context);
             return 0;
         }
 
-        private string ResolveUserSecretsId(CommandLineOptions options)
+        internal string ResolveId(CommandLineOptions options)
         {
             if (!string.IsNullOrEmpty(options.Id))
             {
                 return options.Id;
             }
 
-            var projectPath = options.Project ?? _workingDirectory;
-
-            if (!Path.IsPathRooted(projectPath))
+            using (var resolver = new ProjectIdResolver(Logger, _workingDirectory))
             {
-                projectPath = Path.Combine(_workingDirectory, projectPath);
-            }
-
-            if (!projectPath.EndsWith("project.json", StringComparison.OrdinalIgnoreCase))
-            {
-                projectPath = Path.Combine(projectPath, "project.json");
-            }
-
-            var fileInfo = new PhysicalFileInfo(new FileInfo(projectPath));
-
-            if (!fileInfo.Exists)
-            {
-                throw new GracefulException(Resources.FormatError_ProjectPath_NotFound(projectPath));
-            }
-
-            Logger.LogDebug(Resources.Message_Project_File_Path, fileInfo.PhysicalPath);
-            return ReadUserSecretsId(fileInfo);
-        }
-
-        // TODO can use runtime API when upgrading to 1.1
-        private string ReadUserSecretsId(IFileInfo fileInfo)
-        {
-            if (fileInfo == null || !fileInfo.Exists)
-            {
-                throw new GracefulException($"Could not find file '{fileInfo.PhysicalPath}'");
-            }
-
-            using (var stream = fileInfo.CreateReadStream())
-            using (var streamReader = new StreamReader(stream))
-            using (var jsonReader = new JsonTextReader(streamReader))
-            {
-                var obj = JObject.Load(jsonReader);
-
-                var userSecretsId = obj.Value<string>("userSecretsId");
-
-                if (string.IsNullOrEmpty(userSecretsId))
-                {
-                    throw new GracefulException($"Could not find 'userSecretsId' in json file '{fileInfo.PhysicalPath}'");
-                }
-
-                return userSecretsId;
+                return resolver.Resolve(options.Project, options.Configuration);
             }
         }
     }

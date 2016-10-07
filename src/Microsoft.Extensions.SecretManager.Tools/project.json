@@ -4,7 +4,13 @@
     "outputName": "dotnet-user-secrets",
     "emitEntryPoint": true,
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "copyToOutput": "*.targets",
+    "embed": {
+      "mappings": {
+        "FindUserSecretsProperty.targets": "./FindUserSecretsProperty.targets"
+      }
+    }
   },
   "description": "Command line tool to manage user secrets for Microsoft.Extensions.Configuration.",
   "packOptions": {
@@ -16,18 +22,22 @@
       "configuration",
       "secrets",
       "usersecrets"
-    ]
+    ],
+    "files": {
+      "mappings": {
+        "tools/FindUserSecretsProperty.targets": "FindUserSecretsProperty.targets"
+      }
+    }
   },
   "dependencies": {
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
     "Microsoft.Extensions.CommandLineUtils": "1.1.0-*",
     "Microsoft.Extensions.Configuration.UserSecrets": "1.1.0-*",
     "Microsoft.Extensions.Logging": "1.1.0-*",
     "Microsoft.NETCore.App": {
       "version": "1.1.0-*",
       "type": "platform"
-    },
-    "Newtonsoft.Json": "9.0.1",
-    "System.Runtime.Serialization.Primitives": "4.3.0-*"
+    }
   },
   "frameworks": {
     "netcoreapp1.0": {}

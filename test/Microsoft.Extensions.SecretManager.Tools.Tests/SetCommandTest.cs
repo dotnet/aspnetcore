@@ -75,7 +75,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             var secretStore = new TestSecretsStore();
             var command = new SetCommand("key", null);
 
-            var ex = Assert.Throws<GracefulException>(
+            var ex = Assert.Throws< Microsoft.DotNet.Cli.Utils.GracefulException>(
                 () => command.Execute(new CommandContext(secretStore, NullLogger.Instance, testConsole)));
             Assert.Equal(Resources.FormatError_MissingArgument("value"), ex.Message);
         }

@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 

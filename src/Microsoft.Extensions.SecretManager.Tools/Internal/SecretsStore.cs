@@ -26,6 +26,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
             }
 
             _secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
+            
             logger.LogDebug(Resources.Message_Secret_File_Path, _secretsFilePath);
             _secrets = Load(userSecretsId);
         }

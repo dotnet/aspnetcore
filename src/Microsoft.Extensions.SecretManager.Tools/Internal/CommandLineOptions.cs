@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Reflection;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
@@ -13,6 +14,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
         public bool IsHelp { get; set; }
         public string Project { get; set; }
         public ICommand Command { get; set; }
+        public string Configuration { get; set; }
 
         public static CommandLineOptions Parse(string[] args, IConsole console)
         {
@@ -32,6 +34,9 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
                 CommandOptionType.NoValue, inherited: true);
 
             var optionProject = app.Option("-p|--project <PROJECT>", "Path to project, default is current directory",
+                CommandOptionType.SingleValue, inherited: true);
+
+            var optionConfig = app.Option("-c|--configuration <CONFIGURATION>", $"The project configuration to use. Defaults to {Constants.DefaultConfiguration}",
                 CommandOptionType.SingleValue, inherited: true);
 
             // the escape hatch if project evaluation fails, or if users want to alter a secret store other than the one
@@ -55,6 +60,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
                 return null;
             }
 
+            options.Configuration = optionConfig.Value();
             options.Id = optionId.Value();
             options.IsHelp = app.IsShowingInformation;
             options.IsVerbose = optionVerbose.HasValue();

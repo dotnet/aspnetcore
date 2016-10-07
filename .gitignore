@@ -28,6 +28,7 @@ project.lock.json
 .testPublish/
 .build/
 /.vs/
+.vscode/
 testWorkDir/
 *.nuget.props
 *.nuget.targets

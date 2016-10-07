@@ -11,6 +11,22 @@ namespace Microsoft.Extensions.SecretManager.Tools
             = new ResourceManager("Microsoft.Extensions.SecretManager.Tools.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Value cannot be null or an empty string.
+        /// </summary>
+        internal static string Common_StringNullOrEmpty
+        {
+            get { return GetString("Common_StringNullOrEmpty"); }
+        }
+
+        /// <summary>
+        /// Value cannot be null or an empty string.
+        /// </summary>
+        internal static string FormatCommon_StringNullOrEmpty()
+        {
+            return GetString("Common_StringNullOrEmpty");
+        }
+
+        /// <summary>
         /// Command failed : {message}
         /// </summary>
         internal static string Error_Command_Failed
@@ -61,6 +77,22 @@ namespace Microsoft.Extensions.SecretManager.Tools
         }
 
         /// <summary>
+        /// Multiple MSBuild project files found in '{projectPath}'. Specify which to use with the --project option.
+        /// </summary>
+        internal static string Error_MultipleProjectsFound
+        {
+            get { return GetString("Error_MultipleProjectsFound"); }
+        }
+
+        /// <summary>
+        /// Multiple MSBuild project files found in '{projectPath}'. Specify which to use with the --project option.
+        /// </summary>
+        internal static string FormatError_MultipleProjectsFound(object projectPath)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_MultipleProjectsFound", "projectPath"), projectPath);
+        }
+
+        /// <summary>
         /// No secrets configured for this application.
         /// </summary>
         internal static string Error_No_Secrets_Found
@@ -77,6 +109,38 @@ namespace Microsoft.Extensions.SecretManager.Tools
         }
 
         /// <summary>
+        /// Could not find a MSBuild project file in '{projectPath}'. Specify which project to use with the --project option.
+        /// </summary>
+        internal static string Error_NoProjectsFound
+        {
+            get { return GetString("Error_NoProjectsFound"); }
+        }
+
+        /// <summary>
+        /// Could not find a MSBuild project file in '{projectPath}'. Specify which project to use with the --project option.
+        /// </summary>
+        internal static string FormatError_NoProjectsFound(object projectPath)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_NoProjectsFound", "projectPath"), projectPath);
+        }
+
+        /// <summary>
+        /// Could not find the global property 'UserSecretsId' in MSBuild project '{project}'. Ensure this property is set in the project or use the '--id' command line option.
+        /// </summary>
+        internal static string Error_ProjectMissingId
+        {
+            get { return GetString("Error_ProjectMissingId"); }
+        }
+
+        /// <summary>
+        /// Could not find the global property 'UserSecretsId' in MSBuild project '{project}'. Ensure this property is set in the project or use the '--id' command line option.
+        /// </summary>
+        internal static string FormatError_ProjectMissingId(object project)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_ProjectMissingId", "project"), project);
+        }
+
+        /// <summary>
         /// The project file '{path}' does not exist.
         /// </summary>
         internal static string Error_ProjectPath_NotFound
@@ -90,6 +154,22 @@ namespace Microsoft.Extensions.SecretManager.Tools
         internal static string FormatError_ProjectPath_NotFound(object path)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("Error_ProjectPath_NotFound", "path"), path);
+        }
+
+        /// <summary>
+        /// Could not load the MSBuild project '{project}'.
+        /// </summary>
+        internal static string Error_ProjectFailedToLoad
+        {
+            get { return GetString("Error_ProjectFailedToLoad"); }
+        }
+
+        /// <summary>
+        /// Could not load the MSBuild project '{project}'.
+        /// </summary>
+        internal static string FormatError_ProjectFailedToLoad(object project)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_ProjectFailedToLoad", "project"), project);
         }
 
         /// <summary>
