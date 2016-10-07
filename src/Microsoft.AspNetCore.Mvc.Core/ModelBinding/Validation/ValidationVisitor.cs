@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         private ModelMetadata _metadata;
         private IValidationStrategy _strategy;
 
-        private HashSet<object> _currentPath;
+        private ValidationStack _currentPath;
 
         /// <summary>
         /// Creates a new <see cref="ValidationVisitor"/>.
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             _validationState = validationState;
 
             _modelState = actionContext.ModelState;
-            _currentPath = new HashSet<object>(ReferenceEqualityComparer.Instance);
+            _currentPath = new ValidationStack();
         }
 
         /// <summary>
@@ -156,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         {
             RuntimeHelpers.EnsureSufficientExecutionStack();
 
-            if (model != null && !_currentPath.Add(model))
+            if (model != null && !_currentPath.Push(model))
             {
                 // This is a cycle, bail.
                 return true;
@@ -176,6 +177,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             {
                 // Use the key on the entry, because we might not have entries in model state.
                 SuppressValidation(entry.Key);
+                _currentPath.Pop(model);
                 return true;
             }
 
@@ -352,7 +354,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 _visitor._model = _model;
                 _visitor._strategy = _strategy;
 
-                _visitor._currentPath.Remove(_newModel);
+                _visitor._currentPath.Pop(_newModel);
             }
         }
     }

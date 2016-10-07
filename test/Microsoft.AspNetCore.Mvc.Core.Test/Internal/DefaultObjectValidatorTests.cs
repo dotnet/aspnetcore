@@ -559,6 +559,42 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         [Fact]
         [ReplaceCulture]
+        public void Validate_ComplexType_SecondLevelCyclesNotFollowed_Invalid()
+        {
+            // Arrange
+            var actionContext = new ActionContext();
+            var modelState = actionContext.ModelState;
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator();
+
+            var person = new Person() { Name = "Billy" };
+            person.Family = new Family { Members = new List<Person> { person } };
+
+            var model = (object)person;
+
+            modelState.SetModelValue("parameter.Name", "Billy", "Billy");
+            validationState.Add(model, new ValidationStateEntry() { Key = "parameter" });
+
+            // Act
+            validator.Validate(actionContext, validationState, "parameter", model);
+
+            // Assert
+            Assert.False(modelState.IsValid);
+            AssertKeysEqual(modelState, "parameter.Name", "parameter.Profession");
+
+            var entry = modelState["parameter.Name"];
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+            Assert.Empty(entry.Errors);
+
+            entry = modelState["parameter.Profession"];
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+            var error = Assert.Single(entry.Errors);
+            Assert.Equal(error.ErrorMessage, ValidationAttributeUtil.GetRequiredErrorMessage("Profession"));
+        }
+
+        [Fact]
+        [ReplaceCulture]
         public void Validate_ComplexType_CyclesNotFollowed_Invalid()
         {
             // Arrange
@@ -1138,6 +1174,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             public string Profession { get; set; }
 
             public Person Friend { get; set; }
+
+            public Family Family { get; set; }
+        }
+
+        private class Family
+        {
+            public List<Person> Members { get; set; }
         }
 
         private class Person2
