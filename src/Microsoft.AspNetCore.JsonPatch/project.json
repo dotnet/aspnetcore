@@ -33,7 +33,7 @@
     "netstandard1.3": {
       "dependencies": {
         "Microsoft.CSharp": "4.3.0-*",
-        "System.Reflection.TypeExtensions": "4.1.0-*"
+        "System.Reflection.TypeExtensions": "4.3.0-*"
       }
     }
   }
