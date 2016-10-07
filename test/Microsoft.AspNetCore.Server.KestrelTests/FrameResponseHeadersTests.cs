@@ -78,24 +78,29 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             var responseHeaders = new FrameResponseHeaders();
 
-            Assert.Throws<InvalidOperationException>(() => {
+            Assert.Throws<InvalidOperationException>(() =>
+            {
                 ((IHeaderDictionary)responseHeaders)[key] = value;
             });
 
-            Assert.Throws<InvalidOperationException>(() => {
+            Assert.Throws<InvalidOperationException>(() =>
+            {
                 ((IHeaderDictionary)responseHeaders)[key] = new StringValues(new[] { "valid", value });
             });
 
-            Assert.Throws<InvalidOperationException>(() => {
+            Assert.Throws<InvalidOperationException>(() =>
+            {
                 ((IDictionary<string, StringValues>)responseHeaders)[key] = value;
             });
 
-            Assert.Throws<InvalidOperationException>(() => {
+            Assert.Throws<InvalidOperationException>(() =>
+            {
                 var kvp = new KeyValuePair<string, StringValues>(key, value);
                 ((ICollection<KeyValuePair<string, StringValues>>)responseHeaders).Add(kvp);
             });
 
-            Assert.Throws<InvalidOperationException>(() => {
+            Assert.Throws<InvalidOperationException>(() =>
+            {
                 var kvp = new KeyValuePair<string, StringValues>(key, value);
                 ((IDictionary<string, StringValues>)responseHeaders).Add(key, value);
             });
@@ -141,6 +146,84 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             headers.SetReadOnly();
 
             Assert.Throws<InvalidOperationException>(() => dictionary.Clear());
+        }
+
+        [Fact]
+        public void ThrowsWhenAddingContentLengthWithNonNumericValue()
+        {
+            var headers = new FrameResponseHeaders();
+            var dictionary = (IDictionary<string, StringValues>)headers;
+
+            Assert.Throws<InvalidOperationException>(() => dictionary.Add("Content-Length", new[] { "bad" }));
+        }
+
+        [Fact]
+        public void ThrowsWhenSettingContentLengthToNonNumericValue()
+        {
+            var headers = new FrameResponseHeaders();
+            var dictionary = (IDictionary<string, StringValues>)headers;
+
+            Assert.Throws<InvalidOperationException>(() => ((IHeaderDictionary)headers)["Content-Length"] = "bad");
+        }
+
+        [Fact]
+        public void ThrowsWhenAssigningHeaderContentLengthToNonNumericValue()
+        {
+            var headers = new FrameResponseHeaders();
+            Assert.Throws<InvalidOperationException>(() => headers.HeaderContentLength = "bad");
+        }
+
+        [Fact]
+        public void ContentLengthValueCanBeReadAsLongAfterAddingHeader()
+        {
+            var headers = new FrameResponseHeaders();
+            var dictionary = (IDictionary<string, StringValues>)headers;
+            dictionary.Add("Content-Length", "42");
+
+            Assert.Equal(42, headers.HeaderContentLengthValue);
+        }
+
+        [Fact]
+        public void ContentLengthValueCanBeReadAsLongAfterSettingHeader()
+        {
+            var headers = new FrameResponseHeaders();
+            var dictionary = (IDictionary<string, StringValues>)headers;
+            dictionary["Content-Length"] = "42";
+
+            Assert.Equal(42, headers.HeaderContentLengthValue);
+        }
+
+        [Fact]
+        public void ContentLengthValueCanBeReadAsLongAfterAssigningHeader()
+        {
+            var headers = new FrameResponseHeaders();
+            headers.HeaderContentLength = "42";
+
+            Assert.Equal(42, headers.HeaderContentLengthValue);
+        }
+
+        [Fact]
+        public void ContentLengthValueClearedWhenHeaderIsRemoved()
+        {
+            var headers = new FrameResponseHeaders();
+            headers.HeaderContentLength = "42";
+            var dictionary = (IDictionary<string, StringValues>)headers;
+
+            dictionary.Remove("Content-Length");
+
+            Assert.Equal(null, headers.HeaderContentLengthValue);
+        }
+
+        [Fact]
+        public void ContentLengthValueClearedWhenHeadersCleared()
+        {
+            var headers = new FrameResponseHeaders();
+            headers.HeaderContentLength = "42";
+            var dictionary = (IDictionary<string, StringValues>)headers;
+
+            dictionary.Clear();
+
+            Assert.Equal(null, headers.HeaderContentLengthValue);
         }
     }
 }

@@ -622,35 +622,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task WriteOnHeadResponseLoggedOnlyOnce(TestServiceContext testContext)
-        {
-            using (var server = new TestServer(async httpContext =>
-            {
-                await httpContext.Response.WriteAsync("hello, ");
-                await httpContext.Response.WriteAsync("world");
-                await httpContext.Response.WriteAsync("!");
-            }, testContext))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.SendEnd(
-                        "HEAD / HTTP/1.1",
-                        "",
-                        "");
-                    await connection.ReceiveEnd(
-                        "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
-                        "",
-                        "");
-                }
-
-                Assert.Equal(1, ((TestKestrelTrace)testContext.Log).HeadResponseWrites);
-                Assert.Equal(13, ((TestKestrelTrace)testContext.Log).HeadResponseWriteByteCount);
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
         public async Task ThrowingResultsIn500Response(TestServiceContext testContext)
         {
             bool onStartingCalled = false;
@@ -697,11 +668,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Content-Length: 0",
                         "",
                         "");
-
-                    Assert.False(onStartingCalled);
-                    Assert.Equal(2, testLogger.ApplicationErrorsLogged);
                 }
             }
+
+            Assert.False(onStartingCalled);
+            Assert.Equal(2, testLogger.ApplicationErrorsLogged);
         }
 
         [Theory]
@@ -739,11 +710,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Content-Length: 11",
                         "",
                         "Hello World");
-
-                    Assert.True(onStartingCalled);
-                    Assert.Equal(1, testLogger.ApplicationErrorsLogged);
                 }
             }
+
+            Assert.True(onStartingCalled);
+            Assert.Equal(1, testLogger.ApplicationErrorsLogged);
         }
 
         [Theory]
@@ -781,11 +752,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Content-Length: 11",
                         "",
                         "Hello");
-
-                    Assert.True(onStartingCalled);
-                    Assert.Equal(1, testLogger.ApplicationErrorsLogged);
                 }
             }
+
+            Assert.True(onStartingCalled);
+            Assert.Equal(1, testLogger.ApplicationErrorsLogged);
         }
 
         [Theory]
@@ -925,16 +896,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Content-Length: 0",
                         "",
                         "");
-
-                    Assert.Equal(2, onStartingCallCount2);
-
-                    // The first registered OnStarting callback should not be called,
-                    // since they are called LIFO and the other one failed.
-                    Assert.Equal(0, onStartingCallCount1);
-
-                    Assert.Equal(2, testLogger.ApplicationErrorsLogged);
                 }
             }
+
+            // The first registered OnStarting callback should not be called,
+            // since they are called LIFO and the other one failed.
+            Assert.Equal(0, onStartingCallCount1);
+            Assert.Equal(2, onStartingCallCount2);
+            Assert.Equal(2, testLogger.ApplicationErrorsLogged);
         }
 
         [Theory]
@@ -979,12 +948,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "Hello World");
                 }
-
-                // All OnCompleted callbacks should be called even if they throw.
-                Assert.Equal(2, testLogger.ApplicationErrorsLogged);
-                Assert.True(onCompletedCalled1);
-                Assert.True(onCompletedCalled2);
             }
+
+            // All OnCompleted callbacks should be called even if they throw.
+            Assert.Equal(2, testLogger.ApplicationErrorsLogged);
+            Assert.True(onCompletedCalled1);
+            Assert.True(onCompletedCalled2);
         }
 
         [Theory]

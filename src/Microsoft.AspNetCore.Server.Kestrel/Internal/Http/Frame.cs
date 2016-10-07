@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -75,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         protected readonly long _keepAliveMilliseconds;
         private readonly long _requestHeadersTimeoutMilliseconds;
 
-        private int _responseBytesWritten;
+        protected long _responseBytesWritten;
 
         public Frame(ConnectionContext context)
         {
@@ -516,8 +517,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public void Write(ArraySegment<byte> data)
         {
+            VerifyAndUpdateWrite(data.Count);
             ProduceStartAndFireOnStarting().GetAwaiter().GetResult();
-            _responseBytesWritten += data.Count;
 
             if (_canHaveBody)
             {
@@ -547,7 +548,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 return WriteAsyncAwaited(data, cancellationToken);
             }
 
-            _responseBytesWritten += data.Count;
+            VerifyAndUpdateWrite(data.Count);
 
             if (_canHaveBody)
             {
@@ -573,8 +574,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public async Task WriteAsyncAwaited(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
+            VerifyAndUpdateWrite(data.Count);
+
             await ProduceStartAndFireOnStarting();
-            _responseBytesWritten += data.Count;
 
             if (_canHaveBody)
             {
@@ -596,6 +598,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 HandleNonBodyResponseWrite();
                 return;
             }
+        }
+
+        private void VerifyAndUpdateWrite(int count)
+        {
+            var responseHeaders = FrameResponseHeaders;
+
+            if (responseHeaders != null &&
+                !responseHeaders.HasTransferEncoding &&
+                responseHeaders.HasContentLength &&
+                _responseBytesWritten + count > responseHeaders.HeaderContentLengthValue.Value)
+            {
+                _keepAlive = false;
+                throw new InvalidOperationException(
+                    $"Response Content-Length mismatch: too many bytes written ({_responseBytesWritten + count} of {responseHeaders.HeaderContentLengthValue.Value}).");
+            }
+
+            _responseBytesWritten += count;
         }
 
         private void WriteChunked(ArraySegment<byte> data)

@@ -13,10 +13,6 @@ namespace Microsoft.AspNetCore.Testing
         {
         }
 
-        public int HeadResponseWrites { get; set; }
-
-        public int HeadResponseWriteByteCount { get; set; }
-
         public override void ConnectionRead(string connectionId, int count)
         {
             //_logger.LogDebug(1, @"Connection id ""{ConnectionId}"" recv {count} bytes.", connectionId, count);
@@ -30,12 +26,6 @@ namespace Microsoft.AspNetCore.Testing
         public override void ConnectionWriteCallback(string connectionId, int status)
         {
             //_logger.LogDebug(1, @"Connection id ""{ConnectionId}"" send finished with status {status}.", connectionId, status);
-        }
-
-        public override void ConnectionHeadResponseBodyWrite(string connectionId, int count)
-        {
-            HeadResponseWrites++;
-            HeadResponseWriteByteCount = count;
         }
     }
 }

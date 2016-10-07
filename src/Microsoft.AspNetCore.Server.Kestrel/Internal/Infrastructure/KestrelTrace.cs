@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
         private static readonly Action<ILogger, string, Exception> _applicationError;
         private static readonly Action<ILogger, string, Exception> _connectionError;
         private static readonly Action<ILogger, string, int, Exception> _connectionDisconnectedWrite;
-        private static readonly Action<ILogger, string, int, Exception> _connectionHeadResponseBodyWrite;
+        private static readonly Action<ILogger, string, long, Exception> _connectionHeadResponseBodyWrite;
         private static readonly Action<ILogger, Exception> _notAllConnectionsClosedGracefully;
         private static readonly Action<ILogger, string, string, Exception> _connectionBadRequest;
 
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             _connectionDisconnectedWrite = LoggerMessage.Define<string, int>(LogLevel.Debug, 15, @"Connection id ""{ConnectionId}"" write of ""{count}"" bytes to disconnected client.");
             _notAllConnectionsClosedGracefully = LoggerMessage.Define(LogLevel.Debug, 16, "Some connections failed to close gracefully during server shutdown.");
             _connectionBadRequest = LoggerMessage.Define<string, string>(LogLevel.Information, 17, @"Connection id ""{ConnectionId}"" bad request data: ""{message}""");
-            _connectionHeadResponseBodyWrite = LoggerMessage.Define<string, int>(LogLevel.Debug, 18, @"Connection id ""{ConnectionId}"" write of ""{count}"" body bytes to non-body HEAD response.");
+            _connectionHeadResponseBodyWrite = LoggerMessage.Define<string, long>(LogLevel.Debug, 18, @"Connection id ""{ConnectionId}"" write of ""{count}"" body bytes to non-body HEAD response.");
         }
 
         public KestrelTrace(ILogger logger)
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             _connectionDisconnectedWrite(_logger, connectionId, count, ex);
         }
 
-        public virtual void ConnectionHeadResponseBodyWrite(string connectionId, int count)
+        public virtual void ConnectionHeadResponseBodyWrite(string connectionId, long count)
         {
             _connectionHeadResponseBodyWrite(_logger, connectionId, count, null);
         }

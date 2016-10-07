@@ -14,6 +14,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
             return values.Any() ? values.Select(formatter).Aggregate((a, b) => a + b) : "";
         }
 
+        static string If(bool condition, Func<string> formatter)
+        {
+            return condition ? formatter() : "";
+        }
+
         class KnownHeader
         {
             public string Name { get; set; }
@@ -228,7 +233,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 return StringValues.Empty;
             }}
             set
-            {{
+            {{{If(loop.ClassName == "FrameResponseHeaders" && header.Identifier == "ContentLength", () => @"
+                _contentLength = ParseContentLength(value);")}
                 {header.SetBit()};
                 _headers._{header.Identifier} = value; {(header.EnhancedSetter == false ? "" : $@"
                 _headers._raw{header.Identifier} = null;")}
@@ -304,7 +310,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 case {byLength.Key}:
                     {{{Each(byLength, header => $@"
                         if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {{
+                        {{{If(loop.ClassName == "FrameResponseHeaders" && header.Identifier == "ContentLength", () => @"
+                            _contentLength = ParseContentLength(value);")}
                             {header.SetBit()};
                             _headers._{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
                             _headers._raw{header.Identifier} = null;")}
@@ -328,7 +335,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             if ({header.TestBit()})
                             {{
                                 ThrowDuplicateKeyException();
-                            }}
+                            }}{
+                            If(loop.ClassName == "FrameResponseHeaders" && header.Identifier == "ContentLength", () => @"
+                            _contentLength = ParseContentLength(value);")}
                             {header.SetBit()};
                             _headers._{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
                             _headers._raw{header.Identifier} = null;")}
@@ -349,7 +358,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase))
                         {{
                             if ({header.TestBit()})
-                            {{
+                            {{{If(loop.ClassName == "FrameResponseHeaders" && header.Identifier == "ContentLength", () => @"
+                                _contentLength = null;")}
                                 {header.ClearBit()};
                                 _headers._{header.Identifier} = StringValues.Empty;{(header.EnhancedSetter == false ? "" : $@"
                                 _headers._raw{header.Identifier} = null;")}
@@ -369,6 +379,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {{
             _bits = 0;
             _headers = default(HeaderReferences);
+            {(loop.ClassName == "FrameResponseHeaders" ? "_contentLength = null;" : "")}
             MaybeUnknown?.Clear();
         }}
 
@@ -435,7 +446,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                                     _headers._{header.Identifier} = AppendValue(_headers._{header.Identifier}, value);
                                 }}
                                 else
-                                {{
+                                {{{If(loop.ClassName == "FrameResponseHeaders" && header.Identifier == "ContentLength", () => @"
+                                    _contentLength = ParseContentLength(value);")}
                                     {header.SetBit()};
                                     _headers._{header.Identifier} = new StringValues(value);{(header.EnhancedSetter == false ? "" : $@"
                                     _headers._raw{header.Identifier} = null;")}

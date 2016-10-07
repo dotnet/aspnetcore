@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
@@ -85,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     app.Run(async context =>
                     {
                         context.Response.Headers.Add(headerName, headerValue);
-                        
+
                         await context.Response.WriteAsync("");
                     });
                 });
@@ -299,7 +301,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        public async Task ResponseBodyNotWrittenOnHeadResponse()
+        public async Task ResponseBodyNotWrittenOnHeadResponseAndLoggedOnlyOnce()
         {
             var mockKestrelTrace = new Mock<IKestrelTrace>();
 
@@ -324,7 +326,285 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
 
             mockKestrelTrace.Verify(kestrelTrace =>
-                kestrelTrace.ConnectionHeadResponseBodyWrite(It.IsAny<string>(), "hello, world".Length));
+                kestrelTrace.ConnectionHeadResponseBodyWrite(It.IsAny<string>(), "hello, world".Length), Times.Once);
+        }
+
+        [Fact]
+        public async Task WhenAppWritesMoreThanContentLengthWriteThrowsAndConnectionCloses()
+        {
+            var testLogger = new TestApplicationErrorLogger();
+            var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
+
+            using (var server = new TestServer(httpContext =>
+            {
+                httpContext.Response.ContentLength = 11;
+                httpContext.Response.Body.Write(Encoding.ASCII.GetBytes("hello,"), 0, 6);
+                httpContext.Response.Body.Write(Encoding.ASCII.GetBytes(" world"), 0, 6);
+                return TaskCache.CompletedTask;
+            }, serviceContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        $"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 11",
+                        "",
+                        "hello,");
+                }
+            }
+
+            var logMessage = Assert.Single(testLogger.Messages, message => message.LogLevel == LogLevel.Error);
+            Assert.Equal(
+                $"Response Content-Length mismatch: too many bytes written (12 of 11).",
+                logMessage.Exception.Message);
+        }
+
+        [Fact]
+        public async Task WhenAppWritesMoreThanContentLengthWriteAsyncThrowsAndConnectionCloses()
+        {
+            var testLogger = new TestApplicationErrorLogger();
+            var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.ContentLength = 11;
+                await httpContext.Response.WriteAsync("hello,");
+                await httpContext.Response.WriteAsync(" world");
+            }, serviceContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        $"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 11",
+                        "",
+                        "hello,");
+                }
+            }
+
+            var logMessage = Assert.Single(testLogger.Messages, message => message.LogLevel == LogLevel.Error);
+            Assert.Equal(
+                $"Response Content-Length mismatch: too many bytes written (12 of 11).",
+                logMessage.Exception.Message);
+        }
+
+        [Fact]
+        public async Task WhenAppWritesMoreThanContentLengthAndResponseNotStarted500ResponseSentAndConnectionCloses()
+        {
+            var testLogger = new TestApplicationErrorLogger();
+            var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.ContentLength = 5;
+                await httpContext.Response.WriteAsync("hello, world");
+            }, serviceContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        $"HTTP/1.1 500 Internal Server Error",
+                        "Connection: close",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+
+            var logMessage = Assert.Single(testLogger.Messages, message => message.LogLevel == LogLevel.Error);
+            Assert.Equal(
+                $"Response Content-Length mismatch: too many bytes written (12 of 5).",
+                logMessage.Exception.Message);
+        }
+
+        [Fact]
+        public async Task WhenAppWritesLessThanContentLengthErrorLogged()
+        {
+            var testLogger = new TestApplicationErrorLogger();
+            var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.ContentLength = 13;
+                await httpContext.Response.WriteAsync("hello, world");
+            }, serviceContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        $"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 13",
+                        "",
+                        "hello, world");
+                }
+            }
+
+            var errorMessage = Assert.Single(testLogger.Messages, message => message.LogLevel == LogLevel.Error);
+            Assert.Equal(
+                $"Response Content-Length mismatch: too few bytes written (12 of 13).",
+                errorMessage.Exception.Message);
+        }
+
+        [Fact]
+        public async Task WhenAppSetsContentLengthButDoesNotWriteBody500ResponseSentAndConnectionCloses()
+        {
+            var testLogger = new TestApplicationErrorLogger();
+            var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
+
+            using (var server = new TestServer(httpContext =>
+            {
+                httpContext.Response.ContentLength = 5;
+                return TaskCache.CompletedTask;
+            }, serviceContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        $"HTTP/1.1 500 Internal Server Error",
+                        "Connection: close",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+
+            var errorMessage = Assert.Single(testLogger.Messages, message => message.LogLevel == LogLevel.Error);
+            Assert.Equal(
+                $"Response Content-Length mismatch: too few bytes written (0 of 5).",
+                errorMessage.Exception.Message);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task WhenAppSetsContentLengthToZeroAndDoesNotWriteNoErrorIsThrown(bool flushResponse)
+        {
+            var testLogger = new TestApplicationErrorLogger();
+            var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.ContentLength = 0;
+
+                if (flushResponse)
+                {
+                    await httpContext.Response.Body.FlushAsync();
+                }
+            }, serviceContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.Receive(
+                        $"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+
+            Assert.Equal(0, testLogger.ApplicationErrorsLogged);
+        }
+
+        // https://tools.ietf.org/html/rfc7230#section-3.3.3
+        // If a message is received with both a Transfer-Encoding and a
+        // Content-Length header field, the Transfer-Encoding overrides the
+        // Content-Length.
+        [Fact]
+        public async Task WhenAppSetsTransferEncodingAndContentLengthWritingLessIsNotAnError()
+        {
+            var testLogger = new TestApplicationErrorLogger();
+            var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.Headers["Transfer-Encoding"] = "chunked";
+                httpContext.Response.ContentLength = 13;
+                await httpContext.Response.WriteAsync("hello, world");
+            }, serviceContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.Receive(
+                        $"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "Content-Length: 13",
+                        "",
+                        "hello, world");
+                }
+            }
+
+            Assert.Equal(0, testLogger.ApplicationErrorsLogged);
+        }
+
+        // https://tools.ietf.org/html/rfc7230#section-3.3.3
+        // If a message is received with both a Transfer-Encoding and a
+        // Content-Length header field, the Transfer-Encoding overrides the
+        // Content-Length.
+        [Fact]
+        public async Task WhenAppSetsTransferEncodingAndContentLengthWritingMoreIsNotAnError()
+        {
+            var testLogger = new TestApplicationErrorLogger();
+            var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.Headers["Transfer-Encoding"] = "chunked";
+                httpContext.Response.ContentLength = 11;
+                await httpContext.Response.WriteAsync("hello, world");
+            }, serviceContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.Receive(
+                        $"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "Content-Length: 11",
+                        "",
+                        "hello, world");
+                }
+            }
+
+            Assert.Equal(0, testLogger.ApplicationErrorsLogged);
         }
 
         public static TheoryData<string, StringValues, string> NullHeaderData

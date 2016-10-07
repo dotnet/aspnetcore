@@ -3697,6 +3697,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             _bits = 0;
             _headers = default(HeaderReferences);
+            
             MaybeUnknown?.Clear();
         }
 
@@ -5670,6 +5671,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
             set
             {
+                _contentLength = ParseContentLength(value);
                 _bits |= 2048L;
                 _headers._ContentLength = value; 
                 _headers._rawContentLength = null;
@@ -7384,6 +7386,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     {
                         if ("Content-Length".Equals(key, StringComparison.OrdinalIgnoreCase))
                         {
+                            _contentLength = ParseContentLength(value);
                             _bits |= 2048L;
                             _headers._ContentLength = value;
                             _headers._rawContentLength = null;
@@ -7809,6 +7812,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             {
                                 ThrowDuplicateKeyException();
                             }
+                            _contentLength = ParseContentLength(value);
                             _bits |= 2048L;
                             _headers._ContentLength = value;
                             _headers._rawContentLength = null;
@@ -8350,6 +8354,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         {
                             if (((_bits & 2048L) != 0))
                             {
+                                _contentLength = null;
                                 _bits &= ~2048L;
                                 _headers._ContentLength = StringValues.Empty;
                                 _headers._rawContentLength = null;
@@ -8601,6 +8606,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             _bits = 0;
             _headers = default(HeaderReferences);
+            _contentLength = null;
             MaybeUnknown?.Clear();
         }
 

@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -229,6 +230,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         ThrowInvalidHeaderCharacter(ch);
                     }
                 }
+            }
+        }
+
+        public static long ParseContentLength(StringValues value)
+        {
+            try
+            {
+                return long.Parse(value, NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);
+            }
+            catch (FormatException ex)
+            {
+                throw new InvalidOperationException("Content-Length value must be an integral number.", ex);
             }
         }
 
