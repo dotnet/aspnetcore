@@ -62,7 +62,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
         {
         }
 
-        public void TestInvokeTwo(TestEnum testEnum, Dictionary<string, int> testDictionary, int baz = 5)
+        public void TestInvokeTwo(TestEnum testEnum, string testString, int baz = 5)
+        {
+        }
+
+        public void InvokeWithGenericParams(List<string> Foo, Dictionary<string, int> Bar)
         {
         }
 
@@ -75,7 +79,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
                 ShortName = "One",
                 MethodInfo = typeof(ViewComponentTagHelperDescriptorFactoryTest)
                     .GetMethod(nameof(ViewComponentTagHelperDescriptorFactoryTest.TestInvokeOne)),
-                TypeInfo = typeof(ViewComponentTagHelperDescriptorFactory).GetTypeInfo()
+                TypeInfo = typeof(ViewComponentTagHelperDescriptorFactory).GetTypeInfo(),
+                Parameters = typeof(ViewComponentTagHelperDescriptorFactoryTest)
+                    .GetMethod(nameof(ViewComponentTagHelperDescriptorFactoryTest.TestInvokeOne)).GetParameters()
             };
 
             private readonly ViewComponentDescriptor _viewComponentDescriptorTwo = new ViewComponentDescriptor
@@ -85,7 +91,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
                 ShortName = "Two",
                 MethodInfo = typeof(ViewComponentTagHelperDescriptorFactoryTest)
                     .GetMethod(nameof(ViewComponentTagHelperDescriptorFactoryTest.TestInvokeTwo)),
-                TypeInfo = typeof(ViewComponentTagHelperDescriptorFactoryTest).GetTypeInfo()
+                TypeInfo = typeof(ViewComponentTagHelperDescriptorFactoryTest).GetTypeInfo(),
+                Parameters = typeof(ViewComponentTagHelperDescriptorFactoryTest)
+                    .GetMethod(nameof(ViewComponentTagHelperDescriptorFactoryTest.TestInvokeTwo)).GetParameters()
+            };
+
+            private readonly ViewComponentDescriptor _viewComponentDescriptorGeneric = new ViewComponentDescriptor
+            {
+                DisplayName = "GenericDisplayName",
+                FullName = "GenericViewComponent",
+                ShortName = "Generic",
+                MethodInfo = typeof(ViewComponentTagHelperDescriptorFactoryTest)
+                    .GetMethod(nameof(ViewComponentTagHelperDescriptorFactoryTest.InvokeWithGenericParams)),
+                TypeInfo = typeof(ViewComponentTagHelperDescriptorFactoryTest).GetTypeInfo(),
+                Parameters = typeof(ViewComponentTagHelperDescriptorFactoryTest)
+                    .GetMethod(nameof(ViewComponentTagHelperDescriptorFactoryTest.InvokeWithGenericParams)).GetParameters()
             };
 
             public TagHelperDescriptor GetTagHelperDescriptorOne()
@@ -146,9 +166,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
 
                         new TagHelperAttributeDescriptor
                         {
-                            Name = "test-dictionary",
-                            PropertyName = "testDictionary",
-                            TypeName = typeof(Dictionary<string, int>).FullName
+                            Name = "test-string",
+                            PropertyName = "testString",
+                            TypeName = typeof(string).FullName
                         },
 
                         new TagHelperAttributeDescriptor
@@ -167,7 +187,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
 
                         new TagHelperRequiredAttributeDescriptor
                         {
-                            Name = "test-dictionary"
+                            Name = "test-string"
                         },
 
                         new TagHelperRequiredAttributeDescriptor
@@ -186,7 +206,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
                 return new List<ViewComponentDescriptor>
                 {
                     _viewComponentDescriptorOne,
-                    _viewComponentDescriptorTwo
+                    _viewComponentDescriptorTwo,
+                    _viewComponentDescriptorGeneric
                 };
             }
         }
