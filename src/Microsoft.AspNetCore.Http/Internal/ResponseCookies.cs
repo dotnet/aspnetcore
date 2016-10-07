@@ -15,8 +15,6 @@ namespace Microsoft.AspNetCore.Http.Internal
     /// </summary>
     public class ResponseCookies : IResponseCookies
     {
-        private readonly ObjectPool<StringBuilder> _builderPool;
-
         /// <summary>
         /// Create a new wrapper.
         /// </summary>
@@ -30,7 +28,6 @@ namespace Microsoft.AspNetCore.Http.Internal
             }
 
             Headers = headers;
-            _builderPool = builderPool;
         }
 
         private IHeaderDictionary Headers { get; set; }
@@ -44,25 +41,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             {
                 Path = "/"
             };
-
-            string cookieValue;
-            if (_builderPool == null)
-            {
-                cookieValue = setCookieHeaderValue.ToString();
-            }
-            else
-            {
-                var stringBuilder = _builderPool.Get();
-                try
-                {
-                    setCookieHeaderValue.AppendToStringBuilder(stringBuilder);
-                    cookieValue = stringBuilder.ToString();
-                }
-                finally
-                {
-                    _builderPool.Return(stringBuilder);
-                }
-            }
+            var cookieValue = setCookieHeaderValue.ToString();
 
             Headers[HeaderNames.SetCookie] = StringValues.Concat(Headers[HeaderNames.SetCookie], cookieValue);
         }
@@ -86,24 +65,7 @@ namespace Microsoft.AspNetCore.Http.Internal
                 HttpOnly = options.HttpOnly,
             };
 
-            string cookieValue;
-            if (_builderPool == null)
-            {
-                cookieValue = setCookieHeaderValue.ToString();
-            }
-            else
-            {
-                var stringBuilder = _builderPool.Get();
-                try
-                {
-                    setCookieHeaderValue.AppendToStringBuilder(stringBuilder);
-                    cookieValue = stringBuilder.ToString();
-                }
-                finally
-                {
-                    _builderPool.Return(stringBuilder);
-                }
-            }
+            var cookieValue = setCookieHeaderValue.ToString();
 
             Headers[HeaderNames.SetCookie] = StringValues.Concat(Headers[HeaderNames.SetCookie], cookieValue);
         }

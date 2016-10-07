@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
@@ -11,7 +10,6 @@ namespace Microsoft.AspNetCore.Http
 {
     public class HttpContextFactory : IHttpContextFactory
     {
-        private readonly ObjectPool<StringBuilder> _builderPool;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly FormOptions _formOptions;
 
@@ -31,7 +29,6 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(formOptions));
             }
 
-            _builderPool = poolProvider.CreateStringBuilderPool();
             _formOptions = formOptions.Value;
             _httpContextAccessor = httpContextAccessor;
         }
@@ -42,9 +39,6 @@ namespace Microsoft.AspNetCore.Http
             {
                 throw new ArgumentNullException(nameof(featureCollection));
             }
-
-            var responseCookiesFeature = new ResponseCookiesFeature(featureCollection, _builderPool);
-            featureCollection.Set<IResponseCookiesFeature>(responseCookiesFeature);
 
             var httpContext = new DefaultHttpContext(featureCollection);
             if (_httpContextAccessor != null)

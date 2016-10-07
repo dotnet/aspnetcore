@@ -11,27 +11,11 @@ namespace Microsoft.AspNetCore.Http.Tests
 {
     public class ResponseCookiesTest
     {
-        private static readonly ObjectPool<StringBuilder> _builderPool =
-            new DefaultObjectPoolProvider().Create<StringBuilder>(new StringBuilderPooledObjectPolicy());
-
-        public static TheoryData BuilderPoolData
-        {
-            get
-            {
-                return new TheoryData<ObjectPool<StringBuilder>>
-                {
-                    null,
-                    _builderPool,
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(BuilderPoolData))]
-        public void DeleteCookieShouldSetDefaultPath(ObjectPool<StringBuilder> builderPool)
+        [Fact]
+        public void DeleteCookieShouldSetDefaultPath()
         {
             var headers = new HeaderDictionary();
-            var cookies = new ResponseCookies(headers, builderPool);
+            var cookies = new ResponseCookies(headers, null);
             var testcookie = "TestCookie";
 
             cookies.Delete(testcookie);
@@ -43,12 +27,11 @@ namespace Microsoft.AspNetCore.Http.Tests
             Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookieHeaderValues[0]);
         }
 
-        [Theory]
-        [MemberData(nameof(BuilderPoolData))]
-        public void NoParamsDeleteRemovesCookieCreatedByAdd(ObjectPool<StringBuilder> builderPool)
+        [Fact]
+        public void NoParamsDeleteRemovesCookieCreatedByAdd()
         {
             var headers = new HeaderDictionary();
-            var cookies = new ResponseCookies(headers, builderPool);
+            var cookies = new ResponseCookies(headers, null);
             var testcookie = "TestCookie";
 
             cookies.Append(testcookie, testcookie);
@@ -66,15 +49,15 @@ namespace Microsoft.AspNetCore.Http.Tests
             get
             {
                 // key, value, object pool, expected
-                return new TheoryData<string, string, ObjectPool<StringBuilder>, string>
+                return new TheoryData<string, string, string>
                 {
-                    { "key", "value", null, "key=value" },
-                    { "key,", "!value", null, "key%2C=%21value" },
-                    { "ke#y,", "val^ue", null, "ke%23y%2C=val%5Eue" },
-                    { "key", "value", _builderPool, "key=value" },
-                    { "key,", "!value", _builderPool, "key%2C=%21value" },
-                    { "ke#y,", "val^ue", _builderPool, "ke%23y%2C=val%5Eue" },
-                    { "base64", "QUI+REU/Rw==", _builderPool, "base64=QUI%2BREU%2FRw%3D%3D" },
+                    { "key", "value", "key=value" },
+                    { "key,", "!value", "key%2C=%21value" },
+                    { "ke#y,", "val^ue", "ke%23y%2C=val%5Eue" },
+                    { "key", "value", "key=value" },
+                    { "key,", "!value", "key%2C=%21value" },
+                    { "ke#y,", "val^ue", "ke%23y%2C=val%5Eue" },
+                    { "base64", "QUI+REU/Rw==", "base64=QUI%2BREU%2FRw%3D%3D" },
                 };
             }
         }
@@ -84,11 +67,10 @@ namespace Microsoft.AspNetCore.Http.Tests
         public void EscapesKeyValuesBeforeSettingCookie(
             string key,
             string value,
-            ObjectPool<StringBuilder> builderPool,
             string expected)
         {
             var headers = new HeaderDictionary();
-            var cookies = new ResponseCookies(headers, builderPool);
+            var cookies = new ResponseCookies(headers, null);
 
             cookies.Append(key, value);
 

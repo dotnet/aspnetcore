@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
@@ -17,6 +18,8 @@ namespace Microsoft.Net.Http.Headers
         private const string PathToken = "path";
         private const string SecureToken = "secure";
         private const string HttpOnlyToken = "httponly";
+        private const string SeparatorToken = "; ";
+        private const string EqualsToken = "=";
         private const string DefaultPath = "/"; // TODO: Used?
 
         private static readonly HttpHeaderParser<SetCookieHeaderValue> SingleValueParser
@@ -89,10 +92,91 @@ namespace Microsoft.Net.Http.Headers
         // name="val ue"; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; httponly
         public override string ToString()
         {
-            StringBuilder header = new StringBuilder();
-            AppendToStringBuilder(header);
+            var length = _name.Length + EqualsToken.Length + _value.Length;
 
-            return header.ToString();
+            string expires = null;
+            string maxAge = null;
+
+            if (Expires.HasValue)
+            {
+                expires = HeaderUtilities.FormatDate(Expires.Value);
+                length += SeparatorToken.Length + ExpiresToken.Length + EqualsToken.Length + expires.Length;
+            }
+
+            if (MaxAge.HasValue)
+            {
+                maxAge = HeaderUtilities.FormatInt64((long)MaxAge.Value.TotalSeconds);
+                length += SeparatorToken.Length + MaxAgeToken.Length + EqualsToken.Length + maxAge.Length;
+            }
+
+            if (Domain != null)
+            {
+                length += SeparatorToken.Length + DomainToken.Length + EqualsToken.Length + Domain.Length;
+            }
+
+            if (Path != null)
+            {
+                length += SeparatorToken.Length + PathToken.Length + EqualsToken.Length + Path.Length;
+            }
+
+            if (Secure)
+            {
+                length += SeparatorToken.Length + SecureToken.Length;
+            }
+
+            if (HttpOnly)
+            {
+                length += SeparatorToken.Length + HttpOnlyToken.Length;
+            }
+
+            var sb = new InplaceStringBuilder(length);
+
+            sb.Append(_name);
+            sb.Append(EqualsToken);
+            sb.Append(_value);
+
+            if (expires != null)
+            {
+                AppendSegment(ref sb, ExpiresToken, expires);
+            }
+
+            if (maxAge != null)
+            {
+                AppendSegment(ref sb, MaxAgeToken, maxAge);
+            }
+
+            if (Domain != null)
+            {
+                AppendSegment(ref sb, DomainToken, Domain);
+            }
+
+            if (Path != null)
+            {
+                AppendSegment(ref sb, PathToken, Path);
+            }
+
+            if (Secure)
+            {
+                AppendSegment(ref sb, SecureToken, null);
+            }
+
+            if (HttpOnly)
+            {
+                AppendSegment(ref sb, HttpOnlyToken, null);
+            }
+
+            return sb.ToString();
+        }
+
+        private static void AppendSegment(ref InplaceStringBuilder builder, string name, string value)
+        {
+            builder.Append(SeparatorToken);
+            builder.Append(name);
+            if (value != null)
+            {
+                builder.Append(EqualsToken);
+                builder.Append(value);
+            }
         }
 
         /// <summary>

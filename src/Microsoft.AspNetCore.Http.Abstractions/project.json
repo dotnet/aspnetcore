@@ -29,7 +29,8 @@
       "type": "build"
     },
     "NETStandard.Library": "1.6.1-*",
-    "System.Text.Encodings.Web": "4.3.0-*"
+    "System.Text.Encodings.Web": "4.3.0-*",
+    "Microsoft.Extensions.Primitives": "1.1.0-*"
   },
   "frameworks": {
     "net451": {

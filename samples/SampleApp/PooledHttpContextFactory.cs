@@ -12,7 +12,6 @@ namespace SampleApp
 {
     public class PooledHttpContextFactory : IHttpContextFactory
     {
-        private readonly ObjectPool<StringBuilder> _builderPool;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly Stack<PooledHttpContext> _pool = new Stack<PooledHttpContext>();
 
@@ -28,7 +27,6 @@ namespace SampleApp
                 throw new ArgumentNullException(nameof(poolProvider));
             }
 
-            _builderPool = poolProvider.CreateStringBuilderPool();
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -38,9 +36,6 @@ namespace SampleApp
             {
                 throw new ArgumentNullException(nameof(featureCollection));
             }
-
-            var responseCookiesFeature = new ResponseCookiesFeature(featureCollection, _builderPool);
-            featureCollection.Set<IResponseCookiesFeature>(responseCookiesFeature);
 
             PooledHttpContext httpContext = null;
             lock (_pool)
