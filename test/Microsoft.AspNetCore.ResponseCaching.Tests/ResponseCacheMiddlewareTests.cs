@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.ResponseCaching.Internal;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -486,6 +484,49 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 sink.Writes,
                 LoggedMessage.NoResponseServed,
                 LoggedMessage.VaryByRulesUpdated);
+        }
+
+        public static TheoryData<StringValues> NullOrEmptyVaryRules
+        {
+            get
+            {
+                return new TheoryData<StringValues>
+                {
+                    default(StringValues),
+                    StringValues.Empty,
+                    new StringValues((string)null),
+                    new StringValues(string.Empty),
+                    new StringValues((string[])null),
+                    new StringValues(new string[0]),
+                    new StringValues(new string[] { null }),
+                    new StringValues(new string[] { string.Empty })
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(NullOrEmptyVaryRules))]
+        public async Task FinalizeCacheHeaders_UpdateCachedVaryByRules_NullOrEmptyRules(StringValues vary)
+        {
+            var store = new TestResponseCacheStore();
+            var sink = new TestSink();
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, store: store);
+            var context = TestUtils.CreateTestContext();
+
+            context.HttpContext.Response.Headers[HeaderNames.Vary] = vary;
+            context.HttpContext.Features.Set<IResponseCacheFeature>(new ResponseCacheFeature()
+            {
+                VaryByQueryKeys = vary
+            });
+
+            await middleware.TryServeFromCacheAsync(context);
+            await middleware.FinalizeCacheHeadersAsync(context);
+
+            // Vary rules should not be updated
+            Assert.Equal(0, store.SetCount);
+            TestUtils.AssertLoggedMessages(
+                sink.Writes,
+                LoggedMessage.NoResponseServed);
         }
 
         [Fact]

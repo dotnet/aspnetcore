@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Tests
 {
