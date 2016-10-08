@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.Extensions.Primitives;
 
@@ -21,7 +22,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// The default value for <see cref="MaxAllowedErrors"/> of <c>200</c>.
         /// </summary>
         public static readonly int DefaultMaxAllowedErrors = 200;
-        private static readonly char[] Delimiters = new char[] { '.', '[' };
+
+        private const char DelimiterDot = '.';
+        private const char DelimiterOpen = '[';
 
         private readonly ModelStateNode _root;
         private int _maxAllowedErrors;
@@ -502,18 +505,34 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
-        private ModelStateNode GetNode(string key) => GetNode(key, createIfNotExists: false);
-
-        private ModelStateNode GetOrAddNode(string key) => GetNode(key, createIfNotExists: true);
-
-        private ModelStateNode GetNode(string key, bool createIfNotExists)
+        private ModelStateNode GetNode(string key)
         {
             Debug.Assert(key != null);
-            if (key.Length == 0)
+
+            var current = _root;
+            if (key.Length > 0)
             {
-                return _root;
+                var match = default(MatchResult);
+                do
+                {
+                    var subKey = FindNext(key, ref match);
+                    current = current.GetNode(subKey);
+
+                    // Path not found, exit early
+                    if (current == null)
+                    {
+                        break;
+                    }
+
+                } while (match.Type != Delimiter.None);
             }
 
+            return current;
+        }
+
+        private ModelStateNode GetOrAddNode(string key)
+        {
+            Debug.Assert(key != null);
             // For a key of the format, foo.bar[0].baz[qux] we'll create the following nodes:
             // foo
             //  -> bar
@@ -522,42 +541,56 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             //     -> [qux]
 
             var current = _root;
-            var previousIndex = 0;
-            int index;
-            while ((index = key.IndexOfAny(Delimiters, previousIndex)) != -1)
+            if (key.Length > 0)
             {
-                var keyStart = previousIndex == 0 || key[previousIndex - 1] == '.'
-                    ? previousIndex
-                    : previousIndex - 1;
-                var subKey = new StringSegment(key, keyStart, index - keyStart);
-                current = current.GetNode(subKey, createIfNotExists);
-                if (current == null)
+                var match = default(MatchResult);
+                do
                 {
-                    // createIfNotExists is set to false and a node wasn't found. Exit early.
-                    return null;
+                    var subKey = FindNext(key, ref match);
+                    current = current.GetOrAddNode(subKey);
+
+                } while (match.Type != Delimiter.None);
+
+                if (current.Key == null)
+                {
+                    // New Node - Set key
+                    current.Key = key;
                 }
-
-                previousIndex = index + 1;
-            }
-
-            if (previousIndex < key.Length)
-            {
-                var keyStart = previousIndex == 0 || key[previousIndex - 1] == '.'
-                    ? previousIndex
-                    : previousIndex - 1;
-                var subKey = new StringSegment(key, keyStart, key.Length - keyStart);
-                current = current.GetNode(subKey, createIfNotExists);
-            }
-
-            if (current != null && current.Key == null)
-            {
-                // Don't update the key if it's been previously assigned. This is to prevent change in key casing
-                // e.g. modelState.SetModelValue("foo", .., ..);
-                // var value = modelState["FOO"];
-                current.Key = key;
             }
 
             return current;
+        }
+
+        // Shared function factored out for clarity, force inlining to put back in
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static StringSegment FindNext(string key, ref MatchResult currentMatch)
+        {
+            var index = currentMatch.Index;
+            var matchType = Delimiter.None;
+
+            for (; index < key.Length; index++)
+            {
+                var ch = key[index];
+                if (ch == DelimiterDot)
+                {
+                    matchType = Delimiter.Dot;
+                    break;
+                }
+                else if (ch == DelimiterOpen)
+                {
+                    matchType = Delimiter.OpenBracket;
+                    break;
+                }
+            }
+
+            var keyStart = currentMatch.Type == Delimiter.OpenBracket
+                ? currentMatch.Index - 1
+                : currentMatch.Index;
+
+            currentMatch.Type = matchType;
+            currentMatch.Index = index + 1;
+
+            return new StringSegment(key, keyStart, index - keyStart);
         }
 
         private static ModelValidationState? GetValidity(ModelStateNode node)
@@ -757,6 +790,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return new PrefixEnumerable(this, prefix);
         }
 
+        private struct MatchResult
+        {
+            public Delimiter Type;
+            public int Index;
+        }
+
+        private enum Delimiter
+        {
+            None = 0,
+            Dot,
+            OpenBracket
+        }
+
         [DebuggerDisplay("SubKey={SubKey}, Key={Key}, ValidationState={ValidationState}")]
         private class ModelStateNode : ModelStateEntry
         {
@@ -804,42 +850,63 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 Errors.Clear();
             }
 
-            public ModelStateNode GetNode(StringSegment subKey, bool createIfNotExists)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public ModelStateNode GetNode(StringSegment subKey)
             {
+                ModelStateNode modelStateNode = null;
                 if (subKey.Length == 0)
                 {
-                    return this;
+                    modelStateNode = this;
                 }
-
-                var index = BinarySearch(subKey);
-                ModelStateNode modelStateNode = null;
-                if (index >= 0)
+                else if (ChildNodes != null)
                 {
-                    modelStateNode = ChildNodes[index];
-                }
-                else if (createIfNotExists)
-                {
-                    if (ChildNodes == null)
+                    var index = BinarySearch(subKey);
+                    if (index >= 0)
                     {
-                        ChildNodes = new List<ModelStateNode>(1);
+                        modelStateNode = ChildNodes[index];
                     }
+                }
 
+                return modelStateNode;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public ModelStateNode GetOrAddNode(StringSegment subKey)
+            {
+                ModelStateNode modelStateNode;
+                if (subKey.Length == 0)
+                {
+                    modelStateNode = this;
+                }
+                else if (ChildNodes == null)
+                {
+                    ChildNodes = new List<ModelStateNode>(1);
                     modelStateNode = new ModelStateNode(subKey);
-                    ChildNodes.Insert(~index, modelStateNode);
+                    ChildNodes.Add(modelStateNode);
+                }
+                else
+                {
+                    var index = BinarySearch(subKey);
+                    if (index >= 0)
+                    {
+                        modelStateNode = ChildNodes[index];
+                    }
+                    else
+                    {
+                        modelStateNode = new ModelStateNode(subKey);
+                        ChildNodes.Insert(~index, modelStateNode);
+                    }
                 }
 
                 return modelStateNode;
             }
 
             public override ModelStateEntry GetModelStateForProperty(string propertyName)
-                => GetNode(new StringSegment(propertyName), createIfNotExists: false);
+                => GetNode(new StringSegment(propertyName));
 
             private int BinarySearch(StringSegment searchKey)
             {
-                if (ChildNodes == null)
-                {
-                    return -1;
-                }
+                Debug.Assert(ChildNodes != null);
 
                 var low = 0;
                 var high = ChildNodes.Count - 1;
