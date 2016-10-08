@@ -12,15 +12,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
     {
         private readonly IKestrelTrace _log;
 
-        private readonly WaitCallback _runAction;
-        private readonly WaitCallback _cancelTcs;
-        private readonly WaitCallback _completeTcs;
+        private WaitCallback _runAction;
+        private WaitCallback _cancelTcs;
+        private WaitCallback _completeTcs;
 
         public LoggingThreadPool(IKestrelTrace log)
         {
             _log = log;
 
             // Curry and capture log in closures once
+            // The currying is done in functions of the same name to improve the 
+            // call stack for exceptions and profiling else it shows up as LoggingThreadPool.ctor>b__4_0
+            // and you aren't sure which of the 3 functions was called.
+            RunAction();
+            CompleteTcs();
+            CancelTcs();
+        }
+
+        private void RunAction()
+        {
+            // Capture _log in a singleton closure
             _runAction = (o) =>
             {
                 try
@@ -32,7 +43,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                     _log.LogError(0, e, "LoggingThreadPool.Run");
                 }
             };
+        }
 
+        private void CompleteTcs()
+        {
+            // Capture _log in a singleton closure
             _completeTcs = (o) =>
             {
                 try
@@ -44,7 +59,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                     _log.LogError(0, e, "LoggingThreadPool.Complete");
                 }
             };
+        }
 
+        private void CancelTcs()
+        {
+            // Capture _log in a singleton closure
             _cancelTcs = (o) =>
             {
                 try
