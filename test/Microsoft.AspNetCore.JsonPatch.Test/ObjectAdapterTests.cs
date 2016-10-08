@@ -1822,6 +1822,33 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         }
 
         [Fact]
+        public void Replace_WhenDictionary_ValueAPocoType_WithEscaping_Succeeds()
+        {
+            // Arrange
+            var key1 = "Foo/Name";
+            var value1 = new Customer() { Name = "Jamesss" };
+            var key2 = "Foo";
+            var value2 = new Customer() { Name = "Mike" };
+            var model = new Class8();
+            model.DictionaryOfStringToCustomer[key1] = value1;
+            model.DictionaryOfStringToCustomer[key2] = value2;
+            var patchDocument = new JsonPatchDocument();
+            patchDocument.Replace($"/DictionaryOfStringToCustomer/Foo~1Name/Name", "James");
+
+            // Act
+            patchDocument.ApplyTo(model);
+
+            // Assert
+            Assert.Equal(2, model.DictionaryOfStringToCustomer.Count);
+            var actualValue1 = model.DictionaryOfStringToCustomer[key1];
+            var actualValue2 = model.DictionaryOfStringToCustomer[key2];
+            Assert.NotNull(actualValue1);
+            Assert.Equal("James", actualValue1.Name);
+            Assert.Equal("Mike", actualValue2.Name);
+
+        }
+
+        [Fact]
         public void Replace_DeepNested_DictionaryValue_Succeeds()
         {
             // Arrange

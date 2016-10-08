@@ -1,8 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
@@ -19,7 +21,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 throw new ArgumentNullException(nameof(path));
             }
 
-            _segments = path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            _segments = ParsePath(path);
         }
 
         public string LastSegment
@@ -36,5 +38,55 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         }
 
         public IReadOnlyList<string> Segments => _segments ?? Empty;
+
+        private static string[] ParsePath(string path)
+        {
+            var strings = new List<string>();
+            var sb = new StringBuilder(path.Length);
+
+            for (var i = 0; i < path.Length; i++)
+            {
+                if (path[i] == '/')
+                {
+                    if (sb.Length > 0)
+                    {
+                        strings.Add(sb.ToString());
+                        sb.Length = 0;
+                    }
+                }
+                else if (path[i] == '~')
+                {
+                    ++i;
+                    if (i >= path.Length)
+                    {
+                        throw new JsonPatchException(Resources.FormatInvalidValueForPath(path), null);
+                    }
+
+                    if (path[i] == '0')
+                    {
+                        sb.Append('~');
+                    }
+                    else if (path[i] == '1')
+                    {
+                        sb.Append('/');
+                    }
+                    else
+                    {
+                        throw new JsonPatchException(Resources.FormatInvalidValueForPath(path), null);
+                    }
+                }
+                else
+                {
+                    sb.Append(path[i]);
+                }
+            }
+
+            if (sb.Length > 0)
+            {
+                strings.Add(sb.ToString());
+            }
+
+            return strings.ToArray();
+        }
     }
 }

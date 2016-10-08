@@ -144,5 +144,28 @@ namespace Microsoft.AspNetCore.JsonPatch
             var pathToCheck = deserialized.Operations.First().path;
             Assert.Equal(pathToCheck, "/anothername");
         }
+
+        [Fact]
+        public void Add_OnApplyFromJson_EscapingHandledOnComplexJsonPropertyNameOnJsonDocument()
+        {
+            var doc = new JsonPropertyComplexNameDTO()
+            {
+                FooSlashBars = "InitialName",
+                FooSlashTilde = new  SimpleDTO
+                {
+                    StringProperty  = "Initial Value"
+                }
+            };
+
+            // serialization should serialize to "AnotherName"
+            var serialized = "[{\"value\":\"Kevin\",\"path\":\"/foo~1bar~0\",\"op\":\"add\"},{\"value\":\"Final Value\",\"path\":\"/foo~1~0/StringProperty\",\"op\":\"replace\"}]";
+            var deserialized =
+                JsonConvert.DeserializeObject<JsonPatchDocument<JsonPropertyComplexNameDTO>>(serialized);
+
+            deserialized.ApplyTo(doc);
+
+            Assert.Equal("Kevin", doc.FooSlashBars);
+            Assert.Equal("Final Value", doc.FooSlashTilde.StringProperty);
+        }
     }
 }
