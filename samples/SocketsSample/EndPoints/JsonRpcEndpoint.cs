@@ -46,6 +46,12 @@ namespace SocketsSample
 
             while (true)
             {
+                // JSON.NET doesn't handle async reads so we wait for data here
+                var result = await connection.Channel.Input.ReadAsync();
+
+                // Don't advance the buffer so we parse sync
+                connection.Channel.Input.Advance(result.Buffer.Start);
+
                 while (!reader.Read())
                 {
                     break;
@@ -58,7 +64,6 @@ namespace SocketsSample
                 }
                 catch (Exception)
                 {
-                    var result = await connection.Channel.Input.ReadAsync();
                     if (result.IsCompleted)
                     {
                         break;
