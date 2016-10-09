@@ -25,6 +25,13 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 * **[CustomHost]:**
 	6. Run `dnx . run` (This hosts the app in a console application - Application started at URL **http://localhost:5003/**).
 
+## Run on Docker Windows Containers
+
+ * [Install Docker for Windows](https://docs.docker.com/docker-for-windows/) or [setup up Docker Windows containers](https://msdn.microsoft.com/en-us/virtualization/windowscontainers/containers_welcome)
+ * `docker-compose -f .\docker-compose.windows.yml build`
+ * `docker-compose -f .\docker-compose.windows.yml up`
+ * Access MusicStore on either the Windows VM IP or (if container is running locally) on the container IP: `docker inspect -f "{{ .NetworkSettings.Networks.nat.IPAddress }}" musicstore_web_1`
+
 ## To run the sample on Mac/Mono:
 * Follow the instructions at the [Home](https://github.com/aspnet/Home) repository to install Mono and DNVM on Mac OS X.
 * Open a command prompt and execute `cd samples/MusicStore.Standalone`.

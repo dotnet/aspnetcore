@@ -1,0 +1,25 @@
+version: '3'
+services:
+  db:
+    image: microsoft/mssql-server-windows-express
+    environment:
+      sa_password: "Password1"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433" # REMARK: This is currently required, needs investigation
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.windows
+    environment:
+      - "Data:DefaultConnection:ConnectionString=Server=db,1433;Database=MusicStore;User Id=sa;Password=Password1;MultipleActiveResultSets=True"
+    depends_on:
+      - "db"
+    ports:
+      - "5000:5000"
+
+networks:
+  default:
+    external:
+      name: nat
