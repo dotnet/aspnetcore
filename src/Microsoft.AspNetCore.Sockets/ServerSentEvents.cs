@@ -36,8 +36,6 @@ namespace Microsoft.AspNetCore.Sockets
 
                 _channel.Output.Advance(buffer.End);
             }
-
-            _channel.Output.CompleteReader();
         }
 
         private async Task Send(HttpContext context, ReadableBuffer data)

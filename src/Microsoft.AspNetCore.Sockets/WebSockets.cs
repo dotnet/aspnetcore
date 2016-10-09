@@ -109,8 +109,6 @@ namespace Microsoft.AspNetCore.Sockets
                 }
             }
 
-            _channel.Output.CompleteReader();
-
             // REVIEW: Should this ever happen?
             if (!IsClosedOrClosedSent(ws))
             {
