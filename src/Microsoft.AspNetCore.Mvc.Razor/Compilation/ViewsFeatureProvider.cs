@@ -69,7 +69,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 
                 if (File.Exists(precompiledAssemblyFilePath))
                 {
-                    System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(precompiledAssemblyFilePath);
+                    try
+                    {
+                        System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(precompiledAssemblyFilePath);
+                    }
+                    catch (FileLoadException)
+                    {
+                        // Don't throw if assembly cannot be loaded. This can happen if the file is not a managed assembly.
+                    }
                 }
             }
 #endif
