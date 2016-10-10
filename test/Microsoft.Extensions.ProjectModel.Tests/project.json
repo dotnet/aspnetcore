@@ -12,7 +12,15 @@
     "Microsoft.DotNet.ProjectModel": "1.0.0-rc3-003121",
     "Microsoft.Build.Runtime": "15.1.298-preview5",
     "Microsoft.Extensions.FileProviders.Physical": "1.1.0-*",
-    "Microsoft.Extensions.ProjectModel.Sources": {
+    "Microsoft.Extensions.ProjectModel.Abstractions.Sources": {
+        "type": "build",
+        "version": "1.0.0-*"
+    },
+    "Microsoft.Extensions.ProjectModel.DotNet.Sources": {
+        "type": "build",
+        "version": "1.0.0-*"
+    },
+    "Microsoft.Extensions.ProjectModel.MsBuild.Sources": {
         "type": "build",
         "version": "1.0.0-*"
     },

@@ -6,11 +6,12 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>99d6ce89-7302-4c3a-83eb-d534c24644d2</ProjectGuid>
-    <RootNamespace>Microsoft.Extensions.ProjectModel</RootNamespace>
+    <ProjectGuid>1f643a36-a1fc-4502-9d03-75837f20e1a4</ProjectGuid>
+    <RootNamespace>Microsoft.Extensions.ProjectModel.DotNet.Sources</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
   </PropertyGroup>
+
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
