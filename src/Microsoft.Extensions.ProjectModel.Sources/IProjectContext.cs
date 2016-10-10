@@ -18,6 +18,7 @@ namespace Microsoft.Extensions.ProjectModel
         string Config { get; }
         string DepsJson { get; }
         string RuntimeConfigJson { get; }
+        string PackageLockFile { get; }
         string PackagesDirectory { get; }
         string TargetDirectory { get; }
         string AssemblyFullPath { get; }
