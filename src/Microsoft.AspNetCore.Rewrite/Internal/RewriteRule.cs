@@ -5,6 +5,7 @@ using System;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Rewrite.Logging;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal
 {
@@ -103,6 +104,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
                         }
                     }
                 }
+
+                context.Logger?.RewriteSummary(result);
             }
         }
     }

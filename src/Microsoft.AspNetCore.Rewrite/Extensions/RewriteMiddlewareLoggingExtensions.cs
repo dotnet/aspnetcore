@@ -8,28 +8,34 @@ namespace Microsoft.AspNetCore.Rewrite.Logging
 {
     internal static class RewriteMiddlewareLoggingExtensions
     {
-        private static readonly Action<ILogger, Exception> _requestContinueResults;
+        private static readonly Action<ILogger, string, Exception> _requestContinueResults;
         private static readonly Action<ILogger, string, int, Exception> _requestResponseComplete;
-        private static readonly Action<ILogger, Exception> _requestStopRules;
+        private static readonly Action<ILogger, string, Exception> _requestStopRules;
         private static readonly Action<ILogger, string, Exception> _urlRewriteDidNotMatchRule;
         private static readonly Action<ILogger, string, Exception> _urlRewriteMatchedRule;
         private static readonly Action<ILogger, Exception> _modRewriteDidNotMatchRule;
         private static readonly Action<ILogger, Exception> _modRewriteMatchedRule;
+        private static readonly Action<ILogger, Exception> _redirectedToHttps;
+        private static readonly Action<ILogger, string, Exception> _redirectSummary;
+        private static readonly Action<ILogger, string, Exception> _rewriteSummary;
 
         static RewriteMiddlewareLoggingExtensions()
         {
-            _requestContinueResults = LoggerMessage.Define(
+            _requestContinueResults = LoggerMessage.Define<string>(
                             LogLevel.Debug,
                             1,
-                            "Request is continuing in applying rules.");
+                            "Request is continuing in applying rules. Current url is {currentUrl}");
+
             _requestResponseComplete = LoggerMessage.Define<string, int>(
                             LogLevel.Debug,
                             2,
-                            "Request is done processing, Location header '{Location}' with status code '{StatusCode}'.");
-            _requestStopRules = LoggerMessage.Define(
+                            "Request is done processing. Location header '{Location}' with status code '{StatusCode}'.");
+
+            _requestStopRules = LoggerMessage.Define<string>(
                             LogLevel.Debug,
                             3,
-                            "Request is done applying rules.");
+                            "Request is done applying rules. Url was rewritten to {rewrittenUrl}");
+
             _urlRewriteDidNotMatchRule = LoggerMessage.Define<string>(
                             LogLevel.Debug,
                             4,
@@ -49,11 +55,26 @@ namespace Microsoft.AspNetCore.Rewrite.Logging
                             LogLevel.Debug,
                             7,
                             "Request matched current ModRewriteRule.");
+
+            _redirectedToHttps = LoggerMessage.Define(
+                            LogLevel.Information,
+                            8,
+                            "Request redirected to HTTPS");
+
+            _redirectSummary = LoggerMessage.Define<string>(
+                            LogLevel.Information,
+                            9,
+                            "Request was redirected to {redirectedUrl}");
+
+            _rewriteSummary = LoggerMessage.Define<string>(
+                            LogLevel.Information,
+                            10,
+                            "Request was rewritten to {rewrittenUrl}");
         }
 
-        public static void RewriteMiddlewareRequestContinueResults(this ILogger logger)
+        public static void RewriteMiddlewareRequestContinueResults(this ILogger logger, string currentUrl)
         {
-            _requestContinueResults(logger, null);
+            _requestContinueResults(logger, currentUrl, null);
         }
 
         public static void RewriteMiddlewareRequestResponseComplete(this ILogger logger, string location, int statusCode)
@@ -61,9 +82,9 @@ namespace Microsoft.AspNetCore.Rewrite.Logging
             _requestResponseComplete(logger, location, statusCode, null);
         }
 
-        public static void RewriteMiddlewareRequestStopRules(this ILogger logger)
+        public static void RewriteMiddlewareRequestStopRules(this ILogger logger, string rewrittenUrl)
         {
-            _requestStopRules(logger, null);
+            _requestStopRules(logger, rewrittenUrl, null);
         }
 
         public static void UrlRewriteDidNotMatchRule(this ILogger logger, string name)
@@ -80,9 +101,25 @@ namespace Microsoft.AspNetCore.Rewrite.Logging
         {
             _modRewriteDidNotMatchRule(logger, null);
         }
+
         public static void ModRewriteMatchedRule(this ILogger logger)
         {
             _modRewriteMatchedRule(logger, null);
+        }
+
+        public static void RedirectedToHttps(this ILogger logger)
+        {
+            _redirectedToHttps(logger, null);
+        }
+
+        public static void RedirectedSummary(this ILogger logger, string redirectedUrl)
+        {
+            _redirectSummary(logger, redirectedUrl, null);
+        }
+
+        public static void RewriteSummary(this ILogger logger, string rewrittenUrl)
+        {
+            _rewriteSummary(logger, rewrittenUrl, null);
         }
     }
 }

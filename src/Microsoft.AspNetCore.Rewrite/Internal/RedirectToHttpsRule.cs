@@ -3,6 +3,7 @@
 
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Rewrite.Logging;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal
 {
@@ -32,6 +33,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
                 var newUrl = new StringBuilder().Append("https://").Append(host).Append(req.PathBase).Append(req.Path).Append(req.QueryString);
                 context.HttpContext.Response.Redirect(newUrl.ToString());
                 context.Result = RuleResult.EndResponse;
+                context.Logger?.RedirectedToHttps();
             }
         }
     }

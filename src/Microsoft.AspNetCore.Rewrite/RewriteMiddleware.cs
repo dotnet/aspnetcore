@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Rewrite
         private readonly ILogger _logger;
 
         /// <summary>
-        /// Creates a new instance of <see cref="RewriteMiddleware"/> 
+        /// Creates a new instance of <see cref="RewriteMiddleware"/>
         /// </summary>
         /// <param name="next">The delegate representing the next middleware in the request pipeline.</param>
         /// <param name="hostingEnvironment">The Hosting Environment.</param>
@@ -75,10 +75,11 @@ namespace Microsoft.AspNetCore.Rewrite
             foreach (var rule in _options.Rules)
             {
                 rule.ApplyRule(rewriteContext);
+                var currentUrl = new Lazy<string>(() => context.Request.Path + context.Request.QueryString);
                 switch (rewriteContext.Result)
                 {
                     case RuleResult.ContinueRules:
-                        _logger.RewriteMiddlewareRequestContinueResults();
+                        _logger.RewriteMiddlewareRequestContinueResults(currentUrl.Value);
                         break;
                     case RuleResult.EndResponse:
                         _logger.RewriteMiddlewareRequestResponseComplete(
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Rewrite
                             context.Response.StatusCode);
                         return TaskCache.CompletedTask;
                     case RuleResult.SkipRemainingRules:
-                        _logger.RewriteMiddlewareRequestStopRules();
+                        _logger.RewriteMiddlewareRequestStopRules(currentUrl.Value);
                         return _next(context);
                     default:
                         throw new ArgumentOutOfRangeException($"Invalid rule termination {rewriteContext.Result}");
