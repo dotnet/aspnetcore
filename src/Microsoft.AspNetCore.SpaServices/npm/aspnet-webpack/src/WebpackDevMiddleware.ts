@@ -50,17 +50,24 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
             }
 
             // Now also inject eventsource polyfill so this can work on IE/Edge (unless it's already there)
+            // To avoid this being a breaking change for everyone who uses aspnet-webpack, we only do this if you've
+            // referenced event-source-polyfill in your package.json. Note that having event-source-polyfill available
+            // on the server in node_modules doesn't imply that you've also included it in your client-side bundle,
+            // but the converse is true (if it's not in node_modules, then you obviously aren't trying to use it at
+            // all, so it would definitely not work to take a dependency on it).
             const eventSourcePolyfillEntryPoint = 'event-source-polyfill';
-            const entryPointsArray: string[] = entryPoints[entryPointName]; // We know by now that it's an array, because if it wasn't, we already wrapped it in one
-            if (entryPointsArray.indexOf(eventSourcePolyfillEntryPoint) < 0) {
-                const webpackHmrIndex = firstIndexOfStringStartingWith(entryPointsArray, webpackHotMiddlewareEntryPoint);
-                if (webpackHmrIndex < 0) {
-                    // This should not be possible, since we just added it if it was missing
-                    throw new Error('Cannot find ' + webpackHotMiddlewareEntryPoint + ' in entry points array: ' + entryPointsArray);
-                }
+            if (npmModuleIsPresent(eventSourcePolyfillEntryPoint)) {
+                const entryPointsArray: string[] = entryPoints[entryPointName]; // We know by now that it's an array, because if it wasn't, we already wrapped it in one
+                if (entryPointsArray.indexOf(eventSourcePolyfillEntryPoint) < 0) {
+                    const webpackHmrIndex = firstIndexOfStringStartingWith(entryPointsArray, webpackHotMiddlewareEntryPoint);
+                    if (webpackHmrIndex < 0) {
+                        // This should not be possible, since we just added it if it was missing
+                        throw new Error('Cannot find ' + webpackHotMiddlewareEntryPoint + ' in entry points array: ' + entryPointsArray);
+                    }
 
-                // Insert the polyfill just before the HMR entrypoint
-                entryPointsArray.splice(webpackHmrIndex, 0, eventSourcePolyfillEntryPoint);
+                    // Insert the polyfill just before the HMR entrypoint
+                    entryPointsArray.splice(webpackHmrIndex, 0, eventSourcePolyfillEntryPoint);
+                }
             }
         });
 
@@ -188,4 +195,13 @@ function firstIndexOfStringStartingWith(array: string[], prefixToFind: string) {
     }
 
     return -1; // Not found
+}
+
+function npmModuleIsPresent(moduleName: string) {
+    try {
+        require.resolve(moduleName);
+        return true;
+    } catch (ex) {
+        return false;
+    }
 }
