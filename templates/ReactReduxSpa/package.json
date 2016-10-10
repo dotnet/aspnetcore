@@ -12,6 +12,7 @@
     "bootstrap": "^3.3.6",
     "css-loader": "^0.23.1",
     "domain-task": "^2.0.0",
+    "event-source-polyfill": "^0.0.7",
     "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.8.5",
     "jquery": "^2.2.1",

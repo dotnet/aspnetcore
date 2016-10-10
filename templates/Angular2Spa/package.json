@@ -21,6 +21,7 @@
     "css": "^2.2.1",
     "css-loader": "^0.25.0",
     "es6-shim": "^0.35.1",
+    "event-source-polyfill": "^0.0.7",
     "expose-loader": "^0.7.1",
     "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.9.0",

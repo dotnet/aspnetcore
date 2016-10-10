@@ -4,6 +4,7 @@
   "devDependencies": {
     "bootstrap": "^3.3.6",
     "css-loader": "^0.23.1",
+    "event-source-polyfill": "^0.0.7",
     "extendify": "^1.0.0",
     "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.8.5",

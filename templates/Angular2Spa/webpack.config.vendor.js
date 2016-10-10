@@ -30,6 +30,7 @@ module.exports = {
             'bootstrap/dist/css/bootstrap.css',
             'es6-shim',
             'es6-promise',
+            'event-source-polyfill',
             'jquery',
             'zone.js',
         ]

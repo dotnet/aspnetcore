@@ -15,7 +15,7 @@ module.exports = {
         ]
     },
     entry: {
-        vendor: ['bootstrap', 'bootstrap/dist/css/bootstrap.css', 'style-loader', 'jquery']
+        vendor: ['bootstrap', 'bootstrap/dist/css/bootstrap.css', 'event-source-polyfill', 'style-loader', 'jquery']
     },
     output: {
         path: path.join(__dirname, 'wwwroot', 'dist'),

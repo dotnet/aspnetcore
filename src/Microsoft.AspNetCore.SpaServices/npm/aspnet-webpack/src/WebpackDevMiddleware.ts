@@ -26,10 +26,6 @@ interface DevServerOptions {
     ReactHotModuleReplacement: boolean;
 }
 
-function arrayContainsStringStartingWith(array: string[], prefixToFind: string) {
-    return array.some(item => item.substring(0, prefixToFind.length) === prefixToFind);
-}
-
 function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configuration, enableHotModuleReplacement: boolean, enableReactHotModuleReplacement: boolean, hmrEndpoint: string) {
     // Build the final Webpack config based on supplied options
     if (enableHotModuleReplacement) {
@@ -49,8 +45,22 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
             const webpackHotMiddlewareOptions = `?path=` + encodeURIComponent(hmrEndpoint);
             if (typeof entryPoints[entryPointName] === 'string') {
                 entryPoints[entryPointName] = [webpackHotMiddlewareEntryPoint + webpackHotMiddlewareOptions, entryPoints[entryPointName]];
-            } else if (!arrayContainsStringStartingWith(entryPoints[entryPointName], webpackHotMiddlewareEntryPoint)) {
+            } else if (firstIndexOfStringStartingWith(entryPoints[entryPointName], webpackHotMiddlewareEntryPoint) < 0) {
                 entryPoints[entryPointName].unshift(webpackHotMiddlewareEntryPoint + webpackHotMiddlewareOptions);
+            }
+
+            // Now also inject eventsource polyfill so this can work on IE/Edge (unless it's already there)
+            const eventSourcePolyfillEntryPoint = 'event-source-polyfill';
+            const entryPointsArray: string[] = entryPoints[entryPointName]; // We know by now that it's an array, because if it wasn't, we already wrapped it in one
+            if (entryPointsArray.indexOf(eventSourcePolyfillEntryPoint) < 0) {
+                const webpackHmrIndex = firstIndexOfStringStartingWith(entryPointsArray, webpackHotMiddlewareEntryPoint);
+                if (webpackHmrIndex < 0) {
+                    // This should not be possible, since we just added it if it was missing
+                    throw new Error('Cannot find ' + webpackHotMiddlewareEntryPoint + ' in entry points array: ' + entryPointsArray);
+                }
+
+                // Insert the polyfill just before the HMR entrypoint
+                entryPointsArray.splice(webpackHmrIndex, 0, eventSourcePolyfillEntryPoint);
             }
         });
 
@@ -167,4 +177,15 @@ function removeTrailingSlash(str: string) {
 
 function getPath(publicPath: string) {
     return url.parse(publicPath).path;
+}
+
+function firstIndexOfStringStartingWith(array: string[], prefixToFind: string) {
+    for (let index = 0; index < array.length; index++) {
+        const candidate = array[index];
+        if (candidate.substring(0, prefixToFind.length) === prefixToFind) {
+            return index;
+        }
+    }
+
+    return -1; // Not found
 }
