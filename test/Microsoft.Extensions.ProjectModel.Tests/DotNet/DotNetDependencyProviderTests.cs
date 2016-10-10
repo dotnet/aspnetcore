@@ -63,25 +63,21 @@ namespace Microsoft.Extensions.ProjectModel.DotNet
 
                 var context = new DotNetProjectContext(oldContext, "Debug", Path.Combine(fileProvider.Root, "demo", "bin"));
 
-                var home = Environment.GetEnvironmentVariable("USERPROFILE")
-                    ?? Environment.GetEnvironmentVariable("HOME");
-                var nugetPackageRoot = Path.Combine(home, ".nuget", "packages");
-                var expectedPackagePath = Path.Combine(nugetPackageRoot, "Microsoft.AspNetCore.Mvc", "1.0.0");
-                var expectedReferencePath = Path.Combine(expectedPackagePath, "lib", "netstandard1.6", "Microsoft.AspNetCore.Mvc.dll");
-
                 var assembly = context
                     .CompilationAssemblies
                     .Where(asm => asm.Name.Equals("Microsoft.AspNetCore.Mvc", StringComparison.OrdinalIgnoreCase))
                     .First();
 
-                Assert.Equal(expectedReferencePath, assembly.ResolvedPath);
+                Assert.True(File.Exists(assembly.ResolvedPath));
+                Assert.True(assembly.ResolvedPath.EndsWith("Microsoft.AspNetCore.Mvc.dll", StringComparison.OrdinalIgnoreCase));
 
                 var mvcPackage = context
                     .PackageDependencies
                     .Where(package => package.Name.Equals("Microsoft.AspNetCore.Mvc", StringComparison.OrdinalIgnoreCase))
                     .First();
 
-                Assert.Equal(expectedPackagePath, mvcPackage.Path);
+                Assert.True(Directory.Exists(mvcPackage.Path));
+                Assert.True(mvcPackage.Path.EndsWith($"Microsoft.AspNetCore.Mvc{Path.DirectorySeparatorChar}1.0.0", StringComparison.OrdinalIgnoreCase));
             }
         }
     }
