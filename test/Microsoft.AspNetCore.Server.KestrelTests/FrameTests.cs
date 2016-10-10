@@ -6,6 +6,8 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
@@ -1290,7 +1292,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var expectedKeepAliveTimeout = (long)serviceContext.ServerOptions.Limits.KeepAliveTimeout.TotalMilliseconds;
                 connectionControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutAction.CloseConnection));
 
-                frame.Stop();
+                frame.StopAsync();
                 socketInput.IncomingFin();
 
                 requestProcessingTask.Wait();
@@ -1463,6 +1465,44 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             // Assert
             Assert.Throws<InvalidOperationException>(() => frame.Flush());
+        }
+
+        [Fact]
+        public async Task RequestProcessingTaskIsUnwrapped()
+        {
+            var trace = new KestrelTrace(new TestKestrelTrace());
+            var ltp = new LoggingThreadPool(trace);
+            using (var pool = new MemoryPool())
+            using (var socketInput = new SocketInput(pool, ltp))
+            {
+                var serviceContext = new ServiceContext
+                {
+                    DateHeaderValueManager = new DateHeaderValueManager(),
+                    ServerOptions = new KestrelServerOptions(),
+                    Log = trace
+                };
+                var listenerContext = new ListenerContext(serviceContext)
+                {
+                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+                };
+                var connectionContext = new ConnectionContext(listenerContext)
+                {
+                    ConnectionControl = Mock.Of<IConnectionControl>(),
+                    SocketInput = socketInput
+                };
+
+                var frame = new Frame<HttpContext>(application: null, context: connectionContext);
+                frame.Start();
+
+                var data = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n\r\n");
+                socketInput.IncomingData(data, 0, data.Length);
+
+                var requestProcessingTask = frame.StopAsync();
+                Assert.IsNotType(typeof(Task<Task>), requestProcessingTask);
+
+                await requestProcessingTask.TimeoutAfter(TimeSpan.FromSeconds(10));
+                socketInput.IncomingFin();
+            }
         }
     }
 }

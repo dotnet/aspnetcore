@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public Task StopAsync()
         {
-            _frame.Stop();
+            _frame.StopAsync();
             _frame.SocketInput.CompleteAwaiting();
 
             return _socketClosedTcs.Task;
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             if (_filteredStreamAdapter != null)
             {
-                _readInputTask.ContinueWith((task, state) =>
+                Task.WhenAll(_readInputTask, _frame.StopAsync()).ContinueWith((task, state) =>
                 {
                     var connection = (Connection)state;
                     connection._filterContext.Connection.Dispose();

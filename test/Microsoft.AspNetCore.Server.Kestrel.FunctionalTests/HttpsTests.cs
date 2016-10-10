@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         try
                         {
-                            await httpContext.Response.WriteAsync($"hello, world\r\r", ct);
+                            await httpContext.Response.WriteAsync($"hello, world", ct);
                             await Task.Delay(1000, ct);
                         }
                         catch (TaskCanceledException)
@@ -134,6 +134,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
 
             Assert.False(loggerFactory.ErrorLogger.ObjectDisposedExceptionLogged);
+        }
+
+        [Fact]
+        public async Task DoesNotThrowObjectDisposedExceptionFromWriteAsyncAfterConnectionIsAborted()
+        {
+            var tcs = new TaskCompletionSource<object>();
+            var x509Certificate2 = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword");
+            var loggerFactory = new HandshakeErrorLoggerFactory();
+            var hostBuilder = new WebHostBuilder()
+                .UseKestrel(options =>
+                {
+                    options.UseHttps(@"TestResources/testCert.pfx", "testPassword");
+                })
+                .UseUrls("https://127.0.0.1:0/")
+                .UseLoggerFactory(loggerFactory)
+                .Configure(app => app.Run(async httpContext =>
+                {
+                    httpContext.Abort();
+                    try
+                    {
+                        await httpContext.Response.WriteAsync($"hello, world");
+                        tcs.SetResult(null);
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.SetException(ex);
+                    }
+                }));
+
+            using (var host = hostBuilder.Build())
+            {
+                host.Start();
+
+                using (var socket = await HttpClientSlim.GetSocket(new Uri($"https://127.0.0.1:{host.GetPort()}/")))
+                using (var stream = new NetworkStream(socket, ownsSocket: false))
+                using (var sslStream = new SslStream(stream, true, (sender, certificate, chain, errors) => true))
+                {
+                    await sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
+                        enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12,
+                        checkCertificateRevocation: false);
+
+                    var request = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n\r\n");
+                    await sslStream.WriteAsync(request, 0, request.Length);
+                    await sslStream.ReadAsync(new byte[32], 0, 32);
+                }
+            }
+
+            await tcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
         }
 
         private class HandshakeErrorLoggerFactory : ILoggerFactory

@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     this,
                     default(CancellationToken),
                     TaskCreationOptions.DenyChildAttach,
-                    TaskScheduler.Default);
+                    TaskScheduler.Default).Unwrap();
         }
 
         /// <summary>
@@ -374,7 +374,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         /// Stop will be called on all active connections, and Task.WaitAll() will be called on every
         /// return value.
         /// </summary>
-        public Task Stop()
+        public Task StopAsync()
         {
             if (!_requestProcessingStopping)
             {
