@@ -30,7 +30,7 @@ function arrayContainsStringStartingWith(array: string[], prefixToFind: string) 
     return array.some(item => item.substring(0, prefixToFind.length) === prefixToFind);
 }
 
-function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configuration, enableHotModuleReplacement: boolean, enableReactHotModuleReplacement: boolean) {
+function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configuration, enableHotModuleReplacement: boolean, enableReactHotModuleReplacement: boolean, hmrEndpoint: string) {
     // Build the final Webpack config based on supplied options
     if (enableHotModuleReplacement) {
         // For this, we only support the key/value config format, not string or string[], since
@@ -46,10 +46,11 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
         // Augment all entry points so they support HMR (unless they already do)
         Object.getOwnPropertyNames(entryPoints).forEach(entryPointName => {
             const webpackHotMiddlewareEntryPoint = 'webpack-hot-middleware/client';
+            const webpackHotMiddlewareOptions = `?path=` + encodeURIComponent(hmrEndpoint);
             if (typeof entryPoints[entryPointName] === 'string') {
-                entryPoints[entryPointName] = [webpackHotMiddlewareEntryPoint, entryPoints[entryPointName]];
+                entryPoints[entryPointName] = [webpackHotMiddlewareEntryPoint + webpackHotMiddlewareOptions, entryPoints[entryPointName]];
             } else if (!arrayContainsStringStartingWith(entryPoints[entryPointName], webpackHotMiddlewareEntryPoint)) {
-                entryPoints[entryPointName].unshift(webpackHotMiddlewareEntryPoint);
+                entryPoints[entryPointName].unshift(webpackHotMiddlewareEntryPoint + webpackHotMiddlewareOptions);
             }
         });
 
@@ -135,7 +136,9 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
                         throw new Error('To use the Webpack dev server, you must specify a value for \'publicPath\' on the \'output\' section of your webpack config (for any configuration that targets browsers)');
                     }
                     normalizedPublicPaths.push(removeTrailingSlash(publicPath));
-                    attachWebpackDevMiddleware(app, webpackConfig, enableHotModuleReplacement, enableReactHotModuleReplacement);
+
+                    const hmrEndpoint = `http://localhost:${listener.address().port}/__webpack_hmr`;
+                    attachWebpackDevMiddleware(app, webpackConfig, enableHotModuleReplacement, enableReactHotModuleReplacement, hmrEndpoint);
                 }
             });
 
