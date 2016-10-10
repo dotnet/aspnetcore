@@ -5,7 +5,9 @@
       "include": [
         "Http.config",
         "nginx.conf",
-        "NtlmAuthentication.config"
+        "NtlmAuthentication.config",
+        "NoCompression.config",
+        "NoCompression.conf"
       ]
     }
   },
@@ -23,7 +25,9 @@
     "include": [
       "Http.config",
       "nginx.conf",
-      "NtlmAuthentication.config"
+      "NtlmAuthentication.config",
+      "NoCompression.config",
+      "NoCompression.conf"
     ]
   },
   "frameworks": {
