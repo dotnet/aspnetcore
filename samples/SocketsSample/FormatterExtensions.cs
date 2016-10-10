@@ -32,5 +32,10 @@ namespace SocketsSample
         {
             _socketFormatters.RegisterFormatter<T, TFormatterType>(format);
         }
+
+        public void AddInvocationAdapter(string format, IInvocationAdapter adapter)
+        {
+            _socketFormatters.RegisterInvocationAdapter(format, adapter);
+        }
     }
 }

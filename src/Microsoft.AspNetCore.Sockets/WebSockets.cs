@@ -11,11 +11,13 @@ namespace Microsoft.AspNetCore.Sockets
     {
         private readonly HttpChannel _channel;
         private readonly Connection _connection;
+        private readonly WebSocketMessageType _messageType;
 
-        public WebSockets(Connection connection)
+        public WebSockets(Connection connection, Format format)
         {
             _connection = connection;
             _channel = (HttpChannel)connection.Channel;
+            _messageType = format == Format.Binary ? WebSocketMessageType.Binary : WebSocketMessageType.Text;
         }
 
         public async Task ProcessRequest(HttpContext context)
@@ -93,7 +95,7 @@ namespace Microsoft.AspNetCore.Sockets
                                 break;
                             }
 
-                            await ws.SendAsync(data, WebSocketMessageType.Text, endOfMessage: true, cancellationToken: CancellationToken.None);
+                            await ws.SendAsync(data, _messageType, endOfMessage: true, cancellationToken: CancellationToken.None);
                         }
                     }
 

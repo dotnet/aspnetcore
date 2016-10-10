@@ -78,11 +78,11 @@ namespace SocketsSample
 
                 foreach (var connection in _endPoint.Connections)
                 {
-                    // TODO: separate serialization from writing to stream
-                    var formatter = _endPoint._serviceProvider.GetRequiredService<SocketFormatters>()
-                        .GetFormatter<InvocationDescriptor>((string)connection.Metadata["formatType"]);
 
-                    tasks.Add(formatter.WriteAsync(message, connection.Channel.GetStream()));
+                    var invocationAdapter = _endPoint._serviceProvider.GetRequiredService<SocketFormatters>()
+                        .GetInvocationAdapter((string)connection.Metadata["formatType"]);
+
+                    tasks.Add(invocationAdapter.InvokeClientMethod(connection.Channel.GetStream(), message));
                 }
 
                 return Task.WhenAll(tasks);

@@ -9,6 +9,7 @@ namespace SocketsSample
     {
         private IServiceProvider _serviceProvider;
         private Dictionary<string, Dictionary<Type, Type>> _formatters = new Dictionary<string, Dictionary<Type, Type>>();
+        private Dictionary<string, IInvocationAdapter> _invocationAdapters = new Dictionary<string, IInvocationAdapter>();
 
         public SocketFormatters(IServiceProvider serviceProvider)
         {
@@ -37,7 +38,20 @@ namespace SocketsSample
                 return (IFormatter<T>)_serviceProvider.GetRequiredService(targetFormatterType);
             }
 
-            throw new InvalidOperationException($"No formatter register for format '{format}' and type '{typeof(T).GetType().FullName}'");
+            return null;
+            // throw new InvalidOperationException($"No formatter register for format '{format}' and type '{typeof(T).GetType().FullName}'");
+        }
+
+        public void RegisterInvocationAdapter(string format, IInvocationAdapter adapter)
+        {
+            _invocationAdapters[format] = adapter;
+        }
+
+        public IInvocationAdapter GetInvocationAdapter(string format)
+        {
+            IInvocationAdapter value;
+
+            return _invocationAdapters.TryGetValue(format, out value) ? value : null;
         }
     }
 }

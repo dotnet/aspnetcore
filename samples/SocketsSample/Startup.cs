@@ -53,6 +53,9 @@ namespace SocketsSample
                 formatters.MapFormatter<InvocationResultDescriptor, InvocationResultDescriptorLineFormatter>("line");
                 formatters.MapFormatter<InvocationDescriptor, RpcJSonFormatter<InvocationDescriptor>>("json");
                 formatters.MapFormatter<InvocationResultDescriptor, RpcJSonFormatter<InvocationResultDescriptor>>("json");
+
+                formatters.AddInvocationAdapter("protobuf", new Protobuf.ProtobufInvocationAdapter());
+                formatters.AddInvocationAdapter("json", new JSonInvocationAdapter(app.ApplicationServices));
             });
         }
     }

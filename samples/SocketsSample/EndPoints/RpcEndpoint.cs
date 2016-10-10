@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SocketsSample.Protobuf;
 
 namespace SocketsSample
 {
@@ -18,9 +19,11 @@ namespace SocketsSample
     {
         private readonly Dictionary<string, Func<InvocationDescriptor, InvocationResultDescriptor>> _callbacks
             = new Dictionary<string, Func<InvocationDescriptor, InvocationResultDescriptor>>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Type[]> _paramTypes = new Dictionary<string, Type[]>();
 
         private readonly ILogger<RpcEndpoint> _logger;
         private readonly IServiceProvider _serviceProvider;
+
 
         public RpcEndpoint(ILogger<RpcEndpoint> logger, IServiceProvider serviceProvider)
         {
@@ -41,40 +44,34 @@ namespace SocketsSample
             // TODO: Dispatch from the caller
             await Task.Yield();
 
+            /*
             var formatter = _serviceProvider.GetRequiredService<SocketFormatters>()
                 .GetFormatter<InvocationDescriptor>((string)connection.Metadata["formatType"]);
+            */
+
+            var stream = connection.Channel.GetStream();
+            var invocationAdapter = _serviceProvider.GetRequiredService<SocketFormatters>()
+                .GetInvocationAdapter((string)connection.Metadata["formatType"]);
 
             while (true)
             {
-                // JSON.NET doesn't handle async reads so we wait for data here
-                var result = await connection.Channel.Input.ReadAsync();
+                var invocationDescriptor =
+                    await invocationAdapter.CreateInvocationDescriptor(
+                            stream, methodName => {
+                                Type[] types;
+                                // TODO: null or throw?
+                                return _paramTypes.TryGetValue(methodName, out types) ? types : null;
+                            });
 
-                // Don't advance the buffer so we parse sync
-                connection.Channel.Input.Advance(result.Buffer.Start);
-
-                while (!reader.Read())
-                {
-                    break;
-                }
-
-                JObject request;
-                try
-                {
-                    request = JObject.Load(reader);
-                }
-                catch (Exception)
-                {
-                    if (result.IsCompleted)
-                    {
-                        break;
-                    }
-
-                    throw;
-                }
+                /* TODO: ?? */
+                //if (((Channel)connection.Channel).Reading.IsCompleted)
+                //{
+                //    break;
+                //}
 
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
-                    _logger.LogDebug("Received JSON RPC request: {request}", invocationDescriptor.ToString());
+                    _logger.LogDebug("Received RPC request: {request}", invocationDescriptor.ToString());
                 }
 
                 InvocationResultDescriptor result;
@@ -93,9 +90,7 @@ namespace SocketsSample
                     };
                 }
 
-                var resultFormatter = _serviceProvider.GetRequiredService<SocketFormatters>().
-                    GetFormatter<InvocationResultDescriptor>((string)connection.Metadata["formatType"]);
-                await resultFormatter.WriteAsync(result, connection.Channel.GetStream());
+                await invocationAdapter.WriteInvocationResult(stream, result);
             }
         }
 
@@ -105,20 +100,17 @@ namespace SocketsSample
 
         protected void RegisterRPCEndPoint(Type type)
         {
-            var methods = new List<string>();
-
-            foreach (var m in type.GetTypeInfo().DeclaredMethods.Where(m => m.IsPublic))
+            foreach (var methodInfo in type.GetTypeInfo().DeclaredMethods.Where(m => m.IsPublic))
             {
-                var methodName = type.FullName + "." + m.Name;
-
-                methods.Add(methodName);
-
-                var parameters = m.GetParameters();
+                var methodName = type.FullName + "." + methodInfo.Name;
 
                 if (_callbacks.ContainsKey(methodName))
                 {
-                    throw new NotSupportedException(String.Format("Duplicate definitions of {0}. Overloading is not supported.", m.Name));
+                    throw new NotSupportedException($"Duplicate definitions of '{methodInfo.Name}'. Overloading is not supported.");
                 }
+
+                var parameters = methodInfo.GetParameters();
+                _paramTypes[methodName] = parameters.Select(p => p.ParameterType).ToArray();
 
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
@@ -145,7 +137,7 @@ namespace SocketsSample
                                 .Zip(parameters, (a, p) => Convert.ChangeType(a, p.ParameterType))
                                 .ToArray();
 
-                            invocationResult.Result = m.Invoke(value, args);
+                            invocationResult.Result = methodInfo.Invoke(value, args);
                         }
                         catch (TargetInvocationException ex)
                         {

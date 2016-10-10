@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Sockets
                     var formatType = (string)context.Request.Query["formatType"];
                     state.Connection.Metadata["formatType"] = string.IsNullOrEmpty(formatType) ? "json" : formatType;
 
-                    var ws = new WebSockets(state.Connection);
+                    var ws = new WebSockets(state.Connection, format);
 
                     await DoPersistentConnection(endpoint, ws, context, state.Connection);
 

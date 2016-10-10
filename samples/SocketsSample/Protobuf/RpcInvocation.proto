@@ -1,9 +1,20 @@
 ﻿syntax = "proto3";
 
+message RpcMessageKind {
+    enum Kind { Result = 0; Invocation = 1; }
+    Kind MessageKind = 1;
+}
+
 message RpcInvocationHeader {
   string Name = 1;
   int32 Id = 2;
   int32 NumArgs = 3;
+}
+
+message RpcInvocationResultHeader {
+  int32 Id = 1;
+  bool HasResult = 2;
+  string Error = 3;
 }
 
 message PrimitiveValue {
