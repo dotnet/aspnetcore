@@ -1,3 +1,7 @@
+var SourceMapDevToolPlugin = require('aspnet-webpack').SourceMapDevToolPlugin;
+
 module.exports = {
-    devtool: 'inline-source-map'
+    plugins: [
+        new SourceMapDevToolPlugin({ moduleFilenameTemplate: '../../[resourcePath]' }) // Compiled output is at './wwwroot/dist/', but sources are relative to './'
+    ]
 };
