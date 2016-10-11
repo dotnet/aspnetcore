@@ -124,7 +124,7 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
 
 function copyRecursiveSync(from: typeof fs, to: typeof fs, rootDir: string, exclude: RegExp[]) {
     from.readdirSync(rootDir).forEach(filename => {
-        const fullPath = path.join(rootDir, filename);
+        const fullPath = pathJoinSafe(rootDir, filename);
         const shouldExclude = exclude.filter(re => re.test(fullPath)).length > 0;
         if (!shouldExclude) {
             const fileStat = from.statSync(fullPath);
@@ -136,6 +136,17 @@ function copyRecursiveSync(from: typeof fs, to: typeof fs, rootDir: string, excl
             }
         }
     });
+}
+
+function pathJoinSafe(rootPath: string, filePath: string) {
+    // On Windows, MemoryFileSystem's readdirSync output produces directory entries like 'C:'
+    // which then trigger errors if you call statSync for them. Avoid this by detecting drive
+    // names at the root, and adding a backslash (so 'C:' becomes 'C:\', which works).
+    if (rootPath === '/' && path.sep === '\\' && filePath.match(/^[a-z0-9]+\:$/i)) {
+        return filePath + '\\';
+    } else {
+        return path.join(rootPath, filePath);
+    }
 }
 
 function beginWebpackWatcher(webpackConfig: webpack.Configuration) {
