@@ -2,7 +2,6 @@ var isDevBuild = process.argv.indexOf('--env.prod') < 0;
 var path = require('path');
 var webpack = require('webpack');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
-var SourceMapDevToolPlugin = require('aspnet-webpack').SourceMapDevToolPlugin;
 var nodeExternals = require('webpack-node-externals');
 var merge = require('webpack-merge');
 var allFilenamesExceptJavaScript = /\.(?!js(\?|$))([^.]+(\?|$))/;
@@ -40,7 +39,7 @@ var clientBundleConfig = merge(sharedConfig(), {
         })
     ].concat(isDevBuild ? [
         // Plugins that apply in development builds only
-        new SourceMapDevToolPlugin({ moduleFilenameTemplate: '../../[resourcePath]' }) // Compiled output is at './wwwroot/dist/', but sources are relative to './'
+        new webpack.SourceMapDevToolPlugin({ moduleFilenameTemplate: '../../[resourcePath]' }) // Compiled output is at './wwwroot/dist/', but sources are relative to './'
     ] : [
         // Plugins that apply in production builds only
         new webpack.optimize.OccurenceOrderPlugin(),
