@@ -1,7 +1,8 @@
 FROM microsoft/dotnet:latest
 
 RUN apt-get update
-RUN apt-get install -y build-essential nodejs nodejs-legacy
+RUN wget -qO- https://deb.nodesource.com/setup_4.x | bash -
+RUN apt-get install -y build-essential nodejs
 
 WORKDIR /app
 
