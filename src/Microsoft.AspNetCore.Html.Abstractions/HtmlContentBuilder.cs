@@ -31,6 +31,11 @@ namespace Microsoft.AspNetCore.Html
         }
 
         /// <summary>
+        /// Gets the number of elements in the <see cref="HtmlContentBuilder"/>.
+        /// </summary>
+        public int Count => Entries.Count;
+
+        /// <summary>
         /// Creates a new <see cref="HtmlContentBuilder"/> with the given list of entries.
         /// </summary>
         /// <param name="entries">

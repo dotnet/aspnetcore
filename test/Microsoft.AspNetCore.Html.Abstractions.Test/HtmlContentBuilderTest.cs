@@ -22,6 +22,7 @@ namespace Microsoft.Extensions.Internal
             content.Append("Hello");
 
             // Assert
+            Assert.Equal(1, content.Count);
             var result = Assert.Single(content.Entries);
             Assert.IsType<string>(result);
         }
@@ -69,6 +70,7 @@ namespace Microsoft.Extensions.Internal
             content.AppendHtml(new TestHtmlContent("Hello"));
 
             // Assert
+            Assert.Equal(1, content.Count);
             var result = Assert.Single(content.Entries);
             var testHtmlContent = Assert.IsType<TestHtmlContent>(result);
             testHtmlContent.WriteTo(writer, new HtmlTestEncoder());
@@ -86,9 +88,11 @@ namespace Microsoft.Extensions.Internal
             content.Append("Test");
 
             // Assert
-            Assert.Equal(2, content.Entries.Count);
-            Assert.Equal("Written from TestHtmlContent: hello", content.Entries[0].ToString());
-            Assert.Equal("Test", content.Entries[1]);
+            Assert.Equal(2, content.Count);
+            Assert.Collection(
+                content.Entries,
+                entry => Assert.Equal("Written from TestHtmlContent: hello", entry.ToString()),
+                entry => Assert.Equal("Test", entry));
         }
 
         [Fact]
@@ -103,7 +107,8 @@ namespace Microsoft.Extensions.Internal
             content.Clear();
 
             // Assert
-            Assert.Equal(0, content.Entries.Count);
+            Assert.Equal(0, content.Count);
+            Assert.Empty(content.Entries);
         }
 
         [Fact]
@@ -121,12 +126,13 @@ namespace Microsoft.Extensions.Internal
             source.CopyTo(destination);
 
             // Assert
-            Assert.Equal(2, source.Entries.Count);
-            Assert.Equal(3, destination.Entries.Count);
-
-            Assert.Equal("some-content", Assert.IsType<string>(destination.Entries[0]));
-            Assert.Equal(new TestHtmlContent("hello"), Assert.IsType<TestHtmlContent>(destination.Entries[1]));
-            Assert.Equal("Test", Assert.IsType<string>(destination.Entries[2]));
+            Assert.Equal(2, source.Count);
+            Assert.Equal(3, destination.Count);
+            Assert.Collection(
+                destination.Entries,
+                entry => Assert.Equal("some-content", Assert.IsType<string>(entry)),
+                entry => Assert.Equal(new TestHtmlContent("hello"), Assert.IsType<TestHtmlContent>(entry)),
+                entry => Assert.Equal("Test", Assert.IsType<string>(entry)));
         }
 
         [Fact]
@@ -147,13 +153,14 @@ namespace Microsoft.Extensions.Internal
             source.CopyTo(destination);
 
             // Assert
-            Assert.Equal(2, source.Entries.Count);
-            Assert.Equal(1, nested.Entries.Count);
-            Assert.Equal(3, destination.Entries.Count);
-
-            Assert.Equal("some-content", Assert.IsType<string>(destination.Entries[0]));
-            Assert.Equal(new TestHtmlContent("hello"), Assert.IsType<TestHtmlContent>(destination.Entries[1]));
-            Assert.Equal("Test", Assert.IsType<string>(destination.Entries[2]));
+            Assert.Equal(2, source.Count);
+            Assert.Equal(1, nested.Count);
+            Assert.Equal(3, destination.Count);
+            Assert.Collection(
+                destination.Entries,
+                entry => Assert.Equal("some-content", Assert.IsType<string>(entry)),
+                entry => Assert.Equal(new TestHtmlContent("hello"), Assert.IsType<TestHtmlContent>(entry)),
+                entry => Assert.Equal("Test", Assert.IsType<string>(entry)));
         }
 
         [Fact]
@@ -171,12 +178,13 @@ namespace Microsoft.Extensions.Internal
             source.MoveTo(destination);
 
             // Assert
-            Assert.Equal(0, source.Entries.Count);
-            Assert.Equal(3, destination.Entries.Count);
-
-            Assert.Equal("some-content", Assert.IsType<string>(destination.Entries[0]));
-            Assert.Equal(new TestHtmlContent("hello"), Assert.IsType<TestHtmlContent>(destination.Entries[1]));
-            Assert.Equal("Test", Assert.IsType<string>(destination.Entries[2]));
+            Assert.Equal(0, source.Count);
+            Assert.Equal(3, destination.Count);
+            Assert.Collection(
+                destination.Entries,
+                entry => Assert.Equal("some-content", Assert.IsType<string>(entry)),
+                entry => Assert.Equal(new TestHtmlContent("hello"), Assert.IsType<TestHtmlContent>(entry)),
+                entry => Assert.Equal("Test", Assert.IsType<string>(entry)));
         }
 
         [Fact]
@@ -197,13 +205,14 @@ namespace Microsoft.Extensions.Internal
             source.MoveTo(destination);
 
             // Assert
-            Assert.Equal(0, source.Entries.Count);
-            Assert.Equal(0, nested.Entries.Count);
-            Assert.Equal(3, destination.Entries.Count);
-
-            Assert.Equal("some-content", Assert.IsType<string>(destination.Entries[0]));
-            Assert.Equal(new TestHtmlContent("hello"), Assert.IsType<TestHtmlContent>(destination.Entries[1]));
-            Assert.Equal("Test", Assert.IsType<string>(destination.Entries[2]));
+            Assert.Equal(0, source.Count);
+            Assert.Equal(0, nested.Count);
+            Assert.Equal(3, destination.Count);
+            Assert.Collection(
+                destination.Entries,
+                entry => Assert.Equal("some-content", Assert.IsType<string>(entry)),
+                entry => Assert.Equal(new TestHtmlContent("hello"), Assert.IsType<TestHtmlContent>(entry)),
+                entry => Assert.Equal("Test", Assert.IsType<string>(entry)));
         }
 
         [Fact]
@@ -219,7 +228,7 @@ namespace Microsoft.Extensions.Internal
             content.WriteTo(writer, new HtmlTestEncoder());
 
             // Assert
-            Assert.Equal(2, content.Entries.Count);
+            Assert.Equal(2, content.Count);
             Assert.Equal("Written from TestHtmlContent: HelloHtmlEncode[[Test]]", writer.ToString());
         }
 
