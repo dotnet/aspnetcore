@@ -21,10 +21,6 @@ namespace SocketsSample
             services.AddSingleton<ChatEndPoint>();
 
             services.AddSingleton<SocketFormatters>();
-            services.AddSingleton<InvocationDescriptorLineFormatter>();
-            services.AddSingleton<InvocationResultDescriptorLineFormatter>();
-            services.AddSingleton<RpcJSonFormatter<InvocationDescriptor>>();
-            services.AddSingleton<RpcJSonFormatter<InvocationResultDescriptor>>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,13 +45,9 @@ namespace SocketsSample
 
             app.UseFormatters(formatters=>
             {
-                formatters.MapFormatter<InvocationDescriptor, InvocationDescriptorLineFormatter>("line");
-                formatters.MapFormatter<InvocationResultDescriptor, InvocationResultDescriptorLineFormatter>("line");
-                formatters.MapFormatter<InvocationDescriptor, RpcJSonFormatter<InvocationDescriptor>>("json");
-                formatters.MapFormatter<InvocationResultDescriptor, RpcJSonFormatter<InvocationResultDescriptor>>("json");
-
                 formatters.AddInvocationAdapter("protobuf", new Protobuf.ProtobufInvocationAdapter());
-                formatters.AddInvocationAdapter("json", new JSonInvocationAdapter(app.ApplicationServices));
+                formatters.AddInvocationAdapter("json", new JSonInvocationAdapter());
+                formatters.AddInvocationAdapter("line", new LineInvocationAdapter());
             });
         }
     }
