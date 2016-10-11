@@ -21,6 +21,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task TestKeepAliveTimeout()
         {
+            // Delays in these tests cannot be much longer than expected.
+            // Call ConfigureAwait(false) to get rid of Xunit's synchronization context,
+            // otherwise it can cause unexpectedly longer delays when multiple tests
+            // are running in parallel. These tests becomes flaky on slower
+            // hardware because the continuations for the delay tasks might take too long to be
+            // scheduled if running on Xunit's synchronization context.
+            await Task.Delay(1).ConfigureAwait(false);
+
             var longRunningCancellationTokenSource = new CancellationTokenSource();
             var upgradeCancellationTokenSource = new CancellationTokenSource();
 
