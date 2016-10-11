@@ -1,6 +1,8 @@
 import * as connect from 'connect';
 import * as webpack from 'webpack';
 import * as url from 'url';
+import * as fs from 'fs';
+import * as path from 'path';
 import { requireNewCopy } from './RequireNewCopy';
 
 export type CreateDevServerResult = {
@@ -91,10 +93,23 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
 
     // Attach Webpack dev middleware and optional 'hot' middleware
     const compiler = webpack(webpackConfig);
+    const originalFileSystem = compiler.outputFileSystem;
     app.use(require('webpack-dev-middleware')(compiler, {
         noInfo: true,
         publicPath: webpackConfig.output.publicPath
     }));
+
+    // After each compilation completes, copy the in-memory filesystem to disk.
+    // This is needed because the debuggers in both VS and VS Code assume that they'll be able to find
+    // the compiled files on the local disk (though it would be better if they got the source file from
+    // the browser they are debugging, which would be more correct and make this workaround unnecessary).
+    // Without this, Webpack plugins like HMR that dynamically modify the compiled output in the dev
+    // middleware's in-memory filesystem only (and not on disk) would confuse the debugger, because the
+    // file on disk wouldn't match the file served to the browser, and the source map line numbers wouldn't
+    // match up. Breakpoints would either not be hit, or would hit the wrong lines.
+    (compiler as any).plugin('done', stats => {
+        copyRecursiveSync(compiler.outputFileSystem, originalFileSystem, '/', [/\.hot-update\.(js|json)$/]);
+    });
 
     if (enableHotModuleReplacement) {
         let webpackHotMiddlewareModule;
@@ -105,6 +120,22 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
         }
         app.use(webpackHotMiddlewareModule(compiler));
     }
+}
+
+function copyRecursiveSync(from: typeof fs, to: typeof fs, rootDir: string, exclude: RegExp[]) {
+    from.readdirSync(rootDir).forEach(filename => {
+        const fullPath = path.join(rootDir, filename);
+        const shouldExclude = exclude.filter(re => re.test(fullPath)).length > 0;
+        if (!shouldExclude) {
+            const fileStat = from.statSync(fullPath);
+            if (fileStat.isFile()) {
+                const fileBuf = from.readFileSync(fullPath);
+                to.writeFile(fullPath, fileBuf);
+            } else if (fileStat.isDirectory()) {
+                copyRecursiveSync(from, to, fullPath, exclude);
+            }
+        }
+    });
 }
 
 function beginWebpackWatcher(webpackConfig: webpack.Configuration) {
