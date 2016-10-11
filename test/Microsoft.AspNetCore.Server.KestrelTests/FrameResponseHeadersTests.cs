@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
@@ -167,6 +168,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Fact]
+        public void ThrowsWhenSettingRawContentLengthToNonNumericValue()
+        {
+            var headers = new FrameResponseHeaders();
+
+            Assert.Throws<InvalidOperationException>(() => headers.SetRawContentLength("bad", Encoding.ASCII.GetBytes("bad")));
+        }
+
+        [Fact]
         public void ThrowsWhenAssigningHeaderContentLengthToNonNumericValue()
         {
             var headers = new FrameResponseHeaders();
@@ -189,6 +198,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var headers = new FrameResponseHeaders();
             var dictionary = (IDictionary<string, StringValues>)headers;
             dictionary["Content-Length"] = "42";
+
+            Assert.Equal(42, headers.HeaderContentLengthValue);
+        }
+
+        [Fact]
+        public void ContentLengthValueCanBeReadAsLongAfterSettingRawHeader()
+        {
+            var headers = new FrameResponseHeaders();
+            headers.SetRawContentLength("42", Encoding.ASCII.GetBytes("42"));
 
             Assert.Equal(42, headers.HeaderContentLengthValue);
         }

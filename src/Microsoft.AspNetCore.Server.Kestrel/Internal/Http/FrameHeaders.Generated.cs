@@ -6083,6 +6083,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         }
         public void SetRawContentLength(StringValues value, byte[] raw)
         {
+            _contentLength = ParseContentLength(value);
             _bits |= 2048L;
             _headers._ContentLength = value;
             _headers._rawContentLength = raw;
