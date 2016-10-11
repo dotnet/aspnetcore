@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -764,8 +763,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// In layout pages, renders the content of the section named <paramref name="name"/>.
         /// </summary>
         /// <param name="name">The name of the section to render.</param>
-        /// <returns>Returns <see cref="HtmlString.Empty"/> to allow the <see cref="Write(object)"/> call to
-        /// succeed.</returns>
+        /// <returns>An empty <see cref="IHtmlContent"/>.</returns>
         /// <remarks>The method writes to the <see cref="Output"/> and the value returned is a token
         /// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
         /// value does not represent the rendered content.</remarks>
@@ -784,8 +782,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </summary>
         /// <param name="name">The section to render.</param>
         /// <param name="required">Indicates if this section must be rendered.</param>
-        /// <returns>Returns <see cref="HtmlString.Empty"/> to allow the <see cref="Write(object)"/> call to
-        /// succeed.</returns>
+        /// <returns>An empty <see cref="IHtmlContent"/>.</returns>
         /// <remarks>The method writes to the <see cref="Output"/> and the value returned is a token
         /// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
         /// value does not represent the rendered content.</remarks>
@@ -806,8 +803,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// In layout pages, asynchronously renders the content of the section named <paramref name="name"/>.
         /// </summary>
         /// <param name="name">The section to render.</param>
-        /// <returns>A <see cref="Task{HtmlString}"/> that on completion returns <see cref="HtmlString.Empty"/> that
-        /// allows the <see cref="Write(object)"/> call to succeed.</returns>
+        /// <returns>
+        /// A <see cref="Task{HtmlString}"/> that on completion returns an empty <see cref="IHtmlContent"/>.
+        /// </returns>
         /// <remarks>The method writes to the <see cref="Output"/> and the value returned is a token
         /// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
         /// value does not represent the rendered content.</remarks>
@@ -827,8 +825,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <param name="name">The section to render.</param>
         /// <param name="required">Indicates the <paramref name="name"/> section must be registered
         /// (using <c>@section</c>) in the page.</param>
-        /// <returns>A <see cref="Task{HtmlString}"/> that on completion returns <see cref="HtmlString.Empty"/> that
-        /// allows the <see cref="Write(object)"/> call to succeed.</returns>
+        /// <returns>
+        /// A <see cref="Task{HtmlString}"/> that on completion returns an empty <see cref="IHtmlContent"/>.
+        /// </returns>
         /// <remarks>The method writes to the <see cref="Output"/> and the value returned is a token
         /// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
         /// value does not represent the rendered content.</remarks>
@@ -912,7 +911,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// on the response stream, writing out any buffered content to the <see cref="HttpResponse.Body"/>.
         /// </summary>
         /// <returns>A <see cref="Task{HtmlString}"/> that represents the asynchronous flush operation and on
-        /// completion returns <see cref="HtmlString.Empty"/>.</returns>
+        /// completion returns an empty <see cref="IHtmlContent"/>.</returns>
         /// <remarks>The value returned is a token value that allows FlushAsync to work directly in an HTML
         /// section. However the value does not represent the rendered content.
         /// This method also writes out headers, so any modifications to headers must be done before
@@ -1015,7 +1014,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <summary>
         /// Sets antiforgery cookie and X-Frame-Options header on the response.
         /// </summary>
-        /// <returns><see cref="HtmlString.Empty"/>.</returns>
+        /// <returns>An empty <see cref="IHtmlContent"/>.</returns>
         /// <remarks> Call this method to send antiforgery cookie token and X-Frame-Options header to client
         /// before <see cref="FlushAsync"/> flushes the headers. </remarks>
         public virtual HtmlString SetAntiforgeryCookieAndHeader()

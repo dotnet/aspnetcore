@@ -93,9 +93,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public ModelExpression For { get; set; }
 
         /// <summary>
-        /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx) to
-        /// apply when converting the <see cref="For"/> result to a <see cref="string"/>. Sets the generated "value"
-        /// attribute to that formatted <see cref="string"/>.
+        /// The format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to format the
+        /// <see cref="For"/> result. Sets the generated "value" attribute to that formatted string.
         /// </summary>
         /// <remarks>
         /// Not used if the provided (see <see cref="InputTypeName"/>) or calculated "type" attribute value is

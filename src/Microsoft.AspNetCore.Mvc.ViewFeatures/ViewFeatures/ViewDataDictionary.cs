@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </summary>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="format">
-        /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
+        /// The format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx).
         /// </param>
         /// <returns>
         /// Value of named <paramref name="expression"/> in this <see cref="ViewDataDictionary"/>, formatted using
@@ -400,7 +400,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </summary>
         /// <param name="value">The value to format.</param>
         /// <param name="format">
-        /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
+        /// The format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx).
         /// </param>
         /// <returns>The formatted <see cref="string"/>.</returns>
         public static string FormatValue(object value, string format)

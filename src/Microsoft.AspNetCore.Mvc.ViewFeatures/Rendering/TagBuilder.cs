@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// Valid HTML 4.01 "id" attribute value for an element with the given <paramref name="name"/>.
         /// </returns>
         /// <remarks>
-        /// Valid "id" attributes are defined in http://www.w3.org/TR/html401/types.html#type-id
+        /// Valid "id" attributes are defined in https://www.w3.org/TR/html401/types.html#type-id.
         /// </remarks>
         public static string CreateSanitizedId(string name, string invalidCharReplacement)
         {

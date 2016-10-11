@@ -112,8 +112,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract string Description { get; }
 
         /// <summary>
-        /// Gets the composite format <see cref="string"/> (see
-        /// http://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to display the model.
+        /// Gets the format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to display the
+        /// model.
         /// </summary>
         public abstract string DisplayFormatString { get; }
 
@@ -123,8 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract string DisplayName { get; }
 
         /// <summary>
-        /// Gets the composite format <see cref="string"/> (see
-        /// http://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to edit the model.
+        /// Gets the format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to edit the model.
         /// </summary>
         public abstract string EditFormatString { get; }
 

@@ -99,7 +99,7 @@ namespace System.Net.Http.Formatting
         /// </value>
         /// <remarks>
         /// Not yet a standard. In particular this media type is not currently listed at
-        /// http://www.iana.org/assignments/media-types/application.
+        /// https://www.iana.org/assignments/media-types/application.
         /// </remarks>
         public static MediaTypeHeaderValue ApplicationBsonMediaType
         {

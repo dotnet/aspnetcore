@@ -12,7 +12,12 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     public static class HtmlHelperValueExtensions
     {
         /// <summary>
-        /// Returns the formatted value for the specified <paramref name="expression"/>.
+        /// Returns the formatted value for the specified <paramref name="expression"/>. Specifically, returns the
+        /// first non-<c>null</c> value found in:
+        /// the <see cref="ActionContext.ModelState"/> entry with full name,
+        /// the <see cref="IHtmlHelper.ViewData"/> entry with full name, or
+        /// the <paramref name="expression"/> evaluated against <see cref="ViewFeatures.ViewDataDictionary.Model"/>.
+        /// See <see cref="IHtmlHelper.Name"/> for more information about a "full name".
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="expression">Expression name, relative to the current model.</param>
@@ -31,7 +36,11 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         }
 
         /// <summary>
-        /// Returns the formatted value for the specified <paramref name="expression"/>.
+        /// Returns the formatted value for the specified <paramref name="expression"/>. Specifically, returns the
+        /// first non-<c>null</c> value found in:
+        /// the <see cref="ActionContext.ModelState"/> entry with full name, or
+        /// the <paramref name="expression"/> evaluated against <see cref="ViewFeatures.ViewDataDictionary.Model"/>.
+        /// See <see cref="IHtmlHelper{TModel}.NameFor"/> for more information about a "full name".
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper{TModel}"/> instance this method extends.</param>
         /// <param name="expression">An expression to be evaluated against the current model.</param>
@@ -59,7 +68,12 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         }
 
         /// <summary>
-        /// Returns the formatted value for the current model.
+        /// Returns the formatted value for the current model. Specifically, returns the
+        /// first non-<c>null</c> value found in:
+        /// the <see cref="ActionContext.ModelState"/> entry with full name,
+        /// the <see cref="IHtmlHelper.ViewData"/> entry with full name, or
+        /// the <see cref="ViewFeatures.ViewDataDictionary.Model"/>.
+        /// See <see cref="IHtmlHelper.Name"/> for more information about a "full name".
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <returns>A <see cref="string"/> containing the formatted value.</returns>
@@ -77,11 +91,17 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         }
 
         /// <summary>
-        /// Returns the formatted value for the current model.
+        /// Returns the formatted value for the current model. Specifically, returns the
+        /// first non-<c>null</c> value found in:
+        /// the <see cref="ActionContext.ModelState"/> entry with full name,
+        /// the <see cref="IHtmlHelper.ViewData"/> entry with full name, or
+        /// the <see cref="ViewFeatures.ViewDataDictionary.Model"/>.
+        /// See <see cref="IHtmlHelper.Name"/> for more information about a "full name".
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <param name="format">
-        /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
+        /// The format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to format the return
+        /// value unless that came from model binding.
         /// </param>
         /// <returns>A <see cref="string"/> containing the formatted value.</returns>
         /// <remarks>

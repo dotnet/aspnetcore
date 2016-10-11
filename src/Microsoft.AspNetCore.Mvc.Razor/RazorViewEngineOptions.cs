@@ -42,8 +42,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <remarks>
         /// <para>
         /// The locations of the views returned from controllers that do not belong to an area.
-        /// Locations are composite format strings (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx),
-        /// which may contain the following format items:
+        /// Locations are format strings (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) which may contain
+        /// the following format items:
         /// </para>
         /// <list type="bullet">
         /// <item>
@@ -68,8 +68,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <remarks>
         /// <para>
         /// The locations of the views returned from controllers that belong to an area.
-        /// Locations are composite format strings (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx),
-        /// which may contain the following format items:
+        /// Locations are format strings (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) which may contain
+        /// the following format items:
         /// </para>
         /// <list type="bullet">
         /// <item>

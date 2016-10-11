@@ -11,7 +11,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     public static class HtmlHelperNameExtensions
     {
         /// <summary>
-        /// Returns the full HTML element name for the current model.
+        /// Returns the full HTML element name for the current model. Uses
+        /// <see cref="ViewFeatures.TemplateInfo.HtmlFieldPrefix"/> (if non-empty) to reflect relationship between
+        /// current <see cref="ViewFeatures.ViewDataDictionary.Model"/> and the top-level view's model.
         /// </summary>
         /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
         /// <returns>A <see cref="string"/> containing the element name.</returns>

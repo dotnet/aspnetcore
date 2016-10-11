@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 {
     /// <summary>
-    /// Provides a a set of possible content types than can be consumed by the action.
+    /// Provides a set of possible content types than can be consumed by the action.
     /// </summary>
     public interface IApiRequestMetadataProvider : IFilterMetadata
     {

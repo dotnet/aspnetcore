@@ -169,7 +169,16 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
         /// <summary>
         /// Returns an &lt;input&gt; element of type "checkbox" with value "true" and an &lt;input&gt; element of type
-        /// "hidden" with value "false".
+        /// "hidden" with value "false" for the specified <paramref name="expression"/>. Adds a "checked" attribute to
+        /// the "checkbox" element based on the first non-<c>null</c> value found in:
+        /// the <paramref name="htmlAttributes"/> dictionary entry with key "checked",
+        /// the <see cref="ActionContext.ModelState"/> entry with full name,
+        /// the <see cref="ViewData"/> entry with full name, or
+        /// the <paramref name="expression"/> evaluated against <see cref="ViewDataDictionary.Model"/>.
+        /// If <paramref name="isChecked"/> is non-<c>null</c>, instead uses the first non-<c>null</c> value found in:
+        /// the <see cref="ActionContext.ModelState"/> entry with full name, or
+        /// the <paramref name="isChecked"/> parameter.
+        /// See <see cref="Name"/> for more information about a "full name".
         /// </summary>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="isChecked">If <c>true</c>, checkbox is initially checked.</param>
@@ -179,35 +188,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; elements.</returns>
         /// <remarks>
-        /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set checkbox
         /// element's "name" attribute. Sanitizes <paramref name="expression"/> to set checkbox element's "id"
         /// attribute.
-        /// </para>
-        /// <para>Determines checkbox element's "checked" attribute based on the following precedence:</para>
-        /// <list type="number">
-        /// <item>
-        /// <see cref="ModelStateDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="bool"/>.
-        /// </item>
-        /// <item><paramref name="isChecked"/> if non-<c>null</c>.</item>
-        /// <item>
-        /// <see cref="ViewData"/> entry for <paramref name="expression"/> (converted to a fully-qualified name)
-        /// if entry exists and can be converted to a <see cref="bool"/>.
-        /// </item>
-        /// <item>
-        /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
-        /// current model if result is non-<c>null</c> and can be converted to a <see cref="bool"/>. For example
-        /// <c>string.Empty</c> identifies the current model and <c>"prop"</c> identifies the current model's "prop"
-        /// property.
-        /// </item>
-        /// <item>Existing "checked" entry in <paramref name="htmlAttributes"/> if any.</item>
-        /// <item>Otherwise, does not include a "checked" attribute.</item>
-        /// </list>
-        /// <para>
-        /// In all but the <paramref name="htmlAttributes"/> and default cases, includes a "checked" attribute with
-        /// value "checked" if the <see cref="bool"/> values is <c>true</c>; does not include the attribute otherwise.
-        /// </para>
         /// </remarks>
         IHtmlContent CheckBox(string expression, bool? isChecked, object htmlAttributes);
 
@@ -240,6 +223,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// Example <paramref name="expression"/>s include <c>string.Empty</c> which identifies the current model and
         /// <c>"prop"</c> which identifies the current model's "prop" property.
         /// </para>
+        /// <para>
+        /// Custom templates are found under a <c>DisplayTemplates</c> folder. The folder name is case-sensitive on
+        /// case-sensitive file systems.
+        /// </para>
         /// </remarks>
         IHtmlContent Display(
             string expression,
@@ -265,13 +252,20 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         string DisplayText(string expression);
 
         /// <summary>
-        /// Returns a single-selection HTML &lt;select&gt; element for the <paramref name="expression"/>,
-        /// using the specified list items, option label, and HTML attributes.
+        /// Returns a single-selection HTML &lt;select&gt; element for the <paramref name="expression"/>. Adds
+        /// &lt;option&gt; elements based on <paramref name="optionLabel"/> and <paramref name="selectList"/>. Adds a
+        /// "selected" attribute to an &lt;option&gt; if its <see cref="SelectListItem.Value"/> (if non-<c>null</c>) or
+        /// <see cref="SelectListItem.Text"/> matches the first non-<c>null</c> value found in:
+        /// the <see cref="ActionContext.ModelState"/> entry with full name,
+        /// the <see cref="ViewData"/> entry with full name (unless used instead of <paramref name="selectList"/>), or
+        /// the <paramref name="expression"/> evaluated against <see cref="ViewDataDictionary.Model"/>.
+        /// See <see cref="Name"/> for more information about a "full name".
         /// </summary>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="selectList">
         /// A collection of <see cref="SelectListItem"/> objects used to populate the &lt;select&gt; element with
-        /// &lt;optgroup&gt; and &lt;option&gt; elements.
+        /// &lt;optgroup&gt; and &lt;option&gt; elements. If <c>null</c>, uses the <see cref="ViewData"/> entry with
+        /// full name and that entry must be a collection of <see cref="SelectListItem"/> objects.
         /// </param>
         /// <param name="optionLabel">
         /// The text for a default empty item. Does not include such an item if argument is <c>null</c>.
@@ -321,6 +315,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// Example <paramref name="expression"/>s include <c>string.Empty</c> which identifies the current model and
         /// <c>"prop"</c> which identifies the current model's "prop" property.
         /// </para>
+        /// <para>
+        /// Custom templates are found under a <c>EditorTemplates</c> folder. The folder name is case-sensitive on
+        /// case-sensitive file systems.
+        /// </para>
         /// </remarks>
         IHtmlContent Editor(string expression, string templateName, string htmlFieldName, object additionalViewData);
 
@@ -351,7 +349,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="format">
-        /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
+        /// The format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to format the return
+        /// value.
         /// </param>
         /// <returns>A <see cref="string"/> containing the formatted value.</returns>
         /// <remarks>
@@ -364,7 +363,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// Returns an HTML element Id for the specified expression <paramref name="fullName"/>.
         /// </summary>
         /// <param name="fullName">
-        /// Fully-qualified expression name, ignoring the current model. Must not be <c>null</c>.
+        /// Fully-qualified expression name, ignoring the current model. Must not be <c>null</c>. See
+        /// <see cref="Name"/> for more information about a "full name".
         /// </param>
         /// <returns>A <see cref="string"/> containing the element Id.</returns>
         string GenerateIdFromName(string fullName);
@@ -398,7 +398,14 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         IEnumerable<SelectListItem> GetEnumSelectList(Type enumType);
 
         /// <summary>
-        /// Returns an &lt;input&gt; element of type "hidden" for the specified <paramref name="expression"/>.
+        /// Returns an &lt;input&gt; element of type "hidden" for the specified <paramref name="expression"/>. Adds a
+        /// "value" attribute to the element containing the first non-<c>null</c> value found in:
+        /// the <see cref="ActionContext.ModelState"/> entry with full name,
+        /// the <paramref name="value"/> parameter,
+        /// the <see cref="ViewData"/> entry with full name,
+        /// the <paramref name="expression"/> evaluated against <see cref="ViewDataDictionary.Model"/>, or
+        /// the <paramref name="htmlAttributes"/> dictionary entry with key "value".
+        /// See <see cref="Name"/> for more information about a "full name".
         /// </summary>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="value">If non-<c>null</c>, value to include in the element.</param>
@@ -408,31 +415,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
-        /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;input&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
-        /// </para>
-        /// <para>Determines &lt;input&gt; element's "value" attribute based on the following precedence:</para>
-        /// <list type="number">
-        /// <item>
-        /// <see cref="ModelStateDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="string"/>.
-        /// </item>
-        /// <item><paramref name="value"/> if non-<c>null</c>.</item>
-        /// <item>
-        /// <see cref="ViewData"/> entry for <paramref name="expression"/> (converted to a fully-qualified name)
-        /// if entry exists and can be converted to a <see cref="string"/>.
-        /// </item>
-        /// <item>
-        /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
-        /// current model if result is non-<c>null</c> and can be converted to a <see cref="string"/>. For example
-        /// <c>string.Empty</c> identifies the current model and <c>"prop"</c> identifies the current model's "prop"
-        /// property.
-        /// </item>
-        /// <item>Existing "value" entry in <paramref name="htmlAttributes"/> if any.</item>
-        /// <item>Otherwise, <c>string.Empty</c>.</item>
-        /// </list>
         /// </remarks>
         IHtmlContent Hidden(string expression, object value, object htmlAttributes);
 
@@ -456,13 +441,20 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         IHtmlContent Label(string expression, string labelText, object htmlAttributes);
 
         /// <summary>
-        /// Returns a multi-selection &lt;select&gt; element for the <paramref name="expression"/>, using the
-        /// specified list items and HTML attributes.
+        /// Returns a multi-selection &lt;select&gt; element for the <paramref name="expression"/>. Adds
+        /// &lt;option&gt; elements based on <paramref name="selectList"/>. Adds a "selected" attribute to an
+        /// &lt;option&gt; if its <see cref="SelectListItem.Value"/> (if non-<c>null</c>) or
+        /// <see cref="SelectListItem.Text"/> matches an entry in the first non-<c>null</c> collection found in:
+        /// the <see cref="ActionContext.ModelState"/> entry with full name,
+        /// the <see cref="ViewData"/> entry with full name (unless used instead of <paramref name="selectList"/>), or
+        /// the <paramref name="expression"/> evaluated against <see cref="ViewDataDictionary.Model"/>.
+        /// See <see cref="Name"/> for more information about a "full name".
         /// </summary>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="selectList">
         /// A collection of <see cref="SelectListItem"/> objects used to populate the &lt;select&gt; element with
-        /// &lt;optgroup&gt; and &lt;option&gt; elements.
+        /// &lt;optgroup&gt; and &lt;option&gt; elements. If <c>null</c>, finds the <see cref="SelectListItem"/>
+        /// collection with name <paramref name="expression"/> in <see cref="ViewData"/>.
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the &lt;select&gt; element. Alternatively, an
@@ -477,7 +469,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         IHtmlContent ListBox(string expression, IEnumerable<SelectListItem> selectList, object htmlAttributes);
 
         /// <summary>
-        /// Returns the full HTML element name for the specified <paramref name="expression"/>.
+        /// Returns the full HTML element name for the specified <paramref name="expression"/>. Uses
+        /// <see cref="TemplateInfo.HtmlFieldPrefix"/> (if non-empty) to reflect relationship between current
+        /// <see cref="ViewDataDictionary.Model"/> and the top-level view's model.
         /// </summary>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <returns>A <see cref="string"/> containing the element name.</returns>
@@ -498,7 +492,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         Task<IHtmlContent> PartialAsync(string partialViewName, object model, ViewDataDictionary viewData);
 
         /// <summary>
-        /// Returns an &lt;input&gt; element of type "password" for the specified <paramref name="expression"/>.
+        /// Returns an &lt;input&gt; element of type "password" for the specified <paramref name="expression"/>. Adds a
+        /// "value" attribute containing the first non-<c>null</c> value in:
+        /// the <paramref name="value"/> parameter, or
+        /// the <paramref name="htmlAttributes"/> dictionary entry with key "value".
         /// </summary>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="value">If non-<c>null</c>, value to include in the element.</param>
@@ -508,22 +505,27 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
-        /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;input&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
-        /// </para>
-        /// <para>Determines &lt;input&gt; element's "value" attribute based on the following precedence:</para>
-        /// <list type="number">
-        /// <item><paramref name="value"/> if non-<c>null</c>.</item>
-        /// <item>Existing "value" entry in <paramref name="htmlAttributes"/> if any.</item>
-        /// <item>Otherwise, <c>string.Empty</c>.</item>
-        /// </list>
         /// </remarks>
         IHtmlContent Password(string expression, object value, object htmlAttributes);
 
         /// <summary>
         /// Returns an &lt;input&gt; element of type "radio" for the specified <paramref name="expression"/>.
+        /// Adds a "value" attribute to the element containing the first non-<c>null</c> value found in:
+        /// the <paramref name="value"/> parameter, or
+        /// the <paramref name="htmlAttributes"/> dictionary entry with key "value".
+        /// Adds a "checked" attribute to the element if <paramref name="value"/> matches the first non-<c>null</c>
+        /// value found in:
+        /// the <paramref name="htmlAttributes"/> dictionary entry with key "checked",
+        /// the <see cref="ActionContext.ModelState"/> entry with full name,
+        /// the <see cref="ViewData"/> entry with full name, or
+        /// the <paramref name="expression"/> evaluated against <see cref="ViewDataDictionary.Model"/>.
+        /// If <paramref name="isChecked"/> is non-<c>null</c>, instead uses the first non-<c>null</c> value found in:
+        /// the <see cref="ActionContext.ModelState"/> entry with full name, or
+        /// the <paramref name="isChecked"/> parameter.
+        /// See <see cref="Name"/> for more information about a "full name".
         /// </summary>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="value">
@@ -542,43 +544,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
-        /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;input&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
-        /// </para>
-        /// <para>Determines element's "value" attribute based on the following precedence:</para>
-        /// <list type="number">
-        /// <item><paramref name="value"/> if non-<c>null</c>.</item>
-        /// <item>Existing "value" entry in <paramref name="htmlAttributes"/> if any.</item>
-        /// <item>Otherwise, <c>string.Empty</c>.</item>
-        /// </list>
-        /// <para>Determines &lt;input&gt; element's "checked" attribute based on the following precedence:</para>
-        /// <list type="number">
-        /// <item>
-        /// <see cref="ModelStateDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="string"/>.
-        /// </item>
-        /// <item><paramref name="isChecked"/> if non-<c>null</c>.</item>
-        /// <item>Existing "checked" entry in <paramref name="htmlAttributes"/> if any.</item>
-        /// <item>
-        /// <see cref="ViewData"/> entry for <paramref name="expression"/> (converted to a fully-qualified name)
-        /// if entry exists and can be converted to a <see cref="string"/>.
-        /// </item>
-        /// <item>
-        /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
-        /// current model if result is non-<c>null</c> and can be converted to a <see cref="string"/>. For example
-        /// <c>string.Empty</c> identifies the current model and <c>"prop"</c> identifies the current model's "prop"
-        /// property.
-        /// </item>
-        /// <item>Otherwise, does not include a "checked" attribute.</item>
-        /// </list>
-        /// <para>
-        /// In all but the <paramref name="htmlAttributes"/> and default cases, includes a "checked" attribute with
-        /// value "checked" if the <see cref="string"/> values is equal to a converted <see cref="string"/> for
-        /// <paramref name="value"/> or <paramref name="isChecked"/> is <c>true</c> (for that case); does not include
-        /// the attribute otherwise.
-        /// </para>
         /// </remarks>
         IHtmlContent RadioButton(string expression, object value, bool? isChecked, object htmlAttributes);
 
@@ -641,7 +609,13 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             object htmlAttributes);
 
         /// <summary>
-        /// Returns a &lt;textarea&gt; element for the specified <paramref name="expression"/>.
+        /// Returns a &lt;textarea&gt; element for the specified <paramref name="expression"/>. Adds content to the
+        /// element body based on the first non-<c>null</c> value found in:
+        /// the <see cref="ActionContext.ModelState"/> entry with full name,
+        /// the <paramref name="value"/> parameter,
+        /// the <see cref="ViewData"/> entry with full name, or
+        /// the <paramref name="expression"/> evaluated against <see cref="ViewDataDictionary.Model"/>.
+        /// See <see cref="Name"/> for more information about a "full name".
         /// </summary>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="value">If non-<c>null</c>, value to include in the element.</param>
@@ -653,40 +627,27 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;textarea&gt; element.</returns>
         /// <remarks>
-        /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="expression"/> to set
         /// &lt;textarea&gt; element's "name" attribute. Sanitizes <paramref name="expression"/> to set element's "id"
         /// attribute.
-        /// </para>
-        /// <para>Determines &lt;textarea&gt; element's content based on the following precedence:</para>
-        /// <list type="number">
-        /// <item>
-        /// <see cref="ModelStateDictionary"/> entry for <paramref name="expression"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="string"/>.
-        /// </item>
-        /// <item><paramref name="value"/> if non-<c>null</c>.</item>
-        /// <item>
-        /// <see cref="ViewData"/> entry for <paramref name="expression"/> (converted to a fully-qualified name)
-        /// if entry exists and can be converted to a <see cref="string"/>.
-        /// </item>
-        /// <item>
-        /// Linq expression based on <paramref name="expression"/> (converted to a fully-qualified name) run against
-        /// current model if result is non-<c>null</c> and can be converted to a <see cref="string"/>. For example
-        /// <c>string.Empty</c> identifies the current model and <c>"prop"</c> identifies the current model's "prop"
-        /// property.
-        /// </item>
-        /// <item>Otherwise, <c>string.Empty</c>.</item>
-        /// </list>
         /// </remarks>
         IHtmlContent TextArea(string expression, string value, int rows, int columns, object htmlAttributes);
 
         /// <summary>
-        /// Returns an &lt;input&gt; element of type "text" for the specified <paramref name="current"/>.
+        /// Returns an &lt;input&gt; element of type "text" for the specified <paramref name="current"/>. Adds a
+        /// "value" attribute to the element containing the first non-<c>null</c> value found in:
+        /// the <see cref="ActionContext.ModelState"/> entry with full name,
+        /// the <paramref name="value"/> parameter,
+        /// the <see cref="ViewData"/> entry with full name,
+        /// the <paramref name="current"/> evaluated against <see cref="ViewDataDictionary.Model"/>, or
+        /// the <paramref name="htmlAttributes"/> dictionary entry with key "value".
+        /// See <see cref="Name"/> for more information about a "full name".
         /// </summary>
         /// <param name="current">Expression name, relative to the current model.</param>
         /// <param name="value">If non-<c>null</c>, value to include in the element.</param>
         /// <param name="format">
-        /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
+        /// The format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to format the "value"
+        /// attribute unless that came from model binding.
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
@@ -694,37 +655,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the &lt;input&gt; element.</returns>
         /// <remarks>
-        /// <para>
         /// Combines <see cref="TemplateInfo.HtmlFieldPrefix"/> and <paramref name="current"/> to set
         /// &lt;input&gt; element's "name" attribute. Sanitizes <paramref name="current"/> to set element's "id"
         /// attribute.
-        /// </para>
-        /// <para>Determines &lt;input&gt; element's "value" attribute based on the following precedence:</para>
-        /// <list type="number">
-        /// <item>
-        /// <see cref="ModelStateDictionary"/> entry for <paramref name="current"/> (converted to a fully-qualified
-        /// name) if entry exists and can be converted to a <see cref="string"/>.
-        /// </item>
-        /// <item>
-        /// <paramref name="value"/> if non-<c>null</c>. Formats <paramref name="value"/> using
-        /// <paramref name="format"/> or converts <paramref name="value"/> to a <see cref="string"/> directly if
-        /// <paramref name="format"/> is <c>null</c> or empty.
-        /// </item>
-        /// <item>
-        /// <see cref="ViewData"/> entry for <paramref name="current"/> (converted to a fully-qualified name) if entry
-        /// exists and can be converted to a <see cref="string"/>. Formats entry using <paramref name="format"/> or
-        /// converts entry to a <see cref="string"/> directly if <paramref name="format"/> is <c>null</c> or empty.
-        /// </item>
-        /// <item>
-        /// Linq expression based on <paramref name="current"/> (converted to a fully-qualified name) run against
-        /// current model if result is non-<c>null</c> and can be converted to a <see cref="string"/>. For example
-        /// <c>string.Empty</c> identifies the current model and <c>"prop"</c> identifies the current model's "prop"
-        /// property. Formats result using <paramref name="format"/> or converts result to a <see cref="string"/>
-        /// directly if <paramref name="format"/> is <c>null</c> or empty.
-        /// </item>
-        /// <item>Existing "value" entry in <paramref name="htmlAttributes"/> if any.</item>
-        /// <item>Otherwise, <c>string.Empty</c>.</item>
-        /// </list>
         /// </remarks>
         IHtmlContent TextBox(string current, object value, string format, object htmlAttributes);
 
@@ -747,8 +680,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <see cref="ViewContext.ValidationMessageElement"/>.
         /// </param>
         /// <returns>
-        /// A new <see cref="IHtmlContent"/> containing a <paramref name="tag"/> element. <c>null</c> if the
-        /// <paramref name="expression"/> is valid and client-side validation is disabled.
+        /// A new <see cref="IHtmlContent"/> containing a <paramref name="tag"/> element. An empty
+        /// <see cref="IHtmlContent"/> if the <paramref name="expression"/> is valid and client-side validation is
+        /// disabled.
         /// </returns>
         IHtmlContent ValidationMessage(string expression, string message, object htmlAttributes, string tag);
 
@@ -770,8 +704,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <returns>
         /// New <see cref="IHtmlContent"/> containing a &lt;div&gt; element wrapping the <paramref name="tag"/> element
-        /// and the &lt;ul&gt; element. <see cref="HtmlString.Empty"/> if the current model is valid and client-side
-        /// validation is disabled).
+        /// and the &lt;ul&gt; element. An empty <see cref="IHtmlContent"/> if the current model is valid and
+        /// client-side validation is disabled.
         /// </returns>
         IHtmlContent ValidationSummary(
             bool excludePropertyErrors,
@@ -780,11 +714,17 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             string tag);
 
         /// <summary>
-        /// Returns the formatted value for the specified <paramref name="expression"/>.
+        /// Returns the formatted value for the specified <paramref name="expression"/>. Specifically, returns the
+        /// first non-<c>null</c> value found in:
+        /// the <see cref="ActionContext.ModelState"/> entry with full name,
+        /// the <see cref="ViewData"/> entry with full name, or
+        /// the <paramref name="expression"/> evaluated against <see cref="ViewDataDictionary.Model"/>.
+        /// See <see cref="Name"/> for more information about a "full name".
         /// </summary>
         /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="format">
-        /// The composite format <see cref="string"/> (see http://msdn.microsoft.com/en-us/library/txafckwd.aspx).
+        /// The format string (see https://msdn.microsoft.com/en-us/library/txafckwd.aspx) used to format the return
+        /// value unless that came from model binding.
         /// </param>
         /// <returns>A <see cref="string"/> containing the formatted value.</returns>
         /// <remarks>
