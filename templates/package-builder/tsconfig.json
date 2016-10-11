@@ -3,10 +3,11 @@
     "moduleResolution": "node",
     "target": "es5",
     "outDir": "tmp",
-    "sourceMap": false
+    "sourceMap": false,
+    "lib": ["es6"]
   },
   "exclude": [
-      "node_modules",
+      "**/node_modules",
       "dist"
   ]
 }

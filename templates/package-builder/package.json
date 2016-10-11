@@ -18,6 +18,13 @@
     "rimraf": "^2.5.2"
   },
   "devDependencies": {
-    "typescript": "^1.8.10"
+    "@types/glob": "^5.0.30",
+    "@types/lodash": "^4.14.37",
+    "@types/mkdirp": "^0.3.29",
+    "@types/node": "^6.0.45",
+    "@types/node-uuid": "0.0.28",
+    "@types/rimraf": "0.0.28",
+    "@types/yeoman-generator": "0.0.30",
+    "typescript": "^2.0.0"
   }
 }
