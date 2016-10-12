@@ -21,7 +21,7 @@ namespace SocketsSample
             services.AddSingleton<ChatEndPoint>();
 
             services.AddSingleton<ProtobufSerializer>();
-            services.AddSingleton<SocketFormatters>();
+            services.AddSingleton<InvocationAdapterRegistry>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -44,11 +44,11 @@ namespace SocketsSample
                 routes.MapSocketEndpoint<RpcEndpoint>("/jsonrpc");
             });
 
-            app.UseFormatters(formatters=>
+            app.UseRpc(invocationAdapters =>
             {
-                formatters.AddInvocationAdapter("protobuf", new Protobuf.ProtobufInvocationAdapter(app.ApplicationServices));
-                formatters.AddInvocationAdapter("json", new JSonInvocationAdapter());
-                formatters.AddInvocationAdapter("line", new LineInvocationAdapter());
+                invocationAdapters.AddInvocationAdapter("protobuf", new Protobuf.ProtobufInvocationAdapter(app.ApplicationServices));
+                invocationAdapters.AddInvocationAdapter("json", new JSonInvocationAdapter());
+                invocationAdapters.AddInvocationAdapter("line", new LineInvocationAdapter());
             });
         }
     }

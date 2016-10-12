@@ -1,41 +1,31 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace SocketsSample
 {
-    public static class FormatterExtensions
+    public static class RpcExtensions
     {
-        public static IApplicationBuilder UseFormatters(this IApplicationBuilder app, Action<FormatterBuilder> registerFormatters)
+        public static IApplicationBuilder UseRpc(this IApplicationBuilder app, Action<RpcBuilder> registerAdapters)
         {
-            var formatters = app.ApplicationServices.GetRequiredService<SocketFormatters>();
-            registerFormatters(new FormatterBuilder(formatters));
+            var adapters = app.ApplicationServices.GetRequiredService<InvocationAdapterRegistry>();
+            registerAdapters(new RpcBuilder(adapters));
             return app;
         }
     }
 
-    public class FormatterBuilder
+    public class RpcBuilder
     {
-        private SocketFormatters _socketFormatters;
+        private InvocationAdapterRegistry _invocationAdapters;
 
-        public FormatterBuilder(SocketFormatters socketFormatters)
+        public RpcBuilder(InvocationAdapterRegistry invocationAdapters)
         {
-            _socketFormatters = socketFormatters;
-        }
-
-        public void MapFormatter<T, TFormatterType>(string format)
-            where TFormatterType : IFormatter<T>
-        {
-            _socketFormatters.RegisterFormatter<T, TFormatterType>(format);
+            _invocationAdapters = invocationAdapters;
         }
 
         public void AddInvocationAdapter(string format, IInvocationAdapter adapter)
         {
-            _socketFormatters.RegisterInvocationAdapter(format, adapter);
+            _invocationAdapters.RegisterInvocationAdapter(format, adapter);
         }
     }
 }

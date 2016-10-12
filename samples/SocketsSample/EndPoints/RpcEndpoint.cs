@@ -44,13 +44,8 @@ namespace SocketsSample
             // TODO: Dispatch from the caller
             await Task.Yield();
 
-            /*
-            var formatter = _serviceProvider.GetRequiredService<SocketFormatters>()
-                .GetFormatter<InvocationDescriptor>((string)connection.Metadata["formatType"]);
-            */
-
             var stream = connection.Channel.GetStream();
-            var invocationAdapter = _serviceProvider.GetRequiredService<SocketFormatters>()
+            var invocationAdapter = _serviceProvider.GetRequiredService<InvocationAdapterRegistry>()
                 .GetInvocationAdapter((string)connection.Metadata["formatType"]);
 
             while (true)
