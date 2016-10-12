@@ -17,6 +17,7 @@ namespace Microsoft.Extensions.ProjectModel
         private List<DependencyDescription> _packageDependencies;
         private List<ResolvedReference> _resolvedReferences;
         private string _configuration;
+        private List<string> _projectReferences;
 
         public DotNetDependencyProvider(ProjectContext context, string configuration = Constants.DefaultConfiguration)
         {
@@ -28,6 +29,11 @@ namespace Microsoft.Extensions.ProjectModel
             _configuration = configuration;
             _context = context;
             DiscoverDependencies();
+        }
+
+        public IEnumerable<string> GetProjectReferences()
+        {
+            return _projectReferences;
         }
 
         public IEnumerable<DependencyDescription> GetPackageDependencies()
@@ -55,31 +61,41 @@ namespace Microsoft.Extensions.ProjectModel
                 throw new InvalidOperationException("Couldn't resolve dependencies when target framework is not specified.");
             }
 
-            var exports = exporter.GetAllExports();
-            var nugetPackages = new Dictionary<string, DependencyDescription>(StringComparer.OrdinalIgnoreCase);
+            var exports = exporter.GetDependencies();
             _resolvedReferences = new List<ResolvedReference>();
+            _packageDependencies = new List<DependencyDescription>();
+            _projectReferences = new List<string>();
 
             foreach (var export in exports)
             {
                 var library = export.Library;
-
-                var description = new DependencyDescription(
-                    library.Identity.Name,
-                    library.Identity.Version.ToString(),
-                    export.Library.Path,
-                    framework.DotNetFrameworkName,
-                    library.Identity.Type.Value,
-                    library.Resolved);
-
-                foreach (var dependency in export.Library.Dependencies)
+                var project = library as ProjectDescription;
+                if (project != null)
                 {
-                    var dep = new Dependency(dependency.Name, version: string.Empty);
-                    description.AddDependency(dep);
+                    _projectReferences.Add(project.Project.ProjectFilePath);
+                }
+                else
+                {
+                    var description = new DependencyDescription(
+                        library.Identity.Name,
+                        library.Identity.Version.ToString(),
+                        export.Library.Path,
+                        framework.DotNetFrameworkName,
+                        library.Identity.Type.Value,
+                        library.Resolved);
+
+                    foreach (var dependency in export.Library.Dependencies)
+                    {
+                        var dep = new Dependency(dependency.Name, version: string.Empty);
+                        description.AddDependency(dep);
+                    }
+
+
+                    var itemSpec = $"{framework.DotNetFrameworkName}/{library.Identity.Name}/{library.Identity.Version.ToString()}";
+                    _packageDependencies.Add(description);
                 }
 
-                var itemSpec = $"{framework.DotNetFrameworkName}/{library.Identity.Name}/{library.Identity.Version.ToString()}";
-                nugetPackages[itemSpec] = description;
-
+                // For resolved references we need to include all type of dependencies.
                 if (library.Resolved)
                 {
                     foreach (var asset in export.CompilationAssemblies)
@@ -91,8 +107,6 @@ namespace Microsoft.Extensions.ProjectModel
                     }
                 }
             }
-
-            _packageDependencies = nugetPackages.Values.ToList();
         }
     }
 }

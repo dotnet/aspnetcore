@@ -22,6 +22,7 @@ namespace Microsoft.Extensions.ProjectModel
 
         private IEnumerable<DependencyDescription> _packageDependencies;
         private IEnumerable<ResolvedReference> _compilationAssemblies;
+        private IEnumerable<string> _projectReferences;
 
         public DotNetProjectContext(ProjectContext projectContext, string configuration, string outputPath)
         {
@@ -115,6 +116,19 @@ namespace Microsoft.Extensions.ProjectModel
                 }
 
                 return _compilationAssemblies;
+            }
+        }
+
+        public IEnumerable<string> ProjectReferences
+        {
+            get
+            {
+                if (_projectReferences == null)
+                {
+                    _projectReferences = _dependencyProvider.Value.GetProjectReferences();
+                }
+
+                return _projectReferences;
             }
         }
 

@@ -20,6 +20,7 @@ namespace Microsoft.Extensions.ProjectModel
         private readonly MsBuildProjectDependencyProvider _dependencyProvider;
         private IEnumerable<DependencyDescription> _packageDependencies;
         private IEnumerable<ResolvedReference> _compilationAssemblies;
+        private IEnumerable<string> _projectReferences;
 
         protected ProjectInstance Project { get; }
         protected string Name { get; }
@@ -114,5 +115,17 @@ namespace Microsoft.Extensions.ProjectModel
             }
         }
 
+        public IEnumerable<string> ProjectReferences
+        {
+            get
+            {
+                if (_projectReferences == null)
+                {
+                    _projectReferences = _dependencyProvider.GetProjectReferences();
+                }
+
+                return _projectReferences;
+            }
+        }
     }
 }

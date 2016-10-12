@@ -29,5 +29,6 @@ namespace Microsoft.Extensions.ProjectModel
         string FindProperty(string propertyName);
         IEnumerable<DependencyDescription> PackageDependencies { get;}
         IEnumerable<ResolvedReference> CompilationAssemblies { get; }
+        IEnumerable<string> ProjectReferences { get; }
     }
 }

@@ -25,6 +25,18 @@ namespace Microsoft.Extensions.ProjectModel
             _projectInstance = projectInstance;
         }
 
+        public IEnumerable<string> GetProjectReferences()
+        {
+            var projectPaths = _projectInstance
+                .GetItems("ProjectReference")
+                .Select(reference => reference.EvaluatedInclude);
+
+            return projectPaths
+                .Select(path => Path.IsPathRooted(path)
+                    ? path
+                    : Path.Combine(_projectInstance.Directory, path));
+        }
+
         public IEnumerable<DependencyDescription> GetPackageDependencies()
         {
             var packageItems = _projectInstance.GetItems(PackageDependencyItemType);

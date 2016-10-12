@@ -13,7 +13,33 @@ namespace Microsoft.Extensions.ProjectModel.DotNet
 {
     public class DotNetDependencyProviderTests
     {
+        private const string globalJson = @"
+{
+    ""projects"": [ ""demo"", ""demoLib""]
+}";
+
         private const string projectJson = @"
+{
+  ""buildOptions"": {
+  },
+  ""dependencies"": {
+    ""Microsoft.AspNetCore.Mvc"": ""1.0.0-*"",
+    ""demoLib"": ""1.0.0-*"",
+  },
+  ""frameworks"": {
+    ""netcoreapp1.0"": {
+      ""dependencies"": {
+        ""Microsoft.NETCore.App"": {
+          ""version"": ""1.0.0"",
+          ""type"": ""platform""
+        }
+      }
+    }
+  },
+}
+";
+
+        private const string libProjectJson = @"
 {
   ""buildOptions"": {
   },
@@ -45,13 +71,20 @@ namespace Microsoft.Extensions.ProjectModel.DotNet
             using (var fileProvider = new TemporaryFileProvider())
             {
                 Directory.CreateDirectory(Path.Combine(fileProvider.Root, "demo"));
-                fileProvider.Add($"demo{Path.DirectorySeparatorChar}project.json", projectJson);
-                fileProvider.Add($"demo{Path.DirectorySeparatorChar}First.cs", "namespace demo { class First{} }");
+                Directory.CreateDirectory(Path.Combine(fileProvider.Root, "demoLib"));
+
+                fileProvider.Add($"global.json", globalJson);
+
+                fileProvider.Add($"demo/project.json", projectJson);
+                fileProvider.Add($"demo/First.cs", "namespace demo { class First{} }");
+
+                fileProvider.Add($"demoLib/project.json", libProjectJson);
+                fileProvider.Add($"demoLib/Second.cs", "namespace demoLib { class First{} }");
 
                 var muxer = new Muxer().MuxerPath;
 
                 var result = Command
-                    .Create(muxer, new[] { "restore", Path.Combine(fileProvider.Root, "demo") })
+                    .Create(muxer, new[] { "restore", fileProvider.Root })
                     .OnErrorLine(l => _output.WriteLine(l))
                     .OnOutputLine(l => _output.WriteLine(l))
                     .Execute();
@@ -77,7 +110,9 @@ namespace Microsoft.Extensions.ProjectModel.DotNet
                     .First();
 
                 Assert.True(Directory.Exists(mvcPackage.Path));
-                Assert.True(mvcPackage.Path.EndsWith($"Microsoft.AspNetCore.Mvc{Path.DirectorySeparatorChar}1.0.0", StringComparison.OrdinalIgnoreCase));
+                Assert.True(mvcPackage.Path.EndsWith($"Microsoft.AspNetCore.Mvc/1.0.0", StringComparison.OrdinalIgnoreCase));
+
+                Assert.True(context.ProjectReferences.First().Equals(Path.Combine(fileProvider.Root, "demoLib", "project.json")));
             }
         }
     }

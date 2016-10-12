@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.ProjectModel.MsBuild
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include=""..\Library1\library.csproj"" />
+    <ProjectReference Include=""..\Library1\Library1.csproj"" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include = ""xyz.dll"" />
@@ -109,14 +109,14 @@ namespace Microsoft.Extensions.ProjectModel.MsBuild
                 fileProvider.Add("NuGet.config", NugetConfigTxt);
 
                 // Add Root Project
-                fileProvider.Add($"Root{Path.DirectorySeparatorChar}test.csproj", RootProjectTxt);
-                fileProvider.Add($"Root{Path.DirectorySeparatorChar}One.cs", "public class Abc {}");
-                fileProvider.Add($"Root{Path.DirectorySeparatorChar}Two.cs", "public class Abc2 {}");
-                fileProvider.Add($"Root{Path.DirectorySeparatorChar}Excluded.cs", "public class Abc {}");
+                fileProvider.Add($"Root/test.csproj", RootProjectTxt);
+                fileProvider.Add($"Root/One.cs", "public class Abc {}");
+                fileProvider.Add($"Root/Two.cs", "public class Abc2 {}");
+                fileProvider.Add($"Root/Excluded.cs", "public class Abc {}");
 
                 // Add Class Library project
-                fileProvider.Add($"Library1{Path.DirectorySeparatorChar}library.csproj", LibraryProjectTxt);
-                fileProvider.Add($"Library1{Path.DirectorySeparatorChar}Three.cs", "public class Abc3 {}");
+                fileProvider.Add($"Library1/Library1.csproj", LibraryProjectTxt);
+                fileProvider.Add($"Library1/Three.cs", "public class Abc3 {}");
 
                 var testContext = _fixture.GetMsBuildContext();
 
@@ -152,9 +152,8 @@ namespace Microsoft.Extensions.ProjectModel.MsBuild
                     .FirstOrDefault();
 
                 Assert.NotNull(lib1Dll);
-                var expectedPath = Path.Combine(fileProvider.Root, "Root", "bin", "Debug", "netcoreapp1.0", "lib1.dll");
-                Assert.Equal(expectedPath, lib1Dll.ResolvedPath, ignoreCase: true);
-                
+                Assert.True(File.Exists(lib1Dll.ResolvedPath));
+
                 // This reference doesn't resolve so should not be available here.
                 Assert.False(compilationAssemblies.Any(assembly => assembly.Name.Equals("xyz", StringComparison.OrdinalIgnoreCase)));
 
@@ -165,6 +164,8 @@ namespace Microsoft.Extensions.ProjectModel.MsBuild
                 Assert.NotNull(mvcPackage);
 
                 Assert.True(mvcPackage.Dependencies.Any(dependency => dependency.Name.Equals("Microsoft.Extensions.DependencyInjection", StringComparison.OrdinalIgnoreCase)));
+
+                Assert.True(context.ProjectReferences.First().Equals(Path.Combine(fileProvider.Root, "Library1", "Library1.csproj")));
             }
         }
     }
