@@ -35,7 +35,7 @@
     }
   },
   "frameworks": {
-    "netcoreapp1.0": {
+    "netcoreapp1.1": {
       "dependencies": {
         "Microsoft.DotNet.InternalAbstractions": "1.0.0",
         "Microsoft.DotNet.ProjectModel.Loader": "1.0.0-preview2-003121",
