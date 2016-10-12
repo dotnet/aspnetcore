@@ -336,13 +336,13 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         }
 
         [Theory]
-        [InlineData("你好世界", "utf-16")]
-#if !NETCOREAPP1_0
+        [InlineData("ä½ å¥½ä¸–ç•Œ", "utf-16")]
+#if !NETCOREAPP1_1
         // CoreCLR does not like shift_jis as an encoding.
-        [InlineData("こんにちは世界", "shift_jis")]
+        [InlineData("ã“ã‚“ã«ã¡ã¯ä¸–ç•Œ", "shift_jis")]
 #endif
-        [InlineData("హలో ప్రపంచ", "iso-8859-1")]
-        [InlineData("வணக்கம் உலக", "utf-32")]
+        [InlineData("à°¹à°²à±‹ à°ªà±à°°à°ªà°‚à°š", "iso-8859-1")]
+        [InlineData("à®µà®£à®•à¯à®•à®®à¯ à®‰à®²à®•", "utf-32")]
         public async Task WritesData_InExpectedEncoding(string data, string encodingName)
         {
             // Arrange
@@ -362,24 +362,24 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         }
 
         [Theory]
-        [InlineData('ん', 1023, "utf-8")]
-        [InlineData('ん', 1024, "utf-8")]
-        [InlineData('ん', 1050, "utf-8")]
-        [InlineData('你', 1023, "utf-16")]
-        [InlineData('你', 1024, "utf-16")]
-        [InlineData('你', 1050, "utf-16")]
-#if !NETCOREAPP1_0
+        [InlineData('ã‚“', 1023, "utf-8")]
+        [InlineData('ã‚“', 1024, "utf-8")]
+        [InlineData('ã‚“', 1050, "utf-8")]
+        [InlineData('ä½ ', 1023, "utf-16")]
+        [InlineData('ä½ ', 1024, "utf-16")]
+        [InlineData('ä½ ', 1050, "utf-16")]
+#if !NETCOREAPP1_1
         // CoreCLR does not like shift_jis as an encoding.
-        [InlineData('こ', 1023, "shift_jis")]
-        [InlineData('こ', 1024, "shift_jis")]
-        [InlineData('こ', 1050, "shift_jis")]
+        [InlineData('ã“', 1023, "shift_jis")]
+        [InlineData('ã“', 1024, "shift_jis")]
+        [InlineData('ã“', 1050, "shift_jis")]
 #endif
-        [InlineData('హ', 1023, "iso-8859-1")]
-        [InlineData('హ', 1024, "iso-8859-1")]
-        [InlineData('హ', 1050, "iso-8859-1")]
-        [InlineData('வ', 1023, "utf-32")]
-        [InlineData('வ', 1024, "utf-32")]
-        [InlineData('வ', 1050, "utf-32")]
+        [InlineData('à°¹', 1023, "iso-8859-1")]
+        [InlineData('à°¹', 1024, "iso-8859-1")]
+        [InlineData('à°¹', 1050, "iso-8859-1")]
+        [InlineData('à®µ', 1023, "utf-32")]
+        [InlineData('à®µ', 1024, "utf-32")]
+        [InlineData('à®µ', 1050, "utf-32")]
         public async Task WritesData_OfDifferentLength_InExpectedEncoding(
             char character,
             int charCount,
@@ -437,9 +437,9 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         public async Task HttpResponseStreamWriter_WritesDataCorrectly_ForCharactersHavingSurrogatePairs(int characterSize)
         {
             // Arrange
-            // Here "𐐀" (called Deseret Long I) actually represents 2 characters. Try to make this character split across
+            // Here "ð€" (called Deseret Long I) actually represents 2 characters. Try to make this character split across
             // the boundary
-            var content = new string('a', characterSize - 1) + "𐐀";
+            var content = new string('a', characterSize - 1) + "ð€";
             var stream = new TestMemoryStream();
             var writer = new HttpResponseStreamWriter(stream, Encoding.Unicode);
 
