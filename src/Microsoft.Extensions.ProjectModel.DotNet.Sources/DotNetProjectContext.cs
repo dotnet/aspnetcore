@@ -66,7 +66,9 @@ namespace Microsoft.Extensions.ProjectModel
         public string RuntimeConfigJson => _paths.RuntimeFiles.RuntimeConfigJson;
         public string PackagesDirectory => _projectContext.PackagesDirectory;
         public string PackageLockFile => Path.Combine(Path.GetDirectoryName(ProjectFullPath), "project.lock.json");
-
+        public string AssemblyName => string.IsNullOrEmpty(AssemblyFullPath)
+            ? ProjectName
+            : Path.GetFileNameWithoutExtension(AssemblyFullPath);
         public string AssemblyFullPath =>
             !IsClassLibrary && (_projectContext.IsPortable || TargetFramework.IsDesktop())
                 ? _paths.RuntimeFiles.Executable

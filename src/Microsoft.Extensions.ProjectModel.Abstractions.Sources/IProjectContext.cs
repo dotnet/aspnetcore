@@ -22,6 +22,7 @@ namespace Microsoft.Extensions.ProjectModel
         string PackageLockFile { get; }
         string PackagesDirectory { get; }
         string TargetDirectory { get; }
+        string AssemblyName { get; }
         string AssemblyFullPath { get; }
         IEnumerable<string> CompilationItems { get; }
         IEnumerable<string> EmbededItems { get; }

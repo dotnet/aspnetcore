@@ -73,6 +73,9 @@ namespace Microsoft.Extensions.ProjectModel
                 return Path.Combine(restoreOutputPath, "project.assets.json");
             }
         }
+        public string AssemblyName => string.IsNullOrEmpty(AssemblyFullPath) 
+            ? ProjectName
+            : Path.GetFileNameWithoutExtension(AssemblyFullPath);
         public string AssemblyFullPath => FindProperty("TargetPath");
         public string Platform => FindProperty("Platform");
         public string ProjectFullPath => Project.FullPath;
