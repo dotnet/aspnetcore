@@ -762,6 +762,7 @@ functions
                 "BrowserLink",
                 "Entropy",
                 "MusicStore",
+                "MetaPackages",
             };
 
             if (!string.IsNullOrEmpty(repositoryInclude))
