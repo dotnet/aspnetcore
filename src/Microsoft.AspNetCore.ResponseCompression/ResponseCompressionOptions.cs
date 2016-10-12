@@ -19,6 +19,6 @@ namespace Microsoft.AspNetCore.ResponseCompression
         /// Indicates if responses over HTTPS connections should be compressed. The default is 'false'.
         /// Enable compression on HTTPS connections may expose security problems.
         /// </summary>
-        public bool EnableHttps { get; set; } = false;
+        public bool EnableForHttps { get; set; } = false;
     }
 }

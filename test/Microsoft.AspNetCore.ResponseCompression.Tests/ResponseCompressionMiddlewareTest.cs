@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var options = new ResponseCompressionOptions();
 
-            Assert.False(options.EnableHttps);
+            Assert.False(options.EnableForHttps);
         }
 
         [Fact]
@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 {
                     services.AddResponseCompression(options =>
                     {
-                        options.EnableHttps = enableHttps;
+                        options.EnableForHttps = enableHttps;
                         options.MimeTypes = new[] { TextPlain };
                     });
                 })

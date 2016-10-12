@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Extension methods for the ResponseCompression middleware.
     /// </summary>
-    public static class ResponseCompressionExtensions
+    public static class ResponseCompressionServicesExtensions
     {
         /// <summary>
         /// Add response compression services and enable compression for responses with the given MIME types.
@@ -45,22 +45,8 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             services.Configure(configureOptions);
-            services.TryAddTransient<IResponseCompressionProvider, ResponseCompressionProvider>();
+            services.TryAddSingleton<IResponseCompressionProvider, ResponseCompressionProvider>();
             return services;
-        }
-
-        /// <summary>
-        /// Adds middleware for dynamically compressing HTTP Responses.
-        /// </summary>
-        /// <param name="builder">The <see cref="IApplicationBuilder"/> instance this method extends.</param>
-        public static IApplicationBuilder UseResponseCompression(this IApplicationBuilder builder)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            return builder.UseMiddleware<ResponseCompressionMiddleware>();
         }
     }
 }

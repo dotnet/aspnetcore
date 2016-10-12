@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
             if (options.Value.MimeTypes == null || !options.Value.MimeTypes.Any())
             {
-                throw new InvalidOperationException("No mime types specified");
+                throw new InvalidOperationException("No MIME types specified");
             }
             _mimeTypes = new HashSet<string>(options.Value.MimeTypes, StringComparer.OrdinalIgnoreCase);
         }

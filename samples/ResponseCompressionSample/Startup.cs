@@ -18,8 +18,8 @@ namespace ResponseCompressionSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<ICompressionProvider, GzipCompressionProvider>();
-            services.AddTransient<ICompressionProvider, CustomCompressionProvider>();
+            services.AddSingleton<ICompressionProvider, GzipCompressionProvider>();
+            services.AddSingleton<ICompressionProvider, CustomCompressionProvider>();
             services.AddResponseCompression("text/plain", "text/html");
         }
 

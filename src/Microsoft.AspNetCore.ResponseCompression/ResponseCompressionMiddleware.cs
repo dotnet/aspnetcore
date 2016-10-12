@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
         private readonly IResponseCompressionProvider _provider;
 
-        private readonly bool _enableHttps;
+        private readonly bool _enableForHttps;
 
         /// <summary>
         /// Initialize the Response Compression middleware.
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
             _next = next;
             _provider = provider;
-            _enableHttps = options.Value.EnableHttps;
+            _enableForHttps = options.Value.EnableForHttps;
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         {
             ICompressionProvider compressionProvider = null;
 
-            if (!context.Request.IsHttps || _enableHttps)
+            if (!context.Request.IsHttps || _enableForHttps)
             {
                 compressionProvider = _provider.GetCompressionProvider(context);
             }
