@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -496,7 +496,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 #if NET451 // Flush not supported, compression disabled
             Assert.NotNull(response.Headers.GetValues(HeaderNames.ContentMD5));
             Assert.Empty(response.Content.Headers.ContentEncoding);
-#elif NETCOREAPP1_1 // Flush supported, compression enabled
+#elif NETCOREAPP1_0 // Flush supported, compression enabled
             IEnumerable<string> contentMD5 = null;
             Assert.False(response.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
             Assert.Single(response.Content.Headers.ContentEncoding, "gzip");
@@ -561,7 +561,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 #if NET451 // Flush not supported, compression disabled
             Assert.NotNull(response.Headers.GetValues(HeaderNames.ContentMD5));
             Assert.Empty(response.Content.Headers.ContentEncoding);
-#elif NETCOREAPP1_1 // Flush supported, compression enabled
+#elif NETCOREAPP1_0 // Flush supported, compression enabled
             IEnumerable<string> contentMD5 = null;
             Assert.False(response.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
             Assert.Single(response.Content.Headers.ContentEncoding, "gzip");
