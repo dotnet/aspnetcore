@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -21,7 +22,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 // Wait for the process to start
                 using (var wait = new WaitForFileToChange(scenario.StartedFile))
                 {
-                    scenario.RunDotNetWatch($"run {scenario.StatusFile} --no-exit");
+                    scenario.RunDotNetWatch(new[] { "run", scenario.StatusFile, "--no-exit" });
 
                     wait.Wait(_defaultTimeout,
                         expectedToChange: true,
@@ -60,7 +61,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 // Wait for the process to start
                 using (var wait = new WaitForFileToChange(scenario.StartedFile))
                 {
-                    scenario.RunDotNetWatch($"run {scenario.StatusFile}");
+                    scenario.RunDotNetWatch(new[] { "run", scenario.StatusFile });
 
                     wait.Wait(_defaultTimeout,
                         expectedToChange: true,
@@ -99,15 +100,13 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         private class NoDepsAppScenario : DotNetWatchScenario
         {
             private const string TestAppName = "NoDepsApp";
-            private static readonly string _testAppFolder = Path.Combine(_repositoryRoot, "test", "TestApps", TestAppName);
 
             public NoDepsAppScenario()
             {
                 StatusFile = Path.Combine(_scenario.TempFolder, "status");
                 StartedFile = StatusFile + ".started";
 
-                _scenario.AddProject(_testAppFolder);
-                _scenario.AddToolToProject(TestAppName, DotnetWatch);
+                _scenario.AddTestProjectFolder(TestAppName);
                 _scenario.Restore();
 
                 TestAppFolder = Path.Combine(_scenario.WorkFolder, TestAppName);
@@ -117,7 +116,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             public string StartedFile { get; private set; }
             public string TestAppFolder { get; private set; }
 
-            public void RunDotNetWatch(string args)
+            public void RunDotNetWatch(IEnumerable<string> args)
             {
                 RunDotNetWatch(args, Path.Combine(_scenario.WorkFolder, TestAppName));
             }

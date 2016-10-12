@@ -1,18 +1,22 @@
 {
   "buildOptions": {
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "copyToOutput": {
+      "include": "TestProjects/"
+    },
+    "compile": {
+      "exclude": "TestProjects/"
+    }
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Microsoft.DotNet.Watcher.Tools": "1.0.0-*",
-    "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
     "Microsoft.Extensions.Process.Sources": {
       "type": "build",
       "version": "1.1.0-*"
     },
-    "Newtonsoft.Json": "9.0.1",
     "xunit": "2.2.0-*"
   },
   "frameworks": {
@@ -24,6 +28,12 @@
         }
       }
     }
+  },
+  "scripts": {
+    "precompile": "clean-assets %compile:OutputDir%"
+  },
+  "publishOptions": {
+    "include": "TestProjects/"
   },
   "testRunner": "xunit"
 }

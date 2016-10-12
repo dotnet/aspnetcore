@@ -8,12 +8,18 @@ using System.IO;
 using System.Threading;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.DependencyModel;
+using Microsoft.DotNet.ProjectModel;
+using System.Reflection;
+using System.Linq;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
     public class ProjectToolScenario : IDisposable
     {
         private const string NugetConfigFileName = "NuGet.config";
+        private static readonly string TestProjectSourceRoot = Path.Combine(AppContext.BaseDirectory, "TestProjects");
 
         private static readonly object _restoreLock = new object();
 
@@ -26,55 +32,27 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             CreateTestDirectory();
         }
 
-        public string TempFolder { get; } = Path.Combine(Path.GetDirectoryName(FindNugetConfig()), "testWorkDir", Guid.NewGuid().ToString());
+        public string TempFolder { get; } = Path.Combine(Path.GetDirectoryName(FindNugetConfig()), "testWorkDir", Guid.NewGuid().ToString("N"));
 
         public string WorkFolder { get; }
 
-        public void AddProject(string projectFolder)
+        public void AddTestProjectFolder(string projectName)
         {
-            var destinationFolder = Path.Combine(WorkFolder, Path.GetFileName(projectFolder));
-            Console.WriteLine($"Copying project {projectFolder} to {destinationFolder}");
+            var srcFolder = Path.Combine(TestProjectSourceRoot, projectName);
+            var destinationFolder = Path.Combine(WorkFolder, Path.GetFileName(projectName));
+            Console.WriteLine($"Copying project {srcFolder} to {destinationFolder}");
 
             Directory.CreateDirectory(destinationFolder);
 
-            foreach (var directory in Directory.GetDirectories(projectFolder, "*", SearchOption.AllDirectories))
+            foreach (var directory in Directory.GetDirectories(srcFolder, "*", SearchOption.AllDirectories))
             {
-                Directory.CreateDirectory(directory.Replace(projectFolder, destinationFolder));
+                Directory.CreateDirectory(directory.Replace(srcFolder, destinationFolder));
             }
 
-            foreach (var file in Directory.GetFiles(projectFolder, "*.*", SearchOption.AllDirectories))
+            foreach (var file in Directory.GetFiles(srcFolder, "*", SearchOption.AllDirectories))
             {
-                File.Copy(file, file.Replace(projectFolder, destinationFolder), true);
+                File.Copy(file, file.Replace(srcFolder, destinationFolder), true);
             }
-        }
-
-        public void AddNugetFeed(string feedName, string feed)
-        {
-            var tempNugetConfigFile = Path.Combine(WorkFolder, NugetConfigFileName);
-
-            var nugetConfig = XDocument.Load(tempNugetConfigFile);
-            var packageSource = nugetConfig.Element("configuration").Element("packageSources");
-            packageSource.Add(new XElement("add", new XAttribute("key", feedName), new XAttribute("value", feed)));
-            using (var stream = File.OpenWrite(tempNugetConfigFile))
-            {
-                nugetConfig.Save(stream);
-            }
-        }
-
-        public void AddToolToProject(string projectName, string toolName)
-        {
-            var projectFile = Path.Combine(WorkFolder, projectName, "project.json");
-            Console.WriteLine($"Adding {toolName} to {projectFile}");
-
-            var projectJson = JObject.Parse(File.ReadAllText(projectFile));
-            projectJson.Add("tools",
-              new JObject(
-                new JProperty(toolName,
-                  new JObject(
-                    new JProperty("version", "1.0.0-*"),
-                    new JProperty("target", "package")))));
-
-            File.WriteAllText(projectFile, projectJson.ToString());
         }
 
         public void Restore(string project = null)
@@ -93,8 +71,9 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             // multiple threads - which results in either sharing violation or corrupted json.
             lock (_restoreLock)
             {
-                var restore = ExecuteDotnet($"restore -v Minimal", project);
-                restore.WaitForExit();
+                var restore = Command
+                    .CreateDotNet("restore", new[] { project })
+                    .Execute();
 
                 if (restore.ExitCode != 0)
                 {
@@ -114,11 +93,27 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             File.Copy(nugetConfigFilePath, tempNugetConfigFile);
         }
 
-        public Process ExecuteDotnet(string arguments, string workDir, IDictionary<string, string> environmentVariables = null)
+        public Process ExecuteDotnetWatch(IEnumerable<string> arguments, string workDir, IDictionary<string, string> environmentVariables = null)
         {
-            Console.WriteLine($"Running dotnet {arguments} in {workDir}");
+            // this launches a new .NET Core process using the runtime of the current test app 
+            // and the version of dotnet-watch that this test app is compiled against
+            var thisAssembly = Path.GetFileNameWithoutExtension(GetType().GetTypeInfo().Assembly.Location);
+            var args = new List<string>();
+            args.Add("exec");
 
-            var psi = new ProcessStartInfo("dotnet", arguments)
+            args.Add("--depsfile");
+            args.Add(Path.Combine(AppContext.BaseDirectory, thisAssembly + FileNameSuffixes.DepsJson));
+
+            args.Add("--runtimeconfig");
+            args.Add(Path.Combine(AppContext.BaseDirectory, thisAssembly + FileNameSuffixes.RuntimeConfigJson));
+
+            args.Add(Path.Combine(AppContext.BaseDirectory, "dotnet-watch.dll"));
+
+            var argsStr = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args.Concat(arguments));
+
+            Console.WriteLine($"Running dotnet {argsStr} in {workDir}");
+
+            var psi = new ProcessStartInfo(new Muxer().MuxerPath, argsStr)
             {
                 UseShellExecute = false,
                 WorkingDirectory = workDir,

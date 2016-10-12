@@ -36,18 +36,14 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             private const string AppWithDeps = "AppWithDeps";
             private const string Dependency = "Dependency";
 
-            private static readonly string _appWithDepsFolder = Path.Combine(_repositoryRoot, "test", "TestApps", AppWithDeps);
-            private static readonly string _dependencyFolder = Path.Combine(_repositoryRoot, "test", "TestApps", Dependency);
-
             public AppWithDepsScenario()
             {
                 StatusFile = Path.Combine(_scenario.TempFolder, "status");
                 StartedFile = StatusFile + ".started";
                 
-                _scenario.AddProject(_appWithDepsFolder);
-                _scenario.AddProject(_dependencyFolder);
+                _scenario.AddTestProjectFolder(AppWithDeps);
+                _scenario.AddTestProjectFolder(Dependency);
 
-                _scenario.AddToolToProject(AppWithDeps, DotnetWatch);
                 _scenario.Restore();
 
                 AppWithDepsFolder = Path.Combine(_scenario.WorkFolder, AppWithDeps);
@@ -59,7 +55,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 // Wait for the process to start
                 using (var wait = new WaitForFileToChange(StatusFile))
                 {
-                    RunDotNetWatch($"run {StatusFile}", Path.Combine(_scenario.WorkFolder, AppWithDeps));
+                    RunDotNetWatch(new[] { "run", StatusFile }, Path.Combine(_scenario.WorkFolder, AppWithDeps));
 
                     wait.Wait(_defaultTimeout,
                         expectedToChange: true,

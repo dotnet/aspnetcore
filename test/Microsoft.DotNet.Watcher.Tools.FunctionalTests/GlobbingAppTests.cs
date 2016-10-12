@@ -136,7 +136,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         // Add a file that's in a included folder but not matching the globbing pattern
         private void ChangeNonCompiledFile(bool usePollingWatcher)
-        { 
+        {
             using (var scenario = new GlobbingAppScenario())
             {
                 scenario.UsePollingWatcher = usePollingWatcher;
@@ -184,15 +184,13 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         private class GlobbingAppScenario : DotNetWatchScenario
         {
             private const string TestAppName = "GlobbingApp";
-            private static readonly string _testAppFolder = Path.Combine(_repositoryRoot, "test", "TestApps", TestAppName);
 
             public GlobbingAppScenario()
             {
                 StatusFile = Path.Combine(_scenario.TempFolder, "status");
                 StartedFile = StatusFile + ".started";
 
-                _scenario.AddProject(_testAppFolder);
-                _scenario.AddToolToProject(TestAppName, DotnetWatch);
+                _scenario.AddTestProjectFolder(TestAppName);
                 _scenario.Restore();
 
                 TestAppFolder = Path.Combine(_scenario.WorkFolder, TestAppName);
@@ -203,7 +201,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 // Wait for the process to start
                 using (var wait = new WaitForFileToChange(StartedFile))
                 {
-                    RunDotNetWatch($"run {StatusFile}", Path.Combine(_scenario.WorkFolder, TestAppName));
+                    RunDotNetWatch(new[] { "run", StatusFile }, Path.Combine(_scenario.WorkFolder, TestAppName));
 
                     wait.Wait(_defaultTimeout,
                         expectedToChange: true,
