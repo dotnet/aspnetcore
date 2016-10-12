@@ -64,7 +64,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <param name="context">The <see cref="InputFormatterContext"/>.</param>
         /// <param name="encoding">The <see cref="Encoding"/> used to read the request body.</param>
         /// <returns>A <see cref="Task"/> that on completion deserializes the request body.</returns>
-        public abstract Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding);
+        public abstract Task<InputFormatterResult> ReadRequestBodyAsync(
+            InputFormatterContext context,
+            Encoding encoding);
 
         /// <summary>
         /// Returns an <see cref="Encoding"/> based on <paramref name="context"/>'s
@@ -82,25 +84,31 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (SupportedEncodings?.Count == 0)
+            if (SupportedEncodings.Count == 0)
             {
-                var message = Resources.FormatTextInputFormatter_SupportedEncodingsMustNotBeEmpty(nameof(SupportedEncodings));
+                var message = Resources.FormatTextInputFormatter_SupportedEncodingsMustNotBeEmpty(
+                    nameof(SupportedEncodings));
                 throw new InvalidOperationException(message);
             }
 
-            var request = context.HttpContext.Request;
-
-            var requestEncoding = request.ContentType == null ? null : MediaType.GetEncoding(request.ContentType);
-            if (requestEncoding != null)
+            var requestContentType = context.HttpContext.Request.ContentType;
+            var requestMediaType = requestContentType == null ? default(MediaType) : new MediaType(requestContentType);
+            if (requestMediaType.Charset.HasValue)
             {
-                for (int i = 0; i < SupportedEncodings.Count; i++)
+                // Create Encoding based on requestMediaType.Charset to support charset aliases and custom Encoding
+                // providers. Charset -> Encoding -> encoding.WebName chain canonicalizes the charset name.
+                var requestEncoding = requestMediaType.Encoding;
+                if (requestEncoding != null)
                 {
-                    if (string.Equals(
-                        requestEncoding.WebName,
-                        SupportedEncodings[i].WebName,
-                        StringComparison.OrdinalIgnoreCase))
+                    for (int i = 0; i < SupportedEncodings.Count; i++)
                     {
-                        return SupportedEncodings[i];
+                        if (string.Equals(
+                            requestEncoding.WebName,
+                            SupportedEncodings[i].WebName,
+                            StringComparison.OrdinalIgnoreCase))
+                        {
+                            return SupportedEncodings[i];
+                        }
                     }
                 }
 
@@ -116,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // cases where the client doesn't send a content type header or sends a content
             // type header without encoding. For that reason we pick the first encoding of the
             // list of supported encodings and try to use that to read the body. This encoding
-            // is UTF-8 by default on our formatters, which generally is a safe choice for the
+            // is UTF-8 by default in our formatters, which generally is a safe choice for the
             // encoding.
             return SupportedEncodings[0];
         }
