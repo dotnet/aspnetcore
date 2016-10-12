@@ -29,6 +29,6 @@
     "System.Data.SqlClient": "4.3.0-*"
   },
   "frameworks": {
-    "netcoreapp1.0": {}
+    "netcoreapp1.1": {}
   }
 }
