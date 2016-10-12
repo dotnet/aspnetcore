@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 Assert.Equal("Hello World", response);
             }
         }
-#if !NETCOREAPP1_1
+#if !NETCOREAPP1_0
         [ConditionalFact]
         public async Task RequestBody_ReadBeginEnd_Success()
         {
