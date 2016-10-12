@@ -24,7 +24,7 @@
     "xunit": "2.2.0-*"
   },
   "frameworks": {
-    "netcoreapp1.0": {}
+    "netcoreapp1.1": {}
   },
   "tools": {
     "Microsoft.Extensions.SecretManager.Tools": "1.0.0-*"
