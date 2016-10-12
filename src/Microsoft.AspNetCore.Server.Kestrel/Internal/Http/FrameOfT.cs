@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
@@ -92,16 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         try
                         {
                             await _application.ProcessRequestAsync(context).ConfigureAwait(false);
-
-                            var responseHeaders = FrameResponseHeaders;
-                            if (!responseHeaders.HasTransferEncoding &&
-                                responseHeaders.HasContentLength &&
-                                _responseBytesWritten < responseHeaders.HeaderContentLengthValue.Value)
-                            {
-                                _keepAlive = false;
-                                ReportApplicationError(new InvalidOperationException(
-                                    $"Response Content-Length mismatch: too few bytes written ({_responseBytesWritten} of {responseHeaders.HeaderContentLengthValue.Value})."));
-                            }
+                            VerifyResponseContentLength();
                         }
                         catch (Exception ex)
                         {

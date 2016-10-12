@@ -607,6 +607,62 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.Equal(0, testLogger.ApplicationErrorsLogged);
         }
 
+        [Fact]
+        public async Task HeadResponseCanContainContentLengthHeader()
+        {
+            var testLogger = new TestApplicationErrorLogger();
+            var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
+
+            using (var server = new TestServer(httpContext =>
+            {
+                httpContext.Response.ContentLength = 42;
+                return TaskCache.CompletedTask;
+            }, serviceContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEnd(
+                        "HEAD / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        $"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 42",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task HeadResponseCanContainContentLengthHeaderButBodyNotWritten()
+        {
+            var testLogger = new TestApplicationErrorLogger();
+            var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.ContentLength = 12;
+                await httpContext.Response.WriteAsync("hello, world");
+            }, serviceContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEnd(
+                        "HEAD / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        $"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 12",
+                        "",
+                        "");
+                }
+            }
+        }
+
         public static TheoryData<string, StringValues, string> NullHeaderData
         {
             get

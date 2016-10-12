@@ -617,6 +617,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             _responseBytesWritten += count;
         }
 
+        protected void VerifyResponseContentLength()
+        {
+            var responseHeaders = FrameResponseHeaders;
+
+            if (!HttpMethods.IsHead(Method) &&
+                !responseHeaders.HasTransferEncoding &&
+                responseHeaders.HeaderContentLengthValue.HasValue &&
+                _responseBytesWritten < responseHeaders.HeaderContentLengthValue.Value)
+            {
+                _keepAlive = false;
+                ReportApplicationError(new InvalidOperationException(
+                    $"Response Content-Length mismatch: too few bytes written ({_responseBytesWritten} of {responseHeaders.HeaderContentLengthValue.Value})."));
+            }
+        }
+
         private void WriteChunked(ArraySegment<byte> data)
         {
             SocketOutput.Write(data, chunk: true);
