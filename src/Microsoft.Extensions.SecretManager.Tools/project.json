@@ -30,6 +30,6 @@
     "System.Runtime.Serialization.Primitives": "4.3.0-*"
   },
   "frameworks": {
-    "netcoreapp1.1": {}
+    "netcoreapp1.0": {}
   }
 }
