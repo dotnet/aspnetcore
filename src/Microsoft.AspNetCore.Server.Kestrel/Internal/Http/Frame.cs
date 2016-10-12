@@ -47,7 +47,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private readonly object _onStartingSync = new Object();
         private readonly object _onCompletedSync = new Object();
 
-        protected bool _requestRejected;
         private Streams _frameStreams;
 
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
@@ -64,6 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private bool _canHaveBody;
         private bool _autoChunk;
         protected Exception _applicationException;
+        private BadHttpRequestException _requestRejectedException;
 
         protected HttpVersion _httpVersion;
 
@@ -717,7 +717,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         protected Task TryProduceInvalidRequestResponse()
         {
-            if (_requestRejected)
+            if (_requestRejectedException != null)
             {
                 if (FrameRequestHeaders == null || FrameResponseHeaders == null)
                 {
@@ -732,7 +732,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         protected Task ProduceEnd()
         {
-            if (_requestRejected || _applicationException != null)
+            if (_requestRejectedException != null || _applicationException != null)
             {
                 if (HasResponseStarted)
                 {
@@ -741,8 +741,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     return TaskCache.CompletedTask;
                 }
 
-                // If the request was rejected, the error state has already been set by SetBadRequestState
-                if (!_requestRejected)
+                // If the request was rejected, the error state has already been set by SetBadRequestState and
+                // that should take precedence.
+                if (_requestRejectedException != null)
+                {
+                    SetErrorResponseHeaders(statusCode: _requestRejectedException.StatusCode);
+                }
+                else
                 {
                     // 500 Internal Server Error
                     SetErrorResponseHeaders(statusCode: 500);
@@ -1394,24 +1399,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     _applicationException);
         }
 
-        public void RejectRequest(string message)
-        {
-            throw new ObjectDisposedException(
-                "The response has been aborted due to an unhandled application exception.",
-                _applicationException);
-        }
-
         public void RejectRequest(RequestRejectionReason reason)
         {
-            var ex = BadHttpRequestException.GetException(reason);
-            SetBadRequestState(ex);
-            throw ex;
+            RejectRequest(BadHttpRequestException.GetException(reason));
         }
 
         public void RejectRequest(RequestRejectionReason reason, string value)
         {
-            var ex = BadHttpRequestException.GetException(reason, value);
-            SetBadRequestState(ex);
+            RejectRequest(BadHttpRequestException.GetException(reason, value));
+        }
+
+        private void RejectRequest(BadHttpRequestException ex)
+        {
+            Log.ConnectionBadRequest(ConnectionId, ex);
             throw ex;
         }
 
@@ -1422,17 +1422,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public void SetBadRequestState(BadHttpRequestException ex)
         {
-            // Setting status code will throw if response has already started
             if (!HasResponseStarted)
             {
-                SetErrorResponseHeaders(statusCode: ex.StatusCode);
+                SetErrorResponseHeaders(ex.StatusCode);
             }
 
             _keepAlive = false;
             _requestProcessingStopping = true;
-            _requestRejected = true;
-
-            Log.ConnectionBadRequest(ConnectionId, ex);
+            _requestRejectedException = ex;
         }
 
         protected void ReportApplicationError(Exception ex)

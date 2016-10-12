@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -233,6 +232,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 context =>
                 {
                     return TaskCache.CompletedTask;
+                },
+                expectedClientStatusCode: null,
+                expectedServerStatusCode: HttpStatusCode.BadRequest,
+                sendMalformedRequest: true);
+        }
+
+        [Fact]
+        public Task ResponseStatusCodeSetBeforeHttpContextDisposedRequestMalformedRead()
+        {
+            return ResponseStatusCodeSetBeforeHttpContextDispose(
+                async context =>
+                {
+                    await context.Request.Body.ReadAsync(new byte[1], 0, 1);
+                },
+                expectedClientStatusCode: null,
+                expectedServerStatusCode: HttpStatusCode.BadRequest,
+                sendMalformedRequest: true);
+        }
+
+        [Fact]
+        public Task ResponseStatusCodeSetBeforeHttpContextDisposedRequestMalformedReadIgnored()
+        {
+            return ResponseStatusCodeSetBeforeHttpContextDispose(
+                async context =>
+                {
+                    try
+                    {
+                        await context.Request.Body.ReadAsync(new byte[1], 0, 1);
+                    }
+                    catch (BadHttpRequestException)
+                    {
+                    }
                 },
                 expectedClientStatusCode: null,
                 expectedServerStatusCode: HttpStatusCode.BadRequest,
@@ -730,14 +761,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task HeadResponseCanContainContentLengthHeader()
         {
-            var testLogger = new TestApplicationErrorLogger();
-            var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
-
             using (var server = new TestServer(httpContext =>
             {
                 httpContext.Response.ContentLength = 42;
                 return TaskCache.CompletedTask;
-            }, serviceContext))
+            }, new TestServiceContext()))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -746,7 +774,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
                     await connection.ReceiveEnd(
-                        $"HTTP/1.1 200 OK",
+                        "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 42",
                         "",
@@ -758,14 +786,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task HeadResponseCanContainContentLengthHeaderButBodyNotWritten()
         {
-            var testLogger = new TestApplicationErrorLogger();
-            var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
-
             using (var server = new TestServer(async httpContext =>
             {
                 httpContext.Response.ContentLength = 12;
                 await httpContext.Response.WriteAsync("hello, world");
-            }, serviceContext))
+            }, new TestServiceContext()))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -774,11 +799,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
                     await connection.ReceiveEnd(
-                        $"HTTP/1.1 200 OK",
+                        "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 12",
                         "",
                         "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task AppCanWriteOwnBadRequestResponse()
+        {
+            var expectedResponse = string.Empty;
+            var responseWrittenTcs = new TaskCompletionSource<object>();
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                try
+                {
+                    await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1);
+                }
+                catch (BadHttpRequestException ex)
+                {
+                    expectedResponse = ex.Message;
+                    httpContext.Response.StatusCode = 400;
+                    httpContext.Response.ContentLength = ex.Message.Length;
+                    await httpContext.Response.WriteAsync(ex.Message);
+                    responseWrittenTcs.SetResult(null);
+                }
+            }, new TestServiceContext()))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEnd(
+                        "POST / HTTP/1.1",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "bad");
+                    await responseWrittenTcs.Task;
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 400 Bad Request",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        $"Content-Length: {expectedResponse.Length}",
+                        "",
+                        expectedResponse);
                 }
             }
         }

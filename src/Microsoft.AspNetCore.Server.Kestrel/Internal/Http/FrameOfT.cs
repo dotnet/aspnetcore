@@ -100,6 +100,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             catch (Exception ex)
                             {
                                 ReportApplicationError(ex);
+
+                                if (ex is BadHttpRequestException)
+                                {
+                                    throw;
+                                }
                             }
                             finally
                             {
@@ -118,30 +123,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                                 {
                                     await FireOnCompleted();
                                 }
-
-                                // If _requestAbort is set, the connection has already been closed.
-                                if (Volatile.Read(ref _requestAborted) == 0)
-                                {
-                                    ResumeStreams();
-
-                                    if (_keepAlive)
-                                    {
-                                        // Finish reading the request body in case the app did not.
-                                        await messageBody.Consume();
-                                    }
-
-                                    // ProduceEnd() must be called before _application.DisposeContext(), to ensure
-                                    // HttpContext.Response.StatusCode is correctly set when
-                                    // IHttpContextFactory.Dispose(HttpContext) is called.
-                                    await ProduceEnd();
-                                }
-                                else if (!HasResponseStarted)
-                                {
-                                    // If the request was aborted and no response was sent, there's no
-                                    // meaningful status code to log.
-                                    StatusCode = 0;
-                                }
                             }
+
+                            // If _requestAbort is set, the connection has already been closed.
+                            if (Volatile.Read(ref _requestAborted) == 0)
+                            {
+                                ResumeStreams();
+
+                                if (_keepAlive)
+                                {
+                                    // Finish reading the request body in case the app did not.
+                                    await messageBody.Consume();
+                                }
+
+                                // ProduceEnd() must be called before _application.DisposeContext(), to ensure
+                                // HttpContext.Response.StatusCode is correctly set when
+                                // IHttpContextFactory.Dispose(HttpContext) is called.
+                                await ProduceEnd();
+                            }
+                            else if (!HasResponseStarted)
+                            {
+                                // If the request was aborted and no response was sent, there's no
+                                // meaningful status code to log.
+                                StatusCode = 0;
+                            }
+                        }
+                        catch (BadHttpRequestException ex)
+                        {
+                            // Handle BadHttpRequestException thrown during app execution or remaining message body consumption.
+                            // This has to be caught here so StatusCode is set properly before disposing the HttpContext
+                            // (DisposeContext logs StatusCode).
+                            SetBadRequestState(ex);
                         }
                         finally
                         {
@@ -169,11 +181,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
             catch (BadHttpRequestException ex)
             {
-                if (!_requestRejected)
-                {
-                    // SetBadRequestState logs the error.
-                    SetBadRequestState(ex);
-                }
+                // Handle BadHttpRequestException thrown during request line or header parsing.
+                // SetBadRequestState logs the error.
+                SetBadRequestState(ex);
             }
             catch (Exception ex)
             {
@@ -183,11 +193,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 try
                 {
-                    await TryProduceInvalidRequestResponse();
-
                     // If _requestAborted is set, the connection has already been closed.
                     if (Volatile.Read(ref _requestAborted) == 0)
                     {
+                        await TryProduceInvalidRequestResponse();
                         ConnectionControl.End(ProduceEndType.SocketShutdown);
                     }
                 }
