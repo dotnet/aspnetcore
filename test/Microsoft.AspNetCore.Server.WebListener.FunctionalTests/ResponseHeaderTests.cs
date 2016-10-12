@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 Assert.Equal(0, response.ContentLength);
                 Assert.NotNull(response.Headers["Date"]);
                 Assert.Equal("Microsoft-HTTPAPI/2.0", response.Headers["Server"]);
-#if NETCOREAPP1_0 // WebHeaderCollection.GetValues() not available in CoreCLR.
+#if NETCOREAPP1_1 // WebHeaderCollection.GetValues() not available in CoreCLR.
                 Assert.Equal("custom1, and custom2, custom3", response.Headers["WWW-Authenticate"]);
 #else
                 Assert.Equal(new string[] { "custom1, and custom2", "custom3" }, response.Headers.GetValues("WWW-Authenticate"));
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 Assert.Equal(0, response.ContentLength);
                 Assert.NotNull(response.Headers["Date"]);
                 Assert.Equal("Microsoft-HTTPAPI/2.0", response.Headers["Server"]);
-#if NETCOREAPP1_0 // WebHeaderCollection.GetValues() not available in CoreCLR.
+#if NETCOREAPP1_1 // WebHeaderCollection.GetValues() not available in CoreCLR.
                 Assert.Equal("custom1, and custom2, custom3", response.Headers["Custom-Header1"]);
 #else
                 Assert.Equal(new string[] { "custom1, and custom2", "custom3" }, response.Headers.GetValues("Custom-Header1"));
