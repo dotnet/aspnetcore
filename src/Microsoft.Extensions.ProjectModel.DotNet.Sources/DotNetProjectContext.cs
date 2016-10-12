@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.ProjectModel
             _compilerOptions = _projectContext.ProjectFile.GetCompilerOptions(TargetFramework, Configuration);
 
             // Workaround https://github.com/dotnet/cli/issues/3164
-            IsClassLibrary = !(_compilerOptions.EmitEntryPoint
+            IsClassLibrary = !(_compilerOptions?.EmitEntryPoint
                     ?? projectContext.ProjectFile.GetCompilerOptions(null, configuration).EmitEntryPoint.GetValueOrDefault());
 
             _dependencyProvider = new Lazy<DotNetDependencyProvider>(() => new DotNetDependencyProvider(_projectContext));
@@ -80,13 +80,17 @@ namespace Microsoft.Extensions.ProjectModel
         // TODO read from xproj if available
         public string RootNamespace => _projectContext.ProjectFile.Name;
         public string TargetDirectory => _paths.RuntimeOutputPath;
-        public string Platform => _compilerOptions.Platform;
+        public string Platform => _compilerOptions?.Platform;
 
         public IEnumerable<string> CompilationItems
-            => _compilerOptions.CompileInclude.ResolveFiles();
+            => (_compilerOptions?.CompileInclude == null)
+            ? _projectContext.ProjectFile.Files.SourceFiles
+            : _compilerOptions.CompileInclude.ResolveFiles();
 
         public IEnumerable<string> EmbededItems
-            => _compilerOptions.EmbedInclude.ResolveFiles();
+            => (_compilerOptions?.EmbedInclude == null)
+            ? _projectContext.ProjectFile.Files.ResourceFiles.Keys
+            : _compilerOptions.EmbedInclude.ResolveFiles();
 
         public IEnumerable<DependencyDescription> PackageDependencies
         {
