@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
+﻿// Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             return ReadStream.Read(buffer, offset, count);
         }
 
-#if !NETCOREAPP1_1
+#if !NETCOREAPP1_0
         public override int ReadByte()
         {
             return ReadStream.ReadByte();
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             WriteStream.Write(buffer, offset, count);
         }
 
-#if !NETCOREAPP1_1
+#if !NETCOREAPP1_0
         public override void WriteByte(byte value)
         {
             WriteStream.WriteByte(value);
