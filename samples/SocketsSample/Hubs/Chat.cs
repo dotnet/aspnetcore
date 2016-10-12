@@ -11,5 +11,10 @@ namespace SocketsSample.Hubs
         {
             Clients.All.Invoke("Send", message);
         }
+
+        public Person EchoPerson(Person p)
+        {
+            return p;
+        }
     }
 }

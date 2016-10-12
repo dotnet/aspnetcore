@@ -2,17 +2,25 @@
 using System.IO;
 using System.Threading.Tasks;
 using Google.Protobuf;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SocketsSample.Protobuf
 {
     public class ProtobufInvocationAdapter : IInvocationAdapter
     {
+        IServiceProvider _serviceProvider;
+
+        public ProtobufInvocationAdapter(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
+
         public async Task<InvocationDescriptor> CreateInvocationDescriptor(Stream stream, Func<string, Type[]> getParams)
         {
             return await Task.Run(() => CreateInvocationDescriptorInt(stream, getParams));
         }
 
-        private static Task<InvocationDescriptor> CreateInvocationDescriptorInt(Stream stream, Func<string, Type[]> getParams)
+        private Task<InvocationDescriptor> CreateInvocationDescriptorInt(Stream stream, Func<string, Type[]> getParams)
         {
             var inputStream = new CodedInputStream(stream, leaveOpen: true);
             var invocationHeader = new RpcInvocationHeader();
@@ -28,19 +36,22 @@ namespace SocketsSample.Protobuf
 
             for (var i = 0; i < argumentTypes.Length; i++)
             {
-                var value = new PrimitiveValue();
-                inputStream.ReadMessage(value);
                 if (typeof(int) == argumentTypes[i])
                 {
+                    var value = new PrimitiveValue();
+                    inputStream.ReadMessage(value);
                     invocationDescriptor.Arguments[i] = value.Int32Value;
                 }
                 else if (typeof(string) == argumentTypes[i])
                 {
+                    var value = new PrimitiveValue();
+                    inputStream.ReadMessage(value);
                     invocationDescriptor.Arguments[i] = value.StringValue;
                 }
                 else
                 {
-                    throw new InvalidOperationException();
+                    var serializer = _serviceProvider.GetRequiredService<ProtobufSerializer>();
+                    invocationDescriptor.Arguments[i] = serializer.GetValue(inputStream, argumentTypes[i]);
                 }
             }
 
@@ -65,7 +76,7 @@ namespace SocketsSample.Protobuf
 
             outputStream.WriteMessage(resultHeader);
 
-            if (resultHeader.Error == null && resultDescriptor.Result != null)
+            if (string.IsNullOrEmpty(resultHeader.Error) && resultDescriptor.Result != null)
             {
                 var result = resultDescriptor.Result;
 
@@ -76,6 +87,12 @@ namespace SocketsSample.Protobuf
                 else if (result.GetType() == typeof(string))
                 {
                     outputStream.WriteMessage(new PrimitiveValue { StringValue = (string)result });
+                }
+                else
+                {
+                    var serializer = _serviceProvider.GetRequiredService<ProtobufSerializer>();
+                    var message = serializer.GetMessage(result);
+                    outputStream.WriteMessage(message);
                 }
             }
 

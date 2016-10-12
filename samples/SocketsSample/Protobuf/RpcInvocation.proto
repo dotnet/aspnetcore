@@ -23,3 +23,8 @@ message PrimitiveValue {
         string StringValue = 2;
     }
 }
+
+message PersonMessage {
+  string Name = 1;
+  int64 Age = 2;
+}

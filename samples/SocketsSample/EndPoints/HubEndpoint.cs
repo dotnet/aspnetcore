@@ -59,6 +59,7 @@ namespace SocketsSample
                     Arguments = args
                 };
 
+                // TODO: serialize once per format by providing a different stream?
                 foreach (var connection in _endPoint.Connections)
                 {
 

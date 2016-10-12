@@ -20,6 +20,7 @@ namespace SocketsSample
             services.AddSingleton<RpcEndpoint>();
             services.AddSingleton<ChatEndPoint>();
 
+            services.AddSingleton<ProtobufSerializer>();
             services.AddSingleton<SocketFormatters>();
         }
 
@@ -45,7 +46,7 @@ namespace SocketsSample
 
             app.UseFormatters(formatters=>
             {
-                formatters.AddInvocationAdapter("protobuf", new Protobuf.ProtobufInvocationAdapter());
+                formatters.AddInvocationAdapter("protobuf", new Protobuf.ProtobufInvocationAdapter(app.ApplicationServices));
                 formatters.AddInvocationAdapter("json", new JSonInvocationAdapter());
                 formatters.AddInvocationAdapter("line", new LineInvocationAdapter());
             });
