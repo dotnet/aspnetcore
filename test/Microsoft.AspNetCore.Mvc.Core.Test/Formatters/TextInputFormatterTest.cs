@@ -62,8 +62,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Throws<InvalidOperationException>(() => formatter.TestSelectCharacterEncoding(context));
         }
 
-        [Fact]
-        public void SelectCharacterEncoding_ReturnsNull_IfItCanNotUnderstandContentTypeEncoding()
+        [Theory]
+        [InlineData("utf-8")]
+        [InlineData("invalid")]
+        public void SelectCharacterEncoding_ReturnsNull_IfItCanNotUnderstandContentTypeEncoding(string charset)
         {
             // Arrange
             var formatter = new TestFormatter();
@@ -76,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 new EmptyModelMetadataProvider().GetMetadataForType(typeof(object)),
                 (stream, encoding) => new StreamReader(stream, encoding));
 
-            context.HttpContext.Request.ContentType = "application/json;charset=utf-8";
+            context.HttpContext.Request.ContentType = "application/json;charset=" + charset;
 
             // Act
             var result = formatter.TestSelectCharacterEncoding(context);
@@ -110,9 +112,79 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Theory]
-        [InlineData("application/json")]
+        [InlineData("unicode-1-1-utf-8")]
+        [InlineData("unicode-2-0-utf-8")]
+        [InlineData("unicode-1-1-utf-8")]
+        [InlineData("unicode-2-0-utf-8")]
+        public void SelectCharacterEncoding_ReturnsUTF8Encoding_IfContentTypeIsAnAlias(string charset)
+        {
+            // Arrange
+            var formatter = new TestFormatter();
+            formatter.SupportedEncodings.Add(Encoding.UTF32);
+            formatter.SupportedEncodings.Add(Encoding.UTF8);
+
+            var context = new InputFormatterContext(
+                new DefaultHttpContext(),
+                "something",
+                new ModelStateDictionary(),
+                new EmptyModelMetadataProvider().GetMetadataForType(typeof(object)),
+                (stream, encoding) => new StreamReader(stream, encoding));
+
+            context.HttpContext.Request.ContentType = "application/json;charset=" + charset;
+
+            // Act
+            var result = formatter.TestSelectCharacterEncoding(context);
+
+            // Assert
+            Assert.Equal(Encoding.UTF8, result);
+        }
+
+        [Theory]
+        [InlineData("ANSI_X3.4-1968")]
+        [InlineData("ANSI_X3.4-1986")]
+        [InlineData("ascii")]
+        [InlineData("cp367")]
+        [InlineData("csASCII")]
+        [InlineData("IBM367")]
+        [InlineData("iso-ir-6")]
+        [InlineData("ISO646-US")]
+        [InlineData("ISO_646.irv:1991")]
+        [InlineData("us")]
+        public void SelectCharacterEncoding_ReturnsAsciiEncoding_IfContentTypeIsAnAlias(string charset)
+        {
+            // Arrange
+            var formatter = new TestFormatter();
+            formatter.SupportedEncodings.Add(Encoding.UTF32);
+            formatter.SupportedEncodings.Add(Encoding.ASCII);
+
+            var context = new InputFormatterContext(
+                new DefaultHttpContext(),
+                "something",
+                new ModelStateDictionary(),
+                new EmptyModelMetadataProvider().GetMetadataForType(typeof(object)),
+                (stream, encoding) => new StreamReader(stream, encoding));
+
+            context.HttpContext.Request.ContentType = "application/json;charset=\"" + charset + "\"";
+
+            // Act
+            var result = formatter.TestSelectCharacterEncoding(context);
+
+            // Assert
+            Assert.Equal(Encoding.ASCII, result);
+        }
+
+        [Theory]
         [InlineData("")]
-        public void SelectCharacterEncoding_ReturnsFirstEncoding_IfContentTypeIsNotSpecifiedOrDoesNotHaveEncoding(string contentType)
+        [InlineData("(garbage)")]
+        [InlineData("(garbage); charset=utf-32")]
+        [InlineData("text/(garbage)")]
+        [InlineData("text/(garbage); charset=utf-32")]
+        [InlineData("application/json")]
+        [InlineData("application/json; charset")]
+        [InlineData("application/json; charset=(garbage)")]
+        [InlineData("application/json; version=(garbage); charset=utf-32")]
+        public void SelectCharacterEncoding_ReturnsFirstEncoding_IfContentTypeIsMissingInvalidOrDoesNotHaveEncoding(
+            string contentType)
         {
             // Arrange
             var formatter = new TestFormatter();
