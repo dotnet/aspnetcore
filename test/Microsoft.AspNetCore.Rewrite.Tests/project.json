@@ -12,7 +12,7 @@
     "xunit": "2.2.0-*"
   },
   "frameworks": {
-    "netcoreapp1.0": {
+    "netcoreapp1.1": {
       "dependencies": {
         "Microsoft.CodeCoverage": {
           "type": "build",
