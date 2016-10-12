@@ -36,9 +36,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 if (User != null)
                 {
-                    context.Authenticated(User, properties: null,
-                        description: Options.AuthenticationDescriptions.FirstOrDefault(descrip =>
-                            string.Equals(User.Identity.AuthenticationType, descrip.AuthenticationScheme, StringComparison.Ordinal))?.Items);
+                    context.Authenticated(User, properties: null, description: null);
                 }
                 else
                 {
@@ -133,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 return true;
             }
-            
+
             return Options.AuthenticationDescriptions.Any(description => string.Equals(description.AuthenticationScheme, authenticationScheme, StringComparison.Ordinal));
         }
     }
