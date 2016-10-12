@@ -26,10 +26,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var expected =
 @"This method is running from NET451
 This method is only defined in NET451";
-#elif NETCOREAPP1_1
+#elif NETCOREAPP1_0
             var expected =
-@"This method is running from NETCOREAPP1_1
-This method is only defined in NETCOREAPP1_1";
+@"This method is running from NETCOREAPP1_0
+This method is only defined in NETCOREAPP1_0";
 #endif
 
             // Act
