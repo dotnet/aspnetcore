@@ -110,7 +110,7 @@ namespace Microsoft.Extensions.ProjectModel.DotNet
                     .First();
 
                 Assert.True(Directory.Exists(mvcPackage.Path));
-                Assert.True(mvcPackage.Path.EndsWith($"Microsoft.AspNetCore.Mvc/1.0.0", StringComparison.OrdinalIgnoreCase));
+                Assert.True(mvcPackage.Path.EndsWith($"Microsoft.AspNetCore.Mvc{Path.DirectorySeparatorChar}1.0.0", StringComparison.OrdinalIgnoreCase), mvcPackage.Path);
 
                 Assert.True(context.ProjectReferences.First().Equals(Path.Combine(fileProvider.Root, "demoLib", "project.json")));
             }
