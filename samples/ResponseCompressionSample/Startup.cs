@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
+using System.IO.Compression;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -18,9 +18,13 @@ namespace ResponseCompressionSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ICompressionProvider, GzipCompressionProvider>();
-            services.AddSingleton<ICompressionProvider, CustomCompressionProvider>();
-            services.AddResponseCompression("text/plain", "text/html");
+            services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
+            services.AddResponseCompression(options =>
+            {
+                options.Providers.Add<GzipCompressionProvider>();
+                options.Providers.Add<CustomCompressionProvider>();
+                options.MimeTypes = new[] { "text/plain", "text/html" };
+            });
         }
 
         public void Configure(IApplicationBuilder app)
@@ -63,10 +67,7 @@ namespace ResponseCompressionSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseKestrel(options =>
-                {
-                    options.UseConnectionLogging();
-                })
+                .UseKestrel()
                 // .UseWebListener()
                 .ConfigureLogging(factory =>
                 {

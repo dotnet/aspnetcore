@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -106,6 +108,37 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var response = await client.SendAsync(request);
 
             CheckResponseCompressed(response, expectedBodyLength: 24);
+        }
+
+        [Fact]
+        public async Task GZipCompressionProvider_OptionsSetInDI_Compress()
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.NoCompression);
+                    services.AddResponseCompression(TextPlain);
+                })
+                .Configure(app =>
+                {
+                    app.UseResponseCompression();
+                    app.Run(context =>
+                    {
+                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                        context.Response.ContentType = TextPlain;
+                        return context.Response.WriteAsync(new string('a', 100));
+                    });
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd("gzip");
+
+            var response = await client.SendAsync(request);
+
+            CheckResponseCompressed(response, expectedBodyLength: 123);
         }
 
         [Theory]

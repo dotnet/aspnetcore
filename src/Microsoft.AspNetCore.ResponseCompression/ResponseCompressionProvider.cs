@@ -20,28 +20,37 @@ namespace Microsoft.AspNetCore.ResponseCompression
         /// <summary>
         /// If no compression providers are specified then GZip is used by default.
         /// </summary>
-        /// <param name="providers">Compression providers to use, if any.</param>
+        /// <param name="services">Services to use when instantiating compression providers.</param>
         /// <param name="options"></param>
-        public ResponseCompressionProvider(IEnumerable<ICompressionProvider> providers, IOptions<ResponseCompressionOptions> options)
+        public ResponseCompressionProvider(IServiceProvider services, IOptions<ResponseCompressionOptions> options)
         {
-            if (providers == null)
+            if (services == null)
             {
-                throw new ArgumentNullException(nameof(providers));
+                throw new ArgumentNullException(nameof(services));
             }
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            _providers = providers.ToArray();
+            _providers = options.Value.Providers.ToArray();
             if (_providers.Length == 0)
             {
-                _providers = new [] { new GzipCompressionProvider() };
+                // Use the factory so it can resolve IOptions<GzipCompressionProviderOptions> from DI.
+                _providers = new ICompressionProvider[] { new CompressionProviderFactory(typeof(GzipCompressionProvider)) };
+            }
+            for (var i = 0; i < _providers.Length; i++)
+            {
+                var factory = _providers[i] as CompressionProviderFactory;
+                if (factory != null)
+                {
+                    _providers[i] = factory.CreateInstance(services);
+                }
             }
 
             if (options.Value.MimeTypes == null || !options.Value.MimeTypes.Any())
             {
-                throw new InvalidOperationException("No MIME types specified");
+                throw new InvalidOperationException("No MIME types specified.");
             }
             _mimeTypes = new HashSet<string>(options.Value.MimeTypes, StringComparer.OrdinalIgnoreCase);
         }
