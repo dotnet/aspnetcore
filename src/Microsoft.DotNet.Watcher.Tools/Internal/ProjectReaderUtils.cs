@@ -2,16 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.DotNet.ProjectModel;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
-    public class ProjectProvider : IProjectProvider
+    public class ProjectReader
     {
-        public bool TryReadProject(string projectFile, out IProject project, out string errors)
+        public static bool TryReadProject(string projectFile, out Project project, out string errors)
         {
             errors = null;
             project = null;
@@ -35,12 +33,11 @@ namespace Microsoft.DotNet.Watcher.Internal
             return true;
         }
 
-        // Same as TryGetProject but it doesn't throw
-        private bool TryGetProject(string projectFile, out ProjectModel.Project project, out string errorMessage)
+        private static bool TryGetProject(string projectFile, out ProjectModel.Project project, out string errorMessage)
         {
             try
             {
-                if (!ProjectReader.TryGetProject(projectFile, out project))
+                if (!ProjectModel.ProjectReader.TryGetProject(projectFile, out project))
                 {
                     if (project?.Diagnostics != null && project.Diagnostics.Any())
                     {
@@ -66,7 +63,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             return false;
         }
 
-        private string CollectMessages(Exception exception)
+        private static string CollectMessages(Exception exception)
         {
             var builder = new StringBuilder();
             builder.AppendLine(exception.Message);

@@ -22,10 +22,8 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         internal DotnetFileWatcher(string watchedDirectory, Func<string, FileSystemWatcher> fileSystemWatcherFactory)
         {
-            if (string.IsNullOrEmpty(watchedDirectory))
-            {
-                throw new ArgumentNullException(nameof(watchedDirectory));
-            }
+            Ensure.NotNull(fileSystemWatcherFactory, nameof(fileSystemWatcherFactory));
+            Ensure.NotNullOrEmpty(watchedDirectory, nameof(watchedDirectory));
 
             _watchedDirectory = watchedDirectory;
             _watcherFactory = fileSystemWatcherFactory;
@@ -38,10 +36,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private static FileSystemWatcher DefaultWatcherFactory(string watchedDirectory)
         {
-            if (string.IsNullOrEmpty(watchedDirectory))
-            {
-                throw new ArgumentNullException(nameof(watchedDirectory));
-            }
+            Ensure.NotNullOrEmpty(watchedDirectory, nameof(watchedDirectory));
 
             return new FileSystemWatcher(watchedDirectory);
         }
@@ -51,10 +46,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             // Recreate the watcher
             CreateFileSystemWatcher();
 
-            if (OnError != null)
-            {
-                OnError(this, null);
-            }
+            OnError?.Invoke(this, null);
         }
 
         private void WatcherRenameHandler(object sender, RenamedEventArgs e)
@@ -81,11 +73,8 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private void NotifyChange(string fullPath)
         {
-            if (OnFileChange != null)
-            {
-                // Only report file changes
-                OnFileChange(this, fullPath);
-            }
+            // Only report file changes
+            OnFileChange?.Invoke(this, fullPath);
         }
 
         private void CreateFileSystemWatcher()

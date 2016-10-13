@@ -1,12 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -14,163 +10,68 @@ namespace Microsoft.DotNet.Watcher
 {
     public class DotNetWatcher
     {
-        private readonly Func<IFileWatcher> _fileWatcherFactory;
-        private readonly Func<IProcessWatcher> _processWatcherFactory;
-        private readonly IProjectProvider _projectProvider;
-        private readonly ILoggerFactory _loggerFactory;
-
         private readonly ILogger _logger;
+        private readonly ProcessRunner _processRunner;
 
-        public DotNetWatcher(
-            Func<IFileWatcher> fileWatcherFactory,
-            Func<IProcessWatcher> processWatcherFactory,
-            IProjectProvider projectProvider,
-            ILoggerFactory loggerFactory)
+        public DotNetWatcher(ILogger logger)
         {
-            _fileWatcherFactory = fileWatcherFactory;
-            _processWatcherFactory = processWatcherFactory;
-            _projectProvider = projectProvider;
-            _loggerFactory = loggerFactory;
+            Ensure.NotNull(logger, nameof(logger));
 
-            _logger = _loggerFactory.CreateLogger(nameof(DotNetWatcher));
+            _logger = logger;
+            _processRunner = new ProcessRunner(logger);
         }
 
-        public async Task WatchAsync(string projectFile, IEnumerable<string> dotnetArguments, CancellationToken cancellationToken)
+        public async Task WatchAsync(ProcessSpec processSpec, IFileSetFactory fileSetFactory, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(projectFile))
-            {
-                throw new ArgumentNullException(nameof(projectFile));
-            }
-            if (dotnetArguments == null)
-            {
-                throw new ArgumentNullException(nameof(dotnetArguments));
-            }
-            if (cancellationToken == null)
-            {
-                throw new ArgumentNullException(nameof(cancellationToken));
-            }
+            Ensure.NotNull(processSpec, nameof(processSpec));
 
-            var dotnetArgumentsAsString = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(dotnetArguments);
-
-            var workingDir = Path.GetDirectoryName(projectFile);
+            var cancelledTaskSource = new TaskCompletionSource<object>();
+            cancellationToken.Register(state => ((TaskCompletionSource<object>)state).TrySetResult(null), cancelledTaskSource);
 
             while (true)
             {
-                await WaitForValidProjectJsonAsync(projectFile, cancellationToken);
-                cancellationToken.ThrowIfCancellationRequested();
+                var fileSet = await fileSetFactory.CreateAsync(cancellationToken);
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
 
                 using (var currentRunCancellationSource = new CancellationTokenSource())
                 using (var combinedCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(
                     cancellationToken,
                     currentRunCancellationSource.Token))
+                using (var fileSetWatcher = new FileSetWatcher(fileSet))
                 {
-                    var fileWatchingTask = WaitForProjectFileToChangeAsync(projectFile, combinedCancellationSource.Token);
-                    var dotnetTask = WaitForDotnetToExitAsync(dotnetArgumentsAsString, workingDir, combinedCancellationSource.Token);
+                    var fileSetTask = fileSetWatcher.GetChangedFileAsync(combinedCancellationSource.Token);
+                    var processTask = _processRunner.RunAsync(processSpec, combinedCancellationSource.Token);
 
-                    var tasksToWait = new Task[] { dotnetTask, fileWatchingTask };
+                    var finishedTask = await Task.WhenAny(processTask, fileSetTask, cancelledTaskSource.Task);
 
-                    int finishedTaskIndex = Task.WaitAny(tasksToWait, cancellationToken);
-
-                    // Regardless of the outcome, make sure everything is cancelled
+                    // Regardless of the which task finished first, make sure everything is cancelled
                     // and wait for dotnet to exit. We don't want orphan processes
                     currentRunCancellationSource.Cancel();
-                    Task.WaitAll(tasksToWait);
 
-                    cancellationToken.ThrowIfCancellationRequested();
+                    await Task.WhenAll(processTask, fileSetTask);
 
-                    string changedFile;
-                    if (finishedTaskIndex == 0)
-                    {
-                        // This is the dotnet task
-                        var dotnetExitCode = dotnetTask.Result;
-
-                        if (dotnetExitCode == 0)
-                        {
-                            _logger.LogInformation($"dotnet exit code: {dotnetExitCode}");
-                        }
-                        else
-                        {
-                            _logger.LogError($"dotnet exit code: {dotnetExitCode}");
-                        }
-
-                        _logger.LogInformation("Waiting for a file to change before restarting dotnet...");
-                        // Now wait for a file to change before restarting dotnet
-                        changedFile = await WaitForProjectFileToChangeAsync(projectFile, cancellationToken);
-                    }
-                    else
-                    {
-                        // This is a file watcher task
-                        changedFile = fileWatchingTask.Result;
-                    }
-
-                    if (!string.IsNullOrEmpty(changedFile))
-                    {
-                        _logger.LogInformation($"File changed: {changedFile}");
-                    }
-                }
-            }
-        }
-
-        private async Task<string> WaitForProjectFileToChangeAsync(string projectFile, CancellationToken cancellationToken)
-        {
-            using (var projectWatcher = CreateProjectWatcher(projectFile, watchProjectJsonOnly: false))
-            {
-                return await projectWatcher.WaitForChangeAsync(cancellationToken);
-            }
-        }
-
-        private Task<int> WaitForDotnetToExitAsync(string dotnetArguments, string workingDir, CancellationToken cancellationToken)
-        {
-            _logger.LogDebug($"Running dotnet with the following arguments: {dotnetArguments}");
-
-            var dotnetWatcher = _processWatcherFactory();
-            int dotnetProcessId = dotnetWatcher.Start("dotnet", dotnetArguments, workingDir);
-            _logger.LogInformation($"dotnet process id: {dotnetProcessId}");
-
-            return dotnetWatcher.WaitForExitAsync(cancellationToken);
-        }
-
-        private async Task WaitForValidProjectJsonAsync(string projectFile, CancellationToken cancellationToken)
-        {
-            while (true)
-            {
-                IProject project;
-                string errors;
-                if (_projectProvider.TryReadProject(projectFile, out project, out errors))
-                {
-                    return;
-                }
-
-                _logger.LogError($"Error(s) reading project file '{projectFile}': ");
-                _logger.LogError(errors);
-                _logger.LogInformation("Fix the error to continue.");
-
-                using (var projectWatcher = CreateProjectWatcher(projectFile, watchProjectJsonOnly: true))
-                {
-                    await projectWatcher.WaitForChangeAsync(cancellationToken);
-
-                    if (cancellationToken.IsCancellationRequested)
+                    if (finishedTask == cancelledTaskSource.Task || cancellationToken.IsCancellationRequested)
                     {
                         return;
                     }
 
-                    _logger.LogInformation($"File changed: {projectFile}");
+                    if (finishedTask == processTask)
+                    {
+                        _logger.LogInformation("Waiting for a file to change before restarting dotnet...");
+
+                        // Now wait for a file to change before restarting process
+                        await fileSetWatcher.GetChangedFileAsync(cancellationToken);
+                    }
+
+                    if (!string.IsNullOrEmpty(fileSetTask.Result))
+                    {
+                        _logger.LogInformation($"File changed: {fileSetTask.Result}");
+                    }
                 }
             }
-        }
-
-        private ProjectWatcher CreateProjectWatcher(string projectFile, bool watchProjectJsonOnly)
-        {
-            return new ProjectWatcher(projectFile, watchProjectJsonOnly, _fileWatcherFactory, _projectProvider);
-        }
-
-        public static DotNetWatcher CreateDefault(ILoggerFactory loggerFactory)
-        {
-            return new DotNetWatcher(
-                fileWatcherFactory: () => new FileWatcher(),
-                processWatcherFactory: () => new ProcessWatcher(),
-                projectProvider: new ProjectProvider(),
-                loggerFactory: loggerFactory);
         }
     }
 }

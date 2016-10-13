@@ -5,29 +5,23 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Watcher.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watcher
 {
     public class Program
     {
-        private readonly ILoggerFactory _loggerFactory = new LoggerFactory();
+        private const string LoggerName = "DotNetWatcher";
         private readonly CancellationToken _cancellationToken;
         private readonly TextWriter _stdout;
         private readonly TextWriter _stderr;
 
         public Program(TextWriter consoleOutput, TextWriter consoleError, CancellationToken cancellationToken)
         {
-            if (consoleOutput == null)
-            {
-                throw new ArgumentNullException(nameof(consoleOutput));
-            }
-
-            if (cancellationToken == null)
-            {
-                throw new ArgumentNullException(nameof(cancellationToken));
-            }
+            Ensure.NotNull(consoleOutput, nameof(consoleOutput));
+            Ensure.NotNull(consoleError, nameof(consoleError));
 
             _cancellationToken = cancellationToken;
             _stdout = consoleOutput;
@@ -36,28 +30,43 @@ namespace Microsoft.DotNet.Watcher
 
         public static int Main(string[] args)
         {
+            DebugHelper.HandleDebugSwitch(ref args);
+
             using (CancellationTokenSource ctrlCTokenSource = new CancellationTokenSource())
             {
                 Console.CancelKeyPress += (sender, ev) =>
                 {
+                    if (!ctrlCTokenSource.IsCancellationRequested)
+                    {
+                        Console.WriteLine($"[{LoggerName}] Shutdown requested. Press CTRL+C again to force exit.");
+                        ev.Cancel = true;
+                    }
+                    else
+                    {
+                        ev.Cancel = false;
+                    }
                     ctrlCTokenSource.Cancel();
-                    ev.Cancel = false;
                 };
 
-                int exitCode;
                 try
                 {
-                    exitCode = new Program(Console.Out, Console.Error, ctrlCTokenSource.Token)
+                    return new Program(Console.Out, Console.Error, ctrlCTokenSource.Token)
                         .MainInternalAsync(args)
                         .GetAwaiter()
                         .GetResult();
                 }
-                catch (TaskCanceledException)
+                catch (Exception ex)
                 {
-                    // swallow when only exception is the CTRL+C exit cancellation task
-                    exitCode = 0;
+                    if (ex is TaskCanceledException || ex is OperationCanceledException)
+                    {
+                        // swallow when only exception is the CTRL+C forced an exit
+                        return 0;
+                    }
+
+                    Console.Error.WriteLine(ex.ToString());
+                    Console.Error.WriteLine($"[{LoggerName}] An unexpected error occurred".Bold().Red());
+                    return 1;
                 }
-                return exitCode;
             }
         }
 
@@ -75,17 +84,25 @@ namespace Microsoft.DotNet.Watcher
                 return 2;
             }
 
+            var loggerFactory = new LoggerFactory();
             var commandProvider = new CommandOutputProvider
             {
                 LogLevel = ResolveLogLevel(options)
             };
-            _loggerFactory.AddProvider(commandProvider);
+            loggerFactory.AddProvider(commandProvider);
+            var logger = loggerFactory.CreateLogger(LoggerName);
 
-            var projectToWatch = Path.Combine(Directory.GetCurrentDirectory(), ProjectModel.Project.FileName);
+            var projectFile = Path.Combine(Directory.GetCurrentDirectory(), ProjectModel.Project.FileName);
+            var projectFileSetFactory = new ProjectJsonFileSetFactory(logger, projectFile);
+            var processInfo = new ProcessSpec
+            {
+                Executable = new Muxer().MuxerPath,
+                WorkingDirectory = Path.GetDirectoryName(projectFile),
+                Arguments = options.RemainingArguments
+            };
 
-            await DotNetWatcher
-                    .CreateDefault(_loggerFactory)
-                    .WatchAsync(projectToWatch, options.RemainingArguments, _cancellationToken);
+            await new DotNetWatcher(logger)
+                    .WatchAsync(processInfo, projectFileSetFactory, _cancellationToken);
 
             return 0;
         }
@@ -97,7 +114,7 @@ namespace Microsoft.DotNet.Watcher
                 return LogLevel.Warning;
             }
 
-            bool globalVerbose; 
+            bool globalVerbose;
             bool.TryParse(Environment.GetEnvironmentVariable(CommandContext.Variables.Verbose), out globalVerbose);
 
             if (options.IsVerbose // dotnet watch --verbose

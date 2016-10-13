@@ -1,11 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Watcher.Tools;
+using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.DotNet.Watcher
@@ -18,10 +18,7 @@ namespace Microsoft.DotNet.Watcher
         public IList<string> RemainingArguments { get; private set; }
         public static CommandLineOptions Parse(string[] args, TextWriter stdout, TextWriter stderr)
         {
-            if (args == null)
-            {
-                throw new ArgumentNullException(nameof(args));
-            }
+            Ensure.NotNull(args, nameof(args));
 
             var app = new CommandLineApplication(throwOnUnexpectedArg: false)
             {

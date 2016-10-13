@@ -5,14 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
-using System.Xml.Linq;
-using Newtonsoft.Json.Linq;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.Extensions.DependencyModel;
-using Microsoft.DotNet.ProjectModel;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ProjectModel;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {

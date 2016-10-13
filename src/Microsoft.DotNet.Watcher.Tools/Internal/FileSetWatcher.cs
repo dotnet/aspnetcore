@@ -1,0 +1,52 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Microsoft.DotNet.Watcher.Internal
+{
+    public class FileSetWatcher : IDisposable
+    {
+        private readonly IFileWatcher _fileWatcher;
+        private readonly IFileSet _fileSet;
+
+        public FileSetWatcher(IFileSet fileSet)
+        {
+            _fileSet = fileSet;
+            _fileWatcher = new FileWatcher();
+        }
+
+        public async Task<string> GetChangedFileAsync(CancellationToken cancellationToken)
+        {
+            foreach (var file in _fileSet)
+            {
+                _fileWatcher.WatchDirectory(Path.GetDirectoryName(file));
+            }
+
+            var tcs = new TaskCompletionSource<string>();
+            cancellationToken.Register(() => tcs.TrySetResult(null));
+
+            Action<string> callback = path =>
+            {
+                if (_fileSet.Contains(path))
+                {
+                    tcs.TrySetResult(path);
+                }
+            };
+
+            _fileWatcher.OnFileChange += callback;
+            var changedFile = await tcs.Task;
+            _fileWatcher.OnFileChange -= callback;
+
+            return changedFile;
+        }
+
+        public void Dispose()
+        {
+            _fileWatcher.Dispose();
+        }
+    }
+}

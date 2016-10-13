@@ -27,10 +27,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         public PollingFileWatcher(string watchedDirectory)
         {
-            if (string.IsNullOrEmpty(watchedDirectory))
-            {
-                throw new ArgumentNullException(nameof(watchedDirectory));
-            }
+            Ensure.NotNullOrEmpty(watchedDirectory, nameof(watchedDirectory));
 
             _watchedDirectory = new DirectoryInfo(watchedDirectory);
 
