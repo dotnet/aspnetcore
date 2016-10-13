@@ -1,0 +1,351 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
+    <value>Value cannot be null or an empty string.</value>
+  </data>
+  <data name="Argument_Must_Be_Between" xml:space="preserve">
+    <value>Value must be between {0} and {1}.</value>
+  </data>
+  <data name="Argument_Must_Be_Enum_Member" xml:space="preserve">
+    <value>Value must be a value from the "{0}" enumeration.</value>
+  </data>
+  <data name="Argument_Must_Be_GreaterThan" xml:space="preserve">
+    <value>Value must be greater than {0}.</value>
+  </data>
+  <data name="Argument_Must_Be_GreaterThanOrEqualTo" xml:space="preserve">
+    <value>Value must be greater than or equal to {0}.</value>
+  </data>
+  <data name="Argument_Must_Be_LessThan" xml:space="preserve">
+    <value>Value must be less than {0}.</value>
+  </data>
+  <data name="Argument_Must_Be_LessThanOrEqualTo" xml:space="preserve">
+    <value>Value must be less than or equal to {0}.</value>
+  </data>
+  <data name="Argument_Must_Be_Null_Or_Non_Empty" xml:space="preserve">
+    <value>Value cannot be an empty string. It must either be null or a non-empty string.</value>
+  </data>
+  <data name="BlockName_Code" xml:space="preserve">
+    <value>code</value>
+    <comment>This is a literal used when composing ParserError_* messages. Most blocks are named by the keyword that starts them, for example "if".  However, for those without keywords, a (localizable) name must be used.  This literal is ALWAYS used mid-sentence, thus should not be capitalized.</comment>
+  </data>
+  <data name="BlockName_ExplicitExpression" xml:space="preserve">
+    <value>explicit expression</value>
+    <comment>This is a literal used when composing ParserError_* messages. Most blocks are named by the keyword that starts them, for example "if".  However, for those without keywords, a (localizable) name must be used.  This literal is ALWAYS used mid-sentence, thus should not be capitalized.</comment>
+  </data>
+  <data name="Block_Type_Not_Specified" xml:space="preserve">
+    <value>Block cannot be built because a Type has not been specified in the BlockBuilder</value>
+  </data>
+  <data name="CSharpSymbol_CharacterLiteral" xml:space="preserve">
+    <value>&lt;&lt;character literal&gt;&gt;</value>
+  </data>
+  <data name="CSharpSymbol_Comment" xml:space="preserve">
+    <value>&lt;&lt;comment&gt;&gt;</value>
+  </data>
+  <data name="CSharpSymbol_Identifier" xml:space="preserve">
+    <value>&lt;&lt;identifier&gt;&gt;</value>
+  </data>
+  <data name="CSharpSymbol_IntegerLiteral" xml:space="preserve">
+    <value>&lt;&lt;integer literal&gt;&gt;</value>
+  </data>
+  <data name="CSharpSymbol_Keyword" xml:space="preserve">
+    <value>&lt;&lt;keyword&gt;&gt;</value>
+  </data>
+  <data name="CSharpSymbol_Newline" xml:space="preserve">
+    <value>&lt;&lt;newline sequence&gt;&gt;</value>
+  </data>
+  <data name="CSharpSymbol_RealLiteral" xml:space="preserve">
+    <value>&lt;&lt;real literal&gt;&gt;</value>
+  </data>
+  <data name="CSharpSymbol_StringLiteral" xml:space="preserve">
+    <value>&lt;&lt;string literal&gt;&gt;</value>
+  </data>
+  <data name="CSharpSymbol_Whitespace" xml:space="preserve">
+    <value>&lt;&lt;white space&gt;&gt;</value>
+  </data>
+  <data name="EndBlock_Called_Without_Matching_StartBlock" xml:space="preserve">
+    <value>"EndBlock" was called without a matching call to "StartBlock".</value>
+  </data>
+  <data name="ErrorComponent_Character" xml:space="preserve">
+    <value>"{0}" character</value>
+  </data>
+  <data name="ErrorComponent_EndOfFile" xml:space="preserve">
+    <value>end of file</value>
+  </data>
+  <data name="ErrorComponent_Newline" xml:space="preserve">
+    <value>line break</value>
+  </data>
+  <data name="ErrorComponent_Whitespace" xml:space="preserve">
+    <value>space or line break</value>
+  </data>
+  <data name="HtmlSymbol_NewLine" xml:space="preserve">
+    <value>&lt;&lt;newline sequence&gt;&gt;</value>
+  </data>
+  <data name="HtmlSymbol_RazorComment" xml:space="preserve">
+    <value>&lt;&lt;razor comment&gt;&gt;</value>
+  </data>
+  <data name="HtmlSymbol_Text" xml:space="preserve">
+    <value>&lt;&lt;text&gt;&gt;</value>
+  </data>
+  <data name="HtmlSymbol_WhiteSpace" xml:space="preserve">
+    <value>&lt;&lt;white space&gt;&gt;</value>
+  </data>
+  <data name="Language_Does_Not_Support_RazorComment" xml:space="preserve">
+    <value>Cannot use built-in RazorComment handler, language characteristics does not define the CommentStart, CommentStar and CommentBody known symbol types or parser does not override TokenizerBackedParser.OutputSpanBeforeRazorComment</value>
+  </data>
+  <data name="ParseError_AtInCode_Must_Be_Followed_By_Colon_Paren_Or_Identifier_Start" xml:space="preserve">
+    <value>The "@" character must be followed by a ":", "(", or a C# identifier.  If you intended to switch to markup, use an HTML start tag, for example:
+
+@if(isLoggedIn) {
+    &lt;p&gt;Hello, @user!&lt;/p&gt;
+}</value>
+  </data>
+  <data name="ParseError_BlockComment_Not_Terminated" xml:space="preserve">
+    <value>End of file was reached before the end of the block comment.  All comments started with "/*" sequence must be terminated with a matching "*/" sequence.</value>
+  </data>
+  <data name="ParseError_DirectiveMustHaveValue" xml:space="preserve">
+    <value>Directive '{0}' must have a value.</value>
+  </data>
+  <data name="ParseError_Expected_CloseBracket_Before_EOF" xml:space="preserve">
+    <value>An opening "{0}" is missing the corresponding closing "{1}".</value>
+  </data>
+  <data name="ParseError_Expected_EndOfBlock_Before_EOF" xml:space="preserve">
+    <value>The {0} block is missing a closing "{1}" character.  Make sure you have a matching "{1}" character for all the "{2}" characters within this block, and that none of the "{1}" characters are being interpreted as markup.</value>
+  </data>
+  <data name="ParseError_Expected_X" xml:space="preserve">
+    <value>Expected "{0}".</value>
+  </data>
+  <data name="ParseError_HelperDirectiveNotAvailable" xml:space="preserve">
+    <value>The {0} directive is not supported.</value>
+  </data>
+  <data name="ParseError_IncompleteQuotesAroundDirective" xml:space="preserve">
+    <value>Optional quote around the directive '{0}' is missing the corresponding opening or closing quote.</value>
+  </data>
+  <data name="ParseError_InheritsKeyword_Must_Be_Followed_By_TypeName" xml:space="preserve">
+    <value>The 'inherits' keyword must be followed by a type name on the same line.</value>
+  </data>
+  <data name="ParseError_InlineMarkup_Blocks_Cannot_Be_Nested" xml:space="preserve">
+    <value>Inline markup blocks (@&lt;p&gt;Content&lt;/p&gt;) cannot be nested.  Only one level of inline markup is allowed.</value>
+  </data>
+  <data name="ParseError_MarkupBlock_Must_Start_With_Tag" xml:space="preserve">
+    <value>Markup in a code block must start with a tag and all start tags must be matched with end tags.  Do not use unclosed tags like "&lt;br&gt;".  Instead use self-closing tags like "&lt;br/&gt;".</value>
+  </data>
+  <data name="ParseError_MissingEndTag" xml:space="preserve">
+    <value>The "{0}" element was not closed.  All elements must be either self-closing or have a matching end tag.</value>
+  </data>
+  <data name="ParseError_MissingOpenBraceAfterSection" xml:space="preserve">
+    <value>Sections cannot be empty.  The "@section" keyword must be followed by a block of markup surrounded by "{}".  For example:
+
+@section Sidebar {
+   &lt;!-- Markup and text goes here --&gt;
+}</value>
+  </data>
+  <data name="ParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock" xml:space="preserve">
+    <value>Namespace imports and type aliases cannot be placed within code blocks.  They must immediately follow an "@" character in markup.  It is recommended that you put them at the top of the page, as in the following example:
+
+@using System.Drawing;
+@{
+    // OK here to use types from System.Drawing in the page.
+}</value>
+  </data>
+  <data name="ParseError_OuterTagMissingName" xml:space="preserve">
+    <value>Outer tag is missing a name. The first character of a markup block must be an HTML tag with a valid name.</value>
+  </data>
+  <data name="ParseError_RazorComment_Not_Terminated" xml:space="preserve">
+    <value>End of file was reached before the end of the block comment.  All comments that start with the "@*" sequence must be terminated with a matching "*@" sequence.</value>
+  </data>
+  <data name="ParseError_ReservedWord" xml:space="preserve">
+    <value>"{0}" is a reserved word and cannot be used in implicit expressions.  An explicit expression ("@()") must be used.</value>
+  </data>
+  <data name="ParseError_Sections_Cannot_Be_Nested" xml:space="preserve">
+    <value>Section blocks ("{0}") cannot be nested.  Only one level of section blocks are allowed.</value>
+  </data>
+  <data name="ParseError_SingleLine_ControlFlowStatements_Not_Allowed" xml:space="preserve">
+    <value>Expected a "{0}" but found a "{1}".  Block statements must be enclosed in "{{" and "}}".  You cannot use single-statement control-flow statements in CSHTML pages. For example, the following is not allowed:
+
+@if(isLoggedIn)
+    &lt;p&gt;Hello, @user&lt;/p&gt;
+
+Instead, wrap the contents of the block in "{{}}":
+
+@if(isLoggedIn) {{
+    &lt;p&gt;Hello, @user&lt;/p&gt;
+}}</value>
+    <comment>{0} is only ever a single character</comment>
+  </data>
+  <data name="ParseError_TextTagCannotContainAttributes" xml:space="preserve">
+    <value>"&lt;text&gt;" and "&lt;/text&gt;" tags cannot contain attributes.</value>
+  </data>
+  <data name="ParseError_UnexpectedEndTag" xml:space="preserve">
+    <value>Encountered end tag "{0}" with no matching start tag.  Are your start/end tags properly balanced?</value>
+  </data>
+  <data name="ParseError_Unexpected_Character_At_Section_Name_Start" xml:space="preserve">
+    <value>Unexpected {0} after section keyword.  Section names must start with an "_" or alphabetic character, and the remaining characters must be either "_" or alphanumeric.</value>
+  </data>
+  <data name="ParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS" xml:space="preserve">
+    <value>"{0}" is not valid at the start of a code block.  Only identifiers, keywords, comments, "(" and "{{" are valid.</value>
+    <comment>"{{" is an escape sequence for string.Format, when outputted to the user it will be displayed as "{"</comment>
+  </data>
+  <data name="ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock" xml:space="preserve">
+    <value>End-of-file was found after the "@" character.  "@" must be followed by a valid code block.  If you want to output an "@", escape it using the sequence: "@@"</value>
+  </data>
+  <data name="ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock1" xml:space="preserve">
+    <value>End-of-file was found after the "@" character.  "@" must be followed by a valid code block.  If you want to output an "@", escape it using the sequence: "@@"</value>
+  </data>
+  <data name="ParseError_Unexpected_Nested_CodeBlock" xml:space="preserve">
+    <value>Unexpected "{" after "@" character. Once inside the body of a code block (@if {}, @{}, etc.) you do not need to use "@{" to switch to code.</value>
+  </data>
+  <data name="ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS" xml:space="preserve">
+    <value>A space or line break was encountered after the "@" character.  Only valid identifiers, keywords, comments, "(" and "{" are valid at the start of a code block and they must occur immediately following "@" with no space in between.</value>
+  </data>
+  <data name="ParseError_UnfinishedTag" xml:space="preserve">
+    <value>End of file or an unexpected character was reached before the "{0}" tag could be parsed.  Elements inside markup blocks must be complete. They must either be self-closing ("&lt;br /&gt;") or have matching end tags ("&lt;p&gt;Hello&lt;/p&gt;").  If you intended to display a "&lt;" character, use the "&amp;lt;" HTML entity.</value>
+  </data>
+  <data name="ParseError_Unterminated_String_Literal" xml:space="preserve">
+    <value>Unterminated string literal.  Strings that start with a quotation mark (") must be terminated before the end of the line.  However, strings that start with @ and a quotation mark (@") can span multiple lines.</value>
+  </data>
+  <data name="ParserContext_CannotCompleteTree_NoRootBlock" xml:space="preserve">
+    <value>Cannot complete the tree, StartBlock must be called at least once.</value>
+  </data>
+  <data name="ParserContext_CannotCompleteTree_OutstandingBlocks" xml:space="preserve">
+    <value>Cannot complete the tree, there are still open blocks.</value>
+  </data>
+  <data name="ParserContext_NoCurrentBlock" xml:space="preserve">
+    <value>Cannot finish span, there is no current block. Call StartBlock at least once before finishing a span</value>
+  </data>
+  <data name="ParserContext_ParseComplete" xml:space="preserve">
+    <value>Cannot complete action, the parser has finished. Only CompleteParse can be called to extract the final parser results after the parser has finished</value>
+  </data>
+  <data name="Parser_Context_Not_Set" xml:space="preserve">
+    <value>Parser was started with a null Context property.  The Context property must be set BEFORE calling any methods on the parser.</value>
+  </data>
+  <data name="SectionExample_CS" xml:space="preserve">
+    <value>@section Header { ... }</value>
+    <comment>In CSHTML, the @section keyword is case-sensitive and lowercase (as with all C# keywords)</comment>
+  </data>
+  <data name="SourceLocationFilePathDoesNotMatch" xml:space="preserve">
+    <value>Cannot perform '{1}' operations on '{0}' instances with different file paths.</value>
+  </data>
+  <data name="Symbol_Unknown" xml:space="preserve">
+    <value>&lt;&lt;unknown&gt;&gt;</value>
+  </data>
+  <data name="TokenizerView_CannotPutBack" xml:space="preserve">
+    <value>In order to put a symbol back, it must have been the symbol which ended at the current position. The specified symbol ends at {0}, but the current position is {1}</value>
+  </data>
+</root>

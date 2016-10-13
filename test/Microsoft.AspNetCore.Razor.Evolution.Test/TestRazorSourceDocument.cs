@@ -3,11 +3,27 @@
 
 using System.IO;
 using System.Text;
+using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
     internal class TestRazorSourceDocument : DefaultRazorSourceDocument
     {
+        public static RazorSourceDocument CreateResource(string path, Encoding encoding = null)
+        {
+            var file = TestFile.Create(path);
+
+            var stream = new MemoryStream();
+            using (var input = file.OpenRead())
+            {
+                input.CopyTo(stream);
+            }
+
+            stream.Seek(0L, SeekOrigin.Begin);
+
+            return new TestRazorSourceDocument(stream, encoding ?? Encoding.UTF8, path);
+        }
+
         public static MemoryStream CreateContent(string content = "Hello, World!", Encoding encoding = null)
         {
             var stream = new MemoryStream();
