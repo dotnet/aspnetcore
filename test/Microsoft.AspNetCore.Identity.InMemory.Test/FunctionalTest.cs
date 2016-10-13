@@ -140,6 +140,54 @@ namespace Microsoft.AspNetCore.Identity.InMemory
         }
 
         [Fact]
+        public async Task CanAccessOldPrincipalDuringSecurityStampReplacement()
+        {
+            var clock = new TestClock();
+            var server = CreateServer(services => services.Configure<IdentityOptions>(options =>
+            {
+                options.Cookies.ApplicationCookie.SystemClock = clock;
+                options.OnSecurityStampRefreshingPrincipal = c =>
+                {
+                    var newId = new ClaimsIdentity();
+                    newId.AddClaim(new Claim("PreviousName", c.CurrentPrincipal.Identity.Name));
+                    c.NewPrincipal.AddIdentity(newId);
+                    return Task.FromResult(0);
+                };
+            }));
+
+            var transaction1 = await SendAsync(server, "http://example.com/createMe");
+            Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
+            Assert.Null(transaction1.SetCookie);
+
+            var transaction2 = await SendAsync(server, "http://example.com/pwdLogin/false" );
+            Assert.Equal(HttpStatusCode.OK, transaction2.Response.StatusCode);
+            Assert.NotNull(transaction2.SetCookie);
+            Assert.DoesNotContain("; expires=", transaction2.SetCookie);
+
+            var transaction3 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
+            Assert.Equal("hao", FindClaimValue(transaction3, ClaimTypes.Name));
+            Assert.Null(transaction3.SetCookie);
+
+            // Make sure we don't get a new cookie yet
+            clock.Add(TimeSpan.FromMinutes(10));
+            var transaction4 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
+            Assert.Equal("hao", FindClaimValue(transaction4, ClaimTypes.Name));
+            Assert.Null(transaction4.SetCookie);
+
+            // Go past SecurityStampValidation interval and ensure we get a new cookie
+            clock.Add(TimeSpan.FromMinutes(21));
+
+            var transaction5 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
+            Assert.NotNull(transaction5.SetCookie);
+            Assert.Equal("hao", FindClaimValue(transaction5, ClaimTypes.Name));
+            Assert.Equal("hao", FindClaimValue(transaction5, "PreviousName"));
+
+            // Make sure new cookie is valid
+            var transaction6 = await SendAsync(server, "http://example.com/me", transaction5.CookieNameValue);
+            Assert.Equal("hao", FindClaimValue(transaction6, ClaimTypes.Name));
+        }
+
+        [Fact]
         public async Task TwoFactorRememberCookieVerification()
         {
             var server = CreateServer();
