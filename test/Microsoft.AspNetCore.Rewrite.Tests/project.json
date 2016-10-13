@@ -1,12 +1,11 @@
 {
-  "version": "1.1.0-*",
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.AspNetCore.Rewrite": "1.1.0-*",
+    "Microsoft.AspNetCore.Rewrite": "1.0.0-*",
     "Microsoft.AspNetCore.TestHost": "1.1.0-*",
     "Microsoft.Extensions.Logging.Testing": "1.1.0-*",
     "xunit": "2.2.0-*"
