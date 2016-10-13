@@ -24,6 +24,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorPageGenerator", "src\RazorPageGenerator\RazorPageGenerator.xproj", "{7BE58880-36AD-4CD5-9E16-2A5AFEA790EF}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Razor.Evolution", "src\Microsoft.AspNetCore.Razor.Evolution\Microsoft.AspNetCore.Razor.Evolution.xproj", "{932F3C9C-A6C0-40D3-BA50-9309886242FC}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Razor.Evolution.Test", "test\Microsoft.AspNetCore.Razor.Evolution.Test\Microsoft.AspNetCore.Razor.Evolution.Test.xproj", "{969357A4-CCF1-46D9-B002-9AA072AFC75C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,6 +58,14 @@ Global
 		{7BE58880-36AD-4CD5-9E16-2A5AFEA790EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BE58880-36AD-4CD5-9E16-2A5AFEA790EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7BE58880-36AD-4CD5-9E16-2A5AFEA790EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{932F3C9C-A6C0-40D3-BA50-9309886242FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{932F3C9C-A6C0-40D3-BA50-9309886242FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{932F3C9C-A6C0-40D3-BA50-9309886242FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{932F3C9C-A6C0-40D3-BA50-9309886242FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{969357A4-CCF1-46D9-B002-9AA072AFC75C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{969357A4-CCF1-46D9-B002-9AA072AFC75C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{969357A4-CCF1-46D9-B002-9AA072AFC75C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{969357A4-CCF1-46D9-B002-9AA072AFC75C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -65,5 +77,7 @@ Global
 		{0535998A-E32C-4D1A-80D1-0B15A513C471} = {92463391-81BE-462B-AC3C-78C6C760741F}
 		{E3A2A305-634D-4BA6-95DB-AA06D6C442B0} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
 		{7BE58880-36AD-4CD5-9E16-2A5AFEA790EF} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
+		{932F3C9C-A6C0-40D3-BA50-9309886242FC} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
+		{969357A4-CCF1-46D9-B002-9AA072AFC75C} = {92463391-81BE-462B-AC3C-78C6C760741F}
 	EndGlobalSection
 EndGlobal
