@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if NETCOREAPP1_0
+#if NETCOREAPP1_1
 using System.Reflection;
 #endif
 using Microsoft.AspNetCore.Razor.CodeGenerators;

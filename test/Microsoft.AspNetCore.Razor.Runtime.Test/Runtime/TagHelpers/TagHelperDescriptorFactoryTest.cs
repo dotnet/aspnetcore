@@ -2202,7 +2202,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         }
 
         // TagHelperDesignTimeDescriptors are not created in CoreCLR.
-#if !NETCOREAPP1_0
+#if !NETCOREAPP1_1
         public static TheoryData OutputElementHintData
         {
             get

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-#if NETCOREAPP1_0
+#if NETCOREAPP1_1
 using System.Reflection;
 #endif
 using Microsoft.AspNetCore.Razor.CodeGenerators.Visitors;
