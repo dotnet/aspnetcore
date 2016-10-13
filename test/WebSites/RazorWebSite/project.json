@@ -27,10 +27,10 @@
         ]
       }
     },
-    "netcoreapp1.0": {
+    "netcoreapp1.1": {
       "buildOptions": {
         "define": [
-          "NETCOREAPP1_0_CUSTOM_DEFINE"
+          "NETCOREAPP1_1_CUSTOM_DEFINE"
         ]
       },
       "dependencies": {

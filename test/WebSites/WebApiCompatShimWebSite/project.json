@@ -13,7 +13,7 @@
   },
   "frameworks": {
     "net451": {},
-    "netcoreapp1.0": {
+    "netcoreapp1.1": {
       "imports": "portable-net451+win8",
       "dependencies": {
         "Microsoft.NETCore.App": {

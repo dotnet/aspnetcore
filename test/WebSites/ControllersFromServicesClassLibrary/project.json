@@ -7,6 +7,6 @@
   },
   "frameworks": {
     "net451": {},
-    "netcoreapp1.0": {}
+    "netcoreapp1.1": {}
   }
 }

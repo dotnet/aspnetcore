@@ -15,7 +15,7 @@
   },
   "testRunner": "xunit",
   "frameworks": {
-    "netcoreapp1.0": {
+    "netcoreapp1.1": {
       "imports": [
         "portable-net451+win8"
       ],
