@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             {
                 ApplicationBaseUriHint = baseUrl,
                 ApplicationType = ApplicationType.Portable,
-                TargetFramework = "netcoreapp1.0",
+                TargetFramework = "netcoreapp1.1",
                 EnvironmentName = environment
             };
 

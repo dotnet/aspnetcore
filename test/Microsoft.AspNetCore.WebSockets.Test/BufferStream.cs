@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
+// Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-#if !NETCOREAPP1_0
+#if !NETCOREAPP1_1
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             // TODO: This option doesn't preserve the state object.
@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-#if !NETCOREAPP1_0
+#if !NETCOREAPP1_1
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             Write(buffer, offset, count);
