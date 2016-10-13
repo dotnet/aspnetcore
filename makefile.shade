@@ -1,0 +1,6 @@
+var AUTHORS='Microsoft Open Technologies, Inc.'
+
+use-standard-lifecycle
+k-standard-goals
+
+-Environment.SetEnvironmentVariable("KOREBUILD_ADD_ASSEMBLY_INFO", "0");
