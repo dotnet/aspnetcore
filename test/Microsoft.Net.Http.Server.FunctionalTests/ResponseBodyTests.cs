@@ -129,7 +129,7 @@ namespace Microsoft.Net.Http.Server
                 var context = await server.AcceptAsync();
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Dispose();
-#if !NETCOREAPP1_0
+#if !NETCOREAPP1_1
                 // HttpClient retries the request because it didn't get a response.
                 context = await server.AcceptAsync();
                 context.Response.Headers["Content-lenGth"] = " 20 ";
