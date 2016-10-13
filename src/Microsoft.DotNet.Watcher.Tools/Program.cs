@@ -6,16 +6,18 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Watcher
 {
     public class Program
     {
-        private readonly ILoggerFactory _loggerFactory;
+        private readonly ILoggerFactory _loggerFactory = new LoggerFactory();
         private readonly CancellationToken _cancellationToken;
-        private readonly TextWriter _out;
+        private readonly TextWriter _stdout;
+        private readonly TextWriter _stderr;
 
-        public Program(TextWriter consoleOutput, CancellationToken cancellationToken)
+        public Program(TextWriter consoleOutput, TextWriter consoleError, CancellationToken cancellationToken)
         {
             if (consoleOutput == null)
             {
@@ -28,23 +30,8 @@ namespace Microsoft.DotNet.Watcher
             }
 
             _cancellationToken = cancellationToken;
-            _out = consoleOutput;
-
-            _loggerFactory = new LoggerFactory();
-
-            var logVar = Environment.GetEnvironmentVariable("DOTNET_WATCH_LOG_LEVEL");
-
-            LogLevel logLevel;
-            if (string.IsNullOrEmpty(logVar) || !Enum.TryParse<LogLevel>(logVar, out logLevel))
-            {
-                logLevel = LogLevel.Information;
-            }
-
-            var commandProvider = new CommandOutputProvider()
-            {
-                LogLevel = logLevel
-            };
-            _loggerFactory.AddProvider(commandProvider);
+            _stdout = consoleOutput;
+            _stderr = consoleError;
         }
 
         public static int Main(string[] args)
@@ -60,7 +47,7 @@ namespace Microsoft.DotNet.Watcher
                 int exitCode;
                 try
                 {
-                    exitCode = new Program(Console.Out, ctrlCTokenSource.Token)
+                    exitCode = new Program(Console.Out, Console.Error, ctrlCTokenSource.Token)
                         .MainInternalAsync(args)
                         .GetAwaiter()
                         .GetResult();
@@ -76,7 +63,7 @@ namespace Microsoft.DotNet.Watcher
 
         private async Task<int> MainInternalAsync(string[] args)
         {
-            var options = CommandLineOptions.Parse(args, _out);
+            var options = CommandLineOptions.Parse(args, _stdout, _stdout);
             if (options == null)
             {
                 // invalid args syntax
@@ -88,6 +75,12 @@ namespace Microsoft.DotNet.Watcher
                 return 2;
             }
 
+            var commandProvider = new CommandOutputProvider
+            {
+                LogLevel = ResolveLogLevel(options)
+            };
+            _loggerFactory.AddProvider(commandProvider);
+
             var projectToWatch = Path.Combine(Directory.GetCurrentDirectory(), ProjectModel.Project.FileName);
 
             await DotNetWatcher
@@ -95,6 +88,25 @@ namespace Microsoft.DotNet.Watcher
                     .WatchAsync(projectToWatch, options.RemainingArguments, _cancellationToken);
 
             return 0;
+        }
+
+        private LogLevel ResolveLogLevel(CommandLineOptions options)
+        {
+            if (options.IsQuiet)
+            {
+                return LogLevel.Warning;
+            }
+
+            bool globalVerbose; 
+            bool.TryParse(Environment.GetEnvironmentVariable(CommandContext.Variables.Verbose), out globalVerbose);
+
+            if (options.IsVerbose // dotnet watch --verbose
+                || globalVerbose) // dotnet --verbose watch
+            {
+                return LogLevel.Debug;
+            }
+
+            return LogLevel.Information;
         }
     }
 }

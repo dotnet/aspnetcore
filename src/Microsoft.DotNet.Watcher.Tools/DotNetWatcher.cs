@@ -121,7 +121,7 @@ namespace Microsoft.DotNet.Watcher
 
         private Task<int> WaitForDotnetToExitAsync(string dotnetArguments, string workingDir, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Running dotnet with the following arguments: {dotnetArguments}");
+            _logger.LogDebug($"Running dotnet with the following arguments: {dotnetArguments}");
 
             var dotnetWatcher = _processWatcherFactory();
             int dotnetProcessId = dotnetWatcher.Start("dotnet", dotnetArguments, workingDir);

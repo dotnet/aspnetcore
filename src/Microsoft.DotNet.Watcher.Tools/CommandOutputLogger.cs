@@ -50,12 +50,12 @@ namespace Microsoft.DotNet.Watcher
         {
             switch (logLevel)
             {
-                case LogLevel.Trace: return "\x1b[35mtrace\x1b[39m";
-                case LogLevel.Debug: return "\x1b[35mdebug\x1b[39m";
+                case LogLevel.Trace: return "\x1b[35mtrce\x1b[39m";
+                case LogLevel.Debug: return "\x1b[35mdbug\x1b[39m";
                 case LogLevel.Information: return "\x1b[32minfo\x1b[39m";
                 case LogLevel.Warning: return "\x1b[33mwarn\x1b[39m";
                 case LogLevel.Error: return "\x1b[31mfail\x1b[39m";
-                case LogLevel.Critical: return "\x1b[31mcritical\x1b[39m";
+                case LogLevel.Critical: return "\x1b[31mcrit\x1b[39m";
             }
 
             throw new Exception("Unknown LogLevel");

@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             var stdout = new StringBuilder();
 
-            var options = CommandLineOptions.Parse(args, new StringWriter(stdout));
+            var options = CommandLineOptions.Parse(args, new StringWriter(stdout), new StringWriter());
 
             Assert.True(options.IsHelp);
             Assert.Contains("Usage: dotnet watch ", stdout.ToString());
@@ -36,11 +36,20 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             var stdout = new StringBuilder();
 
-            var options = CommandLineOptions.Parse(args, new StringWriter(stdout));
+            var options = CommandLineOptions.Parse(args, new StringWriter(stdout), new StringWriter());
 
             Assert.Equal(expected, options.RemainingArguments.ToArray());
             Assert.False(options.IsHelp);
             Assert.Empty(stdout.ToString());
+        }
+
+        [Fact]
+        public void CannotHaveQuietAndVerbose()
+        {
+            var sb = new StringBuilder();
+            var stderr = new StringWriter(sb);
+            Assert.Null(CommandLineOptions.Parse(new[] { "--quiet", "--verbose" }, new StringWriter(), stderr));
+            Assert.Contains(Resources.Error_QuietAndVerboseSpecified, sb.ToString());
         }
     }
 }

@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.DotNet.Watcher
@@ -11,8 +13,10 @@ namespace Microsoft.DotNet.Watcher
     internal class CommandLineOptions
     {
         public bool IsHelp { get; private set; }
+        public bool IsQuiet { get; private set; }
+        public bool IsVerbose { get; private set; }
         public IList<string> RemainingArguments { get; private set; }
-        public static CommandLineOptions Parse(string[] args, TextWriter consoleOutput)
+        public static CommandLineOptions Parse(string[] args, TextWriter stdout, TextWriter stderr)
         {
             if (args == null)
             {
@@ -23,11 +27,16 @@ namespace Microsoft.DotNet.Watcher
             {
                 Name = "dotnet watch",
                 FullName = "Microsoft DotNet File Watcher",
-                Out = consoleOutput,
+                Out = stdout,
+                Error = stderr,
                 AllowArgumentSeparator = true
             };
 
             app.HelpOption("-?|-h|--help");
+            var optQuiet = app.Option("-q|--quiet", "Suppresses all output except warnings and errors",
+                CommandOptionType.NoValue);
+            var optVerbose = app.Option("-v|--verbose", "Show verbose output",
+                CommandOptionType.NoValue);
 
             app.OnExecute(() =>
             {
@@ -44,8 +53,16 @@ namespace Microsoft.DotNet.Watcher
                 return null;
             }
 
+            if (optQuiet.HasValue() && optVerbose.HasValue())
+            {
+                stderr.WriteLine(Resources.Error_QuietAndVerboseSpecified.Bold().Red());
+                return null;
+            }
+
             return new CommandLineOptions
             {
+                IsQuiet = optQuiet.HasValue(),
+                IsVerbose = optVerbose.HasValue(),
                 RemainingArguments = app.RemainingArguments,
                 IsHelp = app.IsShowingInformation
             };
