@@ -6,6 +6,7 @@ _ReSharper.*/
 /packages
 artifacts/
 PublishProfiles/
+nuspec/
 *.user
 *.suo
 *.cache
