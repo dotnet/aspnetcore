@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
@@ -149,75 +150,88 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.Throws<InvalidOperationException>(() => dictionary.Clear());
         }
 
-        [Fact]
-        public void ThrowsWhenAddingContentLengthWithNonNumericValue()
+        [Theory]
+        [MemberData(nameof(BadContentLengths))]
+        public void ThrowsWhenAddingContentLengthWithNonNumericValue(string contentLength)
         {
             var headers = new FrameResponseHeaders();
             var dictionary = (IDictionary<string, StringValues>)headers;
 
-            Assert.Throws<InvalidOperationException>(() => dictionary.Add("Content-Length", new[] { "bad" }));
+            var exception = Assert.Throws<InvalidOperationException>(() => dictionary.Add("Content-Length", new[] { contentLength }));
+            Assert.Equal($"Invalid Content-Length: \"{contentLength}\". Value must be a positive integral number.", exception.Message);
         }
 
-        [Fact]
-        public void ThrowsWhenSettingContentLengthToNonNumericValue()
+        [Theory]
+        [MemberData(nameof(BadContentLengths))]
+        public void ThrowsWhenSettingContentLengthToNonNumericValue(string contentLength)
         {
             var headers = new FrameResponseHeaders();
             var dictionary = (IDictionary<string, StringValues>)headers;
 
-            Assert.Throws<InvalidOperationException>(() => ((IHeaderDictionary)headers)["Content-Length"] = "bad");
+            var exception = Assert.Throws<InvalidOperationException>(() => ((IHeaderDictionary)headers)["Content-Length"] = contentLength);
+            Assert.Equal($"Invalid Content-Length: \"{contentLength}\". Value must be a positive integral number.", exception.Message);
         }
 
-        [Fact]
-        public void ThrowsWhenSettingRawContentLengthToNonNumericValue()
+        [Theory]
+        [MemberData(nameof(BadContentLengths))]
+        public void ThrowsWhenSettingRawContentLengthToNonNumericValue(string contentLength)
         {
             var headers = new FrameResponseHeaders();
 
-            Assert.Throws<InvalidOperationException>(() => headers.SetRawContentLength("bad", Encoding.ASCII.GetBytes("bad")));
+            var exception = Assert.Throws<InvalidOperationException>(() => headers.SetRawContentLength(contentLength, Encoding.ASCII.GetBytes(contentLength)));
+            Assert.Equal($"Invalid Content-Length: \"{contentLength}\". Value must be a positive integral number.", exception.Message);
         }
 
-        [Fact]
-        public void ThrowsWhenAssigningHeaderContentLengthToNonNumericValue()
+        [Theory]
+        [MemberData(nameof(BadContentLengths))]
+        public void ThrowsWhenAssigningHeaderContentLengthToNonNumericValue(string contentLength)
         {
             var headers = new FrameResponseHeaders();
-            Assert.Throws<InvalidOperationException>(() => headers.HeaderContentLength = "bad");
+
+            var exception = Assert.Throws<InvalidOperationException>(() => headers.HeaderContentLength = contentLength);
+            Assert.Equal($"Invalid Content-Length: \"{contentLength}\". Value must be a positive integral number.", exception.Message);
         }
 
-        [Fact]
-        public void ContentLengthValueCanBeReadAsLongAfterAddingHeader()
-        {
-            var headers = new FrameResponseHeaders();
-            var dictionary = (IDictionary<string, StringValues>)headers;
-            dictionary.Add("Content-Length", "42");
-
-            Assert.Equal(42, headers.HeaderContentLengthValue);
-        }
-
-        [Fact]
-        public void ContentLengthValueCanBeReadAsLongAfterSettingHeader()
+        [Theory]
+        [MemberData(nameof(GoodContentLengths))]
+        public void ContentLengthValueCanBeReadAsLongAfterAddingHeader(string contentLength)
         {
             var headers = new FrameResponseHeaders();
             var dictionary = (IDictionary<string, StringValues>)headers;
-            dictionary["Content-Length"] = "42";
+            dictionary.Add("Content-Length", contentLength);
 
-            Assert.Equal(42, headers.HeaderContentLengthValue);
+            Assert.Equal(ParseLong(contentLength), headers.HeaderContentLengthValue);
         }
 
-        [Fact]
-        public void ContentLengthValueCanBeReadAsLongAfterSettingRawHeader()
+        [Theory]
+        [MemberData(nameof(GoodContentLengths))]
+        public void ContentLengthValueCanBeReadAsLongAfterSettingHeader(string contentLength)
         {
             var headers = new FrameResponseHeaders();
-            headers.SetRawContentLength("42", Encoding.ASCII.GetBytes("42"));
+            var dictionary = (IDictionary<string, StringValues>)headers;
+            dictionary["Content-Length"] = contentLength;
 
-            Assert.Equal(42, headers.HeaderContentLengthValue);
+            Assert.Equal(ParseLong(contentLength), headers.HeaderContentLengthValue);
         }
 
-        [Fact]
-        public void ContentLengthValueCanBeReadAsLongAfterAssigningHeader()
+        [Theory]
+        [MemberData(nameof(GoodContentLengths))]
+        public void ContentLengthValueCanBeReadAsLongAfterSettingRawHeader(string contentLength)
         {
             var headers = new FrameResponseHeaders();
-            headers.HeaderContentLength = "42";
+            headers.SetRawContentLength(contentLength, Encoding.ASCII.GetBytes(contentLength));
 
-            Assert.Equal(42, headers.HeaderContentLengthValue);
+            Assert.Equal(ParseLong(contentLength), headers.HeaderContentLengthValue);
+        }
+
+        [Theory]
+        [MemberData(nameof(GoodContentLengths))]
+        public void ContentLengthValueCanBeReadAsLongAfterAssigningHeader(string contentLength)
+        {
+            var headers = new FrameResponseHeaders();
+            headers.HeaderContentLength = contentLength;
+
+            Assert.Equal(ParseLong(contentLength), headers.HeaderContentLengthValue);
         }
 
         [Fact]
@@ -243,5 +257,33 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             Assert.Equal(null, headers.HeaderContentLengthValue);
         }
+
+        private static long ParseLong(string value)
+        {
+            return long.Parse(value, NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);
+        }
+
+        public static TheoryData<string> GoodContentLengths => new TheoryData<string>
+        {
+            "0",
+            "00",
+            "042",
+            "42",
+            long.MaxValue.ToString(CultureInfo.InvariantCulture)
+        };
+
+        public static TheoryData<string> BadContentLengths => new TheoryData<string>
+        {
+            "",
+            " ",
+            " 42",
+            "42 ",
+            "bad",
+            "!",
+            "!42",
+            "42!",
+            "42,000",
+            "42.000",
+        };
     }
 }

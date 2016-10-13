@@ -233,16 +233,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
         }
 
-        public static long ParseContentLength(StringValues value)
+        public static unsafe long ParseContentLength(StringValues value)
         {
-            try
+            var input = value.ToString();
+            var parsed = 0L;
+
+            fixed (char* ptr = input)
             {
-                return long.Parse(value, NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);
+                var ch = (ushort*)ptr;
+                var end = ch + input.Length;
+
+                if (ch == end)
+                {
+                    ThrowInvalidContentLengthException(value);
+                }
+
+                ushort digit = 0;
+                while (ch < end && (digit = (ushort)(*ch - 0x30)) <= 9)
+                {
+                    parsed *= 10;
+                    parsed += digit;
+                    ch++;
+                }
+
+                if (ch != end)
+                {
+                    ThrowInvalidContentLengthException(value);
+                }
             }
-            catch (FormatException ex)
-            {
-                throw new InvalidOperationException("Content-Length value must be an integral number.", ex);
-            }
+
+            return parsed;
+        }
+
+        private static void ThrowInvalidContentLengthException(string value)
+        {
+            throw new InvalidOperationException($"Invalid Content-Length: \"{value}\". Value must be a positive integral number.");
         }
 
         private static void ThrowInvalidHeaderCharacter(char ch)
