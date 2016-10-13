@@ -90,22 +90,7 @@ namespace IdentitySample
             }
             app.UseStaticFiles();
 
-            app.UseIdentity()
-               .UseFacebookAuthentication(new FacebookOptions
-               {
-                   AppId = "901611409868059",
-                   AppSecret = "4aa3c530297b1dcebc8860334b39668b"
-               })
-                .UseGoogleAuthentication(new GoogleOptions
-                {
-                    ClientId = "514485782433-fr3ml6sq0imvhi8a7qir0nb46oumtgn9.apps.googleusercontent.com",
-                    ClientSecret = "V2nDD9SkFbvLTqAUBWBBxYAL"
-                })
-                .UseTwitterAuthentication(new TwitterOptions
-                {
-                    ConsumerKey = "BSdJJ0CrDuvEhpkchnukXZBUv",
-                    ConsumerSecret = "xKUNuKhsRdHD03eLn67xhPAyE1wFFEndFo1X2UJaK2m1jdAxf4"
-                });
+            app.UseIdentity();
             // To configure external authentication please see http://go.microsoft.com/fwlink/?LinkID=532715
 
             app.UseMvc(routes =>
