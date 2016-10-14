@@ -248,7 +248,10 @@ var buildTarget = "compile"
                         if (Environment.GetEnvironmentVariable("KOREBUILD_ADD_ASSEMBLY_INFO") == "1")
                         {
                             var commitFile = Path.Combine(repoArtifacts, "commit");
-                            commits.TryAdd(repo, File.ReadAllLines(commitFile)[0]);
+                            if (File.Exists(commitFile))
+                            {
+                                commits.TryAdd(repo, File.ReadAllLines(commitFile)[0]);
+                            }
                         }
 
                         if (!string.IsNullOrEmpty(ciVolatileShare))
