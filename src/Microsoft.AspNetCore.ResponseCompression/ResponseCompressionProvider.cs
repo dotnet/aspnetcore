@@ -48,11 +48,12 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 }
             }
 
-            if (options.Value.MimeTypes == null || !options.Value.MimeTypes.Any())
+            var mimeTypes = options.Value.MimeTypes;
+            if (mimeTypes == null || !mimeTypes.Any())
             {
-                throw new InvalidOperationException("No MIME types specified.");
+                mimeTypes = ResponseCompressionDefaults.MimeTypes;
             }
-            _mimeTypes = new HashSet<string>(options.Value.MimeTypes, StringComparer.OrdinalIgnoreCase);
+            _mimeTypes = new HashSet<string>(mimeTypes, StringComparer.OrdinalIgnoreCase);
         }
 
         /// <inheritdoc />

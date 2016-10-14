@@ -14,17 +14,19 @@ namespace Microsoft.AspNetCore.Builder
     public static class ResponseCompressionServicesExtensions
     {
         /// <summary>
-        /// Add response compression services and enable compression for responses with the given MIME types.
+        /// Add response compression services.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> for adding services.</param>
-        /// <param name="mimeTypes">Response Content-Type MIME types to enable compression for.</param>
         /// <returns></returns>
-        public static IServiceCollection AddResponseCompression(this IServiceCollection services, params string[] mimeTypes)
+        public static IServiceCollection AddResponseCompression(this IServiceCollection services)
         {
-            return services.AddResponseCompression(options =>
+            if (services == null)
             {
-                options.MimeTypes = mimeTypes;
-            });
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            services.TryAddSingleton<IResponseCompressionProvider, ResponseCompressionProvider>();
+            return services;
         }
 
         /// <summary>

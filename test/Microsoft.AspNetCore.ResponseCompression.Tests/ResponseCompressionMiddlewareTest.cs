@@ -55,27 +55,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             CheckResponseNotCompressed(response, expectedBodyLength: 100);
         }
 
-        [Fact]
-        public void NoMimeTypes_Throws()
-        {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
-                {
-                    services.AddResponseCompression();
-                })
-                .Configure(app =>
-                {
-                    app.UseResponseCompression();
-                    app.Run(context =>
-                    {
-                        context.Response.ContentType = TextPlain;
-                        return context.Response.WriteAsync(new string('a', 100));
-                    });
-                });
-
-            Assert.Throws<InvalidOperationException>(() => new TestServer(builder));
-        }
-
         [Theory]
         [InlineData("text/plain")]
         [InlineData("text/PLAIN")]
@@ -86,7 +65,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddResponseCompression(TextPlain);
+                    services.AddResponseCompression();
                 })
                 .Configure(app =>
                 {
@@ -117,7 +96,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 .ConfigureServices(services =>
                 {
                     services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.NoCompression);
-                    services.AddResponseCompression(TextPlain);
+                    services.AddResponseCompression();
                 })
                 .Configure(app =>
                 {
@@ -149,7 +128,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddResponseCompression(TextPlain);
+                    services.AddResponseCompression();
                 })
                 .Configure(app =>
                 {
@@ -185,7 +164,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddResponseCompression(TextPlain);
+                    services.AddResponseCompression();
                 })
                 .Configure(app =>
                 {
@@ -246,9 +225,9 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         }
 
         [Fact]
-        public async Task Response_UnauthorizedMimeType_NotCompressed()
+        public async Task Response_UnknownMimeType_NotCompressed()
         {
-            var response = await InvokeMiddleware(100, requestAcceptEncodings: new string[] { "gzip" }, responseType: "text/html");
+            var response = await InvokeMiddleware(100, requestAcceptEncodings: new string[] { "gzip" }, responseType: "text/custom");
 
             CheckResponseNotCompressed(response, expectedBodyLength: 100);
         }
@@ -323,7 +302,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddResponseCompression(TextPlain);
+                    services.AddResponseCompression();
                 })
                 .Configure(app =>
                 {
@@ -360,7 +339,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddResponseCompression(TextPlain);
+                    services.AddResponseCompression();
                 })
                 .Configure(app =>
                 {
@@ -397,7 +376,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddResponseCompression(TextPlain);
+                    services.AddResponseCompression();
                 })
                 .Configure(app =>
                 {
@@ -444,7 +423,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddResponseCompression(TextPlain);
+                    services.AddResponseCompression();
                 })
                 .Configure(app =>
                 {
@@ -497,7 +476,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddResponseCompression(TextPlain);
+                    services.AddResponseCompression();
                 })
                 .Configure(app =>
                 {
@@ -563,7 +542,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddResponseCompression(TextPlain);
+                    services.AddResponseCompression();
                 })
                 .Configure(app =>
                 {
@@ -619,7 +598,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddResponseCompression(TextPlain);
+                    services.AddResponseCompression();
                 })
                 .Configure(app =>
                 {
@@ -653,7 +632,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddResponseCompression(TextPlain);
+                    services.AddResponseCompression();
                 })
                 .Configure(app =>
                 {
@@ -696,7 +675,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddResponseCompression(TextPlain);
+                    services.AddResponseCompression();
                 })
                 .Configure(app =>
                 {
@@ -739,7 +718,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddResponseCompression(TextPlain);
+                    services.AddResponseCompression();
                 })
                 .Configure(app =>
                 {
@@ -780,7 +759,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddResponseCompression(TextPlain);
+                    services.AddResponseCompression();
                 })
                 .Configure(app =>
                 {

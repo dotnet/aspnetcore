@@ -13,14 +13,14 @@ namespace Microsoft.AspNetCore.ResponseCompression
     /// </summary>
     internal class CompressionProviderFactory : ICompressionProvider
     {
-        internal CompressionProviderFactory(Type providerType)
+        public CompressionProviderFactory(Type providerType)
         {
             ProviderType = providerType;
         }
 
-        internal Type ProviderType { get; }
+        private Type ProviderType { get; }
 
-        internal ICompressionProvider CreateInstance(IServiceProvider serviceProvider)
+        public ICompressionProvider CreateInstance(IServiceProvider serviceProvider)
         {
             if (serviceProvider == null)
             {

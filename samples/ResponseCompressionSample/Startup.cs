@@ -3,6 +3,7 @@
 
 using System;
 using System.IO.Compression;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,7 +24,8 @@ namespace ResponseCompressionSample
             {
                 options.Providers.Add<GzipCompressionProvider>();
                 options.Providers.Add<CustomCompressionProvider>();
-                options.MimeTypes = new[] { "text/plain", "text/html" };
+                // .Append(TItem) is only available on Core.
+                options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "image/svg+xml" });
             });
         }
 
