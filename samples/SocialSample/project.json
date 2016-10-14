@@ -31,7 +31,6 @@
   "userSecretsId": "aspnet5-SocialSample-20151210111056",
   "publishOptions": {
     "include": [
-      "appsettings.json",
       "project.json",
       "web.config"
     ]

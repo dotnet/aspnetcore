@@ -29,7 +29,7 @@ namespace SocialSample
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json");
+                .AddJsonFile("appsettings.json", optional: true);
 
             if (env.IsDevelopment())
             {
@@ -77,7 +77,14 @@ namespace SocialSample
                 LoginPath = new PathString("/login")
             });
 
-            // You must first create an app with facebook and add it's ID and Secret to your config.json or user-secrets.
+            if (string.IsNullOrEmpty(Configuration["facebook:appid"]))
+            {
+                // User-Secrets: https://docs.asp.net/en/latest/security/app-secrets.html
+                // See below for registration instructions for each provider.
+                throw new InvalidOperationException("User secrets must be configured for each authentication provider.");
+            }
+
+            // You must first create an app with Facebook and add its ID and Secret to your user-secrets.
             // https://developers.facebook.com/apps/
             app.UseFacebookAuthentication(new FacebookOptions
             {
@@ -88,7 +95,8 @@ namespace SocialSample
                 SaveTokens = true,
             });
 
-            // See config.json
+            // You must first create an app with Google and add its ID and Secret to your user-secrets.
+            // https://console.developers.google.com/project
             app.UseOAuthAuthentication(new OAuthOptions
             {
                 AuthenticationScheme = "Google-AccessToken",
@@ -102,7 +110,7 @@ namespace SocialSample
                 SaveTokens = true
             });
 
-            // See config.json
+            // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
             // https://console.developers.google.com/project
             app.UseGoogleAuthentication(new GoogleOptions
             {
@@ -120,7 +128,7 @@ namespace SocialSample
                 }
             });
 
-            // See config.json
+            // You must first create an app with Twitter and add its key and Secret to your user-secrets.
             // https://apps.twitter.com/
             app.UseTwitterAuthentication(new TwitterOptions
             {
@@ -151,14 +159,14 @@ namespace SocialSample
                Therefore, to authenticate through microsoft accounts, tryout the sample using the following URL:
                https://localhost:44318/
             */
-            // See config.json
+            // You must first create an app with Microsoft Account and add its ID and Secret to your user-secrets.
             // https://apps.dev.microsoft.com/
             app.UseOAuthAuthentication(new OAuthOptions
             {
                 AuthenticationScheme = "Microsoft-AccessToken",
                 DisplayName = "MicrosoftAccount-AccessToken",
-                ClientId = Configuration["msa:clientid"],
-                ClientSecret = Configuration["msa:clientsecret"],
+                ClientId = Configuration["microsoftaccount:clientid"],
+                ClientSecret = Configuration["microsoftaccount:clientsecret"],
                 CallbackPath = new PathString("/signin-microsoft-token"),
                 AuthorizationEndpoint = MicrosoftAccountDefaults.AuthorizationEndpoint,
                 TokenEndpoint = MicrosoftAccountDefaults.TokenEndpoint,
@@ -166,17 +174,17 @@ namespace SocialSample
                 SaveTokens = true
             });
 
-            // See config.json
+            // You must first create an app with Microsoft Account and add its ID and Secret to your user-secrets.
             // https://azure.microsoft.com/en-us/documentation/articles/active-directory-v2-app-registration/
             app.UseMicrosoftAccountAuthentication(new MicrosoftAccountOptions
             {
                 DisplayName = "MicrosoftAccount",
-                ClientId = Configuration["msa:clientid"],
-                ClientSecret = Configuration["msa:clientsecret"],
+                ClientId = Configuration["microsoftaccount:clientid"],
+                ClientSecret = Configuration["microsoftaccount:clientsecret"],
                 SaveTokens = true
             });
 
-            // See config.json
+            // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
             // https://github.com/settings/applications/
             app.UseOAuthAuthentication(new OAuthOptions
             {
@@ -190,7 +198,8 @@ namespace SocialSample
                 SaveTokens = true
             });
 
-            // See config.json
+            // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
+            // https://github.com/settings/applications/
             app.UseOAuthAuthentication(new OAuthOptions
             {
                 AuthenticationScheme = "GitHub",
