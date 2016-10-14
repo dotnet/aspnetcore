@@ -14,14 +14,14 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Tests
 {
-    public class ResponseCacheMiddlewareTests
+    public class ResponseCachingMiddlewareTests
     {
         [Fact]
         public async Task TryServeFromCacheAsync_OnlyIfCached_Serves504()
         {
-            var store = new TestResponseCacheStore();
+            var cache = new TestResponseCache();
             var sink = new TestSink();
-            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, store: store, keyProvider: new TestResponseCacheKeyProvider());
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider());
             var context = TestUtils.CreateTestContext();
             context.TypedRequestHeaders.CacheControl = new CacheControlHeaderValue()
             {
@@ -38,13 +38,13 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task TryServeFromCacheAsync_CachedResponseNotFound_Fails()
         {
-            var store = new TestResponseCacheStore();
+            var cache = new TestResponseCache();
             var sink = new TestSink();
-            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, store: store, keyProvider: new TestResponseCacheKeyProvider("BaseKey"));
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
             var context = TestUtils.CreateTestContext();
 
             Assert.False(await middleware.TryServeFromCacheAsync(context));
-            Assert.Equal(1, store.GetCount);
+            Assert.Equal(1, cache.GetCount);
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.NoResponseServed);
@@ -53,12 +53,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task TryServeFromCacheAsync_CachedResponseFound_Succeeds()
         {
-            var store = new TestResponseCacheStore();
+            var cache = new TestResponseCache();
             var sink = new TestSink();
-            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, store: store, keyProvider: new TestResponseCacheKeyProvider("BaseKey"));
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
             var context = TestUtils.CreateTestContext();
 
-            await store.SetAsync(
+            await cache.SetAsync(
                 "BaseKey",
                 new CachedResponse()
                 {
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 TimeSpan.Zero);
 
             Assert.True(await middleware.TryServeFromCacheAsync(context));
-            Assert.Equal(1, store.GetCount);
+            Assert.Equal(1, cache.GetCount);
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.CachedResponseServed);
@@ -76,18 +76,18 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task TryServeFromCacheAsync_VaryByRuleFound_CachedResponseNotFound_Fails()
         {
-            var store = new TestResponseCacheStore();
+            var cache = new TestResponseCache();
             var sink = new TestSink();
-            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, store: store, keyProvider: new TestResponseCacheKeyProvider("BaseKey", "VaryKey"));
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey", "VaryKey"));
             var context = TestUtils.CreateTestContext();
 
-            await store.SetAsync(
+            await cache.SetAsync(
                 "BaseKey",
                 new CachedVaryByRules(),
                 TimeSpan.Zero);
 
             Assert.False(await middleware.TryServeFromCacheAsync(context));
-            Assert.Equal(2, store.GetCount);
+            Assert.Equal(2, cache.GetCount);
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.NoResponseServed);
@@ -96,16 +96,16 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task TryServeFromCacheAsync_VaryByRuleFound_CachedResponseFound_Succeeds()
         {
-            var store = new TestResponseCacheStore();
+            var cache = new TestResponseCache();
             var sink = new TestSink();
-            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, store: store, keyProvider: new TestResponseCacheKeyProvider("BaseKey", new[] { "VaryKey", "VaryKey2" }));
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey", new[] { "VaryKey", "VaryKey2" }));
             var context = TestUtils.CreateTestContext();
 
-            await store.SetAsync(
+            await cache.SetAsync(
                 "BaseKey",
                 new CachedVaryByRules(),
                 TimeSpan.Zero);
-            await store.SetAsync(
+            await cache.SetAsync(
                 "BaseKeyVaryKey2",
                 new CachedResponse()
                 {
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 TimeSpan.Zero);
 
             Assert.True(await middleware.TryServeFromCacheAsync(context));
-            Assert.Equal(3, store.GetCount);
+            Assert.Equal(3, cache.GetCount);
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.CachedResponseServed);
@@ -123,13 +123,13 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task TryServeFromCacheAsync_CachedResponseFound_Serves304IfPossible()
         {
-            var store = new TestResponseCacheStore();
+            var cache = new TestResponseCache();
             var sink = new TestSink();
-            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, store: store, keyProvider: new TestResponseCacheKeyProvider("BaseKey"));
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
             var context = TestUtils.CreateTestContext();
             context.HttpContext.Request.Headers[HeaderNames.IfNoneMatch] = "*";
 
-            await store.SetAsync(
+            await cache.SetAsync(
                 "BaseKey",
                 new CachedResponse()
                 {
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 TimeSpan.Zero);
 
             Assert.True(await middleware.TryServeFromCacheAsync(context));
-            Assert.Equal(1, store.GetCount);
+            Assert.Equal(1, cache.GetCount);
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.NotModifiedServed);
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var context = TestUtils.CreateTestContext(sink);
             context.CachedResponseHeaders = new ResponseHeaders(new HeaderDictionary());
 
-            Assert.False(ResponseCacheMiddleware.ContentIsNotModified(context));
+            Assert.False(ResponseCachingMiddleware.ContentIsNotModified(context));
             Assert.Empty(sink.Writes);
         }
 
@@ -167,17 +167,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             // Verify modifications in the past succeeds
             context.CachedResponseHeaders.Date = utcNow - TimeSpan.FromSeconds(10);
-            Assert.True(ResponseCacheMiddleware.ContentIsNotModified(context));
+            Assert.True(ResponseCachingMiddleware.ContentIsNotModified(context));
             Assert.Equal(1, sink.Writes.Count);
 
             // Verify modifications at present succeeds
             context.CachedResponseHeaders.Date = utcNow;
-            Assert.True(ResponseCacheMiddleware.ContentIsNotModified(context));
+            Assert.True(ResponseCachingMiddleware.ContentIsNotModified(context));
             Assert.Equal(2, sink.Writes.Count);
 
             // Verify modifications in the future fails
             context.CachedResponseHeaders.Date = utcNow + TimeSpan.FromSeconds(10);
-            Assert.False(ResponseCacheMiddleware.ContentIsNotModified(context));
+            Assert.False(ResponseCachingMiddleware.ContentIsNotModified(context));
 
             // Verify logging
             TestUtils.AssertLoggedMessages(
@@ -199,19 +199,19 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             // Verify modifications in the past succeeds
             context.CachedResponseHeaders.Date = utcNow + TimeSpan.FromSeconds(10);
             context.CachedResponseHeaders.LastModified = utcNow - TimeSpan.FromSeconds(10);
-            Assert.True(ResponseCacheMiddleware.ContentIsNotModified(context));
+            Assert.True(ResponseCachingMiddleware.ContentIsNotModified(context));
             Assert.Equal(1, sink.Writes.Count);
 
             // Verify modifications at present
             context.CachedResponseHeaders.Date = utcNow + TimeSpan.FromSeconds(10);
             context.CachedResponseHeaders.LastModified = utcNow;
-            Assert.True(ResponseCacheMiddleware.ContentIsNotModified(context));
+            Assert.True(ResponseCachingMiddleware.ContentIsNotModified(context));
             Assert.Equal(2, sink.Writes.Count);
 
             // Verify modifications in the future fails
             context.CachedResponseHeaders.Date = utcNow - TimeSpan.FromSeconds(10);
             context.CachedResponseHeaders.LastModified = utcNow + TimeSpan.FromSeconds(10);
-            Assert.False(ResponseCacheMiddleware.ContentIsNotModified(context));
+            Assert.False(ResponseCachingMiddleware.ContentIsNotModified(context));
 
             // Verify logging
             TestUtils.AssertLoggedMessages(
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.CachedResponseHeaders.LastModified = utcNow + TimeSpan.FromSeconds(10);
 
             context.TypedRequestHeaders.IfNoneMatch = new List<EntityTagHeaderValue>(new[] { EntityTagHeaderValue.Any });
-            Assert.True(ResponseCacheMiddleware.ContentIsNotModified(context));
+            Assert.True(ResponseCachingMiddleware.ContentIsNotModified(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.NotModifiedIfNoneMatchStar);
@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.CachedResponseHeaders.LastModified = utcNow - TimeSpan.FromSeconds(10);
 
             context.TypedRequestHeaders.IfNoneMatch = new List<EntityTagHeaderValue>(new[] { new EntityTagHeaderValue("\"E1\"") });
-            Assert.False(ResponseCacheMiddleware.ContentIsNotModified(context));
+            Assert.False(ResponseCachingMiddleware.ContentIsNotModified(context));
             Assert.Empty(sink.Writes);
         }
 
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             context.TypedRequestHeaders.IfNoneMatch = new List<EntityTagHeaderValue>(new[] { new EntityTagHeaderValue("\"E1\"") });
 
-            Assert.False(ResponseCacheMiddleware.ContentIsNotModified(context));
+            Assert.False(ResponseCachingMiddleware.ContentIsNotModified(context));
             Assert.Empty(sink.Writes);
         }
 
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             context.TypedRequestHeaders.IfNoneMatch = new List<EntityTagHeaderValue>(new[] { requestETag });
 
-            Assert.True(ResponseCacheMiddleware.ContentIsNotModified(context));
+            Assert.True(ResponseCachingMiddleware.ContentIsNotModified(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.NotModifiedIfNoneMatchMatched);
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             context.TypedRequestHeaders.IfNoneMatch = new List<EntityTagHeaderValue>(new[] { new EntityTagHeaderValue("\"E1\"") });
 
-            Assert.False(ResponseCacheMiddleware.ContentIsNotModified(context));
+            Assert.False(ResponseCachingMiddleware.ContentIsNotModified(context));
             Assert.Empty(sink.Writes);
         }
 
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public async Task FinalizeCacheHeaders_DoNotUpdateShouldCacheResponse_IfResponseIsNotCacheable()
         {
             var sink = new TestSink();
-            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, policyProvider: new ResponseCachePolicyProvider());
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, policyProvider: new ResponseCachingPolicyProvider());
             var context = TestUtils.CreateTestContext();
 
             Assert.False(context.ShouldCacheResponse);
@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public async Task FinalizeCacheHeaders_UpdateShouldCacheResponse_IfResponseIsCacheable()
         {
             var sink = new TestSink();
-            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, policyProvider: new ResponseCachePolicyProvider());
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, policyProvider: new ResponseCachingPolicyProvider());
             var context = TestUtils.CreateTestContext();
             context.TypedResponseHeaders.CacheControl = new CacheControlHeaderValue()
             {
@@ -425,13 +425,13 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task FinalizeCacheHeaders_UpdateCachedVaryByRules_IfNotEquivalentToPrevious()
         {
-            var store = new TestResponseCacheStore();
+            var cache = new TestResponseCache();
             var sink = new TestSink();
-            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, store: store);
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
             var context = TestUtils.CreateTestContext();
 
             context.HttpContext.Response.Headers[HeaderNames.Vary] = new StringValues(new[] { "headerA", "HEADERB", "HEADERc" });
-            context.HttpContext.Features.Set<IResponseCacheFeature>(new ResponseCacheFeature()
+            context.HttpContext.Features.Set<IResponseCachingFeature>(new ResponseCachingFeature()
             {
                 VaryByQueryKeys = new StringValues(new[] { "queryB", "QUERYA" })
             });
@@ -445,7 +445,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             await middleware.TryServeFromCacheAsync(context);
             await middleware.FinalizeCacheHeadersAsync(context);
 
-            Assert.Equal(1, store.SetCount);
+            Assert.Equal(1, cache.SetCount);
             Assert.NotSame(cachedVaryByRules, context.CachedVaryByRules);
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
@@ -456,13 +456,13 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task FinalizeCacheHeaders_UpdateCachedVaryByRules_IfEquivalentToPrevious()
         {
-            var store = new TestResponseCacheStore();
+            var cache = new TestResponseCache();
             var sink = new TestSink();
-            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, store: store);
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
             var context = TestUtils.CreateTestContext();
 
             context.HttpContext.Response.Headers[HeaderNames.Vary] = new StringValues(new[] { "headerA", "HEADERB" });
-            context.HttpContext.Features.Set<IResponseCacheFeature>(new ResponseCacheFeature()
+            context.HttpContext.Features.Set<IResponseCachingFeature>(new ResponseCachingFeature()
             {
                 VaryByQueryKeys = new StringValues(new[] { "queryB", "QUERYA" })
             });
@@ -478,7 +478,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             await middleware.FinalizeCacheHeadersAsync(context);
 
             // An update to the cache is always made but the entry should be the same
-            Assert.Equal(1, store.SetCount);
+            Assert.Equal(1, cache.SetCount);
             Assert.Same(cachedVaryByRules, context.CachedVaryByRules);
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
@@ -508,13 +508,13 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [MemberData(nameof(NullOrEmptyVaryRules))]
         public async Task FinalizeCacheHeaders_UpdateCachedVaryByRules_NullOrEmptyRules(StringValues vary)
         {
-            var store = new TestResponseCacheStore();
+            var cache = new TestResponseCache();
             var sink = new TestSink();
-            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, store: store);
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
             var context = TestUtils.CreateTestContext();
 
             context.HttpContext.Response.Headers[HeaderNames.Vary] = vary;
-            context.HttpContext.Features.Set<IResponseCacheFeature>(new ResponseCacheFeature()
+            context.HttpContext.Features.Set<IResponseCachingFeature>(new ResponseCachingFeature()
             {
                 VaryByQueryKeys = vary
             });
@@ -523,7 +523,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             await middleware.FinalizeCacheHeadersAsync(context);
 
             // Vary rules should not be updated
-            Assert.Equal(0, store.SetCount);
+            Assert.Equal(0, cache.SetCount);
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.NoResponseServed);
@@ -600,9 +600,9 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task FinalizeCacheBody_Cache_IfContentLengthMatches()
         {
-            var store = new TestResponseCacheStore();
+            var cache = new TestResponseCache();
             var sink = new TestSink();
-            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, store: store);
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
             var context = TestUtils.CreateTestContext();
 
             middleware.ShimResponseStream(context);
@@ -616,7 +616,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             await middleware.FinalizeCacheBodyAsync(context);
 
-            Assert.Equal(1, store.SetCount);
+            Assert.Equal(1, cache.SetCount);
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ResponseCached);
@@ -625,9 +625,9 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task FinalizeCacheBody_DoNotCache_IfContentLengthMismatches()
         {
-            var store = new TestResponseCacheStore();
+            var cache = new TestResponseCache();
             var sink = new TestSink();
-            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, store: store);
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
             var context = TestUtils.CreateTestContext();
 
             middleware.ShimResponseStream(context);
@@ -641,7 +641,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             await middleware.FinalizeCacheBodyAsync(context);
 
-            Assert.Equal(0, store.SetCount);
+            Assert.Equal(0, cache.SetCount);
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ResponseContentLengthMismatchNotCached);
@@ -650,9 +650,9 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task FinalizeCacheBody_Cache_IfContentLengthAbsent()
         {
-            var store = new TestResponseCacheStore();
+            var cache = new TestResponseCache();
             var sink = new TestSink();
-            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, store: store);
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
             var context = TestUtils.CreateTestContext();
 
             middleware.ShimResponseStream(context);
@@ -665,7 +665,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             await middleware.FinalizeCacheBodyAsync(context);
 
-            Assert.Equal(1, store.SetCount);
+            Assert.Equal(1, cache.SetCount);
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ResponseCached);
@@ -674,9 +674,9 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task FinalizeCacheBody_DoNotCache_IfShouldCacheResponseFalse()
         {
-            var store = new TestResponseCacheStore();
+            var cache = new TestResponseCache();
             var sink = new TestSink();
-            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, store: store);
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
             var context = TestUtils.CreateTestContext();
 
             middleware.ShimResponseStream(context);
@@ -686,7 +686,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             await middleware.FinalizeCacheBodyAsync(context);
 
-            Assert.Equal(0, store.SetCount);
+            Assert.Equal(0, cache.SetCount);
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ResponseNotCached);
@@ -695,20 +695,20 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Fact]
         public async Task FinalizeCacheBody_DoNotCache_IfBufferingDisabled()
         {
-            var store = new TestResponseCacheStore();
+            var cache = new TestResponseCache();
             var sink = new TestSink();
-            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, store: store);
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
             var context = TestUtils.CreateTestContext();
 
             middleware.ShimResponseStream(context);
             await context.HttpContext.Response.WriteAsync(new string('0', 10));
 
             context.ShouldCacheResponse = true;
-            context.ResponseCacheStream.DisableBuffering();
+            context.ResponseCachingStream.DisableBuffering();
 
             await middleware.FinalizeCacheBodyAsync(context);
 
-            Assert.Equal(0, store.SetCount);
+            Assert.Equal(0, cache.SetCount);
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ResponseNotCached);
@@ -733,7 +733,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var uppercaseStrings = new StringValues(new[] { "STRINGA", "STRINGB" });
             var lowercaseStrings = new StringValues(new[] { "stringA", "stringB" });
 
-            var normalizedStrings = ResponseCacheMiddleware.GetOrderCasingNormalizedStringValues(lowercaseStrings);
+            var normalizedStrings = ResponseCachingMiddleware.GetOrderCasingNormalizedStringValues(lowercaseStrings);
 
             Assert.Equal(uppercaseStrings, normalizedStrings);
         }
@@ -744,7 +744,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var orderedStrings = new StringValues(new[] { "STRINGA", "STRINGB" });
             var reverseOrderStrings = new StringValues(new[] { "STRINGB", "STRINGA" });
 
-            var normalizedStrings = ResponseCacheMiddleware.GetOrderCasingNormalizedStringValues(reverseOrderStrings);
+            var normalizedStrings = ResponseCachingMiddleware.GetOrderCasingNormalizedStringValues(reverseOrderStrings);
 
             Assert.Equal(orderedStrings, normalizedStrings);
         }
@@ -754,7 +754,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         {
             var originalStrings = new StringValues(new[] { "STRINGA, STRINGB" });
 
-            var normalizedStrings = ResponseCacheMiddleware.GetOrderCasingNormalizedStringValues(originalStrings);
+            var normalizedStrings = ResponseCachingMiddleware.GetOrderCasingNormalizedStringValues(originalStrings);
 
             Assert.Equal(originalStrings, normalizedStrings);
         }

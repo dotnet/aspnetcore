@@ -44,92 +44,96 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             await context.Response.WriteAsync(uniqueId);
         };
 
-        internal static IResponseCacheKeyProvider CreateTestKeyProvider()
+        internal static IResponseCachingKeyProvider CreateTestKeyProvider()
         {
-            return CreateTestKeyProvider(new ResponseCacheOptions());
+            return CreateTestKeyProvider(new ResponseCachingOptions());
         }
 
-        internal static IResponseCacheKeyProvider CreateTestKeyProvider(ResponseCacheOptions options)
+        internal static IResponseCachingKeyProvider CreateTestKeyProvider(ResponseCachingOptions options)
         {
-            return new ResponseCacheKeyProvider(new DefaultObjectPoolProvider(), Options.Create(options));
+            return new ResponseCachingKeyProvider(new DefaultObjectPoolProvider(), Options.Create(options));
         }
 
-        internal static IEnumerable<IWebHostBuilder> CreateBuildersWithResponseCache(
+        internal static IEnumerable<IWebHostBuilder> CreateBuildersWithResponseCaching(
             Action<IApplicationBuilder> configureDelegate = null,
-            ResponseCacheOptions options = null,
+            ResponseCachingOptions options = null,
             RequestDelegate requestDelegate = null)
         {
             if (configureDelegate == null)
             {
                 configureDelegate = app => { };
             }
-            if (options == null)
-            {
-                options = new ResponseCacheOptions();
-            }
             if (requestDelegate == null)
             {
                 requestDelegate = TestRequestDelegate;
             }
 
-            // Test with MemoryResponseCacheStore
+            // Test with in memory ResponseCache
             yield return new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddMemoryResponseCacheStore();
+                    services.AddResponseCaching(responseCachingOptions =>
+                    {
+                        if (options != null)
+                        {
+                            responseCachingOptions.MaximumBodySize = options.MaximumBodySize;
+                            responseCachingOptions.UseCaseSensitivePaths = options.UseCaseSensitivePaths;
+                            responseCachingOptions.SystemClock = options.SystemClock;
+                        }
+                    });
                 })
                 .Configure(app =>
                 {
                     configureDelegate(app);
-                    app.UseResponseCache(options);
+                    app.UseResponseCaching();
                     app.Run(requestDelegate);
                 });
         }
 
-        internal static ResponseCacheMiddleware CreateTestMiddleware(
-            IResponseCacheStore store = null,
-            ResponseCacheOptions options = null,
+        internal static ResponseCachingMiddleware CreateTestMiddleware(
+            IResponseCache cache = null,
+            ResponseCachingOptions options = null,
             TestSink testSink = null,
-            IResponseCacheKeyProvider keyProvider = null,
-            IResponseCachePolicyProvider policyProvider = null)
+            IResponseCachingKeyProvider keyProvider = null,
+            IResponseCachingPolicyProvider policyProvider = null)
         {
-            if (store == null)
+            if (cache == null)
             {
-                store = new TestResponseCacheStore();
+                cache = new TestResponseCache();
             }
             if (options == null)
             {
-                options = new ResponseCacheOptions();
+                options = new ResponseCachingOptions();
             }
             if (keyProvider == null)
             {
-                keyProvider = new ResponseCacheKeyProvider(new DefaultObjectPoolProvider(), Options.Create(options));
+                keyProvider = new ResponseCachingKeyProvider(new DefaultObjectPoolProvider(), Options.Create(options));
             }
             if (policyProvider == null)
             {
-                policyProvider = new TestResponseCachePolicyProvider();
+                policyProvider = new TestResponseCachingPolicyProvider();
             }
 
-            return new ResponseCacheMiddleware(
+            return new ResponseCachingMiddleware(
                 httpContext => TaskCache.CompletedTask,
                 Options.Create(options),
                 testSink == null ? (ILoggerFactory)NullLoggerFactory.Instance : new TestLoggerFactory(testSink, true),
                 policyProvider,
-                store,
+                cache,
                 keyProvider);
         }
 
-        internal static ResponseCacheContext CreateTestContext()
+        internal static ResponseCachingContext CreateTestContext()
         {
-            return new ResponseCacheContext(new DefaultHttpContext(), NullLogger.Instance)
+            return new ResponseCachingContext(new DefaultHttpContext(), NullLogger.Instance)
             {
                 ResponseTime = DateTimeOffset.UtcNow
             };
         }
 
-        internal static ResponseCacheContext CreateTestContext(TestSink testSink)
+        internal static ResponseCachingContext CreateTestContext(TestSink testSink)
         {
-            return new ResponseCacheContext(new DefaultHttpContext(), new TestLogger("ResponseCachingTests", testSink, true))
+            return new ResponseCachingContext(new DefaultHttpContext(), new TestLogger("ResponseCachingTests", testSink, true))
             {
                 ResponseTime = DateTimeOffset.UtcNow
             };
@@ -208,21 +212,21 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
     }
 
-    internal class TestResponseCachePolicyProvider : IResponseCachePolicyProvider
+    internal class TestResponseCachingPolicyProvider : IResponseCachingPolicyProvider
     {
-        public bool IsCachedEntryFresh(ResponseCacheContext context) => true;
+        public bool IsCachedEntryFresh(ResponseCachingContext context) => true;
 
-        public bool IsRequestCacheable(ResponseCacheContext context) => true;
+        public bool IsRequestCacheable(ResponseCachingContext context) => true;
 
-        public bool IsResponseCacheable(ResponseCacheContext context) => true;
+        public bool IsResponseCacheable(ResponseCachingContext context) => true;
     }
 
-    internal class TestResponseCacheKeyProvider : IResponseCacheKeyProvider
+    internal class TestResponseCachingKeyProvider : IResponseCachingKeyProvider
     {
         private readonly string _baseKey;
         private readonly StringValues _varyKey;
 
-        public TestResponseCacheKeyProvider(string lookupBaseKey = null, StringValues? lookupVaryKey = null)
+        public TestResponseCachingKeyProvider(string lookupBaseKey = null, StringValues? lookupVaryKey = null)
         {
             _baseKey = lookupBaseKey;
             if (lookupVaryKey.HasValue)
@@ -231,7 +235,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             }
         }
 
-        public IEnumerable<string> CreateLookupVaryByKeys(ResponseCacheContext context)
+        public IEnumerable<string> CreateLookupVaryByKeys(ResponseCachingContext context)
         {
             foreach (var varyKey in _varyKey)
             {
@@ -239,18 +243,18 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             }
         }
 
-        public string CreateBaseKey(ResponseCacheContext context)
+        public string CreateBaseKey(ResponseCachingContext context)
         {
             return _baseKey;
         }
 
-        public string CreateStorageVaryByKey(ResponseCacheContext context)
+        public string CreateStorageVaryByKey(ResponseCachingContext context)
         {
             throw new NotImplementedException();
         }
     }
 
-    internal class TestResponseCacheStore : IResponseCacheStore
+    internal class TestResponseCache : IResponseCache
     {
         private readonly IDictionary<string, IResponseCacheEntry> _storage = new Dictionary<string, IResponseCacheEntry>();
         public int GetCount { get; private set; }

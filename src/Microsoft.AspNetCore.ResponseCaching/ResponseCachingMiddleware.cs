@@ -4,7 +4,6 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Headers;
@@ -17,25 +16,25 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
-    public class ResponseCacheMiddleware
+    public class ResponseCachingMiddleware
     {
         private static readonly TimeSpan DefaultExpirationTimeSpan = TimeSpan.FromSeconds(10);
 
         private readonly RequestDelegate _next;
-        private readonly ResponseCacheOptions _options;
+        private readonly ResponseCachingOptions _options;
         private readonly ILogger _logger;
-        private readonly IResponseCachePolicyProvider _policyProvider;
-        private readonly IResponseCacheStore _store;
-        private readonly IResponseCacheKeyProvider _keyProvider;
+        private readonly IResponseCachingPolicyProvider _policyProvider;
+        private readonly IResponseCache _cache;
+        private readonly IResponseCachingKeyProvider _keyProvider;
         private readonly Func<object, Task> _onStartingCallback;
 
-        public ResponseCacheMiddleware(
+        public ResponseCachingMiddleware(
             RequestDelegate next,
-            IOptions<ResponseCacheOptions> options,
+            IOptions<ResponseCachingOptions> options,
             ILoggerFactory loggerFactory,
-            IResponseCachePolicyProvider policyProvider,
-            IResponseCacheStore store,
-            IResponseCacheKeyProvider keyProvider)
+            IResponseCachingPolicyProvider policyProvider,
+            IResponseCache cache,
+            IResponseCachingKeyProvider keyProvider)
         {
             if (next == null)
             {
@@ -53,9 +52,9 @@ namespace Microsoft.AspNetCore.ResponseCaching
             {
                 throw new ArgumentNullException(nameof(policyProvider));
             }
-            if (store == null)
+            if (cache == null)
             {
-                throw new ArgumentNullException(nameof(store));
+                throw new ArgumentNullException(nameof(cache));
             }
             if (keyProvider == null)
             {
@@ -64,16 +63,16 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
             _next = next;
             _options = options.Value;
-            _logger = loggerFactory.CreateLogger<ResponseCacheMiddleware>();
+            _logger = loggerFactory.CreateLogger<ResponseCachingMiddleware>();
             _policyProvider = policyProvider;
-            _store = store;
+            _cache = cache;
             _keyProvider = keyProvider;
-            _onStartingCallback = state => OnResponseStartingAsync((ResponseCacheContext)state);
+            _onStartingCallback = state => OnResponseStartingAsync((ResponseCachingContext)state);
         }
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var context = new ResponseCacheContext(httpContext, _logger);
+            var context = new ResponseCachingContext(httpContext, _logger);
 
             // Should we attempt any caching logic?
             if (_policyProvider.IsRequestCacheable(context))
@@ -111,7 +110,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
         }
 
-        internal async Task<bool> TryServeCachedResponseAsync(ResponseCacheContext context, CachedResponse cachedResponse)
+        internal async Task<bool> TryServeCachedResponseAsync(ResponseCachingContext context, CachedResponse cachedResponse)
         {
             context.CachedResponse = cachedResponse;
             context.CachedResponseHeaders = new ResponseHeaders(cachedResponse.Headers);
@@ -166,10 +165,10 @@ namespace Microsoft.AspNetCore.ResponseCaching
             return false;
         }
 
-        internal async Task<bool> TryServeFromCacheAsync(ResponseCacheContext context)
+        internal async Task<bool> TryServeFromCacheAsync(ResponseCachingContext context)
         {
             context.BaseKey = _keyProvider.CreateBaseKey(context);
-            var cacheEntry = await _store.GetAsync(context.BaseKey);
+            var cacheEntry = await _cache.GetAsync(context.BaseKey);
 
             if (cacheEntry is CachedVaryByRules)
             {
@@ -178,7 +177,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
                 foreach (var varyKey in _keyProvider.CreateLookupVaryByKeys(context))
                 {
-                    cacheEntry = await _store.GetAsync(varyKey);
+                    cacheEntry = await _cache.GetAsync(varyKey);
 
                     if (cacheEntry is CachedResponse && await TryServeCachedResponseAsync(context, (CachedResponse)cacheEntry))
                     {
@@ -202,7 +201,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             return false;
         }
 
-        internal async Task FinalizeCacheHeadersAsync(ResponseCacheContext context)
+        internal async Task FinalizeCacheHeadersAsync(ResponseCachingContext context)
         {
             if (_policyProvider.IsResponseCacheable(context))
             {
@@ -211,7 +210,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 // Create the cache entry now
                 var response = context.HttpContext.Response;
                 var varyHeaders = new StringValues(response.Headers.GetCommaSeparatedValues(HeaderNames.Vary));
-                var varyQueryKeys = context.HttpContext.Features.Get<IResponseCacheFeature>()?.VaryByQueryKeys ?? StringValues.Empty;
+                var varyQueryKeys = new StringValues(context.HttpContext.Features.Get<IResponseCachingFeature>()?.VaryByQueryKeys);
                 context.CachedResponseValidFor = context.ResponseCacheControlHeaderValue.SharedMaxAge ??
                     context.ResponseCacheControlHeaderValue.MaxAge ??
                     (context.ResponseExpires - context.ResponseTime.Value) ??
@@ -239,7 +238,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
                     // Always overwrite the CachedVaryByRules to update the expiry information
                     _logger.LogVaryByRulesUpdated(normalizedVaryHeaders, normalizedVaryQueryKeys);
-                    await _store.SetAsync(context.BaseKey, context.CachedVaryByRules, context.CachedResponseValidFor);
+                    await _cache.SetAsync(context.BaseKey, context.CachedVaryByRules, context.CachedResponseValidFor);
 
                     context.StorageVaryKey = _keyProvider.CreateStorageVaryByKey(context);
                 }
@@ -269,21 +268,21 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
             else
             {
-                context.ResponseCacheStream.DisableBuffering();
+                context.ResponseCachingStream.DisableBuffering();
             }
         }
 
-        internal async Task FinalizeCacheBodyAsync(ResponseCacheContext context)
+        internal async Task FinalizeCacheBodyAsync(ResponseCachingContext context)
         {
             var contentLength = context.TypedResponseHeaders.ContentLength;
-            if (context.ShouldCacheResponse && context.ResponseCacheStream.BufferingEnabled)
+            if (context.ShouldCacheResponse && context.ResponseCachingStream.BufferingEnabled)
             {
-                var bufferStream = context.ResponseCacheStream.GetBufferStream();
+                var bufferStream = context.ResponseCachingStream.GetBufferStream();
                 if (!contentLength.HasValue || contentLength == bufferStream.Length)
                 {
                     context.CachedResponse.Body = bufferStream;
                     _logger.LogResponseCached();
-                    await _store.SetAsync(context.StorageVaryKey ?? context.BaseKey, context.CachedResponse, context.CachedResponseValidFor);
+                    await _cache.SetAsync(context.StorageVaryKey ?? context.BaseKey, context.CachedResponse, context.CachedResponseValidFor);
                 }
                 else
                 {
@@ -296,7 +295,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
         }
 
-        internal Task OnResponseStartingAsync(ResponseCacheContext context)
+        internal Task OnResponseStartingAsync(ResponseCachingContext context)
         {
             if (!context.ResponseStarted)
             {
@@ -311,29 +310,29 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
         }
 
-        internal void ShimResponseStream(ResponseCacheContext context)
+        internal void ShimResponseStream(ResponseCachingContext context)
         {
             // Shim response stream
             context.OriginalResponseStream = context.HttpContext.Response.Body;
-            context.ResponseCacheStream = new ResponseCacheStream(context.OriginalResponseStream, _options.MaximumBodySize, StreamUtilities.BodySegmentSize);
-            context.HttpContext.Response.Body = context.ResponseCacheStream;
+            context.ResponseCachingStream = new ResponseCachingStream(context.OriginalResponseStream, _options.MaximumBodySize, StreamUtilities.BodySegmentSize);
+            context.HttpContext.Response.Body = context.ResponseCachingStream;
 
             // Shim IHttpSendFileFeature
             context.OriginalSendFileFeature = context.HttpContext.Features.Get<IHttpSendFileFeature>();
             if (context.OriginalSendFileFeature != null)
             {
-                context.HttpContext.Features.Set<IHttpSendFileFeature>(new SendFileFeatureWrapper(context.OriginalSendFileFeature, context.ResponseCacheStream));
+                context.HttpContext.Features.Set<IHttpSendFileFeature>(new SendFileFeatureWrapper(context.OriginalSendFileFeature, context.ResponseCachingStream));
             }
 
-            // Add IResponseCacheFeature
-            if (context.HttpContext.Features.Get<IResponseCacheFeature>() != null)
+            // Add IResponseCachingFeature
+            if (context.HttpContext.Features.Get<IResponseCachingFeature>() != null)
             {
-                throw new InvalidOperationException($"Another instance of {nameof(ResponseCacheFeature)} already exists. Only one instance of {nameof(ResponseCacheMiddleware)} can be configured for an application.");
+                throw new InvalidOperationException($"Another instance of {nameof(ResponseCachingFeature)} already exists. Only one instance of {nameof(ResponseCachingMiddleware)} can be configured for an application.");
             }
-            context.HttpContext.Features.Set<IResponseCacheFeature>(new ResponseCacheFeature());
+            context.HttpContext.Features.Set<IResponseCachingFeature>(new ResponseCachingFeature());
         }
 
-        internal static void UnshimResponseStream(ResponseCacheContext context)
+        internal static void UnshimResponseStream(ResponseCachingContext context)
         {
             // Unshim response stream
             context.HttpContext.Response.Body = context.OriginalResponseStream;
@@ -341,11 +340,11 @@ namespace Microsoft.AspNetCore.ResponseCaching
             // Unshim IHttpSendFileFeature
             context.HttpContext.Features.Set(context.OriginalSendFileFeature);
 
-            // Remove IResponseCacheFeature
-            context.HttpContext.Features.Set<IResponseCacheFeature>(null);
+            // Remove IResponseCachingFeature
+            context.HttpContext.Features.Set<IResponseCachingFeature>(null);
         }
 
-        internal static bool ContentIsNotModified(ResponseCacheContext context)
+        internal static bool ContentIsNotModified(ResponseCachingContext context)
         {
             var cachedResponseHeaders = context.CachedResponseHeaders;
             var ifNoneMatchHeader = context.TypedRequestHeaders.IfNoneMatch;

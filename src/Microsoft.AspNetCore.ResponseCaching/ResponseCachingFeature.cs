@@ -2,15 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
-    public class ResponseCacheFeature : IResponseCacheFeature
+    public class ResponseCachingFeature : IResponseCachingFeature
     {
-        private StringValues _varyByQueryKeys;
+        private string[] _varyByQueryKeys;
 
-        public StringValues VaryByQueryKeys
+        public string[] VaryByQueryKeys
         {
             get
             {
@@ -18,9 +17,9 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
             set
             {
-                if (value.Count > 1)
+                if (value?.Length > 1)
                 {
-                    for (var i = 0; i < value.Count; i++)
+                    for (var i = 0; i < value.Length; i++)
                     {
                         if (string.IsNullOrEmpty(value[i]))
                         {

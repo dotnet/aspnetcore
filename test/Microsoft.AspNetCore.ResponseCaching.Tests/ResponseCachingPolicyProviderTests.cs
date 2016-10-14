@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Tests
 {
-    public class ResponseCachePolicyProviderTests
+    public class ResponseCachingPolicyProviderTests
     {
         public static TheoryData<string> CacheableMethods
         {
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var context = TestUtils.CreateTestContext(sink);
             context.HttpContext.Request.Method = method;
 
-            Assert.True(new ResponseCachePolicyProvider().IsRequestCacheable(context));
+            Assert.True(new ResponseCachingPolicyProvider().IsRequestCacheable(context));
             Assert.Empty(sink.Writes);
         }
         public static TheoryData<string> NonCacheableMethods
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var context = TestUtils.CreateTestContext(sink);
             context.HttpContext.Request.Method = method;
 
-            Assert.False(new ResponseCachePolicyProvider().IsRequestCacheable(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsRequestCacheable(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.RequestMethodNotCacheable);
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.HttpContext.Request.Method = HttpMethods.Get;
             context.HttpContext.Request.Headers[HeaderNames.Authorization] = "Basic plaintextUN:plaintextPW";
 
-            Assert.False(new ResponseCachePolicyProvider().IsRequestCacheable(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsRequestCacheable(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.RequestWithAuthorizationNotCacheable);
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 NoCache = true
             };
 
-            Assert.False(new ResponseCachePolicyProvider().IsRequestCacheable(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsRequestCacheable(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.RequestWithNoCacheNotCacheable);
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 NoStore = true
             };
 
-            Assert.True(new ResponseCachePolicyProvider().IsRequestCacheable(context));
+            Assert.True(new ResponseCachingPolicyProvider().IsRequestCacheable(context));
             Assert.Empty(sink.Writes);
         }
 
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.HttpContext.Request.Method = HttpMethods.Get;
             context.HttpContext.Request.Headers[HeaderNames.Pragma] = "no-cache";
 
-            Assert.False(new ResponseCachePolicyProvider().IsRequestCacheable(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsRequestCacheable(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.RequestWithPragmaNoCacheNotCacheable);
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.HttpContext.Request.Headers[HeaderNames.Pragma] = "no-cache";
             context.HttpContext.Request.Headers[HeaderNames.CacheControl] = "max-age=10";
 
-            Assert.True(new ResponseCachePolicyProvider().IsRequestCacheable(context));
+            Assert.True(new ResponseCachingPolicyProvider().IsRequestCacheable(context));
             Assert.Empty(sink.Writes);
         }
 
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var sink = new TestSink();
             var context = TestUtils.CreateTestContext(sink);
 
-            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ResponseWithoutPublicNotCacheable);
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Public = true
             };
 
-            Assert.True(new ResponseCachePolicyProvider().IsResponseCacheable(context));
+            Assert.True(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
             Assert.Empty(sink.Writes);
         }
 
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 NoCache = true
             };
 
-            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ResponseWithNoCacheNotCacheable);
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Public = true
             };
 
-            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ResponseWithNoStoreNotCacheable);
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 NoStore = true
             };
 
-            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ResponseWithNoStoreNotCacheable);
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             };
             context.HttpContext.Response.Headers[HeaderNames.SetCookie] = "cookieName=cookieValue";
 
-            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ResponseWithSetCookieNotCacheable);
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             };
             context.HttpContext.Response.Headers[HeaderNames.Vary] = "*";
 
-            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ResponseWithVaryStarNotCacheable);
@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Private = true
             };
 
-            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ResponseWithPrivateNotCacheable);
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Public = true
             };
 
-            Assert.True(new ResponseCachePolicyProvider().IsResponseCacheable(context));
+            Assert.True(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
             Assert.Empty(sink.Writes);
         }
 
@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Public = true
             };
 
-            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ResponseWithUnsuccessfulStatusCodeNotCacheable);
@@ -361,7 +361,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.TypedResponseHeaders.Date = utcNow;
             context.ResponseTime = DateTimeOffset.MaxValue;
 
-            Assert.True(new ResponseCachePolicyProvider().IsResponseCacheable(context));
+            Assert.True(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
             Assert.Empty(sink.Writes);
         }
 
@@ -381,7 +381,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.TypedResponseHeaders.Date = utcNow;
             context.ResponseTime = utcNow;
 
-            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ExpirationExpiresExceeded);
@@ -403,7 +403,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.TypedResponseHeaders.Date = utcNow;
             context.ResponseTime = utcNow + TimeSpan.FromSeconds(9);
 
-            Assert.True(new ResponseCachePolicyProvider().IsResponseCacheable(context));
+            Assert.True(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
             Assert.Empty(sink.Writes);
         }
 
@@ -423,7 +423,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.TypedResponseHeaders.Date = utcNow;
             context.ResponseTime = utcNow + TimeSpan.FromSeconds(10);
 
-            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ExpirationMaxAgeExceeded);
@@ -445,7 +445,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.TypedResponseHeaders.Date = utcNow;
             context.ResponseTime = utcNow + TimeSpan.FromSeconds(11);
 
-            Assert.True(new ResponseCachePolicyProvider().IsResponseCacheable(context));
+            Assert.True(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
             Assert.Empty(sink.Writes);
         }
 
@@ -465,7 +465,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.TypedResponseHeaders.Date = utcNow;
             context.ResponseTime = utcNow + TimeSpan.FromSeconds(5);
 
-            Assert.False(new ResponseCachePolicyProvider().IsResponseCacheable(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsResponseCacheable(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ExpirationSharedMaxAgeExceeded);
@@ -481,7 +481,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.CachedEntryAge = TimeSpan.MaxValue;
             context.CachedResponseHeaders = new ResponseHeaders(new HeaderDictionary());
 
-            Assert.True(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
+            Assert.True(new ResponseCachingPolicyProvider().IsCachedEntryFresh(context));
             Assert.Empty(sink.Writes);
         }
 
@@ -501,7 +501,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 }
             };
 
-            Assert.True(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
+            Assert.True(new ResponseCachingPolicyProvider().IsCachedEntryFresh(context));
             Assert.Empty(sink.Writes);
         }
 
@@ -522,7 +522,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Expires = utcNow
             };
 
-            Assert.False(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsCachedEntryFresh(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ExpirationExpiresExceeded);
@@ -546,7 +546,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Expires = utcNow
             };
 
-            Assert.True(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
+            Assert.True(new ResponseCachingPolicyProvider().IsCachedEntryFresh(context));
             Assert.Empty(sink.Writes);
         }
 
@@ -568,7 +568,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Expires = utcNow
             };
 
-            Assert.False(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsCachedEntryFresh(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ExpirationMaxAgeExceeded);
@@ -593,7 +593,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Expires = utcNow
             };
 
-            Assert.True(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
+            Assert.True(new ResponseCachingPolicyProvider().IsCachedEntryFresh(context));
             Assert.Empty(sink.Writes);
         }
 
@@ -616,7 +616,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Expires = utcNow
             };
 
-            Assert.False(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsCachedEntryFresh(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ExpirationSharedMaxAgeExceeded);
@@ -641,7 +641,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             };
             context.CachedEntryAge = TimeSpan.FromSeconds(3);
 
-            Assert.False(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsCachedEntryFresh(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ExpirationMinFreshAdded,
@@ -666,7 +666,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             };
             context.CachedEntryAge = TimeSpan.FromSeconds(5);
 
-            Assert.False(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsCachedEntryFresh(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ExpirationMaxAgeExceeded);
@@ -692,7 +692,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             };
             context.CachedEntryAge = TimeSpan.FromSeconds(6);
 
-            Assert.True(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
+            Assert.True(new ResponseCachingPolicyProvider().IsCachedEntryFresh(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ExpirationMaxStaleSatisfied);
@@ -718,7 +718,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             };
             context.CachedEntryAge = TimeSpan.FromSeconds(6);
 
-            Assert.False(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsCachedEntryFresh(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ExpirationMaxAgeExceeded);
@@ -745,7 +745,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             };
             context.CachedEntryAge = TimeSpan.FromSeconds(6);
 
-            Assert.False(new ResponseCachePolicyProvider().IsCachedEntryFresh(context));
+            Assert.False(new ResponseCachingPolicyProvider().IsCachedEntryFresh(context));
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ExpirationMustRevalidate);

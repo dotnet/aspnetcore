@@ -8,11 +8,11 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    public class ResponseCachePolicyProvider : IResponseCachePolicyProvider
+    public class ResponseCachingPolicyProvider : IResponseCachingPolicyProvider
     {
         private static readonly CacheControlHeaderValue EmptyCacheControl = new CacheControlHeaderValue();
 
-        public virtual bool IsRequestCacheable(ResponseCacheContext context)
+        public virtual bool IsRequestCacheable(ResponseCachingContext context)
         {
             // Verify the method
             var request = context.HttpContext.Request;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             return true;
         }
 
-        public virtual bool IsResponseCacheable(ResponseCacheContext context)
+        public virtual bool IsResponseCacheable(ResponseCachingContext context)
         {
             // Only cache pages explicitly marked with public
             if (!context.ResponseCacheControlHeaderValue.Public)
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             return true;
         }
 
-        public virtual bool IsCachedEntryFresh(ResponseCacheContext context)
+        public virtual bool IsCachedEntryFresh(ResponseCachingContext context)
         {
             var age = context.CachedEntryAge.Value;
             var cachedControlHeaders = context.CachedResponseHeaders.CacheControl ?? EmptyCacheControl;

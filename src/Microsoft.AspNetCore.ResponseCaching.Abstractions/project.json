@@ -17,11 +17,13 @@
       "caching"
     ]
   },
-  "dependencies": {
-    "Microsoft.Extensions.Primitives": "1.0.0"
-  },
   "frameworks": {
     "net451": {},
-    "netstandard1.3": {}
+    "netstandard1.3": {
+      "dependencies": {
+        "System.Runtime": "4.1.0",
+        "System.Resources.ResourceManager": "4.0.1"
+      }
+    }
   }
 }

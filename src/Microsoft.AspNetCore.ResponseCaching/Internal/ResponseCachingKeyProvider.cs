@@ -5,23 +5,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    public class ResponseCacheKeyProvider : IResponseCacheKeyProvider
+    public class ResponseCachingKeyProvider : IResponseCachingKeyProvider
     {
         // Use the record separator for delimiting components of the cache key to avoid possible collisions
         private static readonly char KeyDelimiter = '\x1e';
 
         private readonly ObjectPool<StringBuilder> _builderPool;
-        private readonly ResponseCacheOptions _options;
+        private readonly ResponseCachingOptions _options;
 
-        public ResponseCacheKeyProvider(ObjectPoolProvider poolProvider, IOptions<ResponseCacheOptions> options)
+        public ResponseCachingKeyProvider(ObjectPoolProvider poolProvider, IOptions<ResponseCachingOptions> options)
         {
             if (poolProvider == null)
             {
@@ -36,13 +34,13 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             _options = options.Value;
         }
 
-        public IEnumerable<string> CreateLookupVaryByKeys(ResponseCacheContext context)
+        public IEnumerable<string> CreateLookupVaryByKeys(ResponseCachingContext context)
         {
             return new string[] { CreateStorageVaryByKey(context) };
         }
 
         // GET<delimiter>/PATH
-        public string CreateBaseKey(ResponseCacheContext context)
+        public string CreateBaseKey(ResponseCachingContext context)
         {
             if (context == null)
             {
@@ -76,7 +74,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         }
 
         // BaseKey<delimiter>H<delimiter>HeaderName=HeaderValue<delimiter>Q<delimiter>QueryName=QueryValue
-        public string CreateStorageVaryByKey(ResponseCacheContext context)
+        public string CreateStorageVaryByKey(ResponseCachingContext context)
         {
             if (context == null)
             {
@@ -86,7 +84,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             var varyByRules = context.CachedVaryByRules;
             if (varyByRules == null)
             {
-                throw new InvalidOperationException($"{nameof(CachedVaryByRules)} must not be null on the {nameof(ResponseCacheContext)}");
+                throw new InvalidOperationException($"{nameof(CachedVaryByRules)} must not be null on the {nameof(ResponseCachingContext)}");
             }
 
             if ((StringValues.IsNullOrEmpty(varyByRules.Headers) && StringValues.IsNullOrEmpty(varyByRules.QueryKeys)))
