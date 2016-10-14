@@ -13,7 +13,7 @@ namespace ServerComparison.TestSites
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddResponseCompression("text/plain");
+            services.AddResponseCompression();
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
