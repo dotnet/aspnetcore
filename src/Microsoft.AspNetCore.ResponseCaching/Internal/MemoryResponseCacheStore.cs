@@ -24,11 +24,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         public Task<IResponseCacheEntry> GetAsync(string key)
         {
             var entry = _cache.Get(key);
-
-            if (entry is MemoryCachedResponse)
+            
+            var memoryCachedResponse = entry as MemoryCachedResponse;
+            if (memoryCachedResponse != null)
             {
-                var memoryCachedResponse = (MemoryCachedResponse)entry;
-                return Task.FromResult<IResponseCacheEntry>(new CachedResponse()
+                return Task.FromResult<IResponseCacheEntry>(new CachedResponse
                 {
                     Created = memoryCachedResponse.Created,
                     StatusCode = memoryCachedResponse.StatusCode,
@@ -44,15 +44,15 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         public async Task SetAsync(string key, IResponseCacheEntry entry, TimeSpan validFor)
         {
-            if (entry is CachedResponse)
+            var cachedResponse = entry as CachedResponse;
+            if (cachedResponse != null)
             {
-                var cachedResponse = (CachedResponse)entry;
                 var segmentStream = new SegmentWriteStream(StreamUtilities.BodySegmentSize);
                 await cachedResponse.Body.CopyToAsync(segmentStream);
 
                 _cache.Set(
                     key,
-                    new MemoryCachedResponse()
+                    new MemoryCachedResponse
                     {
                         Created = cachedResponse.Created,
                         StatusCode = cachedResponse.StatusCode,
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                         BodySegments = segmentStream.GetSegments(),
                         BodyLength = segmentStream.Length
                     },
-                    new MemoryCacheEntryOptions()
+                    new MemoryCacheEntryOptions
                     {
                         AbsoluteExpirationRelativeToNow = validFor
                     });
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 _cache.Set(
                     key,
                     entry,
-                    new MemoryCacheEntryOptions()
+                    new MemoryCacheEntryOptions
                     {
                         AbsoluteExpirationRelativeToNow = validFor
                     });

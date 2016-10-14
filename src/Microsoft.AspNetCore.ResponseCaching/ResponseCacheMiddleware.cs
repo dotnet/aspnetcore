@@ -111,8 +111,14 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
         }
 
-        internal async Task<bool> TryServeCachedResponseAsync(ResponseCacheContext context, CachedResponse cachedResponse)
+        internal async Task<bool> TryServeCachedResponseAsync(ResponseCacheContext context, IResponseCacheEntry cacheEntry)
         {
+            var cachedResponse = cacheEntry as CachedResponse;
+            if (cachedResponse == null)
+            {
+                return false;
+            }
+
             context.CachedResponse = cachedResponse;
             context.CachedResponseHeaders = new ResponseHeaders(cachedResponse.Headers);
             context.ResponseTime = _options.SystemClock.UtcNow;
@@ -171,24 +177,26 @@ namespace Microsoft.AspNetCore.ResponseCaching
             context.BaseKey = _keyProvider.CreateBaseKey(context);
             var cacheEntry = await _store.GetAsync(context.BaseKey);
 
-            if (cacheEntry is CachedVaryByRules)
+            var cachedVaryByRules = cacheEntry as CachedVaryByRules;
+            if (cachedVaryByRules != null)
             {
                 // Request contains vary rules, recompute key(s) and try again
-                context.CachedVaryByRules = (CachedVaryByRules)cacheEntry;
+                context.CachedVaryByRules = cachedVaryByRules;
 
                 foreach (var varyKey in _keyProvider.CreateLookupVaryByKeys(context))
                 {
-                    cacheEntry = await _store.GetAsync(varyKey);
-
-                    if (cacheEntry is CachedResponse && await TryServeCachedResponseAsync(context, (CachedResponse)cacheEntry))
+                    if (await TryServeCachedResponseAsync(context, await _store.GetAsync(varyKey)))
                     {
                         return true;
                     }
                 }
             }
-            else if (cacheEntry is CachedResponse && await TryServeCachedResponseAsync(context, (CachedResponse)cacheEntry))
+            else
             {
-                return true;
+                if (await TryServeCachedResponseAsync(context, cacheEntry))
+                {
+                    return true;
+                }
             }
 
             if (context.RequestCacheControlHeaderValue.OnlyIfCached)
