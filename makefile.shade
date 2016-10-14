@@ -213,6 +213,11 @@ var buildTarget = "compile"
             }
         }
 
+        if (Environment.GetEnvironmentVariable("UNIVERSE_PUSH_TO_VOLATILE") == "true")
+        {
+            Environment.SetEnvironmentVariable("NUGET_PUBLISH_FEED", "https://dotnet.myget.org/F/aspnetcore-volatile-release/api/v2/package");
+        }
+
         foreach (var batch in batchedRepos)
         {
             Parallel.ForEach(batch.ToArray(), new ParallelOptions { MaxDegreeOfParallelism = threads }, repo =>
