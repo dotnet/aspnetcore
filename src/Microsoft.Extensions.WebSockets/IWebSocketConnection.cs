@@ -48,8 +48,9 @@ namespace Microsoft.Extensions.WebSockets
         /// Runs the WebSocket receive loop, using the provided message handler.
         /// </summary>
         /// <param name="messageHandler">The callback that will be invoked for each new frame</param>
+        /// <param name="state">A state parameter that will be passed to each invocation of <paramref name="messageHandler"/></param>
         /// <returns>A <see cref="Task{WebSocketCloseResult}"/> that will complete when the client has sent a close frame, or the connection has been terminated</returns>
-        Task<WebSocketCloseResult> ExecuteAsync(Func<WebSocketFrame, Task> messageHandler);
+        Task<WebSocketCloseResult> ExecuteAsync(Func<WebSocketFrame, object, Task> messageHandler, object state);
     }
 
     public static class WebSocketConnectionExtensions
@@ -74,9 +75,28 @@ namespace Microsoft.Extensions.WebSockets
         /// <param name="messageHandler">The callback that will be invoked for each new frame</param>
         /// <returns>A <see cref="Task{WebSocketCloseResult}"/> that will complete when the client has sent a close frame, or the connection has been terminated</returns>
         public static Task<WebSocketCloseResult> ExecuteAsync(this IWebSocketConnection self, Action<WebSocketFrame> messageHandler) =>
-            self.ExecuteAsync(frame => {
+            self.ExecuteAsync((frame, _) => {
                 messageHandler(frame);
                 return Task.CompletedTask;
-            });
+            }, null);
+
+        /// <summary>
+        /// Runs the WebSocket receive loop, using the provided message handler.
+        /// </summary>
+        /// <param name="messageHandler">The callback that will be invoked for each new frame</param>
+        /// <returns>A <see cref="Task{WebSocketCloseResult}"/> that will complete when the client has sent a close frame, or the connection has been terminated</returns>
+        public static Task<WebSocketCloseResult> ExecuteAsync(this IWebSocketConnection self, Action<WebSocketFrame, object> messageHandler, object state) =>
+            self.ExecuteAsync((frame, s) => {
+                messageHandler(frame, s);
+                return Task.CompletedTask;
+            }, state);
+
+        /// <summary>
+        /// Runs the WebSocket receive loop, using the provided message handler.
+        /// </summary>
+        /// <param name="messageHandler">The callback that will be invoked for each new frame</param>
+        /// <returns>A <see cref="Task{WebSocketCloseResult}"/> that will complete when the client has sent a close frame, or the connection has been terminated</returns>
+        public static Task<WebSocketCloseResult> ExecuteAsync(this IWebSocketConnection self, Func<WebSocketFrame, Task> messageHandler) =>
+            self.ExecuteAsync((frame, _) => messageHandler(frame), null);
     }
 }

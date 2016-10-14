@@ -34,13 +34,13 @@ namespace Microsoft.Extensions.WebSockets
 
         public static bool TryParse(ReadableBuffer payload, out WebSocketCloseResult result)
         {
-            if(payload.Length == 0)
+            if (payload.Length == 0)
             {
                 // Empty payload is OK
                 result = new WebSocketCloseResult(WebSocketCloseStatus.Empty, string.Empty);
                 return true;
             }
-            else if(payload.Length < 2)
+            else if (payload.Length < 2)
             {
                 result = default(WebSocketCloseResult);
                 return false;
@@ -50,7 +50,7 @@ namespace Microsoft.Extensions.WebSockets
                 var status = payload.ReadBigEndian<ushort>();
                 var description = string.Empty;
                 payload = payload.Slice(2);
-                if(payload.Length > 0)
+                if (payload.Length > 0)
                 {
                     description = payload.GetUtf8String();
                 }

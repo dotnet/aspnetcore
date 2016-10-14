@@ -79,7 +79,7 @@ namespace Microsoft.Extensions.WebSockets
             _terminateReceiveCts.Cancel();
         }
 
-        public Task<WebSocketCloseResult> ExecuteAsync(Func<WebSocketFrame, Task> messageHandler)
+        public Task<WebSocketCloseResult> ExecuteAsync(Func<WebSocketFrame, object, Task> messageHandler, object state)
         {
             if (State == WebSocketConnectionState.Closed)
             {
@@ -91,7 +91,7 @@ namespace Microsoft.Extensions.WebSockets
                 throw new InvalidOperationException("Connection is already running.");
             }
             State = WebSocketConnectionState.Connected;
-            return Task.Run(() => ReceiveLoop(messageHandler, _terminateReceiveCts.Token));
+            return ReceiveLoop(messageHandler, state, _terminateReceiveCts.Token);
         }
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace Microsoft.Extensions.WebSockets
             buffer.Set(_maskingKey);
         }
 
-        private async Task<WebSocketCloseResult> ReceiveLoop(Func<WebSocketFrame, Task> messageHandler, CancellationToken cancellationToken)
+        private async Task<WebSocketCloseResult> ReceiveLoop(Func<WebSocketFrame, object, Task> messageHandler, object state, CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -309,7 +309,7 @@ namespace Microsoft.Extensions.WebSockets
                 }
                 else
                 {
-                    await messageHandler(frame);
+                    await messageHandler(frame, state);
                 }
 
                 // Mark the payload as consumed
@@ -376,6 +376,7 @@ namespace Microsoft.Extensions.WebSockets
 
             // Allocate a buffer
             var buffer = _outbound.Alloc(minimumSize: allocSize);
+            Debug.Assert(buffer.Memory.Length >= allocSize);
             if (buffer.Memory.Length < allocSize)
             {
                 throw new InvalidOperationException("Couldn't allocate enough data from the channel to write the header");
