@@ -775,8 +775,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         internal static int LocateFirstFoundByte(ref Vector<byte> byteEquals)
         {
             var vector64 = Vector.AsVectorInt64(byteEquals);
-            var i = 0;
             long longValue = 0;
+            var i = 0;
             for (; i < Vector<long>.Count; i++)
             {
                 longValue = vector64[i];
