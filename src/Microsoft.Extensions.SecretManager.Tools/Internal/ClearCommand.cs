@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
 {
-    internal class ClearCommand : ICommand
+    public class ClearCommand : ICommand
     {
         public static void Configure(CommandLineApplication command, CommandLineOptions options)
         {
@@ -19,10 +18,10 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
             });
         }
 
-        public void Execute(SecretsStore store, ILogger logger)
+        public void Execute(CommandContext context)
         {
-            store.Clear();
-            store.Save();
+            context.SecretStore.Clear();
+            context.SecretStore.Save();
         }
     }
 }

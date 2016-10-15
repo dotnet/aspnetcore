@@ -27,6 +27,24 @@ namespace Microsoft.Extensions.SecretManager.Tools
         }
 
         /// <summary>
+        /// Missing parameter value for '{name}'.
+        /// Use the '--help' flag to see info.
+        /// </summary>
+        internal static string Error_MissingArgument
+        {
+            get { return GetString("Error_MissingArgument"); }
+        }
+
+        /// <summary>
+        /// Missing parameter value for '{name}'.
+        /// Use the '--help' flag to see info.
+        /// </summary>
+        internal static string FormatError_MissingArgument(object name)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_MissingArgument", "name"), name);
+        }
+
+        /// <summary>
         /// Cannot find '{key}' in the secret store.
         /// </summary>
         internal static string Error_Missing_Secret
@@ -104,6 +122,22 @@ namespace Microsoft.Extensions.SecretManager.Tools
         internal static string FormatMessage_Saved_Secret(object key, object value)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("Message_Saved_Secret", "key", "value"), key, value);
+        }
+
+        /// <summary>
+        /// Successfully saved {number} secrets to the secret store.
+        /// </summary>
+        internal static string Message_Saved_Secrets
+        {
+            get { return GetString("Message_Saved_Secrets"); }
+        }
+
+        /// <summary>
+        /// Successfully saved {number} secrets to the secret store.
+        /// </summary>
+        internal static string FormatMessage_Saved_Secrets(object number)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Message_Saved_Secrets", "number"), number);
         }
 
         /// <summary>

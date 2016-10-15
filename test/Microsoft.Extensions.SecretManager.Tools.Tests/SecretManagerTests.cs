@@ -8,9 +8,9 @@ using System.Text;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Configuration.UserSecrets.Tests;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.SecretManager.Tools.Internal;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.Extensions.SecretManager.Tools.Internal;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Tests
 {
@@ -48,7 +48,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         public void Error_Project_DoesNotExist()
         {
             var projectPath = Path.Combine(GetTempSecretProject(), "does_not_exist", "project.json");
-            var secretManager = new Program(Console.Out, Directory.GetCurrentDirectory()) { Logger = _logger };
+            var secretManager = new Program(new TestConsole(), Directory.GetCurrentDirectory()) { Logger = _logger };
 
             var ex = Assert.Throws<GracefulException>(() => secretManager.RunInternal("list", "--project", projectPath));
 
@@ -61,7 +61,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             var projectPath = GetTempSecretProject();
             var cwd = Path.Combine(projectPath, "nested1");
             Directory.CreateDirectory(cwd);
-            var secretManager = new Program(Console.Out, cwd) { Logger = _logger, CommandOutputProvider = _logger.CommandOutputProvider };
+            var secretManager = new Program(new TestConsole(), cwd) { Logger = _logger, CommandOutputProvider = _logger.CommandOutputProvider };
             secretManager.CommandOutputProvider.LogLevel = LogLevel.Debug;
 
             secretManager.RunInternal("list", "-p", "../", "--verbose");
@@ -86,7 +86,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             var dir = fromCurrentDirectory
                 ? projectPath
                 : Path.GetTempPath();
-            var secretManager = new Program(Console.Out, dir) { Logger = _logger };
+            var secretManager = new Program(new TestConsole(), dir) { Logger = _logger };
 
             foreach (var secret in secrets)
             {
@@ -223,6 +223,27 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
+        public void List_Json()
+        {
+            var output = new StringBuilder();
+            var testConsole = new TestConsole
+            {
+                Out = new StringWriter(output)
+            };
+            string id;
+            var projectPath = GetTempSecretProject(out id);
+            var secretsFile = PathHelper.GetSecretsPathFromSecretsId(id);
+            Directory.CreateDirectory(Path.GetDirectoryName(secretsFile));
+            File.WriteAllText(secretsFile, @"{ ""AzureAd"": { ""ClientSecret"": ""abcdéƒ©˙î""} }", Encoding.UTF8);
+            var secretManager = new Program(testConsole, Path.GetDirectoryName(projectPath)) { Logger = _logger };
+            secretManager.RunInternal("list", "--id", id, "--json");
+            var stdout = output.ToString();
+            Assert.Contains("//BEGIN", stdout);
+            Assert.Contains(@"""AzureAd:ClientSecret"": ""abcdéƒ©˙î""", stdout);
+            Assert.Contains("//END", stdout);
+        }
+
+        [Fact]
         public void Set_Flattens_Nested_Objects()
         {
             string id;
@@ -265,7 +286,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
                 ? projectPath
                 : Path.GetTempPath();
 
-            var secretManager = new Program(Console.Out, dir) { Logger = _logger };
+            var secretManager = new Program(new TestConsole(), dir) { Logger = _logger };
 
             var secrets = new KeyValuePair<string, string>[]
                         {

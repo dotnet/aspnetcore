@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
 {
-    internal class SecretsStore
+    public class SecretsStore
     {
         private readonly string _secretsFilePath;
         private IDictionary<string, string> _secrets;
@@ -27,13 +27,15 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
 
             _secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
             logger.LogDebug(Resources.Message_Secret_File_Path, _secretsFilePath);
+            _secrets = Load(userSecretsId);
+        }
 
-            _secrets = new ConfigurationBuilder()
-                .AddJsonFile(_secretsFilePath, optional: true)
-                .Build()
-                .AsEnumerable()
-                .Where(i => i.Value != null)
-                .ToDictionary(i => i.Key, i => i.Value, StringComparer.OrdinalIgnoreCase);
+        public string this[string key]
+        {
+            get
+            {
+                return _secrets[key];
+            }
         }
 
         public int Count => _secrets.Count;
@@ -54,7 +56,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
             }
         }
 
-        public void Save()
+        public virtual void Save()
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_secretsFilePath));
 
@@ -68,6 +70,16 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
             }
 
             File.WriteAllText(_secretsFilePath, contents.ToString(), Encoding.UTF8);
+        }
+
+        protected virtual IDictionary<string, string> Load(string userSecretsId)
+        {
+            return new ConfigurationBuilder()
+                .AddJsonFile(_secretsFilePath, optional: true)
+                .Build()
+                .AsEnumerable()
+                .Where(i => i.Value != null)
+                .ToDictionary(i => i.Key, i => i.Value, StringComparer.OrdinalIgnoreCase);
         }
     }
 }

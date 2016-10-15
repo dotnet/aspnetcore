@@ -18,17 +18,17 @@ namespace Microsoft.Extensions.SecretManager.Tools
     {
         private ILogger _logger;
         private CommandOutputProvider _loggerProvider;
-        private readonly TextWriter _consoleOutput;
+        private readonly IConsole _console;
         private readonly string _workingDirectory;
 
         public Program()
-            : this(Console.Out, Directory.GetCurrentDirectory())
+            : this(PhysicalConsole.Singleton, Directory.GetCurrentDirectory())
         {
         }
 
-        internal Program(TextWriter consoleOutput, string workingDirectory)
+        internal Program(IConsole console, string workingDirectory)
         {
-            _consoleOutput = consoleOutput;
+            _console = console;
             _workingDirectory = workingDirectory;
 
             var loggerFactory = new LoggerFactory();
@@ -117,7 +117,7 @@ namespace Microsoft.Extensions.SecretManager.Tools
 
         internal int RunInternal(params string[] args)
         {
-            var options = CommandLineOptions.Parse(args, _consoleOutput);
+            var options = CommandLineOptions.Parse(args, _console);
 
             if (options == null)
             {
@@ -136,12 +136,18 @@ namespace Microsoft.Extensions.SecretManager.Tools
 
             var userSecretsId = ResolveUserSecretsId(options);
             var store = new SecretsStore(userSecretsId, Logger);
-            options.Command.Execute(store, Logger);
+            var context = new CommandContext(store, Logger, _console);
+            options.Command.Execute(context);
             return 0;
         }
 
         private string ResolveUserSecretsId(CommandLineOptions options)
         {
+            if (!string.IsNullOrEmpty(options.Id))
+            {
+                return options.Id;
+            }
+
             var projectPath = options.Project ?? _workingDirectory;
 
             if (!Path.IsPathRooted(projectPath))

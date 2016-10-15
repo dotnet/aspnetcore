@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Extensions.Configuration.UserSecrets.Tests
 {
-    internal class UserSecretHelper
+    public class UserSecretHelper
     {
         internal static string GetTempSecretProject()
         {

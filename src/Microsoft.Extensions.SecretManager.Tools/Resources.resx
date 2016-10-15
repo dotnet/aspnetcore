@@ -120,6 +120,10 @@
   <data name="Error_Command_Failed" xml:space="preserve">
     <value>Command failed : {message}</value>
   </data>
+  <data name="Error_MissingArgument" xml:space="preserve">
+    <value>Missing parameter value for '{name}'.
+Use the '--help' flag to see info.</value>
+  </data>
   <data name="Error_Missing_Secret" xml:space="preserve">
     <value>Cannot find '{key}' in the secret store.</value>
   </data>
@@ -134,6 +138,9 @@
   </data>
   <data name="Message_Saved_Secret" xml:space="preserve">
     <value>Successfully saved {key} = {value} to the secret store.</value>
+  </data>
+  <data name="Message_Saved_Secrets" xml:space="preserve">
+    <value>Successfully saved {number} secrets to the secret store.</value>
   </data>
   <data name="Message_Secret_File_Path" xml:space="preserve">
     <value>Secrets file path {secretsFilePath}.</value>
