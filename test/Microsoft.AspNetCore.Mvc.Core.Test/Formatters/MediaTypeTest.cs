@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Text;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -11,7 +12,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         [Theory]
         [InlineData("application/json")]
         [InlineData("application /json")]
-        public void CanParse_ParameterlessMediaTypes(string mediaType)
+        [InlineData(" application / json ")]
+        public void Constructor_CanParseParameterlessMediaTypes(string mediaType)
         {
             // Arrange & Act
             var result = new MediaType(mediaType, 0, mediaType.Length);
@@ -21,16 +23,30 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Equal(new StringSegment("json"), result.SubType);
         }
 
+        public static TheoryData<string> MediaTypesWithParameters
+        {
+            get
+            {
+                return new TheoryData<string>
+                {
+                    "application/json;format=pretty;charset=utf-8;q=0.8",
+                    "application/json;format=pretty;charset=\"utf-8\";q=0.8",
+                    "application/json;format=pretty;charset=utf-8; q=0.8 ",
+                    "application/json;format=pretty;charset=utf-8 ; q=0.8 ",
+                    "application/json;format=pretty; charset=utf-8 ; q=0.8 ",
+                    "application/json;format=pretty ; charset=utf-8 ; q=0.8 ",
+                    "application/json; format=pretty ; charset=utf-8 ; q=0.8 ",
+                    "application/json; format=pretty ; charset=utf-8 ; q=  0.8 ",
+                    "application/json; format=pretty ; charset=utf-8 ; q  =  0.8 ",
+                    " application /  json; format =  pretty ; charset = utf-8 ; q  =  0.8 ",
+                    " application /  json; format =  \"pretty\" ; charset = \"utf-8\" ; q  =  \"0.8\" ",
+                };
+            }
+        }
+
         [Theory]
-        [InlineData("application/json;format=pretty;charset=utf-8;q=0.8")]
-        [InlineData("application/json;format=pretty;charset=utf-8; q=0.8 ")]
-        [InlineData("application/json;format=pretty;charset=utf-8 ; q=0.8 ")]
-        [InlineData("application/json;format=pretty; charset=utf-8 ; q=0.8 ")]
-        [InlineData("application/json;format=pretty ; charset=utf-8 ; q=0.8 ")]
-        [InlineData("application/json; format=pretty ; charset=utf-8 ; q=0.8 ")]
-        [InlineData("application/json; format=pretty ; charset=utf-8 ; q=  0.8 ")]
-        [InlineData("application/json; format=pretty ; charset=utf-8 ; q  =  0.8 ")]
-        public void CanParse_MediaTypesWithParameters(string mediaType)
+        [MemberData(nameof(MediaTypesWithParameters))]
+        public void Constructor_CanParseMediaTypesWithParameters(string mediaType)
         {
             // Arrange & Act
             var result = new MediaType(mediaType, 0, mediaType.Length);
@@ -44,6 +60,21 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Theory]
+        [MemberData(nameof(MediaTypesWithParameters))]
+        public void ReplaceEncoding_ReturnsExpectedMediaType(string mediaType)
+        {
+            // Arrange
+            var encoding = Encoding.GetEncoding("iso-8859-1");
+            var expectedMediaType = mediaType.Replace("utf-8", "iso-8859-1");
+
+            // Act
+            var result = MediaType.ReplaceEncoding(mediaType, encoding);
+
+            // Assert
+            Assert.Equal(expectedMediaType, result);
+        }
+
+        [Theory]
         [InlineData("application/json;charset=utf-8")]
         [InlineData("application/json;format=indent;q=0.8;charset=utf-8")]
         [InlineData("application/json;format=indent;charset=utf-8;q=0.8")]
@@ -52,15 +83,27 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             // Arrange
             var expectedParameter = new StringSegment("utf-8");
-
             var parsedMediaType = new MediaType(mediaType, 0, mediaType.Length);
 
             // Act
             var result = parsedMediaType.GetParameter("charset");
 
             // Assert
-            Assert.NotNull(result);
             Assert.Equal(expectedParameter, result);
+        }
+
+        [Fact]
+        public void GetParameter_ReturnsNull_IfParameterIsNotInMediaType()
+        {
+            var mediaType = "application/json;charset=utf-8;format=indent;q=0.8";
+
+            var parsedMediaType = new MediaType(mediaType, 0, mediaType.Length);
+
+            // Act
+            var result = parsedMediaType.GetParameter("other");
+
+            // Assert
+            Assert.False(result.HasValue);
         }
 
         [Fact]
@@ -76,21 +119,18 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var result = parsedMediaType.GetParameter("CHARSET");
 
             // Assert
-            Assert.NotNull(result);
             Assert.Equal(expectedParameter, result);
         }
 
         [Theory]
-        [InlineData("application/json", "application/json", true)]
-        [InlineData("application/json", "application/json;charset=utf-8", true)]
-        [InlineData("application/json;charset=utf-8", "application/json", false)]
-        [InlineData("application/json;q=0.8", "application/json;q=0.9", true)]
-        [InlineData("application/json;q=0.8;charset=utf-7", "application/json;charset=utf-8;q=0.9", true)]
-        [InlineData("application/json;format=indent;charset=utf-8", "application/json", false)]
-        [InlineData("application/json", "application/json;format=indent;charset=utf-8", true)]
-        [InlineData("application/json;format=indent;charset=utf-8", "application/json;format=indent;charset=utf-8", true)]
-        [InlineData("application/json;charset=utf-8;format=indent", "application/json;format=indent;charset=utf-8", true)]
-        public void IsSubsetOf(string set, string subset, bool expectedResult)
+        [InlineData("application/json", "application/json")]
+        [InlineData("application/json", "application/json;charset=utf-8")]
+        [InlineData("application/json;q=0.8", "application/json;q=0.9")]
+        [InlineData("application/json;q=0.8;charset=utf-7", "application/json;charset=utf-8;q=0.9")]
+        [InlineData("application/json", "application/json;format=indent;charset=utf-8")]
+        [InlineData("application/json;format=indent;charset=utf-8", "application/json;format=indent;charset=utf-8")]
+        [InlineData("application/json;charset=utf-8;format=indent", "application/json;format=indent;charset=utf-8")]
+        public void IsSubsetOf_ReturnsTrueWhenExpected(string set, string subset)
         {
             // Arrange
             var setMediaType = new MediaType(set);
@@ -100,14 +140,43 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var result = subSetMediaType.IsSubsetOf(setMediaType);
 
             // Assert
-            Assert.Equal(expectedResult, result);
+            Assert.True(result);
         }
 
         [Theory]
-        [InlineData("*/*", true)]
-        [InlineData("text/*", false)]
-        [InlineData("text/plain", false)]
-        public void MatchesAllTypes(string value, bool expectedResult)
+        [InlineData("application/json;charset=utf-8", "application/json")]
+        [InlineData("application/json;format=indent;charset=utf-8", "application/json")]
+        [InlineData("application/json;format=indent;charset=utf-8", "application/json;charset=utf-8")]
+        public void IsSubsetOf_ReturnsFalseWhenExpected(string set, string subset)
+        {
+            // Arrange
+            var setMediaType = new MediaType(set);
+            var subSetMediaType = new MediaType(subset);
+
+            // Act
+            var result = subSetMediaType.IsSubsetOf(setMediaType);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void MatchesAllTypes_ReturnsTrueWhenExpected()
+        {
+            // Arrange
+            var mediaType = new MediaType("*/*");
+
+            // Act
+            var result = mediaType.MatchesAllTypes;
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Theory]
+        [InlineData("text/*")]
+        [InlineData("text/plain")]
+        public void MatchesAllTypes_ReturnsFalseWhenExpected(string value)
         {
             // Arrange
             var mediaType = new MediaType(value);
@@ -116,14 +185,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var result = mediaType.MatchesAllTypes;
 
             // Assert
-            Assert.Equal(expectedResult, result);
+            Assert.False(result);
         }
 
         [Theory]
-        [InlineData("*/*", true)]
-        [InlineData("text/*", true)]
-        [InlineData("text/plain", false)]
-        public void MatchesAllSubtypes(string value, bool expectedResult)
+        [InlineData("*/*")]
+        [InlineData("text/*")]
+        public void MatchesAllSubtypes_ReturnsTrueWhenExpected(string value)
         {
             // Arrange
             var mediaType = new MediaType(value);
@@ -132,21 +200,33 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var result = mediaType.MatchesAllSubTypes;
 
             // Assert
-            Assert.Equal(expectedResult, result);
+            Assert.True(result);
         }
 
         [Fact]
-        public void GetParameter_ReturnsNull_IfParameterIsNotInMediaType()
+        public void MatchesAllSubtypes_ReturnsFalseWhenExpected()
         {
-            var mediaType = "application/json;charset=utf-8;format=indent;q=0.8";
-
-            var parsedMediaType = new MediaType(mediaType, 0, mediaType.Length);
+            // Arrange
+            var mediaType = new MediaType("text/plain");
 
             // Act
-            var result = parsedMediaType.GetParameter("other");
+            var result = mediaType.MatchesAllSubTypes;
 
             // Assert
-            Assert.False(result.HasValue);
+            Assert.False(result);
+        }
+
+        [Theory]
+        [MemberData(nameof(MediaTypesWithParameters))]
+        [InlineData("application/json;format=pretty;q=0.9;charset=utf-8;q=0.8")]
+        [InlineData("application/json;format=pretty;q=0.9;charset=utf-8;q=0.8;version=3")]
+        public void CreateMediaTypeSegmentWithQuality_FindsQValue(string value)
+        {
+            // Arrange & Act
+            var mediaTypeSegment = MediaType.CreateMediaTypeSegmentWithQuality(value, start: 0);
+
+            // Assert
+            Assert.Equal(0.8d, mediaTypeSegment.Quality);
         }
     }
 }
