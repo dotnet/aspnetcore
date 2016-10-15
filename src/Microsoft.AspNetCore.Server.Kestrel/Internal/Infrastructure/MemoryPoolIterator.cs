@@ -236,14 +236,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
         }
 
-        public int Seek(ref Vector<byte> byte0Vector)
+        public int Seek(byte byte0)
         {
             int bytesScanned;
-            return Seek(ref byte0Vector, out bytesScanned);
+            return Seek(byte0, out bytesScanned);
         }
 
         public unsafe int Seek(
-            ref Vector<byte> byte0Vector,
+            byte byte0,
             out int bytesScanned,
             int limit = int.MaxValue)
         {
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             var wasLastBlock = block.Next == null;
             var following = block.End - index;
             byte[] array;
-            var byte0 = byte0Vector[0];
+            var byte0Vector = GetVector(byte0);
 
             while (true)
             {
@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         }
 
         public unsafe int Seek(
-            ref Vector<byte> byte0Vector,
+            byte byte0,
             ref MemoryPoolIterator limit)
         {
             if (IsDefault)
@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             var wasLastBlock = block.Next == null;
             var following = block.End - index;
             byte[] array;
-            var byte0 = byte0Vector[0];
+            var byte0Vector = GetVector(byte0);
 
             while (true)
             {
@@ -453,15 +453,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
         }
 
-        public int Seek(ref Vector<byte> byte0Vector, ref Vector<byte> byte1Vector)
+        public int Seek(byte byte0, byte byte1)
         {
             var limit = new MemoryPoolIterator();
-            return Seek(ref byte0Vector, ref byte1Vector, ref limit);
+            return Seek(byte0, byte1, ref limit);
         }
 
         public unsafe int Seek(
-            ref Vector<byte> byte0Vector,
-            ref Vector<byte> byte1Vector,
+            byte byte0,
+            byte byte1,
             ref MemoryPoolIterator limit)
         {
             if (IsDefault)
@@ -476,8 +476,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             byte[] array;
             int byte0Index = int.MaxValue;
             int byte1Index = int.MaxValue;
-            var byte0 = byte0Vector[0];
-            var byte1 = byte1Vector[0];
+            var byte0Vector = GetVector(byte0);
+            var byte1Vector = GetVector(byte1);
 
             while (true)
             {
@@ -595,16 +595,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
         }
 
-        public int Seek(ref Vector<byte> byte0Vector, ref Vector<byte> byte1Vector, ref Vector<byte> byte2Vector)
+        public int Seek(byte byte0, byte byte1, byte byte2)
         {
             var limit = new MemoryPoolIterator();
-            return Seek(ref byte0Vector, ref byte1Vector, ref byte2Vector, ref limit);
+            return Seek(byte0, byte1, byte2, ref limit);
         }
 
         public unsafe int Seek(
-            ref Vector<byte> byte0Vector,
-            ref Vector<byte> byte1Vector,
-            ref Vector<byte> byte2Vector,
+            byte byte0,
+            byte byte1,
+            byte byte2,
             ref MemoryPoolIterator limit)
         {
             if (IsDefault)
@@ -620,9 +620,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             int byte0Index = int.MaxValue;
             int byte1Index = int.MaxValue;
             int byte2Index = int.MaxValue;
-            var byte0 = byte0Vector[0];
-            var byte1 = byte1Vector[0];
-            var byte2 = byte2Vector[0];
+            var byte0Vector = GetVector(byte0);
+            var byte1Vector = GetVector(byte1);
+            var byte2Vector = GetVector(byte2);
 
             while (true)
             {
@@ -1033,6 +1033,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             block.End = blockIndex;
             _block = block;
             _index = blockIndex;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector<byte> GetVector(byte vectorByte)
+        {
+            // Vector<byte> .ctor doesn't become an intrinsic due to detection issue
+            // However this does cause it to become an intrinsic (with additional multiply and reg->reg copy)
+            // https://github.com/dotnet/coreclr/issues/7459#issuecomment-253965670
+            return Vector.AsVectorByte(new Vector<ulong>(vectorByte * 0x0101010101010101ul));
         }
 
         private static ulong PowerOfTwoToHighByte()

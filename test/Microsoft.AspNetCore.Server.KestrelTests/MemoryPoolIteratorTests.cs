@@ -78,21 +78,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             int found = -1;
             if (searchFor.Length == 1)
             {
-                var search0 = new Vector<byte>((byte) searchFor[0]);
-                found = begin.Seek(ref search0);
+                found = begin.Seek((byte)searchFor[0]);
             }
             else if (searchFor.Length == 2)
             {
-                var search0 = new Vector<byte>((byte) searchFor[0]);
-                var search1 = new Vector<byte>((byte) searchFor[1]);
-                found = begin.Seek(ref search0, ref search1);
+                found = begin.Seek((byte)searchFor[0], (byte)searchFor[1]);
             }
             else if (searchFor.Length == 3)
             {
-                var search0 = new Vector<byte>((byte) searchFor[0]);
-                var search1 = new Vector<byte>((byte) searchFor[1]);
-                var search2 = new Vector<byte>((byte) searchFor[2]);
-                found = begin.Seek(ref search0, ref search1, ref search2);
+                found = begin.Seek((byte)searchFor[0], (byte)searchFor[1], (byte)searchFor[2]);
             }
             else
             {
@@ -739,7 +733,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             try
             {
                 // Arrange
-                var seekVector = new Vector<byte>((byte)seek);
 
                 block = _pool.Lease();
                 var chars = input.ToString().ToCharArray().Select(c => (byte)c).ToArray();
@@ -749,7 +742,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 // Act
                 int bytesScanned;
-                var returnValue = scan.Seek(ref seekVector, out bytesScanned, limit);
+                var returnValue = scan.Seek((byte)seek, out bytesScanned, limit);
 
                 // Assert
                 Assert.Equal(expectedBytesScanned, bytesScanned);
@@ -779,8 +772,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             try
             {
                 // Arrange
-                var seekVector = new Vector<byte>((byte)seek);
-
                 var input1 = input.Substring(0, input.Length / 2);
                 block1 = _pool.Lease();
                 var chars1 = input1.ToCharArray().Select(c => (byte)c).ToArray();
@@ -801,7 +792,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 // Act
                 int bytesScanned;
-                var returnValue = scan.Seek(ref seekVector, out bytesScanned, limit);
+                var returnValue = scan.Seek((byte)seek, out bytesScanned, limit);
 
                 // Assert
                 Assert.Equal(expectedBytesScanned, bytesScanned);
@@ -835,9 +826,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             try
             {
                 // Arrange
-                var seekVector = new Vector<byte>((byte)seek);
-                var limitAtVector = new Vector<byte>((byte)limitAt);
-                var afterSeekVector = new Vector<byte>((byte)'B');
+                var afterSeek = (byte)'B';
 
                 block = _pool.Lease();
                 var chars = input.ToCharArray().Select(c => (byte)c).ToArray();
@@ -852,13 +841,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var end = scan1;
 
                 // Act
-                var endReturnValue = end.Seek(ref limitAtVector);
-                var returnValue1 = scan1.Seek(ref seekVector, ref end);
-                var returnValue2_1 = scan2_1.Seek(ref seekVector, ref afterSeekVector, ref end);
-                var returnValue2_2 = scan2_2.Seek(ref afterSeekVector, ref seekVector, ref end);
-                var returnValue3_1 = scan3_1.Seek(ref seekVector, ref afterSeekVector, ref afterSeekVector, ref end);
-                var returnValue3_2 = scan3_2.Seek(ref afterSeekVector, ref seekVector, ref afterSeekVector, ref end);
-                var returnValue3_3 = scan3_3.Seek(ref afterSeekVector, ref afterSeekVector, ref seekVector, ref end);
+                var endReturnValue = end.Seek((byte)limitAt);
+                var returnValue1 = scan1.Seek((byte)seek, ref end);
+                var returnValue2_1 = scan2_1.Seek((byte)seek, afterSeek, ref end);
+                var returnValue2_2 = scan2_2.Seek(afterSeek, (byte)seek, ref end);
+                var returnValue3_1 = scan3_1.Seek((byte)seek, afterSeek, afterSeek, ref end);
+                var returnValue3_2 = scan3_2.Seek(afterSeek, (byte)seek, afterSeek, ref end);
+                var returnValue3_3 = scan3_3.Seek(afterSeek, afterSeek, (byte)seek, ref end);
 
                 // Assert
                 Assert.Equal(input.Contains(limitAt) ? limitAt : -1, endReturnValue);
@@ -902,9 +891,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             try
             {
                 // Arrange
-                var seekVector = new Vector<byte>((byte)seek);
-                var limitAtVector = new Vector<byte>((byte)limitAt);
-                var afterSeekVector = new Vector<byte>((byte)'B');
+                var afterSeek = (byte)'B';
 
                 var input1 = input.Substring(0, input.Length / 2);
                 block1 = _pool.Lease();
@@ -931,13 +918,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var end = scan1;
 
                 // Act
-                var endReturnValue = end.Seek(ref limitAtVector);
-                var returnValue1 = scan1.Seek(ref seekVector, ref end);
-                var returnValue2_1 = scan2_1.Seek(ref seekVector, ref afterSeekVector, ref end);
-                var returnValue2_2 = scan2_2.Seek(ref afterSeekVector, ref seekVector, ref end);
-                var returnValue3_1 = scan3_1.Seek(ref seekVector, ref afterSeekVector, ref afterSeekVector, ref end);
-                var returnValue3_2 = scan3_2.Seek(ref afterSeekVector, ref seekVector, ref afterSeekVector, ref end);
-                var returnValue3_3 = scan3_3.Seek(ref afterSeekVector, ref afterSeekVector, ref seekVector, ref end);
+                var endReturnValue = end.Seek((byte)limitAt);
+                var returnValue1 = scan1.Seek((byte)seek, ref end);
+                var returnValue2_1 = scan2_1.Seek((byte)seek, afterSeek, ref end);
+                var returnValue2_2 = scan2_2.Seek(afterSeek, (byte)seek, ref end);
+                var returnValue3_1 = scan3_1.Seek((byte)seek, afterSeek, afterSeek, ref end);
+                var returnValue3_2 = scan3_2.Seek(afterSeek, (byte)seek, afterSeek, ref end);
+                var returnValue3_3 = scan3_3.Seek(afterSeek, afterSeek, (byte)seek, ref end);
 
                 // Assert
                 Assert.Equal(input.Contains(limitAt) ? limitAt : -1, endReturnValue);

@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -390,9 +389,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         /// </summary>
         private class ForChunkedEncoding : MessageBody
         {
-            // This causes an InvalidProgramException if made static
-            // https://github.com/dotnet/corefx/issues/8825
-            private Vector<byte> _vectorCRs = new Vector<byte>((byte)'\r');
+            // byte consts don't have a data type annotation so we pre-cast it
+            private const byte ByteCR = (byte)'\r';
 
             private readonly SocketInput _input;
             private readonly FrameRequestHeaders _requestHeaders;
@@ -613,7 +611,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     // Just drain the data
                     do
                     {
-                        if (scan.Seek(ref _vectorCRs) == -1)
+                        if (scan.Seek(ByteCR) == -1)
                         {
                             // End marker not found yet
                             consumed = scan;
