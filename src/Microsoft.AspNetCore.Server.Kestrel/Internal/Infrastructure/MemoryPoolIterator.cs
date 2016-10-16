@@ -11,7 +11,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 {
     public struct MemoryPoolIterator
     {
-        private static readonly ulong _powerOfTwoToHighByte = PowerOfTwoToHighByte();
+        private const ulong _xorPowerOfTwoToHighByte = (0x07ul       |
+                                                        0x06ul <<  8 |
+                                                        0x05ul << 16 |
+                                                        0x04ul << 24 |
+                                                        0x03ul << 32 |
+                                                        0x02ul << 40 |
+                                                        0x01ul << 48 ) + 1;
+
         private static readonly int _vectorSpan = Vector<byte>.Count;
 
         private MemoryPoolBlock _block;
@@ -785,9 +792,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
 
             // Flag least significant power of two bit
-            var powerOfTwoFlag = (ulong)(longValue & -longValue);
+            var powerOfTwoFlag = (ulong)(longValue ^ (longValue - 1));
             // Shift all powers of two into the high byte and extract
-            var foundByteIndex = (int)((powerOfTwoFlag * _powerOfTwoToHighByte) >> 61);
+            var foundByteIndex = (int)((powerOfTwoFlag * _xorPowerOfTwoToHighByte) >> 57);
             // Single LEA instruction with jitted const (using function result)
             return i * 8 + foundByteIndex;
         }
@@ -1044,9 +1051,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             return Vector.AsVectorByte(new Vector<ulong>(vectorByte * 0x0101010101010101ul));
         }
 
-        private static ulong PowerOfTwoToHighByte()
-        {
-            return BitConverter.IsLittleEndian ? 0x20406080A0C0E0ul : 0xE0C0A080604020ul;
-        }
     }
 }
