@@ -371,8 +371,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             var index = _index;
             var wasLastBlock = block.Next == null;
             var following = block.End - index;
-            byte[] array;
-            var byte0Vector = GetVector(byte0);
 
             while (true)
             {
@@ -392,7 +390,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                     wasLastBlock = block.Next == null;
                     following = block.End - index;
                 }
-                array = block.Array;
+                var array = block.Array;
                 while (following > 0)
                 {
 // Need unit tests to test Vector path
@@ -403,7 +401,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 #endif
                         if (following >= _vectorSpan)
                         {
-                            var byte0Equals = Vector.Equals(new Vector<byte>(array, index), byte0Vector);
+                            var byte0Equals = Vector.Equals(new Vector<byte>(array, index), GetVector(byte0));
 
                             if (byte0Equals.Equals(Vector<byte>.Zero))
                             {
@@ -480,11 +478,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             var index = _index;
             var wasLastBlock = block.Next == null;
             var following = block.End - index;
-            byte[] array;
             int byte0Index = int.MaxValue;
             int byte1Index = int.MaxValue;
-            var byte0Vector = GetVector(byte0);
-            var byte1Vector = GetVector(byte1);
 
             while (true)
             {
@@ -503,7 +498,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                     wasLastBlock = block.Next == null;
                     following = block.End - index;
                 }
-                array = block.Array;
+                var array = block.Array;
                 while (following > 0)
                 {
 
@@ -517,13 +512,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                         {
                             var data = new Vector<byte>(array, index);
 
-                            var byte0Equals = Vector.Equals(data, byte0Vector);
+                            var byte0Equals = Vector.Equals(data, GetVector(byte0));
                             if (!byte0Equals.Equals(Vector<byte>.Zero))
                             {
                                 byte0Index = LocateFirstFoundByte(ref byte0Equals);
                             }
 
-                            var byte1Equals = Vector.Equals(data, byte1Vector);
+                            var byte1Equals = Vector.Equals(data, GetVector(byte1));
                             if (!byte1Equals.Equals(Vector<byte>.Zero))
                             {
                                 byte1Index = LocateFirstFoundByte(ref byte1Equals);
@@ -623,13 +618,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             var index = _index;
             var wasLastBlock = block.Next == null;
             var following = block.End - index;
-            byte[] array;
             int byte0Index = int.MaxValue;
             int byte1Index = int.MaxValue;
             int byte2Index = int.MaxValue;
-            var byte0Vector = GetVector(byte0);
-            var byte1Vector = GetVector(byte1);
-            var byte2Vector = GetVector(byte2);
 
             while (true)
             {
@@ -648,7 +639,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                     wasLastBlock = block.Next == null;
                     following = block.End - index;
                 }
-                array = block.Array;
+                var array = block.Array;
                 while (following > 0)
                 {
 // Need unit tests to test Vector path
@@ -661,19 +652,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                         {
                             var data = new Vector<byte>(array, index);
 
-                            var byte0Equals = Vector.Equals(data, byte0Vector);
+                            var byte0Equals = Vector.Equals(data, GetVector(byte0));
                             if (!byte0Equals.Equals(Vector<byte>.Zero))
                             {
                                 byte0Index = LocateFirstFoundByte(ref byte0Equals);
                             }
 
-                            var byte1Equals = Vector.Equals(data, byte1Vector);
+                            var byte1Equals = Vector.Equals(data, GetVector(byte1));
                             if (!byte1Equals.Equals(Vector<byte>.Zero))
                             {
                                 byte1Index = LocateFirstFoundByte(ref byte1Equals);
                             }
 
-                            var byte2Equals = Vector.Equals(data, byte2Vector);
+                            var byte2Equals = Vector.Equals(data, GetVector(byte2));
                             if (!byte2Equals.Equals(Vector<byte>.Zero))
                             {
                                 byte2Index = LocateFirstFoundByte(ref byte2Equals);
