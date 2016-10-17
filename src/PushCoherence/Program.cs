@@ -16,9 +16,14 @@ namespace PushCoherence
     {
         public static void Main(string[] args)
         {
-            var nugetFeed = Environment.GetEnvironmentVariable("NUGET_FEED");
-            var dropRoot = Environment.GetEnvironmentVariable("DROP_ROOT");
-            var apiKey = Environment.GetEnvironmentVariable("APIKEY");
+            if (args.Length < 3)
+            {
+                Console.Error.WriteLine("Usage PushCoherence <NUGET_FEED> <DROP_ROOT> <APIKEY>");
+            }
+
+            var nugetFeed = args[0];
+            var dropRoot = args[1];
+            var apiKey = args[2];
 
             if (string.IsNullOrEmpty(nugetFeed))
             {
