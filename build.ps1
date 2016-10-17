@@ -28,6 +28,9 @@ function DownloadWithRetry([string] $url, [string] $downloadLocation, [int] $ret
     }
 }
 
+# Avoid issues similar to https://github.com/npm/npm/issues/10826
+npm cache clean
+
 cd $PSScriptRoot
 
 $repoFolder = $PSScriptRoot

@@ -2,6 +2,9 @@
 repoFolder="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $repoFolder
 
+# Avoid issues similar to https://github.com/npm/npm/issues/10826
+npm cache clean
+
 koreBuildZip="https://github.com/aspnet/KoreBuild/archive/dev.zip"
 if [ ! -z $KOREBUILD_ZIP ]; then
     koreBuildZip=$KOREBUILD_ZIP
