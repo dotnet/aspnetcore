@@ -1,6 +1,6 @@
 {
   "name": "redux-typed",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Helpers for building React+Redux apps with strong TypeScript type checking everywhere",
   "main": "main.js",
   "typings": "main.d.ts",
