@@ -28,15 +28,12 @@ function DownloadWithRetry([string] $url, [string] $downloadLocation, [int] $ret
     }
 }
 
-# Avoid issues similar to https://github.com/npm/npm/issues/10826
-npm cache clean
-
 cd $PSScriptRoot
 
 $repoFolder = $PSScriptRoot
 $env:REPO_FOLDER = $repoFolder
 
-$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/dev.zip"
+$koreBuildZip="https://codeload.github.com/aspnet/KoreBuild/zip/stevesa/npm-in-series"
 if ($env:KOREBUILD_ZIP)
 {
     $koreBuildZip=$env:KOREBUILD_ZIP
