@@ -369,7 +369,7 @@
     <Target Name="PushPackages">
         <Exec Command="$(PUSH_NUGET_EXE) restore src\PushCoherence\PushCoherence.sln" />
         <MSBuild Projects="src\PushCoherence\PushCoherence.csproj" Properties="Configuration=$(Configuration)" />
-        <Exec Command="src\PushCoherence\bin\$(Configuration)\PushCoherence.exe;NUGET_FEED=$(NUGET_FEED);APIKEY=$(APIKEY)" />
+        <Exec Command="src\PushCoherence\bin\$(Configuration)\PushCoherence.exe $(NUGET_FEED) $(DROP_ROOT) $(APIKEY)" />
     </Target>
      
     <UsingTask TaskName="RenameEncodedFolders" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
