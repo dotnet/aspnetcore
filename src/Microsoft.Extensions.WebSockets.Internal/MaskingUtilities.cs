@@ -2,7 +2,7 @@
 using System.Binary;
 using Channels;
 
-namespace Microsoft.Extensions.WebSockets
+namespace Microsoft.Extensions.WebSockets.Internal
 {
     internal static class MaskingUtilities
     {

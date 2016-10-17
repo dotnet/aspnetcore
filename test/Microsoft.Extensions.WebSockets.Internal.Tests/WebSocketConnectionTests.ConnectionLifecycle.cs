@@ -3,11 +3,9 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Channels;
-using Microsoft.Extensions.WebSockets.Test;
 using Xunit;
 
-namespace Microsoft.Extensions.WebSockets.Tests
+namespace Microsoft.Extensions.WebSockets.Internal.Tests
 {
     public partial class WebSocketConnectionTests
     {
@@ -50,7 +48,7 @@ namespace Microsoft.Extensions.WebSockets.Tests
         [Fact]
         public async Task ExecuteReturnsWhenCloseFrameReceived()
         {
-            using(var pair = WebSocketPair.Create())
+            using (var pair = WebSocketPair.Create())
             {
                 var client = pair.ClientSocket.ExecuteAndCaptureFramesAsync();
                 await pair.ClientSocket.CloseAsync(new WebSocketCloseResult(WebSocketCloseStatus.InvalidMessageType, "Abc"));
@@ -71,7 +69,7 @@ namespace Microsoft.Extensions.WebSockets.Tests
         [Fact]
         public async Task AbnormalTerminationOfInboundChannelCausesExecuteToThrow()
         {
-            using(var pair = WebSocketPair.Create())
+            using (var pair = WebSocketPair.Create())
             {
                 var client = pair.ClientSocket.ExecuteAndCaptureFramesAsync();
                 var server = pair.ServerSocket.ExecuteAndCaptureFramesAsync();

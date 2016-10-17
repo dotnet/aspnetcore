@@ -1,7 +1,7 @@
 ﻿using System;
 using Channels;
 
-namespace Microsoft.Extensions.WebSockets.Test
+namespace Microsoft.Extensions.WebSockets.Internal.Tests
 {
     internal class WebSocketPair : IDisposable
     {

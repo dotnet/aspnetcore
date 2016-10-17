@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Microsoft.Extensions.WebSockets.Tests
+namespace Microsoft.Extensions.WebSockets.Internal.Tests
 {
     public class WebSocketConnectionSummary
     {

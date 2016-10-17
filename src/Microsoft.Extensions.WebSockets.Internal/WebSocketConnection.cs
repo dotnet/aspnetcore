@@ -5,9 +5,8 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Channels;
-using Microsoft.Extensions.WebSockets.Internal;
 
-namespace Microsoft.Extensions.WebSockets
+namespace Microsoft.Extensions.WebSockets.Internal
 {
     /// <summary>
     /// Provides the default implementation of <see cref="IWebSocketConnection"/>.

@@ -3,7 +3,7 @@ using System.Text;
 using Channels;
 using Channels.Text.Primitives;
 
-namespace Microsoft.Extensions.WebSockets
+namespace Microsoft.Extensions.WebSockets.Internal
 {
     /// <summary>
     /// Represents the payload of a Close frame (i.e. a <see cref="WebSocketFrame"/> with an <see cref="WebSocketFrame.Opcode"/> of <see cref="WebSocketOpcode.Close"/>).

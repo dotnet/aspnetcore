@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
@@ -7,7 +6,7 @@ using System.Threading.Tasks;
 using Channels;
 using Xunit;
 
-namespace Microsoft.Extensions.WebSockets.Tests
+namespace Microsoft.Extensions.WebSockets.Internal.Tests
 {
     public partial class WebSocketConnectionTests
     {

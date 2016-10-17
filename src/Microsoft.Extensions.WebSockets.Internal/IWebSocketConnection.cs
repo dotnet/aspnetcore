@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Extensions.WebSockets
+namespace Microsoft.Extensions.WebSockets.Internal
 {
     /// <summary>
     /// Represents a connection to a WebSocket endpoint.
@@ -75,7 +75,8 @@ namespace Microsoft.Extensions.WebSockets
         /// <param name="messageHandler">The callback that will be invoked for each new frame</param>
         /// <returns>A <see cref="Task{WebSocketCloseResult}"/> that will complete when the client has sent a close frame, or the connection has been terminated</returns>
         public static Task<WebSocketCloseResult> ExecuteAsync(this IWebSocketConnection self, Action<WebSocketFrame> messageHandler) =>
-            self.ExecuteAsync((frame, _) => {
+            self.ExecuteAsync((frame, _) =>
+            {
                 messageHandler(frame);
                 return Task.CompletedTask;
             }, null);
@@ -86,7 +87,8 @@ namespace Microsoft.Extensions.WebSockets
         /// <param name="messageHandler">The callback that will be invoked for each new frame</param>
         /// <returns>A <see cref="Task{WebSocketCloseResult}"/> that will complete when the client has sent a close frame, or the connection has been terminated</returns>
         public static Task<WebSocketCloseResult> ExecuteAsync(this IWebSocketConnection self, Action<WebSocketFrame, object> messageHandler, object state) =>
-            self.ExecuteAsync((frame, s) => {
+            self.ExecuteAsync((frame, s) =>
+            {
                 messageHandler(frame, s);
                 return Task.CompletedTask;
             }, state);

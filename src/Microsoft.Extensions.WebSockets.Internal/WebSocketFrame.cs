@@ -1,8 +1,6 @@
-﻿using System;
-using System.Text;
-using Channels;
+﻿using Channels;
 
-namespace Microsoft.Extensions.WebSockets
+namespace Microsoft.Extensions.WebSockets.Internal
 {
     /// <summary>
     /// Represents a single Frame received or sent on a <see cref="IWebSocketConnection"/>.

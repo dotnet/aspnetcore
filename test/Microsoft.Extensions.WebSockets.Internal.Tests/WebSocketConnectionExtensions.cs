@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Channels;
 
-namespace Microsoft.Extensions.WebSockets.Tests
+namespace Microsoft.Extensions.WebSockets.Internal.Tests
 {
     public static class WebSocketConnectionExtensions
     {

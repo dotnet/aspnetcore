@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Extensions.WebSockets
+﻿namespace Microsoft.Extensions.WebSockets.Internal
 {
     /// <summary>
     /// Represents the possible values for the "opcode" field of a WebSocket frame.

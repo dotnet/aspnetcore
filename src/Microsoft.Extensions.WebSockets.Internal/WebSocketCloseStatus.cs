@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Extensions.WebSockets
+﻿namespace Microsoft.Extensions.WebSockets.Internal
 {
     /// <summary>
     /// Represents well-known WebSocket Close frame status codes.
