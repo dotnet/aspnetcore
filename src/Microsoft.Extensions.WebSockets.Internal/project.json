@@ -1,0 +1,34 @@
+{
+    "version": "0.1.0-*",
+    "buildOptions": {
+        "warningsAsErrors": true,
+        "allowUnsafe": true
+    },
+    "description": "Low-allocation Push-oriented WebSockets based on Channels",
+    "packOptions": {
+        "repository": {
+            "type": "git",
+            "url": "git://github.com/aspnet/websockets"
+        }
+    },
+    "dependencies": {
+        "Channels": "0.2.0-beta-*",
+        "Channels.Text.Primitives": "0.2.0-beta-*"
+    },
+
+    "frameworks": {
+        "net46": {},
+        "netstandard1.3": {
+            "dependencies": {
+                "System.Collections": "4.0.11",
+                "System.Diagnostics.Debug": "4.0.11",
+                "System.IO": "4.1.0",
+                "System.Linq": "4.1.0",
+                "System.Runtime": "4.1.0",
+                "System.Runtime.Extensions": "4.1.0",
+                "System.Threading": "4.0.11",
+                "System.Threading.Tasks": "4.0.11"
+            }
+        }
+    }
+}

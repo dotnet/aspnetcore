@@ -31,3 +31,5 @@ runtimes/
 .testPublish/
 launchSettings.json
 *.tmp
+*.nuget.props
+*.nuget.targets
