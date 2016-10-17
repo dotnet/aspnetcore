@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "Microsoft.AspNetCore.ResponseCaching": "1.0.0",
+    "Microsoft.AspNetCore.ResponseCaching": "1.0.0-preview1",
     "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.1",
     "Microsoft.Extensions.Caching.Memory": "1.0.0"

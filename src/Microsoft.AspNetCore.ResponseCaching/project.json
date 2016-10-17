@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.0-preview1",
   "buildOptions": {
     "warningsAsErrors": true,
     "allowUnsafe": true,
@@ -24,7 +24,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.Http": "1.0.0",
     "Microsoft.AspNetCore.Http.Extensions": "1.0.0",
-    "Microsoft.AspNetCore.ResponseCaching.Abstractions": "1.0.0",
+    "Microsoft.AspNetCore.ResponseCaching.Abstractions": "1.0.0-preview1",
     "Microsoft.Extensions.Caching.Memory": "1.0.0",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0"
   },
