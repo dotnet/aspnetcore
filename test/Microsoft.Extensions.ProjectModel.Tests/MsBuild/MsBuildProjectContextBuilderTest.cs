@@ -130,7 +130,7 @@ namespace Microsoft.Extensions.ProjectModel
             Assert.False(_files.GetFileInfo("obj").Exists);
             Assert.Equal(expectedCompileItems, context.CompilationItems.OrderBy(i => i).ToArray());
             Assert.Equal(Path.Combine(_files.Root, "bin", "Debug", "netcoreapp1.0", "test.dll"), context.AssemblyFullPath);
-            Assert.True(context.IsClassLibrary);
+            Assert.True(context.IsClassLibrary, "Expecting IsClassLibrary == true");
             Assert.Equal("TestProject", context.ProjectName);
             Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp10, context.TargetFramework);
             Assert.Equal("Microsoft.TestProject", context.RootNamespace);

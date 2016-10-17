@@ -3,17 +3,19 @@
 
 using System;
 using System.Linq;
-using Microsoft.Extensions.ProjectModel.Tests;
-using Xunit;
-using Xunit.Abstractions;
 using System.IO;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.ProjectModel.Tests;
 using NuGet.Frameworks;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.ProjectModel.MsBuild
 {
-    public class MsBuildProjectDependencyProviderTests: IClassFixture<MsBuildFixture>
+    public class MsBuildProjectDependencyProviderTests : IClassFixture<MsBuildFixture>
     {
+        private const string SkipReason = "CI doesn't yet have a new enough version of .NET Core SDK";
+
         private const string NugetConfigTxt = @"
 <configuration>
     <packageSources>
@@ -98,7 +100,7 @@ namespace Microsoft.Extensions.ProjectModel.MsBuild
             _output = output;
         }
 
-        [Fact(Skip = "CI doesn't yet have a new enough version of .NET Core SDK")]
+        [Fact(Skip = SkipReason)]
         public void BuildDependenciesForProject()
         {
             using (var fileProvider = new TemporaryFileProvider())
@@ -122,7 +124,7 @@ namespace Microsoft.Extensions.ProjectModel.MsBuild
 
                 var muxer = Path.Combine(testContext.ExtensionsPath, "../..", "dotnet.exe");
                 var result = Command
-                    .Create(muxer, new[] { "restore3", Path.Combine(fileProvider.Root, "Library1","Library1.csproj") })
+                    .Create(muxer, new[] { "restore3", Path.Combine(fileProvider.Root, "Library1", "Library1.csproj") })
                     .OnErrorLine(l => _output.WriteLine(l))
                     .OnOutputLine(l => _output.WriteLine(l))
                     .Execute();
@@ -146,26 +148,16 @@ namespace Microsoft.Extensions.ProjectModel.MsBuild
 
                 var context = builder.Build();
 
-                var compilationAssemblies = context.CompilationAssemblies;
-                var lib1Dll = compilationAssemblies
-                    .Where(assembly => assembly.Name.Equals("Library1", StringComparison.OrdinalIgnoreCase))
-                    .FirstOrDefault();
-
-                Assert.NotNull(lib1Dll);
-                Assert.True(File.Exists(lib1Dll.ResolvedPath));
+                var lib1Dll = Assert.Single(context.CompilationAssemblies, a => a.Name.Equals("Library1", StringComparison.OrdinalIgnoreCase));
+                Assert.False(File.Exists(lib1Dll.ResolvedPath), $"Design time build. Shouldn't produce a file to {lib1Dll.ResolvedPath}");
 
                 // This reference doesn't resolve so should not be available here.
-                Assert.False(compilationAssemblies.Any(assembly => assembly.Name.Equals("xyz", StringComparison.OrdinalIgnoreCase)));
+                Assert.DoesNotContain("xyz", context.CompilationAssemblies.Select(a => a.Name), StringComparer.OrdinalIgnoreCase);
 
                 var packageDependencies = context.PackageDependencies;
-                var mvcPackage = packageDependencies
-                    .Where(p => p.Name.Equals("Microsoft.AspNetCore.Mvc", StringComparison.OrdinalIgnoreCase))
-                    .FirstOrDefault();
-                Assert.NotNull(mvcPackage);
-
-                Assert.True(mvcPackage.Dependencies.Any(dependency => dependency.Name.Equals("Microsoft.Extensions.DependencyInjection", StringComparison.OrdinalIgnoreCase)));
-
-                Assert.True(context.ProjectReferences.First().Equals(Path.Combine(fileProvider.Root, "Library1", "Library1.csproj")));
+                var mvcPackage = Assert.Single(context.PackageDependencies, p => p.Name.Equals("Microsoft.AspNetCore.Mvc", StringComparison.OrdinalIgnoreCase));
+                Assert.Contains("Microsoft.Extensions.DependencyInjection", mvcPackage.Dependencies.Select(d => d.Name), StringComparer.OrdinalIgnoreCase);
+                Assert.Equal(Path.Combine(fileProvider.Root, "Root", "..", "Library1", "Library1.csproj"), context.ProjectReferences.First());
             }
         }
     }

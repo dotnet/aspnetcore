@@ -7,10 +7,11 @@
     }
   },
   "dependencies": {
-    "NuGet.Frameworks": "3.5.0-rc1-final",
+    "NuGet.ProjectModel": "3.6.0-*",
+    "NuGet.Frameworks": "3.6.0-*",
     "Microsoft.DotNet.Cli.Utils": "1.0.0-preview2-003121",
     "Microsoft.DotNet.ProjectModel": "1.0.0-rc3-003121",
-    "Microsoft.Build.Runtime": "15.1.298-preview5",
+    "Microsoft.Build.Runtime": "15.1.319-preview5",
     "Microsoft.Extensions.FileProviders.Physical": "1.1.0-*",
     "Microsoft.Extensions.ProjectModel.Abstractions.Sources": {
         "type": "build",
