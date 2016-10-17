@@ -2,19 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Tests
 {
-    public class ResponseCacheKeyProviderTests
+    public class ResponseCachingKeyProviderTests
     {
         private static readonly char KeyDelimiter = '\x1e';
 
         [Fact]
-        public void ResponseCacheKeyProvider_CreateStorageBaseKey_IncludesOnlyNormalizedMethodAndPath()
+        public void ResponseCachingKeyProvider_CreateStorageBaseKey_IncludesOnlyNormalizedMethodAndPath()
         {
             var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
             var context = TestUtils.CreateTestContext();
@@ -29,9 +28,9 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public void ResponseCacheKeyProvider_CreateStorageBaseKey_CaseInsensitivePath_NormalizesPath()
+        public void ResponseCachingKeyProvider_CreateStorageBaseKey_CaseInsensitivePath_NormalizesPath()
         {
-            var cacheKeyProvider = TestUtils.CreateTestKeyProvider(new ResponseCacheOptions()
+            var cacheKeyProvider = TestUtils.CreateTestKeyProvider(new ResponseCachingOptions()
             {
                 UseCaseSensitivePaths = false
             });
@@ -43,9 +42,9 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public void ResponseCacheKeyProvider_CreateStorageBaseKey_CaseSensitivePath_PreservesPathCase()
+        public void ResponseCachingKeyProvider_CreateStorageBaseKey_CaseSensitivePath_PreservesPathCase()
         {
-            var cacheKeyProvider = TestUtils.CreateTestKeyProvider(new ResponseCacheOptions()
+            var cacheKeyProvider = TestUtils.CreateTestKeyProvider(new ResponseCachingOptions()
             {
                 UseCaseSensitivePaths = true
             });
@@ -57,7 +56,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public void ResponseCacheKeyProvider_CreateStorageVaryByKey_Throws_IfVaryByRulesIsNull()
+        public void ResponseCachingKeyProvider_CreateStorageVaryByKey_Throws_IfVaryByRulesIsNull()
         {
             var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
             var context = TestUtils.CreateTestContext();
@@ -66,7 +65,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public void ResponseCacheKeyProvider_CreateStorageVaryKey_ReturnsCachedVaryByGuid_IfVaryByRulesIsEmpty()
+        public void ResponseCachingKeyProvider_CreateStorageVaryKey_ReturnsCachedVaryByGuid_IfVaryByRulesIsEmpty()
         {
             var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
             var context = TestUtils.CreateTestContext();
@@ -79,7 +78,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public void ResponseCacheKeyProvider_CreateStorageVaryKey_IncludesListedHeadersOnly()
+        public void ResponseCachingKeyProvider_CreateStorageVaryKey_IncludesListedHeadersOnly()
         {
             var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
             var context = TestUtils.CreateTestContext();
@@ -95,7 +94,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public void ResponseCacheKeyProvider_CreateStorageVaryKey_IncludesListedQueryKeysOnly()
+        public void ResponseCachingKeyProvider_CreateStorageVaryKey_IncludesListedQueryKeysOnly()
         {
             var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
             var context = TestUtils.CreateTestContext();
@@ -111,7 +110,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public void ResponseCacheKeyProvider_CreateStorageVaryKey_IncludesQueryKeys_QueryKeyCaseInsensitive_UseQueryKeyCasing()
+        public void ResponseCachingKeyProvider_CreateStorageVaryKey_IncludesQueryKeys_QueryKeyCaseInsensitive_UseQueryKeyCasing()
         {
             var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
             var context = TestUtils.CreateTestContext();
@@ -127,7 +126,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public void ResponseCacheKeyProvider_CreateStorageVaryKey_IncludesAllQueryKeysGivenAsterisk()
+        public void ResponseCachingKeyProvider_CreateStorageVaryKey_IncludesAllQueryKeysGivenAsterisk()
         {
             var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
             var context = TestUtils.CreateTestContext();
@@ -145,7 +144,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public void ResponseCacheKeyProvider_CreateStorageVaryKey_IncludesListedHeadersAndQueryKeys()
+        public void ResponseCachingKeyProvider_CreateStorageVaryKey_IncludesListedHeadersAndQueryKeys()
         {
             var cacheKeyProvider = TestUtils.CreateTestKeyProvider();
             var context = TestUtils.CreateTestContext();

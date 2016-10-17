@@ -15,12 +15,12 @@ namespace ResponseCachingSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMemoryResponseCacheStore();
+            services.AddResponseCaching();
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseResponseCache();
+            app.UseResponseCaching();
             app.Run(async (context) =>
             {
                 context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()

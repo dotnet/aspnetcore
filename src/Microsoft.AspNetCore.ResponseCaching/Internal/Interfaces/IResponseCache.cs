@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    public interface IResponseCacheStore
+    public interface IResponseCache
     {
         Task<IResponseCacheEntry> GetAsync(string key);
         Task SetAsync(string key, IResponseCacheEntry entry, TimeSpan validFor);

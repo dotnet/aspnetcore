@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    internal class ResponseCacheStream : Stream
+    internal class ResponseCachingStream : Stream
     {
         private readonly Stream _innerStream;
         private readonly long _maxBufferSize;
         private readonly int _segmentSize;
         private SegmentWriteStream _segmentWriteStream;
 
-        internal ResponseCacheStream(Stream innerStream, long maxBufferSize, int segmentSize)
+        internal ResponseCachingStream(Stream innerStream, long maxBufferSize, int segmentSize)
         {
             _innerStream = innerStream;
             _maxBufferSize = maxBufferSize;

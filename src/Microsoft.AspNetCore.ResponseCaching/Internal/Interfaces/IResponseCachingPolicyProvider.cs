@@ -3,27 +3,27 @@
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    public interface IResponseCachePolicyProvider
+    public interface IResponseCachingPolicyProvider
     {
         /// <summary>
         /// Determine wehther the response cache middleware should be executed for the incoming HTTP request.
         /// </summary>
-        /// <param name="context">The <see cref="ResponseCacheContext"/>.</param>
+        /// <param name="context">The <see cref="ResponseCachingContext"/>.</param>
         /// <returns><c>true</c> if the request is cacheable; otherwise <c>false</c>.</returns>
-        bool IsRequestCacheable(ResponseCacheContext context);
+        bool IsRequestCacheable(ResponseCachingContext context);
 
         /// <summary>
         /// Determine whether the response received by the middleware be cached for future requests.
         /// </summary>
-        /// <param name="context">The <see cref="ResponseCacheContext"/>.</param>
+        /// <param name="context">The <see cref="ResponseCachingContext"/>.</param>
         /// <returns><c>true</c> if the response is cacheable; otherwise <c>false</c>.</returns>
-        bool IsResponseCacheable(ResponseCacheContext context);
+        bool IsResponseCacheable(ResponseCachingContext context);
 
         /// <summary>
         /// Determine whether the response retrieved from the response cache is fresh and be served.
         /// </summary>
-        /// <param name="context">The <see cref="ResponseCacheContext"/>.</param>
+        /// <param name="context">The <see cref="ResponseCachingContext"/>.</param>
         /// <returns><c>true</c> if the cached entry is fresh; otherwise <c>false</c>.</returns>
-        bool IsCachedEntryFresh(ResponseCacheContext context);
+        bool IsCachedEntryFresh(ResponseCachingContext context);
     }
 }
