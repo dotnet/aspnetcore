@@ -1,4 +1,7 @@
-﻿using Channels;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Channels;
 
 namespace Microsoft.Extensions.WebSockets.Internal
 {
@@ -27,6 +30,19 @@ namespace Microsoft.Extensions.WebSockets.Internal
             EndOfMessage = endOfMessage;
             Opcode = opcode;
             Payload = payload;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="WebSocketFrame"/> containing the same information, but with all buffers
+        /// copied to new heap memory.
+        /// </summary>
+        /// <returns></returns>
+        public WebSocketFrame Copy()
+        {
+            return new WebSocketFrame(
+                endOfMessage: EndOfMessage,
+                opcode: Opcode,
+                payload: ReadableBuffer.Create(Payload.ToArray()));
         }
     }
 }

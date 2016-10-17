@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,6 +25,14 @@ namespace Microsoft.Extensions.WebSockets.Internal
     /// </remarks>
     public interface IWebSocketConnection : IDisposable
     {
+        /// <summary>
+        /// Gets the sub-protocol value configured during handshaking.
+        /// </summary>
+        string SubProtocol { get; }
+
+        /// <summary>
+        /// Gets the current state of the connection
+        /// </summary>
         WebSocketConnectionState State { get; }
 
         /// <summary>
@@ -45,7 +56,8 @@ namespace Microsoft.Extensions.WebSockets.Internal
         Task CloseAsync(WebSocketCloseResult result, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Runs the WebSocket receive loop, using the provided message handler.
+        /// Runs the WebSocket receive loop, using the provided message handler. Note that <see cref="WebSocketOpcode.Ping"/> and
+        /// <see cref="WebSocketOpcode.Pong"/> frames will be passed to this handler for tracking/logging/monitoring, BUT will automatically be handled.
         /// </summary>
         /// <param name="messageHandler">The callback that will be invoked for each new frame</param>
         /// <param name="state">A state parameter that will be passed to each invocation of <paramref name="messageHandler"/></param>
@@ -65,7 +77,39 @@ namespace Microsoft.Extensions.WebSockets.Internal
         /// <summary>
         /// Sends a Close frame to the other party. This does not guarantee that the client will send a responding close frame.
         /// </summary>
-        /// <param name="result">A <see cref="WebSocketCloseResult"/> with the payload for the close frame</param>
+        /// <param name="status">A <see cref="WebSocketCloseStatus"/> value to be sent to the client in the close frame</param>.
+        /// <returns>A <see cref="Task"/> that completes when the close frame has been sent</returns>
+        public static Task CloseAsync(this IWebSocketConnection self, WebSocketCloseStatus status) => self.CloseAsync(new WebSocketCloseResult(status), CancellationToken.None);
+
+        /// <summary>
+        /// Sends a Close frame to the other party. This does not guarantee that the client will send a responding close frame.
+        /// </summary>
+        /// <param name="status">A <see cref="WebSocketCloseStatus"/> value to be sent to the client in the close frame</param>.
+        /// <param name="description">A textual description of the reason for closing the connection.</param>
+        /// <returns>A <see cref="Task"/> that completes when the close frame has been sent</returns>
+        public static Task CloseAsync(this IWebSocketConnection self, WebSocketCloseStatus status, string description) => self.CloseAsync(new WebSocketCloseResult(status, description), CancellationToken.None);
+
+        /// <summary>
+        /// Sends a Close frame to the other party. This does not guarantee that the client will send a responding close frame.
+        /// </summary>
+        /// <param name="status">A <see cref="WebSocketCloseStatus"/> value to be sent to the client in the close frame</param>.
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> that indicates when/if the send is cancelled.</param>
+        /// <returns>A <see cref="Task"/> that completes when the close frame has been sent</returns>
+        public static Task CloseAsync(this IWebSocketConnection self, WebSocketCloseStatus status, CancellationToken cancellationToken) => self.CloseAsync(new WebSocketCloseResult(status), cancellationToken);
+
+        /// <summary>
+        /// Sends a Close frame to the other party. This does not guarantee that the client will send a responding close frame.
+        /// </summary>
+        /// <param name="status">A <see cref="WebSocketCloseStatus"/> value to be sent to the client in the close frame</param>.
+        /// <param name="description">A textual description of the reason for closing the connection.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> that indicates when/if the send is cancelled.</param>
+        /// <returns>A <see cref="Task"/> that completes when the close frame has been sent</returns>
+        public static Task CloseAsync(this IWebSocketConnection self, WebSocketCloseStatus status, string description, CancellationToken cancellationToken) => self.CloseAsync(new WebSocketCloseResult(status, description), cancellationToken);
+
+        /// <summary>
+        /// Sends a Close frame to the other party. This does not guarantee that the client will send a responding close frame.
+        /// </summary>
+        /// <param name="result">A <see cref="WebSocketCloseResult"/> with the payload for the close frame.</param>
         /// <returns>A <see cref="Task"/> that completes when the close frame has been sent</returns>
         public static Task CloseAsync(this IWebSocketConnection self, WebSocketCloseResult result) => self.CloseAsync(result, CancellationToken.None);
 

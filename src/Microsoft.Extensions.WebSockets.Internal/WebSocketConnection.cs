@@ -1,7 +1,11 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Binary;
 using System.Diagnostics;
-using System.Security.Cryptography;
+using System.Globalization;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Channels;
@@ -24,11 +28,20 @@ namespace Microsoft.Extensions.WebSockets.Internal
     /// </remarks>
     public class WebSocketConnection : IWebSocketConnection
     {
-        private readonly RandomNumberGenerator _random;
-        private readonly byte[] _maskingKey;
+        private WebSocketOptions _options;
+        private readonly byte[] _maskingKeyBuffer;
         private readonly IReadableChannel _inbound;
         private readonly IWritableChannel _outbound;
         private readonly CancellationTokenSource _terminateReceiveCts = new CancellationTokenSource();
+        private readonly Timer _pinger;
+        private readonly CancellationTokenSource _timerCts = new CancellationTokenSource();
+        private Utf8Validator _validator = new Utf8Validator();
+        private WebSocketOpcode _currentMessageType = WebSocketOpcode.Continuation;
+
+        // Sends must be serialized between SendAsync, Pinger, and the Close frames sent when invalid messages are received.
+        private SemaphoreSlim _sendLock = new SemaphoreSlim(1, 1);
+
+        public string SubProtocol { get; }
 
         public WebSocketConnectionState State { get; private set; } = WebSocketConnectionState.Created;
 
@@ -37,45 +50,91 @@ namespace Microsoft.Extensions.WebSockets.Internal
         /// </summary>
         /// <param name="inbound">A <see cref="IReadableChannel"/> from which frames will be read when receiving.</param>
         /// <param name="outbound">A <see cref="IWritableChannel"/> to which frame will be written when sending.</param>
-        public WebSocketConnection(IReadableChannel inbound, IWritableChannel outbound) : this(inbound, outbound, masked: false) { }
+        public WebSocketConnection(IReadableChannel inbound, IWritableChannel outbound) : this(inbound, outbound, options: WebSocketOptions.DefaultUnmasked) { }
 
         /// <summary>
-        /// Constructs a new, optionally masked, <see cref="WebSocketConnection"/> from an <see cref="IReadableChannel"/> and an <see cref="IWritableChannel"/> that represents an established WebSocket connection (i.e. after handshaking)
+        /// Constructs a new, unmasked, <see cref="WebSocketConnection"/> from an <see cref="IReadableChannel"/> and an <see cref="IWritableChannel"/> that represents an established WebSocket connection (i.e. after handshaking)
         /// </summary>
         /// <param name="inbound">A <see cref="IReadableChannel"/> from which frames will be read when receiving.</param>
         /// <param name="outbound">A <see cref="IWritableChannel"/> to which frame will be written when sending.</param>
-        /// <param name="masked">A boolean indicating if frames sent from this socket should be masked (the masking key is automatically generated)</param>
-        public WebSocketConnection(IReadableChannel inbound, IWritableChannel outbound, bool masked)
+        /// <param name="subProtocol">The sub-protocol provided during handshaking</param>
+        public WebSocketConnection(IReadableChannel inbound, IWritableChannel outbound, string subProtocol) : this(inbound, outbound, subProtocol, options: WebSocketOptions.DefaultUnmasked) { }
+
+        /// <summary>
+        /// Constructs a new, <see cref="WebSocketConnection"/> from an <see cref="IReadableChannel"/> and an <see cref="IWritableChannel"/> that represents an established WebSocket connection (i.e. after handshaking)
+        /// </summary>
+        /// <param name="inbound">A <see cref="IReadableChannel"/> from which frames will be read when receiving.</param>
+        /// <param name="outbound">A <see cref="IWritableChannel"/> to which frame will be written when sending.</param>
+        /// <param name="options">A <see cref="WebSocketOptions"/> which provides the configuration options for the socket.</param>
+        public WebSocketConnection(IReadableChannel inbound, IWritableChannel outbound, WebSocketOptions options) : this(inbound, outbound, subProtocol: string.Empty, options: options) { }
+
+        /// <summary>
+        /// Constructs a new <see cref="WebSocketConnection"/> from an <see cref="IReadableChannel"/> and an <see cref="IWritableChannel"/> that represents an established WebSocket connection (i.e. after handshaking)
+        /// </summary>
+        /// <param name="inbound">A <see cref="IReadableChannel"/> from which frames will be read when receiving.</param>
+        /// <param name="outbound">A <see cref="IWritableChannel"/> to which frame will be written when sending.</param>
+        /// <param name="subProtocol">The sub-protocol provided during handshaking</param>
+        /// <param name="options">A <see cref="WebSocketOptions"/> which provides the configuration options for the socket.</param>
+        public WebSocketConnection(IReadableChannel inbound, IWritableChannel outbound, string subProtocol, WebSocketOptions options)
         {
             _inbound = inbound;
             _outbound = outbound;
+            _options = options;
+            SubProtocol = subProtocol;
 
-            if (masked)
+            if (_options.FixedMaskingKey != null)
             {
-                _maskingKey = new byte[4];
-                _random = RandomNumberGenerator.Create();
+                // Use the fixed key directly as the buffer.
+                _maskingKeyBuffer = _options.FixedMaskingKey;
+
+                // Clear the MaskingKeyGenerator just to ensure that nobody set it.
+                _options.MaskingKeyGenerator = null;
+            }
+            else if (_options.MaskingKeyGenerator != null)
+            {
+                // Establish a buffer for the random generator to use
+                _maskingKeyBuffer = new byte[4];
+            }
+
+            if (_options.PingInterval > TimeSpan.Zero)
+            {
+                var pingIntervalMillis = (int)_options.PingInterval.TotalMilliseconds;
+                // Set up the pinger
+                _pinger = new Timer(Pinger, this, pingIntervalMillis, pingIntervalMillis);
             }
         }
 
-        /// <summary>
-        /// Constructs a new, fixed masking-key, <see cref="WebSocketConnection"/> from an <see cref="IReadableChannel"/> and an <see cref="IWritableChannel"/> that represents an established WebSocket connection (i.e. after handshaking)
-        /// </summary>
-        /// <param name="inbound">A <see cref="IReadableChannel"/> from which frames will be read when receiving.</param>
-        /// <param name="outbound">A <see cref="IWritableChannel"/> to which frame will be written when sending.</param>
-        /// <param name="fixedMaskingKey">The masking key to use for the connection. Must be exactly 4-bytes long. This is ONLY recommended for testing and development purposes.</param>
-        public WebSocketConnection(IReadableChannel inbound, IWritableChannel outbound, byte[] fixedMaskingKey)
+        private static void Pinger(object state)
         {
-            _inbound = inbound;
-            _outbound = outbound;
-            _maskingKey = fixedMaskingKey;
+            var connection = (WebSocketConnection)state;
+
+            // If we are cancelled, don't send the ping
+            // Also, if we can't immediately acquire the send lock, we're already sending something, so we don't need the ping.
+            if (!connection._timerCts.Token.IsCancellationRequested && connection._sendLock.Wait(0))
+            {
+                // We don't need to wait for this task to complete, we're "tail calling" and
+                // we are in a Timer thread-pool thread.
+#pragma warning disable 4014
+                connection.SendCoreLockAcquiredAsync(
+                    fin: true,
+                    opcode: WebSocketOpcode.Ping,
+                    payloadAllocLength: 28,
+                    payloadLength: 28,
+                    payloadWriter: PingPayloadWriter,
+                    payload: DateTime.UtcNow,
+                    cancellationToken: connection._timerCts.Token);
+#pragma warning restore 4014
+            }
         }
 
         public void Dispose()
         {
             State = WebSocketConnectionState.Closed;
+            _pinger?.Dispose();
+            _timerCts.Cancel();
+            _terminateReceiveCts.Cancel();
             _inbound.Complete();
             _outbound.Complete();
-            _terminateReceiveCts.Cancel();
         }
 
         public Task<WebSocketCloseResult> ExecuteAsync(Func<WebSocketFrame, object, Task> messageHandler, object state)
@@ -109,7 +168,7 @@ namespace Microsoft.Extensions.WebSockets.Internal
             // This clause is a bit of an artificial restriction to ensure people run "Execute". Maybe we don't care?
             else if (State == WebSocketConnectionState.Created)
             {
-                throw new InvalidOperationException("Cannot send until the connection is started using Execute");
+                throw new InvalidOperationException($"Cannot send until the connection is started using {nameof(ExecuteAsync)}");
             }
             else if (State == WebSocketConnectionState.CloseSent)
             {
@@ -118,9 +177,16 @@ namespace Microsoft.Extensions.WebSockets.Internal
 
             if (frame.Opcode == WebSocketOpcode.Close)
             {
-                throw new InvalidOperationException("Cannot use SendAsync to send a Close frame, use CloseAsync instead.");
+                throw new InvalidOperationException($"Cannot use {nameof(SendAsync)} to send a Close frame, use {nameof(CloseAsync)} instead.");
             }
-            return SendCoreAsync(frame, null, cancellationToken);
+            return SendCoreAsync(
+                fin: frame.EndOfMessage,
+                opcode: frame.Opcode,
+                payloadAllocLength: 0, // We don't copy the payload, we append it, so we don't need any alloc for the payload
+                payloadLength: frame.Payload.Length,
+                payloadWriter: AppendPayloadWriter,
+                payload: frame.Payload,
+                cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -148,10 +214,18 @@ namespace Microsoft.Extensions.WebSockets.Internal
                 throw new InvalidOperationException("Cannot send multiple close frames");
             }
 
-            // When we pass a close result to SendCoreAsync, the frame is only used for the header and the payload is ignored
-            var frame = new WebSocketFrame(endOfMessage: true, opcode: WebSocketOpcode.Close, payload: default(ReadableBuffer));
+            var payloadSize = result.GetSize();
+            await SendCoreAsync(
+                fin: true,
+                opcode: WebSocketOpcode.Close,
+                payloadAllocLength: payloadSize,
+                payloadLength: payloadSize,
+                payloadWriter: CloseResultPayloadWriter,
+                payload: result,
+                cancellationToken: cancellationToken);
 
-            await SendCoreAsync(frame, result, cancellationToken);
+            _timerCts.Cancel();
+            _pinger?.Dispose();
 
             if (State == WebSocketConnectionState.CloseReceived)
             {
@@ -165,15 +239,15 @@ namespace Microsoft.Extensions.WebSockets.Internal
 
         private void WriteMaskingKey(Span<byte> buffer)
         {
-            if (_random != null)
+            if (_options.MaskingKeyGenerator != null)
             {
                 // Get a new random mask
                 // Until https://github.com/dotnet/corefx/issues/12323 is fixed we need to use this shared buffer and copy model
                 // Once we have that fix we should be able to generate the mask directly into the output buffer.
-                _random.GetBytes(_maskingKey);
+                _options.MaskingKeyGenerator.GetBytes(_maskingKeyBuffer);
             }
 
-            buffer.Set(_maskingKey);
+            buffer.Set(_maskingKeyBuffer);
         }
 
         private async Task<WebSocketCloseResult> ReceiveLoop(Func<WebSocketFrame, object, Task> messageHandler, object state, CancellationToken cancellationToken)
@@ -213,15 +287,27 @@ namespace Microsoft.Extensions.WebSockets.Internal
                 var opcodeByte = buffer.ReadBigEndian<byte>();
                 buffer = buffer.Slice(1);
 
-                var fin = (opcodeByte & 0x01) != 0;
-                var opcode = (WebSocketOpcode)((opcodeByte & 0xF0) >> 4);
+                var fin = (opcodeByte & 0x80) != 0;
+                var opcodeNum = opcodeByte & 0x0F;
+                var opcode = (WebSocketOpcode)opcodeNum;
+
+                if ((opcodeByte & 0x70) != 0)
+                {
+                    // Reserved bits set, this frame is invalid, close our side and terminate immediately
+                    return await CloseFromProtocolError(cancellationToken, 0, default(ReadableBuffer), "Reserved bits, which are required to be zero, were set.");
+                }
+                else if ((opcodeNum >= 0x03 && opcodeNum <= 0x07) || (opcodeNum >= 0x0B && opcodeNum <= 0x0F))
+                {
+                    // Reserved opcode
+                    return await CloseFromProtocolError(cancellationToken, 0, default(ReadableBuffer), $"Received frame using reserved opcode: 0x{opcodeNum:X}");
+                }
 
                 // Read the first byte of the payload length
                 var lenByte = buffer.ReadBigEndian<byte>();
                 buffer = buffer.Slice(1);
 
-                var masked = (lenByte & 0x01) != 0;
-                var payloadLen = (lenByte & 0xFE) >> 1;
+                var masked = (lenByte & 0x80) != 0;
+                var payloadLen = (lenByte & 0x7F);
 
                 // Mark what we've got so far as consumed
                 _inbound.Advance(buffer.Start);
@@ -234,7 +320,7 @@ namespace Microsoft.Extensions.WebSockets.Internal
                 }
                 else if (payloadLen == 127)
                 {
-                    headerLength += 4;
+                    headerLength += 8;
                 }
 
                 uint maskingKey = 0;
@@ -302,13 +388,104 @@ namespace Microsoft.Extensions.WebSockets.Internal
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var frame = new WebSocketFrame(fin, opcode, payload);
+
+                if (frame.Opcode.IsControl() && !frame.EndOfMessage)
+                {
+                    // Control frames cannot be fragmented.
+                    return await CloseFromProtocolError(cancellationToken, payloadLen, payload, "Control frames may not be fragmented");
+                }
+                else if (_currentMessageType != WebSocketOpcode.Continuation && opcode.IsMessage() && opcode != 0)
+                {
+                    return await CloseFromProtocolError(cancellationToken, payloadLen, payload, "Received non-continuation frame during a fragmented message");
+                }
+                else if (_currentMessageType == WebSocketOpcode.Continuation && frame.Opcode == WebSocketOpcode.Continuation)
+                {
+                    return await CloseFromProtocolError(cancellationToken, payloadLen, payload, "Continuation Frame was received when expecting a new message");
+                }
+
                 if (frame.Opcode == WebSocketOpcode.Close)
                 {
-                    return HandleCloseFrame(payloadLen, payload, frame);
+                    // Allowed frame lengths:
+                    //  0 - No body
+                    //  2 - Code with no reason phrase
+                    //  >2 - Code and reason phrase (must be valid UTF-8)
+                    if (frame.Payload.Length > 125)
+                    {
+                        return await CloseFromProtocolError(cancellationToken, payloadLen, payload, "Close frame payload too long. Maximum size is 125 bytes");
+                    }
+                    else if ((frame.Payload.Length == 1) || (frame.Payload.Length > 2 && !Utf8Validator.ValidateUtf8(payload.Slice(2))))
+                    {
+                        return await CloseFromProtocolError(cancellationToken, payloadLen, payload, "Close frame payload invalid");
+                    }
+
+                    ushort? actualStatusCode;
+                    var closeResult = HandleCloseFrame(payload, frame, out actualStatusCode);
+
+                    // Verify the close result
+                    if (actualStatusCode != null)
+                    {
+                        var statusCode = actualStatusCode.Value;
+                        if (statusCode < 1000 || statusCode == 1004 || statusCode == 1005 || statusCode == 1006 || (statusCode > 1011 && statusCode < 3000))
+                        {
+                            return await CloseFromProtocolError(cancellationToken, payloadLen, payload, $"Invalid close status: {statusCode}.");
+                        }
+                    }
+
+                    // Make the payload as consumed
+                    if (payloadLen > 0)
+                    {
+                        _inbound.Advance(payload.End);
+                    }
+
+                    return closeResult;
                 }
                 else
                 {
-                    await messageHandler(frame, state);
+                    if (frame.Opcode == WebSocketOpcode.Ping)
+                    {
+                        // Check the ping payload length
+                        if (frame.Payload.Length > 125)
+                        {
+                            // Payload too long
+                            return await CloseFromProtocolError(cancellationToken, payloadLen, payload, "Ping frame exceeded maximum size of 125 bytes");
+                        }
+
+                        await SendCoreAsync(
+                            frame.EndOfMessage,
+                            WebSocketOpcode.Pong,
+                            payloadAllocLength: 0,
+                            payloadLength: payload.Length,
+                            payloadWriter: AppendPayloadWriter,
+                            payload: payload,
+                            cancellationToken: cancellationToken);
+                    }
+                    var effectiveOpcode = opcode == WebSocketOpcode.Continuation ? _currentMessageType : opcode;
+                    if (effectiveOpcode == WebSocketOpcode.Text && !_validator.ValidateUtf8Frame(frame.Payload, frame.EndOfMessage))
+                    {
+                        // Drop the frame and immediately close with InvalidPayload
+                        return await CloseFromProtocolError(cancellationToken, payloadLen, payload, "An invalid Text frame payload was received", statusCode: WebSocketCloseStatus.InvalidPayloadData);
+                    }
+                    else if (_options.PassAllFramesThrough || (frame.Opcode != WebSocketOpcode.Ping && frame.Opcode != WebSocketOpcode.Pong))
+                    {
+                        await messageHandler(frame, state);
+                    }
+                }
+
+                if (fin)
+                {
+                    // Reset the UTF8 validator
+                    _validator.Reset();
+
+                    // If it's a non-control frame, reset the message type tracker
+                    if (opcode.IsMessage())
+                    {
+                        _currentMessageType = WebSocketOpcode.Continuation;
+                    }
+                }
+                // If there isn't a current message type, and this was a fragmented message frame, set the current message type
+                else if (!fin && _currentMessageType == WebSocketOpcode.Continuation && opcode.IsMessage())
+                {
+                    _currentMessageType = opcode;
                 }
 
                 // Mark the payload as consumed
@@ -320,7 +497,22 @@ namespace Microsoft.Extensions.WebSockets.Internal
             return WebSocketCloseResult.AbnormalClosure;
         }
 
-        private WebSocketCloseResult HandleCloseFrame(int payloadLen, ReadableBuffer payload, WebSocketFrame frame)
+        private async Task<WebSocketCloseResult> CloseFromProtocolError(CancellationToken cancellationToken, int payloadLen, ReadableBuffer payload, string reason, WebSocketCloseStatus statusCode = WebSocketCloseStatus.ProtocolError)
+        {
+            // Non-continuation non-control message during fragmented message
+            if (payloadLen > 0)
+            {
+                _inbound.Advance(payload.End);
+            }
+            var closeResult = new WebSocketCloseResult(
+                statusCode,
+                reason);
+            await CloseAsync(closeResult, cancellationToken);
+            Dispose();
+            return closeResult;
+        }
+
+        private WebSocketCloseResult HandleCloseFrame(ReadableBuffer payload, WebSocketFrame frame, out ushort? actualStatusCode)
         {
             // Update state
             if (State == WebSocketConnectionState.CloseSent)
@@ -334,24 +526,134 @@ namespace Microsoft.Extensions.WebSockets.Internal
 
             // Process the close frame
             WebSocketCloseResult closeResult;
-            if (!WebSocketCloseResult.TryParse(frame.Payload, out closeResult))
+            if (!WebSocketCloseResult.TryParse(frame.Payload, out closeResult, out actualStatusCode))
             {
                 closeResult = WebSocketCloseResult.Empty;
-            }
-
-            // Make the payload as consumed
-            if (payloadLen > 0)
-            {
-                _inbound.Advance(payload.End);
             }
             return closeResult;
         }
 
-        private Task SendCoreAsync(WebSocketFrame message, WebSocketCloseResult? closeResult, CancellationToken cancellationToken)
+        private static void PingPayloadWriter(WritableBuffer output, Span<byte> maskingKey, int payloadLength, DateTime timestamp)
         {
-            // Base header size is 2 bytes.
+            var payload = output.Memory.Slice(0, payloadLength);
+
+            // TODO: Don't put this string on the heap? Is there a way to do that without re-implementing ToString?
+            // Ideally we'd like to render the string directly to the output buffer.
+            var str = timestamp.ToString("O", CultureInfo.InvariantCulture);
+
+            ArraySegment<byte> buffer;
+            if (payload.TryGetArray(out buffer))
+            {
+                // Fast path - Write the encoded bytes directly out.
+                Encoding.UTF8.GetBytes(str, 0, str.Length, buffer.Array, buffer.Offset);
+            }
+            else
+            {
+                // TODO: Could use TryGetPointer, GetBytes does take a byte*, but it seems like just waiting until we have a version that uses Span is best.
+                // Slow path - Allocate a heap buffer for the encoded bytes before writing them out.
+                payload.Span.Set(Encoding.UTF8.GetBytes(str));
+            }
+
+            if (maskingKey.Length > 0)
+            {
+                MaskingUtilities.ApplyMask(payload.Span, maskingKey);
+            }
+
+            output.Advance(payloadLength);
+        }
+
+        private static void CloseResultPayloadWriter(WritableBuffer output, Span<byte> maskingKey, int payloadLength, WebSocketCloseResult result)
+        {
+            // Write the close payload out
+            var payload = output.Memory.Slice(0, payloadLength).Span;
+            result.WriteTo(ref output);
+
+            if (maskingKey.Length > 0)
+            {
+                MaskingUtilities.ApplyMask(payload, maskingKey);
+            }
+        }
+
+        private static void AppendPayloadWriter(WritableBuffer output, Span<byte> maskingKey, int payloadLength, ReadableBuffer payload)
+        {
+            if (maskingKey.Length > 0)
+            {
+                // Mask the payload in it's own buffer
+                MaskingUtilities.ApplyMask(ref payload, maskingKey);
+            }
+
+            output.Append(payload);
+        }
+
+        private Task SendCoreAsync<T>(bool fin, WebSocketOpcode opcode, int payloadAllocLength, int payloadLength, Action<WritableBuffer, Span<byte>, int, T> payloadWriter, T payload, CancellationToken cancellationToken)
+        {
+            if (_sendLock.Wait(0))
+            {
+                return SendCoreLockAcquiredAsync(fin, opcode, payloadAllocLength, payloadLength, payloadWriter, payload, cancellationToken);
+            }
+            else
+            {
+                return SendCoreWaitForLockAsync(fin, opcode, payloadAllocLength, payloadLength, payloadWriter, payload, cancellationToken);
+            }
+        }
+
+        private async Task SendCoreWaitForLockAsync<T>(bool fin, WebSocketOpcode opcode, int payloadAllocLength, int payloadLength, Action<WritableBuffer, Span<byte>, int, T> payloadWriter, T payload, CancellationToken cancellationToken)
+        {
+            await _sendLock.WaitAsync(cancellationToken);
+            await SendCoreLockAcquiredAsync(fin, opcode, payloadAllocLength, payloadLength, payloadWriter, payload, cancellationToken);
+        }
+
+        private async Task SendCoreLockAcquiredAsync<T>(bool fin, WebSocketOpcode opcode, int payloadAllocLength, int payloadLength, Action<WritableBuffer, Span<byte>, int, T> payloadWriter, T payload, CancellationToken cancellationToken)
+        {
+            try
+            {
+                // Ensure the lock is held
+                Debug.Assert(_sendLock.CurrentCount == 0);
+
+                // Base header size is 2 bytes.
+                WritableBuffer buffer;
+                var allocSize = CalculateAllocSize(payloadAllocLength, payloadLength);
+
+                // Allocate a buffer
+                buffer = _outbound.Alloc(minimumSize: allocSize);
+                Debug.Assert(buffer.Memory.Length >= allocSize);
+
+                // Write the opcode and FIN flag
+                var opcodeByte = (byte)opcode;
+                if (fin)
+                {
+                    opcodeByte |= 0x80;
+                }
+                buffer.WriteBigEndian(opcodeByte);
+
+                // Write the length and mask flag
+                WritePayloadLength(payloadLength, buffer);
+
+                var maskingKey = Span<byte>.Empty;
+                if (_maskingKeyBuffer != null)
+                {
+                    // Get a span of the output buffer for the masking key, write it there, then advance the write head.
+                    maskingKey = buffer.Memory.Slice(0, 4).Span;
+                    WriteMaskingKey(maskingKey);
+                    buffer.Advance(4);
+                }
+
+                // Write the payload
+                payloadWriter(buffer, maskingKey, payloadLength, payload);
+
+                // Flush.
+                await buffer.FlushAsync();
+            }
+            finally
+            {
+                // Unlock.
+                _sendLock.Release();
+            }
+        }
+
+        private int CalculateAllocSize(int payloadAllocLength, int payloadLength)
+        {
             var allocSize = 2;
-            var payloadLength = closeResult == null ? message.Payload.Length : closeResult.Value.GetSize();
             if (payloadLength > ushort.MaxValue)
             {
                 // We're going to need an 8-byte length
@@ -362,46 +664,30 @@ namespace Microsoft.Extensions.WebSockets.Internal
                 // We're going to need a 2-byte length
                 allocSize += 2;
             }
-            if (_maskingKey != null)
+            if (_maskingKeyBuffer != null)
             {
                 // We need space for the masking key
                 allocSize += 4;
             }
-            if (closeResult != null)
-            {
-                // We need space for the close result payload too
-                allocSize += payloadLength;
-            }
 
-            // Allocate a buffer
-            var buffer = _outbound.Alloc(minimumSize: allocSize);
-            Debug.Assert(buffer.Memory.Length >= allocSize);
-            if (buffer.Memory.Length < allocSize)
-            {
-                throw new InvalidOperationException("Couldn't allocate enough data from the channel to write the header");
-            }
+            // We may need space for the payload too
+            return allocSize + payloadAllocLength;
+        }
 
-            // Write the opcode and FIN flag
-            var opcodeByte = (byte)((int)message.Opcode << 4);
-            if (message.EndOfMessage)
-            {
-                opcodeByte |= 1;
-            }
-            buffer.WriteBigEndian(opcodeByte);
-
-            // Write the length and mask flag
-            var maskingByte = _maskingKey != null ? 0x01 : 0x00; // TODO: Masking flag goes here
+        private void WritePayloadLength(int payloadLength, WritableBuffer buffer)
+        {
+            var maskingByte = _maskingKeyBuffer != null ? 0x80 : 0x00;
 
             if (payloadLength > ushort.MaxValue)
             {
-                buffer.WriteBigEndian((byte)(0xFE | maskingByte));
+                buffer.WriteBigEndian((byte)(0x7F | maskingByte));
 
                 // 8-byte length
                 buffer.WriteBigEndian((ulong)payloadLength);
             }
             else if (payloadLength > 125)
             {
-                buffer.WriteBigEndian((byte)(0xFC | maskingByte));
+                buffer.WriteBigEndian((byte)(0x7E | maskingByte));
 
                 // 2-byte length
                 buffer.WriteBigEndian((ushort)payloadLength);
@@ -409,48 +695,8 @@ namespace Microsoft.Extensions.WebSockets.Internal
             else
             {
                 // 1-byte length
-                buffer.WriteBigEndian((byte)((payloadLength << 1) | maskingByte));
+                buffer.WriteBigEndian((byte)(payloadLength | maskingByte));
             }
-
-            var maskingKey = Span<byte>.Empty;
-            if (_maskingKey != null)
-            {
-                // Get a span of the output buffer for the masking key, write it there, then advance the write head.
-                maskingKey = buffer.Memory.Slice(0, 4).Span;
-                WriteMaskingKey(maskingKey);
-                buffer.Advance(4);
-            }
-
-            if (closeResult != null)
-            {
-                // Write the close payload out
-                var payload = buffer.Memory.Slice(0, payloadLength).Span;
-                closeResult.Value.WriteTo(ref buffer);
-
-                if (_maskingKey != null)
-                {
-                    MaskingUtilities.ApplyMask(payload, maskingKey);
-                }
-            }
-            else
-            {
-                // This will copy the actual buffer struct, but NOT the underlying data
-                // We need a field so we can by-ref it.
-                var payload = message.Payload;
-
-                if (_maskingKey != null)
-                {
-                    // Mask the payload in it's own buffer
-                    MaskingUtilities.ApplyMask(ref payload, maskingKey);
-                }
-
-                // Append the (masked) buffer to the output channel
-                buffer.Append(payload);
-            }
-
-
-            // Commit and Flush
-            return buffer.FlushAsync();
         }
     }
 }

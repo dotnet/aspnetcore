@@ -1,4 +1,7 @@
-﻿using System.Threading;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Threading;
 using System.Threading.Tasks;
 using Channels;
 
@@ -9,7 +12,7 @@ namespace Microsoft.Extensions.WebSockets.Internal
         public static ValueTask<ChannelReadResult> ReadAtLeastAsync(this IReadableChannel input, int minimumRequiredBytes) => ReadAtLeastAsync(input, minimumRequiredBytes, CancellationToken.None);
 
         // TODO: Pull this up to Channels. We should be able to do it there without allocating a Task<T> in any case (rather than here where we can avoid allocation
-        // only if the buffer is already ready and has enough data.
+        // only if the buffer is already ready and has enough data)
         public static ValueTask<ChannelReadResult> ReadAtLeastAsync(this IReadableChannel input, int minimumRequiredBytes, CancellationToken cancellationToken)
         {
             var awaiter = input.ReadAsync(/* cancellationToken */);

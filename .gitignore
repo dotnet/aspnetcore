@@ -33,3 +33,4 @@ launchSettings.json
 *.tmp
 *.nuget.props
 *.nuget.targets
+autobahnreports/

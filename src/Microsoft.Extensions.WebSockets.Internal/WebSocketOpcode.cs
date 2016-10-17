@@ -1,4 +1,9 @@
-﻿namespace Microsoft.Extensions.WebSockets.Internal
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Runtime.CompilerServices;
+
+namespace Microsoft.Extensions.WebSockets.Internal
 {
     /// <summary>
     /// Represents the possible values for the "opcode" field of a WebSocket frame.
@@ -38,5 +43,20 @@
         /* 0xB-0xF are reserved */
 
         /* all opcodes above 0xF are invalid */
+    }
+
+    public static class WebSocketOpcodeExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsControl(this WebSocketOpcode self)
+        {
+            return self >= WebSocketOpcode.Close;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsMessage(this WebSocketOpcode self)
+        {
+            return self < WebSocketOpcode.Close;
+        }
     }
 }

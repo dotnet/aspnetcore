@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Channels;
 
@@ -9,15 +12,7 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
         public static async Task<WebSocketConnectionSummary> ExecuteAndCaptureFramesAsync(this IWebSocketConnection self)
         {
             var frames = new List<WebSocketFrame>();
-            var closeResult = await self.ExecuteAsync(frame =>
-            {
-                var buffer = new byte[frame.Payload.Length];
-                frame.Payload.CopyTo(buffer);
-                frames.Add(new WebSocketFrame(
-                    frame.EndOfMessage,
-                    frame.Opcode,
-                    ReadableBuffer.Create(buffer, 0, buffer.Length)));
-            });
+            var closeResult = await self.ExecuteAsync(frame => frames.Add(frame.Copy()));
             return new WebSocketConnectionSummary(frames, closeResult);
         }
     }

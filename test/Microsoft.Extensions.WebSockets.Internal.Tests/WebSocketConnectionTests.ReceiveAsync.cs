@@ -1,5 +1,7 @@
-﻿using System;
-using System.Diagnostics;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,12 +15,12 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
         public class TheReceiveAsyncMethod
         {
             [Theory]
-            [InlineData(new byte[] { 0x11, 0x00 }, "", true)]
-            [InlineData(new byte[] { 0x11, 0x0A, 0x48, 0x65, 0x6C, 0x6C, 0x6F }, "Hello", true)]
-            [InlineData(new byte[] { 0x11, 0x0B, 0x1, 0x2, 0x3, 0x4, 0x48 ^ 0x1, 0x65 ^ 0x2, 0x6C ^ 0x3, 0x6C ^ 0x4, 0x6F ^ 0x1 }, "Hello", true)]
-            [InlineData(new byte[] { 0x10, 0x00 }, "", false)]
-            [InlineData(new byte[] { 0x10, 0x0A, 0x48, 0x65, 0x6C, 0x6C, 0x6F }, "Hello", false)]
-            [InlineData(new byte[] { 0x10, 0x0B, 0x1, 0x2, 0x3, 0x4, 0x48 ^ 0x1, 0x65 ^ 0x2, 0x6C ^ 0x3, 0x6C ^ 0x4, 0x6F ^ 0x1 }, "Hello", false)]
+            [InlineData(new byte[] { 0x81, 0x00 }, "", true)]
+            [InlineData(new byte[] { 0x81, 0x05, 0x48, 0x65, 0x6C, 0x6C, 0x6F }, "Hello", true)]
+            [InlineData(new byte[] { 0x81, 0x85, 0x1, 0x2, 0x3, 0x4, 0x48 ^ 0x1, 0x65 ^ 0x2, 0x6C ^ 0x3, 0x6C ^ 0x4, 0x6F ^ 0x1 }, "Hello", true)]
+            [InlineData(new byte[] { 0x01, 0x00 }, "", false)]
+            [InlineData(new byte[] { 0x01, 0x05, 0x48, 0x65, 0x6C, 0x6C, 0x6F }, "Hello", false)]
+            [InlineData(new byte[] { 0x01, 0x85, 0x1, 0x2, 0x3, 0x4, 0x48 ^ 0x1, 0x65 ^ 0x2, 0x6C ^ 0x3, 0x6C ^ 0x4, 0x6F ^ 0x1 }, "Hello", false)]
             public Task ReadTextFrames(byte[] rawFrame, string message, bool endOfMessage)
             {
                 return RunSingleFrameTest(
@@ -30,36 +32,24 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
 
             [Theory]
             // Opcode = Binary
-            [InlineData(new byte[] { 0x21, 0x00 }, new byte[0], WebSocketOpcode.Binary, true)]
-            [InlineData(new byte[] { 0x21, 0x0A, 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Binary, true)]
-            [InlineData(new byte[] { 0x21, 0x0B, 0x1, 0x2, 0x3, 0x4, 0xDE ^ 0x1, 0xAD ^ 0x2, 0xBE ^ 0x3, 0xEF ^ 0x4, 0xAB ^ 0x1 }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Binary, true)]
-            [InlineData(new byte[] { 0x20, 0x00 }, new byte[0], WebSocketOpcode.Binary, false)]
-            [InlineData(new byte[] { 0x20, 0x0A, 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Binary, false)]
-            [InlineData(new byte[] { 0x20, 0x0B, 0x1, 0x2, 0x3, 0x4, 0xDE ^ 0x1, 0xAD ^ 0x2, 0xBE ^ 0x3, 0xEF ^ 0x4, 0xAB ^ 0x1 }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Binary, false)]
-
-            // Opcode = Continuation
-            [InlineData(new byte[] { 0x01, 0x00 }, new byte[0], WebSocketOpcode.Continuation, true)]
-            [InlineData(new byte[] { 0x01, 0x0A, 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Continuation, true)]
-            [InlineData(new byte[] { 0x01, 0x0B, 0x1, 0x2, 0x3, 0x4, 0xDE ^ 0x1, 0xAD ^ 0x2, 0xBE ^ 0x3, 0xEF ^ 0x4, 0xAB ^ 0x1 }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Continuation, true)]
-            [InlineData(new byte[] { 0x00, 0x00 }, new byte[0], WebSocketOpcode.Continuation, false)]
-            [InlineData(new byte[] { 0x00, 0x0A, 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Continuation, false)]
-            [InlineData(new byte[] { 0x00, 0x0B, 0x1, 0x2, 0x3, 0x4, 0xDE ^ 0x1, 0xAD ^ 0x2, 0xBE ^ 0x3, 0xEF ^ 0x4, 0xAB ^ 0x1 }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Continuation, false)]
+            [InlineData(new byte[] { 0x82, 0x00 }, new byte[0], WebSocketOpcode.Binary, true)]
+            [InlineData(new byte[] { 0x82, 0x05, 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Binary, true)]
+            [InlineData(new byte[] { 0x82, 0x85, 0x1, 0x2, 0x3, 0x4, 0xDE ^ 0x1, 0xAD ^ 0x2, 0xBE ^ 0x3, 0xEF ^ 0x4, 0xAB ^ 0x1 }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Binary, true)]
+            [InlineData(new byte[] { 0x02, 0x00 }, new byte[0], WebSocketOpcode.Binary, false)]
+            [InlineData(new byte[] { 0x02, 0x05, 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Binary, false)]
+            [InlineData(new byte[] { 0x02, 0x85, 0x1, 0x2, 0x3, 0x4, 0xDE ^ 0x1, 0xAD ^ 0x2, 0xBE ^ 0x3, 0xEF ^ 0x4, 0xAB ^ 0x1 }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Binary, false)]
 
             // Opcode = Ping
-            [InlineData(new byte[] { 0x91, 0x00 }, new byte[0], WebSocketOpcode.Ping, true)]
-            [InlineData(new byte[] { 0x91, 0x0A, 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Ping, true)]
-            [InlineData(new byte[] { 0x91, 0x0B, 0x1, 0x2, 0x3, 0x4, 0xDE ^ 0x1, 0xAD ^ 0x2, 0xBE ^ 0x3, 0xEF ^ 0x4, 0xAB ^ 0x1 }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Ping, true)]
-            [InlineData(new byte[] { 0x90, 0x00 }, new byte[0], WebSocketOpcode.Ping, false)]
-            [InlineData(new byte[] { 0x90, 0x0A, 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Ping, false)]
-            [InlineData(new byte[] { 0x90, 0x0B, 0x1, 0x2, 0x3, 0x4, 0xDE ^ 0x1, 0xAD ^ 0x2, 0xBE ^ 0x3, 0xEF ^ 0x4, 0xAB ^ 0x1 }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Ping, false)]
+            [InlineData(new byte[] { 0x89, 0x00 }, new byte[0], WebSocketOpcode.Ping, true)]
+            [InlineData(new byte[] { 0x89, 0x05, 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Ping, true)]
+            [InlineData(new byte[] { 0x89, 0x85, 0x1, 0x2, 0x3, 0x4, 0xDE ^ 0x1, 0xAD ^ 0x2, 0xBE ^ 0x3, 0xEF ^ 0x4, 0xAB ^ 0x1 }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Ping, true)]
+            // Control frames can't have fin=false
 
             // Opcode = Pong
-            [InlineData(new byte[] { 0xA1, 0x00 }, new byte[0], WebSocketOpcode.Pong, true)]
-            [InlineData(new byte[] { 0xA1, 0x0A, 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Pong, true)]
-            [InlineData(new byte[] { 0xA1, 0x0B, 0x1, 0x2, 0x3, 0x4, 0xDE ^ 0x1, 0xAD ^ 0x2, 0xBE ^ 0x3, 0xEF ^ 0x4, 0xAB ^ 0x1 }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Pong, true)]
-            [InlineData(new byte[] { 0xA0, 0x00 }, new byte[0], WebSocketOpcode.Pong, false)]
-            [InlineData(new byte[] { 0xA0, 0x0A, 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Pong, false)]
-            [InlineData(new byte[] { 0xA0, 0x0B, 0x1, 0x2, 0x3, 0x4, 0xDE ^ 0x1, 0xAD ^ 0x2, 0xBE ^ 0x3, 0xEF ^ 0x4, 0xAB ^ 0x1 }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Pong, false)]
+            [InlineData(new byte[] { 0x8A, 0x00 }, new byte[0], WebSocketOpcode.Pong, true)]
+            [InlineData(new byte[] { 0x8A, 0x05, 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Pong, true)]
+            [InlineData(new byte[] { 0x8A, 0x85, 0x1, 0x2, 0x3, 0x4, 0xDE ^ 0x1, 0xAD ^ 0x2, 0xBE ^ 0x3, 0xEF ^ 0x4, 0xAB ^ 0x1 }, new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB }, WebSocketOpcode.Pong, true)]
+            // Control frames can't have fin=false
             public Task ReadBinaryFormattedFrames(byte[] rawFrame, byte[] payload, WebSocketOpcode opcode, bool endOfMessage)
             {
                 return RunSingleFrameTest(
@@ -75,10 +65,14 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
                 var result = await RunReceiveTest(
                     producer: async (channel, cancellationToken) =>
                     {
-                        await channel.WriteAsync(new byte[] { 0x20, 0x0A }.Slice());
-                        await channel.WriteAsync(new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB, 0x01, 0x0A }.Slice());
-                        await channel.WriteAsync(new byte[] { 0xDE, 0xAD, 0xBE, 0xEF }.Slice());
-                        await channel.WriteAsync(new byte[] { 0xAB }.Slice());
+                        await channel.WriteAsync(new byte[] { 0x02, 0x05 }.Slice()).OrTimeout();
+                        await Task.Yield();
+                        await channel.WriteAsync(new byte[] { 0xDE, 0xAD, 0xBE, 0xEF, 0xAB, 0x80, 0x05 }.Slice()).OrTimeout();
+                        await Task.Yield();
+                        await channel.WriteAsync(new byte[] { 0xDE, 0xAD, 0xBE, 0xEF }.Slice()).OrTimeout();
+                        await Task.Yield();
+                        await channel.WriteAsync(new byte[] { 0xAB }.Slice()).OrTimeout();
+                        await Task.Yield();
                     });
 
                 Assert.Equal(2, result.Received.Count);
@@ -93,6 +87,47 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
             }
 
             [Fact]
+            public async Task ReadLargeMaskedPayload()
+            {
+                // This test was added to ensure we don't break a behavior discovered while running the Autobahn test suite.
+
+                // Larger than one page, which means it will span blocks in the memory pool.
+                var expectedPayload = new byte[4192];
+                for (int i = 0; i < expectedPayload.Length; i++)
+                {
+                    expectedPayload[i] = (byte)(i % byte.MaxValue);
+                }
+                var maskingKey = new byte[] { 0x01, 0x02, 0x03, 0x04 };
+                var sendPayload = new byte[4192];
+                for (int i = 0; i < expectedPayload.Length; i++)
+                {
+                    sendPayload[i] = (byte)(expectedPayload[i] ^ maskingKey[i % 4]);
+                }
+
+                var result = await RunReceiveTest(
+                    producer: async (channel, cancellationToken) =>
+                    {
+                        // We use a 64-bit length because we want to ensure that the first page of data ends at an
+                        // offset within the frame that is NOT divisible by 4. This ensures that when the unmasking
+                        // moves from one buffer to the other, we are at a non-zero position within the masking key.
+                        // This ensures that we're tracking the masking key offset properly.
+
+                        // Header: (Opcode=Binary, Fin=true), (Mask=false, Len=126), (64-bit big endian length)
+                        await channel.WriteAsync(new byte[] { 0x82, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x60 }).OrTimeout();
+                        await channel.WriteAsync(maskingKey).OrTimeout();
+                        await Task.Yield();
+                        await channel.WriteAsync(sendPayload).OrTimeout();
+                    });
+
+                Assert.Equal(1, result.Received.Count);
+
+                var frame = result.Received[0];
+                Assert.True(frame.EndOfMessage);
+                Assert.Equal(WebSocketOpcode.Binary, frame.Opcode);
+                Assert.Equal(expectedPayload, frame.Payload.ToArray());
+            }
+
+            [Fact]
             public async Task Read16BitPayloadLength()
             {
                 var expectedPayload = new byte[1024];
@@ -102,8 +137,9 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
                     producer: async (channel, cancellationToken) =>
                     {
                         // Header: (Opcode=Binary, Fin=true), (Mask=false, Len=126), (16-bit big endian length)
-                        await channel.WriteAsync(new byte[] { 0x21, 0xFC, 0x04, 0x00 });
-                        await channel.WriteAsync(expectedPayload);
+                        await channel.WriteAsync(new byte[] { 0x82, 0x7E, 0x04, 0x00 }).OrTimeout();
+                        await Task.Yield();
+                        await channel.WriteAsync(expectedPayload).OrTimeout();
                     });
 
                 Assert.Equal(1, result.Received.Count);
@@ -125,8 +161,9 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
                     producer: async (channel, cancellationToken) =>
                     {
                         // Header: (Opcode=Binary, Fin=true), (Mask=false, Len=127), (64-bit big endian length)
-                        await channel.WriteAsync(new byte[] { 0x21, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00 });
-                        await channel.WriteAsync(expectedPayload);
+                        await channel.WriteAsync(new byte[] { 0x82, 0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00 }).OrTimeout();
+                        await Task.Yield();
+                        await channel.WriteAsync(expectedPayload).OrTimeout();
                     });
 
                 Assert.Equal(1, result.Received.Count);
@@ -142,7 +179,7 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
                 var result = await RunReceiveTest(
                     producer: async (channel, cancellationToken) =>
                     {
-                        await channel.WriteAsync(rawFrame.Slice());
+                        await channel.WriteAsync(rawFrame.Slice()).OrTimeout();
                     });
                 var frames = result.Received;
                 Assert.Equal(1, frames.Count);
@@ -153,43 +190,36 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
                 Assert.Equal(expectedOpcode, frame.Opcode);
                 payloadAssert(frame.Payload.ToArray());
             }
+        }
 
-            private static async Task<WebSocketConnectionSummary> RunReceiveTest(Func<IWritableChannel, CancellationToken, Task> producer)
+        private static async Task<WebSocketConnectionSummary> RunReceiveTest(Func<IWritableChannel, CancellationToken, Task> producer)
+        {
+            using (var factory = new ChannelFactory())
             {
-                using (var factory = new ChannelFactory())
+                var outbound = factory.CreateChannel();
+                var inbound = factory.CreateChannel();
+
+                var timeoutToken = TestUtil.CreateTimeoutToken();
+
+                var producerTask = Task.Run(async () =>
                 {
-                    var outbound = factory.CreateChannel();
-                    var inbound = factory.CreateChannel();
+                    await producer(inbound, timeoutToken).OrTimeout();
+                    inbound.CompleteWriter();
+                }, timeoutToken);
 
-                    var cts = new CancellationTokenSource();
-                    var cancellationToken = cts.Token;
-
-                    // Timeout for the test, but only if the debugger is not attached.
-                    if (!Debugger.IsAttached)
+                var consumerTask = Task.Run(async () =>
+                {
+                    var connection = new WebSocketConnection(inbound, outbound, options: new WebSocketOptions().WithAllFramesPassedThrough());
+                    using (timeoutToken.Register(() => connection.Dispose()))
+                    using (connection)
                     {
-                        cts.CancelAfter(TimeSpan.FromSeconds(5));
+                        // Receive frames until we're closed
+                        return await connection.ExecuteAndCaptureFramesAsync().OrTimeout();
                     }
+                }, timeoutToken);
 
-                    var producerTask = Task.Run(async () =>
-                    {
-                        await producer(inbound, cancellationToken);
-                        inbound.CompleteWriter();
-                    }, cancellationToken);
-
-                    var consumerTask = Task.Run(async () =>
-                    {
-                        var connection = new WebSocketConnection(inbound, outbound);
-                        using (cancellationToken.Register(() => connection.Dispose()))
-                        using (connection)
-                        {
-                            // Receive frames until we're closed
-                            return await connection.ExecuteAndCaptureFramesAsync();
-                        }
-                    }, cancellationToken);
-
-                    await Task.WhenAll(producerTask, consumerTask);
-                    return consumerTask.Result;
-                }
+                await Task.WhenAll(producerTask, consumerTask);
+                return consumerTask.Result;
             }
         }
 

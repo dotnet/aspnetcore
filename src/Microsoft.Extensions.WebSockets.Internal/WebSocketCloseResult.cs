@@ -1,4 +1,7 @@
-﻿using System.Binary;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Binary;
 using System.Text;
 using Channels;
 using Channels.Text.Primitives;
@@ -32,22 +35,25 @@ namespace Microsoft.Extensions.WebSockets.Internal
 
         public int GetSize() => Encoding.UTF8.GetByteCount(Description) + sizeof(ushort);
 
-        public static bool TryParse(ReadableBuffer payload, out WebSocketCloseResult result)
+        public static bool TryParse(ReadableBuffer payload, out WebSocketCloseResult result, out ushort? actualCloseCode)
         {
             if (payload.Length == 0)
             {
                 // Empty payload is OK
+                actualCloseCode = null;
                 result = new WebSocketCloseResult(WebSocketCloseStatus.Empty, string.Empty);
                 return true;
             }
             else if (payload.Length < 2)
             {
+                actualCloseCode = null;
                 result = default(WebSocketCloseResult);
                 return false;
             }
             else
             {
                 var status = payload.ReadBigEndian<ushort>();
+                actualCloseCode = status;
                 var description = string.Empty;
                 payload = payload.Slice(2);
                 if (payload.Length > 0)

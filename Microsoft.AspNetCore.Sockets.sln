@@ -30,6 +30,11 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.SignalR", "src\Microsoft.AspNetCore.SignalR\Microsoft.AspNetCore.SignalR.xproj", "{42E76F87-92B6-45AB-BF07-6B811C0F2CAC}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.SignalR.Redis", "src\Microsoft.AspNetCore.SignalR.Redis\Microsoft.AspNetCore.SignalR.Redis.xproj", "{59319B72-38BE-4041-8E5C-FF6938874CE8}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.WebSockets.Internal", "src\Microsoft.AspNetCore.WebSockets.Internal\Microsoft.AspNetCore.WebSockets.Internal.xproj", "{FFFE71F8-E476-4BCD-9689-F106EE1C1497}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest", "test\Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest\Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest.xproj", "{8CBC1C71-AF0B-44E2-AEE9-D8024C07634D}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WebSocketsTestApp", "test\WebSocketsTestApp\WebSocketsTestApp.xproj", "{58E771EC-8454-4558-B61A-C9D049065911}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +74,18 @@ Global
 		{59319B72-38BE-4041-8E5C-FF6938874CE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{59319B72-38BE-4041-8E5C-FF6938874CE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{59319B72-38BE-4041-8E5C-FF6938874CE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFFE71F8-E476-4BCD-9689-F106EE1C1497}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFFE71F8-E476-4BCD-9689-F106EE1C1497}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFFE71F8-E476-4BCD-9689-F106EE1C1497}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFFE71F8-E476-4BCD-9689-F106EE1C1497}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8CBC1C71-AF0B-44E2-AEE9-D8024C07634D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CBC1C71-AF0B-44E2-AEE9-D8024C07634D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CBC1C71-AF0B-44E2-AEE9-D8024C07634D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CBC1C71-AF0B-44E2-AEE9-D8024C07634D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58E771EC-8454-4558-B61A-C9D049065911}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58E771EC-8454-4558-B61A-C9D049065911}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58E771EC-8454-4558-B61A-C9D049065911}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58E771EC-8454-4558-B61A-C9D049065911}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -82,5 +99,8 @@ Global
 		{A7050BAE-3DB9-4FB3-A49D-303201415B13} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
 		{42E76F87-92B6-45AB-BF07-6B811C0F2CAC} = {DA69F624-5398-4884-87E4-B816698CDE65}
 		{59319B72-38BE-4041-8E5C-FF6938874CE8} = {DA69F624-5398-4884-87E4-B816698CDE65}
+		{FFFE71F8-E476-4BCD-9689-F106EE1C1497} = {DA69F624-5398-4884-87E4-B816698CDE65}
+		{8CBC1C71-AF0B-44E2-AEE9-D8024C07634D} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
+		{58E771EC-8454-4558-B61A-C9D049065911} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
 	EndGlobalSection
 EndGlobal
