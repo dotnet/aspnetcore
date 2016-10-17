@@ -19,7 +19,7 @@ use import="Json"
 
 functions
     @{
-        const string DefaultBuildBranch = "dev";
+        const string DefaultBuildBranch = "rel/1.1.0-preview1";
         const string DefaultCoherenceCacheDir = ".coherence-cache";
         const string UniverseCommitsFileName = "commits-universe";
         const string CoherenceCacheVersionFileName = "coherence-version";
