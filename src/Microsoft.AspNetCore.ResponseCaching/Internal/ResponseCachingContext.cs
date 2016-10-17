@@ -11,7 +11,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    public class ResponseCacheContext
+    public class ResponseCachingContext
     {
         private static readonly CacheControlHeaderValue EmptyCacheControl = new CacheControlHeaderValue();
 
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         private DateTimeOffset? _responseExpires;
         private bool _parsedResponseExpires;
 
-        internal ResponseCacheContext(HttpContext httpContext, ILogger logger)
+        internal ResponseCachingContext(HttpContext httpContext, ILogger logger)
         {
             HttpContext = httpContext;
             Logger = logger;
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         internal Stream OriginalResponseStream { get; set; }
 
-        internal ResponseCacheStream ResponseCacheStream { get; set; }
+        internal ResponseCachingStream ResponseCachingStream { get; set; }
 
         internal IHttpSendFileFeature OriginalSendFileFeature { get; set; }
 

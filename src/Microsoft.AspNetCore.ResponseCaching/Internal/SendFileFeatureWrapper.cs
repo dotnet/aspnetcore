@@ -10,18 +10,18 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
     internal class SendFileFeatureWrapper : IHttpSendFileFeature
     {
         private readonly IHttpSendFileFeature _originalSendFileFeature;
-        private readonly ResponseCacheStream _responseCacheStream;
+        private readonly ResponseCachingStream _responseCachingStream;
 
-        public SendFileFeatureWrapper(IHttpSendFileFeature originalSendFileFeature, ResponseCacheStream responseCacheStream)
+        public SendFileFeatureWrapper(IHttpSendFileFeature originalSendFileFeature, ResponseCachingStream responseCachingStream)
         {
             _originalSendFileFeature = originalSendFileFeature;
-            _responseCacheStream = responseCacheStream;
+            _responseCachingStream = responseCachingStream;
         }
 
         // Flush and disable the buffer if anyone tries to call the SendFile feature.
         public Task SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
         {
-            _responseCacheStream.DisableBuffering();
+            _responseCachingStream.DisableBuffering();
             return _originalSendFileFeature.SendFileAsync(path, offset, length, cancellation);
         }
     }

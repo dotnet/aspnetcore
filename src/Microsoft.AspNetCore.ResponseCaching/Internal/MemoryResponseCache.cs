@@ -7,11 +7,11 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    public class MemoryResponseCacheStore : IResponseCacheStore
+    public class MemoryResponseCache : IResponseCache
     {
         private readonly IMemoryCache _cache;
 
-        public MemoryResponseCacheStore(IMemoryCache cache)
+        public MemoryResponseCache(IMemoryCache cache)
         {
             if (cache == null)
             {
