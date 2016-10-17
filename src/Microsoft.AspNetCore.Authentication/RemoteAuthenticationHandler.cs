@@ -43,6 +43,10 @@ namespace Microsoft.AspNetCore.Authentication
                 {
                     exception = new InvalidOperationException("Invalid return state, unable to redirect.");
                 }
+                else if (authResult.Handled)
+                {
+                    return true;
+                }
                 else if (authResult.Skipped)
                 {
                     return false;

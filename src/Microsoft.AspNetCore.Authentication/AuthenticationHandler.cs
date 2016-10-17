@@ -58,6 +58,8 @@ namespace Microsoft.AspNetCore.Authentication
 
         protected TOptions Options { get; private set; }
 
+        protected AuthenticateResult InitializeResult { get; private set; }
+
         /// <summary>
         /// Initialize is called once per request to contextualize this instance with appropriate state.
         /// </summary>
@@ -101,12 +103,18 @@ namespace Microsoft.AspNetCore.Authentication
 
             if (ShouldHandleScheme(AuthenticationManager.AutomaticScheme, Options.AutomaticAuthenticate))
             {
-                var result = await HandleAuthenticateOnceAsync();
-                if (result?.Failure != null)
+                InitializeResult = await HandleAuthenticateOnceAsync();
+                if (InitializeResult?.Skipped == true || InitializeResult?.Handled == true)
                 {
-                    Logger.AuthenticationSchemeNotAuthenticatedWithFailure(Options.AuthenticationScheme, result.Failure.Message);
+                    return;
                 }
-                var ticket = result?.Ticket;
+
+                if (InitializeResult?.Failure != null)
+                {
+                    Logger.AuthenticationSchemeNotAuthenticatedWithFailure(Options.AuthenticationScheme, InitializeResult.Failure.Message);
+                }
+
+                var ticket = InitializeResult?.Ticket;
                 if (ticket?.Principal != null)
                 {
                     Context.User = SecurityHelper.MergeUserPrincipal(Context.User, ticket.Principal);
@@ -179,6 +187,10 @@ namespace Microsoft.AspNetCore.Authentication
         /// pipeline.</returns>
         public virtual Task<bool> HandleRequestAsync()
         {
+            if (InitializeResult?.Handled == true)
+            {
+                return Task.FromResult(true);
+            }
             return Task.FromResult(false);
         }
 
@@ -250,7 +262,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Used to ensure HandleAuthenticateAsync is only invoked once safely. The subsequent
         /// calls will return the same authentication result. Any exceptions will be converted
-        /// into a failed authenticatoin result containing the exception.
+        /// into a failed authentication result containing the exception.
         /// </summary>
         protected async Task<AuthenticateResult> HandleAuthenticateOnceSafeAsync()
         {

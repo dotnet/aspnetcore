@@ -430,6 +430,39 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         }
 
         [Fact]
+        public async Task EventOnMessageReceivedHandled_NoMoreEventsExecuted()
+        {
+            var server = CreateServer(new JwtBearerOptions
+            {
+                Events = new JwtBearerEvents()
+                {
+                    OnMessageReceived = context =>
+                    {
+                        context.HandleResponse();
+                        context.Response.StatusCode = StatusCodes.Status202Accepted;
+                        return Task.FromResult(0);
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        throw new NotImplementedException();
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        throw new NotImplementedException(context.Exception.ToString());
+                    },
+                    OnChallenge = context =>
+                    {
+                        throw new NotImplementedException();
+                    },
+                }
+            });
+
+            var response = await SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
+            Assert.Equal(HttpStatusCode.Accepted, response.Response.StatusCode);
+            Assert.Equal(string.Empty, response.ResponseText);
+        }
+
+        [Fact]
         public async Task EventOnTokenValidatedSkipped_NoMoreEventsExecuted()
         {
             var options = new JwtBearerOptions
@@ -457,6 +490,38 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
             var response = await SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
             Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+            Assert.Equal(string.Empty, response.ResponseText);
+        }
+
+        [Fact]
+        public async Task EventOnTokenValidatedHandled_NoMoreEventsExecuted()
+        {
+            var options = new JwtBearerOptions
+            {
+                Events = new JwtBearerEvents()
+                {
+                    OnTokenValidated = context =>
+                    {
+                        context.HandleResponse();
+                        context.Response.StatusCode = StatusCodes.Status202Accepted;
+                        return Task.FromResult(0);
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        throw new NotImplementedException(context.Exception.ToString());
+                    },
+                    OnChallenge = context =>
+                    {
+                        throw new NotImplementedException();
+                    },
+                }
+            };
+            options.SecurityTokenValidators.Clear();
+            options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT"));
+            var server = CreateServer(options);
+
+            var response = await SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
+            Assert.Equal(HttpStatusCode.Accepted, response.Response.StatusCode);
             Assert.Equal(string.Empty, response.ResponseText);
         }
 
@@ -492,6 +557,38 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         }
 
         [Fact]
+        public async Task EventOnAuthenticationFailedHandled_NoMoreEventsExecuted()
+        {
+            var options = new JwtBearerOptions
+            {
+                Events = new JwtBearerEvents()
+                {
+                    OnTokenValidated = context =>
+                    {
+                        throw new Exception("Test Exception");
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        context.HandleResponse();
+                        context.Response.StatusCode = StatusCodes.Status202Accepted;
+                        return Task.FromResult(0);
+                    },
+                    OnChallenge = context =>
+                    {
+                        throw new NotImplementedException();
+                    },
+                }
+            };
+            options.SecurityTokenValidators.Clear();
+            options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT"));
+            var server = CreateServer(options);
+
+            var response = await SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
+            Assert.Equal(HttpStatusCode.Accepted, response.Response.StatusCode);
+            Assert.Equal(string.Empty, response.ResponseText);
+        }
+
+        [Fact]
         public async Task EventOnChallengeSkipped_ResponseNotModified()
         {
             var server = CreateServer(new JwtBearerOptions
@@ -508,6 +605,28 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
             var response = await SendAsync(server, "http://example.com/unauthorized", "Bearer Token");
             Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+            Assert.Empty(response.Response.Headers.WwwAuthenticate);
+            Assert.Equal(string.Empty, response.ResponseText);
+        }
+
+        [Fact]
+        public async Task EventOnChallengeHandled_ResponseNotModified()
+        {
+            var server = CreateServer(new JwtBearerOptions
+            {
+                Events = new JwtBearerEvents()
+                {
+                    OnChallenge = context =>
+                    {
+                        context.HandleResponse();
+                        context.Response.StatusCode = StatusCodes.Status202Accepted;
+                        return Task.FromResult(0);
+                    },
+                }
+            });
+
+            var response = await SendAsync(server, "http://example.com/unauthorized", "Bearer Token");
+            Assert.Equal(HttpStatusCode.Accepted, response.Response.StatusCode);
             Assert.Empty(response.Response.Headers.WwwAuthenticate);
             Assert.Equal(string.Empty, response.ResponseText);
         }

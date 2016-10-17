@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -15,6 +16,8 @@ namespace JwtBearerSample
     {
         public Startup(IHostingEnvironment env)
         {
+            Environment = env;
+
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath);
 
@@ -29,6 +32,8 @@ namespace JwtBearerSample
         }
 
         public IConfiguration Configuration { get; set; }
+
+        public IHostingEnvironment Environment { get; set; }
 
         // Shared between users in memory
         public IList<Todo> Todos { get; } = new List<Todo>();
@@ -68,7 +73,23 @@ namespace JwtBearerSample
             {
                 // You also need to update /wwwroot/app/scripts/app.js
                 Authority = Configuration["jwt:authority"],
-                Audience = Configuration["jwt:audience"]
+                Audience = Configuration["jwt:audience"],
+                Events = new JwtBearerEvents()
+                {
+                    OnAuthenticationFailed = c =>
+                    {
+                        c.HandleResponse();
+
+                        c.Response.StatusCode = 500;
+                        c.Response.ContentType = "text/plain";
+                        if (Environment.IsDevelopment())
+                        {
+                            // Debug only, in production do not share exceptions with the remote host.
+                            return c.Response.WriteAsync(c.Exception.ToString());
+                        }
+                        return c.Response.WriteAsync("An error occurred processing your authentication.");
+                    }
+                }
             });
 
             // [Authorize] would usually handle this

@@ -86,6 +86,7 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Boolean to set whether the middleware should go to user info endpoint to retrieve additional claims or not after creating an identity from id_token received from token endpoint.
+        /// The default is 'false'.
         /// </summary>
         public bool GetClaimsFromUserInfoEndpoint { get; set; }
 

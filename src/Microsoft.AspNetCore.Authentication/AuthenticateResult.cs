@@ -34,6 +34,12 @@ namespace Microsoft.AspNetCore.Authentication
         public Exception Failure { get; private set; }
 
         /// <summary>
+        /// Indicates that stage of authentication was directly handled by user intervention and no
+        /// further processing should be attempted.
+        /// </summary>
+        public bool Handled { get; private set; }
+
+        /// <summary>
         /// Indicates that this stage of authentication was skipped by user intervention.
         /// </summary>
         public bool Skipped { get; private set; }
@@ -45,6 +51,11 @@ namespace Microsoft.AspNetCore.Authentication
                 throw new ArgumentNullException(nameof(ticket));
             }
             return new AuthenticateResult() { Ticket = ticket };
+        }
+
+        public static AuthenticateResult Handle()
+        {
+            return new AuthenticateResult() { Handled = true };
         }
 
         public static AuthenticateResult Skip()

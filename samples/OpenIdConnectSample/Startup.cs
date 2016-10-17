@@ -20,6 +20,8 @@ namespace OpenIdConnectSample
     {
         public Startup(IHostingEnvironment env)
         {
+            Environment = env;
+
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath);
 
@@ -34,6 +36,8 @@ namespace OpenIdConnectSample
         }
 
         public IConfiguration Configuration { get; set; }
+
+        public IHostingEnvironment Environment { get; set; }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -75,8 +79,24 @@ namespace OpenIdConnectSample
                 ClientId = Configuration["oidc:clientid"],
                 ClientSecret = Configuration["oidc:clientsecret"], // for code flow
                 Authority = Configuration["oidc:authority"],
-                ResponseType = OpenIdConnectResponseType.Code,
-                GetClaimsFromUserInfoEndpoint = true
+                ResponseType = OpenIdConnectResponseType.CodeIdToken,
+                GetClaimsFromUserInfoEndpoint = true,
+                Events = new OpenIdConnectEvents()
+                {
+                    OnAuthenticationFailed = c =>
+                    {
+                        c.HandleResponse();
+
+                        c.Response.StatusCode = 500;
+                        c.Response.ContentType = "text/plain";
+                        if (Environment.IsDevelopment())
+                        {
+                            // Debug only, in production do not share exceptions with the remote host.
+                            return c.Response.WriteAsync(c.Exception.ToString());
+                        }
+                        return c.Response.WriteAsync("An error occurred processing your authentication.");
+                    }
+                }
             });
 
             app.Run(async context =>

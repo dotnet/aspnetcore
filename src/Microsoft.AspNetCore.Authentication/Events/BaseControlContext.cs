@@ -51,7 +51,14 @@ namespace Microsoft.AspNetCore.Authentication
         {
             if (HandledResponse)
             {
-                result = AuthenticateResult.Success(Ticket);
+                if (Ticket == null)
+                {
+                    result = AuthenticateResult.Handle();
+                }
+                else
+                {
+                    result = AuthenticateResult.Success(Ticket);
+                }
                 return true;
             }
             else if (Skipped)

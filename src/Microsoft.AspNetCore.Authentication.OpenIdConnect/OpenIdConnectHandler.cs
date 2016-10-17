@@ -578,7 +578,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                         tokenEndpointResponse = await RedeemAuthorizationCodeAsync(tokenEndpointRequest);
                     }
 
-                    var tokenResponseReceivedContext = await RunTokenResponseReceivedEventAsync(authorizationResponse, tokenEndpointResponse, properties);
+                    var tokenResponseReceivedContext = await RunTokenResponseReceivedEventAsync(authorizationResponse, tokenEndpointResponse, properties, ticket);
                     if (tokenResponseReceivedContext.CheckEventResult(out result))
                     {
                         return result;
@@ -1038,13 +1038,15 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         private async Task<TokenResponseReceivedContext> RunTokenResponseReceivedEventAsync(
             OpenIdConnectMessage message,
             OpenIdConnectMessage tokenEndpointResponse,
-            AuthenticationProperties properties)
+            AuthenticationProperties properties,
+            AuthenticationTicket ticket)
         {
             Logger.TokenResponseReceived();
             var eventContext = new TokenResponseReceivedContext(Context, Options, properties)
             {
                 ProtocolMessage = message,
-                TokenEndpointResponse = tokenEndpointResponse
+                TokenEndpointResponse = tokenEndpointResponse,
+                Ticket = ticket
             };
 
             await Options.Events.TokenResponseReceived(eventContext);
