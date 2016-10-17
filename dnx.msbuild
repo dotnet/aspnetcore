@@ -368,7 +368,7 @@
 
     <Target Name="PushPackages">
         <PropertyGroup>
-          <NUGET_FEED>https://dotnet.myget.org/F/aspnetcore-release/api/v2/package</NUGET_FEED>
+          <NUGET_FEED>https://dotnet.myget.org/F/aspnetcore-release/</NUGET_FEED>
         </PropertyGroup>
 
         <Exec Command="$(PUSH_NUGET_EXE) restore src\PushCoherence\PushCoherence.sln" />
