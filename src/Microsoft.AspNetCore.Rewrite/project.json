@@ -8,7 +8,7 @@
     ],
     "xmlDoc": true
   },
-  "description": "ASP.NET Core basic middleware for:\r\nRewrite Url module.",
+  "description": "ASP.NET Core basic middleware for rewriting URLs. Includes:\r\n* Support for custom URL rewrite rules\r\n* Support for running IIS URL Rewrite module rules\r\n* Support for running Apache mod_rewrite rules.",
   "packOptions": {
     "repository": {
       "type": "git",

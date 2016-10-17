@@ -8,7 +8,7 @@
     ],
     "xmlDoc": true
   },
-  "description": "ASP.NET Core basic middleware for:\r\nX-Forwarded-* headers to forward headers from a proxy.\r\nHTTP method override header.",
+  "description": "ASP.NET Core basic middleware for supporting HTTP method overrides. Includes:\r\n* X-Forwarded-* headers to forward headers from a proxy.\r\n* HTTP method override header.",
   "packOptions": {
     "repository": {
       "type": "git",
