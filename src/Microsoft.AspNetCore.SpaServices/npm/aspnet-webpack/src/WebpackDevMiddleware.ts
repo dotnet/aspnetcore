@@ -231,7 +231,7 @@ function getPath(publicPath: string) {
 function firstIndexOfStringStartingWith(array: string[], prefixToFind: string) {
     for (let index = 0; index < array.length; index++) {
         const candidate = array[index];
-        if (candidate.substring(0, prefixToFind.length) === prefixToFind) {
+        if ((typeof candidate === 'string') && (candidate.substring(0, prefixToFind.length) === prefixToFind)) {
             return index;
         }
     }
