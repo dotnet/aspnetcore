@@ -3,6 +3,7 @@
     "moduleResolution": "node",
     "target": "es5",
     "sourceMap": true,
+    "lib": ["es6", "dom"],
     "skipDefaultLibCheck": true
   },
   "exclude": [

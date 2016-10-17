@@ -13,7 +13,7 @@ class AppRootViewModel {
     public route: KnockoutObservable<Route>;
     private _router: Router;
 
-    constructor(params: { history: HistoryModule.History }) {
+    constructor(params: { history: History.History }) {
         // Activate the client-side router
         this._router = new Router(params.history, routes)
         this.route = this._router.currentRoute;

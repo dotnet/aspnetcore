@@ -13,8 +13,7 @@ export default <Route component={ Layout }>
     </Route>
 </Route>;
 
-// Allow Hot Module Reloading
-declare var module: any;
+// Enable Hot Module Replacement (HMR)
 if (module.hot) {
     module.hot.accept();
 }

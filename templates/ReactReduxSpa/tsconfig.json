@@ -5,7 +5,9 @@
     "jsx": "preserve",
     "experimentalDecorators": true,
     "sourceMap": true,
-    "skipDefaultLibCheck": true
+    "skipDefaultLibCheck": true,
+    "lib": ["es6", "dom"],
+    "types": [ "webpack-env", "whatwg-fetch" ]
   },
   "exclude": [
       "bin",

@@ -15,7 +15,7 @@ export class Router {
     private disposeHistory: () => void;
     private clickEventListener: EventListener;
 
-    constructor(history: HistoryModule.History, routes: Route[]) {
+    constructor(history: History.History, routes: Route[]) {
         // Reset and configure Crossroads so it matches routes and updates this.currentRoute
         crossroads.removeAllRoutes();
         crossroads.resetState();
@@ -38,8 +38,11 @@ export class Router {
                 }
             }
         };
-
         $(document).on('click', 'a', this.clickEventListener);
+
+        // Initialize Crossroads with starting location
+        // Need to cast history to 'any' because @types/history is out-of-date
+        crossroads.parse((history as any).location.pathname);
     }
 
     public dispose() {
