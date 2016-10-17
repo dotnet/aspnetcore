@@ -174,7 +174,7 @@
             <DnxToolsFeed>https://dotnet.myget.org/F/aspnetcore-tools/api/v2</DnxToolsFeed>
             <CommandsPath>$(DNXToolsPath)commands</CommandsPath>
         </PropertyGroup>
-        <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -pre NuGetPackageVerifier -Source $(DnxToolsFeed) -out $(CommandsPath)"/>
+        <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -pre NuGetPackageVerifier -Version 1.0.1-rc2-15109 -Source $(DnxToolsFeed) -out $(CommandsPath)"/>
         <Exec Command="$(CommandsPath)\NuGetPackageVerifier\NuGetPackageVerifier.exe &quot;$(PackagesOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
         <RemoveDir Directories="$(CommandsPath)"/>
     </Target>
@@ -367,6 +367,10 @@
     </Target>
 
     <Target Name="PushPackages">
+        <PropertyGroup>
+          <NUGET_FEED>https://dotnet.myget.org/F/aspnetcore-release/api/v2/package</NUGET_FEED>
+        </PropertyGroup>
+
         <Exec Command="$(PUSH_NUGET_EXE) restore src\PushCoherence\PushCoherence.sln" />
         <MSBuild Projects="src\PushCoherence\PushCoherence.csproj" Properties="Configuration=$(Configuration)" />
         <Exec Command="src\PushCoherence\bin\$(Configuration)\PushCoherence.exe;NUGET_FEED=$(NUGET_FEED);APIKEY=$(APIKEY)" />
