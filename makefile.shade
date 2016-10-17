@@ -29,7 +29,7 @@ functions
         static string baseDir = Directory.GetCurrentDirectory();
         static string targetDir = Path.Combine(baseDir, "artifacts", "build");
 
-        static string buildBranch = GetEnvironmentParameter("BUILD_BRANCH") ?? DefaultBuildBranch;
+        static string buildBranch = DefaultBuildBranch;
         static string coherencePath = GetEnvironmentParameter("COHERENCE_PATH");
         static string dropsShare = GetEnvironmentParameter("ASPNETCI_DROPS_SHARE", DefaultDropsShare);
         static string kBuildVersion = GetEnvironmentParameter("DNX_BUILD_VERSION");
