@@ -30,14 +30,6 @@
             }
         }
     },
-    "adx-nonshipping": {
-        "rules": [],
-        "packages": {
-            "Microsoft.Extensions.ProjectModel.Abstractions.Sources": {},
-            "Microsoft.Extensions.ProjectModel.DotNet.Sources": {},
-            "Microsoft.Extensions.ProjectModel.MsBuild.Sources": {}
-        }
-    },
     "Default": {
         "rules": [
             "DefaultCompositeRule"

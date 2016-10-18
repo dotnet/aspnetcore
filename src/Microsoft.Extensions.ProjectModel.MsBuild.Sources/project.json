@@ -1,7 +1,0 @@
-{
-  "version": "1.0.0-*",
-  "shared": "**/*.cs",
-  "frameworks": {
-    "netstandard1.0": {}
-  }
-}

@@ -22,12 +22,6 @@ k-standard-goals
               "-n src/Microsoft.Extensions.Caching.SqlConfig.Tools/Microsoft.Extensions.Caching.SqlConfig.Tools.nuspec " +
               "-n src/Microsoft.DotNet.Watcher.Tools/Microsoft.DotNet.Watcher.Tools.nuspec ");
 
-          var projectModel = Files.Include("src/Microsoft.Extensions.ProjectModel.*/project.json");
-          foreach (var proj in projectModel)
-          {
-              DotnetPack(proj, BUILD_DIR_LOCAL, E("Configuration"), E("KOREBUILD_DOTNET_PACK_OPTIONS") + " --no-build");
-          }
-
           foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR_LOCAL, "*/" + E("Configuration") + "/*.nupkg")))
           {
               File.Copy(nupkg, Path.Combine(BUILD_DIR_LOCAL, Path.GetFileName(nupkg)), true);
