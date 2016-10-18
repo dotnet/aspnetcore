@@ -41,7 +41,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host.Internal
                 Visit(tagHelperChunk);
             }
 
-            base.Accept(chunk); 
+            var parentChunk = chunk as ParentChunk;
+            if (parentChunk != null)
+            {
+                Visit(parentChunk);
+            }
         }
 
         protected override void Visit(ParentChunk parentChunk)
