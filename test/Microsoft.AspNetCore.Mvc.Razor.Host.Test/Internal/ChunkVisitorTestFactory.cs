@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 
         private static ParentChunk GetNestedViewComponentTagHelperChunk(string name, bool visitedTagHelperChunks)
         {
-            var parentChunk = new ParentChunk();
+            var parentChunk = GetTagHelperChunk("blah");
             var tagHelperChunk = GetViewComponentTagHelperChunk(name, visitedTagHelperChunks);
             parentChunk.Children.Add(tagHelperChunk);
             return parentChunk;

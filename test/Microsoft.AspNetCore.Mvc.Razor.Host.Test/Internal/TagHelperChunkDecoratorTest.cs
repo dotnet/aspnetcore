@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host.Test
 
             // Test the parent chunk with view component tag helper inside, Foo.
             var expectedParentChunk = (ParentChunk)expectedChunks[1];
-            var resultParentChunk = Assert.IsType<ParentChunk>(resultChunks[1]);
+            var resultParentChunk = Assert.IsType<TagHelperChunk>(resultChunks[1]);
             Assert.Single(resultParentChunk.Children);
 
             expectedTagHelperChunk = (TagHelperChunk)expectedParentChunk.Children.First();

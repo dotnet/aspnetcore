@@ -40,7 +40,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host.Internal
                 tagHelperChunk.Descriptors = Decorate(tagHelperChunk.Descriptors);
             }
 
-            base.Accept(chunk);
+            var parentChunk = chunk as ParentChunk;
+            if (parentChunk != null)
+            {
+                Visit(parentChunk);
+            }
         }
 
         protected override void Visit(ParentChunk parentChunk)
