@@ -30,6 +30,11 @@ namespace TagHelpersWebSite.Controllers
             return View();
         }
 
+        public IActionResult ViewComponentTagHelpers()
+        {
+            return View();
+        }
+
         public IActionResult UnboundDynamicAttributes()
         {
             return View();

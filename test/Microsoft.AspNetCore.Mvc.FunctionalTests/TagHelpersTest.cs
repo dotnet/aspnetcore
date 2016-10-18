@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [InlineData("About")]
         [InlineData("Help")]
         [InlineData("UnboundDynamicAttributes")]
+        [InlineData("ViewComponentTagHelpers")]
         public async Task CanRenderViewsWithTagHelpers(string action)
         {
             // Arrange
