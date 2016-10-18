@@ -567,6 +567,185 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         }
 
         [Fact]
+        public void Accepted_SetsStatusCode()
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var result = controller.Accepted();
+
+            // Assert
+            Assert.IsType<AcceptedResult>(result);
+            Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        }
+
+        [Fact]
+        public void Accepted_SetsValue()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var value = new object();
+
+            // Act
+            var result = controller.Accepted(value);
+
+            // Assert
+            Assert.IsType<AcceptedResult>(result);
+            Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+            Assert.Same(value, result.Value);
+        }
+
+        [Fact]
+        public void Accepted_StringUri_SetsAcceptedLocation()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var uri = "http://test/url";
+
+            // Act
+            var result = controller.Accepted(uri);
+
+            // Assert
+            Assert.IsType<AcceptedResult>(result);
+            Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+            Assert.Same(uri, result.Location);
+        }
+
+        [Fact]
+        public void Accepted_AbsoluteUri_SetsAcceptedLocation()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var uri = new Uri("http://test/url");
+
+            // Act
+            var result = controller.Accepted(uri);
+
+            // Assert
+            Assert.IsType<AcceptedResult>(result);
+            Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+            Assert.Equal(uri.OriginalString, result.Location);
+        }
+
+        [Fact]
+        public void Accepted_RelativeUri_SetsAcceptedLocation()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var uri = new Uri("/test/url", UriKind.Relative);
+
+            // Act
+            var result = controller.Accepted(uri);
+
+            // Assert
+            Assert.IsType<AcceptedResult>(result);
+            Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+            Assert.Equal(uri.OriginalString, result.Location);
+        }
+
+        [Fact]
+        public void AcceptedAtAction_SetsActionName()
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var result = controller.AcceptedAtAction("SampleAction");
+
+            // Assert
+            Assert.IsType<AcceptedAtActionResult>(result);
+            Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+            Assert.Equal("SampleAction", result.ActionName);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("SampleController")]
+        public void AcceptedAtAction_SetsActionController(string controllerName)
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var result = controller.AcceptedAtAction("SampleAction", controllerName);
+
+            // Assert
+            Assert.IsType<AcceptedAtActionResult>(result);
+            Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+            Assert.Equal("SampleAction", result.ActionName);
+            Assert.Equal(controllerName, result.ControllerName);
+        }
+
+        [Fact]
+        public void AcceptedAtAction_SetsActionControllerRouteValues()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var expected = new Dictionary<string, object>
+            {
+                { "test", "case" },
+                { "sample", "route" },
+            };
+
+            // Act
+            var result = controller.AcceptedAtAction(
+                "SampleAction",
+                "SampleController",
+                new RouteValueDictionary(expected));
+
+            // Assert
+            Assert.IsType<AcceptedAtActionResult>(result);
+            Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+            Assert.Equal("SampleAction", result.ActionName);
+            Assert.Equal("SampleController", result.ControllerName);
+            Assert.Equal(expected, result.RouteValues);
+        }
+
+        [Fact]
+        public void AcceptedAtRoute_SetsRouteValues()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var expected = new Dictionary<string, object>
+            {
+                { "test", "case" },
+                { "sample", "route" },
+            };
+
+            // Act
+            var result = controller.AcceptedAtRoute(new RouteValueDictionary(expected));
+
+            // Assert
+            Assert.IsType<AcceptedAtRouteResult>(result);
+            Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+            Assert.Equal(expected, result.RouteValues);
+        }
+
+        [Fact]
+        public void AcceptedAtRoute_SetsRouteNameAndValues()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var routeName = "SampleRoute";
+            var expected = new Dictionary<string, object>
+            {
+                { "test", "case" },
+                { "sample", "route" },
+            };
+
+            // Act
+            var result = controller.AcceptedAtRoute(routeName, new RouteValueDictionary(expected));
+
+            // Assert
+            Assert.IsType<AcceptedAtRouteResult>(result);
+            Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+            Assert.Same(routeName, result.RouteName);
+            Assert.Equal(expected, result.RouteValues);
+        }
+
+        [Fact]
         public void File_WithContents()
         {
             // Arrange
@@ -1107,7 +1286,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var modelName = "mymodel";
 
-            Func<ModelMetadata, bool> propertyFilter = (m) => 
+            Func<ModelMetadata, bool> propertyFilter = (m) =>
                 string.Equals(m.PropertyName, "Include1", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(m.PropertyName, "Include2", StringComparison.OrdinalIgnoreCase);
 
@@ -1207,7 +1386,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var modelName = "mymodel";
 
-            Func<ModelMetadata, bool> propertyFilter = (m) => 
+            Func<ModelMetadata, bool> propertyFilter = (m) =>
                 string.Equals(m.PropertyName, "Include1", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(m.PropertyName, "Include2", StringComparison.OrdinalIgnoreCase);
 
@@ -1446,7 +1625,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var binder = new StubModelBinder();
             var controller = GetController(binder, valueProvider: null);
             controller.ObjectValidator = new DefaultObjectValidator(
-                controller.MetadataProvider, 
+                controller.MetadataProvider,
                 new[] { provider.Object });
 
             // Act
