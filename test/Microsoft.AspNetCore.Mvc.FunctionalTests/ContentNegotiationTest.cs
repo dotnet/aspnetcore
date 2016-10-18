@@ -85,6 +85,26 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
         }
 
+        [Theory]
+        [InlineData("/;q=0.9")]
+        [InlineData("/;q=0.9, invalid;q=0.5;application/json;q=0.1")]
+        [InlineData("/invalid;q=0.9, application/json;q=0.1,invalid;q=0.5")]
+        [InlineData("text/html, application/json, image/jpeg, *; q=.2, */*; q=.2")]
+        public async Task ContentNegotiationWithPartiallyValidAcceptHeader_SkipsInvalidEntries(string acceptHeader)
+        {
+            // Arrange
+            var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/ContentNegotiation/UserInfo_ProducesWithTypeOnly");
+            request.Headers.TryAddWithoutValidation("Accept", acceptHeader);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
+        }
+
         [Fact]
         public async Task ProducesAttributeWithTypeOnly_RunsRegularContentNegotiation()
         {

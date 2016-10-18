@@ -292,6 +292,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public static MediaTypeSegmentWithQuality CreateMediaTypeSegmentWithQuality(string mediaType, int start)
         {
             var parsedMediaType = new MediaType(mediaType, start, length: null);
+            if (parsedMediaType.Type.Equals(default(StringSegment)) ||
+                parsedMediaType.SubType.Equals(default(StringSegment)))
+            {
+                return default(MediaTypeSegmentWithQuality);
+            }
+
             var parser = parsedMediaType._parameterParser;
 
             double quality = 1.0d;
@@ -306,7 +312,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 }
             }
 
-            // We check if the parsed media type has value at this stage when we have iterated
+            // We check if the parsed media type has a value at this stage when we have iterated
             // over all the parameters and we know if the parsing was sucessful.
             if (!parser.ParsingFailed)
             {
@@ -395,6 +401,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 if (_mediaTypeBuffer == null)
                 {
+                    ParsingFailed = true;
                     result = default(MediaTypeParameter);
                     return false;
                 }
