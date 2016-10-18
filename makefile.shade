@@ -1,7 +1,6 @@
 use namespace="System.IO"
 
--BuildQuality = "preview4";
-
+-BuildQuality = "preview2";
 use-standard-lifecycle
 k-standard-goals
 
