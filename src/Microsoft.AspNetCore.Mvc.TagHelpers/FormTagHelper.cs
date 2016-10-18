@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     [HtmlTargetElement("form", Attributes = ActionAttributeName)]
     [HtmlTargetElement("form", Attributes = AntiforgeryAttributeName)]
     [HtmlTargetElement("form", Attributes = AreaAttributeName)]
+    [HtmlTargetElement("form", Attributes = FragmentAttributeName)]
     [HtmlTargetElement("form", Attributes = ControllerAttributeName)]
     [HtmlTargetElement("form", Attributes = RouteAttributeName)]
     [HtmlTargetElement("form", Attributes = RouteValuesDictionaryName)]
@@ -25,6 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private const string ActionAttributeName = "asp-action";
         private const string AntiforgeryAttributeName = "asp-antiforgery";
         private const string AreaAttributeName = "asp-area";
+        private const string FragmentAttributeName = "asp-fragment";
         private const string ControllerAttributeName = "asp-controller";
         private const string RouteAttributeName = "asp-route";
         private const string RouteValuesDictionaryName = "asp-all-route-data";
@@ -79,6 +81,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public bool? Antiforgery { get; set; }
 
         /// <summary>
+        /// Gets or sets the URL fragment.
+        /// </summary>
+        [HtmlAttributeName(FragmentAttributeName)]
+        public string Fragment { get; set; }
+
+        /// <summary>
         /// Name of the route.
         /// </summary>
         /// <remarks>
@@ -121,7 +129,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <c>false</c>.
         /// </remarks>
         /// <exception cref="InvalidOperationException">
-        /// Thrown if <c>action</c> attribute is provided and <see cref="Action"/> or <see cref="Controller"/> are
+        /// Thrown if <c>action</c> attribute is provided and <see cref="Action"/>, <see cref="Controller"/> or <see cref="Fragment"/> are
         /// non-<c>null</c> or if the user provided <c>asp-route-*</c> attributes.
         /// </exception>
         public override void Process(TagHelperContext context, TagHelperOutput output)
@@ -148,6 +156,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 if (Action != null ||
                     Controller != null ||
                     Area != null ||
+                    Fragment != null ||
                     Route != null ||
                     (_routeValues != null && _routeValues.Count > 0))
                 {
@@ -158,6 +167,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             HtmlActionAttributeName,
                             ActionAttributeName,
                             ControllerAttributeName,
+                            FragmentAttributeName,
                             AreaAttributeName,
                             RouteAttributeName,
                             RouteValuesPrefix));
@@ -198,6 +208,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         ViewContext,
                         Action,
                         Controller,
+                        Fragment,
                         routeValues,
                         method: null,
                         htmlAttributes: null);
@@ -211,7 +222,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             RouteAttributeName,
                             ActionAttributeName,
                             ControllerAttributeName,
-                            HtmlActionAttributeName));
+                            HtmlActionAttributeName,
+                            FragmentAttributeName));
                 }
                 else
                 {
@@ -219,6 +231,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         ViewContext,
                         Route,
                         routeValues,
+                        Fragment,
                         method: null,
                         htmlAttributes: null);
                 }

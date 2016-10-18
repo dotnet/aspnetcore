@@ -285,6 +285,72 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Fact]
+        public async Task ProcessAsync_AspFragmentAddsFragmentToAction()
+        {
+            // Arrange
+            var expectedTagName = "form";
+            var metadataProvider = new TestModelMetadataProvider();
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new TagHelperAttributeList
+                {
+                    { "id", "myform" },
+                    { "asp-route-name", "value" },
+                    { "asp-action", "index" },
+                    { "asp-controller", "home" },
+                    { "asp-fragment", "test" },
+                    { "method", "post" },
+                    { "asp-antiforgery", true }
+                },
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+
+            var output = new TagHelperOutput(
+                expectedTagName,
+                attributes: new TagHelperAttributeList
+                {
+                    { "id", "myform" },
+                },
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper
+                .Setup(mock => mock.Action(It.IsAny<UrlActionContext>())).Returns("home/index");
+
+            var htmlGenerator = new TestableHtmlGenerator(metadataProvider, urlHelper.Object);
+            var viewContext = TestableHtmlGenerator.GetViewContext(
+                model: null,
+                htmlGenerator: htmlGenerator,
+                metadataProvider: metadataProvider);
+
+            var formTagHelper = new FormTagHelper(htmlGenerator)
+            {
+                Action = "index",
+                Antiforgery = true,
+                Controller = "home",
+                Fragment = "test",
+                ViewContext = viewContext,
+                RouteValues =
+                {
+                    { "name", "value" },
+                },
+            };
+
+            // Act
+            await formTagHelper.ProcessAsync(tagHelperContext, output);
+
+            // Assert
+
+            Assert.Equal("form", output.TagName);
+            Assert.Equal(TagMode.StartTagAndEndTag, output.TagMode);
+            var attribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("action"));
+            Assert.Equal("home/index#test", attribute.Value);
+        }
+
+        [Fact]
         public async Task ProcessAsync_AspAreaAddsAreaToRouteValues()
         {
             // Arrange
@@ -585,7 +651,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var expectedErrorMessage = "Cannot override the 'action' attribute for <form>. A <form> with a specified " +
                                        "'action' must not have attributes starting with 'asp-route-' or an " +
-                                       "'asp-action' or 'asp-controller' or 'asp-area' or 'asp-route' attribute.";
+                                       "'asp-action', 'asp-controller', 'asp-fragment', 'asp-area', or 'asp-route' attribute.";
 
             var context = new TagHelperContext(
                 allAttributes: new TagHelperAttributeList(
@@ -616,7 +682,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 attributes: new TagHelperAttributeList(),
                 getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(null));
             var expectedErrorMessage = "Cannot determine an 'action' attribute for <form>. A <form> with a specified " +
-                "'asp-route' must not have an 'asp-action' or 'asp-controller' attribute.";
+                "'asp-route' must not have an 'asp-action', 'asp-controller', or 'asp-fragment' attribute.";
 
             var context = new TagHelperContext(
                 allAttributes: new TagHelperAttributeList(

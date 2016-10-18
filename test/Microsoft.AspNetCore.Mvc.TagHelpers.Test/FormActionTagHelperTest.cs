@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 {
                     Assert.Equal("delete", param.Action, StringComparer.Ordinal);
                     Assert.Equal("books", param.Controller, StringComparer.Ordinal);
-                    Assert.Null(param.Fragment);
+                    Assert.Equal("test", param.Fragment, StringComparer.Ordinal);
                     Assert.Null(param.Host);
                     Assert.Null(param.Protocol);
                     Assert.Equal<KeyValuePair<string, object>>(expectedRouteValues, param.Values as RouteValueDictionary);
@@ -238,6 +238,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 Action = "delete",
                 Controller = "books",
+                Fragment = "test",
                 RouteValues = routeValues,
                 ViewContext = viewContext,
             };
@@ -277,9 +278,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 .Setup(mock => mock.RouteUrl(It.IsAny<UrlRouteContext>()))
                 .Callback<UrlRouteContext>(param =>
                 {
-                    Assert.Null(param.Fragment);
                     Assert.Null(param.Host);
                     Assert.Null(param.Protocol);
+                    Assert.Equal("test", param.Fragment, StringComparer.Ordinal);
                     Assert.Equal("Default", param.RouteName, StringComparer.Ordinal);
                     Assert.Equal<KeyValuePair<string, object>>(expectedRouteValues, param.Values as RouteValueDictionary);
                 })
@@ -294,6 +295,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var tagHelper = new FormActionTagHelper(urlHelperFactory.Object)
             {
                 Route = "Default",
+                Fragment = "test",
                 RouteValues = routeValues,
                 ViewContext = viewContext,
             };
@@ -467,7 +469,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var expectedErrorMessage = $"Cannot override the 'formaction' attribute for <{tagName}>. <{tagName}> " +
                 "elements with a specified 'formaction' must not have attributes starting with 'asp-route-' or an " +
-                "'asp-action', 'asp-controller', 'asp-area', or 'asp-route' attribute.";
+                "'asp-action', 'asp-controller', 'asp-area', 'asp-fragment', or 'asp-route' attribute.";
 
             var context = new TagHelperContext(
                 allAttributes: new TagHelperAttributeList(
@@ -502,7 +504,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 attributes: new TagHelperAttributeList(),
                 getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(null));
             var expectedErrorMessage = $"Cannot determine a 'formaction' attribute for <{tagName}>. <{tagName}> " +
-                "elements with a specified 'asp-route' must not have an 'asp-action' or 'asp-controller' attribute.";
+                "elements with a specified 'asp-route' must not have an 'asp-action', 'asp-controller', or 'asp-fragment' attribute.";
 
             var context = new TagHelperContext(
                 allAttributes: new TagHelperAttributeList(

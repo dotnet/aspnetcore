@@ -18,18 +18,21 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     [HtmlTargetElement("button", Attributes = ActionAttributeName)]
     [HtmlTargetElement("button", Attributes = ControllerAttributeName)]
     [HtmlTargetElement("button", Attributes = AreaAttributeName)]
+    [HtmlTargetElement("button", Attributes = FragmentAttributeName)]
     [HtmlTargetElement("button", Attributes = RouteAttributeName)]
     [HtmlTargetElement("button", Attributes = RouteValuesDictionaryName)]
     [HtmlTargetElement("button", Attributes = RouteValuesPrefix + "*")]
     [HtmlTargetElement("input", Attributes = ImageActionAttributeSelector, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("input", Attributes = ImageControllerAttributeSelector, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("input", Attributes = ImageAreaAttributeSelector, TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("input", Attributes = ImageFragmentAttributeSelector, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("input", Attributes = ImageRouteAttributeSelector, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("input", Attributes = ImageRouteValuesDictionarySelector, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("input", Attributes = ImageRouteValuesSelector, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("input", Attributes = SubmitActionAttributeSelector, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("input", Attributes = SubmitControllerAttributeSelector, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("input", Attributes = SubmitAreaAttributeSelector, TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("input", Attributes = SubmitFragmentAttributeSelector, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("input", Attributes = SubmitRouteAttributeSelector, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("input", Attributes = SubmitRouteValuesDictionarySelector, TagStructure = TagStructure.WithoutEndTag)]
     [HtmlTargetElement("input", Attributes = SubmitRouteValuesSelector, TagStructure = TagStructure.WithoutEndTag)]
@@ -38,6 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private const string ActionAttributeName = "asp-action";
         private const string AreaAttributeName = "asp-area";
         private const string ControllerAttributeName = "asp-controller";
+        private const string FragmentAttributeName = "asp-fragment";
         private const string RouteAttributeName = "asp-route";
         private const string RouteValuesDictionaryName = "asp-all-route-data";
         private const string RouteValuesPrefix = "asp-route-";
@@ -46,6 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private const string ImageTypeSelector = "[type=image], ";
         private const string ImageActionAttributeSelector = ImageTypeSelector + ActionAttributeName;
         private const string ImageAreaAttributeSelector = ImageTypeSelector + AreaAttributeName;
+        private const string ImageFragmentAttributeSelector = ImageTypeSelector + FragmentAttributeName;
         private const string ImageControllerAttributeSelector = ImageTypeSelector + ControllerAttributeName;
         private const string ImageRouteAttributeSelector = ImageTypeSelector + RouteAttributeName;
         private const string ImageRouteValuesDictionarySelector = ImageTypeSelector + RouteValuesDictionaryName;
@@ -54,6 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private const string SubmitTypeSelector = "[type=submit], ";
         private const string SubmitActionAttributeSelector = SubmitTypeSelector + ActionAttributeName;
         private const string SubmitAreaAttributeSelector = SubmitTypeSelector + AreaAttributeName;
+        private const string SubmitFragmentAttributeSelector = SubmitTypeSelector + FragmentAttributeName;
         private const string SubmitControllerAttributeSelector = SubmitTypeSelector + ControllerAttributeName;
         private const string SubmitRouteAttributeSelector = SubmitTypeSelector + RouteAttributeName;
         private const string SubmitRouteValuesDictionarySelector = SubmitTypeSelector + RouteValuesDictionaryName;
@@ -101,6 +107,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public string Area { get; set; }
 
         /// <summary>
+        /// Gets or sets the URL fragment.
+        /// </summary>
+        [HtmlAttributeName(FragmentAttributeName)]
+        public string Fragment { get; set; }
+
+        /// <summary>
         /// Name of the route.
         /// </summary>
         /// <remarks>
@@ -134,7 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <remarks>Does nothing if user provides an <c>formaction</c> attribute.</remarks>
         /// <exception cref="InvalidOperationException">
         /// Thrown if <c>formaction</c> attribute is provided and <see cref="Action"/>, <see cref="Controller"/>,
-        /// or <see cref="Route"/> are non-<c>null</c> or if the user provided <c>asp-route-*</c> attributes.
+        /// <see cref="Fragment"/> or <see cref="Route"/> are non-<c>null</c> or if the user provided <c>asp-route-*</c> attributes.
         /// Also thrown if <see cref="Route"/> and one or both of <see cref="Action"/> and <see cref="Controller"/>
         /// are non-<c>null</c>
         /// </exception>
@@ -156,6 +168,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 if (Action != null ||
                     Controller != null ||
                     Area != null ||
+                    Fragment != null ||
                     Route != null ||
                     (_routeValues != null && _routeValues.Count > 0))
                 {
@@ -167,6 +180,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             ActionAttributeName,
                             ControllerAttributeName,
                             AreaAttributeName,
+                            FragmentAttributeName,
                             RouteAttributeName,
                             RouteValuesPrefix,
                             FormAction));
@@ -194,7 +208,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 if (Route == null)
                 {
                     var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
-                    var url = urlHelper.Action(Action, Controller, routeValues);
+                    var url = urlHelper.Action(Action, Controller, routeValues, protocol: null, host: null, fragment: Fragment);
                     output.Attributes.SetAttribute(FormAction, url);
                 }
                 else if (Action != null || Controller != null)
@@ -206,12 +220,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             RouteAttributeName,
                             ActionAttributeName,
                             ControllerAttributeName,
-                            FormAction));
+                            FormAction,
+                            FragmentAttributeName));
                 }
                 else
                 {
                     var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
-                    var url = urlHelper.RouteUrl(Route, routeValues);
+                    var url = urlHelper.RouteUrl(Route, routeValues, protocol: null, host: null, fragment: Fragment);
                     output.Attributes.SetAttribute(FormAction, url);
                 }
             }

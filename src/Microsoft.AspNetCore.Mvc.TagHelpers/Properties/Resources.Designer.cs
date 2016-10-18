@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot override the '{1}' attribute for {0}. A {0} with a specified '{1}' must not have attributes starting with '{6}' or an '{2}' or '{3}' or '{4}' or '{5}' attribute.
+        /// Cannot override the '{1}' attribute for {0}. A {0} with a specified '{1}' must not have attributes starting with '{7}' or an '{2}', '{3}', '{4}', '{5}', or '{6}' attribute.
         /// </summary>
         internal static string FormTagHelper_CannotOverrideAction
         {
@@ -51,11 +51,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot override the '{1}' attribute for {0}. A {0} with a specified '{1}' must not have attributes starting with '{6}' or an '{2}' or '{3}' or '{4}' or '{5}' attribute.
+        /// Cannot override the '{1}' attribute for {0}. A {0} with a specified '{1}' must not have attributes starting with '{7}' or an '{2}', '{3}', '{4}', '{5}', or '{6}' attribute.
         /// </summary>
-        internal static string FormatFormTagHelper_CannotOverrideAction(object p0, object p1, object p2, object p3, object p4, object p5, object p6)
+        internal static string FormatFormTagHelper_CannotOverrideAction(object p0, object p1, object p2, object p3, object p4, object p5, object p6, object p7)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("FormTagHelper_CannotOverrideAction"), p0, p1, p2, p3, p4, p5, p6);
+            return string.Format(CultureInfo.CurrentCulture, GetString("FormTagHelper_CannotOverrideAction"), p0, p1, p2, p3, p4, p5, p6, p7);
         }
 
         /// <summary>
@@ -147,11 +147,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot determine an '{4}' attribute for {0}. A {0} with a specified '{1}' must not have an '{2}' or '{3}' attribute.
+        /// Cannot determine an '{4}' attribute for {0}. A {0} with a specified '{1}' must not have an '{2}', '{3}', or '{5}' attribute.
         /// </summary>
-        internal static string FormatFormTagHelper_CannotDetermineActionWithRouteAndActionOrControllerSpecified(object p0, object p1, object p2, object p3, object p4)
+        internal static string FormatFormTagHelper_CannotDetermineActionWithRouteAndActionOrControllerSpecified(object p0, object p1, object p2, object p3, object p4, object p5)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("FormTagHelper_CannotDetermineActionWithRouteAndActionOrControllerSpecified"), p0, p1, p2, p3, p4);
+            return string.Format(CultureInfo.CurrentCulture, GetString("FormTagHelper_CannotDetermineActionWithRouteAndActionOrControllerSpecified"), p0, p1, p2, p3, p4, p5);
         }
 
         /// <summary>
@@ -179,11 +179,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot override the '{6}' attribute for &lt;{0}&gt;. &lt;{0}&gt; elements with a specified '{6}' must not have attributes starting with '{5}' or an '{1}', '{2}', '{3}', or '{4}' attribute.
+        /// Cannot override the '{6}' attribute for &lt;{0}&gt;. &lt;{0}&gt; elements with a specified '{7}' must not have attributes starting with '{6}' or an '{1}', '{2}', '{3}', '{4}', or '{5}' attribute.
         /// </summary>
-        internal static string FormatFormActionTagHelper_CannotOverrideFormAction(object p0, object p1, object p2, object p3, object p4, object p5, object p6)
+        internal static string FormatFormActionTagHelper_CannotOverrideFormAction(object p0, object p1, object p2, object p3, object p4, object p5, object p6, object p7)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("FormActionTagHelper_CannotOverrideFormAction"), p0, p1, p2, p3, p4, p5, p6);
+            return string.Format(CultureInfo.CurrentCulture, GetString("FormActionTagHelper_CannotOverrideFormAction"), p0, p1, p2, p3, p4, p5, p6, p7);
         }
 
         /// <summary>
@@ -195,11 +195,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot determine a '{4}' attribute for &lt;{0}&gt;. &lt;{0}&gt; elements with a specified '{1}' must not have an '{2}' or '{3}' attribute.
+        /// Cannot determine a '{4}' attribute for &lt;{0}&gt;. &lt;{0}&gt; elements with a specified '{1}' must not have an '{2}', '{3}', or '{5}' attribute.
         /// </summary>
-        internal static string FormatFormActionTagHelper_CannotDetermineFormActionRouteActionOrControllerSpecified(object p0, object p1, object p2, object p3, object p4)
+        internal static string FormatFormActionTagHelper_CannotDetermineFormActionRouteActionOrControllerSpecified(object p0, object p1, object p2, object p3, object p4, object p5)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("FormActionTagHelper_CannotDetermineFormActionRouteActionOrControllerSpecified"), p0, p1, p2, p3, p4);
+            return string.Format(CultureInfo.CurrentCulture, GetString("FormActionTagHelper_CannotDetermineFormActionRouteActionOrControllerSpecified"), p0, p1, p2, p3, p4, p5);
         }
 
         private static string GetString(string name, params string[] formatterNames)
