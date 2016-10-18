@@ -7,7 +7,7 @@
     "dotnet-test-xunit": "1.0.0-rc3-000000-01",
     "Microsoft.AspNetCore.ResponseCaching": "1.0.0-preview1",
     "Microsoft.AspNetCore.TestHost": "1.0.0",
-    "Microsoft.Extensions.Logging.Testing": "1.0.0",
+    "Microsoft.Extensions.Logging.Testing": "1.0.0-rtm-21431",
     "xunit": "2.1.0"
   },
   "frameworks": {
