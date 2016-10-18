@@ -1,0 +1,39 @@
+{
+  "version": "1.0.0-preview3-*",
+  "description": "IIS Integration publish tool for .NET Core CLI. Contains the dotnet-publish-iis command for publishing web applications to be hosted using IIS.",
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/IISIntegration"
+    },
+    "tags": [
+      "aspnetcore",
+      "iis"
+    ]
+  },
+  "buildOptions": {
+    "emitEntryPoint": true,
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk",
+    "nowarn": [
+      "CS1591"
+    ],
+    "xmlDoc": true,
+    "outputName": "dotnet-publish-iis"
+  },
+  "dependencies": {
+    "Microsoft.Extensions.CommandLineUtils": "1.1.0-*",
+    "Microsoft.DotNet.ProjectModel": "1.0.0-*",
+    "System.Diagnostics.Process": "4.1.0-*"
+  },
+  "frameworks": {
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0-*"
+        }
+      }
+    }
+  }
+}
