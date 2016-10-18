@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.AspNetCore.Server.IISIntegration.Tools</id>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>IIS Integration publish tool for .NET Core CLI. Contains the dotnet-publish-iis command for publishing web applications to be hosted using IIS.</description>
+    <tags>aspnetcore,iis</tags>
+    <serviceable>true</serviceable>
+    <packageTypes>
+      <packageType name="DotnetCliTool" />
+    </packageTypes>
+    <dependencies>
+      <group targetFramework=".NETCoreApp1.0">
+        <dependency id="Microsoft.DotNet.ProjectModel" version="$dep_1$" />
+        <dependency id="Microsoft.Extensions.CommandLineUtils" version="$dep_2$" />
+        <dependency id="Microsoft.NETCore.App" version="$dep_3$" />
+        <dependency id="System.Diagnostics.Process" version="$dep_4$" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin/$configuration$/netcoreapp1.0/dotnet-publish-iis.dll" target="lib\netcoreapp1.0\" />
+    <file src="bin/$configuration$/netcoreapp1.0/dotnet-publish-iis.xml" target="lib\netcoreapp1.0\" />
+    <file src="bin/$configuration$/netcoreapp1.0/dotnet-publish-iis.runtimeconfig.json" target="lib\netcoreapp1.0\" />
+  </files>
+</package>

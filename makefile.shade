@@ -1,3 +1,7 @@
+use namespace="System.IO"
+
+default BASE_DIR_LOCAL='${Directory.GetCurrentDirectory()}'
+default BUILD_DIR_LOCAL='${Path.Combine(BASE_DIR_LOCAL, "artifacts", "build")}'
 
 var VERSION='0.1'
 var FULL_VERSION='0.1'
@@ -5,3 +9,21 @@ var AUTHORS='Microsoft Open Technologies, Inc.'
 
 use-standard-lifecycle
 k-standard-goals
+
+#build-pack .build-compile target='compile'
+    @{
+        if (Directory.Exists("src") && !IsLinux)
+        {
+            Directory.CreateDirectory(BUILD_DIR_LOCAL);
+            Dotnet("run -p tools/NuGetPackager -- -c " + E("Configuration") +
+                " -o artifacts/build/ "+
+                "-n src/Microsoft.AspNetCore.Server.IISIntegration.Tools/Microsoft.AspNetCore.Server.IISIntegration.Tools.nuspec");
+
+            DotnetPack("src/Microsoft.AspNetCore.Server.IISIntegration/project.json", BUILD_DIR_LOCAL, E("Configuration"), E("KOREBUILD_DOTNET_PACK_OPTIONS") + " --no-build");
+
+            foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR_LOCAL, "*/" + E("Configuration") + "/*.nupkg")))
+            {
+                File.Copy(nupkg, Path.Combine(BUILD_DIR_LOCAL, Path.GetFileName(nupkg)), true);
+            }
+        }
+    }

@@ -5,7 +5,9 @@
         ],
         "packages": {
             "Microsoft.AspNetCore.Server.IISIntegration": { },
-            "Microsoft.AspNetCore.Server.IISIntegration.Tools": { }
+            "Microsoft.AspNetCore.Server.IISIntegration.Tools": {
+                "packageTypes": ["DotnetCliTool"]
+            }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.
