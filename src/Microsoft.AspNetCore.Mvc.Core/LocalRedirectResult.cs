@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -83,18 +82,6 @@ namespace Microsoft.AspNetCore.Mvc
 
             var executor = context.HttpContext.RequestServices.GetRequiredService<LocalRedirectResultExecutor>();
             executor.Execute(context, this);
-        }
-
-        private IUrlHelper GetUrlHelper(ActionContext context)
-        {
-            var urlHelper = UrlHelper;
-            if (urlHelper == null)
-            {
-                var services = context.HttpContext.RequestServices;
-                urlHelper = services.GetRequiredService<IUrlHelperFactory>().GetUrlHelper(context);
-            }
-
-            return urlHelper;
         }
     }
 }

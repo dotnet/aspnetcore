@@ -120,7 +120,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.PartManager.PopulateFeature(feature);
 
             foreach (var controller in feature.Controllers.Select(c => c.AsType()))
-        {
+            {
                 builder.Services.TryAddTransient(controller, controller);
             }
 

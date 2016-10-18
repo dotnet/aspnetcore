@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             var urlHelper = result.UrlHelper ?? _urlHelperFactory.GetUrlHelper(context);
 
-            // IsLocalUrl is called to handle  Urls starting with '~/'.
+            // IsLocalUrl is called to handle URLs starting with '~/'.
             var destinationUrl = result.Url;
             if (urlHelper.IsLocalUrl(destinationUrl))
             {

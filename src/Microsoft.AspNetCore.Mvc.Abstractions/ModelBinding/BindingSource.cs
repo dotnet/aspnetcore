@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             if (object.ReferenceEquals(s1, null))
             {
-                return object.ReferenceEquals(s2, null); ;
+                return object.ReferenceEquals(s2, null);
             }
 
             return s1.Equals(s2);
