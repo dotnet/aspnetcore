@@ -748,7 +748,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <summary>
         /// Replaces the <paramref name="claim"/> on the specified <paramref name="user"/>, with the <paramref name="newClaim"/>.
         /// </summary>
-        /// <param name="user">The role to replace the claim on.</param>
+        /// <param name="user">The user to replace the claim on.</param>
         /// <param name="claim">The claim replace.</param>
         /// <param name="newClaim">The new claim replacing the <paramref name="claim"/>.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
