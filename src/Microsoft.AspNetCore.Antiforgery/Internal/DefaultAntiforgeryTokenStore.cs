@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             options.HttpOnly = true;
             options.Path = httpContext.Request.PathBase;
             // Note: don't use "newCookie.Secure = _options.RequireSSL;" since the default
-            // value of newCookie.Secure is poulated out of band.
+            // value of newCookie.Secure is populated out of band.
             if (_options.RequireSsl)
             {
                 options.Secure = true;
