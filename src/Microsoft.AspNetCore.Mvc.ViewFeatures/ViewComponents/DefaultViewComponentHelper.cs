@@ -135,12 +135,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         // Internal for testing
         internal IDictionary<string, object> GetArgumentDictionary(ViewComponentDescriptor descriptor, object arguments)
         {
-            if (descriptor.Parameters.Count == 1 && descriptor.Parameters[0].ParameterType.IsAssignableFrom(arguments.GetType()))
+            if (arguments != null)
             {
-                return new Dictionary<string, object>(capacity: 1, comparer: StringComparer.OrdinalIgnoreCase)
+                if (descriptor.Parameters.Count == 1 && descriptor.Parameters[0].ParameterType.IsAssignableFrom(arguments.GetType()))
                 {
-                    { descriptor.Parameters[0].Name, arguments }
-                };
+                    return new Dictionary<string, object>(capacity: 1, comparer: StringComparer.OrdinalIgnoreCase)
+                    {
+                        { descriptor.Parameters[0].Name, arguments }
+                    };
+                }
             }
 
             return PropertyHelper.ObjectToDictionary(arguments);

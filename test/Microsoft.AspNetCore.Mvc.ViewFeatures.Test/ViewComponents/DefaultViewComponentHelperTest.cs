@@ -16,6 +16,21 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
     public class DefaultViewComponentHelperTest
     {
         [Fact]
+        public void GetArgumentDictionary_SupportsNullArguments()
+        {
+            // Arrange
+            var helper = CreateHelper();
+            var descriptor = CreateDescriptorForType(typeof(ViewComponentSingleParam));
+
+            // Act
+            var argumentDictionary = helper.GetArgumentDictionary(descriptor, null);
+
+            // Assert
+            Assert.Equal(0, argumentDictionary.Count);
+            Assert.IsType(typeof(Dictionary<string,object>),argumentDictionary);
+        }
+
+        [Fact]
         public void GetArgumentDictionary_SupportsAnonymouslyTypedArguments()
         {
             // Arrange
