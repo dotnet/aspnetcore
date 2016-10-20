@@ -3,7 +3,7 @@ k-standard-goals
 
 #push-packages target="verify"
     @{
-        if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_PUBLISH_FEED")))
+        if (IsTeamCity)
         {
             Environment.SetEnvironmentVariable("NUGET_PUBLISH_FEED", "https://dotnet.myget.org/F/aspnetcore-feature-work/api/v2/package");
             CallTarget("nuget-install");
