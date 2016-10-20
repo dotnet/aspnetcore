@@ -1,0 +1,10 @@
+@{
+    if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_PUBLISH_FEED")))
+    {
+        Environment.SetEnvironmentVariable("NUGET_PUBLISH_FEED", "https://dotnet.myget.org/F/aspnetcore-feature-work/api/v2/package");
+    }
+}
+
+use-standard-lifecycle
+k-standard-goals
+
