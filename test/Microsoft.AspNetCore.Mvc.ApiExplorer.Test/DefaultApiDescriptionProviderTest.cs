@@ -424,11 +424,14 @@ namespace Microsoft.AspNetCore.Mvc.Description
                         new ProducesAttribute("text/json", "application/json") { Type = typeof(Customer) },
                         FilterScope.Action),
                     new FilterDescriptor(
+                        new ProducesResponseTypeAttribute(304),
+                        FilterScope.Action),
+                    new FilterDescriptor(
                         new ProducesResponseTypeAttribute(typeof(BadData), 400),
                         FilterScope.Action),
                     new FilterDescriptor(
                         new ProducesResponseTypeAttribute(typeof(ErrorDetails), 500),
-                        FilterScope.Action)
+                        FilterScope.Action),
                 };
 
                 return new TheoryData<Type, string, List<FilterDescriptor>>
@@ -444,10 +447,15 @@ namespace Microsoft.AspNetCore.Mvc.Description
                         filterDescriptors
                     },
                     {
+                        typeof(DefaultApiDescriptionProviderTest),
+                        nameof(DefaultApiDescriptionProviderTest.ReturnsActionResult),
+                        filterDescriptors
+                    },
+                    {
                         typeof(DerivedProducesController),
                         nameof(DerivedProducesController.ReturnsActionResult),
                         filterDescriptors
-                    },
+                    }
                 };
             }
         }
@@ -469,7 +477,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
 
             // Assert
             var description = Assert.Single(descriptions);
-            Assert.Equal(3, description.SupportedResponseTypes.Count);
+            Assert.Equal(4, description.SupportedResponseTypes.Count);
 
             Assert.Collection(
                 description.SupportedResponseTypes.OrderBy(responseType => responseType.StatusCode),
@@ -479,6 +487,13 @@ namespace Microsoft.AspNetCore.Mvc.Description
                     Assert.Equal(typeof(Customer), responseType.Type);
                     Assert.NotNull(responseType.ModelMetadata);
                     Assert.Equal(expectedMediaTypes, GetSortedMediaTypes(responseType));
+                },
+                responseType =>
+                {
+                    Assert.Equal(304, responseType.StatusCode);
+                    Assert.Equal(typeof(void), responseType.Type);
+                    Assert.Null(responseType.ModelMetadata);
+                    Assert.Empty(responseType.ApiResponseFormats);
                 },
                 responseType =>
                 {
@@ -509,7 +524,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
                         new ProducesAttribute("text/json", "application/json"),
                         FilterScope.Action),
                     new FilterDescriptor(
-                        new ProducesResponseTypeAttribute(typeof(void), 200),
+                        new ProducesResponseTypeAttribute(200),
                         FilterScope.Action),
                     new FilterDescriptor(
                         new ProducesResponseTypeAttribute(typeof(BadData), 400),
