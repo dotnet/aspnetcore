@@ -712,8 +712,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await connection.Receive(
                         $"HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Transfer-Encoding: chunked",
                         "Content-Length: 13",
+                        "Transfer-Encoding: chunked",
                         "",
                         "hello, world");
                 }
@@ -748,8 +748,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await connection.Receive(
                         $"HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Transfer-Encoding: chunked",
                         "Content-Length: 11",
+                        "Transfer-Encoding: chunked",
                         "",
                         "hello, world");
                 }

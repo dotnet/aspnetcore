@@ -44,12 +44,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
                                     _headers._raw{header.Identifier} = null;")}
                                 }}
                                 return;
-
                             }}
                         ")}}}
                         break;
-
-                        
                 ")}}}
 
                 {(handleUnknown ? $@"
@@ -450,17 +447,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 _bits = 0;
                 return;
             }}
-
             {Each(loop.Headers.OrderBy(h => !h.PrimaryHeader), header => $@"
-                if ({header.TestBit()})
+            if ({header.TestBit()})
+            {{
+                _headers._{header.Identifier} = default(StringValues);
+                {header.ClearBit()};
+                if(_bits == 0)
                 {{
-                    _headers._{header.Identifier} = default(StringValues);
-                    {header.ClearBit()};
-                    if(_bits == 0)
-                    {{
-                        return;
-                    }}
+                    return;
                 }}
+            }}
             ")}
         }}
 
