@@ -3,6 +3,7 @@
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Razor.Evolution": "1.1.0-*",
+    "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"
   },
   "testRunner": "xunit",
