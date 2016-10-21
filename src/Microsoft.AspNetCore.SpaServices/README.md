@@ -688,7 +688,7 @@ If you're unfamiliar with your browser's debugging tools, then take the time to 
 
 #### Using your browser's built-in debugging tools
 
-**Using Chrome's developer tools for debugging**
+##### Using Chrome's developer tools for debugging
 
 In Chrome, with your application running in the browser, [open the developer tools](https://developer.chrome.com/devtools#access). You can now find your code:
 
@@ -697,7 +697,7 @@ In Chrome, with your application running in the browser, [open the developer too
 
 With source maps enabled (which is the case in the project templates in this repo), you'll be able to see your original TypeScript source code, set breakpoints on it, etc.
 
-**Using Internet Explorer/Edge's developer tools (F12) for debugging**
+##### Using Internet Explorer/Edge's developer tools (F12) for debugging
 
 In Internet Explorer or Edge, with your application running in the browser, open the F12 developer tools by pressing `F12`. You can now find your code:
 
@@ -706,7 +706,7 @@ In Internet Explorer or Edge, with your application running in the browser, open
 
 With source maps enabled (which is the case in the project templates in this repo), you'll be able to see your original TypeScript source code, set breakpoints on it, etc.
 
-**Using Firefox's developer tools for debugging**
+##### Using Firefox's developer tools for debugging
 
 In Firefox, with your application running in the browser, open the developer tools by pressing `F12`. You can now find your code:
 
@@ -715,7 +715,7 @@ In Firefox, with your application running in the browser, open the developer too
 
 With source maps enabled (which is the case in the project templates in this repo), you'll be able to see your original TypeScript source code, set breakpoints on it, etc.
 
-**How browser-based debugging interacts with Hot Module Replacement (HMR)**
+##### How browser-based debugging interacts with Hot Module Replacement (HMR)
 
 If you're using HMR, then each time you modify a file, the Webpack dev middleware restarts your client-side application, adding a new version of each affected module, without reloading the page. This can be confusing during debugging, because any breakpoints set on the old version of the code will still be there, but they will no longer get hit, because the old version of the module is no longer in use.
 
@@ -746,7 +746,7 @@ If you're using Visual Studio Code and Chrome, you can set breakpoints directly 
 
 For more information about VS Code's built-in debugging facilities, [see its documentation](https://code.visualstudio.com/Docs/editor/debugging).
 
-**Caveats**
+Caveats:
 
  * The debugging interface between VS Code and Chrome occasionally has issues. If you're unable to set or hit breakpoints, or if you try to set a breakpoint but it appears in the wrong place, you may need to stop and restart the debugger (and often, the whole Chrome process).
  * If you're using Hot Module Replacement (HMR), then whenever you edit a file, the breakpoints in it will no longer hit. This is because HMR loads a new version of the module into the browser, so the old code no longer runs. To fix this, you must:
