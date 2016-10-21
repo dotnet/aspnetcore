@@ -88,19 +88,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    try
-                    {
-                        await connection.SendEnd(
-                            "POST / HTTP/1.0",
-                            "Content-Length: 12",
-                            "",
-                            "Hello World?");
-                    }
-                    catch (IOException)
-                    {
-                        // Will throw because the exception in the connection filter will close the connection.
-                        Assert.True(true);
-                    }
+                    // Will throw because the exception in the connection filter will close the connection.
+                    await Assert.ThrowsAsync<IOException>(async () => await connection.SendEnd(
+                        "POST / HTTP/1.0",
+                        "Content-Length: 12",
+                        "",
+                        "Hello World?"));
                 }
             }
         }
