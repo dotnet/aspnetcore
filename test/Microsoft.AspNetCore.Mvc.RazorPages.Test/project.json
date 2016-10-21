@@ -10,7 +10,6 @@
     "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"
   },
-  "testRunner": "xunit",
   "frameworks": {
     "netcoreapp1.1": {
       "dependencies": {
