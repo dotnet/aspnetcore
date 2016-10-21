@@ -38,6 +38,8 @@ If you're starting from scratch, you might prefer to use the `aspnetcore-spa` Ye
 
 See: [Getting started with the aspnetcore-spa generator](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/)
 
+Also, if you want to debug projects created with the aspnetcore-spa generator, see [Debugging your projects](#debugging-your-projects)
+
 ## Server-side prerendering
 
 The `SpaServices` package isn't tied to any particular client-side framework, and it doesn't force you to set up your client-side application in any one particular style. So, `SpaServices` doesn't contain hard-coded logic for rendering Angular 2 / React / etc. components.
@@ -664,3 +666,141 @@ Then, since `MapSpaFallbackRoute` is last, any other requests **that don't appea
 Any requests that do appear to be for static files (i.e., those that end with filename extensions), will *not* be handled by `MapSpaFallbackRoute`, and so will end up as 404s.
 
 This is not a perfect solution to the problem of identifying 404s, because for example `MapSpaFallbackRoute` will not match requests for `/users/albert.einstein`, because it appears to contain a filename extension (`.einstein`). If you need your SPA to handle routes like that, then don't use `MapSpaFallbackRoute` - just use a regular MVC catch-all route. But then beware that requests for unknown static files will result in your client-side app being rendered.
+
+## Debugging your projects
+
+How to attach and use a debugger depends on what code you want to debug. For details, see:
+
+ * How to debug your C# code that runs on the server
+ * How to debug your JavaScript/TypeScript code:
+   * ... when it's running in a browser
+   * ... when it's running on the server (i.e., via `asp-prerender` or NodeSevices)
+
+### Debugging your C# code that runs on the server
+
+You can use any .NET debugger, for example Visual Studio's C# debugger or [Visual Studio Code's C# debugger](https://code.visualstudio.com/Docs/editor/debugging).
+
+### Debugging your JavaScript/TypeScript code when it's running in a browser
+
+**The absolute most reliable way of debugging your client-side code is to use your browser's built-in debugger.** This is much easier to make work than debugging via an IDE, plus it offers much richer insight into what's going on than your IDE will do (for example, you'll be able to inspect the DOM and capture performance profiles as well as just set breakpoints and step through code).
+
+If you're unfamiliar with your browser's debugging tools, then take the time to get familiar with them. You will become more productive.
+
+#### Using your browser's built-in debugging tools
+
+**Using Chrome's developer tools for debugging**
+
+In Chrome, with your application running in the browser, [open the developer tools](https://developer.chrome.com/devtools#access). You can now find your code:
+
+ * In the developer tools *Sources* tab, expand folders in the hierarchy pane on the left to find the file you want
+ * Or, press `ctrl`+`o` (on Windows) or `cmd`+`o` on Mac, then start to type name name of the file you want to open (e.g., `counter.component.ts`)
+
+With source maps enabled (which is the case in the project templates in this repo), you'll be able to see your original TypeScript source code, set breakpoints on it, etc.
+
+**Using Internet Explorer/Edge's developer tools (F12) for debugging**
+
+In Internet Explorer or Edge, with your application running in the browser, open the F12 developer tools by pressing `F12`. You can now find your code:
+
+ * In the F12 tools *Debugger* tab, expand folders in the hierarchy pane on the left to find the file you want
+ * Or, press `ctrl`+`o`, then start to type name name of the file you want to open (e.g., `counter.component.ts`)
+
+With source maps enabled (which is the case in the project templates in this repo), you'll be able to see your original TypeScript source code, set breakpoints on it, etc.
+
+**Using Firefox's developer tools for debugging**
+
+In Firefox, with your application running in the browser, open the developer tools by pressing `F12`. You can now find your code:
+
+ * In the developer tools *Debugger* tab, expand folders in the hierarchy pane titled *Sources* towards the bottom to find the file you want
+ * Or, press `ctrl`+`o` (on Windows) or `cmd`+`o` on Mac, then start to type name name of the file you want to open (e.g., `counter.component.ts`)
+
+With source maps enabled (which is the case in the project templates in this repo), you'll be able to see your original TypeScript source code, set breakpoints on it, etc.
+
+**How browser-based debugging interacts with Hot Module Replacement (HMR)**
+
+If you're using HMR, then each time you modify a file, the Webpack dev middleware restarts your client-side application, adding a new version of each affected module, without reloading the page. This can be confusing during debugging, because any breakpoints set on the old version of the code will still be there, but they will no longer get hit, because the old version of the module is no longer in use.
+
+You have two options to get breakpoints that will be hit as expected:
+
+ * **Reload the page** (e.g., by pressing `F5`). Then your existing breakpoints will be applied to the new version of the module. This is obviously the easiest solution.
+ * Or, if you don't want to reload the page, you can **set new breakpoints on the new version of the module**. To do this, look in your browser's debug tools' list of source files, and identify the newly-injected copy of the module you want to debug. It will typically have a suffix on its URL such as `?4a2c`, and may appear in a new top-level hierarchy entry called `webpack://`. Set a breakpoint in the newly-injected module, and it will be hit as expected as your application runs.
+
+#### Using Visual Studio Code's "Debugger for Chrome" extension
+
+If you're using Visual Studio Code and Chrome, you can set breakpoints directly on your TypeScript source code in the IDE. To do this:
+
+1. Install VS Code's [*Debugger for Chrome* extension](https://marketplace.visualstudio.com/items?itemName=msjsdiag.debugger-for-chrome)
+2. Ensure your application server has started and can be reached on `localhost` (for example, run `dotnet watch run`)
+3. In VS Code, open its *Debug* view (on Windows/Linux, press `ctrl`+`shift`+`d`; on Mac, press `cmd`+`shift`+`d`).
+4. Press the cog icon and when prompted to *Select environment*, choose `Chrome`. VS Code will create a `launch.json` file for you. This describes how the debugger and browser should be launched.
+5. Edit your new `.vscode/launch.json` file to specify the correct `url` and `webRoot` for your application. If you're using the project templates in this repo, then the values you probably want are:
+     * For `url`, put `"http://localhost:5000"` (but of course, change this if you're using a different port)
+     * For `port`, put `5000` (or your custom port number if applicable)
+     * For `workspace` in **both** configurations, put `"${workspaceRoot}/wwwroot"`
+       * This tells the debugger how URLs within your application correspond to files in your VS Code workspace. By default, ASP.NET Core projects treat `wwwroot` as the root directory for publicly-served files, so `http://localhost:5000/dist/myfile.js` corresponds to `<yourprojectroot>/wwwroot/dist/myfile.js`. VS Code doesn't know about `wwwroot` unless you tell it.
+       * **Important:** If your VS Code window's workspace root is not the same as your ASP.NET Core project root (for example, if VS Code is opened at a higher-level directory to show both your ASP.NET Core project plus other peer-level directories), then you will need to amend `workspace` correspondingly (e.g., to `"${workspaceRoot}/SomeDir/MyAspNetProject/wwwroot"`).
+6. Start the debugger:
+   * While still on the *Debug* view, from the dropdown near the top-left, choose "*Launch Chrome against localhost, with sourcemaps*".
+   * Press the *Play* icon. Your application will launch in Chrome.
+     * If you get the error *Cannot connect to runtime process*, that's because you already have an instance of Chrome running. Close it first, then try again.
+7. Finally, you can now set and hit breakpoints in your TypeScript code in VS Code.
+
+For more information about VS Code's built-in debugging facilities, [see its documentation](https://code.visualstudio.com/Docs/editor/debugging).
+
+**Caveats**
+
+ * The debugging interface between VS Code and Chrome occasionally has issues. If you're unable to set or hit breakpoints, or if you try to set a breakpoint but it appears in the wrong place, you may need to stop and restart the debugger (and often, the whole Chrome process).
+ * If you're using Hot Module Replacement (HMR), then whenever you edit a file, the breakpoints in it will no longer hit. This is because HMR loads a new version of the module into the browser, so the old code no longer runs. To fix this, you must:
+   * Reload the page in Chrome (e.g., by pressing `F5`)
+   * **Then** (and only then), remove and re-add the breakpoint in VS Code. It will now be attached to the current version of your module. Alternatively, stop and restart debugging altogether.
+ * If you prefer, you can use "*Attach to Chrome, with sourcemaps*" instead of launching a new Chrome instance, but this is a bit trickier: you must first start Chrome using the command-line option `--remote-debugging-port=9222`, and you must ensure there are no other tabs opened (otherwise, it might try to connect to the wrong one).
+
+
+#### Using Visual Studio's built-in debugger for Internet Explorer
+
+If you're using Visual Studio on Windows, and are running your app in Internet Explorer 11 (not Edge!), then you can use VS's built-in debugger rather than Interner Explorer's F12 tools if you prefer. To do this:
+
+ 1. In Internet Explorer, [enable script debugging](https://msdn.microsoft.com/en-us/library/ms241741\(v=vs.100\).aspx)
+ 2. In Visual Studio, [set the default "*Browse with*" option](http://stackoverflow.com/a/31959053) to Internet Explorer
+ 3. In Visual Studio, press F5 to launch your application with the debugger in Internet Explorer.
+    * When the page has loaded in the browser, you'll be able to set and hit breakpoints in your TypeScript source files in Visual Studio.
+
+Caveats:
+
+ * If you're using Hot Module Replacement, you'll need to stop and restart the debugger any time you change a source file. VS's IE debugger does not recognise that source files might change while the debugging session is in progress.
+ * Realistically, you are not going to be as productive using this approach to debugging as you would be if you used your browser's built-in debugging tools. The browser's built-in debugging tools are far more effective: they are always available (you don't have to have launched your application in a special way), they better handle HMR, and they don't make your application very slow to launch.
+
+## Debugging your JavaScript/TypeScript code when it runs on the server
+
+When you're using NodeServices or the server-side prerendering feature included in the project templates in this repo, your JavaScript/TypeScript code will execute on the server in a background instance of Node.js. You can enable debugging on that Node.js instance. Here's how to do it.
+
+First, in your `Startup.cs` file, in the `ConfigureServices` method, add the following:
+
+```
+services.AddNodeServices(options => {
+    options.LaunchWithDebugging = true;
+    options.DebuggingPort = 5858;
+});
+```
+
+Now, run your application from that command line (e.g., `dotnet run`). Then in a browser visit one of your pages that causes server-side JS to execute.
+
+In the console, you should see all the normal trace messages appear, plus among them will be:
+
+      -----
+      *** Node.js debugging is enabled ***
+      Debugger listening on port 5858
+
+      To debug, run:
+         node-inspector
+      
+      If you haven't yet installed node-inspector, you can do so as follows:
+         npm install -g node-inspector
+      -----
+
+In some other command line window, follow those instructions (i.e., install `node-inspector` as it describes, then run `node-inspector`). Then you can open a browser at `http://127.0.0.1:8080/?port=5858` and you'll see the debugger UI.
+
+By expanding the `webpack://` entry in the sidebar, you'll be able to find your original TypeScript code (it's using source maps), and then set breakpoints in it. When you re-run your app in another browser window, your breakpoints will be hit, then you can debug the server-side execution just like you'd debug client-side execution. It looks like this:
+
+![screen shot 2016-07-26 at 18 56 12](https://cloud.githubusercontent.com/assets/1101362/17149317/a6f7d00c-5362-11e6-969c-4c3a9bbc33f7.png)
+
+(Note: although this looks like Chrome's native debugger for client-side code, it is actually a JavaScript-powered debugger UI that's connected to the server-side runtime)
