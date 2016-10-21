@@ -35,7 +35,7 @@
     "react-router-redux": "^4.0.6",
     "redux": "^3.6.0",
     "redux-thunk": "^2.1.0",
-    "redux-typed": "^1.0.1",
+    "redux-typed": "^2.0.0",
     "style-loader": "^0.13.0",
     "ts-loader": "^0.8.1",
     "typescript": "2.0.3",
