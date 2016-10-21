@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
-using System.IO;
-using System.Text;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -24,6 +22,60 @@ namespace Microsoft.AspNetCore.Mvc
 {
     public class AcceptedAtActionResultTests
     {
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("actionName")]
+        public void Constructor_InitializesActionName(string actionName)
+        {
+            // Act
+            var result = new AcceptedAtActionResult(actionName: actionName, controllerName: null, routeValues: null, value: null);
+
+            // Assert
+            Assert.Equal(actionName, result.ActionName);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("controllerName")]
+        public void Constructor_InitializesControllerName(string controllerName)
+        {
+            // Act
+            var result = new AcceptedAtActionResult(actionName: null, controllerName: controllerName, routeValues: null, value: null);
+
+            // Assert
+            Assert.Equal(controllerName, result.ControllerName);
+        }
+
+        public static TheoryData<object, int> RouteValuesData()
+        {
+            return new TheoryData<object, int>()
+            {
+                { null, -1 },
+                { "value", 1 },
+                { new object(), 0 }
+            };
+        }
+
+        [Theory]
+        [MemberData(nameof(RouteValuesData))]
+        public void Constructor_InitializesRouteValues(object routeValues, int expectedRouteValuesCount)
+        {
+            // Act
+            var result = new AcceptedAtActionResult(actionName: null, controllerName: null, routeValues: routeValues, value: null);
+
+            // Assert
+            if (expectedRouteValuesCount == -1)
+            {
+                Assert.Null(result.RouteValues);
+            }
+            else
+            {
+                Assert.Equal(expectedRouteValuesCount, result.RouteValues.Count);
+            }
+        }
+
         public static TheoryData<object> ValuesData
         {
             get
@@ -54,6 +106,16 @@ namespace Microsoft.AspNetCore.Mvc
             // Assert
             Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
             Assert.Same(value, result.Value);
+        }
+
+        [Fact]
+        public void UrlHelper_Get_ReturnsNull()
+        {
+            // Act         
+            var result = new AcceptedAtActionResult(actionName: null, controllerName: null, routeValues: null, value: null);
+
+            // Assert
+            Assert.Null(result.UrlHelper);
         }
 
         [Theory]
@@ -111,14 +173,16 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(expectedUrl, httpContext.Response.Headers["Location"]);
         }
 
-        [Fact]
-        public async Task ExecuteResultAsync_ThrowsIfActionUrlIsNull()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public async Task ExecuteResultAsync_ThrowsIfActionUrlIsNullOrEmpty(string returnValue)
         {
             // Arrange
             var formatter = CreateMockFormatter();
             var httpContext = GetHttpContext(formatter);
             var actionContext = GetActionContext(httpContext);
-            var urlHelper = GetMockUrlHelper(returnValue: null);
+            var urlHelper = GetMockUrlHelper(returnValue);
 
             // Act
             var result = new AcceptedAtActionResult(
@@ -133,6 +197,46 @@ namespace Microsoft.AspNetCore.Mvc
             await ExceptionAssert.ThrowsAsync<InvalidOperationException>(() =>
                 result.ExecuteResultAsync(actionContext),
                 "No route matches the supplied values.");
+        }
+
+        [Fact]
+        public void OnFormatting_NullUrlHelperContextHasRequestServices_ReturnsRequestServicesAction()
+        {
+            // Arrange
+            var context = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+            context.HttpContext.RequestServices = new ForwardingServiceProvider();
+
+            // Act
+            var result = new AcceptedAtActionResult(actionName: null, controllerName: null, routeValues: null, value: null);
+            result.OnFormatting(context);
+
+            // Assert
+            var header = context.HttpContext.Response.Headers.Last();
+            Assert.Equal("Location", header.Key);
+            Assert.Equal("abc", header.Value);
+        }
+
+        [Fact]
+        public void OnFormatting_NullUrlHelperContextNoRequestServices_ThrowsArgumentNullExeption()
+        {
+            // Arrange
+            var context = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+
+            // Act
+            var result = new AcceptedAtActionResult(actionName: null, controllerName: null, routeValues: null, value: null);
+
+            // Assert
+            Assert.Throws<ArgumentNullException>("provider", () => result.OnFormatting(context));
+        }
+
+        [Fact]
+        public void OnFormatting_NullContext_ThrowsArgumentNullException()
+        {
+            // Act
+            var result = new AcceptedAtActionResult("actionName", "controllerName", "routeValues", "value");
+
+            // Assert
+            Assert.Throws<ArgumentNullException>("context", () => result.OnFormatting(null));
         }
 
         private static ActionContext GetActionContext(HttpContext httpContext)
@@ -183,6 +287,33 @@ namespace Microsoft.AspNetCore.Mvc
             urlHelper.Setup(o => o.Action(It.IsAny<UrlActionContext>())).Returns(returnValue);
 
             return urlHelper.Object;
+        }
+
+        private class ForwardingServiceProvider : IServiceProvider
+        {
+            public object GetService(Type serviceType) => new ForwardingUrlHelperFactory();
+        }
+
+        private class ForwardingUrlHelperFactory : IUrlHelperFactory
+        {
+            public IUrlHelper GetUrlHelper(ActionContext context) => new ForwardingUrlHelper() { ActionValue = "abc" };
+        }
+
+        private class ForwardingUrlHelper : IUrlHelper
+        {
+            public string ActionValue { get; set; }
+
+            public ActionContext ActionContext => null;
+
+            public string Action(UrlActionContext actionContext) => ActionValue;
+
+            public string Content(string contentPath) => null;
+
+            public bool IsLocalUrl(string url) => false;
+
+            public string Link(string routeName, object values) => null;
+
+            public string RouteUrl(UrlRouteContext routeContext) => null;
         }
     }
 }
