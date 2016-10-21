@@ -729,7 +729,7 @@ You have two options to get breakpoints that will be hit as expected:
 If you're using Visual Studio Code and Chrome, you can set breakpoints directly on your TypeScript source code in the IDE. To do this:
 
 1. Install VS Code's [*Debugger for Chrome* extension](https://marketplace.visualstudio.com/items?itemName=msjsdiag.debugger-for-chrome)
-2. Ensure your application server has started and can be reached on `localhost` (for example, run `dotnet watch run`)
+2. Ensure your application server has started and can be reached with a browser (for example, run `dotnet watch run`)
 3. In VS Code, open its *Debug* view (on Windows/Linux, press `ctrl`+`shift`+`d`; on Mac, press `cmd`+`shift`+`d`).
 4. Press the cog icon and when prompted to *Select environment*, choose `Chrome`. VS Code will create a `launch.json` file for you. This describes how the debugger and browser should be launched.
 5. Edit your new `.vscode/launch.json` file to specify the correct `url` and `webRoot` for your application. If you're using the project templates in this repo, then the values you probably want are:
@@ -741,7 +741,7 @@ If you're using Visual Studio Code and Chrome, you can set breakpoints directly 
 6. Start the debugger:
    * While still on the *Debug* view, from the dropdown near the top-left, choose "*Launch Chrome against localhost, with sourcemaps*".
    * Press the *Play* icon. Your application will launch in Chrome.
-     * If you get the error *Cannot connect to runtime process*, that's because you already have an instance of Chrome running. Close it first, then try again.
+     * If it does nothing for a while, then eventually gives the error *Cannot connect to runtime process*, that's because you already have an instance of Chrome running. Close it first, then try again.
 7. Finally, you can now set and hit breakpoints in your TypeScript code in VS Code.
 
 For more information about VS Code's built-in debugging facilities, [see its documentation](https://code.visualstudio.com/Docs/editor/debugging).
