@@ -59,6 +59,9 @@
       "Views",
       "web.config",
       "wwwroot"
+    ],
+    "exclude": [
+      "wwwroot/dist/*.map"
     ]
   },
 

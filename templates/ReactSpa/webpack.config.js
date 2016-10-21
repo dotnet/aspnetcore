@@ -3,12 +3,13 @@ var path = require('path');
 var webpack = require('webpack');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
+var bundleOutputDir = './wwwroot/dist';
 module.exports = {
     devtool: isDevBuild ? 'inline-source-map' : null,
     entry: { 'main': './ClientApp/boot.tsx' },
     resolve: { extensions: [ '', '.js', '.jsx', '.ts', '.tsx' ] },
     output: {
-        path: path.join(__dirname, './wwwroot/dist'),
+        path: path.join(__dirname, bundleOutputDir),
         filename: '[name].js',
         publicPath: '/dist/'
     },
@@ -27,7 +28,10 @@ module.exports = {
         })
     ].concat(isDevBuild ? [
         // Plugins that apply in development builds only
-        new webpack.SourceMapDevToolPlugin({ moduleFilenameTemplate: '../../[resourcePath]' }) // Compiled output is at './wwwroot/dist/', but sources are relative to './'
+        new webpack.SourceMapDevToolPlugin({
+            filename: '[name].js.map', // Remove this line if you prefer inline source maps
+            moduleFilenameTemplate: path.relative(bundleOutputDir, '[resourcePath]') // Point sourcemap entries to the original file locations on disk
+        })
     ] : [
         // Plugins that apply in production builds only
         new webpack.optimize.OccurenceOrderPlugin(),

@@ -23,9 +23,10 @@ var sharedConfig = {
 };
 
 // Configuration for client-side bundle suitable for running in browsers
+var clientBundleOutputDir = './wwwroot/dist';
 var clientBundleConfig = merge(sharedConfig, {
     entry: { 'main-client': './ClientApp/boot-client.ts' },
-    output: { path: path.join(__dirname, './wwwroot/dist') },
+    output: { path: path.join(__dirname, clientBundleOutputDir) },
     plugins: [
         new webpack.DllReferencePlugin({
             context: __dirname,
@@ -33,7 +34,10 @@ var clientBundleConfig = merge(sharedConfig, {
         })
     ].concat(isDevBuild ? [
         // Plugins that apply in development builds only
-        new webpack.SourceMapDevToolPlugin({ moduleFilenameTemplate: '../../[resourcePath]' }) // Compiled output is at './wwwroot/dist/', but sources are relative to './'
+        new webpack.SourceMapDevToolPlugin({
+            filename: '[name].js.map', // Remove this line if you prefer inline source maps
+            moduleFilenameTemplate: path.relative(clientBundleOutputDir, '[resourcePath]') // Point sourcemap entries to the original file locations on disk
+        })
     ] : [
         // Plugins that apply in production builds only
         new webpack.optimize.OccurenceOrderPlugin(),
