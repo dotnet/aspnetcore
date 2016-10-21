@@ -1,0 +1,25 @@
+﻿{
+  "buildOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "dotnet-test-xunit": "2.2.0-*",
+    "Microsoft.AspNetCore.Mvc.ViewFeatures": { "target": "project" },
+    "Microsoft.AspNetCore.Testing": "1.1.0-*",
+    "Microsoft.DotNet.InternalAbstractions": "1.0.0",
+    "Moq": "4.6.36-*",
+    "xunit": "2.2.0-*"
+  },
+  "testRunner": "xunit",
+  "frameworks": {
+    "netcoreapp1.1": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.1.0-*",
+          "type": "platform"
+        }
+      }
+    },
+    "net451": {}
+  }
+}
