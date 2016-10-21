@@ -671,10 +671,10 @@ This is not a perfect solution to the problem of identifying 404s, because for e
 
 How to attach and use a debugger depends on what code you want to debug. For details, see:
 
- * How to debug your C# code that runs on the server
+ * [How to debug your C# code that runs on the server](#debugging-your-c-code-that-runs-on-the-server)
  * How to debug your JavaScript/TypeScript code:
-   * ... when it's running in a browser
-   * ... when it's running on the server (i.e., via `asp-prerender` or NodeSevices)
+   * ... [when it's running in a browser](#debugging-your-javascripttypescript-code-when-its-running-in-a-browser)
+   * ... [when it's running on the server](#debugging-your-javascripttypescript-code-when-it-runs-on-the-server) (i.e., via `asp-prerender` or NodeSevices)
 
 ### Debugging your C# code that runs on the server
 
