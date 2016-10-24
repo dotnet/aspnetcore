@@ -38,6 +38,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                 return;
             }
 
+            if (string.Equals(rules.Name.ToString(), "GlobalRules", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new NotSupportedException("Support for global rules has not been implemented yet");
+            }
+
             foreach (var rule in rules.Elements(RewriteTags.Rule))
             {
                 var builder = new UrlRewriteRuleBuilder();
@@ -58,6 +63,17 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             if (!bool.TryParse(rule.Attribute(RewriteTags.Enabled)?.Value, out enabled))
             {
                 builder.Enabled = true;
+            }
+            else
+            {
+                if (enabled)
+                {
+                    builder.Enabled = enabled;
+                }
+                else
+                {
+                    return;
+                }
             }
 
             PatternSyntax patternSyntax;
@@ -149,7 +165,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             bool negate;
             if (!bool.TryParse(condition.Attribute(RewriteTags.Negate)?.Value, out negate))
             {
-                ignoreCase = false;
+                negate = false;
             }
 
             MatchType matchType;
