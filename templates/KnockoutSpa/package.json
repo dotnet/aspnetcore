@@ -4,6 +4,7 @@
   "devDependencies": {
     "@types/core-js": "^0.9.34",
     "@types/crossroads": "0.0.29",
+    "@types/es6-promise": "0.0.32",
     "@types/history": "^2.0.38",
     "@types/jquery": "^2.0.32",
     "@types/knockout": "^3.4.35",

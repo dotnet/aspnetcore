@@ -3,7 +3,8 @@
     "moduleResolution": "node",
     "target": "es5",
     "sourceMap": true,
-    "skipDefaultLibCheck": true
+    "skipDefaultLibCheck": true,
+    "types": ["es6-promise", "history", "requirejs", "whatwg-fetch"]
   },
   "exclude": [
       "bin",
