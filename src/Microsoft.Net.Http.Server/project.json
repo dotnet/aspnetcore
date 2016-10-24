@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-rc2-final",
+  "version": "1.0.0",
   "description": ".NET HTTP server that uses the Windows HTTP Server API.",
   "packOptions": {
     "tags": [
