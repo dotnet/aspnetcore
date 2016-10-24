@@ -606,6 +606,14 @@ Now when you load your application in a browser, you should see a message like t
 
 If you edit any of your source files that get built by webpack, the result will automatically be pushed into the browser. As for what the browser does with these updates - that's a matter of how you configure it - see below.
 
+**Note for TypeScript + Visual Studio users**
+
+If you want HMR to work correctly with TypeScript, and you use Visual Studio on Windows as an IDE (but not VS Code), then you will need to make a further configuration change. In your `.csproj` file, in one of the `<PropertyGroup>` elements, add this:
+
+    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+
+This is necessary because otherwise, Visual Studio will try to auto-compile TypeScript files as you save changes to them. That default auto-compilation behavior is unhelpful in projects where you have a proper build system (e.g., Webpack), because VS doesn't know about your build system and would emit `.js` files in the wrong locations, which would in turn cause problems with your real build or deployment mechanisms.
+
 #### Enabling hot replacement for React components
 
 Webpack has built-in support for updating React components in place. To enable this, amend your `UseWebpackDevMiddleware` call further as follows:
