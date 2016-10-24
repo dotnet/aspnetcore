@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -30,18 +31,29 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             StreamUtilities.BodySegmentSize = 10;
         }
 
-        internal static RequestDelegate TestRequestDelegate = async (context) =>
+        internal static RequestDelegate TestRequestDelegate = async context =>
         {
-            var uniqueId = Guid.NewGuid().ToString();
             var headers = context.Response.GetTypedHeaders();
-            headers.CacheControl = new CacheControlHeaderValue()
+
+            var expires = context.Request.Query["Expires"];
+            if (!string.IsNullOrEmpty(expires))
+            {
+                headers.Expires = DateTimeOffset.Now.AddSeconds(int.Parse(expires));
+            }
+
+            var uniqueId = Guid.NewGuid().ToString();
+            headers.CacheControl = new CacheControlHeaderValue
             {
                 Public = true,
-                MaxAge = TimeSpan.FromSeconds(10)
+                MaxAge = string.IsNullOrEmpty(expires) ? TimeSpan.FromSeconds(10) : (TimeSpan?)null
             };
             headers.Date = DateTimeOffset.UtcNow;
             headers.Headers["X-Value"] = uniqueId;
-            await context.Response.WriteAsync(uniqueId);
+
+            if (context.Request.Method != "HEAD")
+            {
+                await context.Response.WriteAsync(uniqueId);
+            }
         };
 
         internal static IResponseCachingKeyProvider CreateTestKeyProvider()
@@ -147,6 +159,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 Assert.Equal(expectedMessages[i].EventId, messages[i].EventId);
                 Assert.Equal(expectedMessages[i].LogLevel, messages[i].LogLevel);
             }
+        }
+
+        public static HttpRequestMessage CreateRequest(string method, string requestUri)
+        {
+            return new HttpRequestMessage(new HttpMethod(method), requestUri);
         }
     }
 
