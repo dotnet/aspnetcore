@@ -8,7 +8,7 @@
     ],
     "xmlDoc": true
   },
-  "description": "A compatibility layer for sharing identity databases between Microsoft.AspNet.Identity.EntityFramework and Microsoft.AspNetCore.Identity.EntityFrameworkCore",
+  "description": "A compatibility layer for sharing identity databases between Microsoft.AspNet.Identity.EntityFramework and Microsoft.AspNetCore.Identity.EntityFrameworkCore.",
   "packOptions": {
     "repository": {
       "type": "git",
