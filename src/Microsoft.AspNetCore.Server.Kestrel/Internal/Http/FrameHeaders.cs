@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -263,6 +262,106 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
 
             return parsed;
+        }
+
+        public static unsafe ConnectionOptions ParseConnection(StringValues connection)
+        {
+            var connectionOptions = ConnectionOptions.None;
+
+            foreach (var value in connection)
+            {
+                fixed (char* ptr = value)
+                {
+                    var ch = ptr;
+                    var tokenEnd = ch;
+                    var end = ch + value.Length;
+
+                    while (ch < end)
+                    {
+                        while (tokenEnd < end && *tokenEnd != ',')
+                        {
+                            tokenEnd++;
+                        }
+
+                        while (ch < tokenEnd && *ch == ' ')
+                        {
+                            ch++;
+                        }
+
+                        var tokenLength = tokenEnd - ch;
+
+                        if (tokenLength >= 9 && (*ch | 0x20) == 'k')
+                        {
+                            if ((*++ch | 0x20) == 'e' &&
+                                (*++ch | 0x20) == 'e' &&
+                                (*++ch | 0x20) == 'p' &&
+                                *++ch == '-' &&
+                                (*++ch | 0x20) == 'a' &&
+                                (*++ch | 0x20) == 'l' &&
+                                (*++ch | 0x20) == 'i' &&
+                                (*++ch | 0x20) == 'v' &&
+                                (*++ch | 0x20) == 'e')
+                            {
+                                ch++;
+                                while (ch < tokenEnd && *ch == ' ')
+                                {
+                                    ch++;
+                                }
+
+                                if (ch == tokenEnd || *ch == ',')
+                                {
+                                    connectionOptions |= ConnectionOptions.KeepAlive;
+                                }
+                            }
+                        }
+                        else if (tokenLength >= 7 && (*ch | 0x20) == 'u')
+                        {
+                            if ((*++ch | 0x20) == 'p' &&
+                                (*++ch | 0x20) == 'g' &&
+                                (*++ch | 0x20) == 'r' &&
+                                (*++ch | 0x20) == 'a' &&
+                                (*++ch | 0x20) == 'd' &&
+                                (*++ch | 0x20) == 'e')
+                            {
+                                ch++;
+                                while (ch < tokenEnd && *ch == ' ')
+                                {
+                                    ch++;
+                                }
+
+                                if (ch == tokenEnd || *ch == ',')
+                                {
+                                    connectionOptions |= ConnectionOptions.Upgrade;
+                                }
+                            }
+                        }
+                        else if (tokenLength >= 5 && (*ch | 0x20) == 'c')
+                        {
+                            if ((*++ch | 0x20) == 'l' &&
+                                (*++ch | 0x20) == 'o' &&
+                                (*++ch | 0x20) == 's' &&
+                                (*++ch | 0x20) == 'e')
+                            {
+                                ch++;
+                                while (ch < tokenEnd && *ch == ' ')
+                                {
+                                    ch++;
+                                }
+
+                                if (ch == tokenEnd || *ch == ',')
+                                {
+                                    connectionOptions |= ConnectionOptions.Close;
+                                }
+                            }
+                        }
+
+                        tokenEnd++;
+                        ch = tokenEnd;
+                    }
+                }
+            }
+
+            return connectionOptions;
         }
 
         private static void ThrowInvalidContentLengthException(string value)

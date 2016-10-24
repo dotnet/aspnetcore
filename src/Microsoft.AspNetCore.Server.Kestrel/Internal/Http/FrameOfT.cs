@@ -86,6 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     {
                         var messageBody = MessageBody.For(_httpVersion, FrameRequestHeaders, this);
                         _keepAlive = messageBody.RequestKeepAlive;
+                        _upgrade = messageBody.RequestUpgrade;
 
                         InitializeStreams(messageBody);
 

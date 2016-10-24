@@ -259,18 +259,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             get { return HasResponseStarted; }
         }
 
-        bool IHttpUpgradeFeature.IsUpgradableRequest
-        {
-            get
-            {
-                StringValues values;
-                if (RequestHeaders.TryGetValue("Connection", out values))
-                {
-                    return values.Any(value => value.IndexOf("upgrade", StringComparison.OrdinalIgnoreCase) != -1);
-                }
-                return false;
-            }
-        }
+        bool IHttpUpgradeFeature.IsUpgradableRequest => _upgrade;
 
         bool IFeatureCollection.IsReadOnly => false;
 

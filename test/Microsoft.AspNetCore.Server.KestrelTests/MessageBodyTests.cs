@@ -286,6 +286,27 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
+        [Theory]
+        [InlineData("keep-alive, upgrade")]
+        [InlineData("Keep-Alive, Upgrade")]
+        [InlineData("upgrade, keep-alive")]
+        [InlineData("Upgrade, Keep-Alive")]
+        public void ConnectionUpgradeKeepAlive(string headerConnection)
+        {
+            using (var input = new TestInput())
+            {
+                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderConnection = headerConnection }, input.FrameContext);
+                var stream = new FrameRequestStream();
+                stream.StartAcceptingReads(body);
+
+                input.Add("Hello", true);
+
+                var buffer = new byte[1024];
+                Assert.Equal(5, stream.Read(buffer, 0, 1024));
+                AssertASCII("Hello", new ArraySegment<byte>(buffer, 0, 5));
+            }
+        }
+
         private void AssertASCII(string expected, ArraySegment<byte> actual)
         {
             var encoding = Encoding.ASCII;

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
@@ -22,6 +23,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         }
 
         public bool RequestKeepAlive { get; protected set; }
+
+        public bool RequestUpgrade { get; protected set; }
 
         public Task<int> ReadAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -231,15 +234,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             // see also http://tools.ietf.org/html/rfc2616#section-4.4
             var keepAlive = httpVersion != HttpVersion.Http10;
 
-            var connection = headers.HeaderConnection.ToString();
-            if (connection.Length > 0)
+            var connection = headers.HeaderConnection;
+            if (connection.Count > 0)
             {
-                if (connection.Equals("upgrade", StringComparison.OrdinalIgnoreCase))
+                var connectionOptions = FrameHeaders.ParseConnection(connection);
+
+                if ((connectionOptions & ConnectionOptions.Upgrade) == ConnectionOptions.Upgrade)
                 {
-                    return new ForRemainingData(context);
+                    return new ForRemainingData(true, context);
                 }
 
-                keepAlive = connection.Equals("keep-alive", StringComparison.OrdinalIgnoreCase);
+                keepAlive = (connectionOptions & ConnectionOptions.KeepAlive) == ConnectionOptions.KeepAlive;
             }
 
             var transferEncoding = headers.HeaderTransferEncoding.ToString();
@@ -267,9 +272,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private class ForRemainingData : MessageBody
         {
-            public ForRemainingData(Frame context)
+            public ForRemainingData(bool upgrade, Frame context)
                 : base(context)
             {
+                RequestUpgrade = upgrade;
             }
 
             protected override ValueTask<ArraySegment<byte>> PeekAsync(CancellationToken cancellationToken)

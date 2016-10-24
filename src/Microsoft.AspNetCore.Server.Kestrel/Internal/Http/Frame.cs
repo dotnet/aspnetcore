@@ -60,6 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private RequestProcessingStatus _requestProcessingStatus;
         protected bool _keepAlive;
+        protected bool _upgrade;
         private bool _canHaveBody;
         private bool _autoChunk;
         protected Exception _applicationException;
@@ -810,13 +811,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             var responseHeaders = FrameResponseHeaders;
             var hasConnection = responseHeaders.HasConnection;
+            var connectionOptions = hasConnection ? FrameHeaders.ParseConnection(responseHeaders.HeaderConnection) : ConnectionOptions.None;
 
             var end = SocketOutput.ProducingStart();
 
             if (_keepAlive && hasConnection)
             {
-                var connectionValue = responseHeaders.HeaderConnection.ToString();
-                _keepAlive = connectionValue.Equals("keep-alive", StringComparison.OrdinalIgnoreCase);
+                _keepAlive = (connectionOptions & ConnectionOptions.KeepAlive) == ConnectionOptions.KeepAlive;
             }
 
             // Set whether response can have body
