@@ -9,15 +9,15 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 {
     public static class ServerVariables
     {
-        public static PatternSegment FindServerVariable(string serverVariable)
+        public static PatternSegment FindServerVariable(string serverVariable, ParserContext context)
         {
             switch (serverVariable)
             {
                 // TODO Add all server variables here.
                 case "ALL_RAW":
-                    throw new NotSupportedException("Rules using the AUTH_TYPE server variable are not supported");
+                    throw new NotSupportedException("Rules using the ALL_RAW server variable are not supported");
                 case "APP_POOL_ID":
-                    throw new NotSupportedException("Rules using the AUTH_TYPE server variable are not supported");
+                    throw new NotSupportedException("Rules using the APP_POOL_ID server variable are not supported");
                 case "CONTENT_LENGTH":
                     return new HeaderSegment(HeaderNames.ContentLength);
                 case "CONTENT_TYPE":
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                 case "LOCAL_ADDR":
                     return new LocalAddressSegment();
                 case "HTTP_PROXY_CONNECTION":
-                    throw new NotSupportedException("Rules using the AUTH_TYPE server variable are not supported");
+                    throw new NotSupportedException("Rules using the HTTP_PROXY_CONNECTION server variable are not supported");
                 case "QUERY_STRING":
                     return new QueryStringSegment();
                 case "REMOTE_ADDR":
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                 case "REQUEST_URI":
                     return new UrlSegment();
                 default:
-                    throw new FormatException("Unrecognized server variable");
+                    throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(serverVariable, context.Index));
             }
         }
     }

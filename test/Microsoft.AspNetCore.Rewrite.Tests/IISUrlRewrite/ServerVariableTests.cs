@@ -27,7 +27,8 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         public void CheckServerVariableParsingAndApplication(string variable, string expected)
         {
             // Arrange and Act
-            var serverVar = ServerVariables.FindServerVariable(variable);
+            var testParserContext = new ParserContext("test");
+            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext);
             var lookup = serverVar.Evaluate(CreateTestHttpContext(), CreateTestRuleMatch(), CreateTestCondMatch());
             // Assert
             Assert.Equal(expected, lookup);

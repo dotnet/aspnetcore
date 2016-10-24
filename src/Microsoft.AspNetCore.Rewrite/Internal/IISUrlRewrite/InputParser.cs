@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                 {
                     // This is just a server variable, so we do a lookup and verify the server variable exists.
                     parameter = context.Capture();
-                    results.Add(ServerVariables.FindServerVariable(parameter));
+                    results.Add(ServerVariables.FindServerVariable(parameter, context));
                     return;
                 }
                 else if (context.Current == Colon)
