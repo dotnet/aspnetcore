@@ -865,13 +865,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             responseHeaders.SetReadOnly();
 
-            if (!_keepAlive && !hasConnection)
+            if (!hasConnection)
             {
-                responseHeaders.SetRawConnection("close", _bytesConnectionClose);
-            }
-            else if (_keepAlive && !hasConnection && _httpVersion == Http.HttpVersion.Http10)
-            {
-                responseHeaders.SetRawConnection("keep-alive", _bytesConnectionKeepAlive);
+                if (!_keepAlive)
+                {
+                    responseHeaders.SetRawConnection("close", _bytesConnectionClose);
+                }
+                else if (_httpVersion == Http.HttpVersion.Http10)
+                {
+                    responseHeaders.SetRawConnection("keep-alive", _bytesConnectionKeepAlive);
+                }
             }
 
             if (ServerOptions.AddServerHeader && !responseHeaders.HasServer)
