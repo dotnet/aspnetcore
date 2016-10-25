@@ -99,6 +99,33 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             };
         }
 
+        /// <summary>
+        /// Combines the prefix and route template for an attribute route.
+        /// </summary>
+        /// <param name="prefix">The prefix.</param>
+        /// <param name="template">The route template.</param>
+        /// <returns>The combined pattern.</returns>
+        public static string CombineTemplates(string prefix, string template)
+        {
+            var result = CombineCore(prefix, template);
+            return CleanTemplate(result);
+        }
+
+        /// <summary>
+        /// Determines if a template pattern can be used to override a prefix.
+        /// </summary>
+        /// <param name="template">The template.</param>
+        /// <returns><c>true</c> if this is an overriding template, <c>false</c> otherwise.</returns>
+        /// <remarks>
+        /// Route templates starting with "~/" or "/" can be used to override the prefix.
+        /// </remarks>
+        public static bool IsOverridePattern(string template)
+        {
+            return template != null &&
+                (template.StartsWith("~/", StringComparison.Ordinal) ||
+                template.StartsWith("/", StringComparison.Ordinal));
+        }
+
         private static string ChooseName(
             AttributeRouteModel left,
             AttributeRouteModel right)
@@ -111,12 +138,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             {
                 return right.Name;
             }
-        }
-
-        internal static string CombineTemplates(string left, string right)
-        {
-            var result = CombineCore(left, right);
-            return CleanTemplate(result);
         }
 
         private static string CombineCore(string left, string right)
@@ -141,13 +162,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             // Both templates contain some text.
             return left + "/" + right;
-        }
-
-        private static bool IsOverridePattern(string template)
-        {
-            return template != null &&
-                (template.StartsWith("~/", StringComparison.Ordinal) ||
-                template.StartsWith("/", StringComparison.Ordinal));
         }
 
         private static bool IsEmptyLeftSegment(string template)

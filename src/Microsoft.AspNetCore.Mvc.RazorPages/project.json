@@ -22,6 +22,7 @@
     "xmlDoc": true
   },
   "dependencies": {
+    "Microsoft.AspNetCore.Mvc.ViewFeatures": { "target": "project" },
     "Microsoft.AspNetCore.Razor.Evolution": "1.0.0-*",
     "NETStandard.Library": "1.6.1-*"
   },

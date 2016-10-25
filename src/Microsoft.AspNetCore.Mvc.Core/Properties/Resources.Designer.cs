@@ -1307,22 +1307,6 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// Unable to create an instance of type '{0}'. The type specified in {1} must not be abstract and must have a parameterless constructor.
-        /// </summary>
-        internal static string MiddlewareFilterConfigurationProvider_CreateConfigureDelegate_CannotCreateType
-        {
-            get { return GetString("MiddlewareFilterConfigurationProvider_CreateConfigureDelegate_CannotCreateType"); }
-        }
-
-        /// <summary>
-        /// Unable to create an instance of type '{0}'. The type specified in {1} must not be abstract and must have a parameterless constructor.
-        /// </summary>
-        internal static string FormatMiddlewareFilterConfigurationProvider_CreateConfigureDelegate_CannotCreateType(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("MiddlewareFilterConfigurationProvider_CreateConfigureDelegate_CannotCreateType"), p0, p1);
-        }
-
-        /// <summary>
         /// An {0} cannot be created without a valid instance of {1}.
         /// </summary>
         internal static string AuthorizeFilter_AuthorizationPolicyCannotBeCreated
@@ -1355,7 +1339,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// VaryByQueryKeys requires the response cache middleware.
+        /// '{0}' requires the response cache middleware.
         /// </summary>
         internal static string VaryByQueryKeys_Requires_ResponseCachingMiddleware
         {
@@ -1363,7 +1347,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// VaryByQueryKeys requires the response cache middleware.
+        /// '{0}' requires the response cache middleware.
         /// </summary>
         internal static string FormatVaryByQueryKeys_Requires_ResponseCachingMiddleware(object p0)
         {
@@ -1384,6 +1368,22 @@ namespace Microsoft.AspNetCore.Mvc.Core
         internal static string FormatCandidateResolver_DifferentCasedReference(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("CandidateResolver_DifferentCasedReference"), p0);
+        }
+
+        /// <summary>
+        /// Unable to create an instance of type '{0}'. The type specified in {1} must not be abstract and must have a parameterless constructor.
+        /// </summary>
+        internal static string MiddlewareFilterConfigurationProvider_CreateConfigureDelegate_CannotCreateType
+        {
+            get { return GetString("MiddlewareFilterConfigurationProvider_CreateConfigureDelegate_CannotCreateType"); }
+        }
+
+        /// <summary>
+        /// Unable to create an instance of type '{0}'. The type specified in {1} must not be abstract and must have a parameterless constructor.
+        /// </summary>
+        internal static string FormatMiddlewareFilterConfigurationProvider_CreateConfigureDelegate_CannotCreateType(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MiddlewareFilterConfigurationProvider_CreateConfigureDelegate_CannotCreateType"), p0, p1);
         }
 
         private static string GetString(string name, params string[] formatterNames)
