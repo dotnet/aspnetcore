@@ -3,15 +3,15 @@ class HttpClient {
         return this.xhr("GET", url);
     }
 
-    post(url: string): Promise<string> {
+    post(url: string, content: string): Promise<string> {
         return this.xhr("POST", url);
     }
 
-    private xhr(method: string, url: string): Promise<string> {
+    private xhr(method: string, url: string, content?: string): Promise<string> {
         return new Promise((resolve, reject) => {
             let xhr = new XMLHttpRequest();
             xhr.open(method, url, true);
-            xhr.send();
+            xhr.send(content);
             xhr.onload = () => {
                 if (xhr.status >= 200 && xhr.status < 300) {
                     resolve(xhr.response);
