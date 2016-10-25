@@ -3,7 +3,55 @@
 <head>
     <meta charset="utf-8" />
     <title></title>
+    <script src="js/signalr-client.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let connectButton = document.getElementById('connect');
+            let connection = new RpcConnection(`http://${document.location.host}/hubs`);
+            connection.on('Send',(msg) => { addLine(msg); });
+            let isConnected = false;
+
+            connectButton.addEventListener('click', () => {
+                connection.start()
+                .then(() => {
+                    isConnected = true;
+                })
+                .catch(err => {
+                    addLine(err, true);
+                });
+            });
+
+            document.getElementById('sendmessage').addEventListener('submit', event => {
+                let data = document.getElementById('data').value;
+
+                if (isConnected) {
+                    connection.invoke('SocketsSample.Hubs.Chat.Send', data)
+                    .then(result => {
+                        console.log("invocation completed successfully: " + (result === null ? '(null)' : result));
+
+                        if (result != null) {
+                            addLine(result);
+                        }
+                    })
+                    .catch(err => {
+                        addLine(err, true);
+                    });
+                }
+
+                event.preventDefault();
+            });
+        });
+
+        function addLine(line, isError) {
+            var child = document.createElement('li');
+            if (isError === true) {
+                child.style.color = 'red';
+            }
+            child.innerText = line;
+            document.getElementById('messages').appendChild(child);
+        }
+
+/*
         function hubConnection(url) {
             var ws = new WebSocket(url);
             var id = 0;
@@ -108,7 +156,7 @@
                 event.preventDefault();
             });
         };
-
+*/
     </script>
 </head>
 <body>
