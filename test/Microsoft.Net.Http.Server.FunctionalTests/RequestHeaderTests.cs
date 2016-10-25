@@ -22,7 +22,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var requestHeaders = context.Request.Headers;
                 // NOTE: The System.Net client only sends the Connection: keep-alive header on the first connection per service-point.
                 // Assert.Equal(2, requestHeaders.Count);
@@ -48,7 +48,7 @@ namespace Microsoft.Net.Http.Server
                 string[] customValues = new string[] { "custom1, and custom2", "custom3" };
                 Task responseTask = SendRequestAsync(address, "Custom-Header", customValues);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var requestHeaders = context.Request.Headers;
                 Assert.Equal(4, requestHeaders.Count);
                 Assert.Equal(new Uri(address).Authority, requestHeaders["Host"]);
@@ -75,7 +75,7 @@ namespace Microsoft.Net.Http.Server
                 string[] customValues = new string[] { "custom1, and custom测试2", "custom3" };
                 Task responseTask = SendRequestAsync(address, "Custom-Header", customValues);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var requestHeaders = context.Request.Headers;
                 Assert.Equal(4, requestHeaders.Count);
                 Assert.Equal(new Uri(address).Authority, requestHeaders["Host"]);

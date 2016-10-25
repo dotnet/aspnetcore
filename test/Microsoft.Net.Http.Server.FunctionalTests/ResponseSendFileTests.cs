@@ -18,7 +18,7 @@ namespace Microsoft.Net.Http.Server
         private readonly string AbsoluteFilePath;
         private readonly string RelativeFilePath;
         private readonly long FileLength;
-        
+
         public ResponseSendFileTests()
         {
             AbsoluteFilePath = Directory.GetFiles(Directory.GetCurrentDirectory()).First();
@@ -34,16 +34,16 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
-                await Assert.ThrowsAsync<FileNotFoundException>(() => 
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                await Assert.ThrowsAsync<FileNotFoundException>(() =>
                     context.Response.SendFileAsync("Missing.txt", 0, null, CancellationToken.None));
                 context.Dispose();
-                
+
                 var response = await responseTask;
                 response.EnsureSuccessStatusCode();
             }
         }
-        
+
         [ConditionalFact]
         public async Task ResponseSendFile_NoHeaders_DefaultsToChunked()
         {
@@ -52,7 +52,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 context.Dispose();
 
@@ -73,7 +73,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 await context.Response.SendFileAsync(RelativeFilePath, 0, null, CancellationToken.None);
                 context.Dispose();
 
@@ -94,7 +94,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 context.Dispose();
 
@@ -115,7 +115,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 context.Dispose();
@@ -137,7 +137,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, FileLength / 2, CancellationToken.None);
                 context.Dispose();
 
@@ -158,7 +158,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
                     () => context.Response.SendFileAsync(AbsoluteFilePath, 1234567, null, CancellationToken.None));
                 context.Dispose();
@@ -176,7 +176,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
                     () => context.Response.SendFileAsync(AbsoluteFilePath, 0, 1234567, CancellationToken.None));
                 context.Dispose();
@@ -194,7 +194,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
                 context.Dispose();
 
@@ -219,7 +219,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 await context.Response.SendFileAsync(emptyFilePath, 0, null, CancellationToken.None);
                 Assert.True(context.Response.HasStarted);
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10, CancellationToken.None);
@@ -243,7 +243,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["Content-lenGth"] = FileLength.ToString();
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
 
@@ -265,7 +265,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["Content-lenGth"] = "10";
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, 10, CancellationToken.None);
                 context.Dispose();
@@ -288,7 +288,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["Content-lenGth"] = "0";
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
                 context.Dispose();
@@ -311,7 +311,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
@@ -332,7 +332,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var cts = new CancellationTokenSource();
                 cts.CancelAfter(TimeSpan.FromSeconds(10));
                 // First write sends headers
@@ -355,7 +355,7 @@ namespace Microsoft.Net.Http.Server
                 server.Settings.ThrowWriteExceptions = true;
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
@@ -364,7 +364,7 @@ namespace Microsoft.Net.Http.Server
                 context.Dispose();
 #if NET451
                 // .NET 4.5 HttpClient automatically retries a request if it does not get a response.
-                context = await server.AcceptAsync();
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
@@ -384,7 +384,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
@@ -393,7 +393,7 @@ namespace Microsoft.Net.Http.Server
                 context.Dispose();
 #if NET451
                 // .NET 4.5 HttpClient automatically retries a request if it does not get a response.
-                context = await server.AcceptAsync();
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
@@ -414,7 +414,7 @@ namespace Microsoft.Net.Http.Server
                 server.Settings.ThrowWriteExceptions = true;
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
@@ -435,7 +435,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
@@ -458,7 +458,7 @@ namespace Microsoft.Net.Http.Server
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
 
                 // First write sends headers
                 cts.Cancel();
@@ -490,7 +490,7 @@ namespace Microsoft.Net.Http.Server
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 // First write sends headers
                 cts.Cancel();
                 await Assert.ThrowsAsync<TaskCanceledException>(() => responseTask);
@@ -504,7 +504,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "Tests hanging: https://github.com/aspnet/WebListener/issues/270")]
         public async Task ResponseSendFileExceptions_ClientDisconnectsBeforeSecondSend_SendThrows()
         {
             string address;
@@ -516,7 +516,7 @@ namespace Microsoft.Net.Http.Server
                 {
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
-                    context = await server.AcceptAsync();
+                    context = await server.AcceptAsync(Utilities.DefaultTimeout);
                     // First write sends headers
                     await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
 
@@ -538,7 +538,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "Tests hanging: https://github.com/aspnet/WebListener/issues/270")]
         public async Task ResponseSendFile_ClientDisconnectsBeforeSecondSend_SendCompletesSilently()
         {
             string address;
@@ -549,7 +549,7 @@ namespace Microsoft.Net.Http.Server
                 {
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
-                    context = await server.AcceptAsync();
+                    context = await server.AcceptAsync(Utilities.DefaultTimeout);
                     // First write sends headers
                     await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
 

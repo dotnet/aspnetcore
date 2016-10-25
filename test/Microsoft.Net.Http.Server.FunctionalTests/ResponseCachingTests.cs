@@ -24,6 +24,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win2008R2, WindowsVersions.Win7, SkipReason = "Content type not required for caching on Win7 and Win2008R2.")]
         public async Task Caching_SetTtlWithoutContentType_NotCached()
         {
             string address;
@@ -31,7 +32,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -44,7 +45,7 @@ namespace Microsoft.Net.Http.Server
 
                 responseTask = SendRequestAsync(address);
 
-                context = await server.AcceptAsync();
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "2";
                 // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -58,6 +59,38 @@ namespace Microsoft.Net.Http.Server
         }
 
         [ConditionalFact]
+        public async Task Caching_SetTtlWithoutContentType_Cached_OnWin7AndWin2008R2()
+        {
+            if (Utilities.IsWin8orLater)
+            {
+                return;
+            }
+
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                var responseTask = SendRequestAsync(address);
+
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                context.Response.Headers["x-request-count"] = "1";
+                // Http.sys does not require a content-type to cache on Win7 and Win2008R2
+                context.Response.CacheTtl = TimeSpan.FromSeconds(10);
+                context.Dispose();
+
+                var response = await responseTask;
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.Equal("1", response.Headers.GetValues("x-request-count").FirstOrDefault());
+                Assert.Equal(new byte[0], await response.Content.ReadAsByteArrayAsync());
+
+                // Send a second request and make sure we get the same response (without listening for one on the server).
+                response = await SendRequestAsync(address);
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.Equal("1", response.Headers.GetValues("x-request-count").FirstOrDefault());
+                Assert.Equal(new byte[0], await response.Content.ReadAsByteArrayAsync());
+            }
+        }
+
+        [ConditionalFact]
         public async Task Caching_SetTtlWithContentType_Cached()
         {
             string address;
@@ -65,7 +98,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -94,7 +127,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -125,7 +158,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.Headers["age"] = "12345";
@@ -157,7 +190,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(0);
@@ -170,7 +203,7 @@ namespace Microsoft.Net.Http.Server
 
                 responseTask = SendRequestAsync(address);
 
-                context = await server.AcceptAsync();
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "2";
                 // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -191,7 +224,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromMilliseconds(900);
@@ -204,7 +237,7 @@ namespace Microsoft.Net.Http.Server
 
                 responseTask = SendRequestAsync(address);
 
-                context = await server.AcceptAsync();
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "2";
                 // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -225,7 +258,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(-10);
@@ -238,7 +271,7 @@ namespace Microsoft.Net.Http.Server
 
                 responseTask = SendRequestAsync(address);
 
-                context = await server.AcceptAsync();
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "2";
                 // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -259,7 +292,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.MaxValue;
@@ -286,7 +319,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.ContentLength = 10;
@@ -317,7 +350,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.ContentLength = 10;
@@ -348,7 +381,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -362,7 +395,7 @@ namespace Microsoft.Net.Http.Server
 
                 responseTask = SendRequestAsync(address);
 
-                context = await server.AcceptAsync();
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "2";
                 context.Dispose();
 
@@ -381,7 +414,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -396,7 +429,7 @@ namespace Microsoft.Net.Http.Server
 
                 responseTask = SendRequestAsync(address);
 
-                context = await server.AcceptAsync();
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "2";
                 context.Dispose();
 
@@ -415,7 +448,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.ContentLength = 10;
@@ -446,7 +479,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -460,7 +493,7 @@ namespace Microsoft.Net.Http.Server
 
                 responseTask = SendRequestAsync(address);
 
-                context = await server.AcceptAsync();
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "2";
                 context.Dispose();
 
@@ -479,7 +512,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.ContentLength =_fileLength;
@@ -520,7 +553,7 @@ namespace Microsoft.Net.Http.Server
 
                     var responseTask = SendRequestAsync(address + status);
 
-                    var context = await server.AcceptAsync();
+                    var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                     context.Response.StatusCode = status;
                     context.Response.Headers["x-request-count"] = status.ToString();
                     context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
@@ -571,7 +604,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address, method);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = context.Request.Method + "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -584,7 +617,7 @@ namespace Microsoft.Net.Http.Server
 
                 responseTask = SendRequestAsync(address, method);
 
-                context = await server.AcceptAsync();
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = context.Request.Method + "2";
                 // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -597,7 +630,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        // RFC violation. http://tools.ietf.org/html/rfc7234#section-4.4 
+        // RFC violation. http://tools.ietf.org/html/rfc7234#section-4.4
         // "A cache MUST invalidate the effective Request URI ... when a non-error status code
         // is received in response to an unsafe request method."
         [ConditionalTheory]
@@ -630,7 +663,7 @@ namespace Microsoft.Net.Http.Server
                 // Cache the first response
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = context.Request.Method + "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -644,7 +677,7 @@ namespace Microsoft.Net.Http.Server
                 // Try to clear the cache with a second request
                 responseTask = SendRequestAsync(address, method);
 
-                context = await server.AcceptAsync();
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = context.Request.Method + "2";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Dispose();
@@ -675,7 +708,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address, "GET", "x-vary", "vary1");
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.Headers["vary"] = "x-vary";
@@ -706,7 +739,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address, "GET", "Authorization", "Basic abc123");
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -719,7 +752,7 @@ namespace Microsoft.Net.Http.Server
 
                 responseTask = SendRequestAsync(address, "GET", "Authorization", "Basic abc123");
 
-                context = await server.AcceptAsync();
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "2";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Dispose();
@@ -740,7 +773,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -753,7 +786,7 @@ namespace Microsoft.Net.Http.Server
 
                 responseTask = SendRequestAsync(address, "GET", "Authorization", "Basic abc123");
 
-                context = await server.AcceptAsync();
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "2";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Dispose();
@@ -776,7 +809,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address, "GET", "Pragma", "no-cache");
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -805,7 +838,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -833,7 +866,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address, "GET", "Cache-Control", "no-cache");
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -861,7 +894,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -889,7 +922,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -917,7 +950,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
@@ -944,7 +977,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address, "GET", "Range", "bytes=0-10");
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.StatusCode = 206;
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
@@ -961,7 +994,7 @@ namespace Microsoft.Net.Http.Server
 
                 responseTask = SendRequestAsync(address, "GET", "Range", "bytes=0-10");
 
-                context = await server.AcceptAsync();
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.StatusCode = 206;
                 context.Response.Headers["x-request-count"] = "2";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
@@ -988,7 +1021,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.ContentLength = 100;
@@ -1018,7 +1051,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.ContentLength = 100;
@@ -1047,7 +1080,7 @@ namespace Microsoft.Net.Http.Server
                 var responseLength = _fileLength / 2; // Make sure it handles partial files.
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.ContentLength = responseLength;
@@ -1079,7 +1112,7 @@ namespace Microsoft.Net.Http.Server
                 var responseLength = _fileLength / 2; // Make sure it handles partial files.
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.ContentLength = responseLength;

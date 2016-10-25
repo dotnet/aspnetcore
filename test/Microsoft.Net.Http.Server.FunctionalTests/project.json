@@ -1,5 +1,9 @@
 {
   "testRunner": "xunit",
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
@@ -9,6 +13,10 @@
   "frameworks": {
     "netcoreapp1.1": {
       "dependencies": {
+        "Microsoft.Extensions.RuntimeEnvironment.Sources": {
+          "type": "build",
+          "version": "1.1.0-*"
+        },
         "Microsoft.NETCore.App": {
           "version": "1.1.0-*",
           "type": "platform"

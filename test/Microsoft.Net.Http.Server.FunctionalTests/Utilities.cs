@@ -2,18 +2,36 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Net.Http.Server
 {
     internal static class Utilities
     {
-        // When tests projects are run in parallel, overlapping port ranges can cause a race condition when looking for free 
-        // ports during dynamic port allocation. To avoid this, make sure the port range here is different from the range in 
+        // When tests projects are run in parallel, overlapping port ranges can cause a race condition when looking for free
+        // ports during dynamic port allocation. To avoid this, make sure the port range here is different from the range in
         // Microsoft.AspNetCore.Server.WebListener.
         private const int BasePort = 8001;
         private const int MaxPort = 11000;
         private static int NextPort = BasePort;
         private static object PortLock = new object();
+
+        internal static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
+        // Minimum support for Windows 7 is assumed.
+        internal static readonly bool IsWin8orLater;
+
+        static Utilities()
+        {
+            var win8Version = new Version(6, 2);
+
+#if NET451
+            IsWin8orLater = (Environment.OSVersion.Version >= win8Version);
+#else
+            IsWin8orLater = (new Version(RuntimeEnvironment.OperatingSystemVersion) >= win8Version);
+#endif
+        }
 
         internal static WebListener CreateHttpAuthServer(AuthenticationSchemes authScheme, bool allowAnonymos, out string baseAddress)
         {
@@ -73,6 +91,26 @@ namespace Microsoft.Net.Http.Server
             listener.Settings.UrlPrefixes.Add(UrlPrefix.Create(scheme, host, port, path));
             listener.Start();
             return listener;
+        }
+
+        /// <summary>
+        /// AcceptAsync extension with timeout. This extension should be used in all tests to prevent
+        /// unexpected hangs when a request does not arrive.
+        /// </summary>
+        internal static async Task<RequestContext> AcceptAsync(this WebListener server, TimeSpan timeout)
+        {
+            var acceptTask = server.AcceptAsync();
+            var completedTask = await Task.WhenAny(acceptTask, Task.Delay(timeout));
+
+            if (completedTask == acceptTask)
+            {
+                return await acceptTask;
+            }
+            else
+            {
+                server.Dispose();
+                throw new TimeoutException("AcceptAsync has timed out.");
+            }
         }
     }
 }

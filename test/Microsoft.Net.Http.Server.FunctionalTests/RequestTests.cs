@@ -22,7 +22,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(root + "/basepath/SomePath?SomeQuery");
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
 
                 // General fields
                 var request = context.Request;
@@ -66,7 +66,7 @@ namespace Microsoft.Net.Http.Server
             {
                 Task<string> responseTask = SendRequestAsync(root + requestPath);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
 
                 // General fields
                 var request = context.Request;
@@ -94,7 +94,7 @@ namespace Microsoft.Net.Http.Server
             using (var server = Utilities.CreateHttpServerReturnRoot("/", out root))
             {
                 var responseTask = SendSocketRequestAsync(root, requestPath);
-                var contextTask = server.AcceptAsync();
+                var contextTask = server.AcceptAsync(Utilities.DefaultTimeout);
                 var response = await responseTask;
                 var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
                 Assert.Equal("400", responseStatusCode);
@@ -108,7 +108,7 @@ namespace Microsoft.Net.Http.Server
             using (var server = Utilities.CreateHttpServerReturnRoot("/", out root))
             {
                 var responseTask = SendSocketRequestAsync(root, "/%252F");
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 Assert.Equal("/%2F", context.Request.Path);
             }
         }
@@ -120,7 +120,7 @@ namespace Microsoft.Net.Http.Server
             using (var server = Utilities.CreateHttpServerReturnRoot("/", out root))
             {
                 var responseTask = SendSocketRequestAsync(root, "*", "OPTIONS");
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 Assert.Equal("", context.Request.PathBase);
                 Assert.Equal("", context.Request.Path);
                 Assert.Equal("*", context.Request.RawUrl);
@@ -159,7 +159,7 @@ namespace Microsoft.Net.Http.Server
 
                 Task<string> responseTask = SendRequestAsync(root + requestUri);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var request = context.Request;
 
                 Assert.Equal(expectedPath, request.Path);
@@ -202,7 +202,7 @@ namespace Microsoft.Net.Http.Server
             using (var server = Utilities.CreateHttpServerReturnRoot("/", out root))
             {
                 var responseTask = SendSocketRequestAsync(root, "/" + requestPath);
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 actualPath = context.Request.Path;
                 context.Dispose();
 
@@ -227,7 +227,7 @@ namespace Microsoft.Net.Http.Server
             using (var server = Utilities.CreateHttpServerReturnRoot("/", out root))
             {
                 var responseTask = SendSocketRequestAsync(root, requestPath);
-                var contextTask = server.AcceptAsync();
+                var contextTask = server.AcceptAsync(Utilities.DefaultTimeout);
 
                 var response = await responseTask;
                 Assert.Equal("400", response.Substring(9));
@@ -252,7 +252,7 @@ namespace Microsoft.Net.Http.Server
             using (var server = Utilities.CreateHttpServerReturnRoot("/", out root))
             {
                 var responseTask = SendSocketRequestAsync(root, requestPath);
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 Assert.Equal(expectedPath, context.Request.Path);
                 context.Dispose();
 

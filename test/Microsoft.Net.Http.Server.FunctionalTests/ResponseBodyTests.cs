@@ -24,7 +24,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Body.Write(new byte[10], 0, 10);
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
                 context.Dispose();
@@ -47,7 +47,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Body.Write(new byte[10], 0, 10);
                 context.Response.Body.Flush();
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
@@ -70,7 +70,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["transfeR-Encoding"] = "CHunked";
                 Stream stream = context.Response.Body;
                 var responseBytes = Encoding.ASCII.GetBytes("10\r\nManually Chunked\r\n0\r\n\r\n");
@@ -95,7 +95,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["Content-lenGth"] = " 30 ";
                 var stream = context.Response.Body;
 #if NET451
@@ -126,12 +126,12 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Dispose();
 #if !NETCOREAPP1_1
                 // HttpClient retries the request because it didn't get a response.
-                context = await server.AcceptAsync();
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Dispose();
 #endif
@@ -147,7 +147,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Response.Body.Write(new byte[5], 0, 5);
                 context.Dispose();
@@ -164,7 +164,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["Content-lenGth"] = " 10 ";
                 context.Response.Body.Write(new byte[5], 0, 5);
                 Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(new byte[6], 0, 6));
@@ -182,7 +182,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["Content-lenGth"] = " 10 ";
                 context.Response.Body.Write(new byte[10], 0, 10);
                 Assert.Throws<ObjectDisposedException>(() => context.Response.Body.Write(new byte[6], 0, 6));
@@ -207,7 +207,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Body.Write(new byte[10], 0, 0);
                 Assert.True(context.Response.HasStarted);
                 await context.Response.Body.WriteAsync(new byte[10], 0, 0);
@@ -231,7 +231,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
@@ -252,7 +252,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var cts = new CancellationTokenSource();
                 cts.CancelAfter(TimeSpan.FromSeconds(10));
                 // First write sends headers
@@ -275,7 +275,7 @@ namespace Microsoft.Net.Http.Server
                 server.Settings.ThrowWriteExceptions = true;
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
@@ -284,7 +284,7 @@ namespace Microsoft.Net.Http.Server
                 context.Dispose();
 #if NET451
                 // .NET 4.5 HttpClient automatically retries a request if it does not get a response.
-                context = await server.AcceptAsync();
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
@@ -304,7 +304,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
@@ -313,7 +313,7 @@ namespace Microsoft.Net.Http.Server
                 context.Dispose();
 #if NET451
                 // .NET 4.5 HttpClient automatically retries a request if it does not get a response.
-                context = await server.AcceptAsync();
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
@@ -334,7 +334,7 @@ namespace Microsoft.Net.Http.Server
                 server.Settings.ThrowWriteExceptions = true;
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
@@ -355,7 +355,7 @@ namespace Microsoft.Net.Http.Server
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
@@ -378,7 +378,7 @@ namespace Microsoft.Net.Http.Server
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 // First write sends headers
                 cts.Cancel();
                 await Assert.ThrowsAsync<TaskCanceledException>(() => responseTask);
@@ -408,7 +408,7 @@ namespace Microsoft.Net.Http.Server
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
 
                 // First write sends headers
                 cts.Cancel();
@@ -439,7 +439,7 @@ namespace Microsoft.Net.Http.Server
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 // First write sends headers
                 cts.Cancel();
                 await Assert.ThrowsAsync<TaskCanceledException>(() => responseTask);
@@ -462,7 +462,7 @@ namespace Microsoft.Net.Http.Server
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
 
-                var context = await server.AcceptAsync();
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 // First write sends headers
                 cts.Cancel();
                 await Assert.ThrowsAsync<TaskCanceledException>(() => responseTask);
@@ -488,7 +488,7 @@ namespace Microsoft.Net.Http.Server
                 {
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
-                    context = await server.AcceptAsync();
+                    context = await server.AcceptAsync(Utilities.DefaultTimeout);
                     // First write sends headers
                     context.Response.Body.Write(new byte[10], 0, 10);
 
@@ -522,7 +522,7 @@ namespace Microsoft.Net.Http.Server
                 {
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
-                    context = await server.AcceptAsync();
+                    context = await server.AcceptAsync(Utilities.DefaultTimeout);
                     // First write sends headers
                     await context.Response.Body.WriteAsync(new byte[10], 0, 10);
 
@@ -555,7 +555,7 @@ namespace Microsoft.Net.Http.Server
                 {
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
-                    context = await server.AcceptAsync();
+                    context = await server.AcceptAsync(Utilities.DefaultTimeout);
                     // First write sends headers
                     context.Response.Body.Write(new byte[10], 0, 10);
 
@@ -585,7 +585,7 @@ namespace Microsoft.Net.Http.Server
                 {
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
-                    context = await server.AcceptAsync();
+                    context = await server.AcceptAsync(Utilities.DefaultTimeout);
                     // First write sends headers
                     await context.Response.Body.WriteAsync(new byte[10], 0, 10);
 
@@ -593,7 +593,7 @@ namespace Microsoft.Net.Http.Server
                     response.EnsureSuccessStatusCode();
                     response.Dispose();
                 }
-                
+
                 Assert.True(context.DisconnectToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
                 // It can take several tries before Write notices the disconnect.
                 for (int i = 0; i < 10; i++)
