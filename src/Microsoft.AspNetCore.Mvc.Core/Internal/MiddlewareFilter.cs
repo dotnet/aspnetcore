@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     /// <summary>
     /// A filter which executes a user configured middleware pipeline.
     /// </summary>
-    public class MiddlewareFilter : IAsyncResourceFilter
+    internal class MiddlewareFilter : IAsyncResourceFilter
     {
         private readonly RequestDelegate _middlewarePipeline;
 
