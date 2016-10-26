@@ -160,7 +160,7 @@ private:
                 m_ppServerProcessList[i] != NULL )
             {
                 // shutdown pServerProcess if not already shutdown.
-                m_ppServerProcessList[i]->StopProcess();
+                m_ppServerProcessList[i]->SendSignal();
                 m_ppServerProcessList[i]->DereferenceServerProcess();
                 m_ppServerProcessList[i] = NULL;
             }
