@@ -12,6 +12,11 @@ namespace SocketsSample
         {
             var streamReader = new StreamReader(stream);
             var line = await streamReader.ReadLineAsync();
+            if (line == null)
+            {
+                return null;
+            }
+
             var values = line.Split(',');
 
             var method = values[1].Substring(1);

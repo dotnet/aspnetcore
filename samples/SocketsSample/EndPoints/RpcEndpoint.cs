@@ -14,7 +14,6 @@ using SocketsSample.Protobuf;
 
 namespace SocketsSample
 {
-    // This end point implementation is used for framing JSON objects from the stream
     public class RpcEndpoint : EndPoint
     {
         private readonly Dictionary<string, Func<InvocationDescriptor, InvocationResultDescriptor>> _callbacks
@@ -58,11 +57,11 @@ namespace SocketsSample
                                 return _paramTypes.TryGetValue(methodName, out types) ? types : null;
                             });
 
-                /* TODO: ?? */
-                //if (((Channel)connection.Channel).Reading.IsCompleted)
-                //{
-                //    break;
-                //}
+                // Is there a better way of detecting that a connection was closed?
+                if (invocationDescriptor == null)
+                {
+                    break;
+                }
 
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
