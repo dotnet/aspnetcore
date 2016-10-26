@@ -21,5 +21,10 @@ namespace Microsoft.AspNetCore.Diagnostics.RazorViews
         /// Detailed information about each parse or compilation error.
         /// </summary>
         public IList<ExceptionDetails> ErrorDetails { get; } = new List<ExceptionDetails>();
+
+        /// <summary>
+        /// Gets the generated content that produced the corresponding <see cref="ErrorDetails"/>.
+        /// </summary>
+        public IList<string> CompiledContent { get; } = new List<string>();
     }
 }

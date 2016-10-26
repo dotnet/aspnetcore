@@ -24,8 +24,14 @@
     </head>
     <body>
         <h1>@Resources.ErrorPageHtml_CompilationException</h1>
-        @foreach (var errorDetail in Model.ErrorDetails)
+        @{
+            var exceptionDetailId = "";
+        }
+        @for (var i = 0; i < Model.ErrorDetails.Count; i++)
         {
+            var errorDetail = Model.ErrorDetails[i];
+            exceptionDetailId = "exceptionDetail" + i;
+
             <div id="stackpage" class="page">
                 @{
                     var stackFrameCount = 0;
@@ -91,7 +97,19 @@
                 </ul>
                 <br />
             </div>
+            @if (!string.IsNullOrEmpty(Model.CompiledContent[i]))
+            {
+                <div class="rawExceptionBlock">
+                    <div class="showRawExceptionContainer">
+                        <button class="showRawException" data-exceptionDetailId="@exceptionDetailId">Show compilation source</button>
+                    </div>
+                    <div id="@exceptionDetailId" class="rawExceptionDetails">
+                        <pre class="rawExceptionStackTrace">@Model.CompiledContent[i]</pre>
+                    </div>
+                </div>
+            }
         }
+
         <script>
             //<!--
             <%$ include: ErrorPage.js %>

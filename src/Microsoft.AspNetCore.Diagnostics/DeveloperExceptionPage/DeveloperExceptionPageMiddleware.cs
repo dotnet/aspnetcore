@@ -154,6 +154,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                 }
 
                 model.ErrorDetails.Add(exceptionDetails);
+                model.CompiledContent.Add(compilationFailure.CompiledContent);
             }
 
             var errorPage = new CompilationErrorPage
