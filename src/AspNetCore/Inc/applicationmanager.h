@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #pragma once
@@ -138,7 +138,7 @@ private:
           <div class = \"content-container\"> \
             <fieldset><h4> Troubleshooting steps: </h4> \
              <ul><li> Check the system event log for error messages </li> \
-             <li> Enable logging the application process’ stdout messages </li> \
+             <li> Enable logging the application process' stdout messages </li> \
              <li> Attach a debugger to the application process and inspect </li></ul></fieldset> \
              <fieldset><h4> For more information visit: \
              <a href=\"http://go.microsoft.com/fwlink/?linkid=808681\" <cite> http://go.microsoft.com/fwlink/?LinkID=808681 </cite></a></h4> \

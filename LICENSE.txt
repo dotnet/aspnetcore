@@ -1,6 +1,6 @@
 ASP.NET Core Module
 
-Copyright (c) Microsoft Corporation
+Copyright (c) .NET Foundation
 All rights reserved.
 
 MIT License

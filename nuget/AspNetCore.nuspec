@@ -7,7 +7,7 @@
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
     <licenseUrl>http://www.microsoft.com/web/webpi/eula/net_library_eula_ENU.htm</licenseUrl>
-    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <copyright>© .NET Foundation. All rights reserved.</copyright>
     <projectUrl>http://www.asp.net/</projectUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>ASP.NET Core Module</description>
