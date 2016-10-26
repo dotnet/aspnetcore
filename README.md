@@ -4,6 +4,10 @@ The ASP.NET Core Module is an IIS Module which is responsible for process
 management of ASP.NET Core http listeners and to proxy requests to the process
 that it manages.
 
+## Installing the latest ASP.NET Core Module
+The ASP.NET Core Module for IIS can be installed on servers without installing the .NET Core runtime. You can download the [Windows (Server Hosting) installer](https://go.microsoft.com/fwlink/?linkid=832756) and run the following command from an Administrator command prompt:
+``DotNetCore.1.1.0.Preview1-WindowsHosting.exe OPT_INSTALL_LTS_REDIST=0 OPT_INSTALL_FTS_REDIST=0``
+
 ## Pre-requisites for building
 
 ### Windows 8.1+ or Windows Server 2012 R2+
