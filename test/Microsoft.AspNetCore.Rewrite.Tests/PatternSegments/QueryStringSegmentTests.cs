@@ -12,16 +12,13 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments
         [Fact]
         public void QueryString_AssertSegmentIsCorrect()
         {
-            // Arrange
             var segement = new QueryStringSegment();
             var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
             context.HttpContext.Request.QueryString = new QueryString("?hey=1");
 
-            // Act
             var results = segement.Evaluate(context, null, null);
 
-            // Assert
-            Assert.Equal("?hey=1", results);
+            Assert.Equal("hey=1", results);
         }
     }
 }

@@ -7,7 +7,14 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
     {
         public override string Evaluate(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
         {
-            return context.HttpContext.Request.QueryString.ToString();
+            var queryString = context.HttpContext.Request.QueryString.ToString();
+
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                return queryString.Substring(1);
+            }
+
+            return queryString;
         }
     }
 }
