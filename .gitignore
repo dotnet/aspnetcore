@@ -6,7 +6,6 @@ _ReSharper.*/
 /packages
 artifacts/
 PublishProfiles/
-nuspec/
 *.user
 *.suo
 *.cache
@@ -25,3 +24,4 @@ nuget.exe
 *.metaproj*
 debugSettings.json
 project.lock.json
+*.nupkg

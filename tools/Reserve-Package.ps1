@@ -34,44 +34,16 @@ Param(
     [switch] $publish=$False
 )
 
-$template = @'
-<?xml version="1.0"?>
-<package >
-  <metadata>
-    <id>$id$</id>
-    <version>0.0.1-alpha</version>
-    <authors>aspnet</authors>
-    <owners>Microsoft</owners>
-    <licenseUrl>http://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</licenseUrl>
-    <projectUrl>http://www.asp.net/</projectUrl>
-    <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
-    <requireLicenseAcceptance>true</requireLicenseAcceptance>
-    <description>$id$</description>
-  </metadata>
-</package>
-'@
-
 # download nuget.exe if it hasn't been downloaded yet.
-if (-not (Test-Path tools\nuget.exe)) {
-    mkdir tools | Out-Null
-    curl https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile tools\nuget.exe
+if (-not (Test-Path nuget.exe)) {
+    Invoke-WebRequest https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile nuget.exe
 }
-
-if (Test-Path nuspec) {
-    rmdir -r nuspec | Out-Null
-}
-
-mkdir nuspec | Out-Null
-mkdir nuspec\content | Out-Null
-
-$template | Out-File "nuspec\$packageName.nuspec"
-echo "placeholder" | Out-file "nuspec\content\readme.txt"
 
 pushd nuspec
-..\tools\nuget.exe pack -p Id=$packageName
+..\nuget.exe pack -p Id=$packageName
 
 if ($publish) {
-    ..\tools\nuget.exe push "$packageName.0.0.1-alpha.nupkg" -Source https://www.nuget.org -ApiKey $apikey -Non
-    ..\tools\nuget.exe delete $packageName 0.0.1-alpha -Source https://www.nuget.org -ApiKey $apikey -Non
+    ..\nuget.exe push "$packageName.0.0.1-alpha.nupkg" -Source https://www.nuget.org -ApiKey $apikey -Non
+    ..\nuget.exe delete $packageName 0.0.1-alpha -Source https://www.nuget.org -ApiKey $apikey -Non
 }
 popd
