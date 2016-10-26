@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
 
         public ApplicationTestFixture Fixture { get; }
 
-        [Fact]
+        [ConditionalFact]
         [OSSkipConditionAttribute(OperatingSystems.Linux)]
         [OSSkipConditionAttribute(OperatingSystems.Windows)]
         public async Task Precompilation_WorksForSimpleApps()
