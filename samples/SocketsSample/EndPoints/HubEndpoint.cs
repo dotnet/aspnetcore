@@ -63,10 +63,12 @@ namespace SocketsSample
                 foreach (var connection in _endPoint.Connections)
                 {
 
-                    var invocationAdapter = _endPoint._serviceProvider.GetRequiredService<InvocationAdapterRegistry>()
-                        .GetInvocationAdapter((string)connection.Metadata["formatType"]);
+                    var invocationAdapter =
+                        _endPoint._serviceProvider
+                            .GetRequiredService<InvocationAdapterRegistry>()
+                            .GetInvocationAdapter((string)connection.Metadata["formatType"]);
 
-                    tasks.Add(invocationAdapter.InvokeClientMethod(connection.Channel.GetStream(), message));
+                    tasks.Add(invocationAdapter.WriteInvocationDescriptor(message, connection.Channel.GetStream()));
                 }
 
                 return Task.WhenAll(tasks);
@@ -88,8 +90,10 @@ namespace SocketsSample
             {
                 var connection = _endPoint.Connections[_connectionId];
 
-                var invocationAdapter = _endPoint._serviceProvider.GetRequiredService<InvocationAdapterRegistry>()
-                    .GetInvocationAdapter((string)connection.Metadata["formatType"]);
+                var invocationAdapter =
+                    _endPoint._serviceProvider
+                        .GetRequiredService<InvocationAdapterRegistry>()
+                        .GetInvocationAdapter((string)connection.Metadata["formatType"]);
 
                 if (_endPoint._logger.IsEnabled(LogLevel.Debug))
                 {
@@ -102,7 +106,7 @@ namespace SocketsSample
                     Arguments = args
                 };
 
-                return invocationAdapter.InvokeClientMethod(connection.Channel.GetStream(), message);
+                return invocationAdapter.WriteInvocationDescriptor(message, connection.Channel.GetStream());
             }
         }
     }

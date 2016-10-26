@@ -44,13 +44,15 @@ namespace SocketsSample
             await Task.Yield();
 
             var stream = connection.Channel.GetStream();
-            var invocationAdapter = _serviceProvider.GetRequiredService<InvocationAdapterRegistry>()
-                .GetInvocationAdapter((string)connection.Metadata["formatType"]);
+            var invocationAdapter =
+                _serviceProvider
+                    .GetRequiredService<InvocationAdapterRegistry>()
+                    .GetInvocationAdapter((string)connection.Metadata["formatType"]);
 
             while (true)
             {
                 var invocationDescriptor =
-                    await invocationAdapter.CreateInvocationDescriptor(
+                    await invocationAdapter.ReadInvocationDescriptor(
                             stream, methodName => {
                                 Type[] types;
                                 // TODO: null or throw?
@@ -84,7 +86,7 @@ namespace SocketsSample
                     };
                 }
 
-                await invocationAdapter.WriteInvocationResult(stream, result);
+                await invocationAdapter.WriteInvocationResult(result, stream);
             }
         }
 

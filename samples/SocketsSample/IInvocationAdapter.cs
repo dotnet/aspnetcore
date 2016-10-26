@@ -6,10 +6,10 @@ namespace SocketsSample
 {
     public interface IInvocationAdapter
     {
-        Task<InvocationDescriptor> CreateInvocationDescriptor(Stream stream, Func<string, Type[]> getParams);
+        Task<InvocationDescriptor> ReadInvocationDescriptor(Stream stream, Func<string, Type[]> getParams);
 
-        Task WriteInvocationResult(Stream stream, InvocationResultDescriptor resultDescriptor);
+        Task WriteInvocationResult(InvocationResultDescriptor resultDescriptor, Stream stream);
 
-        Task InvokeClientMethod(Stream stream, InvocationDescriptor invocationDescriptor);
+        Task WriteInvocationDescriptor(InvocationDescriptor invocationDescriptor, Stream stream);
     }
 }

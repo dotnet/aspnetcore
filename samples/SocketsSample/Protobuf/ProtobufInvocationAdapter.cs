@@ -8,14 +8,14 @@ namespace SocketsSample.Protobuf
 {
     public class ProtobufInvocationAdapter : IInvocationAdapter
     {
-        IServiceProvider _serviceProvider;
+        private IServiceProvider _serviceProvider;
 
         public ProtobufInvocationAdapter(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
 
-        public async Task<InvocationDescriptor> CreateInvocationDescriptor(Stream stream, Func<string, Type[]> getParams)
+        public async Task<InvocationDescriptor> ReadInvocationDescriptor(Stream stream, Func<string, Type[]> getParams)
         {
             return await Task.Run(() => CreateInvocationDescriptorInt(stream, getParams));
         }
@@ -58,7 +58,7 @@ namespace SocketsSample.Protobuf
             return Task.FromResult(invocationDescriptor);
         }
 
-        public async Task WriteInvocationResult(Stream stream, InvocationResultDescriptor resultDescriptor)
+        public async Task WriteInvocationResult(InvocationResultDescriptor resultDescriptor, Stream stream)
         {
             var outputStream = new CodedOutputStream(stream, leaveOpen: true);
             outputStream.WriteMessage(new RpcMessageKind() { MessageKind = RpcMessageKind.Types.Kind.Result });
@@ -100,7 +100,7 @@ namespace SocketsSample.Protobuf
             await stream.FlushAsync();
         }
 
-        public async Task InvokeClientMethod(Stream stream, InvocationDescriptor invocationDescriptor)
+        public async Task WriteInvocationDescriptor(InvocationDescriptor invocationDescriptor, Stream stream)
         {
             var outputStream = new CodedOutputStream(stream, leaveOpen: true);
             outputStream.WriteMessage(new RpcMessageKind() { MessageKind = RpcMessageKind.Types.Kind.Invocation });
@@ -123,6 +123,12 @@ namespace SocketsSample.Protobuf
                 else if (arg.GetType() == typeof(string))
                 {
                     outputStream.WriteMessage(new PrimitiveValue { StringValue = (string)arg });
+                }
+                else
+                {
+                    var serializer = _serviceProvider.GetRequiredService<ProtobufSerializer>();
+                    var message = serializer.GetMessage(arg);
+                    outputStream.WriteMessage(message);
                 }
             }
 

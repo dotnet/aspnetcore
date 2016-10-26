@@ -8,14 +8,10 @@ namespace SocketsSample
 {
     public class ChatEndPoint : EndPoint
     {
-        public ChatEndPoint()
-        {
-        }
 
         public override async Task OnConnected(Connection connection)
         {
             await Broadcast($"{connection.ConnectionId} connected ({connection.Metadata["transport"]})");
-
 
             while (true)
             {

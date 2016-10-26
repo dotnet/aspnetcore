@@ -8,7 +8,7 @@ namespace SocketsSample
 {
     public class LineInvocationAdapter : IInvocationAdapter
     {
-        public async Task<InvocationDescriptor> CreateInvocationDescriptor(Stream stream, Func<string, Type[]> getParams)
+        public async Task<InvocationDescriptor> ReadInvocationDescriptor(Stream stream, Func<string, Type[]> getParams)
         {
             var streamReader = new StreamReader(stream);
             var line = await streamReader.ReadLineAsync();
@@ -29,25 +29,25 @@ namespace SocketsSample
             };
         }
 
-        public async Task InvokeClientMethod(Stream stream, InvocationDescriptor invocationDescriptor)
+        public async Task WriteInvocationDescriptor(InvocationDescriptor invocationDescriptor, Stream stream)
         {
             var msg = $"CI{invocationDescriptor.Id},M{invocationDescriptor.Method},{string.Join(",", invocationDescriptor.Arguments.Select(a => a.ToString()))}\n";
-            await WriteAsync(stream, msg);
+            await WriteAsync(msg, stream);
         }
 
-        public async Task WriteInvocationResult(Stream stream, InvocationResultDescriptor resultDescriptor)
+        public async Task WriteInvocationResult(InvocationResultDescriptor resultDescriptor, Stream stream)
         {
             if (string.IsNullOrEmpty(resultDescriptor.Error))
             {
-                await WriteAsync(stream, $"RI{resultDescriptor.Id},E{resultDescriptor.Error}\n");
+                await WriteAsync($"RI{resultDescriptor.Id},E{resultDescriptor.Error}\n", stream);
             }
             else
             {
-                await WriteAsync(stream, $"RI{resultDescriptor.Id},R{(resultDescriptor.Result != null ? resultDescriptor.Result.ToString() : string.Empty)}\n");
+                await WriteAsync($"RI{resultDescriptor.Id},R{(resultDescriptor.Result != null ? resultDescriptor.Result.ToString() : string.Empty)}\n", stream);
             }
         }
 
-        private async Task WriteAsync(Stream stream, string msg)
+        private async Task WriteAsync(string msg, Stream stream)
         {
             var writer = new StreamWriter(stream);
             await writer.WriteAsync(msg);
