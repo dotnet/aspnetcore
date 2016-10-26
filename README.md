@@ -56,3 +56,18 @@ If chose to install from the command prompt, you can run the following command.
 # Build in Release Configuration
 .\build.cmd /property:configuration=release
 ```
+
+## Contributions
+
+Check out the [contributing](https://github.com/aspnet/Home/blob/dev/CONTRIBUTING.md)
+page to see the best places to log issues and start discussions.
+
+This project has adopted the code of conduct defined by the [Contributor Covenant](http://contributor-covenant.org/)
+to clarify expected behavior in our community.
+For more information see the [.NET Foundation Code of Conduct](http://www.dotnetfoundation.org/code-of-conduct).
+
+### .NET Foundation
+
+This project is supported by the [.NET Foundation](http://www.dotnetfoundation.org).
+
+
