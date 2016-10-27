@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Linq;
 using Moq;
 using Xunit;
@@ -18,8 +19,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             // Assert
             Assert.IsType<DefaultRazorEngine>(engine);
-            Assert.Empty(engine.Features);
-            Assert.Empty(engine.Phases);
+            AssertDefaultFeatures(engine.Features);
+            AssertDefaultPhases(engine.Phases);
         }
 
         [Fact]
@@ -31,8 +32,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             // Assert
             Assert.IsType<DefaultRazorEngine>(engine);
-            Assert.Empty(engine.Features);
-            Assert.Empty(engine.Phases);
+            AssertDefaultFeatures(engine.Features);
+            AssertDefaultPhases(engine.Phases);
         }
 
         [Fact]
@@ -68,6 +69,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 engine.Phases,
                 p => Assert.Same(phases[0], p),
                 p => Assert.Same(phases[1], p));
+        }
+
+        private static void AssertDefaultFeatures(IEnumerable<IRazorEngineFeature> features)
+        {
+            Assert.Empty(features);
+        }
+
+        private static void AssertDefaultPhases(IReadOnlyList<IRazorEnginePhase> features)
+        {
+            Assert.Collection(
+                features,
+                f => Assert.IsType<DefaultRazorParsingPhase>(f),
+                f => Assert.IsType<DefaultRazorSyntaxTreePhase>(f));
         }
     }
 }

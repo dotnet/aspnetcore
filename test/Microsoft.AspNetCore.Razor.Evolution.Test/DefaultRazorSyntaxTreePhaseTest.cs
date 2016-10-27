@@ -55,7 +55,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void Execute_ExecutesPhasesInOrder()
         {
             // Arrange
-
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
 
             // We're going to set up mocks to simulate a sequence of passes. We don't care about
@@ -63,13 +62,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var originalSyntaxTree = RazorSyntaxTree.Parse(codeDocument.Source);
             var firstPassSyntaxTree = RazorSyntaxTree.Parse(codeDocument.Source);
             var secondPassSyntaxTree = RazorSyntaxTree.Parse(codeDocument.Source);
+            codeDocument.SetSyntaxTree(originalSyntaxTree);
 
             var firstPass = new Mock<IRazorSyntaxTreePass>(MockBehavior.Strict);
             firstPass.SetupGet(m => m.Order).Returns(0);
+            firstPass.SetupProperty(m => m.Engine);
             firstPass.Setup(m => m.Execute(codeDocument, originalSyntaxTree)).Returns(firstPassSyntaxTree);
 
             var secondPass = new Mock<IRazorSyntaxTreePass>(MockBehavior.Strict);
-            secondPass.SetupGet(m => m.Order).Returns(0);
+            secondPass.SetupGet(m => m.Order).Returns(1);
+            secondPass.SetupProperty(m => m.Engine);
             secondPass.Setup(m => m.Execute(codeDocument, firstPassSyntaxTree)).Returns(secondPassSyntaxTree);
 
             var phase = new DefaultRazorSyntaxTreePhase();
@@ -78,8 +80,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 b.Phases.Add(phase);
 
-                b.Features.Add(secondPass.Object);
                 b.Features.Add(firstPass.Object);
+                b.Features.Add(secondPass.Object);
             });
 
             // Act
