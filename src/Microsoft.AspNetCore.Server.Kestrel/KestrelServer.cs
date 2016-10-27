@@ -59,6 +59,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         {
             try
             {
+                if (!BitConverter.IsLittleEndian)
+                {
+                    throw new PlatformNotSupportedException("Kestrel does not support big-endian architectures.");
+                }
+
                 ValidateOptions();
 
                 if (_disposables != null)
