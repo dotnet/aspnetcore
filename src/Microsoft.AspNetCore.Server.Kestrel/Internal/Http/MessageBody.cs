@@ -247,9 +247,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 keepAlive = (connectionOptions & ConnectionOptions.KeepAlive) == ConnectionOptions.KeepAlive;
             }
 
-            var transferEncoding = headers.HeaderTransferEncoding.ToString();
-            if (transferEncoding.Length > 0)
+            var transferEncoding = headers.HeaderTransferEncoding;
+            if (transferEncoding.Count > 0)
             {
+                var transferCoding = FrameHeaders.GetFinalTransferCoding(headers.HeaderTransferEncoding);
+
+                // https://tools.ietf.org/html/rfc7230#section-3.3.3
+                // If a Transfer-Encoding header field
+                // is present in a request and the chunked transfer coding is not
+                // the final encoding, the message body length cannot be determined
+                // reliably; the server MUST respond with the 400 (Bad Request)
+                // status code and then close the connection.
+                if (transferCoding != TransferCoding.Chunked)
+                {
+                    context.RejectRequest(RequestRejectionReason.FinalTransferCodingNotChunked, transferEncoding.ToString());
+                }
+
                 return new ForChunkedEncoding(keepAlive, headers, context);
             }
 

@@ -848,6 +848,140 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
+        [Theory]
+        [InlineData("gzip")]
+        [InlineData("chunked, gzip")]
+        [InlineData("gzip")]
+        [InlineData("chunked, gzip")]
+        public async Task ConnectionClosedWhenChunkedIsNotFinalTransferCoding(string responseTransferEncoding)
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.Headers["Transfer-Encoding"] = responseTransferEncoding;
+                await httpContext.Response.WriteAsync("hello, world");
+            }, new TestServiceContext()))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        $"Transfer-Encoding: {responseTransferEncoding}",
+                        "",
+                        "hello, world");
+                }
+
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.0",
+                        "Connection: keep-alive",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        $"Transfer-Encoding: {responseTransferEncoding}",
+                        "",
+                        "hello, world");
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("gzip")]
+        [InlineData("chunked, gzip")]
+        [InlineData("gzip")]
+        [InlineData("chunked, gzip")]
+        public async Task ConnectionClosedWhenChunkedIsNotFinalTransferCodingEvenIfConnectionKeepAliveSetInResponse(string responseTransferEncoding)
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.Headers["Connection"] = "keep-alive";
+                httpContext.Response.Headers["Transfer-Encoding"] = responseTransferEncoding;
+                await httpContext.Response.WriteAsync("hello, world");
+            }, new TestServiceContext()))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: keep-alive",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        $"Transfer-Encoding: {responseTransferEncoding}",
+                        "",
+                        "hello, world");
+                }
+
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.0",
+                        "Connection: keep-alive",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: keep-alive",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        $"Transfer-Encoding: {responseTransferEncoding}",
+                        "",
+                        "hello, world");
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("chunked")]
+        [InlineData("gzip, chunked")]
+        public async Task ConnectionKeptAliveWhenChunkedIsFinalTransferCoding(string responseTransferEncoding)
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.Headers["Transfer-Encoding"] = responseTransferEncoding;
+
+                // App would have to chunk manually, but here we don't care
+                await httpContext.Response.WriteAsync("hello, world");
+            }, new TestServiceContext()))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        $"Transfer-Encoding: {responseTransferEncoding}",
+                        "",
+                        "hello, world");
+
+                    // Make sure connection was kept open
+                    await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        $"Transfer-Encoding: {responseTransferEncoding}",
+                        "",
+                        "hello, world");
+                }
+            }
+        }
+
         public static TheoryData<string, StringValues, string> NullHeaderData
         {
             get

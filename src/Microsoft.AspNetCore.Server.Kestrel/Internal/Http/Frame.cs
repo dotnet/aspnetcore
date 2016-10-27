@@ -811,13 +811,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             var responseHeaders = FrameResponseHeaders;
             var hasConnection = responseHeaders.HasConnection;
-            var connectionOptions = hasConnection ? FrameHeaders.ParseConnection(responseHeaders.HeaderConnection) : ConnectionOptions.None;
+            var connectionOptions = FrameHeaders.ParseConnection(responseHeaders.HeaderConnection);
+            var hasTransferEncoding = responseHeaders.HasTransferEncoding;
+            var transferCoding = FrameHeaders.GetFinalTransferCoding(responseHeaders.HeaderTransferEncoding);
 
             var end = SocketOutput.ProducingStart();
 
             if (_keepAlive && hasConnection)
             {
                 _keepAlive = (connectionOptions & ConnectionOptions.KeepAlive) == ConnectionOptions.KeepAlive;
+            }
+
+            // https://tools.ietf.org/html/rfc7230#section-3.3.1
+            // If any transfer coding other than
+            // chunked is applied to a response payload body, the sender MUST either
+            // apply chunked as the final transfer coding or terminate the message
+            // by closing the connection.
+            if (hasTransferEncoding && transferCoding != TransferCoding.Chunked)
+            {
+                _keepAlive = false;
             }
 
             // Set whether response can have body
@@ -827,7 +839,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             // automatically for HEAD requests or 204, 205, 304 responses.
             if (_canHaveBody)
             {
-                if (!responseHeaders.HasTransferEncoding && !responseHeaders.HasContentLength)
+                if (!hasTransferEncoding && !responseHeaders.HasContentLength)
                 {
                     if (appCompleted && StatusCode != 101)
                     {
@@ -856,12 +868,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     }
                 }
             }
-            else
+            else if (hasTransferEncoding)
             {
-                if (responseHeaders.HasTransferEncoding)
-                {
-                    RejectNonBodyTransferEncodingResponse(appCompleted);
-                }
+                RejectNonBodyTransferEncodingResponse(appCompleted);
             }
 
             responseHeaders.SetReadOnly();

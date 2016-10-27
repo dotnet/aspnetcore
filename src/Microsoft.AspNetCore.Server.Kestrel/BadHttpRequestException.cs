@@ -99,6 +99,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 case RequestRejectionReason.UnrecognizedHTTPVersion:
                     ex = new BadHttpRequestException($"Unrecognized HTTP version: {value}", 505);
                     break;
+                case RequestRejectionReason.FinalTransferCodingNotChunked:
+                    ex = new BadHttpRequestException($"Final transfer coding is not \"chunked\": \"{value}\"", 400);
+                    break;
                 default:
                     ex = new BadHttpRequestException("Bad request.", 400);
                     break;

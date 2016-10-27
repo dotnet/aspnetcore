@@ -10,6 +10,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
     public class FrameHeadersTests
     {
         [Theory]
+        [InlineData("", ConnectionOptions.None)]
+        [InlineData(",", ConnectionOptions.None)]
+        [InlineData(" ,", ConnectionOptions.None)]
+        [InlineData(" , ", ConnectionOptions.None)]
+        [InlineData(",,", ConnectionOptions.None)]
+        [InlineData(" ,,", ConnectionOptions.None)]
+        [InlineData(",, ", ConnectionOptions.None)]
+        [InlineData(" , ,", ConnectionOptions.None)]
+        [InlineData(" , ,", ConnectionOptions.None)]
+        [InlineData(" , , ", ConnectionOptions.None)]
         [InlineData("keep-alive", ConnectionOptions.KeepAlive)]
         [InlineData("keep-alive, upgrade", ConnectionOptions.KeepAlive | ConnectionOptions.Upgrade)]
         [InlineData("keep-alive,upgrade", ConnectionOptions.KeepAlive | ConnectionOptions.Upgrade)]
@@ -123,10 +133,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("up2rade ,", ConnectionOptions.None)]
         [InlineData("c2ose ,", ConnectionOptions.None)]
         [InlineData("cl2se ,", ConnectionOptions.None)]
-        public void TestParseConnection(string connection, ConnectionOptions expectedConnectionOptionss)
+        public void TestParseConnection(string connection, ConnectionOptions expectedConnectionOptions)
         {
             var connectionOptions = FrameHeaders.ParseConnection(connection);
-            Assert.Equal(expectedConnectionOptionss, connectionOptions);
+            Assert.Equal(expectedConnectionOptions, connectionOptions);
         }
 
         [Theory]
@@ -145,11 +155,73 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("", "close", ConnectionOptions.Close)]
         [InlineData("close", "upgrade", ConnectionOptions.Close | ConnectionOptions.Upgrade)]
         [InlineData("upgrade", "close", ConnectionOptions.Close | ConnectionOptions.Upgrade)]
-        public void TestParseConnectionMultipleValues(string value1, string value2, ConnectionOptions expectedConnectionOptionss)
+        public void TestParseConnectionMultipleValues(string value1, string value2, ConnectionOptions expectedConnectionOptions)
         {
             var connection = new StringValues(new[] { value1, value2 });
             var connectionOptions = FrameHeaders.ParseConnection(connection);
-            Assert.Equal(expectedConnectionOptionss, connectionOptions);
+            Assert.Equal(expectedConnectionOptions, connectionOptions);
+        }
+
+        [Theory]
+        [InlineData("", TransferCoding.None)]
+        [InlineData(",,", TransferCoding.None)]
+        [InlineData(" ,,", TransferCoding.None)]
+        [InlineData(",, ", TransferCoding.None)]
+        [InlineData(" , ,", TransferCoding.None)]
+        [InlineData(" , ,", TransferCoding.None)]
+        [InlineData(" , , ", TransferCoding.None)]
+        [InlineData("chunked,", TransferCoding.Chunked)]
+        [InlineData("chunked,,", TransferCoding.Chunked)]
+        [InlineData(",chunked", TransferCoding.Chunked)]
+        [InlineData(",,chunked", TransferCoding.Chunked)]
+        [InlineData("chunked, ", TransferCoding.Chunked)]
+        [InlineData("chunked, ,", TransferCoding.Chunked)]
+        [InlineData("chunked, , ", TransferCoding.Chunked)]
+        [InlineData("chunked ,", TransferCoding.Chunked)]
+        [InlineData(",chunked", TransferCoding.Chunked)]
+        [InlineData(", chunked", TransferCoding.Chunked)]
+        [InlineData(",,chunked", TransferCoding.Chunked)]
+        [InlineData(", ,chunked", TransferCoding.Chunked)]
+        [InlineData(",, chunked", TransferCoding.Chunked)]
+        [InlineData(", , chunked", TransferCoding.Chunked)]
+        [InlineData("chunked, gzip", TransferCoding.Other)]
+        [InlineData("chunked,compress", TransferCoding.Other)]
+        [InlineData("deflate, chunked", TransferCoding.Chunked)]
+        [InlineData("gzip,chunked", TransferCoding.Chunked)]
+        [InlineData("compress,,chunked", TransferCoding.Chunked)]
+        [InlineData("chunkedchunked", TransferCoding.Other)]
+        [InlineData("chunked2", TransferCoding.Other)]
+        [InlineData("chunked 2", TransferCoding.Other)]
+        [InlineData("2chunked", TransferCoding.Other)]
+        [InlineData("c2unked", TransferCoding.Other)]
+        [InlineData("ch2nked", TransferCoding.Other)]
+        [InlineData("chunked 2, gzip", TransferCoding.Other)]
+        [InlineData("chunked2, gzip", TransferCoding.Other)]
+        [InlineData("gzip, chunked 2", TransferCoding.Other)]
+        [InlineData("gzip, chunked2", TransferCoding.Other)]
+        public void TestParseTransferEncoding(string transferEncoding, TransferCoding expectedTransferEncodingOptions)
+        {
+            var transferEncodingOptions = FrameHeaders.GetFinalTransferCoding(transferEncoding);
+            Assert.Equal(expectedTransferEncodingOptions, transferEncodingOptions);
+        }
+
+        [Theory]
+        [InlineData("chunked", "gzip", TransferCoding.Other)]
+        [InlineData("compress", "chunked", TransferCoding.Chunked)]
+        [InlineData("chunked", "", TransferCoding.Chunked)]
+        [InlineData("", "chunked", TransferCoding.Chunked)]
+        [InlineData("chunked, deflate", "", TransferCoding.Other)]
+        [InlineData("gzip, chunked", "", TransferCoding.Chunked)]
+        [InlineData("", "chunked, compress", TransferCoding.Other)]
+        [InlineData("", "compress, chunked", TransferCoding.Chunked)]
+        [InlineData("", "", TransferCoding.None)]
+        [InlineData("deflate", "", TransferCoding.Other)]
+        [InlineData("", "gzip", TransferCoding.Other)]
+        public void TestParseTransferEncodingMultipleValues(string value1, string value2, TransferCoding expectedTransferEncodingOptions)
+        {
+            var transferEncoding = new StringValues(new[] { value1, value2 });
+            var transferEncodingOptions = FrameHeaders.GetFinalTransferCoding(transferEncoding);
+            Assert.Equal(expectedTransferEncodingOptions, transferEncodingOptions);
         }
     }
 }

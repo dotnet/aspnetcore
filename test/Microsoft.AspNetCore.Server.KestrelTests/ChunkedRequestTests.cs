@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -505,6 +506,106 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Connection: close",
                         "");
                     await connection.ReceiveForcedEnd(
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task ChunkedNotFinalTransferCodingResultsIn400(TestServiceContext testContext)
+        {
+            using (var server = new TestServer(httpContext =>
+            {
+                return TaskCache.CompletedTask;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendAll(
+                        "POST / HTTP/1.1",
+                        "Transfer-Encoding: not-chunked",
+                        "",
+                        "C",
+                        "hello, world",
+                        "0",
+                        "",
+                        "");
+
+                    await connection.ReceiveForcedEnd(
+                        "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+
+                // Content-Length should not affect this
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendAll(
+                        "POST / HTTP/1.1",
+                        "Transfer-Encoding: not-chunked",
+                        "Content-Length: 22",
+                        "",
+                        "C",
+                        "hello, world",
+                        "0",
+                        "",
+                        "");
+
+                    await connection.ReceiveForcedEnd(
+                        "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendAll(
+                        "POST / HTTP/1.1",
+                        "Transfer-Encoding: chunked, not-chunked",
+                        "",
+                        "C",
+                        "hello, world",
+                        "0",
+                        "",
+                        "");
+
+                    await connection.ReceiveForcedEnd(
+                        "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+
+                // Content-Length should not affect this
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendAll(
+                        "POST / HTTP/1.1",
+                        "Transfer-Encoding: chunked, not-chunked",
+                        "Content-Length: 22",
+                        "",
+                        "C",
+                        "hello, world",
+                        "0",
+                        "",
+                        "");
+
+                    await connection.ReceiveForcedEnd(
+                        "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
                         "",

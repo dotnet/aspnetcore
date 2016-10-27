@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                                     ch++;
                                 }
 
-                                if (ch == tokenEnd || *ch == ',')
+                                if (ch == tokenEnd)
                                 {
                                     connectionOptions |= ConnectionOptions.KeepAlive;
                                 }
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                                     ch++;
                                 }
 
-                                if (ch == tokenEnd || *ch == ',')
+                                if (ch == tokenEnd)
                                 {
                                     connectionOptions |= ConnectionOptions.Upgrade;
                                 }
@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                                     ch++;
                                 }
 
-                                if (ch == tokenEnd || *ch == ',')
+                                if (ch == tokenEnd)
                                 {
                                     connectionOptions |= ConnectionOptions.Close;
                                 }
@@ -362,6 +362,68 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
 
             return connectionOptions;
+        }
+
+        public static unsafe TransferCoding GetFinalTransferCoding(StringValues transferEncoding)
+        {
+            var transferEncodingOptions = TransferCoding.None;
+
+            foreach (var value in transferEncoding)
+            {
+                fixed (char* ptr = value)
+                {
+                    var ch = ptr;
+                    var tokenEnd = ch;
+                    var end = ch + value.Length;
+
+                    while (ch < end)
+                    {
+                        while (tokenEnd < end && *tokenEnd != ',')
+                        {
+                            tokenEnd++;
+                        }
+
+                        while (ch < tokenEnd && *ch == ' ')
+                        {
+                            ch++;
+                        }
+
+                        var tokenLength = tokenEnd - ch;
+
+                        if (tokenLength >= 7 && (*ch | 0x20) == 'c')
+                        {
+                            if ((*++ch | 0x20) == 'h' &&
+                                (*++ch | 0x20) == 'u' &&
+                                (*++ch | 0x20) == 'n' &&
+                                (*++ch | 0x20) == 'k' &&
+                                (*++ch | 0x20) == 'e' &&
+                                (*++ch | 0x20) == 'd')
+                            {
+                                ch++;
+                                while (ch < tokenEnd && *ch == ' ')
+                                {
+                                    ch++;
+                                }
+
+                                if (ch == tokenEnd)
+                                {
+                                    transferEncodingOptions = TransferCoding.Chunked;
+                                }
+                            }
+                        }
+
+                        if (tokenLength > 0 && ch != tokenEnd)
+                        {
+                            transferEncodingOptions = TransferCoding.Other;
+                        }
+
+                        tokenEnd++;
+                        ch = tokenEnd;
+                    }
+                }
+            }
+
+            return transferEncodingOptions;
         }
 
         private static void ThrowInvalidContentLengthException(string value)

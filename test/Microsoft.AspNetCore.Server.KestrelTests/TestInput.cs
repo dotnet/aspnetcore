@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var context = new Frame<object>(null, connectionContext);
             FrameContext = context;
             FrameContext.FrameControl = this;
+            FrameContext.ConnectionContext.ListenerContext.ServiceContext.Log = trace;
 
             _memoryPool = new MemoryPool();
             FrameContext.SocketInput = new SocketInput(_memoryPool, ltp);
