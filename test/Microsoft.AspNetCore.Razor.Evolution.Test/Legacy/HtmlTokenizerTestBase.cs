@@ -3,23 +3,28 @@
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal abstract class HtmlTokenizerTestBase : TokenizerTestBase<HtmlSymbol, HtmlSymbolType>
+    public abstract class HtmlTokenizerTestBase : TokenizerTestBase
     {
         private static HtmlSymbol _ignoreRemaining = new HtmlSymbol(0, 0, 0, string.Empty, HtmlSymbolType.Unknown);
 
-        protected override HtmlSymbol IgnoreRemaining
+        internal override object IgnoreRemaining
         {
             get { return _ignoreRemaining; }
         }
 
-        protected override Tokenizer<HtmlSymbol, HtmlSymbolType> CreateTokenizer(ITextDocument source)
+        internal override object CreateTokenizer(ITextDocument source)
         {
             return new HtmlTokenizer(source);
         }
 
-        protected void TestSingleToken(string text, HtmlSymbolType expectedSymbolType)
+        internal void TestSingleToken(string text, HtmlSymbolType expectedSymbolType)
         {
             TestTokenizer(text, new HtmlSymbol(0, 0, 0, text, expectedSymbolType));
+        }
+
+        internal void TestTokenizer(string input, params HtmlSymbol[] expectedSymbols)
+        {
+            base.TestTokenizer<HtmlSymbol, HtmlSymbolType>(input, expectedSymbols);
         }
     }
 }

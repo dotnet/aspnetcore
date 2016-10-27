@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class BlockTest
+    public class BlockTest
     {
         [Fact]
         public void ConstructorWithBlockBuilderSetsParent()

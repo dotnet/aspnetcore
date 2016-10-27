@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class TestFile
+    public class TestFile
     {
         public TestFile(string resourceName, Assembly assembly)
         {

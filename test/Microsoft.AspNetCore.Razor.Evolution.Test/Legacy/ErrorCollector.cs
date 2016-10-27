@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class ErrorCollector
+    public class ErrorCollector
     {
         private StringBuilder _message = new StringBuilder();
         private int _indent = 0;

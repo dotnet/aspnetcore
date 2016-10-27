@@ -9,14 +9,14 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal abstract class TokenizerTestBase<TSymbol, TSymbolType>
-        where TSymbolType : struct
-        where TSymbol : SymbolBase<TSymbolType>
+    public abstract class TokenizerTestBase
     {
-        protected abstract TSymbol IgnoreRemaining { get; }
-        protected abstract Tokenizer<TSymbol, TSymbolType> CreateTokenizer(ITextDocument source);
+        internal abstract object IgnoreRemaining { get; }
+        internal abstract object CreateTokenizer(ITextDocument source);
 
-        protected void TestTokenizer(string input, params TSymbol[] expectedSymbols)
+        internal void TestTokenizer<TSymbol, TSymbolType>(string input, params TSymbol[] expectedSymbols)
+            where TSymbolType : struct
+            where TSymbol : SymbolBase<TSymbolType>
         {
             // Arrange
             var success = true;
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             {
                 using (SeekableTextReader source = new SeekableTextReader(reader))
                 {
-                    Tokenizer<TSymbol, TSymbolType> tokenizer = CreateTokenizer(source);
+                    var tokenizer = (Tokenizer<TSymbol, TSymbolType>)CreateTokenizer(source);
                     var counter = 0;
                     TSymbol current = null;
                     while ((current = tokenizer.NextSymbol()) != null)

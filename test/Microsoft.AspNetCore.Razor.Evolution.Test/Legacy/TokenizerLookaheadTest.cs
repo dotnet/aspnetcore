@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class TokenizerLookaheadTest : HtmlTokenizerTestBase
+    public class TokenizerLookaheadTest : HtmlTokenizerTestBase
     {
         [Fact]
         public void Lookahead_MaintainsExistingBufferWhenRejected()

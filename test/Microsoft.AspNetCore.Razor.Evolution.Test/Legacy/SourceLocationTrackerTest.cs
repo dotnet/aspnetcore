@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class SourceLocationTrackerTest
+    public class SourceLocationTrackerTest
     {
         private static readonly SourceLocation TestStartLocation = new SourceLocation(10, 42, 45);
 

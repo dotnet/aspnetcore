@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class CSharpDirectivesTest : CsHtmlCodeParserTestBase
+    public class CSharpDirectivesTest : CsHtmlCodeParserTestBase
     {
         [Fact]
         public void TagHelperPrefixDirective_NoValueSucceeds()

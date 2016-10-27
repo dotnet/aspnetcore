@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class CSharpTemplateTest : CsHtmlCodeParserTestBase
+    public class CSharpTemplateTest : CsHtmlCodeParserTestBase
     {
         private const string TestTemplateCode = " @<p>Foo #@item</p>";
 

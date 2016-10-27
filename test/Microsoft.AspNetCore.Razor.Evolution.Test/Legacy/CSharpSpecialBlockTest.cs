@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class CSharpSpecialBlockTest : CsHtmlCodeParserTestBase
+    public class CSharpSpecialBlockTest : CsHtmlCodeParserTestBase
     {
         [Fact]
         public void ParseInheritsStatementMarksInheritsSpanAsCanGrowIfMissingTrailingSpace()

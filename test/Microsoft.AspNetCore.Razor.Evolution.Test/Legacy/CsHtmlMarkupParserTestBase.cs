@@ -5,14 +5,14 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal abstract class CsHtmlMarkupParserTestBase : MarkupParserTestBase
+    public abstract class CsHtmlMarkupParserTestBase : MarkupParserTestBase
     {
-        protected override ISet<string> KeywordSet
+        internal override ISet<string> KeywordSet
         {
             get { return CSharpCodeParser.DefaultKeywords; }
         }
 
-        protected override BlockFactory CreateBlockFactory()
+        internal override BlockFactory CreateBlockFactory()
         {
             return new BlockFactory(Factory ?? CreateSpanFactory());
         }

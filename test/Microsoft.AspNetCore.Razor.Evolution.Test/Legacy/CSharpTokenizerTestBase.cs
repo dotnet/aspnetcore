@@ -3,23 +3,28 @@
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal abstract class CSharpTokenizerTestBase : TokenizerTestBase<CSharpSymbol, CSharpSymbolType>
+    public abstract class CSharpTokenizerTestBase : TokenizerTestBase
     {
         private static CSharpSymbol _ignoreRemaining = new CSharpSymbol(0, 0, 0, string.Empty, CSharpSymbolType.Unknown);
 
-        protected override CSharpSymbol IgnoreRemaining
+        internal override object IgnoreRemaining
         {
             get { return _ignoreRemaining; }
         }
 
-        protected override Tokenizer<CSharpSymbol, CSharpSymbolType> CreateTokenizer(ITextDocument source)
+        internal override object CreateTokenizer(ITextDocument source)
         {
             return new CSharpTokenizer(source);
         }
 
-        protected void TestSingleToken(string text, CSharpSymbolType expectedSymbolType)
+        internal void TestSingleToken(string text, CSharpSymbolType expectedSymbolType)
         {
             TestTokenizer(text, new CSharpSymbol(0, 0, 0, text, expectedSymbolType));
+        }
+
+        internal void TestTokenizer(string input, params CSharpSymbol[] expectedSymbols)
+        {
+            base.TestTokenizer<CSharpSymbol, CSharpSymbolType>(input, expectedSymbols);
         }
     }
 }

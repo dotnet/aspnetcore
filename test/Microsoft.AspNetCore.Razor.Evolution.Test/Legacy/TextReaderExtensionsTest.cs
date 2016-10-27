@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class TextReaderExtensionsTest
+    public class TextReaderExtensionsTest
     {
         [Fact]
         public void ReadUntilWithCharReadsAllTextUpToSpecifiedCharacterButNotPast()

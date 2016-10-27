@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class CSharpToMarkupSwitchTest : CsHtmlCodeParserTestBase
+    public class CSharpToMarkupSwitchTest : CsHtmlCodeParserTestBase
     {
         [Fact]
         public void SingleAngleBracketDoesNotCauseSwitchIfOuterBlockIsTerminated()

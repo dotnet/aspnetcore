@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class CSharpImplicitExpressionTest : CsHtmlCodeParserTestBase
+    public class CSharpImplicitExpressionTest : CsHtmlCodeParserTestBase
     {
         private const string TestExtraKeyword = "model";
 
@@ -60,15 +60,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         public void ParseBlockMethodParsesNullConditionalOperatorImplicitExpression_Bracket(
             string implicitExpresison,
             string expectedImplicitExpression,
-            AcceptedCharacters acceptedCharacters,
-            RazorError[] expectedErrors)
+            object acceptedCharacters,
+            object expectedErrors)
         {
             // Act & Assert
             ImplicitExpressionTest(
                 implicitExpresison,
                 expectedImplicitExpression,
-                acceptedCharacters,
-                expectedErrors);
+                (AcceptedCharacters)acceptedCharacters,
+                (RazorError[])expectedErrors);
         }
 
         public static TheoryData NullConditionalOperatorData_Dot

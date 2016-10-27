@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class CSharpTokenizerOperatorsTest : CSharpTokenizerTestBase
+    public class CSharpTokenizerOperatorsTest : CSharpTokenizerTestBase
     {
         [Fact]
         public void LeftBrace_Is_Recognized()

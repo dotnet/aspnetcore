@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class CSharpReservedWordsTest : CsHtmlCodeParserTestBase
+    public class CSharpReservedWordsTest : CsHtmlCodeParserTestBase
     {
         [Theory]
         [InlineData("namespace")]

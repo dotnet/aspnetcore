@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class CSharpErrorTest : CsHtmlCodeParserTestBase
+    public class CSharpErrorTest : CsHtmlCodeParserTestBase
     {
         [Fact]
         public void ParseBlockHandlesQuotesAfterTransition()

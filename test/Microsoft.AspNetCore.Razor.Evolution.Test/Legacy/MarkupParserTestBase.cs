@@ -4,14 +4,14 @@
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal abstract class MarkupParserTestBase : CodeParserTestBase
+    public abstract class MarkupParserTestBase : CodeParserTestBase
     {
-        protected override RazorSyntaxTree ParseBlock(string document, bool designTime)
+        internal override RazorSyntaxTree ParseBlock(string document, bool designTime)
         {
             return ParseHtmlBlock(document, designTime);
         }
 
-        protected virtual void SingleSpanDocumentTest(string document, BlockType blockType, SpanKind spanType)
+        internal virtual void SingleSpanDocumentTest(string document, BlockType blockType, SpanKind spanType)
         {
             var b = CreateSimpleBlockAndSpan(document, blockType, spanType);
             ParseDocumentTest(document, b);

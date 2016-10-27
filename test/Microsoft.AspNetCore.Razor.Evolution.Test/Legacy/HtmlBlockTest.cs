@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class HtmlBlockTest : CsHtmlMarkupParserTestBase
+    public class HtmlBlockTest : CsHtmlMarkupParserTestBase
     {
         [Fact]
         public void ParseBlockHandlesOpenAngleAtEof()
@@ -388,11 +388,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         [Theory]
         [MemberData(nameof(HtmlCommentSupportsMultipleDashesData))]
-        public void HtmlCommentSupportsMultipleDashes(string documentContent, MarkupBlock expectedOutput)
+        public void HtmlCommentSupportsMultipleDashes(string documentContent, object expectedOutput)
         {
-            ParseBlockTest(documentContent, expectedOutput);
+            ParseBlockTest(documentContent, (MarkupBlock)expectedOutput);
         }
-
 
         [Fact]
         public void ParseBlockProperlyBalancesCommentStartAndEndTags()

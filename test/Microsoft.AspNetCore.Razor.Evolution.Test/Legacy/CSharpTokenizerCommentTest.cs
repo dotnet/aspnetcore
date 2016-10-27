@@ -5,8 +5,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class CSharpTokenizerCommentTest : CSharpTokenizerTestBase
+    public class CSharpTokenizerCommentTest : CSharpTokenizerTestBase
     {
+        private new CSharpSymbol IgnoreRemaining => (CSharpSymbol)base.IgnoreRemaining;
+
         [Fact]
         public void Next_Ignores_Star_At_EOF_In_RazorComment()
         {

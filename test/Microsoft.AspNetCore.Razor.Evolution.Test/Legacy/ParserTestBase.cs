@@ -10,22 +10,22 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal abstract class ParserTestBase
+    public abstract class ParserTestBase
     {
-        protected static Block IgnoreOutput = new IgnoreOutputBlock();
+        internal static Block IgnoreOutput = new IgnoreOutputBlock();
 
-        public SpanFactory Factory { get; private set; }
-        public BlockFactory BlockFactory { get; private set; }
+        internal SpanFactory Factory { get; private set; }
+        internal BlockFactory BlockFactory { get; private set; }
 
-        protected ParserTestBase()
+        internal ParserTestBase()
         {
             Factory = CreateSpanFactory();
             BlockFactory = CreateBlockFactory();
         }
 
-        protected abstract RazorSyntaxTree ParseBlock(string document, bool designTime);
+        internal abstract RazorSyntaxTree ParseBlock(string document, bool designTime);
 
-        protected virtual RazorSyntaxTree ParseDocument(string document, bool designTime = false)
+        internal virtual RazorSyntaxTree ParseDocument(string document, bool designTime = false)
         {
             using (var reader = new SeekableTextReader(document))
             {
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
-        protected virtual RazorSyntaxTree ParseHtmlBlock(string document, bool designTime = false)
+        internal virtual RazorSyntaxTree ParseHtmlBlock(string document, bool designTime = false)
         {
             using (var reader = new SeekableTextReader(document))
             {
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
-        protected virtual RazorSyntaxTree ParseCodeBlock(string document, bool designTime = false)
+        internal virtual RazorSyntaxTree ParseCodeBlock(string document, bool designTime = false)
         {
             using (var reader = new SeekableTextReader(document))
             {
@@ -78,49 +78,49 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
-        protected SpanFactory CreateSpanFactory()
+        internal SpanFactory CreateSpanFactory()
         {
             return new SpanFactory();
         }
 
-        protected abstract BlockFactory CreateBlockFactory();
+        internal abstract BlockFactory CreateBlockFactory();
 
-        protected virtual void ParseBlockTest(string document)
+        internal virtual void ParseBlockTest(string document)
         {
             ParseBlockTest(document, null, false, new RazorError[0]);
         }
 
-        protected virtual void ParseBlockTest(string document, bool designTime)
+        internal virtual void ParseBlockTest(string document, bool designTime)
         {
             ParseBlockTest(document, null, designTime, new RazorError[0]);
         }
 
-        protected virtual void ParseBlockTest(string document, params RazorError[] expectedErrors)
+        internal virtual void ParseBlockTest(string document, params RazorError[] expectedErrors)
         {
             ParseBlockTest(document, false, expectedErrors);
         }
 
-        protected virtual void ParseBlockTest(string document, bool designTime, params RazorError[] expectedErrors)
+        internal virtual void ParseBlockTest(string document, bool designTime, params RazorError[] expectedErrors)
         {
             ParseBlockTest(document, null, designTime, expectedErrors);
         }
 
-        protected virtual void ParseBlockTest(string document, Block expectedRoot)
+        internal virtual void ParseBlockTest(string document, Block expectedRoot)
         {
             ParseBlockTest(document, expectedRoot, false, null);
         }
 
-        protected virtual void ParseBlockTest(string document, Block expectedRoot, bool designTime)
+        internal virtual void ParseBlockTest(string document, Block expectedRoot, bool designTime)
         {
             ParseBlockTest(document, expectedRoot, designTime, null);
         }
 
-        protected virtual void ParseBlockTest(string document, Block expectedRoot, params RazorError[] expectedErrors)
+        internal virtual void ParseBlockTest(string document, Block expectedRoot, params RazorError[] expectedErrors)
         {
             ParseBlockTest(document, expectedRoot, false, expectedErrors);
         }
 
-        protected virtual void ParseBlockTest(string document, Block expected, bool designTime, params RazorError[] expectedErrors)
+        internal virtual void ParseBlockTest(string document, Block expected, bool designTime, params RazorError[] expectedErrors)
         {
             var result = ParseBlock(document, designTime);
 
@@ -130,32 +130,32 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
-        protected virtual void SingleSpanBlockTest(string document, BlockType blockType, SpanKind spanType, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)
+        internal virtual void SingleSpanBlockTest(string document, BlockType blockType, SpanKind spanType, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)
         {
             SingleSpanBlockTest(document, blockType, spanType, acceptedCharacters, expectedError: null);
         }
 
-        protected virtual void SingleSpanBlockTest(string document, string spanContent, BlockType blockType, SpanKind spanType, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)
+        internal virtual void SingleSpanBlockTest(string document, string spanContent, BlockType blockType, SpanKind spanType, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)
         {
             SingleSpanBlockTest(document, spanContent, blockType, spanType, acceptedCharacters, expectedErrors: null);
         }
 
-        protected virtual void SingleSpanBlockTest(string document, BlockType blockType, SpanKind spanType, params RazorError[] expectedError)
+        internal virtual void SingleSpanBlockTest(string document, BlockType blockType, SpanKind spanType, params RazorError[] expectedError)
         {
             SingleSpanBlockTest(document, document, blockType, spanType, expectedError);
         }
 
-        protected virtual void SingleSpanBlockTest(string document, string spanContent, BlockType blockType, SpanKind spanType, params RazorError[] expectedErrors)
+        internal virtual void SingleSpanBlockTest(string document, string spanContent, BlockType blockType, SpanKind spanType, params RazorError[] expectedErrors)
         {
             SingleSpanBlockTest(document, spanContent, blockType, spanType, AcceptedCharacters.Any, expectedErrors ?? new RazorError[0]);
         }
 
-        protected virtual void SingleSpanBlockTest(string document, BlockType blockType, SpanKind spanType, AcceptedCharacters acceptedCharacters, params RazorError[] expectedError)
+        internal virtual void SingleSpanBlockTest(string document, BlockType blockType, SpanKind spanType, AcceptedCharacters acceptedCharacters, params RazorError[] expectedError)
         {
             SingleSpanBlockTest(document, document, blockType, spanType, acceptedCharacters, expectedError);
         }
 
-        protected virtual void SingleSpanBlockTest(string document, string spanContent, BlockType blockType, SpanKind spanType, AcceptedCharacters acceptedCharacters, params RazorError[] expectedErrors)
+        internal virtual void SingleSpanBlockTest(string document, string spanContent, BlockType blockType, SpanKind spanType, AcceptedCharacters acceptedCharacters, params RazorError[] expectedErrors)
         {
             var result = ParseBlock(document, designTime: false);
 
@@ -169,32 +169,32 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
-        protected virtual void ParseDocumentTest(string document)
+        internal virtual void ParseDocumentTest(string document)
         {
             ParseDocumentTest(document, null, false);
         }
 
-        protected virtual void ParseDocumentTest(string document, Block expectedRoot)
+        internal virtual void ParseDocumentTest(string document, Block expectedRoot)
         {
             ParseDocumentTest(document, expectedRoot, false, null);
         }
 
-        protected virtual void ParseDocumentTest(string document, Block expectedRoot, params RazorError[] expectedErrors)
+        internal virtual void ParseDocumentTest(string document, Block expectedRoot, params RazorError[] expectedErrors)
         {
             ParseDocumentTest(document, expectedRoot, false, expectedErrors);
         }
 
-        protected virtual void ParseDocumentTest(string document, bool designTime)
+        internal virtual void ParseDocumentTest(string document, bool designTime)
         {
             ParseDocumentTest(document, null, designTime);
         }
 
-        protected virtual void ParseDocumentTest(string document, Block expectedRoot, bool designTime)
+        internal virtual void ParseDocumentTest(string document, Block expectedRoot, bool designTime)
         {
             ParseDocumentTest(document, expectedRoot, designTime, null);
         }
 
-        protected virtual void ParseDocumentTest(string document, Block expectedRoot, bool designTime, params RazorError[] expectedErrors)
+        internal virtual void ParseDocumentTest(string document, Block expectedRoot, bool designTime, params RazorError[] expectedErrors)
         {
             var result = ParseDocument(document, designTime);
 
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
-        protected virtual RazorSyntaxTree RunParse(
+        internal virtual RazorSyntaxTree RunParse(
             string document,
             Func<ParserBase, Action> parserActionSelector,
             bool designTimeParser,
@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             throw null;
         }
 
-        protected virtual void RunParseTest(
+        internal virtual void RunParseTest(
             string document,
             Func<ParserBase, Action> parserActionSelector,
             Block expectedRoot, IList<RazorError> expectedErrors,
@@ -245,18 +245,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
-        public static void EvaluateResults(RazorSyntaxTree result, Block expectedRoot)
+        internal static void EvaluateResults(RazorSyntaxTree result, Block expectedRoot)
         {
             EvaluateResults(result, expectedRoot, null);
         }
 
-        public static void EvaluateResults(RazorSyntaxTree result, Block expectedRoot, IList<RazorError> expectedErrors)
+        internal static void EvaluateResults(RazorSyntaxTree result, Block expectedRoot, IList<RazorError> expectedErrors)
         {
             EvaluateParseTree(result.Root, expectedRoot);
             EvaluateRazorErrors(result.Diagnostics, expectedErrors);
         }
 
-        public static void EvaluateParseTree(Block actualRoot, Block expectedRoot)
+        internal static void EvaluateParseTree(Block actualRoot, Block expectedRoot)
         {
             // Evaluate the result
             var collector = new ErrorCollector();
@@ -366,7 +366,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             collector.AddError("{0} - FAILED :: Actual: << Null >>", expected);
         }
 
-        public static void EvaluateRazorErrors(IEnumerable<RazorError> actualErrors, IList<RazorError> expectedErrors)
+        internal static void EvaluateRazorErrors(IEnumerable<RazorError> actualErrors, IList<RazorError> expectedErrors)
         {
             var realCount = actualErrors.Count();
 
@@ -389,7 +389,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             WriteTraceLine("Expected Errors were raised:" + Environment.NewLine + FormatErrors(expectedErrors));
         }
 
-        public static string FormatErrors(IEnumerable<RazorError> errors)
+        internal static string FormatErrors(IEnumerable<RazorError> errors)
         {
             if (errors == null)
             {
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             Trace.WriteLine(string.Format(format, args));
         }
 
-        protected virtual Block CreateSimpleBlockAndSpan(string spanContent, BlockType blockType, SpanKind spanType, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)
+        internal virtual Block CreateSimpleBlockAndSpan(string spanContent, BlockType blockType, SpanKind spanType, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)
         {
             var span = Factory.Span(spanType, spanContent, spanType == SpanKind.Markup).Accepts(acceptedCharacters);
             var b = new BlockBuilder()
@@ -421,7 +421,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             return ConfigureAndAddSpanToBlock(b, span);
         }
 
-        protected virtual Block ConfigureAndAddSpanToBlock(BlockBuilder block, SpanConstructor span)
+        internal virtual Block ConfigureAndAddSpanToBlock(BlockBuilder block, SpanConstructor span)
         {
             switch (block.Type)
             {

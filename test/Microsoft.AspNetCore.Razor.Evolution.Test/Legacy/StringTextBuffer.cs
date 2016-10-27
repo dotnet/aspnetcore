@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class StringTextBuffer : ITextBuffer, IDisposable
+    public class StringTextBuffer : ITextBuffer, IDisposable
     {
         private string _buffer;
         public bool Disposed { get; set; }

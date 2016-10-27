@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class CSharpSectionTest : CsHtmlMarkupParserTestBase
+    public class CSharpSectionTest : CsHtmlMarkupParserTestBase
     {
         [Fact]
         public void ParseSectionBlockCapturesNewlineImmediatelyFollowing()
@@ -580,9 +580,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         [Theory]
         [MemberData(nameof(SectionWithEscapedTransitionData))]
-        public void ParseSectionBlock_WithDoubleTransition_DoesNotThrow(string input, Block expected)
+        public void ParseSectionBlock_WithDoubleTransition_DoesNotThrow(string input, object expected)
         {
-            ParseDocumentTest(input, expected);
+            ParseDocumentTest(input, (Block)expected);
         }
     }
 }

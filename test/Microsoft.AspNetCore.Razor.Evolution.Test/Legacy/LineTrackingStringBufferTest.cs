@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class LineTrackingStringBufferTest
+    public class LineTrackingStringBufferTest
     {
         [Fact]
         public void CtorInitializesProperties()

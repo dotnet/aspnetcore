@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class CSharpNestedStatementsTest : CsHtmlCodeParserTestBase
+    public class CSharpNestedStatementsTest : CsHtmlCodeParserTestBase
     {
         [Fact]
         public void NestedSimpleStatement()

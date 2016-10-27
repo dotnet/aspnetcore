@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class CSharpBlockTest : CsHtmlCodeParserTestBase
+    public class CSharpBlockTest : CsHtmlCodeParserTestBase
     {
         [Fact]
         public void ParseBlock_NestedCodeBlockWithCSharpAt()
@@ -1113,10 +1113,10 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
 
         [Theory]
         [MemberData(nameof(BlockWithEscapedTransitionData))]
-        public void ParseBlock_WithDoubleTransition_DoesNotThrow(string input, Block expected)
+        public void ParseBlock_WithDoubleTransition_DoesNotThrow(string input, object expected)
         {
             // Act & Assert
-            ParseBlockTest(input, expected);
+            ParseBlockTest(input, (Block)expected);
         }
 
         [Fact]

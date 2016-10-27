@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class CSharpTokenizerIdentifierTest : CSharpTokenizerTestBase
+    public class CSharpTokenizerIdentifierTest : CSharpTokenizerTestBase
     {
         [Fact]
         public void Simple_Identifier_Is_Recognized()

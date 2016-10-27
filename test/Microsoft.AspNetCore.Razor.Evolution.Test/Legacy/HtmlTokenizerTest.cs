@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class HtmlTokenizerTest : HtmlTokenizerTestBase
+    public class HtmlTokenizerTest : HtmlTokenizerTestBase
     {
         [Fact]
         public void Next_Returns_Null_When_EOF_Reached()

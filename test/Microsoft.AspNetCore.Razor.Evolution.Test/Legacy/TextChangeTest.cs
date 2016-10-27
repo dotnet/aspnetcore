@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class TextChangeTest
+    public class TextChangeTest
     {
         [Fact]
         public void ConstructorRequiresNonNegativeOldPosition()

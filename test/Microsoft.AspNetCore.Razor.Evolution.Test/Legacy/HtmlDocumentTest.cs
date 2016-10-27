@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class HtmlDocumentTest : CsHtmlMarkupParserTestBase
+    public class HtmlDocumentTest : CsHtmlMarkupParserTestBase
     {
         private static readonly TestFile Nested1000 = TestFile.Create("TestFiles/nested-1000.html");
 
@@ -744,10 +744,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         [Theory]
         [MemberData(nameof(BlockWithEscapedTransitionData))]
-        public void ParseBlock_WithDoubleTransition_DoesNotThrow(string input, Block expected)
+        public void ParseBlock_WithDoubleTransition_DoesNotThrow(string input, object expected)
         {
             // Act & Assert
-            ParseDocumentTest(input, expected);
+            ParseDocumentTest(input, (Block)expected);
         }
 
         [Fact]

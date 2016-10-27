@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class RazorParserTest
+    public class RazorParserTest
     {
         [Fact]
         public void CanParseStuff()

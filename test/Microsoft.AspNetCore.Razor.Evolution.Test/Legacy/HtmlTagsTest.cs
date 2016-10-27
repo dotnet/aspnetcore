@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class HtmlTagsTest : CsHtmlMarkupParserTestBase
+    public class HtmlTagsTest : CsHtmlMarkupParserTestBase
     {
         public static IEnumerable<string[]> VoidElementNames
         {

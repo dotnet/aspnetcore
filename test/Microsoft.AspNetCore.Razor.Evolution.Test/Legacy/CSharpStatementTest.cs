@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
     //  * Tests for various types of nested statements
     //  * Comment tests
 
-    internal class CSharpStatementTest : CsHtmlCodeParserTestBase
+    public class CSharpStatementTest : CsHtmlCodeParserTestBase
     {
         [Fact]
         public void ForStatement()
@@ -235,10 +235,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         [Theory]
         [MemberData(nameof(ExceptionFilterData))]
-        public void ExceptionFilters(string document, StatementBlock expectedStatement)
+        public void ExceptionFilters(string document, object expectedStatement)
         {
             // Act & Assert
-            ParseBlockTest(document, expectedStatement);
+            ParseBlockTest(document, (StatementBlock)expectedStatement);
         }
 
         public static TheoryData ExceptionFilterErrorData
@@ -289,11 +289,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [MemberData(nameof(ExceptionFilterErrorData))]
         public void ExceptionFilterErrors(
             string document,
-            StatementBlock expectedStatement,
-            RazorError[] expectedErrors)
+            object expectedStatement,
+            object expectedErrors)
         {
             // Act & Assert
-            ParseBlockTest(document, expectedStatement, expectedErrors);
+            ParseBlockTest(document, (StatementBlock)expectedStatement, (RazorError[])expectedErrors);
         }
 
         [Fact]
@@ -349,10 +349,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         [Theory]
         [MemberData(nameof(StaticUsingData))]
-        public void StaticUsingImport(string document, DirectiveBlock expectedResult)
+        public void StaticUsingImport(string document, object expectedResult)
         {
             // Act & Assert
-            ParseBlockTest(document, expectedResult);
+            ParseBlockTest(document, (DirectiveBlock)expectedResult);
         }
 
         [Fact]

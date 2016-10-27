@@ -6,8 +6,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class CSharpTokenizerLiteralTest : CSharpTokenizerTestBase
+    public class CSharpTokenizerLiteralTest : CSharpTokenizerTestBase
     {
+        private new CSharpSymbol IgnoreRemaining => (CSharpSymbol)base.IgnoreRemaining;
+
         [Fact]
         public void Simple_Integer_Literal_Is_Recognized()
         {

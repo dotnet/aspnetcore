@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class RazorErrorTest
+    public class RazorErrorTest
     {
         [Fact]
         public void RazorError_CanBeSerialized()

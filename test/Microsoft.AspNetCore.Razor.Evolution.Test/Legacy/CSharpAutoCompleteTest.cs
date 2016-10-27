@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class CSharpAutoCompleteTest : CsHtmlCodeParserTestBase
+    public class CSharpAutoCompleteTest : CsHtmlCodeParserTestBase
     {
         [Fact]
         public void FunctionsDirectiveAutoCompleteAtEOF()

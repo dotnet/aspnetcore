@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class SourceLocationTest
+    public class SourceLocationTest
     {
         [Fact]
         public void ConstructorWithLineAndCharacterIndexSetsAssociatedProperties()
