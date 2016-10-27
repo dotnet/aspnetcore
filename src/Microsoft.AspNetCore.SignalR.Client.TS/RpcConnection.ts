@@ -19,9 +19,9 @@ class RpcConnection {
     private transport: ITransport;
     private id: number;
 
-    constructor(url: string, queryString: string) {
+    constructor(url: string, queryString?: string) {
         this.url = url;
-        this.queryString = queryString;
+        this.queryString = queryString || "";
         this.callbacks = new Map<string, (any) => void>();
         this.methods = new Map<string, (...args:any[]) => void>();
         this.id = 0;
@@ -53,6 +53,7 @@ class RpcConnection {
             new HttpClient().get(this.url + "/getid?" + this.queryString)
             .then(id => {
                 this.transport = new WebSocketTransport(data => this.messageReceived(data));
+                //this.transport = new LongPollingTransport(data => this.messageReceived(data));
                 return this.transport.connect(this.url, `id=${id}`);
             })
             .then(() => {

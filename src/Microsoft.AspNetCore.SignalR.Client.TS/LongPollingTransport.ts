@@ -13,17 +13,16 @@ class LongPollingTransport implements ITransport {
     }
 
     connect(url: string, queryString: string): Promise<void> {
-
         return Promise.resolve();
     }
 
-    private poll(): void {
-        this.pollXhr.open("GET", , true);
+    private poll(url: string): void {
+        this.pollXhr.open("GET", url, true);
         this.pollXhr.send();
         this.pollXhr.onload = () => {
             if (this.pollXhr.status >= 200 && this.pollXhr.status < 300) {
                 this.receiveCallback(this.pollXhr.response);
-                this.poll();
+                this.poll(url);
             }
             else {
                 //TODO: handle error
