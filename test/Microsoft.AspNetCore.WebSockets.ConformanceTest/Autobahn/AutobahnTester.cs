@@ -103,6 +103,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
 
             var deployer = ApplicationDeployerFactory.Create(parameters, logger);
             var result = deployer.Deploy();
+            _deployers.Add(deployer);
 
 #if NET451
             System.Net.ServicePointManager.ServerCertificateValidationCallback = (_, __, ___, ____) => true;
@@ -129,8 +130,6 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             // Add to the current spec
             var wsUrl = result.ApplicationBaseUri.Replace("https://", "wss://").Replace("http://", "ws://");
             Spec.WithServer(name, wsUrl);
-
-            _deployers.Add(deployer);
 
             var expectations = new AutobahnExpectations(server, ssl, environment);
             expectationConfig?.Invoke(expectations);
