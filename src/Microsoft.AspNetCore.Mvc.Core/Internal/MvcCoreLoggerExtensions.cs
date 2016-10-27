@@ -56,6 +56,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly Action<ILogger, Exception> _noAcceptForNegotiation;
         private static readonly Action<ILogger, IEnumerable<MediaTypeSegmentWithQuality>, Exception> _noFormatterFromNegotiation;
 
+        private static readonly Action<ILogger, IInputFormatter, string, Exception> _inputFormatterSelected;
+        private static readonly Action<ILogger, IInputFormatter, string, Exception> _inputFormatterRejected;
+        private static readonly Action<ILogger, string, Exception> _noInputFormatterSelected;
+        private static readonly Action<ILogger, string, string, Exception> _removeFromBodyAttribute;
+
         private static readonly Action<ILogger, string, Exception> _redirectResultExecuting;
 
         private static readonly Action<ILogger, string, Exception> _redirectToActionResultExecuting;
@@ -183,6 +188,26 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 LogLevel.Debug,
                 5,
                 "Could not find an output formatter based on content negotiation. Accepted types were ({AcceptTypes})");
+
+            _inputFormatterSelected = LoggerMessage.Define<IInputFormatter, string>(
+                LogLevel.Debug,
+                1,
+                "Selected input formatter '{InputFormatter}' for content type '{ContentType}'.");
+
+            _inputFormatterRejected = LoggerMessage.Define<IInputFormatter, string>(
+                LogLevel.Debug,
+                2,
+                "Rejected input formatter '{InputFormatter}' for content type '{ContentType}'.");
+
+            _noInputFormatterSelected = LoggerMessage.Define<string>(
+                LogLevel.Debug,
+                3,
+                "No input formatter was found to support the content type '{ContentType}' for use with the [FromBody] attribute.");
+
+            _removeFromBodyAttribute = LoggerMessage.Define<string, string>(
+                LogLevel.Debug,
+                4,
+                "To use model binding, remove the [FromBody] attribute from the property or parameter named '{ModelName}' with model type '{ModelType}'.");
 
             _redirectResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,
@@ -401,6 +426,47 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _noFormatterFromNegotiation(logger, acceptTypes, null);
         }
 
+        public static void InputFormatterSelected(
+           this ILogger logger,
+           IInputFormatter inputFormatter,
+           InputFormatterContext formatterContext)
+        {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                var contentType = formatterContext.HttpContext.Request.ContentType;
+                _inputFormatterSelected(logger, inputFormatter, contentType, null);
+            }
+        }
+
+        public static void InputFormatterRejected(
+            this ILogger logger,
+            IInputFormatter inputFormatter,
+            InputFormatterContext formatterContext)
+        {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                var contentType = formatterContext.HttpContext.Request.ContentType;
+                _inputFormatterRejected(logger, inputFormatter, contentType, null);
+            }
+        }
+
+        public static void NoInputFormatterSelected(
+            this ILogger logger,
+            InputFormatterContext formatterContext)
+        {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                var contentType = formatterContext.HttpContext.Request.ContentType;
+                _noInputFormatterSelected(logger, contentType, null);
+                if (formatterContext.HttpContext.Request.HasFormContentType)
+                {
+                    var modelType = formatterContext.ModelType.FullName;
+                    var modelName = formatterContext.ModelName;
+                    _removeFromBodyAttribute(logger, modelName, modelType, null);
+                }
+            }
+        }
+
         public static void RedirectResultExecuting(this ILogger logger, string destination)
         {
             _redirectResultExecuting(logger, destination, null);
@@ -443,7 +509,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         return new KeyValuePair<string, object>("ActionName", _action.DisplayName);
                     }
                     throw new IndexOutOfRangeException(nameof(index));
-                 }
+                }
             }
 
             public int Count

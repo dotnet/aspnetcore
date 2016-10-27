@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
@@ -19,8 +20,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     public class MvcCoreMvcOptionsSetup : IConfigureOptions<MvcOptions>
     {
         private readonly IHttpRequestStreamReaderFactory _readerFactory;
+        private readonly ILoggerFactory _loggerFactory;
 
         public MvcCoreMvcOptionsSetup(IHttpRequestStreamReaderFactory readerFactory)
+            : this(readerFactory, loggerFactory: null)
+        {
+        }
+
+        public MvcCoreMvcOptionsSetup(IHttpRequestStreamReaderFactory readerFactory, ILoggerFactory loggerFactory)
         {
             if (readerFactory == null)
             {
@@ -28,6 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             _readerFactory = readerFactory;
+            _loggerFactory = loggerFactory;
         }
 
         public void Configure(MvcOptions options)
@@ -35,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Set up ModelBinding
             options.ModelBinderProviders.Add(new BinderTypeModelBinderProvider());
             options.ModelBinderProviders.Add(new ServicesModelBinderProvider());
-            options.ModelBinderProviders.Add(new BodyModelBinderProvider(options.InputFormatters, _readerFactory));
+            options.ModelBinderProviders.Add(new BodyModelBinderProvider(options.InputFormatters, _readerFactory, _loggerFactory));
             options.ModelBinderProviders.Add(new HeaderModelBinderProvider());
             options.ModelBinderProviders.Add(new SimpleTypeModelBinderProvider());
             options.ModelBinderProviders.Add(new CancellationTokenModelBinderProvider());

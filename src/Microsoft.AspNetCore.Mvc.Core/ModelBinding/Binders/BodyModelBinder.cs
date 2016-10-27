@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -20,6 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     {
         private readonly IList<IInputFormatter> _formatters;
         private readonly Func<Stream, Encoding, TextReader> _readerFactory;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Creates a new <see cref="BodyModelBinder"/>.
@@ -30,6 +32,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// instances for reading the request body.
         /// </param>
         public BodyModelBinder(IList<IInputFormatter> formatters, IHttpRequestStreamReaderFactory readerFactory)
+            : this(formatters, readerFactory, loggerFactory: null)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="BodyModelBinder"/>.
+        /// </summary>
+        /// <param name="formatters">The list of <see cref="IInputFormatter"/>.</param>
+        /// <param name="readerFactory">
+        /// The <see cref="IHttpRequestStreamReaderFactory"/>, used to create <see cref="System.IO.TextReader"/>
+        /// instances for reading the request body.
+        /// </param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        public BodyModelBinder(IList<IInputFormatter> formatters, IHttpRequestStreamReaderFactory readerFactory, ILoggerFactory loggerFactory)
         {
             if (formatters == null)
             {
@@ -43,6 +59,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             _formatters = formatters;
             _readerFactory = readerFactory.CreateReader;
+
+            if (loggerFactory != null)
+            {
+                _logger = loggerFactory.CreateLogger<BodyModelBinder>();
+            }
         }
 
         /// <inheritdoc />
@@ -81,14 +102,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 if (_formatters[i].CanRead(formatterContext))
                 {
                     formatter = _formatters[i];
+                    _logger?.InputFormatterSelected(formatter, formatterContext);
                     break;
+                }
+                else
+                {
+                    _logger?.InputFormatterRejected(_formatters[i], formatterContext);
                 }
             }
 
             if (formatter == null)
             {
+                _logger?.NoInputFormatterSelected(formatterContext);
                 var message = Resources.FormatUnsupportedContentType(httpContext.Request.ContentType);
-
                 var exception = new UnsupportedContentTypeException(message);
                 bindingContext.ModelState.AddModelError(modelBindingKey, exception, bindingContext.ModelMetadata);
                 return;

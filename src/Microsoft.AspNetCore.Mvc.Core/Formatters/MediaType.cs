@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </summary>
         /// <param name="mediaType">The <see cref="string"/> with the media type.</param>
         /// <param name="offset">The offset in the <paramref name="mediaType"/> where the parsing starts.</param>
-        /// <param name="length">The of the media type to parse if provided.</param>
+        /// <param name="length">The length of the media type to parse if provided.</param>
         public MediaType(string mediaType, int offset, int? length)
         {
             if (mediaType == null)
