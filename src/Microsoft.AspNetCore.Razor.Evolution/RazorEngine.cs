@@ -16,8 +16,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public static RazorEngine Create(Action<IRazorEngineBuilder> configure)
         {
             var builder = new DefaultRazorEngineBuilder();
+            AddDefaults(builder);
             configure?.Invoke(builder);
             return builder.Build();
+        }
+
+        public static RazorEngine CreateEmpty(Action<IRazorEngineBuilder> configure)
+        {
+            var builder = new DefaultRazorEngineBuilder();
+            configure?.Invoke(builder);
+            return builder.Build();
+        }
+
+        internal static void AddDefaults(IRazorEngineBuilder builder)
+        {
+            builder.Phases.Add(new DefaultRazorParsingPhase());
+            builder.Phases.Add(new DefaultRazorSyntaxTreePhase());
         }
 
         public abstract IReadOnlyList<IRazorEngineFeature> Features { get; }

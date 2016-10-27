@@ -45,6 +45,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Act
             var engine = RazorEngine.Create(builder =>
             {
+                builder.Features.Clear();
+                builder.Phases.Clear();
+
                 builder.Features.Add(Mock.Of<IRazorEngineFeature>());
                 builder.Features.Add(Mock.Of<IRazorEngineFeature>());
 

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             engine.Process(document);
 
             // Assert
-            // (nothing to verify yet)
+            Assert.NotNull(document.GetSyntaxTree());
         }
     }
 }

@@ -3,10 +3,8 @@
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    public interface IRazorEnginePhase
+    // Internal until we flesh out public RazorSyntaxTree API.
+    internal interface IRazorSyntaxTreePhase : IRazorEnginePhase
     {
-        RazorEngine Engine { get; set; }
-
-        void Execute(RazorCodeDocument codeDocument);
     }
 }

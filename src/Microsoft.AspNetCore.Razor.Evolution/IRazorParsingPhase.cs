@@ -3,10 +3,7 @@
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    public interface IRazorEnginePhase
+    public interface IRazorParsingPhase : IRazorEnginePhase
     {
-        RazorEngine Engine { get; set; }
-
-        void Execute(RazorCodeDocument codeDocument);
     }
 }

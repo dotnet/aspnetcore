@@ -117,4 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="PhaseDependencyMissing" xml:space="preserve">
+    <value>The '{0}' phase requires a '{1}' provided by the '{2}'.</value>
+  </data>
+  <data name="PhaseMustBeInitialized" xml:space="preserve">
+    <value>The phase must be initialized by setting the '{0}' property.</value>
+  </data>
 </root>
