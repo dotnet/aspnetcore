@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Precompilation
 
         [ConditionalFact]
         [OSSkipConditionAttribute(OperatingSystems.Linux)]
-        [OSSkipConditionAttribute(OperatingSystems.Windows)]
+        [OSSkipConditionAttribute(OperatingSystems.MacOSX)]
         public async Task Precompilation_WorksForSimpleApps()
         {
             // Arrange
