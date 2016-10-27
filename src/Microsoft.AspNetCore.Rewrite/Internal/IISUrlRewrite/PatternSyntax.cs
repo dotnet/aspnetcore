@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
     public enum PatternSyntax
     {
         ECMAScript,
-        WildCard,
+        Wildcard,
         ExactMatch
     }
 }
