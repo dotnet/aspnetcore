@@ -180,38 +180,57 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             } while (true);
         }
 
-        public unsafe long PeekLong()
+        // NOTE: Little-endian only!
+        public unsafe bool TryPeekLong(out ulong longValue)
         {
+            longValue = 0;
+
             if (_block == null)
             {
-                return -1;
+                return false;
             }
 
             var wasLastBlock = _block.Next == null;
+            var blockBytes = _block.End - _index;
 
-            if (_block.End - _index >= sizeof(long))
+            if (blockBytes >= sizeof(ulong))
             {
-                return *(long*)(_block.DataFixedPtr + _index);
+                longValue = *(ulong*)(_block.DataFixedPtr + _index);
+                return true;
             }
             else if (wasLastBlock)
             {
-                return -1;
+                return false;
             }
             else
             {
-                var blockBytes = _block.End - _index;
-                var nextBytes = sizeof(long) - blockBytes;
+                // Each block will be filled with at least 2048 bytes before the Next pointer is set, so a long
+                // will cross at most one block boundary assuming there are at least 8 bytes following the iterator.
+                var nextBytes = sizeof(ulong) - blockBytes;
 
                 if (_block.Next.End - _block.Next.Start < nextBytes)
                 {
-                    return -1;
+                    return false;
                 }
 
-                var blockLong = *(long*)(_block.DataFixedPtr + _block.End - sizeof(long));
+                var nextLong = *(ulong*)(_block.Next.DataFixedPtr + _block.Next.Start);
 
-                var nextLong = *(long*)(_block.Next.DataFixedPtr + _block.Next.Start);
+                if (blockBytes == 0)
+                {
+                    // This case can not fall through to the else block since that would cause a 64-bit right shift
+                    // on blockLong which is equivalent to no shift at all instead of shifting in all zeros.
+                    // https://msdn.microsoft.com/en-us/library/xt18et0d.aspx
+                    longValue = nextLong;
+                }
+                else
+                {
+                    var blockLong = *(ulong*)(_block.DataFixedPtr + _block.End - sizeof(ulong));
 
-                return (blockLong >> (sizeof(long) - blockBytes) * 8) | (nextLong << (sizeof(long) - nextBytes) * 8);
+                    // Ensure that the right shift has a ulong operand so a logical shift is performed.
+                    longValue = (blockLong >> nextBytes * 8) | (nextLong << blockBytes * 8);
+                }
+
+                return true;
             }
         }
 

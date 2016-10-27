@@ -17,26 +17,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         public const string Http11Version = "HTTP/1.1";
 
         // readonly primitive statics can be Jit'd to consts https://github.com/dotnet/coreclr/issues/1079
-        private readonly static long _httpConnectMethodLong = GetAsciiStringAsLong("CONNECT ");
-        private readonly static long _httpDeleteMethodLong = GetAsciiStringAsLong("DELETE \0");
-        private readonly static long _httpGetMethodLong = GetAsciiStringAsLong("GET \0\0\0\0");
-        private readonly static long _httpHeadMethodLong = GetAsciiStringAsLong("HEAD \0\0\0");
-        private readonly static long _httpPatchMethodLong = GetAsciiStringAsLong("PATCH \0\0");
-        private readonly static long _httpPostMethodLong = GetAsciiStringAsLong("POST \0\0\0");
-        private readonly static long _httpPutMethodLong = GetAsciiStringAsLong("PUT \0\0\0\0");
-        private readonly static long _httpOptionsMethodLong = GetAsciiStringAsLong("OPTIONS ");
-        private readonly static long _httpTraceMethodLong = GetAsciiStringAsLong("TRACE \0\0");
+        private readonly static ulong _httpConnectMethodLong = GetAsciiStringAsLong("CONNECT ");
+        private readonly static ulong _httpDeleteMethodLong = GetAsciiStringAsLong("DELETE \0");
+        private readonly static ulong _httpGetMethodLong = GetAsciiStringAsLong("GET \0\0\0\0");
+        private readonly static ulong _httpHeadMethodLong = GetAsciiStringAsLong("HEAD \0\0\0");
+        private readonly static ulong _httpPatchMethodLong = GetAsciiStringAsLong("PATCH \0\0");
+        private readonly static ulong _httpPostMethodLong = GetAsciiStringAsLong("POST \0\0\0");
+        private readonly static ulong _httpPutMethodLong = GetAsciiStringAsLong("PUT \0\0\0\0");
+        private readonly static ulong _httpOptionsMethodLong = GetAsciiStringAsLong("OPTIONS ");
+        private readonly static ulong _httpTraceMethodLong = GetAsciiStringAsLong("TRACE \0\0");
 
-        private readonly static long _http10VersionLong = GetAsciiStringAsLong("HTTP/1.0");
-        private readonly static long _http11VersionLong = GetAsciiStringAsLong("HTTP/1.1");
+        private readonly static ulong _http10VersionLong = GetAsciiStringAsLong("HTTP/1.0");
+        private readonly static ulong _http11VersionLong = GetAsciiStringAsLong("HTTP/1.1");
 
-        private readonly static long _mask8Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff });
-        private readonly static long _mask7Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00 });
-        private readonly static long _mask6Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00 });
-        private readonly static long _mask5Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00 });
-        private readonly static long _mask4Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00 });
+        private readonly static ulong _mask8Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff });
+        private readonly static ulong _mask7Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00 });
+        private readonly static ulong _mask6Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00 });
+        private readonly static ulong _mask5Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00 });
+        private readonly static ulong _mask4Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00 });
 
-        private readonly static Tuple<long, long, string>[] _knownMethods = new Tuple<long, long, string>[8];
+        private readonly static Tuple<ulong, ulong, string>[] _knownMethods = new Tuple<ulong, ulong, string>[8];
 
         static MemoryPoolIteratorExtensions()
         {
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             _knownMethods[7] = Tuple.Create(_mask8Chars, _httpOptionsMethodLong, HttpMethods.Options);
         }
 
-        private unsafe static long GetAsciiStringAsLong(string str)
+        private unsafe static ulong GetAsciiStringAsLong(string str)
         {
             Debug.Assert(str.Length == 8, "String must be exactly 8 (ASCII) characters long.");
 
@@ -58,16 +58,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
             fixed (byte* ptr = &bytes[0])
             {
-                return *(long*)ptr;
+                return *(ulong*)ptr;
             }
         }
-        private unsafe static long GetMaskAsLong(byte[] bytes)
+        private unsafe static ulong GetMaskAsLong(byte[] bytes)
         {
             Debug.Assert(bytes.Length == 8, "Mask must be exactly 8 bytes long.");
 
             fixed (byte* ptr = bytes)
             {
-                return *(long*)ptr;
+                return *(ulong*)ptr;
             }
         }
 
@@ -286,7 +286,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         public static bool GetKnownMethod(this MemoryPoolIterator begin, out string knownMethod)
         {
             knownMethod = null;
-            var value = begin.PeekLong();
+
+            ulong value;
+            if (!begin.TryPeekLong(out value))
+            {
+                return false;
+            }
 
             if ((value & _mask4Chars) == _httpGetMethodLong)
             {
@@ -321,7 +326,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         public static bool GetKnownVersion(this MemoryPoolIterator begin, out string knownVersion)
         {
             knownVersion = null;
-            var value = begin.PeekLong();
+
+            ulong value;
+            if (!begin.TryPeekLong(out value))
+            {
+                return false;
+            }
 
             if (value == _http11VersionLong)
             {
