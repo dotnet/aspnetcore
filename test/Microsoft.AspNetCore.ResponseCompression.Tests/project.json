@@ -1,5 +1,6 @@
 {
   "buildOptions": {
+    "keyFile": "../../tools/Key.snk",
     "copyToOutput": [
       "testfile1kb.txt"
     ],
@@ -11,6 +12,7 @@
     "Microsoft.AspNetCore.ResponseCompression": "1.0.0-*",
     "Microsoft.AspNetCore.TestHost": "1.1.0-*",
     "Microsoft.Net.Http.Headers": "1.1.0-*",
+    "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"
   },
   "frameworks": {

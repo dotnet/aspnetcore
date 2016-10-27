@@ -18,15 +18,13 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
         private readonly IResponseCompressionProvider _provider;
 
-        private readonly bool _enableForHttps;
 
         /// <summary>
         /// Initialize the Response Compression middleware.
         /// </summary>
         /// <param name="next"></param>
         /// <param name="provider"></param>
-        /// <param name="options"></param>
-        public ResponseCompressionMiddleware(RequestDelegate next, IResponseCompressionProvider provider, IOptions<ResponseCompressionOptions> options)
+        public ResponseCompressionMiddleware(RequestDelegate next, IResponseCompressionProvider provider)
         {
             if (next == null)
             {
@@ -36,14 +34,9 @@ namespace Microsoft.AspNetCore.ResponseCompression
             {
                 throw new ArgumentNullException(nameof(provider));
             }
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
 
             _next = next;
             _provider = provider;
-            _enableForHttps = options.Value.EnableForHttps;
         }
 
         /// <summary>
@@ -53,14 +46,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         /// <returns></returns>
         public async Task Invoke(HttpContext context)
         {
-            ICompressionProvider compressionProvider = null;
-
-            if (!context.Request.IsHttps || _enableForHttps)
-            {
-                compressionProvider = _provider.GetCompressionProvider(context);
-            }
-
-            if (compressionProvider == null)
+            if (!_provider.CheckRequestAcceptsCompression(context))
             {
                 await _next(context);
                 return;
@@ -70,7 +56,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             var originalBufferFeature = context.Features.Get<IHttpBufferingFeature>();
             var originalSendFileFeature = context.Features.Get<IHttpSendFileFeature>();
 
-            var bodyWrapperStream = new BodyWrapperStream(context.Response, bodyStream, _provider, compressionProvider,
+            var bodyWrapperStream = new BodyWrapperStream(context, bodyStream, _provider,
                 originalBufferFeature, originalSendFileFeature);
             context.Response.Body = bodyWrapperStream;
             context.Features.Set<IHttpBufferingFeature>(bodyWrapperStream);
