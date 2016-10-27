@@ -27,9 +27,9 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 
 ## To run the sample on Mac/Mono:
 * Follow the instructions at the [Home](https://github.com/aspnet/Home) repository to install Mono and DNVM on Mac OS X.
-* Open a command prompt and execute `cd \src\MusicStore\`.
-* Execute `dnu restore`.
-* Try `dnx . kestrel` to run the application.
+* Open a command prompt and execute `cd samples/MusicStore.Standalone`.
+* Execute `dotnet restore`.
+* Try `dotnet run` to run the application.
 
 **NOTE:** Since on Mono SQL client is not available the sample uses an InMemoryStore to run the application. So the changes that you make will not be persisted.
 
