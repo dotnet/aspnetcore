@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as yeoman from 'yeoman-generator';
 import * as uuid from 'node-uuid';
 import * as glob from 'glob';
+import npmWhich = require('npm-which');
 const yosay = require('yosay');
 const toPascalCase = require('to-pascal-case');
 
@@ -80,6 +81,15 @@ class MyGenerator extends yeoman.Base {
     }
 
     installingDeps() {
+        // If available, restore dependencies using Yarn instead of NPM
+        const yarnPath = getPathToExecutable('yarn');
+        if (!!yarnPath) {
+            this.log('Will restore NPM dependencies using \'yarn\' installed at ' + yarnPath);
+            this.npmInstall = (pkgs, options, cb) => {
+                return (this as any).runInstall(yarnPath, pkgs, options, cb);
+            };
+        }
+
         this.installDependencies({
             npm: true,
             bower: false,
@@ -89,6 +99,14 @@ class MyGenerator extends yeoman.Base {
                 this.spawnCommandSync('./node_modules/.bin/webpack');
             }
         });
+    }
+}
+
+function getPathToExecutable(executableName: string) {
+    try {
+        return npmWhich(__dirname).sync(executableName);
+    } catch(ex) {
+        return null;
     }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "generator-aspnetcore-spa",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Single-Page App templates for ASP.NET Core",
   "author": "Microsoft",
   "license": "Apache-2.0",
@@ -20,6 +20,7 @@
   "dependencies": {
     "glob": "^7.0.3",
     "node-uuid": "^1.4.7",
+    "npm-which": "^3.0.1",
     "to-pascal-case": "^1.0.0",
     "yeoman-generator": "^0.20.2",
     "yeoman-option-or-prompt": "^1.0.2",
