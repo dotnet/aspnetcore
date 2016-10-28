@@ -2,55 +2,48 @@ var isDevBuild = process.argv.indexOf('--env.prod') < 0;
 var path = require('path');
 var webpack = require('webpack');
 var AureliaWebpackPlugin = require('aurelia-webpack-plugin');
-var srcDir = path.resolve('./ClientApp');
-var rootDir = path.resolve();
-var outDir = path.resolve('./wwwroot/dist');
-var baseUrl = '/';
-var project = require('./package.json');
-var aureliaModules = Object.keys(project.dependencies).filter(dep => dep.startsWith('aurelia-'));
 
-// Configuration for client-side bundle suitable for running in browsers
-var clientBundleConfig = {
+module.exports = {
      resolve: { extensions: [ '.js', '.ts' ] },
      devtool: isDevBuild ? 'inline-source-map' : null,
      entry: {
         'app': [], // <-- this array will be filled by the aurelia-webpack-plugin
-        'aurelia-modules': aureliaModules
+        'aurelia-modules': [
+            'aurelia-bootstrapper-webpack',
+            'aurelia-event-aggregator',
+            'aurelia-fetch-client',
+            'aurelia-framework',
+            'aurelia-history-browser',
+            'aurelia-loader-webpack',
+            'aurelia-logging-console',
+            'aurelia-pal-browser',
+            'aurelia-polyfills',
+            'aurelia-route-recognizer',
+            'aurelia-router',
+            'aurelia-templating-binding',
+            'aurelia-templating-resources',
+            'aurelia-templating-router'
+        ]
     },
     output: {
-        path: outDir,
+        path: path.resolve('./wwwroot/dist'),
         publicPath: '/dist',
         filename: '[name]-bundle.js'
     },
     module: {
         loaders: [
-            {
-                test: /\.ts$/,
-                include: /ClientApp/,
-                loader: 'ts',
-                query: {silent: true}
-            }, {
-                test: /\.html$/,
-                exclude: /index\.html$/,
-                loader: 'html-loader'
-            }, {
-                test: /\.css$/,
-                loaders: ['style-loader', 'css-loader']
-            }, {
-                test: /\.(png|woff|woff2|eot|ttf|svg)$/,
-                loader: 'url-loader?limit=100000'
-            }
+            { test: /\.ts$/, include: /ClientApp/, loader: 'ts', query: {silent: true} },
+            { test: /\.html$/, loader: 'html-loader' },
+            { test: /\.css$/, loaders: ['style-loader', 'css-loader'] },
+            { test: /\.(png|woff|woff2|eot|ttf|svg)$/, loader: 'url-loader?limit=100000' }
         ]
     },
     plugins: [
-        new webpack.ProvidePlugin({
-            $: 'jquery', // because 'bootstrap' by Twitter depends on this
-            jQuery: 'jquery'
-        }),
+        new webpack.ProvidePlugin({ $: 'jquery', jQuery: 'jquery' }), // because Bootstrap expects $ and jQuery to be globals
         new AureliaWebpackPlugin({
-            root: rootDir,
-            src: srcDir,
-            baseUrl: baseUrl
+            root: path.resolve('./'),
+            src: path.resolve('./ClientApp'),
+            baseUrl: '/'
         }),
         new webpack.optimize.CommonsChunkPlugin({
             name: ['aurelia-modules']
@@ -60,5 +53,3 @@ var clientBundleConfig = {
         new webpack.optimize.UglifyJsPlugin()
     ])
 };
-
-module.exports = [clientBundleConfig];
