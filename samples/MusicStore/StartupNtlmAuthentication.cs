@@ -1,5 +1,6 @@
 using System;
 using System.Security.Claims;
+using System.Security.Principal;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -109,8 +110,7 @@ namespace MusicStore
                 // administrator. But this can be changed to suit the needs.
                 var identity = (ClaimsIdentity)context.User.Identity;
 
-                if (context.User.Identity.Name == Environment.GetEnvironmentVariable("USERDOMAIN") + "\\"
-                    + Environment.GetEnvironmentVariable("USERNAME"))
+                if (context.User.Identity.Name == WindowsPrincipal.Current.Identity.Name)
                 {
                     identity.AddClaim(new Claim("ManageStore", "Allowed"));
                 }
