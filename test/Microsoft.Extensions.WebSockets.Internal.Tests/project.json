@@ -3,9 +3,9 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-rc3-000000-01",
+    "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.Extensions.WebSockets.Internal": "0.1.0-*",
-    "xunit": "2.1.0"
+    "xunit": "2.2.0-*"
   },
   "testRunner": "xunit",
   "frameworks": {
