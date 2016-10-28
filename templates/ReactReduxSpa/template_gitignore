@@ -35,6 +35,7 @@ Obj/
 !/wwwroot/dist/_placeholder.txt
 !/ClientApp/dist/_placeholder.txt
 
+/yarn.lock
 
 # MSTest test Results
 [Tt]est[Rr]esult*/

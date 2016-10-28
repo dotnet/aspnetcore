@@ -1,5 +1,6 @@
 import * as ko from 'knockout';
 import * as $ from 'jquery';
+import * as History from 'history';
 import crossroads = require('crossroads');
 
 // This module configures crossroads.js, a routing library. If you prefer, you

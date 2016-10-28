@@ -37,4 +37,5 @@ npm-debug.log
 /templates/*/node_modules/
 /templates/*/wwwroot/dist/
 /templates/*/ClientApp/dist/
+/templates/*/yarn.lock
 .vscode/

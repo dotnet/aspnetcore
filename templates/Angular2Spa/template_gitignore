@@ -196,6 +196,8 @@ orleans.codegen.cs
 /node_modules/**
 !/node_modules/_placeholder.txt
 
+/yarn.lock
+
 # RIA/Silverlight projects
 Generated_Code/
 

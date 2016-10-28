@@ -1,4 +1,5 @@
 import * as ko from 'knockout';
+import * as History from 'history';
 import { Route, Router } from '../../router';
 import navMenu from '../nav-menu/nav-menu';
 
