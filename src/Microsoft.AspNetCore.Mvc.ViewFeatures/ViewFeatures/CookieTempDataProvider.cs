@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Options;
@@ -41,10 +42,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             if (context.Request.Cookies.ContainsKey(CookieName))
             {
-                var base64EncodedValue = _chunkingCookieManager.GetRequestCookie(context, CookieName);
-                if (!string.IsNullOrEmpty(base64EncodedValue))
+                var encodedValue = _chunkingCookieManager.GetRequestCookie(context, CookieName);
+                if (!string.IsNullOrEmpty(encodedValue))
                 {
-                    var protectedData = Convert.FromBase64String(base64EncodedValue);
+                    var protectedData = Base64UrlTextEncoder.Decode(encodedValue);
                     var unprotectedData = _dataProtector.Unprotect(protectedData);
                     return _tempDataSerializer.Deserialize(unprotectedData);
                 }
@@ -73,8 +74,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             {
                 var bytes = _tempDataSerializer.Serialize(values);
                 bytes = _dataProtector.Protect(bytes);
-                var base64EncodedValue = Convert.ToBase64String(bytes);
-                _chunkingCookieManager.AppendResponseCookie(context, CookieName, base64EncodedValue, cookieOptions);
+                var encodedValue = Base64UrlTextEncoder.Encode(bytes);
+                _chunkingCookieManager.AppendResponseCookie(context, CookieName, encodedValue, cookieOptions);
             }
             else
             {
