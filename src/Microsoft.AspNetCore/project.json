@@ -14,10 +14,22 @@
     "Microsoft.Extensions.Logging": "1.1.0-*",
     "Microsoft.Extensions.Logging.Console": "1.1.0-*",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.1.0-*",
-    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
-    "netstandard1.3": {},
-    "net451": {}
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": "1.1.0-*"
+      }
+    },
+    "netcoreapp1.1": {
+      "dependencies": {
+        "Microsoft.NETCore.App": "1.1.0-*"
+      }
+    },
+    "net451": {
+      "dependencies": {
+        "NETStandard.Library": "1.6.1-*"
+      }
+    }
   }
 }
