@@ -110,7 +110,7 @@ namespace MusicStore
                 // administrator. But this can be changed to suit the needs.
                 var identity = (ClaimsIdentity)context.User.Identity;
 
-                if (context.User.Identity.Name == WindowsPrincipal.Current.Identity.Name)
+                if (context.User.Identity.Name == WindowsIdentity.GetCurrent().Name)
                 {
                     identity.AddClaim(new Claim("ManageStore", "Allowed"));
                 }
