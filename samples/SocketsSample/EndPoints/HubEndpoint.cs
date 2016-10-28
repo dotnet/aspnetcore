@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Channels;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SocketsSample.Hubs;
@@ -28,12 +29,13 @@ namespace SocketsSample
             return new SingleClientProxy(this, connectionId);
         }
 
-        protected override void Initialize(object endpoint)
+        protected override void Initialize(Connection connection, object endpoint)
         {
             var hub = (Hub)endpoint;
             hub.Clients = this;
+            hub.Context = new HubCallerContext(connection.ConnectionId, connection.User);
 
-            base.Initialize(endpoint);
+            base.Initialize(connection, endpoint);
         }
 
         protected override void DiscoverEndpoints()

@@ -16,8 +16,8 @@ namespace SocketsSample
 {
     public class RpcEndpoint : EndPoint
     {
-        private readonly Dictionary<string, Func<InvocationDescriptor, InvocationResultDescriptor>> _callbacks
-            = new Dictionary<string, Func<InvocationDescriptor, InvocationResultDescriptor>>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Func<Connection, InvocationDescriptor, InvocationResultDescriptor>> _callbacks
+            = new Dictionary<string, Func<Connection, InvocationDescriptor, InvocationResultDescriptor>>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Type[]> _paramTypes = new Dictionary<string, Type[]>();
 
         private readonly ILogger<RpcEndpoint> _logger;
@@ -71,10 +71,10 @@ namespace SocketsSample
                 }
 
                 InvocationResultDescriptor result;
-                Func<InvocationDescriptor, InvocationResultDescriptor> callback;
+                Func<Connection, InvocationDescriptor, InvocationResultDescriptor> callback;
                 if (_callbacks.TryGetValue(invocationDescriptor.Method, out callback))
                 {
-                    result = callback(invocationDescriptor);
+                    result = callback(connection, invocationDescriptor);
                 }
                 else
                 {
@@ -90,7 +90,7 @@ namespace SocketsSample
             }
         }
 
-        protected virtual void Initialize(object endpoint)
+        protected virtual void Initialize(Connection connection, object endpoint)
         {
         }
 
@@ -113,7 +113,7 @@ namespace SocketsSample
                     _logger.LogDebug("RPC method '{methodName}' is bound", methodName);
                 }
 
-                _callbacks[methodName] = invocationDescriptor =>
+                _callbacks[methodName] = (connection, invocationDescriptor) =>
                 {
                     var invocationResult = new InvocationResultDescriptor();
                     invocationResult.Id = invocationDescriptor.Id;
@@ -125,7 +125,7 @@ namespace SocketsSample
                     {
                         object value = scope.ServiceProvider.GetService(type) ?? Activator.CreateInstance(type);
 
-                        Initialize(value);
+                        Initialize(connection, value);
 
                         try
                         {
