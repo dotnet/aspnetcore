@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.Logging;
@@ -43,7 +44,7 @@ namespace E2ETests
         private async Task<HttpResponseMessage> DoGetAsync(Uri uri)
         {
             _logger.LogInformation("GET {0}", uri.ToString());
-            var resp= await _httpClient.GetAsync(uri);
+            var resp = await _httpClient.GetAsync(uri);
             LogHeaders(resp, LogLevel.Information);
             return resp;
         }
@@ -54,7 +55,7 @@ namespace E2ETests
         private async Task<HttpResponseMessage> DoPostAsync(Uri uri, HttpContent content)
         {
             _logger.LogInformation("POST {0}", uri.ToString());
-            var resp= await _httpClient.PostAsync(uri, content);
+            var resp = await _httpClient.PostAsync(uri, content);
             LogHeaders(resp, LogLevel.Information);
             return resp;
         }
@@ -121,8 +122,9 @@ namespace E2ETests
 
             //Check if the user name appears in the page
             Assert.Contains(
-                string.Format("{0}\\{1}", Environment.GetEnvironmentVariable("USERDOMAIN"), Environment.GetEnvironmentVariable("USERNAME")),
-                homePageContent, StringComparison.OrdinalIgnoreCase);
+                WindowsIdentity.GetCurrent().Name,
+                homePageContent,
+                StringComparison.OrdinalIgnoreCase);
         }
 
         public void ValidateLayoutPage(string responseContent)
