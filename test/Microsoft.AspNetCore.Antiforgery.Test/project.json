@@ -10,6 +10,7 @@
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
     "Microsoft.Extensions.Logging": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Testing": "1.1.0-*",
     "Microsoft.Extensions.WebEncoders": "1.1.0-*",
     "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"

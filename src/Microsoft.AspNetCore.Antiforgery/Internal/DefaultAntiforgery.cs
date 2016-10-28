@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Antiforgery.Internal
 {
@@ -65,6 +66,10 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                     _logger.ReusedCookieToken();
                 }
             }
+
+            // Explicitly set the cache headers to 'no-cache'. This could override any user set value but this is fine
+            // as a response with antiforgery token must never be cached.
+            SetDoNotCacheHeaders(httpContext);
 
             return tokenSet;
         }
@@ -237,6 +242,10 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             {
                 _logger.ReusedCookieToken();
             }
+
+            // Explicitly set the cache headers to 'no-cache'. This could override any user set value but this is fine
+            // as a response with antiforgery token must never be cached.
+            SetDoNotCacheHeaders(httpContext);
         }
 
         private void SaveCookieTokenAndHeader(HttpContext httpContext, string cookieToken)
@@ -356,6 +365,43 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             }
 
             return antiforgeryFeature;
+        }
+
+        private void SetDoNotCacheHeaders(HttpContext httpContext)
+        {
+            // Since antifogery token generation is not very obvious to the end users (ex: MVC's form tag generates them
+            // by default), log a warning to let users know of the change in behavior to any cache headers they might
+            // have set explicitly.
+            LogCacheHeaderOverrideWarning(httpContext.Response);
+
+            httpContext.Response.Headers[HeaderNames.CacheControl] = "no-cache";
+            httpContext.Response.Headers[HeaderNames.Pragma] = "no-cache";
+        }
+
+        private void LogCacheHeaderOverrideWarning(HttpResponse response)
+        {
+            var logWarning = false;
+            CacheControlHeaderValue cacheControlHeaderValue;
+            if (CacheControlHeaderValue.TryParse(response.Headers[HeaderNames.CacheControl], out cacheControlHeaderValue))
+            {
+                if (!cacheControlHeaderValue.NoCache)
+                {
+                    logWarning = true;
+                }
+            }
+
+            var pragmaHeader = response.Headers[HeaderNames.Pragma];
+            if (!logWarning
+                && !string.IsNullOrEmpty(pragmaHeader)
+                && string.Compare(pragmaHeader, "no-cache", ignoreCase: true) != 0)
+            {
+                logWarning = true;
+            }
+
+            if (logWarning)
+            {
+                _logger.ResponseCacheHeadersOverridenToNoCache();
+            }
         }
 
         private AntiforgeryTokenSet Serialize(IAntiforgeryFeature antiforgeryFeature)

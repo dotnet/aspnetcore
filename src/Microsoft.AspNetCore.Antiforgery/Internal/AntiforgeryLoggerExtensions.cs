@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         private static readonly Action<ILogger, Exception> _newCookieToken;
         private static readonly Action<ILogger, Exception> _reusedCookieToken;
         private static readonly Action<ILogger, Exception> _tokenDeserializeException;
+        private static readonly Action<ILogger, Exception> _responseCacheHeadersOverridenToNoCache;
 
         static AntiforgeryLoggerExtensions()
         {
@@ -47,6 +48,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 LogLevel.Error,
                 7,
                 "An exception was thrown while deserializing the token.");
+            _responseCacheHeadersOverridenToNoCache = LoggerMessage.Define(
+                LogLevel.Warning,
+                8,
+                "The 'Cache-Control' and 'Pragma' headers have been overridden and set to 'no-cache' to prevent " +
+                "caching of this response. Any response that uses antiforgery should not be cached.");
         }
 
         public static void ValidationFailed(this ILogger logger, string message)
@@ -82,6 +88,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public static void TokenDeserializeException(this ILogger logger, Exception exception)
         {
             _tokenDeserializeException(logger, exception);
+        }
+
+        public static void ResponseCacheHeadersOverridenToNoCache(this ILogger logger)
+        {
+            _responseCacheHeadersOverridenToNoCache(logger, null);
         }
     }
 }

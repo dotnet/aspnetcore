@@ -14,7 +14,8 @@ namespace Microsoft.AspNetCore.Antiforgery
     {
         /// <summary>
         /// Generates an <see cref="AntiforgeryTokenSet"/> for this request and stores the cookie token
-        /// in the response.
+        /// in the response. This operation also sets the "Cache-control" and "Pragma" headers to "no-cache" and
+        /// the "X-Frame-Options" header to "SAMEORIGIN".
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
         /// <returns>An <see cref="AntiforgeryTokenSet" /> with tokens for the response.</returns>
