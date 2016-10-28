@@ -30,7 +30,9 @@ namespace SocketsSample
 
         protected override void Initialize(object endpoint)
         {
-            ((Hub)endpoint).Clients = this;
+            var hub = (Hub)endpoint;
+            hub.Clients = this;
+
             base.Initialize(endpoint);
         }
 

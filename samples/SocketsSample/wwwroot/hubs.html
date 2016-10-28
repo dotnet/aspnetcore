@@ -37,7 +37,7 @@
                 }
 
                 // Response
-                if (typeof response.id === "number") {
+                if (response.Id) {
                     var cb = calls[response.Id];
 
                     delete calls[response.Id];
