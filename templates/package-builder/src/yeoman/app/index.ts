@@ -10,6 +10,7 @@ const optionOrPrompt: YeomanPrompt = require('yeoman-option-or-prompt');
 
 const templates = [
     { value: 'angular-2', name: 'Angular 2' },
+    { value: 'aurelia', name: 'Aurelia' },
     { value: 'knockout', name: 'Knockout' },
     { value: 'react', name: 'React' },
     { value: 'react-redux', name: 'React with Redux' }

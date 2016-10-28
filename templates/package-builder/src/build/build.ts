@@ -13,6 +13,7 @@ const yeomanGeneratorSource = './src/yeoman';
 
 const templates: { [key: string]: { dir: string, dotNetNewId: string, displayName: string, forceInclusion?: RegExp } } = {
     'angular-2': { dir: '../../templates/Angular2Spa/', dotNetNewId: 'Angular', displayName: 'Angular 2', forceInclusion: /^(wwwroot|ClientApp)\/dist\// },
+    'aurelia': { dir: '../../templates/AureliaSpa/', dotNetNewId: 'Aurelia', displayName: 'Aurelia' },
     'knockout': { dir: '../../templates/KnockoutSpa/', dotNetNewId: 'Knockout', displayName: 'Knockout.js' },
     'react-redux': { dir: '../../templates/ReactReduxSpa/', dotNetNewId: 'ReactRedux', displayName: 'React.js and Redux' },
     'react': { dir: '../../templates/ReactSpa/', dotNetNewId: 'React', displayName: 'React.js' }
