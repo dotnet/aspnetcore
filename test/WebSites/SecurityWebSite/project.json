@@ -1,0 +1,48 @@
+{
+  "buildOptions": {
+    "emitEntryPoint": true,
+    "preserveCompilationContext": true
+  },
+  "dependencies": {
+    "Microsoft.Extensions.Logging.Debug": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.1.0-*",
+    "Microsoft.Extensions.Configuration.Json": "1.1.0-*",
+    "Microsoft.Extensions.Configuration.FileExtensions": "1.1.0-*",
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.1.0-*",
+    "Microsoft.Extensions.Configuration": "1.1.0-*",
+    "Microsoft.AspNetCore.StaticFiles": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
+    "Microsoft.AspNetCore.Mvc": "1.1.0-*",
+    "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.1.0-*",
+    "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.1.0-*",
+    "Microsoft.AspNetCore.Identity": "1.1.0-*",
+    "Microsoft.AspNetCore.Hosting": "1.1.0-*",
+    "Microsoft.AspNetCore.Diagnostics": "1.1.0-*"
+  },
+  "frameworks": {
+    "netcoreapp1.1": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.1.0-*",
+          "type": "platform"
+        }
+      },
+      "imports": "portable-net451+win8"
+    },
+    "net451": {}
+  },
+  "publishOptions": {
+    "include": [
+      "wwwroot",
+      "appsettings.json",
+      "web.config"
+    ]
+  },
+  "scripts": {
+    "postpublish": [ "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%" ]
+  },
+  "tools": {
+    "Microsoft.AspNetCore.Razor.Tools": "1.0.0-preview2-final",
+    "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.0.0-preview2-final"
+  }
+}
