@@ -28,6 +28,7 @@
     "css": "^2.2.1",
     "css-loader": "^0.25.0",
     "expose-loader": "^0.7.1",
+    "extract-text-webpack-plugin": "^2.0.0-beta.4",
     "file-loader": "^0.9.0",
     "html-loader": "^0.4.4",
     "html-webpack-plugin": "^2.22.0",
@@ -37,7 +38,7 @@
     "ts-loader": "^0.8.2",
     "typescript": "^2.0.0",
     "url-loader": "^0.5.7",
-    "webpack": "2.1.0-beta.22",
+    "webpack": "^2.1.0-beta.25",
     "webpack-hot-middleware": "^2.10.0"
   }
 }
