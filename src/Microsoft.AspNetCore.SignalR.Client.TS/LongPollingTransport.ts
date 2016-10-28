@@ -9,13 +9,13 @@ class LongPollingTransport implements ITransport {
     // TODO: string won't work for binary formats
     constructor(receiveCallback: (data: string) => void) {
          this.receiveCallback = receiveCallback;
-         this.pollXhr = new XMLHttpRequest();
     }
 
     connect(url: string, queryString: string): Promise<void> {
         this.queryString = queryString || "";
         this.url = url || "";
 
+        this.pollXhr = new XMLHttpRequest();
         // TODO: resolve promise on open sending? + reject on error
         this.poll(url + "/poll?" + this.queryString)
         return Promise.resolve();

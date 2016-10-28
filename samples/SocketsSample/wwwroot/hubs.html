@@ -8,7 +8,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             let connectButton = document.getElementById('connect');
             let connection = new RpcConnection(`http://${document.location.host}/hubs`, 'formatType=json&format=text');
-            connection.on('Send',(msg) => { addLine(msg); });
+            connection.on('Send', msg => {
+                addLine(msg); });
             let isConnected = false;
 
             connectButton.addEventListener('click', () => {
