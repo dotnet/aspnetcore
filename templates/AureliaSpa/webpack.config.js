@@ -3,12 +3,12 @@ var path = require('path');
 var webpack = require('webpack');
 var AureliaWebpackPlugin = require('aurelia-webpack-plugin');
 
+var bundleOutputDir = './wwwroot/dist';
 module.exports = {
     resolve: { extensions: [ '.js', '.ts' ] },
-    devtool: isDevBuild ? 'inline-source-map' : null,
     entry: { 'app': 'aurelia-bootstrapper-webpack' }, // Note: The aurelia-webpack-plugin will add your app's modules to this bundle automatically
     output: {
-        path: path.resolve('./wwwroot/dist'),
+        path: path.resolve(bundleOutputDir),
         publicPath: '/dist',
         filename: '[name].js'
     },
@@ -30,7 +30,13 @@ module.exports = {
             src: path.resolve('./ClientApp'),
             baseUrl: '/'
         })
-    ].concat(isDevBuild ? [] : [
+    ].concat(isDevBuild ? [
+        // Plugins that apply in development builds only
+        new webpack.SourceMapDevToolPlugin({
+            filename: '[file].map', // Remove this line if you prefer inline source maps
+            moduleFilenameTemplate: path.relative(bundleOutputDir, '[resourcePath]') // Point sourcemap entries to the original file locations on disk
+        })
+    ] : [
         // Plugins that apply in production builds only
         new webpack.optimize.UglifyJsPlugin()
     ])
