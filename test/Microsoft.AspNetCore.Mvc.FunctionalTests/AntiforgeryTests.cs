@@ -36,6 +36,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Even though there are two forms there should only be one response cookie,
             // as for the second form, the cookie from the first token should be reused.
             Assert.Single(setCookieHeader);
+
+            Assert.True(response.Headers.CacheControl.NoCache);
+            var pragmaValue = Assert.Single(response.Headers.Pragma.ToArray());
+            Assert.Equal("no-cache", pragmaValue.Name);
         }
 
         [Fact]
@@ -84,6 +88,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             var setCookieHeader = response.Headers.GetValues("Set-Cookie").ToArray();
             Assert.Single(setCookieHeader);
+
+            Assert.True(response.Headers.CacheControl.NoCache);
+            var pragmaValue = Assert.Single(response.Headers.Pragma.ToArray());
+            Assert.Equal("no-cache", pragmaValue.Name);
         }
 
         [Fact]
@@ -144,6 +152,28 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task AntiforgeryTokenGeneration_SetsDoNotCacheHeaders_OverridesExistingCachingHeaders()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Antiforgery/AntiforgeryTokenAndResponseCaching");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var header = Assert.Single(response.Headers.GetValues("X-Frame-Options"));
+            Assert.Equal("SAMEORIGIN", header);
+
+            var setCookieHeader = response.Headers.GetValues("Set-Cookie").ToArray();
+
+            // Even though there are two forms there should only be one response cookie,
+            // as for the second form, the cookie from the first token should be reused.
+            Assert.Single(setCookieHeader);
+
+            Assert.True(response.Headers.CacheControl.NoCache);
+            var pragmaValue = Assert.Single(response.Headers.Pragma.ToArray());
+            Assert.Equal("no-cache", pragmaValue.Name);
         }
     }
 }
