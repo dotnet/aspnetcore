@@ -75,6 +75,9 @@ namespace Microsoft.AspNetCore.Sockets
                 {
                     bool isNewConnection;
                     var state = GetOrCreateConnection(context, out isNewConnection);
+                    // TODO: this is wrong. + how does the user add their own metadata based on HttpContext
+                    var formatType = (string)context.Request.Query["formatType"];
+                    state.Connection.Metadata["formatType"] = string.IsNullOrEmpty(formatType) ? "json" : formatType;
 
                     // Mark the connection as active
                     state.Active = true;

@@ -13,10 +13,16 @@ class LongPollingTransport implements ITransport {
     }
 
     connect(url: string, queryString: string): Promise<void> {
+        this.queryString = queryString || "";
+        this.url = url || "";
+
+        // TODO: resolve promise on open sending? + reject on error
+        this.poll(url + "/poll?" + this.queryString)
         return Promise.resolve();
     }
 
     private poll(url: string): void {
+        //TODO: timeout
         this.pollXhr.open("GET", url, true);
         this.pollXhr.send();
         this.pollXhr.onload = () => {
@@ -46,7 +52,7 @@ class LongPollingTransport implements ITransport {
     }
 
     send(data: string): Promise<void> {
-        return new HttpClient().post(this.url + "/poll/send?" + this.queryString, data);
+        return new HttpClient().post(this.url + "/send?" + this.queryString, data);
     }
 
     stop(): void {

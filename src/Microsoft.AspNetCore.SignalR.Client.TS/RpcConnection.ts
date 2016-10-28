@@ -52,9 +52,9 @@ class RpcConnection {
         return new Promise((resolve, reject) => {
             new HttpClient().get(this.url + "/getid?" + this.queryString)
             .then(id => {
-                this.transport = new WebSocketTransport(data => this.messageReceived(data));
-                //this.transport = new LongPollingTransport(data => this.messageReceived(data));
-                return this.transport.connect(this.url, `id=${id}`);
+                // this.transport = new WebSocketTransport(data => this.messageReceived(data));
+                this.transport = new LongPollingTransport(data => this.messageReceived(data));
+                return this.transport.connect(this.url, `id=${id}&${this.queryString}`);
             })
             .then(() => {
                 resolve();
