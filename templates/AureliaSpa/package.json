@@ -22,6 +22,7 @@
   },
   "devDependencies": {
     "@types/node": "^6.0.45",
+    "@types/whatwg-fetch": "0.0.32",
     "aspnet-webpack": "^1.0.11",
     "aurelia-webpack-plugin": "^1.1.0",
     "copy-webpack-plugin": "^3.0.1",
