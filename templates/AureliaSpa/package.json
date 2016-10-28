@@ -1,0 +1,43 @@
+{
+  "name": "AureliaSpa",
+  "version": "0.0.0",
+  "dependencies": {
+    "aurelia-bootstrapper-webpack": "^1.0.0",
+    "aurelia-event-aggregator": "^1.0.0",
+    "aurelia-fetch-client": "^1.0.0",
+    "aurelia-framework": "^1.0.0",
+    "aurelia-history-browser": "^1.0.0",
+    "aurelia-loader-webpack": "^1.0.0",
+    "aurelia-logging-console": "^1.0.0",
+    "aurelia-pal-browser": "^1.0.0",
+    "aurelia-polyfills": "^1.0.0",
+    "aurelia-route-recognizer": "^1.0.0",
+    "aurelia-router": "^1.0.2",
+    "aurelia-templating-binding": "^1.0.0",
+    "aurelia-templating-resources": "^1.0.0",
+    "aurelia-templating-router": "^1.0.0",
+    "bootstrap": "^3.3.7",
+    "isomorphic-fetch": "^2.2.1",
+    "jquery": "^2.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^6.0.45",
+    "aspnet-webpack": "^1.0.11",
+    "aurelia-webpack-plugin": "^1.1.0",
+    "copy-webpack-plugin": "^3.0.1",
+    "css": "^2.2.1",
+    "css-loader": "^0.25.0",
+    "expose-loader": "^0.7.1",
+    "file-loader": "^0.9.0",
+    "html-loader": "^0.4.4",
+    "html-webpack-plugin": "^2.22.0",
+    "raw-loader": "^0.5.1",
+    "style-loader": "^0.13.1",
+    "to-string-loader": "^1.1.5",
+    "ts-loader": "^0.8.2",
+    "typescript": "^2.0.0",
+    "url-loader": "^0.5.7",
+    "webpack": "2.1.0-beta.22",
+    "webpack-hot-middleware": "^2.10.0"
+  }
+}
