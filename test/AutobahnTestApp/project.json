@@ -5,7 +5,7 @@
     "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
     "Microsoft.AspNetCore.Server.Kestrel.Https": "1.1.0-*",
     "Microsoft.AspNetCore.Server.WebListener": "1.1.0-*",
-    "Microsoft.AspNetCore.WebSockets": "0.2.0-*",
+    "Microsoft.AspNetCore.WebSockets": "1.0.0-*",
     "Microsoft.Extensions.Configuration.CommandLine": "1.1.0-*",
     "Microsoft.Extensions.Logging.Console": "1.1.0-*",
     "Microsoft.NETCore.App": {
