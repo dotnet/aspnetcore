@@ -1,0 +1,69 @@
+<Project
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!--
+  =========================================================================
+  GenerateWatchList
+
+  Main target called by dotnet-watch. This is the cross-targetting version.
+  For single-tfm, the 'GenerateWatchList' in Inner.targets is the main target.
+
+  Phase 1: _CollectWatchProjects:
+           traverses the project-to-project graph to resolve all projects referenced.
+  Phase 2: _CollectWatchItems:
+           for each unique project file from phase 1, extracts all 'Watch' items and
+           collects into a single item group. All values should be a fullpath.
+  Phase 3: _WriteGeneratedWatchList:
+           write all files to a file that can be read by dotnet-watch
+
+  =========================================================================
+  -->
+  <Target Name="GenerateWatchList"
+          DependsOnTargets="_CollectWatchProjects;_CollectWatchItems;_WriteGeneratedWatchList"
+          />
+
+  <!--
+  =========================================================================
+  _CoreCollectWatchItems
+
+  Shim for cross-targetting builds to run _CoreCollectWatchItems for each target
+  framework.
+
+  Returns: @(Watch)
+  =========================================================================
+  -->
+  <Target Name="_CoreCollectWatchItems"
+          Returns="@(Watch)">
+    <ItemGroup>
+      <_TargetFramework Include="$(TargetFrameworks)" />
+    </ItemGroup>
+    <MSBuild Projects="$(MSBuildProjectFile)"
+             Condition="'$(TargetFrameworks)' != '' "
+             Targets="_CoreCollectWatchItems"
+             Properties="TargetFramework=%(_TargetFramework.Identity)">
+      <Output ItemName="Watch" TaskParameter="TargetOutputs" />
+    </MSBuild>
+  </Target>
+
+  <!--
+  =========================================================================
+  _CollectWatchProjects
+
+  Shim for cross-targetting builds to run _CollectWatchProjects for each target
+  framework.
+
+  Returns: @(_DotNetWatchProjects)
+  =========================================================================
+  -->
+  <Target Name="_CollectWatchProjects" Returns="@(_DotNetWatchProjects)">
+    <ItemGroup>
+      <_TargetFramework Include="$(TargetFrameworks)" />
+    </ItemGroup>
+    <MSBuild Projects="$(MSBuildProjectFile)"
+             Condition="'$(TargetFrameworks)' != '' "
+             Targets="_CollectWatchProjects"
+             Properties="TargetFramework=%(_TargetFramework.Identity)">
+      <Output ItemName="_DotNetWatchProjects" TaskParameter="TargetOutputs" />
+    </MSBuild>
+  </Target>
+</Project>

@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
-    public class FileWatcher : IFileWatcher
+    public class FileWatcher
     {
         private bool _disposed;
 

@@ -5,15 +5,29 @@
     "tags": [
       "dotnet",
       "watch"
-    ]
+    ],
+    "files": {
+      "include": "tools/*.targets"
+    }
   },
   "buildOptions": {
     "outputName": "dotnet-watch",
     "warningsAsErrors": true,
     "emitEntryPoint": true,
-    "keyFile": "../../tools/Key.snk"
+    "debugType": "portable",
+    "keyFile": "../../tools/Key.snk",
+    "copyToOutput": "tools/*.targets",
+    "embed": {
+      "mappings": {
+        "dotnetwatch.targets": "dotnetwatch.targets"
+      }
+    }
   },
   "dependencies": {
+    "Microsoft.DotNet.ProjectModel": {
+      "version": "1.0.0-*",
+      "exclude": "all"
+    },
     "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
     "Microsoft.Extensions.CommandLineUtils": "1.1.0-*",
     "Microsoft.Extensions.Logging": "1.1.0-*",

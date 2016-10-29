@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
@@ -14,6 +15,13 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(30);
 
         private static readonly TimeSpan _negativeTestWaitTime = TimeSpan.FromSeconds(10);
+
+        private readonly ITestOutputHelper _logger;
+
+        public GlobbingAppTests(ITestOutputHelper logger)
+        {
+            _logger = logger;
+        }
 
         [Fact]
         public void ChangeCompiledFile_PollingWatcher()
@@ -30,7 +38,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         // Change a file included in compilation
         private void ChangeCompiledFile(bool usePollingWatcher)
         {
-            using (var scenario = new GlobbingAppScenario())
+            using (var scenario = new GlobbingAppScenario(_logger))
             using (var wait = new WaitForFileToChange(scenario.StartedFile))
             {
                 scenario.UsePollingWatcher = usePollingWatcher;
@@ -53,7 +61,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public void AddCompiledFile()
         {
             // Add a file in a folder that's included in compilation
-            using (var scenario = new GlobbingAppScenario())
+            using (var scenario = new GlobbingAppScenario(_logger))
             using (var wait = new WaitForFileToChange(scenario.StartedFile))
             {
                 scenario.Start();
@@ -71,7 +79,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         [Fact]
         public void DeleteCompiledFile()
         {
-            using (var scenario = new GlobbingAppScenario())
+            using (var scenario = new GlobbingAppScenario(_logger))
             using (var wait = new WaitForFileToChange(scenario.StartedFile))
             {
                 scenario.Start();
@@ -86,10 +94,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         // Delete an entire folder
-        [Fact(Skip = "Blocking build")]
+        [Fact]
         public void DeleteSourceFolder()
         {
-            using (var scenario = new GlobbingAppScenario())
+            using (var scenario = new GlobbingAppScenario(_logger))
             using (var wait = new WaitForFileToChange(scenario.StartedFile))
             {
                 scenario.Start();
@@ -107,7 +115,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         [Fact]
         public void RenameCompiledFile()
         {
-            using (var scenario = new GlobbingAppScenario())
+            using (var scenario = new GlobbingAppScenario(_logger))
             using (var wait = new WaitForFileToChange(scenario.StatusFile))
             {
                 scenario.Start();
@@ -137,7 +145,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         // Add a file that's in a included folder but not matching the globbing pattern
         private void ChangeNonCompiledFile(bool usePollingWatcher)
         {
-            using (var scenario = new GlobbingAppScenario())
+            using (var scenario = new GlobbingAppScenario(_logger))
             {
                 scenario.UsePollingWatcher = usePollingWatcher;
 
@@ -162,7 +170,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         [Fact]
         public void ChangeExcludedFile()
         {
-            using (var scenario = new GlobbingAppScenario())
+            using (var scenario = new GlobbingAppScenario(_logger))
             {
                 scenario.Start();
 
@@ -185,15 +193,16 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             private const string TestAppName = "GlobbingApp";
 
-            public GlobbingAppScenario()
+            public GlobbingAppScenario(ITestOutputHelper logger)
+                : base(logger)
             {
-                StatusFile = Path.Combine(_scenario.TempFolder, "status");
+                StatusFile = Path.Combine(Scenario.TempFolder, "status");
                 StartedFile = StatusFile + ".started";
 
-                _scenario.AddTestProjectFolder(TestAppName);
-                _scenario.Restore();
+                Scenario.AddTestProjectFolder(TestAppName);
+                Scenario.Restore3(TestAppName);
 
-                TestAppFolder = Path.Combine(_scenario.WorkFolder, TestAppName);
+                TestAppFolder = Path.Combine(Scenario.WorkFolder, TestAppName);
             }
 
             public void Start()
@@ -201,7 +210,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 // Wait for the process to start
                 using (var wait = new WaitForFileToChange(StartedFile))
                 {
-                    RunDotNetWatch(new[] { "run", StatusFile }, Path.Combine(_scenario.WorkFolder, TestAppName));
+                    RunDotNetWatch(new[] { "run3", StatusFile }, Path.Combine(Scenario.WorkFolder, TestAppName));
 
                     wait.Wait(_defaultTimeout,
                         expectedToChange: true,

@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
@@ -11,11 +12,18 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
     {
         private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(30);
 
+        private readonly ITestOutputHelper _logger;
+
+        public AppWithDepsTests(ITestOutputHelper logger)
+        {
+            _logger = logger;
+        }
+
         // Change a file included in compilation
         [Fact]
         public void ChangeFileInDependency()
         {
-            using (var scenario = new AppWithDepsScenario())
+            using (var scenario = new AppWithDepsScenario(_logger))
             {
                 scenario.Start();
                 using (var wait = new WaitForFileToChange(scenario.StartedFile))
@@ -36,18 +44,19 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             private const string AppWithDeps = "AppWithDeps";
             private const string Dependency = "Dependency";
 
-            public AppWithDepsScenario()
+            public AppWithDepsScenario(ITestOutputHelper logger)
+                : base(logger)
             {
-                StatusFile = Path.Combine(_scenario.TempFolder, "status");
+                StatusFile = Path.Combine(Scenario.TempFolder, "status");
                 StartedFile = StatusFile + ".started";
-                
-                _scenario.AddTestProjectFolder(AppWithDeps);
-                _scenario.AddTestProjectFolder(Dependency);
 
-                _scenario.Restore();
+                Scenario.AddTestProjectFolder(AppWithDeps);
+                Scenario.AddTestProjectFolder(Dependency);
 
-                AppWithDepsFolder = Path.Combine(_scenario.WorkFolder, AppWithDeps);
-                DependencyFolder = Path.Combine(_scenario.WorkFolder, Dependency);
+                Scenario.Restore3(AppWithDeps); // restore3 should be transitive
+
+                AppWithDepsFolder = Path.Combine(Scenario.WorkFolder, AppWithDeps);
+                DependencyFolder = Path.Combine(Scenario.WorkFolder, Dependency);
             }
 
             public void Start()
@@ -55,7 +64,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 // Wait for the process to start
                 using (var wait = new WaitForFileToChange(StatusFile))
                 {
-                    RunDotNetWatch(new[] { "run", StatusFile }, Path.Combine(_scenario.WorkFolder, AppWithDeps));
+                    RunDotNetWatch(new[] { "run3", StatusFile }, Path.Combine(Scenario.WorkFolder, AppWithDeps));
 
                     wait.Wait(_defaultTimeout,
                         expectedToChange: true,

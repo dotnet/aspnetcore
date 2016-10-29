@@ -6,16 +6,21 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Microsoft.Extensions.Internal;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
     public class DotNetWatchScenario : IDisposable
     {
-        protected ProjectToolScenario _scenario;
-
+        protected ProjectToolScenario Scenario { get; }
         public DotNetWatchScenario()
+            : this(null)
         {
-            _scenario = new ProjectToolScenario();
+        }
+
+        public DotNetWatchScenario(ITestOutputHelper logger)
+        {
+            Scenario = new ProjectToolScenario(logger);
         }
 
         public Process WatcherProcess { get; private set; }
@@ -33,7 +38,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 };
             }
 
-            WatcherProcess = _scenario.ExecuteDotnetWatch(arguments, workingFolder, envVariables);
+            WatcherProcess = Scenario.ExecuteDotnetWatch(arguments, workingFolder, envVariables);
         }
 
         public virtual void Dispose()
@@ -46,7 +51,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 }
                 WatcherProcess.Dispose();
             }
-            _scenario.Dispose();
+            Scenario.Dispose();
         }
     }
 }

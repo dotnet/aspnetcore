@@ -7,22 +7,29 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
     public class NoDepsAppTests
     {
         private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(30);
+        private readonly ITestOutputHelper _logger;
+
+        public NoDepsAppTests(ITestOutputHelper logger)
+        {
+            _logger = logger;
+        }
 
         [Fact]
         public void RestartProcessOnFileChange()
         {
-            using (var scenario = new NoDepsAppScenario())
+            using (var scenario = new NoDepsAppScenario(_logger))
             {
                 // Wait for the process to start
                 using (var wait = new WaitForFileToChange(scenario.StartedFile))
                 {
-                    scenario.RunDotNetWatch(new[] { "run", scenario.StatusFile, "--no-exit" });
+                    scenario.RunDotNetWatch(new[] { "run3", "-f", "netcoreapp1.0", scenario.StatusFile, "--no-exit" });
 
                     wait.Wait(_defaultTimeout,
                         expectedToChange: true,
@@ -56,12 +63,12 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         [Fact]
         public void RestartProcessThatTerminatesAfterFileChange()
         {
-            using (var scenario = new NoDepsAppScenario())
+            using (var scenario = new NoDepsAppScenario(_logger))
             {
                 // Wait for the process to start
                 using (var wait = new WaitForFileToChange(scenario.StartedFile))
                 {
-                    scenario.RunDotNetWatch(new[] { "run", scenario.StatusFile });
+                    scenario.RunDotNetWatch(new[] { "run3", "-f", "netcoreapp1.0", scenario.StatusFile });
 
                     wait.Wait(_defaultTimeout,
                         expectedToChange: true,
@@ -101,15 +108,16 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             private const string TestAppName = "NoDepsApp";
 
-            public NoDepsAppScenario()
+            public NoDepsAppScenario(ITestOutputHelper logger)
+                : base(logger)
             {
-                StatusFile = Path.Combine(_scenario.TempFolder, "status");
+                StatusFile = Path.Combine(Scenario.TempFolder, "status");
                 StartedFile = StatusFile + ".started";
 
-                _scenario.AddTestProjectFolder(TestAppName);
-                _scenario.Restore();
+                Scenario.AddTestProjectFolder(TestAppName);
+                Scenario.Restore3(TestAppName);
 
-                TestAppFolder = Path.Combine(_scenario.WorkFolder, TestAppName);
+                TestAppFolder = Path.Combine(Scenario.WorkFolder, TestAppName);
             }
 
             public string StatusFile { get; private set; }
@@ -118,7 +126,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
             public void RunDotNetWatch(IEnumerable<string> args)
             {
-                RunDotNetWatch(args, Path.Combine(_scenario.WorkFolder, TestAppName));
+                RunDotNetWatch(args, Path.Combine(Scenario.WorkFolder, TestAppName));
             }
         }
     }

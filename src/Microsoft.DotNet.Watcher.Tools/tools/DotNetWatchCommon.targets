@@ -1,0 +1,28 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Target Name="_WriteGeneratedWatchList" >
+    <WriteLinesToFile Overwrite="true"
+                      File="$(_DotNetWatchListFile)"
+                      Lines="@(Watch -> '%(FullPath)')" />
+  </Target>
+
+  <!--
+  =========================================================================
+  _CollectWatchItems
+
+  Invokes _CoreCollectWatchItems on each distinct project in _DotNetWatchProjects.
+
+  Returns: @(Watch)
+  =========================================================================
+  -->
+  <Target Name="_CollectWatchItems">
+    <RemoveDuplicates Inputs="@(_DotNetWatchProjects)">
+        <Output TaskParameter="Filtered" ItemName="_DotNetWatchProjectsFiltered" />
+    </RemoveDuplicates>
+    <MSBuild
+      Targets="_CoreCollectWatchItems"
+      Projects="%(_DotNetWatchProjectsFiltered.FullPath)">
+      <Output TaskParameter="TargetOutputs" ItemName="Watch"/>
+    </MSBuild>
+  </Target>
+</Project>

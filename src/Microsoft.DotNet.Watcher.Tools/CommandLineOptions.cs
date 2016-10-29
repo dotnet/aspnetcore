@@ -12,6 +12,7 @@ namespace Microsoft.DotNet.Watcher
 {
     internal class CommandLineOptions
     {
+        public string Project { get; private set; }
         public bool IsHelp { get; private set; }
         public bool IsQuiet { get; private set; }
         public bool IsVerbose { get; private set; }
@@ -30,6 +31,8 @@ namespace Microsoft.DotNet.Watcher
             };
 
             app.HelpOption("-?|-h|--help");
+            var optProjects = app.Option("-p|--project", "The project to watch",
+                CommandOptionType.SingleValue); // TODO multiple shouldn't be too hard to support
             var optQuiet = app.Option("-q|--quiet", "Suppresses all output except warnings and errors",
                 CommandOptionType.NoValue);
             var optVerbose = app.Option("-v|--verbose", "Show verbose output",
@@ -58,6 +61,7 @@ namespace Microsoft.DotNet.Watcher
 
             return new CommandLineOptions
             {
+                Project = optProjects.Value(),
                 IsQuiet = optQuiet.HasValue(),
                 IsVerbose = optVerbose.HasValue(),
                 RemainingArguments = app.RemainingArguments,

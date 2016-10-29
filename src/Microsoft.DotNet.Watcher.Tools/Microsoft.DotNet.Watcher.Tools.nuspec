@@ -24,6 +24,7 @@
   </metadata>
   <files>
     <file src="bin/$configuration$/netcoreapp1.0/dotnet-watch.dll" target="lib\netcoreapp1.0\" />
-    <file src="bin/$configuration$/netcoreapp1.0/dotnet-watch.runtimeconfig.json" target="lib/netcoreapp1.0\" />
+    <file src="bin/$configuration$/netcoreapp1.0/dotnet-watch.runtimeconfig.json" target="lib\netcoreapp1.0\" />
+    <file src="tools/*.targets" target="tools\" />
   </files>
 </package>

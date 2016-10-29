@@ -1,0 +1,70 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!--
+  =========================================================================
+  GenerateWatchList
+
+  Main target called by dotnet-watch. This is the single-tfm version.
+  For multi-tfm version, see the Outer.targets file for description of the
+  design of this target.
+  =========================================================================
+  -->
+  <Target Name="GenerateWatchList"
+          DependsOnTargets="_CollectWatchProjects;_CollectWatchItems;_WriteGeneratedWatchList" />
+
+  <!--
+  =========================================================================
+  _CoreCollectWatchItems
+
+  Creates item group with default set of files to watch.
+
+  Returns: @(Watch)
+  =========================================================================
+  -->
+  <Target Name="_CoreCollectWatchItems" Returns="@(Watch)">
+    <!-- message used to debug -->
+    <Message Importance="High" Text="Collecting watch items from '$(MSBuildProjectName)'" Condition="'$(_DotNetWatchTraceOutput)'=='true'" />
+    <ItemGroup>
+      <Watch Include="@(Compile->'%(FullPath)')" Condition="'%(Compile.Watch)' != 'false'" />
+      <Watch Include="@(EmbeddedResource->'%(FullPath)')" Condition="'%(EmbeddedResource.Watch)' != 'false'"/>
+      <Watch Include="$(MSBuildProjectFullPath)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+  =========================================================================
+  _CollectWatchProjects
+
+  Adds all ProjectReference items to _DotNetWatchProjects.
+  Copies the project file extension file to all project references.
+  Invokes '_CollectWatchProjects' on all referenced projects.
+
+  Returns: @(_DotNetWatchProjects)
+  =========================================================================
+  -->
+  <Target Name="_CollectWatchProjects"
+          Returns="@(_DotNetWatchProjects)">
+    <!-- message used to debug -->
+    <Message Importance="High" Text="Collecting referenced projects from '$(MSBuildProjectName)'" Condition="'$(_DotNetWatchTraceOutput)'=='true'" />
+    <ItemGroup>
+      <_DotNetWatchProjects Include="@(ProjectReference->'%(FullPath)')" Condition="'%(ProjectReference.Watch)' != 'false'" />
+      <_DotNetWatchImportsTargets Include="@(_DotNetWatchProjects->'%(RelativeDir)obj\%(FileName)%(Extension).dotnetwatch.targets')">
+        <TargetsFile>$(_DotNetWatchTargetsFile)</TargetsFile>
+      </_DotNetWatchImportsTargets>
+    </ItemGroup>
+
+     <Copy SourceFiles="@(_DotNetWatchImportsTargets->'%(TargetsFile)')"
+           DestinationFiles="@(_DotNetWatchImportsTargets)"
+           SkipUnchangedFiles="true" />
+
+    <MSBuild
+      Targets="_CollectWatchProjects"
+      Projects="%(_DotNetWatchProjects.FullPath)">
+      <Output TaskParameter="TargetOutputs" ItemName="_DotNetWatchProjects"/>
+    </MSBuild>
+
+    <ItemGroup>
+      <_DotNetWatchProjects Include="$(MSBuildProjectFullPath)"/>
+    </ItemGroup>
+  </Target>
+</Project>

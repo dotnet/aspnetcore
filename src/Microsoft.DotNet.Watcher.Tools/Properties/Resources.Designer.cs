@@ -11,6 +11,54 @@ namespace Microsoft.DotNet.Watcher.Tools
             = new ResourceManager("Microsoft.DotNet.Watcher.Tools.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// The project file '{path}' does not exist.
+        /// </summary>
+        internal static string Error_ProjectPath_NotFound
+        {
+            get { return GetString("Error_ProjectPath_NotFound"); }
+        }
+
+        /// <summary>
+        /// The project file '{path}' does not exist.
+        /// </summary>
+        internal static string FormatError_ProjectPath_NotFound(object path)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_ProjectPath_NotFound", "path"), path);
+        }
+
+        /// <summary>
+        /// Multiple MSBuild project files found in '{projectPath}'. Specify which to use with the --project option.
+        /// </summary>
+        internal static string Error_MultipleProjectsFound
+        {
+            get { return GetString("Error_MultipleProjectsFound"); }
+        }
+
+        /// <summary>
+        /// Multiple MSBuild project files found in '{projectPath}'. Specify which to use with the --project option.
+        /// </summary>
+        internal static string FormatError_MultipleProjectsFound(object projectPath)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_MultipleProjectsFound", "projectPath"), projectPath);
+        }
+
+        /// <summary>
+        /// Could not find a MSBuild project file in '{projectPath}'. Specify which project to use with the --project option.
+        /// </summary>
+        internal static string Error_NoProjectsFound
+        {
+            get { return GetString("Error_NoProjectsFound"); }
+        }
+
+        /// <summary>
+        /// Could not find a MSBuild project file in '{projectPath}'. Specify which project to use with the --project option.
+        /// </summary>
+        internal static string FormatError_NoProjectsFound(object projectPath)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_NoProjectsFound", "projectPath"), projectPath);
+        }
+
+        /// <summary>
         /// Cannot specify both '--quiet' and '--verbose' options.
         /// </summary>
         internal static string Error_QuietAndVerboseSpecified

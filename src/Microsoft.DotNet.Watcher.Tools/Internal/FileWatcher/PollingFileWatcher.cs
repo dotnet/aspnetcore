@@ -182,6 +182,11 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private void ForeachEntityInDirectory(DirectoryInfo dirInfo, Action<FileSystemInfo> fileAction)
         {
+            if (!dirInfo.Exists)
+            {
+                return;
+            }
+            
             var entities = dirInfo.EnumerateFileSystemInfos("*.*");
             foreach (var entity in entities)
             {

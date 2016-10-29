@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Threading;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ProjectModel;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
@@ -17,13 +18,17 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
     {
         private const string NugetConfigFileName = "NuGet.config";
         private static readonly string TestProjectSourceRoot = Path.Combine(AppContext.BaseDirectory, "TestProjects");
-
-        private static readonly object _restoreLock = new object();
+        private readonly ITestOutputHelper _logger;
 
         public ProjectToolScenario()
+            : this(null)
         {
-            Console.WriteLine($"The temporary test folder is {TempFolder}");
+        }
 
+        public ProjectToolScenario(ITestOutputHelper logger)
+        {
+            _logger = logger;
+            _logger?.WriteLine($"The temporary test folder is {TempFolder}");
             WorkFolder = Path.Combine(TempFolder, "work");
 
             CreateTestDirectory();
@@ -37,7 +42,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             var srcFolder = Path.Combine(TestProjectSourceRoot, projectName);
             var destinationFolder = Path.Combine(WorkFolder, Path.GetFileName(projectName));
-            Console.WriteLine($"Copying project {srcFolder} to {destinationFolder}");
+            _logger?.WriteLine($"Copying project {srcFolder} to {destinationFolder}");
 
             Directory.CreateDirectory(destinationFolder);
 
@@ -63,19 +68,40 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 project = Path.Combine(WorkFolder, project);
             }
 
-            // Tests are run in parallel and they try to restore tools concurrently.
-            // This causes issues because the deps json file for a tool is being written from
-            // multiple threads - which results in either sharing violation or corrupted json.
-            lock (_restoreLock)
-            {
-                var restore = Command
-                    .CreateDotNet("restore", new[] { project })
-                    .Execute();
+            _logger?.WriteLine($"Restoring project in {project}");
 
-                if (restore.ExitCode != 0)
-                {
-                    throw new Exception($"Exit code {restore.ExitCode}");
-                }
+            var restore = Command
+                .CreateDotNet("restore", new[] { project })
+                .CaptureStdErr()
+                .CaptureStdOut()
+                .OnErrorLine(l => _logger?.WriteLine(l))
+                .OnOutputLine(l => _logger?.WriteLine(l))
+                .Execute();
+
+            if (restore.ExitCode != 0)
+            {
+                throw new Exception($"Exit code {restore.ExitCode}");
+            }
+        }
+
+        public void Restore3(string project)
+        {
+            project = Path.Combine(WorkFolder, project);
+
+            _logger?.WriteLine($"Restoring msbuild project in {project}");
+
+            var restore = Command
+                .CreateDotNet("restore3", new [] { "/v:m" })
+                .WorkingDirectory(project)
+                .CaptureStdErr()
+                .CaptureStdOut()
+                .OnErrorLine(l => _logger?.WriteLine(l))
+                .OnOutputLine(l => _logger?.WriteLine(l))
+                .Execute();
+
+            if (restore.ExitCode != 0)
+            {
+                throw new Exception($"Exit code {restore.ExitCode}");
             }
         }
 
@@ -92,7 +118,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         public Process ExecuteDotnetWatch(IEnumerable<string> arguments, string workDir, IDictionary<string, string> environmentVariables = null)
         {
-            // this launches a new .NET Core process using the runtime of the current test app 
+            // this launches a new .NET Core process using the runtime of the current test app
             // and the version of dotnet-watch that this test app is compiled against
             var thisAssembly = Path.GetFileNameWithoutExtension(GetType().GetTypeInfo().Assembly.Location);
             var args = new List<string>();
@@ -108,12 +134,12 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
             var argsStr = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args.Concat(arguments));
 
-            Console.WriteLine($"Running dotnet {argsStr} in {workDir}");
+            _logger?.WriteLine($"Running dotnet {argsStr} in {workDir}");
 
             var psi = new ProcessStartInfo(new Muxer().MuxerPath, argsStr)
             {
                 UseShellExecute = false,
-                WorkingDirectory = workDir,
+                WorkingDirectory = workDir
             };
 
             if (environmentVariables != null)

@@ -45,3 +45,61 @@ Some configuration options can be passed to `dotnet watch` through environment v
 | Variable                                       | Effect                                                   |
 | ---------------------------------------------- | -------------------------------------------------------- |
 | DOTNET_USE_POLLING_FILE_WATCHER                | If set to "1" or "true", `dotnet watch` will use a polling file watcher instead of CoreFx's `FileSystemWatcher`. Used when watching files on network shares or Docker mounted volumes.                       |
+
+### MSBuild
+
+dotnet-watch can be configured from the MSBuild project file being watched.
+
+**Project References**
+
+By default, dotnet-watch will scan the entire graph of project references and watch all files within those projects.
+
+dotnet-watch will ignore project references with the `Watch="false"` attribute.
+
+```xml
+<ItemGroup>
+  <ProjectReference Include="..\ClassLibrary1\ClassLibrary1.csproj" Watch="false" />
+</ItemGroup>
+```
+
+**Watch items**
+
+dotnet-watch will watch all items in the "<kbd>Watch</kbd>" item group.
+By default, this group inclues all items in "<kbd>Compile</kbd>" and "<kbd>EmbeddedResource</kbd>".
+
+More items can be added to watch in a project file by adding items to 'Watch'.
+
+Example:
+
+```xml
+<ItemGroup>
+    <!-- extends watching group to include *.js files -->
+    <Watch Include="**\*.js" Exclude="node_modules\**\*.js;$(DefaultExcludes)" />
+</ItemGroup>
+```
+
+dotnet-watch will ignore Compile and EmbeddedResource items with the `Watch="false"` attribute.
+
+Example:
+
+```xml
+<ItemGroup>
+    <!-- exclude Generated.cs from dotnet-watch -->
+    <Compile Include="Generated.cs" Watch="false" />
+    <EmbeddedResource Include="Generated.cs" Watch="false" />
+</ItemGroup>
+```
+
+
+**Advanced configuration**
+
+dotnet-watch performs a design-time build to find items to watch.
+When this build is run, dotnet-watch will set the property `DotNetWatchBuild=true`.
+
+Example:
+
+```xml
+  <ItemGroup Condition="'$(DotNetWatchBuild)'=='true'">
+    <!-- design-time only items -->
+  </ItemGroup>
+```

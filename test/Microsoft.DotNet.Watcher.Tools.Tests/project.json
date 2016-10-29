@@ -1,7 +1,8 @@
 {
   "buildOptions": {
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "debugType": "portable"
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
@@ -17,6 +18,9 @@
         }
       }
     }
+  },
+  "scripts": {
+    "precompile": "copyfiles %compile:OutputDir%"
   },
   "testRunner": "xunit"
 }
