@@ -1,6 +1,7 @@
 # dnvm.sh
 # Source this file from your .bash-profile or script to use
 
+
 # "Constants"
 _DNVM_BUILDNUMBER="rc2-15546"
 _DNVM_AUTHORS="Microsoft Open Technologies, Inc."
@@ -30,6 +31,17 @@ if [ "$NO_COLOR" != "1" ]; then
     Whi='\e[0;37m';     BWhi='\e[1;37m';    UWhi='\e[4;37m';    IWhi='\e[0;97m';    BIWhi='\e[1;97m';   On_Whi='\e[47m';    On_IWhi='\e[0;107m';
 fi
 
+__dnvm_current_os()
+{
+    local uname=$(uname)
+	if [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ] || [ "$(expr substr $(uname -s) 1 9)" == "CYGWIN_NT" ]; then
+		echo "win"
+	elif [[ $uname == "Darwin" ]]; then
+        echo "darwin"
+    else
+        echo "linux"
+    fi
+}
 
 [[ "$_DNVM_BUILDNUMBER" = {{* ]] && _DNVM_BUILDNUMBER="HEAD"
 
@@ -50,6 +62,10 @@ if [ -z "$DNX_USER_HOME" ]; then
     eval DNX_USER_HOME="~/$_DNVM_RUNTIME_FOLDER_NAME"
 fi
 
+if [ $(__dnvm_current_os)=="win" ]; then
+    eval DNX_USER_HOME="/c/Users/$USERNAME/$_DNVM_RUNTIME_FOLDER_NAME"
+fi
+
 if [ -z "$DNX_GLOBAL_HOME" ]; then
     eval DNX_GLOBAL_HOME="/usr/local/lib/dnx"
 fi
@@ -68,15 +84,7 @@ _DNVM_DNVM_DIR="$DNX_USER_HOME/dnvm"
 
 DNX_ACTIVE_FEED=""
 
-__dnvm_current_os()
-{
-    local uname=$(uname)
-    if [[ $uname == "Darwin" ]]; then
-        echo "darwin"
-    else
-        echo "linux"
-    fi
-}
+
 
 __dnvm_os_runtime_defaults()
 {
@@ -369,6 +377,7 @@ __dnvm_requested_version_or_alias() {
 # This will be more relevant if we support global installs
 __dnvm_locate_runtime_bin_from_full_name() {
     local runtimeFullName=$1
+	
     for v in `echo $DNX_HOME | tr ":" "\n"`; do
         if [ -e "$v/runtimes/$runtimeFullName/bin" ]; then
             echo "$v/runtimes/$runtimeFullName/bin" && return
@@ -640,6 +649,7 @@ dnvm()
                 local runtimeFolder="$runtimeDir/$runtimeFullName"
 
                 local exist=0
+				
                 for folder in `echo $DNX_HOME | tr ":" "\n"`; do
                     if [ -e "$folder/runtimes/$runtimeFullName" ]; then
                         echo "$runtimeFullName already installed in $folder"
@@ -943,10 +953,11 @@ dnvm()
             [[ ! -d $_DNVM_USER_PACKAGES ]] && echo "$_DNVM_RUNTIME_FRIENDLY_NAME is not installed." && return 1
 
             local searchGlob="$_DNVM_RUNTIME_PACKAGE_NAME-*"
-
             local runtimes=""
             for location in `echo $DNX_HOME | tr ":" "\n"`; do
                 location+="/runtimes"
+				
+				echo $location
                 if [ -d "$location" ]; then
                     local oruntimes="$(find $location -name "$searchGlob" \( -type d -or -type l \) -prune -exec basename {} \;)"
                     for v in `echo $oruntimes | tr "\n" " "`; do
