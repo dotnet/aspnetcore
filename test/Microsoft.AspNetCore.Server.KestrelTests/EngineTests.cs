@@ -580,6 +580,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(async httpContext =>
             {
+                // This will hang if 0 content length is not assumed by the server
                 Assert.Equal(0, await httpContext.Request.Body.ReadAsync(new byte[1], 0, 1).TimeoutAfter(TimeSpan.FromSeconds(10)));
             }, testContext))
             {
@@ -592,8 +593,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "GET / HTTP/1.1",
                         "Connection: close",
                         "",
-                        "a");
-                    await connection.ReceiveEnd(
+                        "");
+                    await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
                         "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
@@ -607,8 +608,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     await connection.Send(
                         "GET / HTTP/1.0",
                         "",
-                        "a");
-                    await connection.ReceiveEnd(
+                        "");
+                    await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
                         "Connection: close",
                         $"Date: {testContext.DateHeaderValue}",
