@@ -24,7 +24,7 @@
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.1.0-*",
     "Microsoft.AspNetCore.Http": "1.1.0-*",
     "Microsoft.AspNetCore.Mvc.Abstractions": "1.1.0-*",
-    "Microsoft.AspNetCore.ResponseCaching.Abstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.ResponseCaching.Abstractions": "1.1.0-*",
     "Microsoft.AspNetCore.Routing": "1.1.0-*",
     "Microsoft.AspNetCore.Routing.DecisionTree.Sources": {
       "type": "build",
