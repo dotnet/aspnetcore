@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.JsonPatch.Adapters;
+using Microsoft.AspNetCore.JsonPatch.Exceptions;
 
 namespace Microsoft.AspNetCore.JsonPatch.Operations
 {
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Operations
                     adapter.Copy(this, objectToApplyTo);
                     break;
                 case OperationType.Test:
-                    throw new NotSupportedException(Resources.TestOperationNotSupported);
+                    throw new JsonPatchException(new JsonPatchError(objectToApplyTo, this, Resources.TestOperationNotSupported));
                 default:
                     break;
             }

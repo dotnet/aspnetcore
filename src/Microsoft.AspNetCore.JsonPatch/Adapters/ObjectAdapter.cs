@@ -150,14 +150,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             if (!visitor.TryVisit(ref target, out adapter, out errorMessage))
             {
                 var error = CreatePathNotFoundError(objectToApplyTo, path, operation, errorMessage);
-                ReportError(error);
+                ErrorReporter(error);
                 return;
             }
 
             if (!adapter.TryAdd(target, parsedPath.LastSegment, ContractResolver, value, out errorMessage))
             {
                 var error = CreateOperationFailedError(objectToApplyTo, path, operation, errorMessage);
-                ReportError(error);
+                ErrorReporter(error);
                 return;
             }
         }
@@ -259,14 +259,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             if (!visitor.TryVisit(ref target, out adapter, out errorMessage))
             {
                 var error = CreatePathNotFoundError(objectToApplyTo, path, operationToReport, errorMessage);
-                ReportError(error);
+                ErrorReporter(error);
                 return;
             }
 
             if (!adapter.TryRemove(target, parsedPath.LastSegment, ContractResolver, out errorMessage))
             {
                 var error = CreateOperationFailedError(objectToApplyTo, path, operationToReport, errorMessage);
-                ReportError(error);
+                ErrorReporter(error);
                 return;
             }
         }
@@ -312,14 +312,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             if (!visitor.TryVisit(ref target, out adapter, out errorMessage))
             {
                 var error = CreatePathNotFoundError(objectToApplyTo, operation.path, operation, errorMessage);
-                ReportError(error);
+                ErrorReporter(error);
                 return;
             }
 
             if (!adapter.TryReplace(target, parsedPath.LastSegment, ContractResolver, operation.value, out errorMessage))
             {
                 var error = CreateOperationFailedError(objectToApplyTo, operation.path, operation, errorMessage);
-                ReportError(error);
+                ErrorReporter(error);
                 return;
             }
         }
@@ -401,29 +401,25 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             if (!visitor.TryVisit(ref target, out adapter, out errorMessage))
             {
                 var error = CreatePathNotFoundError(objectToGetValueFrom, fromLocation, operation, errorMessage);
-                ReportError(error);
+                ErrorReporter(error);
                 return false;
             }
 
             if (!adapter.TryGet(target, parsedPath.LastSegment, ContractResolver, out propertyValue, out errorMessage))
             {
                 var error = CreateOperationFailedError(objectToGetValueFrom, fromLocation, operation, errorMessage);
-                ReportError(error);
+                ErrorReporter(error);
                 return false;
             }
 
             return true;
         }
 
-        private void ReportError(JsonPatchError error)
+        private Action<JsonPatchError> ErrorReporter
         {
-            if (LogErrorAction != null)
+            get
             {
-                LogErrorAction(error);
-            }
-            else
-            {
-                throw new JsonPatchException(error);
+                return LogErrorAction ?? Internal.ErrorReporter.Default;
             }
         }
 

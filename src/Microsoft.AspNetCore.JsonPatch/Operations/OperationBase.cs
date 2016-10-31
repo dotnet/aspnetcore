@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.JsonPatch.Operations
@@ -13,7 +14,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Operations
         {
             get
             {
-                return (OperationType)Enum.Parse(typeof(OperationType), op, true);
+                OperationType result;
+                if (!Enum.TryParse(op, ignoreCase: true, result: out result))
+                {
+                    throw new JsonPatchException(
+                        Resources.FormatInvalidJsonPatchOperation(op),
+                        innerException: null);
+                }
+                return result;
             }
         }
 

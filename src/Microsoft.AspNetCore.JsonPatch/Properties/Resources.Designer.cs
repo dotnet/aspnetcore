@@ -123,6 +123,22 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         /// <summary>
+        /// Invalid JsonPatch operation '{0}'.
+        /// </summary>
+        internal static string InvalidJsonPatchOperation
+        {
+            get { return GetString("InvalidJsonPatchOperation"); }
+        }
+
+        /// <summary>
+        /// Invalid JsonPatch operation '{0}'.
+        /// </summary>
+        internal static string FormatInvalidJsonPatchOperation(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("InvalidJsonPatchOperation"), p0);
+        }
+
+        /// <summary>
         /// The provided string '{0}' is an invalid path.
         /// </summary>
         internal static string InvalidValueForPath

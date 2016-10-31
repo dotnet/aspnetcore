@@ -138,6 +138,9 @@
   <data name="InvalidJsonPatchDocument" xml:space="preserve">
     <value>The type '{0}' was malformed and could not be parsed.</value>
   </data>
+  <data name="InvalidJsonPatchOperation" xml:space="preserve">
+    <value>Invalid JsonPatch operation '{0}'.</value>
+  </data>
   <data name="InvalidValueForPath" xml:space="preserve">
     <value>The provided string '{0}' is an invalid path.</value>
   </data>
