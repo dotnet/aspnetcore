@@ -1,6 +1,6 @@
 {
   "name": "aspnet-webpack",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "description": "Helpers for using Webpack in ASP.NET Core projects. Works in conjunction with the Microsoft.AspNetCore.SpaServices NuGet package.",
   "main": "index.js",
   "scripts": {
@@ -33,6 +33,6 @@
     "webpack": "^1.13.2"
   },
   "peerDependencies": {
-    "webpack": "^1.13.2"
+    "webpack": "^1.13.2 || ^2.1.0-beta"
   }
 }
