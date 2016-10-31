@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Antiforgery
 {
@@ -44,6 +45,18 @@ namespace Microsoft.AspNetCore.Antiforgery
                 _cookieName = value;
             }
         }
+
+        /// <summary>
+        /// The path set on the cookie. If it's <c>null</c>, the "path" attribute on the cookie is set to current
+        /// request's <see cref="HttpRequest.PathBase"/> value.
+        /// </summary>
+        public PathString? CookiePath { get; set; }
+
+        /// <summary>
+        /// The domain set on the cookie. By default its <c>null</c> which results in the "domain" attribute not being
+        /// set.
+        /// </summary>
+        public string CookieDomain { get; set; }
 
         /// <summary>
         /// Specifies the name of the antiforgery token field that is used by the antiforgery system.

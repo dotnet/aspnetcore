@@ -308,6 +308,76 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.Equal(requestPathBase, cookies.Options.Path);
         }
 
+        [Fact]
+        public void SaveCookieToken_NonNullAntiforgeryOptionsCookiePath_UsesOptionsCookiePath()
+        {
+            // Arrange
+            var expectedCookiePath = "/";
+            var requestPathBase = "/vdir1";
+            var token = "serialized-value";
+            var cookies = new MockResponseCookieCollection();
+            var httpContext = new Mock<HttpContext>();
+            httpContext
+                .Setup(hc => hc.Response.Cookies)
+                .Returns(cookies);
+            httpContext
+                .SetupGet(hc => hc.Request.PathBase)
+                .Returns(requestPathBase);
+            httpContext
+                .SetupGet(hc => hc.Request.Path)
+                .Returns("/index.html");
+            var options = new AntiforgeryOptions();
+            options.CookieName = _cookieName;
+            options.CookiePath = expectedCookiePath;
+            var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
+
+            // Act
+            tokenStore.SaveCookieToken(httpContext.Object, token);
+
+            // Assert
+            Assert.Equal(1, cookies.Count);
+            Assert.NotNull(cookies);
+            Assert.Equal(_cookieName, cookies.Key);
+            Assert.Equal("serialized-value", cookies.Value);
+            Assert.True(cookies.Options.HttpOnly);
+            Assert.Equal(expectedCookiePath, cookies.Options.Path);
+        }
+
+        [Fact]
+        public void SaveCookieToken_NonNullAntiforgeryOptionsCookieDomain_UsesOptionsCookieDomain()
+        {
+            // Arrange
+            var expectedCookieDomain = "microsoft.com";
+            var token = "serialized-value";
+            var cookies = new MockResponseCookieCollection();
+            var httpContext = new Mock<HttpContext>();
+            httpContext
+                .Setup(hc => hc.Response.Cookies)
+                .Returns(cookies);
+            httpContext
+                .SetupGet(hc => hc.Request.PathBase)
+                .Returns("/vdir1");
+            httpContext
+                .SetupGet(hc => hc.Request.Path)
+                .Returns("/index.html");
+            var options = new AntiforgeryOptions();
+            options.CookieName = _cookieName;
+            options.CookieDomain = expectedCookieDomain;
+            var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
+
+            // Act
+            tokenStore.SaveCookieToken(httpContext.Object, token);
+
+            // Assert
+            Assert.Equal(1, cookies.Count);
+            Assert.NotNull(cookies);
+            Assert.Equal(_cookieName, cookies.Key);
+            Assert.Equal("serialized-value", cookies.Value);
+            Assert.True(cookies.Options.HttpOnly);
+            Assert.Equal("/vdir1", cookies.Options.Path);
+            Assert.Equal(expectedCookieDomain, cookies.Options.Domain);
+        }
+
         private HttpContext GetHttpContext(string cookieName, string cookieValue)
         {
             var cookies = new RequestCookieCollection(new Dictionary<string, string>
