@@ -16,9 +16,7 @@ export default function (params: any) : Promise<{ html: string, globals?: any }>
                 requestUrl: params.url,
                 originUrl: params.origin,
                 preboot: false,
-                // TODO: Render just the <app> component instead of wrapping it inside an extra HTML document
-                // Waiting on https://github.com/angular/universal/issues/347
-                document: '<!DOCTYPE html><html><head></head><body><app></app></body></html>'
+                document: '<app></app>'
             },
             onHandleError: (parentZone, currentZone, targetZone, error) => {
                 // If any error occurs while rendering the module, reject the whole operation
