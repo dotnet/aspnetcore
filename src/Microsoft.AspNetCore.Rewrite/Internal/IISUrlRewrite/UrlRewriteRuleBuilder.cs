@@ -52,7 +52,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                     _action = new RedirectAction(statusCode, url, appendQueryString);
                     break;
                 case ActionType.AbortRequest:
-                    throw new NotImplementedException("Abort Requests are not implemented");
+                    _action = new AbortAction();
+                    break;
                 case ActionType.CustomResponse:
                     throw new NotImplementedException("Custom Responses are not implemented");
             }

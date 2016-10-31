@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Rewrite.Logging
         private static readonly Action<ILogger, Exception> _redirectedToHttps;
         private static readonly Action<ILogger, string, Exception> _redirectSummary;
         private static readonly Action<ILogger, string, Exception> _rewriteSummary;
+        private static readonly Action<ILogger, string, Exception> _abortedRequest;
 
         static RewriteMiddlewareLoggingExtensions()
         {
@@ -70,6 +71,11 @@ namespace Microsoft.AspNetCore.Rewrite.Logging
                             LogLevel.Information,
                             10,
                             "Request was rewritten to {rewrittenUrl}");
+
+            _abortedRequest = LoggerMessage.Define<string>(
+                            LogLevel.Debug,
+                            11,
+                            "Request to {requestedUrl} was aborted");
         }
 
         public static void RewriteMiddlewareRequestContinueResults(this ILogger logger, string currentUrl)
@@ -120,6 +126,11 @@ namespace Microsoft.AspNetCore.Rewrite.Logging
         public static void RewriteSummary(this ILogger logger, string rewrittenUrl)
         {
             _rewriteSummary(logger, rewrittenUrl, null);
+        }
+
+        public static void AbortedRequest(this ILogger logger, string requestedUrl)
+        {
+            _abortedRequest(logger, requestedUrl, null);
         }
     }
 }

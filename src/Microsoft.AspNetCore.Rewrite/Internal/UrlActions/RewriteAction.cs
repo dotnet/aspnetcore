@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
             bool queryStringDelete,
             bool escapeBackReferences)
         {
-            // For the replacement, we must have at least 
+            // For the replacement, we must have at least
             // one segment (cannot have an empty replacement)
             Result = result;
             Url = pattern;
