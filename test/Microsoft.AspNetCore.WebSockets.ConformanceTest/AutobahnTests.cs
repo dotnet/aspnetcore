@@ -65,7 +65,8 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
                                 .OkOrNonStrict("3.2", "3.3", "3.4", "4.1.3", "4.1.4", "4.1.5", "4.2.3", "4.2.4", "4.2.5", "5.15")); // These occasionally get non-strict results
                         }
 
-                        await tester.DeployTestAndAddToSpec(ServerType.WebListener, ssl: false, environment: "ManagedSockets");
+                        await tester.DeployTestAndAddToSpec(ServerType.WebListener, ssl: false, environment: "ManagedSockets", expectationConfig: expect => expect
+                            .OkOrNonStrict("4.2.4"));
                     }
                 }
 
