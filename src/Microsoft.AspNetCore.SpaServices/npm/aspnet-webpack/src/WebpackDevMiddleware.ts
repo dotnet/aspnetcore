@@ -93,7 +93,6 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
 
     // Attach Webpack dev middleware and optional 'hot' middleware
     const compiler = webpack(webpackConfig);
-    const originalFileSystem = compiler.outputFileSystem;
     app.use(require('webpack-dev-middleware')(compiler, {
         noInfo: true,
         publicPath: webpackConfig.output.publicPath
@@ -108,7 +107,7 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
     // file on disk wouldn't match the file served to the browser, and the source map line numbers wouldn't
     // match up. Breakpoints would either not be hit, or would hit the wrong lines.
     (compiler as any).plugin('done', stats => {
-        copyRecursiveSync(compiler.outputFileSystem, originalFileSystem, '/', [/\.hot-update\.(js|json)$/]);
+        copyRecursiveToRealFsSync(compiler.outputFileSystem, '/', [/\.hot-update\.(js|json)$/]);
     });
 
     if (enableHotModuleReplacement) {
@@ -122,7 +121,7 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
     }
 }
 
-function copyRecursiveSync(from: typeof fs, to: typeof fs, rootDir: string, exclude: RegExp[]) {
+function copyRecursiveToRealFsSync(from: typeof fs, rootDir: string, exclude: RegExp[]) {
     from.readdirSync(rootDir).forEach(filename => {
         const fullPath = pathJoinSafe(rootDir, filename);
         const shouldExclude = exclude.filter(re => re.test(fullPath)).length > 0;
@@ -130,9 +129,12 @@ function copyRecursiveSync(from: typeof fs, to: typeof fs, rootDir: string, excl
             const fileStat = from.statSync(fullPath);
             if (fileStat.isFile()) {
                 const fileBuf = from.readFileSync(fullPath);
-                to.writeFile(fullPath, fileBuf);
+                fs.writeFileSync(fullPath, fileBuf);
             } else if (fileStat.isDirectory()) {
-                copyRecursiveSync(from, to, fullPath, exclude);
+                if (!fs.existsSync(fullPath)) {
+                    fs.mkdirSync(fullPath);
+                }
+                copyRecursiveToRealFsSync(from, fullPath, exclude);
             }
         }
     });
