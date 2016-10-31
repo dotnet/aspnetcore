@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
     /// <summary>
     /// An <see cref="IModelBinder"/> which binds models from the request headers when a model
-    /// has the binding source <see cref="BindingSource.Header"/>/
+    /// has the binding source <see cref="BindingSource.Header"/>.
     /// </summary>
     public class HeaderModelBinder : IModelBinder
     {
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
 
             var collection = ModelBindingHelper.GetCompatibleCollection<string>(bindingContext, values.Length);
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 collection.Add(values[i]);
             }

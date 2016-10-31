@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             _stack.Push(_state);
 
-            Result = default(ModelBindingResult);
+            Result = default;
 
             return new NestedScope(this);
         }
@@ -338,6 +338,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             public bool IsTopLevelObject;
 
             public ModelBindingResult Result;
-        };
+        }
     }
 }

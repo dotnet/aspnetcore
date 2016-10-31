@@ -143,6 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             if (formatter == null)
             {
                 _logger?.NoInputFormatterSelected(formatterContext);
+
                 var message = Resources.FormatUnsupportedContentType(httpContext.Request.ContentType);
                 var exception = new UnsupportedContentTypeException(message);
                 bindingContext.ModelState.AddModelError(modelBindingKey, exception, bindingContext.ModelMetadata);
@@ -152,7 +153,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             try
             {
                 var result = await formatter.ReadAsync(formatterContext);
-                var model = result.Model;
 
                 if (result.HasError)
                 {
@@ -162,6 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
                 if (result.IsModelSet)
                 {
+                    var model = result.Model;
                     bindingContext.Result = ModelBindingResult.Success(model);
                 }
                 else

@@ -871,14 +871,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 { nameof(TestController.NullCollectionProperty), new List<string> { "hello", "world" } },
                 { nameof(TestController.StringProperty), "Hello" },
             };
-            var expectedPropertyValues = new Dictionary<string, object>
-            {
-                { nameof(TestController.ArrayProperty), new string[] { "goodbye" } },
-                { nameof(TestController.CollectionProperty), new List<string> { "hello", "world" } },
-                { nameof(TestController.NonCollectionProperty), new Person { Name = "Ginger" } },
-                { nameof(TestController.NullCollectionProperty), null },
-                { nameof(TestController.StringProperty), "Hello" },
-            };
 
             var actionDescriptor = GetActionDescriptor();
             foreach (var keyValuePair in boundPropertyTypes)

@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract string ModelName { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="ModelStateDictionary"/> used to capture <see cref="ModelState"/> values
+        /// Gets or sets the <see cref="ModelStateDictionary"/> used to capture <see cref="ModelStateEntry"/> values
         /// for properties in the object graph of the model when binding.
         /// </summary>
         /// <remarks>
@@ -117,21 +117,33 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract ModelBindingResult Result { get; set; }
 
         /// <summary>
-        /// Pushes a layer of state onto this context. Model binders will call this as part of recursion when binding properties
-        /// or collection items.
+        /// Pushes a layer of state onto this context. Model binders will call this as part of recursion when binding
+        /// properties or collection items.
         /// </summary>
-        /// <param name="modelMetadata"><see cref="ModelBinding.ModelMetadata"/> to assign to the <see cref="ModelMetadata"/> property.</param>
+        /// <param name="modelMetadata">
+        /// <see cref="ModelBinding.ModelMetadata"/> to assign to the <see cref="ModelMetadata"/> property.
+        /// </param>
         /// <param name="fieldName">Name to assign to the <see cref="FieldName"/> property.</param>
         /// <param name="modelName">Name to assign to the <see cref="ModelName"/> property.</param>
         /// <param name="model">Instance to assign to the <see cref="Model"/> property.</param>
-        /// <returns>A <see cref="NestedScope"/> scope object which should be used in a using statement where PushContext is called.</returns>
-        public abstract NestedScope EnterNestedScope(ModelMetadata modelMetadata, string fieldName, string modelName, object model);
+        /// <returns>
+        /// A <see cref="NestedScope"/> scope object which should be used in a <c>using</c> statement where
+        /// <see cref="EnterNestedScope(ModelMetadata, string, string, object)"/> is called.
+        /// </returns>
+        public abstract NestedScope EnterNestedScope(
+            ModelMetadata modelMetadata,
+            string fieldName,
+            string modelName,
+            object model);
 
         /// <summary>
-        /// Pushes a layer of state onto this context. Model binders will call this as part of recursion when binding properties
-        /// or collection items.
+        /// Pushes a layer of state onto this context. Model binders will call this as part of recursion when binding
+        /// properties or collection items.
         /// </summary>
-        /// <returns>A <see cref="NestedScope"/> scope object which should be used in a using statement where PushContext is called.</returns>        
+        /// <returns>
+        /// A <see cref="NestedScope"/> scope object which should be used in a <c>using</c> statement where
+        /// <see cref="EnterNestedScope()"/> is called.
+        /// </returns>
         public abstract NestedScope EnterNestedScope();
 
         /// <summary>
@@ -141,7 +153,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         /// <summary>
         /// Return value of <see cref="M:EnterNestedScope"/>. Should be disposed
-        /// by caller when child binding context state should be popped off of 
+        /// by caller when child binding context state should be popped off of
         /// the <see cref="ModelBindingContext"/>.
         /// </summary>
         public struct NestedScope : IDisposable

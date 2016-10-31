@@ -181,6 +181,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     bindingContext.ValueProvider
                 };
 
+                // Enter new scope to change ModelMetadata and isolate element binding operations.
                 using (bindingContext.EnterNestedScope(
                     elementMetadata,
                     fieldName: bindingContext.FieldName,
@@ -238,8 +239,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 var fullChildName = ModelNames.CreateIndexModelName(bindingContext.ModelName, indexName);
 
-                var didBind = false;
-                object boundValue = null;
                 ModelBindingResult? result;
                 using (bindingContext.EnterNestedScope(
                     elementMetadata,
@@ -251,6 +250,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     result = bindingContext.Result;
                 }
 
+                var didBind = false;
+                object boundValue = null;
                 if (result != null && result.Value.IsModelSet)
                 {
                     didBind = true;
@@ -296,10 +297,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// </summary>
         /// <param name="targetType"><see cref="Type"/> of the model.</param>
         /// <param name="collection">
-        /// Collection of values retrieved from value providers. Or <c>null</c> if nothing was bound.
+        /// Collection of values retrieved from value providers. <see langword="null"/> if nothing was bound.
         /// </param>
         /// <returns>
-        /// An <see cref="object"/> assignable to <paramref name="targetType"/>. Or <c>null</c> if nothing was bound.
+        /// An <see cref="object"/> assignable to <paramref name="targetType"/>. <see langword="null"/> if nothing
+        /// was bound.
         /// </returns>
         /// <remarks>
         /// Extensibility point that allows the bound collection to be manipulated or transformed before being
@@ -330,7 +332,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// </summary>
         /// <param name="target"><see cref="object"/> into which values are copied.</param>
         /// <param name="sourceCollection">
-        /// Collection of values retrieved from value providers. Or <c>null</c> if nothing was bound.
+        /// Collection of values retrieved from value providers. <see langword="null"/> if nothing was bound.
         /// </param>
         protected virtual void CopyToModel(object target, IEnumerable<TElement> sourceCollection)
         {

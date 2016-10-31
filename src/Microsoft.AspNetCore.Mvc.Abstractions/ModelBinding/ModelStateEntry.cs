@@ -50,17 +50,26 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract bool IsContainerNode { get; }
 
         /// <summary>
-        /// Gets the <see cref="ModelStateEntry"/> for a sub-property with the specified <paramref name="propertyName"/>.
+        /// Gets the <see cref="ModelStateEntry"/> for a sub-property with the specified
+        /// <paramref name="propertyName"/>.
         /// </summary>
         /// <param name="propertyName">The property name to lookup.</param>
-        /// <returns>The <see cref="ModelStateEntry"/> if a sub-property was found; otherwise <c>null</c>.</returns>
-        /// <remarks>This method returns any existing entry, even those with <see cref="IsContainerNode"/> with value <c>true</c>..</remarks>
+        /// <returns>
+        /// The <see cref="ModelStateEntry"/> if a sub-property was found; otherwise <see langword="null"/>.
+        /// </returns>
+        /// <remarks>
+        /// This method returns any existing entry, even those with <see cref="IsContainerNode"/> with value
+        /// <see langword="true"/>.
+        /// </remarks>
         public abstract ModelStateEntry GetModelStateForProperty(string propertyName);
 
         /// <summary>
         /// Gets the <see cref="ModelStateEntry"/> values for sub-properties.
         /// </summary>
-        /// <remarks>This method returns all existing entries, even those with <see cref="IsContainerNode"/> with value <c>true</c>.</remarks>
+        /// <remarks>
+        /// This property returns all existing entries, even those with <see cref="IsContainerNode"/> with value
+        /// <see langword="true"/>.
+        /// </remarks>
         public abstract IReadOnlyList<ModelStateEntry> Children { get; }
     }
 }
