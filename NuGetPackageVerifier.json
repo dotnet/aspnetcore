@@ -1,0 +1,7 @@
+{
+    "Default": { // Rules to run for packages not listed in any other set.
+        "rules": [
+            "DefaultCompositeRule"
+        ]
+    }
+}
