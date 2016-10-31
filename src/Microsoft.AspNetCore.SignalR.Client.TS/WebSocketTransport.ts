@@ -1,12 +1,5 @@
 class WebSocketTransport implements ITransport {
     private webSocket: WebSocket;
-    // TODO: make the callback a named type
-    // TODO: string won't work for binary formats
-    private receiveCallback: (data: string) => void;
-
-    constructor(receiveCallback: (data: string) => void) {
-         this.receiveCallback = receiveCallback;
-    }
 
     connect(url: string, queryString: string): Promise<void> {
         return new Promise((resolve, reject) => {
@@ -24,12 +17,15 @@ class WebSocketTransport implements ITransport {
             };
 
             this.webSocket.onmessage = (message: MessageEvent) => {
-                this.receiveCallback(message.data);
+                console.log(`(WebSockets transport) data received: ${message.data}`);
+                if (this.onDataReceived) {
+                    this.onDataReceived(message.data);
+                }
             }
         });
     }
 
-    send(data: string): Promise<void> {
+    send(data: any): Promise<void> {
         this.webSocket.send(data);
         return Promise.resolve();
     }
@@ -37,4 +33,7 @@ class WebSocketTransport implements ITransport {
     stop(): void {
         this.webSocket.close();
     }
+
+    onDataReceived: DataReceived;
+    onError: ErrorHandler;
 }

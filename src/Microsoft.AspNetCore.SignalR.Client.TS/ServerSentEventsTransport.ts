@@ -23,11 +23,14 @@ class ServerSentEventsTransport implements ITransport {
         return Promise.resolve();
     }
 
-    send(data: string): Promise<void> {
+    send(data: any): Promise<void> {
         return new HttpClient().post(this.url + "/send?" + this.queryString, data);
     }
 
     stop(): void {
         this.eventSource.close();
     }
+
+    onDataReceived: DataReceived;
+    onError: ErrorHandler;
 }

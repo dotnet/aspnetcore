@@ -11,23 +11,25 @@ interface InvocationResultDescriptor {
 }
 
 class RpcConnection {
-    // TODO: add connection state
-    private url: string;
-    private queryString: string;
+    private connection: Connection;
     private callbacks: Map<string, (any) => void>;
     private methods: Map<string, (...args:any[]) => void>;
-    private transport: ITransport;
     private id: number;
 
     constructor(url: string, queryString?: string) {
-        this.url = url;
-        this.queryString = queryString || "";
+        this.connection = new Connection(url, queryString);
+
+        let thisRpcConnection = this;
+        this.connection.dataReceived = data => {
+            thisRpcConnection.dataReceived(data);
+        };
+
         this.callbacks = new Map<string, (any) => void>();
         this.methods = new Map<string, (...args:any[]) => void>();
         this.id = 0;
     }
 
-    private messageReceived(data: string) {
+    private dataReceived(data: any) {
         //TODO: separate JSON parsing
         var descriptor = JSON.parse(data);
         if (descriptor.Method === undefined) {
@@ -49,37 +51,26 @@ class RpcConnection {
     }
 
     start(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            new HttpClient().get(this.url + "/getid?" + this.queryString)
-                .then(id => {
-                    this.transport = new ServerSentEventsTransport(data => this.messageReceived(data));
-                    // this.transport = new WebSocketTransport(data => this.messageReceived(data));
-                    // this.transport = new WebSocketTransport(data => this.messageReceived(data));
-                    // this.transport = new LongPollingTransport(data => this.messageReceived(data));
-                    return this.transport.connect(this.url, `id=${id}&${this.queryString}`);
-                })
-                .then(() => {
-                    resolve();
-                })
-                .catch(e => {
-                    reject(e);
-                });
-        });
+        return this.connection.start();
     }
 
     stop(): void {
-        this.transport.stop();
+        return this.connection.stop();
     }
 
     invoke(methodName: string, ...args: any[]): Promise<void> {
+
+        let id = this.id;
+        this.id++;
+
         let invocationDescriptor: InvocationDescriptor = {
-            "Id": this.id.toString(),
+            "Id": id.toString(),
             "Method": methodName,
             "Arguments": args
         };
 
         let p = new Promise<any>((resolve, reject) => {
-            this.callbacks[this.id] = (invocationResult: InvocationResultDescriptor) => {
+            this.callbacks[id] = (invocationResult: InvocationResultDescriptor) => {
                 if (invocationResult.Error != null) {
                     reject(invocationResult.Error);
                 }
@@ -88,13 +79,14 @@ class RpcConnection {
                 }
             };
 
-            this.transport.send(JSON.stringify(invocationDescriptor))
-                .catch(e => reject(e));
+            //TODO: separate conversion to enable different data formats
+            this.connection.send(JSON.stringify(invocationDescriptor))
+                .catch(e => {
+                    // TODO: remove callback
+                    reject(e);
+                });
         });
 
-        this.id++;
-
-        //TODO: separate conversion to enable different data formats
         return p;
     }
 
