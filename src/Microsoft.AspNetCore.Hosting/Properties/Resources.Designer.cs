@@ -58,6 +58,22 @@ namespace Microsoft.AspNetCore.Hosting
             return GetString("ErrorPageHtml_UnknownLocation");
         }
 
+        /// <summary>
+        /// WebHostBuilder allows creation only of a single instance of WebHost
+        /// </summary>
+        internal static string WebHostBuilder_SingleInstance
+        {
+            get { return GetString("WebHostBuilder_SingleInstance"); }
+        }
+
+        /// <summary>
+        /// WebHostBuilder allows creation only of a single instance of WebHost
+        /// </summary>
+        internal static string FormatWebHostBuilder_SingleInstance()
+        {
+            return GetString("WebHostBuilder_SingleInstance");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

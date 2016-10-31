@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Hosting
         private IConfiguration _config;
         private ILoggerFactory _loggerFactory;
         private WebHostOptions _options;
+        private bool _webHostBuilt;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebHostBuilder"/> class.
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Hosting
             if (string.IsNullOrEmpty(GetSetting(WebHostDefaults.EnvironmentKey)))
             {
                 // Try adding legacy environment keys, never remove these.
-                UseSetting(WebHostDefaults.EnvironmentKey, Environment.GetEnvironmentVariable("Hosting:Environment") 
+                UseSetting(WebHostDefaults.EnvironmentKey, Environment.GetEnvironmentVariable("Hosting:Environment")
                     ?? Environment.GetEnvironmentVariable("ASPNET_ENV"));
             }
 
@@ -135,6 +136,12 @@ namespace Microsoft.AspNetCore.Hosting
         /// </summary>
         public IWebHost Build()
         {
+            if (_webHostBuilt)
+            {
+                throw new InvalidOperationException(Resources.WebHostBuilder_SingleInstance);
+            }
+            _webHostBuilt = true;
+
             // Warn about deprecated environment variables
             if (Environment.GetEnvironmentVariable("Hosting:Environment") != null)
             {
@@ -151,17 +158,24 @@ namespace Microsoft.AspNetCore.Hosting
                 Console.WriteLine("The environment variable 'ASPNETCORE_SERVER.URLS' is obsolete and has been replaced with 'ASPNETCORE_URLS'");
             }
 
-            var hostingServices = BuildHostingServices();
-            var hostingContainer = hostingServices.BuildServiceProvider();
+            var hostingServices = BuildCommonServices();
+            var applicationServices = hostingServices.Clone();
+            var hostingServiceProvider = hostingServices.BuildServiceProvider();
 
-            var host = new WebHost(hostingServices, hostingContainer, _options, _config);
+            AddApplicationServices(applicationServices, hostingServiceProvider);
+
+            var host = new WebHost(
+                applicationServices,
+                hostingServiceProvider,
+                _options,
+                _config);
 
             host.Initialize();
 
             return host;
         }
 
-        private IServiceCollection BuildHostingServices()
+        private IServiceCollection BuildCommonServices()
         {
             _options = new WebHostOptions(_config);
 
@@ -175,9 +189,15 @@ namespace Microsoft.AspNetCore.Hosting
             var services = new ServiceCollection();
             services.AddSingleton(_hostingEnvironment);
 
+            // The configured ILoggerFactory is added as a singleton here. AddLogging below will not add an additional one.
             if (_loggerFactory == null)
             {
                 _loggerFactory = new LoggerFactory();
+                services.AddSingleton(provider => _loggerFactory);
+            }
+            else
+            {
+                services.AddSingleton(_loggerFactory);
             }
 
             foreach (var configureLogging in _configureLoggingDelegates)
@@ -185,19 +205,16 @@ namespace Microsoft.AspNetCore.Hosting
                 configureLogging(_loggerFactory);
             }
 
-            //The configured ILoggerFactory is added as a singleton here. AddLogging below will not add an additional one.
-            services.AddSingleton(_loggerFactory);
-
             //This is required to add ILogger of T.
             services.AddLogging();
+
+            var listener = new DiagnosticListener("Microsoft.AspNetCore");
+            services.AddSingleton<DiagnosticListener>(listener);
+            services.AddSingleton<DiagnosticSource>(listener);
 
             services.AddTransient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
             services.AddTransient<IHttpContextFactory, HttpContextFactory>();
             services.AddOptions();
-
-            var diagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
-            services.AddSingleton<DiagnosticSource>(diagnosticSource);
-            services.AddSingleton<DiagnosticListener>(diagnosticSource);
 
             // Conjure up a RequestServices
             services.AddTransient<IStartupFilter, AutoRequestServicesStartupFilter>();
@@ -243,6 +260,20 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             return services;
+        }
+
+        private void AddApplicationServices(IServiceCollection services, IServiceProvider hostingServiceProvider)
+        {
+            // We are forwarding services from hosting contrainer so hosting container
+            // can still manage their lifetime (disposal) shared instances with application services.
+            // NOTE: This code overrides original services lifetime. Instances would always be singleton in
+            // application container.
+            var loggerFactory = hostingServiceProvider.GetService<ILoggerFactory>();
+            services.Replace(ServiceDescriptor.Singleton(typeof(ILoggerFactory), loggerFactory));
+
+            var listener = hostingServiceProvider.GetService<DiagnosticListener>();
+            services.Replace(ServiceDescriptor.Singleton(typeof(DiagnosticListener), listener));
+            services.Replace(ServiceDescriptor.Singleton(typeof(DiagnosticSource), listener));
         }
 
         private string ResolveContentRootPath(string contentRootPath, string basePath)

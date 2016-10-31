@@ -245,23 +245,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             _logger?.Shutdown();
             _applicationLifetime.StopApplication();
+            (_hostingServiceProvider as IDisposable)?.Dispose();
             (_applicationServices as IDisposable)?.Dispose();
             _applicationLifetime.NotifyStopped();
-        }
-
-        private class Disposable : IDisposable
-        {
-            private Action _dispose;
-
-            public Disposable(Action dispose)
-            {
-                _dispose = dispose;
-            }
-
-            public void Dispose()
-            {
-                Interlocked.Exchange(ref _dispose, () => { }).Invoke();
-            }
         }
     }
 }

@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Hosting
 
 
         /// <summary>
-        /// Specify the startup type to be used by the web host. 
+        /// Specify the startup type to be used by the web host.
         /// </summary>
         /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
         /// <param name="startupType">The <see cref="Type"/> to be used.</param>

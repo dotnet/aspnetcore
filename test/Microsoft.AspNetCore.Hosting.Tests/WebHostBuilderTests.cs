@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
@@ -494,6 +495,84 @@ namespace Microsoft.AspNetCore.Hosting
             Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
         }
 
+        [Fact]
+        public void Build_DoesNotAllowBuildingMuiltipleTimes()
+        {
+            var builder = CreateWebHostBuilder();
+            var server = new TestServer();
+            builder.UseServer(server)
+                .UseStartup<StartupNoServices>()
+                .Build();
+
+            var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
+
+            Assert.Equal("WebHostBuilder allows creation only of a single instance of WebHost", ex.Message);
+        }
+
+        [Fact]
+        public void Build_PassesSameAutoCreatedILoggerFactoryEverywhere()
+        {
+            var builder = CreateWebHostBuilder();
+            var server = new TestServer();
+            var host = builder.UseServer(server)
+                .UseStartup<StartupWithILoggerFactory>()
+                .Build();
+
+            var startup = host.Services.GetService<StartupWithILoggerFactory>();
+
+            Assert.Equal(startup.ConfigureLoggerFactory, startup.ConstructorLoggerFactory);
+        }
+
+        [Fact]
+        public void Build_PassesSamePassedILoggerFactoryEverywhere()
+        {
+            var factory = new LoggerFactory();
+            var builder = CreateWebHostBuilder();
+            var server = new TestServer();
+            var host = builder.UseServer(server)
+                .UseLoggerFactory(factory)
+                .UseStartup<StartupWithILoggerFactory>()
+                .Build();
+
+            var startup = host.Services.GetService<StartupWithILoggerFactory>();
+
+            Assert.Equal(factory, startup.ConfigureLoggerFactory);
+            Assert.Equal(factory, startup.ConstructorLoggerFactory);
+        }
+
+        [Fact]
+        public void Build_PassedILoggerFactoryNotDisposed()
+        {
+            var factory = new DisposableLoggerFactory();
+            var builder = CreateWebHostBuilder();
+            var server = new TestServer();
+
+            var host = builder.UseServer(server)
+                .UseLoggerFactory(factory)
+                .UseStartup<StartupWithILoggerFactory>()
+                .Build();
+
+            host.Dispose();
+
+            Assert.Equal(false, factory.Disposed);
+        }
+
+        [Fact]
+        public void Build_DoesNotOverrideILoggerFactorySetByConfigureServices()
+        {
+            var factory = new DisposableLoggerFactory();
+            var builder = CreateWebHostBuilder();
+            var server = new TestServer();
+
+            var host = builder.UseServer(server)
+                .ConfigureServices(collection => collection.AddSingleton<ILoggerFactory>(factory))
+                .UseStartup<StartupWithILoggerFactory>()
+                .Build();
+
+            var factoryFromHost = host.Services.GetService<ILoggerFactory>();
+            Assert.Equal(factory, factoryFromHost);
+        }
+
         private static void StaticConfigureMethod(IApplicationBuilder app)
         { }
 
@@ -557,6 +636,25 @@ namespace Microsoft.AspNetCore.Hosting
         private class ServiceB
         {
 
+        }
+
+        private class DisposableLoggerFactory : ILoggerFactory
+        {
+            public void Dispose()
+            {
+                Disposed = true;
+            }
+
+            public bool Disposed { get; set; }
+
+            public ILogger CreateLogger(string categoryName)
+            {
+                return NullLogger.Instance;
+            }
+
+            public void AddProvider(ILoggerProvider provider)
+            {
+            }
         }
     }
 }

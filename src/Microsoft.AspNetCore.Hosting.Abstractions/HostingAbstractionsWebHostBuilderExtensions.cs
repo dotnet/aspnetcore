@@ -77,8 +77,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 // It would be nicer if this was transient but we need to pass in the
                 // factory instance directly
-                // Registering as factory so server gets disposed along with a WebHost
-                services.AddSingleton(provider => server);
+                services.AddSingleton(server);
             });
         }
 

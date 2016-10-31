@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             host.Dispose();
 
-            Assert.Equal(1, _startInstances[0].DisposeCalls);
+            Assert.Equal(0, _startInstances[0].DisposeCalls);
         }
 
         [Fact]
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Hosting
             // Wait on the host to shutdown
             lifetime.ApplicationStopped.WaitHandle.WaitOne();
 
-            Assert.Equal(1, _startInstances[0].DisposeCalls);
+            Assert.Equal(0, _startInstances[0].DisposeCalls);
         }
 
         [Fact]
