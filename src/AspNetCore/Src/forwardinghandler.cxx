@@ -1591,6 +1591,12 @@ Return Value:
         retVal = RQ_NOTIFICATION_PENDING;
         goto Finished;
     }
+    else if (m_RequestStatus == FORWARDER_RESET_CONNECTION)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_WINHTTP_INVALID_SERVER_RESPONSE);
+        goto Failure;
+
+    }
 
     //
     // Begins normal completion handling. There is already a shared acquired
@@ -2184,6 +2190,12 @@ None
     goto Finished;
 
 Failure:
+
+    if (hr == HRESULT_FROM_WIN32(ERROR_WINHTTP_INVALID_SERVER_RESPONSE))
+    {
+        m_RequestStatus = FORWARDER_RESET_CONNECTION;
+        goto Finished;
+    }
 
     m_RequestStatus = FORWARDER_DONE;
 
