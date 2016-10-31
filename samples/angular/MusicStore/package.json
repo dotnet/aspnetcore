@@ -5,6 +5,8 @@
     "angular2": "2.0.0-beta.15",
     "angular2-aspnet": "^0.0.6",
     "angular2-universal": "0.98.1",
+    "angular2-express-engine": "0.11.1",
+    "angular2-hapi-engine": "0.11.1",
     "aspnet-prerendering": "^1.0.1",
     "bootstrap": "^3.3.5",
     "css": "^2.2.1",
