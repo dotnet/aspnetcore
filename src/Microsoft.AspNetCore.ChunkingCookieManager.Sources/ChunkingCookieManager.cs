@@ -30,6 +30,11 @@ namespace Microsoft.AspNetCore.Internal
     internal class ChunkingCookieManager
     {
 #endif
+        /// <summary>
+        /// The default maximum size of characters in a cookie to send back to the client.
+        /// </summary>
+        public const int DefaultChunkSize = 4070;
+
         private const string ChunkKeySuffix = "C";
         private const string ChunkCountPrefix = "chunks-";
 
@@ -38,7 +43,7 @@ namespace Microsoft.AspNetCore.Internal
             // Lowest common denominator. Safari has the lowest known limit (4093), and we leave little extra just in case.
             // See http://browsercookielimits.x64.me/.
             // Leave at least 20 in case CookiePolicy tries to add 'secure' and/or 'httponly'.
-            ChunkSize = 4070;
+            ChunkSize = DefaultChunkSize;
             ThrowForPartialCookies = true;
         }
 
