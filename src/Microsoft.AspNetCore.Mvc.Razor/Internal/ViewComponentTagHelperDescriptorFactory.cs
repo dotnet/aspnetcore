@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using Microsoft.AspNetCore.Mvc.Razor.Host;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
@@ -56,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     StringComparison.Ordinal));
 
             var tagHelperDescriptors = viewComponentDescriptors
-                .Where(descriptor => !descriptor.Parameters.Any(parameter => parameter.ParameterType.GetTypeInfo().IsGenericType))
+                .Where(d => !d.Parameters.Any(p => p.ParameterType.GetTypeInfo().ContainsGenericParameters))
                 .Select(viewComponentDescriptor => CreateDescriptor(viewComponentDescriptor));
 
             return tagHelperDescriptors;
@@ -92,11 +93,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             foreach (var parameter in methodParameters)
             {
                 var lowerKebabName = TagHelperDescriptorFactory.ToHtmlCase(parameter.Name);
+                var typeName = GetCSharpTypeName(parameter.ParameterType);
                 var descriptor = new TagHelperAttributeDescriptor
                 {
                     Name = lowerKebabName,
                     PropertyName = parameter.Name,
-                    TypeName = parameter.ParameterType.FullName
+                    TypeName = typeName
                 };
 
                 descriptor.IsEnum = parameter.ParameterType.GetTypeInfo().IsEnum;
@@ -113,7 +115,110 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 });
         }
 
-        private string GetTagName(ViewComponentDescriptor descriptor) =>
-            $"vc:{TagHelperDescriptorFactory.ToHtmlCase(descriptor.ShortName)}";
+        private string GetTagName(ViewComponentDescriptor descriptor)
+        {
+            return $"vc:{TagHelperDescriptorFactory.ToHtmlCase(descriptor.ShortName)}";
+        }
+
+        // Internal for testing.
+        internal static string GetCSharpTypeName(Type type)
+        {
+            var outputBuilder = new StringBuilder();
+            WriteCSharpTypeName(type, outputBuilder);
+
+            var typeName = outputBuilder.ToString();
+
+            // We don't want to add global:: to the top level type because Razor does that for us.
+            return typeName.Substring("global::".Length);
+        }
+
+        private static void WriteCSharpTypeName(Type type, StringBuilder outputBuilder)
+        {
+            var typeInfo = type.GetTypeInfo();
+            if (typeInfo.IsByRef)
+            {
+                WriteCSharpTypeName(typeInfo.GetElementType(), outputBuilder);
+            }
+            else if (typeInfo.IsNested)
+            {
+                WriteNestedTypes(type, outputBuilder);
+            }
+            else if (typeInfo.IsGenericType)
+            {
+                outputBuilder.Append("global::");
+                var part = type.FullName.Substring(0, type.FullName.IndexOf('`'));
+                outputBuilder.Append(part);
+
+                var genericArguments = type.GenericTypeArguments;
+                WriteGenericArguments(genericArguments, 0, genericArguments.Length, outputBuilder);
+            }
+            else
+            {
+                outputBuilder.Append("global::");
+                outputBuilder.Append(type.FullName);
+            }
+        }
+
+        private static void WriteNestedTypes(Type type, StringBuilder outputBuilder)
+        {
+            var nestedTypes = new List<Type>();
+            var currentType = type;
+            do
+            {
+                nestedTypes.Insert(0, currentType);
+                currentType = currentType.DeclaringType;
+            } while (currentType.IsNested);
+
+            nestedTypes.Insert(0, currentType);
+
+            outputBuilder.Append("global::");
+            outputBuilder.Append(currentType.Namespace);
+            outputBuilder.Append(".");
+
+            var typeArgumentIndex = 0;
+            for (var i = 0; i < nestedTypes.Count; i++)
+            {
+                var nestedType = nestedTypes[i];
+                var arityIndex = nestedType.Name.IndexOf('`');
+                if (arityIndex >= 0)
+                {
+                    var part = nestedType.Name.Substring(0, arityIndex);
+                    outputBuilder.Append(part);
+
+                    var genericArguments = type.GenericTypeArguments;
+                    var typeArgumentCount = nestedType.IsConstructedGenericType ?
+                        nestedType.GenericTypeArguments.Length : nestedType.GetTypeInfo().GenericTypeParameters.Length;
+
+                    WriteGenericArguments(genericArguments, typeArgumentIndex, typeArgumentCount, outputBuilder);
+
+                    typeArgumentIndex = typeArgumentCount;
+                }
+                else
+                {
+                    outputBuilder.Append(nestedType.Name);
+                }
+
+                if (i + 1 < nestedTypes.Count)
+                {
+                    outputBuilder.Append(".");
+                }
+            }
+        }
+
+        private static void WriteGenericArguments(Type[] genericArguments, int startIndex, int length, StringBuilder outputBuilder)
+        {
+            outputBuilder.Append("<");
+
+            for (var i = startIndex; i < length; i++)
+            {
+                WriteCSharpTypeName(genericArguments[i], outputBuilder);
+                if (i + 1 < length)
+                {
+                    outputBuilder.Append(", ");
+                }
+            }
+
+            outputBuilder.Append(">");
+        }
     }
 }

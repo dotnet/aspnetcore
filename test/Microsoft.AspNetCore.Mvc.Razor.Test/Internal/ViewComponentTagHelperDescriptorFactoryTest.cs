@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
                 return new TheoryData<string, IEnumerable<TagHelperDescriptor>>
                 {
                     { assemblyOne, new [] { provider.GetTagHelperDescriptorOne() } },
-                    { assemblyTwo, new [] { provider.GetTagHelperDescriptorTwo() } },
+                    { assemblyTwo, new [] { provider.GetTagHelperDescriptorTwo(), provider.GetTagHelperDescriptorGeneric() } },
                     { assemblyNone, Enumerable.Empty<TagHelperDescriptor>() }
                 };
             }
@@ -50,6 +51,48 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
             Assert.Equal(expectedDescriptors, descriptors, TagHelperDescriptorComparer.Default);
         }
 
+        public static TheoryData TypeData
+        {
+            get
+            {
+                var outParamType = typeof(ViewComponentTagHelperDescriptorFactoryTest).GetMethod("MethodWithOutParam").GetParameters().First().ParameterType;
+                var refParamType = typeof(ViewComponentTagHelperDescriptorFactoryTest).GetMethod("MethodWithRefParam").GetParameters().First().ParameterType;
+
+                return new TheoryData<Type, string>
+                {
+                    { typeof(string), "System.String" },
+                    { typeof(string[,]), "System.String[,]" },
+                    { typeof(List<int*[]>), "System.Collections.Generic.List<global::System.Int32*[]>" },
+                    { typeof(List<string[,,]>), "System.Collections.Generic.List<global::System.String[,,]>" },
+                    { typeof(Dictionary<string[], List<string>>),
+                        "System.Collections.Generic.Dictionary<global::System.String[], global::System.Collections.Generic.List<global::System.String>>" },
+                    { typeof(Dictionary<string, List<string[,]>>),
+                        "System.Collections.Generic.Dictionary<global::System.String, global::System.Collections.Generic.List<global::System.String[,]>>" },
+                    { outParamType, "System.Collections.Generic.List<global::System.Char*[]>" },
+                    { refParamType, "System.String[]" },
+                    { typeof(NonGeneric.Nested1<bool, string>.Nested2),
+                        "Microsoft.AspNetCore.Mvc.Razor.Test.Internal.ViewComponentTagHelperDescriptorFactoryTest.NonGeneric.Nested1<global::System.Boolean, global::System.String>.Nested2" },
+                    { typeof(GenericType<string, int>.GenericNestedType<bool, string>),
+                        "Microsoft.AspNetCore.Mvc.Razor.Test.Internal.ViewComponentTagHelperDescriptorFactoryTest.GenericType<global::System.String, global::System.Int32>.GenericNestedType<global::System.Boolean, global::System.String>" },
+                    { typeof(GenericType<string, int>.NonGenericNested.MultiNestedType<bool, string>),
+                        "Microsoft.AspNetCore.Mvc.Razor.Test.Internal.ViewComponentTagHelperDescriptorFactoryTest.GenericType<global::System.String, global::System.Int32>.NonGenericNested.MultiNestedType<global::System.Boolean, global::System.String>" },
+                    { typeof(Dictionary<GenericType<string, int>.NonGenericNested.MultiNestedType<bool, string>, List<string[]>>),
+                        "System.Collections.Generic.Dictionary<global::Microsoft.AspNetCore.Mvc.Razor.Test.Internal.ViewComponentTagHelperDescriptorFactoryTest.GenericType<global::System.String, global::System.Int32>.NonGenericNested.MultiNestedType<global::System.Boolean, global::System.String>, global::System.Collections.Generic.List<global::System.String[]>>" },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(TypeData))]
+        public void GetCSharpTypeName_ReturnsCorrectTypeNames(Type type, string expected)
+        {
+            // Act
+            var typeName = ViewComponentTagHelperDescriptorFactory.GetCSharpTypeName(type);
+
+            // Assert
+            Assert.Equal(expected, typeName);
+        }
+
         // Test invokes are needed for method creation in TestViewComponentDescriptorProvider.
         public enum TestEnum
         {
@@ -67,6 +110,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
         }
 
         public void InvokeWithGenericParams(List<string> Foo, Dictionary<string, int> Bar)
+        {
+        }
+
+        public void InvokeWithOpenGeneric<T>(List<T> baz)
         {
         }
 
@@ -106,6 +153,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
                 TypeInfo = typeof(ViewComponentTagHelperDescriptorFactoryTest).GetTypeInfo(),
                 Parameters = typeof(ViewComponentTagHelperDescriptorFactoryTest)
                     .GetMethod(nameof(ViewComponentTagHelperDescriptorFactoryTest.InvokeWithGenericParams)).GetParameters()
+            };
+
+            private readonly ViewComponentDescriptor _viewComponentDescriptorOpenGeneric = new ViewComponentDescriptor
+            {
+                DisplayName = "OpenGenericDisplayName",
+                FullName = "OpenGenericViewComponent",
+                ShortName = "OpenGeneric",
+                MethodInfo = typeof(ViewComponentTagHelperDescriptorFactoryTest)
+                    .GetMethod(nameof(ViewComponentTagHelperDescriptorFactoryTest.InvokeWithOpenGeneric)),
+                TypeInfo = typeof(ViewComponentTagHelperDescriptorFactoryTest).GetTypeInfo(),
+                Parameters = typeof(ViewComponentTagHelperDescriptorFactoryTest)
+                    .GetMethod(nameof(ViewComponentTagHelperDescriptorFactoryTest.InvokeWithOpenGeneric)).GetParameters()
             };
 
             public TagHelperDescriptor GetTagHelperDescriptorOne()
@@ -201,14 +260,90 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
                 return descriptor;
             }
 
+            public TagHelperDescriptor GetTagHelperDescriptorGeneric()
+            {
+                var descriptor = new TagHelperDescriptor
+                {
+                    TagName = "vc:generic",
+                    TypeName = "__Generated__GenericViewComponentTagHelper",
+                    AssemblyName = "Microsoft.AspNetCore.Mvc.Razor.Test",
+                    Attributes = new List<TagHelperAttributeDescriptor>
+                    {
+                        new TagHelperAttributeDescriptor
+                        {
+                            Name = "foo",
+                            PropertyName = "Foo",
+                            TypeName = "System.Collections.Generic.List<global::System.String>"
+                        },
+
+                        new TagHelperAttributeDescriptor
+                        {
+                            Name = "bar",
+                            PropertyName = "Bar",
+                            TypeName = "System.Collections.Generic.Dictionary<global::System.String, global::System.Int32>"
+                        }
+                    },
+                    RequiredAttributes = new List<TagHelperRequiredAttributeDescriptor>
+                    {
+                        new TagHelperRequiredAttributeDescriptor
+                        {
+                            Name = "foo"
+                        },
+
+                        new TagHelperRequiredAttributeDescriptor
+                        {
+                            Name = "bar"
+                        }
+                    }
+                };
+
+                descriptor.PropertyBag.Add(ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey, "Generic");
+                return descriptor;
+            }
+
             public IEnumerable<ViewComponentDescriptor> GetViewComponents()
             {
                 return new List<ViewComponentDescriptor>
                 {
                     _viewComponentDescriptorOne,
                     _viewComponentDescriptorTwo,
-                    _viewComponentDescriptorGeneric
+                    _viewComponentDescriptorGeneric,
+                    _viewComponentDescriptorOpenGeneric
                 };
+            }
+        }
+
+        public void MethodWithOutParam(out List<char*[]> foo)
+        {
+            foo = null;
+        }
+
+        public void MethodWithRefParam(ref string[] bar)
+        {
+        }
+
+        private class GenericType<T1, T2>
+        {
+            public class GenericNestedType<T3, T4>
+            {
+            }
+
+            public class NonGenericNested
+            {
+                public class MultiNestedType<T5, T6>
+                {
+                }
+            }
+        }
+
+        private class NonGeneric
+        {
+            public class Nested1<T1, T2>
+            {
+                public class Nested2
+                {
+
+                }
             }
         }
     }
