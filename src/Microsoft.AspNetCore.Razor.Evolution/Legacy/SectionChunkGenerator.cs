@@ -14,6 +14,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public string SectionName { get; }
 
+        public override void AcceptStart(ParserVisitor visitor, Block block)
+        {
+            visitor.VisitStartSectionBlock(this, block);
+        }
+
+        public override void AcceptEnd(ParserVisitor visitor, Block block)
+        {
+            visitor.VisitEndSectionBlock(this, block);
+        }
+
         public override void GenerateStartParentChunk(Block target, ChunkGeneratorContext context)
         {
             //var chunk = context.ChunkTreeBuilder.StartParentChunk<SectionChunk>(target);

@@ -10,6 +10,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             //context.ChunkTreeBuilder.AddTypeMemberChunk(target.Content, target);
         }
 
+        public override void Accept(ParserVisitor visitor, Span span)
+        {
+            visitor.VisitTypeMemberSpan(this, span);
+        }
+
         public override string ToString()
         {
             return "TypeMember";

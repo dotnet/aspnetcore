@@ -41,5 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         /// <see cref="EquivalentTo"/> comparisons.
         /// </returns>
         public abstract int GetEquivalenceHash();
+
+        public abstract void Accept(ParserVisitor visitor);
     }
 }

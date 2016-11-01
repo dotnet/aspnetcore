@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
@@ -73,6 +74,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 
             public override RazorIRNode Parent { get; set; }
+
+            internal override SourceLocation SourceLocation { get; set; }
 
             public override void Accept(RazorIRNodeVisitor visitor)
             {

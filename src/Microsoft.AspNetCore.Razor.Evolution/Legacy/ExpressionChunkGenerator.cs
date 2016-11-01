@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
     internal class ExpressionChunkGenerator : ISpanChunkGenerator, IParentChunkGenerator
@@ -20,6 +22,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         public void GenerateEndParentChunk(Block target, ChunkGeneratorContext context)
         {
             //context.ChunkTreeBuilder.EndParentChunk();
+        }
+
+        public void Accept(ParserVisitor visitor, Span span)
+        {
+            visitor.VisitExpressionSpan(this, span);
+        }
+
+        public void AcceptStart(ParserVisitor visitor, Block block)
+        {
+            visitor.VisitStartExpressionBlock(this, block);
+        }
+
+        public void AcceptEnd(ParserVisitor visitor, Block block)
+        {
+            visitor.VisitEndExpressionBlock(this, block);
         }
 
         public override string ToString()

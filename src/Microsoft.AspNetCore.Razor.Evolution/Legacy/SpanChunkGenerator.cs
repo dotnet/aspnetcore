@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
     internal abstract class SpanChunkGenerator : ISpanChunkGenerator
@@ -8,6 +10,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         private static readonly int TypeHashCode = typeof(SpanChunkGenerator).GetHashCode();
 
         public static readonly ISpanChunkGenerator Null = new NullSpanChunkGenerator();
+
+        public abstract void Accept(ParserVisitor visitor, Span span);
 
         public virtual void GenerateChunk(Span target, ChunkGeneratorContext context)
         {
@@ -26,6 +30,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         private class NullSpanChunkGenerator : ISpanChunkGenerator
         {
+            public void Accept(ParserVisitor visitor, Span span)
+            {
+            }
+
             public void GenerateChunk(Span target, ChunkGeneratorContext context)
             {
             }

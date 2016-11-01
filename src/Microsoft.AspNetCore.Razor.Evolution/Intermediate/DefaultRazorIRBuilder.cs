@@ -35,6 +35,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             Pop();
         }
 
+        public override RazorIRNode Build()
+        {
+            RazorIRNode node = null;
+            while (_depth > 0)
+            {
+                node = Pop();
+            }
+            
+            return node;
+        }
+        
         public override RazorIRNode Pop()
         {
             if (_depth == 0)

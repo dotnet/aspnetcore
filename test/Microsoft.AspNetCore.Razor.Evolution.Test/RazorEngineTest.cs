@@ -84,7 +84,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             Assert.Collection(
                 phases,
                 phase => Assert.IsType<DefaultRazorParsingPhase>(phase),
-                phase => Assert.IsType<DefaultRazorSyntaxTreePhase>(phase));
+                phase => Assert.IsType<DefaultRazorSyntaxTreePhase>(phase),
+                phase => Assert.IsType<DefaultRazorIRLoweringPhase>(phase));
         }
     }
 }

@@ -2,30 +2,32 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
-    public sealed class RazorIRDocument : RazorIRNode
+    public class HtmlAttributeIRNode : RazorIRNode
     {
-        // Only allow creation of documents through the builder API because
-        // they can't be nested.
-        internal RazorIRDocument()
-        {
-            Children = new List<RazorIRNode>();
-        }
+        public string Name { get; set; }
 
-        public override IList<RazorIRNode> Children { get; }
+        public string Prefix { get; set; }
+
+        public string Suffix { get; set; }
+
+        public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 
         public override RazorIRNode Parent { get; set; }
 
+        internal override SourceLocation SourceLocation { get; set; }
+
         public override void Accept(RazorIRNodeVisitor visitor)
         {
-            visitor.VisitDocument(this);
+            visitor.VisitHtmlAttribute(this);
         }
 
         public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
         {
-            return visitor.VisitDocument(this);
+            return visitor.VisitHtmlAttribute(this);
         }
     }
 }

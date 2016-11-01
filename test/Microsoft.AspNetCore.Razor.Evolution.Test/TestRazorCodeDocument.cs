@@ -11,6 +11,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             return new TestRazorCodeDocument(source);
         }
 
+        public static TestRazorCodeDocument Create(string content)
+        {
+            var source = TestRazorSourceDocument.Create(content);
+            return new TestRazorCodeDocument(source);
+        }
+
         private TestRazorCodeDocument(RazorSourceDocument source)
             : base(source)
         {

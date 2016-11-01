@@ -36,6 +36,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             //context.ChunkTreeBuilder.EndParentChunk();
         }
 
+        public override void AcceptStart(ParserVisitor visitor, Block block)
+        {
+            visitor.VisitStartAttributeBlock(this, block);
+        }
+
+        public override void AcceptEnd(ParserVisitor visitor, Block block)
+        {
+            visitor.VisitEndAttributeBlock(this, block);
+        }
+
         public override string ToString()
         {
             return string.Format(CultureInfo.CurrentCulture, "Attr:{0},{1:F},{2:F}", Name, Prefix, Suffix);

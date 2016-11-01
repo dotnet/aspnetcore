@@ -131,5 +131,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             // Hash code should include only immutable properties but Equals also checks the type.
             return TypeHashCode;
         }
+
+        public override void Accept(ParserVisitor visitor)
+        {
+            visitor.VisitSpan(this);
+        }
     }
 }

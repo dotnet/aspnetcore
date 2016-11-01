@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             var builder = RazorIRBuilder.Document();
 
             // Assert
-            Assert.IsType<RazorIRDocument>(builder.Current);
+            Assert.IsType<DocumentIRNode>(builder.Current);
         }
     }
 }

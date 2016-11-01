@@ -28,6 +28,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public LocationTagged<SpanChunkGenerator> ValueGenerator { get; }
 
+        public override void Accept(ParserVisitor visitor, Span span)
+        {
+            visitor.VisitLiteralAttributeSpan(this, span);
+        }
+
         public override void GenerateChunk(Span target, ChunkGeneratorContext context)
         {
             //var chunk = context.ChunkTreeBuilder.StartParentChunk<LiteralCodeAttributeChunk>(target);

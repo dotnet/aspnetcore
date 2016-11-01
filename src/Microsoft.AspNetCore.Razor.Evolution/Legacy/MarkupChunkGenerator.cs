@@ -10,6 +10,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             //context.ChunkTreeBuilder.AddLiteralChunk(target.Content, target);
         }
 
+        public override void Accept(ParserVisitor visitor, Span span)
+        {
+            visitor.VisitMarkupSpan(this, span);
+        }
+
         public override string ToString()
         {
             return "Markup";

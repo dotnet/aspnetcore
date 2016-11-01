@@ -9,6 +9,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public static readonly IParentChunkGenerator Null = new NullParentChunkGenerator();
 
+        public abstract void AcceptStart(ParserVisitor visitor, Block block);
+        public abstract void AcceptEnd(ParserVisitor visitor, Block block);
+
         public virtual void GenerateStartParentChunk(Block target, ChunkGeneratorContext context)
         {
         }
@@ -41,6 +44,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             public override string ToString()
             {
                 return "None";
+            }
+
+            public void AcceptStart(ParserVisitor visitor, Block block)
+            {
+            }
+
+            public void AcceptEnd(ParserVisitor visitor, Block block)
+            {
             }
         }
     }

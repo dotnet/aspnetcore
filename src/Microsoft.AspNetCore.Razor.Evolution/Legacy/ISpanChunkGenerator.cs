@@ -6,5 +6,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
     internal interface ISpanChunkGenerator
     {
         void GenerateChunk(Span target, ChunkGeneratorContext context);
+
+        void Accept(ParserVisitor visitor, Span span);
     }
 }

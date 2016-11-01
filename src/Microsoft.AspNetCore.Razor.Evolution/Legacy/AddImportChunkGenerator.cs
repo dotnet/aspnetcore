@@ -14,6 +14,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public string Namespace { get; }
 
+        public override void Accept(ParserVisitor visitor, Span span)
+        {
+            visitor.VisitImportSpan(this, span);
+        }
+
         public override void GenerateChunk(Span target, ChunkGeneratorContext context)
         {
             var ns = Namespace;

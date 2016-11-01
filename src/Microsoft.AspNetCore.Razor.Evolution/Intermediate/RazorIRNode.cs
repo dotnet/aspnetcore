@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
@@ -12,6 +13,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         public abstract IList<RazorIRNode> Children { get; }
 
         public abstract RazorIRNode Parent { get; set; }
+
+        internal abstract SourceLocation SourceLocation { get; set; }
 
         public abstract void Accept(RazorIRNodeVisitor visitor);
 
