@@ -97,17 +97,8 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         public virtual void EvaluateRequest(HttpContext context, CorsPolicy policy, CorsResult result)
         {
             var origin = context.Request.Headers[CorsConstants.Origin];
-            if (StringValues.IsNullOrEmpty(origin))
+            if (!IsOriginAllowed(policy, origin))
             {
-                _logger?.RequestDoesNotHaveOriginHeader();
-                return;
-            }
-
-            _logger?.RequestHasOriginHeader(origin);
-            if (!policy.AllowAnyOrigin && !policy.Origins.Contains(origin))
-            {
-                _logger?.PolicyFailure();
-                _logger?.OriginNotAllowed(origin);
                 return;
             }
 
@@ -120,17 +111,8 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         public virtual void EvaluatePreflightRequest(HttpContext context, CorsPolicy policy, CorsResult result)
         {
             var origin = context.Request.Headers[CorsConstants.Origin];
-            if (StringValues.IsNullOrEmpty(origin))
+            if (!IsOriginAllowed(policy, origin))
             {
-                _logger?.RequestDoesNotHaveOriginHeader();
-                return;
-            }
-
-            _logger?.RequestHasOriginHeader(origin);
-            if (!policy.AllowAnyOrigin && !policy.Origins.Contains(origin))
-            {
-                _logger?.PolicyFailure();
-                _logger?.OriginNotAllowed(origin);
                 return;
             }
 
@@ -286,7 +268,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                     result.AllowedOrigin = CorsConstants.AnyOrigin;
                 }
             }
-            else if (policy.Origins.Contains(origin))
+            else if (policy.IsOriginAllowed(origin))
             {
                 result.AllowedOrigin = origin;
             }
@@ -303,6 +285,24 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             {
                 target.Add(current);
             }
+        }
+
+        private bool IsOriginAllowed(CorsPolicy policy, StringValues origin)
+        {
+            if (StringValues.IsNullOrEmpty(origin))
+            {
+                _logger?.RequestDoesNotHaveOriginHeader();
+                return false;
+            }
+
+            _logger?.RequestHasOriginHeader(origin);
+            if (policy.AllowAnyOrigin || policy.IsOriginAllowed(origin))
+            {
+                return true;
+            }
+            _logger?.PolicyFailure();
+            _logger?.OriginNotAllowed(origin);
+            return false;
         }
     }
 }

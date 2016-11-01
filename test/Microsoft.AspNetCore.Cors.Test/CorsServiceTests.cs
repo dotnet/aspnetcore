@@ -59,6 +59,26 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         [Fact]
+        public void EvaluatePolicy_IsOriginAllowedReturnsFalse_ReturnsInvalidResult()
+        {
+            // Arrange
+            var corsService = new CorsService(new TestCorsOptions());
+            var requestContext = GetHttpContext(origin: "http://example.com");
+            var policy = new CorsPolicy()
+            {
+                IsOriginAllowed = origin => false
+            };
+            policy.Origins.Add("example.com");
+
+            // Act
+            var result = corsService.EvaluatePolicy(requestContext, policy);
+
+            // Assert
+            Assert.Null(result.AllowedOrigin);
+            Assert.False(result.VaryByOrigin);
+        }
+
+        [Fact]
         public void EvaluatePolicy_AllowAnyOrigin_DoesNotSupportCredentials_EmitsWildcardForOrigin()
         {
             // Arrange
@@ -398,6 +418,28 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var policy = new CorsPolicy();
             policy.Origins.Add(CorsConstants.AnyOrigin);
             policy.Origins.Add("http://example.com");
+            policy.Methods.Add("*");
+
+            // Act
+            var result = corsService.EvaluatePolicy(requestContext, policy);
+
+            // Assert
+            Assert.Equal("http://example.com", result.AllowedOrigin);
+        }
+
+        [Fact]
+        public void EvaluatePolicy_PreflightRequest_IsOriginAllowedReturnsTrue_ReturnsOrigin()
+        {
+            // Arrange
+            var corsService = new CorsService(new TestCorsOptions());
+            var requestContext = GetHttpContext(
+                method: "OPTIONS",
+                origin: "http://example.com",
+                accessControlRequestMethod: "PUT");
+            var policy = new CorsPolicy
+            {
+                IsOriginAllowed = origin => true
+            };
             policy.Methods.Add("*");
 
             // Act

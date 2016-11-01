@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         public void Constructor_WithPolicy_AddsTheGivenPolicy()
         {
             // Arrange
+            Func<string, bool> isOriginAllowed = origin => true;
             var originalPolicy = new CorsPolicy();
             originalPolicy.Origins.Add("http://existing.com");
             originalPolicy.Headers.Add("Existing");
@@ -21,6 +22,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             originalPolicy.ExposedHeaders.Add("ExistingExposed");
             originalPolicy.SupportsCredentials = true;
             originalPolicy.PreflightMaxAge = TimeSpan.FromSeconds(12);
+            originalPolicy.IsOriginAllowed = isOriginAllowed;
 
             // Act
             var builder = new CorsPolicyBuilder(originalPolicy);
@@ -41,6 +43,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             Assert.NotSame(originalPolicy.ExposedHeaders, corsPolicy.ExposedHeaders);
             Assert.Equal(originalPolicy.ExposedHeaders, corsPolicy.ExposedHeaders);
             Assert.Equal(TimeSpan.FromSeconds(12), corsPolicy.PreflightMaxAge);
+            Assert.Same(originalPolicy.IsOriginAllowed, corsPolicy.IsOriginAllowed);
         }
 
         [Fact]
@@ -138,6 +141,35 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var corsPolicy = builder.Build();
             Assert.True(corsPolicy.AllowAnyOrigin);
             Assert.Equal(new List<string>() { "*" }, corsPolicy.Origins);
+        }
+
+        [Fact]
+        public void SetIsOriginAllowed_AddsIsOriginAllowed()
+        {
+            // Arrange
+            var builder = new CorsPolicyBuilder();
+            Func<string, bool> isOriginAllowed = origin => true;
+
+            // Act
+            builder.SetIsOriginAllowed(isOriginAllowed);
+
+            // Assert
+            var corsPolicy = builder.Build();
+            Assert.Same(corsPolicy.IsOriginAllowed, isOriginAllowed);
+        }
+
+        [Fact]
+        public void SetIsOriginAllowedToAllowWildcardSubdomains_AllowsWildcardSubdomains()
+        {
+            // Arrange
+            var builder = new CorsPolicyBuilder("http://*.example.com");
+
+            // Act
+            builder.SetIsOriginAllowedToAllowWildcardSubdomains();
+
+            // Assert
+            var corsPolicy = builder.Build();
+            Assert.True(corsPolicy.IsOriginAllowed("http://test.example.com"));
         }
 
         [Fact]

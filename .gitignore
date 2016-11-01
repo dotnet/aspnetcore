@@ -37,3 +37,4 @@ node_modules
 *launchSettings.json
 .build/
 .testPublish/
+.vscode

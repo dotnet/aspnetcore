@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             Assert.Empty(corsPolicy.Methods);
             Assert.Empty(corsPolicy.Origins);
             Assert.Null(corsPolicy.PreflightMaxAge);
+            Assert.NotNull(corsPolicy.IsOriginAllowed);
         }
 
         [Fact]

@@ -1,6 +1,7 @@
 {
   "buildOptions": {
-    "emitEntryPoint": true
+    "emitEntryPoint": true,
+    "keyFile": "../../../tools/Key.snk"
   },
   "dependencies": {
     "Microsoft.AspNetCore.Cors": "1.2.0-*",
