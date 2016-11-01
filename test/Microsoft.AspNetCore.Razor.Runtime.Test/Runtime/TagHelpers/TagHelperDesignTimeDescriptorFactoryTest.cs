@@ -6,7 +6,7 @@ using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.AspNetCore.Razor.Test.Internal;
+using Microsoft.AspNetCore.Razor.TagHelpers.Testing;
 using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;

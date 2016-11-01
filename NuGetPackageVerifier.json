@@ -13,7 +13,7 @@
             // Don't run any rules for packages the ADX team creates but doesn't ship.
         ],
         "packages": {
-            "Microsoft.AspNetCore.Razor.Test.Sources": { },
+            "Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources": { },
             "RazorPageGenerator": { }
         }
     },

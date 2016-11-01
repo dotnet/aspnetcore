@@ -7,18 +7,21 @@ using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 using Microsoft.Extensions.Internal;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Test.Internal
+namespace Microsoft.AspNetCore.Razor.TagHelpers.Testing
 {
-    internal class TagHelperDesignTimeDescriptorComparer : IEqualityComparer<TagHelperDesignTimeDescriptor>
+    internal class TagHelperAttributeDesignTimeDescriptorComparer :
+        IEqualityComparer<TagHelperAttributeDesignTimeDescriptor>
     {
-        public static readonly TagHelperDesignTimeDescriptorComparer Default =
-            new TagHelperDesignTimeDescriptorComparer();
+        public static readonly TagHelperAttributeDesignTimeDescriptorComparer Default =
+            new TagHelperAttributeDesignTimeDescriptorComparer();
 
-        private TagHelperDesignTimeDescriptorComparer()
+        private TagHelperAttributeDesignTimeDescriptorComparer()
         {
         }
 
-        public bool Equals(TagHelperDesignTimeDescriptor descriptorX, TagHelperDesignTimeDescriptor descriptorY)
+        public bool Equals(
+            TagHelperAttributeDesignTimeDescriptor descriptorX,
+            TagHelperAttributeDesignTimeDescriptor descriptorY)
         {
             if (descriptorX == descriptorY)
             {
@@ -29,18 +32,15 @@ namespace Microsoft.AspNetCore.Razor.Test.Internal
             Assert.NotNull(descriptorY);
             Assert.Equal(descriptorX.Summary, descriptorY.Summary, StringComparer.Ordinal);
             Assert.Equal(descriptorX.Remarks, descriptorY.Remarks, StringComparer.Ordinal);
-            Assert.Equal(descriptorX.OutputElementHint, descriptorY.OutputElementHint, StringComparer.Ordinal);
 
             return true;
         }
 
-        public int GetHashCode(TagHelperDesignTimeDescriptor descriptor)
+        public int GetHashCode(TagHelperAttributeDesignTimeDescriptor descriptor)
         {
             var hashCodeCombiner = HashCodeCombiner.Start();
-
             hashCodeCombiner.Add(descriptor.Summary, StringComparer.Ordinal);
             hashCodeCombiner.Add(descriptor.Remarks, StringComparer.Ordinal);
-            hashCodeCombiner.Add(descriptor.OutputElementHint, StringComparer.Ordinal);
 
             return hashCodeCombiner;
         }
