@@ -159,10 +159,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         finally
                         {
                             _application.DisposeContext(context, _applicationException);
+
+                            // StopStreams should be called before the end of the "if (!_requestProcessingStopping)" block
+                            // to ensure InitializeStreams has been called.
+                            StopStreams();
                         }
                     }
-
-                    StopStreams();
 
                     if (!_keepAlive)
                     {
