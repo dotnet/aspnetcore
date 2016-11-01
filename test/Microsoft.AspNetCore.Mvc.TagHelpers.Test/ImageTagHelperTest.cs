@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
 
             var metadataProvider = new EmptyModelMetadataProvider();
-            var viewData = new ViewDataDictionary(metadataProvider);
+            var viewData = new ViewDataDictionary(metadataProvider, new ModelStateDictionary());
             var viewContext = new ViewContext(
                 actionContext,
                 Mock.Of<IView>(),

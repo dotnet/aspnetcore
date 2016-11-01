@@ -707,7 +707,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             return new ViewContext(
                 actionContext,
                 Mock.Of<IView>(),
-                new ViewDataDictionary(new TestModelMetadataProvider()),
+                new ViewDataDictionary(new TestModelMetadataProvider(), new ModelStateDictionary()),
                 Mock.Of<ITempDataDictionary>(),
                 TextWriter.Null,
                 new HtmlHelperOptions());

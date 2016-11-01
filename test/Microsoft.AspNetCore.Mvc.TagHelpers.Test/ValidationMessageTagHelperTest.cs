@@ -324,7 +324,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 actionContext,
                 Mock.Of<IView>(),
                 new ViewDataDictionary(
-                    new EmptyModelMetadataProvider()),
+                    new EmptyModelMetadataProvider(),
+                    new ModelStateDictionary()),
                 Mock.Of<ITempDataDictionary>(),
                 TextWriter.Null,
                 new HtmlHelperOptions());

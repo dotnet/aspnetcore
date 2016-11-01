@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.AspNetCore.Razor.TagHelpers.Testing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
 using Moq;
@@ -589,7 +590,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 actionContext,
                 Mock.Of<IView>(),
                 new ViewDataDictionary(
-                    new EmptyModelMetadataProvider()),
+                    new EmptyModelMetadataProvider(),
+                    new ModelStateDictionary()),
                 Mock.Of<ITempDataDictionary>(),
                 TextWriter.Null,
                 new HtmlHelperOptions());

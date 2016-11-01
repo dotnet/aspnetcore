@@ -652,7 +652,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
             return new ViewContext(actionContext,
                                    Mock.Of<IView>(),
-                                   new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                                   new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary()),
                                    Mock.Of<ITempDataDictionary>(),
                                    TextWriter.Null,
                                    new HtmlHelperOptions());
@@ -683,5 +683,5 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
         }
-    }    
+    }
 }
