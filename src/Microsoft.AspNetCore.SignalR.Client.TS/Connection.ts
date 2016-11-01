@@ -65,7 +65,7 @@ class Connection {
                 transports.push(new ServerSentEventsTransport());
             }
             if (transportName === 'longPolling') {
-                transports.push(new LongPollingTransport(null));
+                transports.push(new LongPollingTransport());
             }
         });
 
@@ -100,14 +100,6 @@ class Connection {
         return this.transport.send(data);
     }
 
-    set dataReceived(callback: DataReceived) {
-        this.dataReceivedCallback = callback;
-    }
-
-    set onError(callback: ErrorHandler) {
-        this.errorHandler = callback;
-    }
-
     stop(): void {
         if (this.connectionState != ConnectionState.Connected) {
             throw new Error("Cannot stop the connection if is not in the 'Connected' State");
@@ -115,5 +107,13 @@ class Connection {
 
         this.transport.stop();
         this.connectionState = ConnectionState.Disconnected;
+    }
+
+    set dataReceived(callback: DataReceived) {
+        this.dataReceivedCallback = callback;
+    }
+
+    set onError(callback: ErrorHandler) {
+        this.errorHandler = callback;
     }
 }

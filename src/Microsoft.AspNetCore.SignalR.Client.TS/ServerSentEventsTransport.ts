@@ -1,12 +1,11 @@
 // TODO: need EvenSource typings
 
 class ServerSentEventsTransport implements ITransport {
-    private receiveCallback: (data: string) => void;
     private eventSource: EventSource;
     private url: string;
     private queryString: string;
 
-    connect(url: string, queryString: string = ""): Promise<void> {
+    connect(url: string, queryString: string): Promise<void> {
         if (typeof (EventSource) === "undefined") {
             Promise.reject("EventSource not supported by the browser.")
         }

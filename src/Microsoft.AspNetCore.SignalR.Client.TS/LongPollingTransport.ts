@@ -1,20 +1,11 @@
 class LongPollingTransport implements ITransport {
-
-    private receiveCallback: (data: string) => void;
     private url: string;
     private queryString: string;
     private pollXhr: XMLHttpRequest;
 
-    // TODO: make the callback a named type
-    // TODO: string won't work for binary formats
-    constructor(receiveCallback: (data: string) => void) {
-         this.receiveCallback = receiveCallback;
-    }
-
     connect(url: string, queryString: string): Promise<void> {
-        this.queryString = queryString || "";
-        this.url = url || "";
-
+        this.url = url;
+        this.queryString = queryString;
         this.pollXhr = new XMLHttpRequest();
         // TODO: resolve promise on open sending? + reject on error
         this.poll(url + "/poll?" + this.queryString)
@@ -27,7 +18,7 @@ class LongPollingTransport implements ITransport {
         this.pollXhr.send();
         this.pollXhr.onload = () => {
             if (this.pollXhr.status >= 200 && this.pollXhr.status < 300) {
-                this.receiveCallback(this.pollXhr.response);
+                this.onDataReceived(this.pollXhr.response);
                 this.poll(url);
             }
             else {
