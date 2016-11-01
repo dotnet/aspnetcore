@@ -5,7 +5,26 @@
     <title></title>
     <script src="js/signalr-client.js"></script>
     <script>
+        function getParameterByName(name, url) {
+            if (!url) {
+                url = window.location.href;
+            }
+            name = name.replace(/[\[\]]/g, "\\$&");
+            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            var transports = getParameterByName('transport');
+            if (transports != null) {
+                transports = transports.split(',')
+            }
+
+            document.getElementById('head1').innerHTML = transports ? transports.join(', ') : "auto (WebSockets)";
+
             let connectButton = document.getElementById('connect');
             let connection = new RpcConnection(`http://${document.location.host}/hubs`, 'formatType=json&format=text');
             connection.on('Send', msg => {
@@ -13,7 +32,7 @@
             let isConnected = false;
 
             connectButton.addEventListener('click', () => {
-                connection.start()
+                connection.start(transports)
                 .then(() => {
                     isConnected = true;
                 })
@@ -51,117 +70,10 @@
             child.innerText = line;
             document.getElementById('messages').appendChild(child);
         }
-
-/*
-        function hubConnection(url) {
-            var ws = new WebSocket(url);
-            var id = 0;
-            var calls = {};
-            var methods = {};
-
-            ws.onopen = function () {
-                console.log('Opened!');
-            };
-
-            ws.onmessage = function (event) {
-
-                let response = {};
-
-                if (document.getElementById('formatType').value == 'line') {
-                    let parts = event.data.split(',');
-                    if (event.data[0] == 'R') {
-                        response.Id = parts[0].slice(2);
-                        response.Result = parts[1].slice(1);
-                    }
-                    else if (event.data[0] == 'C') {
-                        response.Method = parts[1].slice(1);
-                        response.Arguments = parts.slice(2).join();
-                    }
-                    else {
-                        response.error = parts[0].slice(1);
-                    }
-                }
-                else {
-                    response = JSON.parse(event.data);
-                }
-
-                // Response
-                if (response.Id) {
-                    var cb = calls[response.Id];
-
-                    delete calls[response.Id];
-
-                    if (response.Error) {
-                        cb.error(response.Error);
-                    }
-                    else {
-                        cb.success(response.Result);
-                    }
-                }
-                else {
-                    // Reverse JSON RPC
-                    methods[response.Method](response.Arguments);
-                }
-            };
-
-            ws.onclose = function (event) {
-                console.log('Closed!');
-            };
-
-            this.invoke = function (method, args, formatType) {
-                return new Promise((resolve, reject) => {
-                    calls[id] = { success: resolve, error: reject };
-                    if (formatType == 'line') {
-                        ws.send(`CI${id},M${method},${args.join()}\n`);
-                    }
-                    else {
-                        ws.send(JSON.stringify({ method: method, arguments: args, id: id }));
-                    }
-                    id++;
-                });
-            };
-
-            this.on = function (method, fn) {
-                methods[method] = fn;
-            };
-        }
-
-
-        document.addEventListener('DOMContentLoaded', () => {
-            let connectButton = document.getElementById('connect');
-            connectButton.addEventListener('click', () => {
-                run(document.getElementById('formatType').value);
-                connectButton.disabled = true;
-            });
-        });
-
-        function run(formatType) {
-            var conn = new hubConnection(`ws://${document.location.host}/hubs/ws?formatType=${formatType}`);
-
-            conn.on('Send', function (message) {
-                var child = document.createElement('li');
-                child.innerText = message;
-                document.getElementById('messages').appendChild(child);
-            });
-
-            document.getElementById('sendmessage').addEventListener('submit', event => {
-                let data = document.getElementById('data').value;
-
-                conn.invoke('SocketsSample.Hubs.Chat.Send', [data], formatType).catch(err => {
-                    var child = document.createElement('li');
-                    child.style.color = 'red';
-                    child.innerText = err;
-                    document.getElementById('messages').appendChild(child);
-                });
-
-                event.preventDefault();
-            });
-        };
-*/
     </script>
 </head>
 <body>
-    <h1>WebSockets</h1>
+    <h1 id="head1"></h1>
     <div>
         <select id="formatType">
             <option value="json">json</option>

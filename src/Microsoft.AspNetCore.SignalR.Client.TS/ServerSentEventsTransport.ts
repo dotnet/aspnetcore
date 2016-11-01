@@ -6,20 +6,28 @@ class ServerSentEventsTransport implements ITransport {
     private url: string;
     private queryString: string;
 
-    constructor(receiveCallback: (data: string) => void) {
-         this.receiveCallback = receiveCallback;
-    }
+    connect(url: string, queryString: string = ""): Promise<void> {
+        if (typeof (EventSource) === "undefined") {
+            Promise.reject("EventSource not supported by the browser.")
+        }
 
-    connect(url: string, queryString: string): Promise<void> {
-        this.queryString = queryString || "";
-        this.url = url || "";
+        this.queryString = queryString;
+        this.url = url;
         let tmp = `${this.url}/sse?${this.queryString}`;
-        this.eventSource = new EventSource(`${this.url}/sse?${this.queryString}`);
-        this.eventSource.onmessage = e => {
-            this.receiveCallback(e.data);
-        };
+        try {
+            this.eventSource = new EventSource(`${this.url}/sse?${this.queryString}`);
 
-        //TODO: handle errors
+            this.eventSource.onmessage = (e: MessageEvent) => {
+                this.onDataReceived(e.data);
+            };
+            this.eventSource.onerror = (e: Event) => {
+                // todo: handle errors
+            }
+        }
+        catch (e) {
+            return Promise.reject(e);
+        }
+
         return Promise.resolve();
     }
 

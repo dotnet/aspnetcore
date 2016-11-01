@@ -21,18 +21,21 @@ class Connection {
         this.connectionState = ConnectionState.Disconnected;
     }
 
-    start(): Promise<void> {
+    start(transportNames?: string[]): Promise<void> {
         if (this.connectionState != ConnectionState.Disconnected) {
             throw new Error("Cannot start a connection that is not in the 'Disconnected' state");
+        }
+
+        let transports = this.filterTransports(transportNames);
+        if (transports.length == 0) {
+            throw new Error("No valid transports requested.");
         }
 
         return new HttpClient().get(`${this.url}/getid?${this.queryString}`)
             .then(connectionId => {
                 this.connectionId = connectionId;
-                return this.tryStartTransport([
-                    new WebSocketTransport(),
-                    new ServerSentEventsTransport(null),
-                    new LongPollingTransport(null)], 0);
+                this.queryString = `id=${connectionId}&${this.connectionId}`;
+                return this.tryStartTransport(transports, 0);
             })
             .then(transport => {
                 this.transport = transport;
@@ -43,6 +46,30 @@ class Connection {
                 this.connectionState = ConnectionState.Disconnected;
                 throw e;
             });
+    }
+
+    private filterTransports(transportNames: string[]): ITransport[] {
+        let availableTransports = ['webSockets', 'serverSentEvents', 'longPolling'];
+        transportNames = transportNames || availableTransports;
+        // uniquify
+        transportNames = transportNames.filter((value, index, values) => {
+            return values.indexOf(value) == index;
+        });
+
+        let transports: ITransport[] = [];
+        transportNames.forEach(transportName => {
+            if (transportName === 'webSockets') {
+                transports.push(new WebSocketTransport());
+            }
+            if (transportName === 'serverSentEvents') {
+                transports.push(new ServerSentEventsTransport());
+            }
+            if (transportName === 'longPolling') {
+                transports.push(new LongPollingTransport(null));
+            }
+        });
+
+        return transports;
     }
 
     private tryStartTransport(transports: ITransport[], index: number): Promise<ITransport> {

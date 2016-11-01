@@ -1,7 +1,7 @@
 class WebSocketTransport implements ITransport {
     private webSocket: WebSocket;
 
-    connect(url: string, queryString: string): Promise<void> {
+    connect(url: string, queryString: string = ""): Promise<void> {
         return new Promise((resolve, reject) => {
             url = url.replace(/^http/, "ws");
             let connectUrl = url + "/ws?" + queryString;
@@ -12,7 +12,7 @@ class WebSocketTransport implements ITransport {
             };
 
             this.webSocket.onerror = (event: Event) => {
-                // TODO: handle when connection was opened successfully
+                // TODO: also handle when connection was opened successfully
                 reject();
             };
 
