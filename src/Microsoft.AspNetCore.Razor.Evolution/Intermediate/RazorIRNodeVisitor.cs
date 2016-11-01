@@ -3,18 +3,18 @@
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
-    public abstract class IRNodeVisitor 
+    public abstract class RazorIRNodeVisitor 
     {
-        public virtual void Visit(IRNode node)
+        public virtual void Visit(RazorIRNode node)
         {
             node.Accept(this);
         }
 
-        public virtual void VisitDefault(IRNode node)
+        public virtual void VisitDefault(RazorIRNode node)
         {
         }
 
-        public virtual void VisitDocument(IRDocument node)
+        public virtual void VisitDocument(RazorIRDocument node)
         {
             VisitDefault(node);
         }

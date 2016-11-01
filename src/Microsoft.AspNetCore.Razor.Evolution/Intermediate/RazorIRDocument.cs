@@ -5,25 +5,25 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
-    public sealed class IRDocument : IRNode
+    public sealed class RazorIRDocument : RazorIRNode
     {
         // Only allow creation of documents through the builder API because
         // they can't be nested.
-        internal IRDocument()
+        internal RazorIRDocument()
         {
-            Children = new List<IRNode>();
+            Children = new List<RazorIRNode>();
         }
 
-        public override IList<IRNode> Children { get; }
+        public override IList<RazorIRNode> Children { get; }
 
-        public override IRNode Parent { get; set; }
+        public override RazorIRNode Parent { get; set; }
 
-        public override void Accept(IRNodeVisitor visitor)
+        public override void Accept(RazorIRNodeVisitor visitor)
         {
             visitor.VisitDocument(this);
         }
 
-        public override TResult Accept<TResult>(IRNodeVisitor<TResult> visitor)
+        public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
         {
             return visitor.VisitDocument(this);
         }

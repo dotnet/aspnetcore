@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
-    public class IRNodeWalkerTest
+    public class RazorIRNodeWalkerTest
     {
         [Fact]
         public void IRNodeWalker_Visit_TraversesEntireGraph()
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             // Arrange
             var walker = new DerivedIRNodeWalker();
 
-            var nodes = new IRNode[]
+            var nodes = new RazorIRNode[]
             {
                 new BasicIRNode("Root"),
                     new BasicIRNode("Root->A"),
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                     new BasicIRNode("Root->C"),
             };
 
-            var builder = new DefaultIRBuilder();
+            var builder = new DefaultRazorIRBuilder();
             builder.Push(nodes[0]);
             builder.Add(nodes[1]);
             builder.Push(nodes[2]);
@@ -43,11 +43,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             Assert.Equal(nodes, walker.Visited.ToArray());
         }
 
-        private class DerivedIRNodeWalker : IRNodeWalker
+        private class DerivedIRNodeWalker : RazorIRNodeWalker
         {
-            public List<IRNode> Visited { get; } = new List<IRNode>();
+            public List<RazorIRNode> Visited { get; } = new List<RazorIRNode>();
 
-            public override void VisitDefault(IRNode node)
+            public override void VisitDefault(RazorIRNode node)
             {
                 Visited.Add(node);
 
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         }
 
 
-        private class BasicIRNode : IRNode
+        private class BasicIRNode : RazorIRNode
         {
             public BasicIRNode(string name)
             {
@@ -70,16 +70,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
             public string Name { get; }
 
-            public override IList<IRNode> Children { get; } = new List<IRNode>();
+            public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 
-            public override IRNode Parent { get; set; }
+            public override RazorIRNode Parent { get; set; }
 
-            public override void Accept(IRNodeVisitor visitor)
+            public override void Accept(RazorIRNodeVisitor visitor)
             {
                 ((DerivedIRNodeWalker)visitor).VisitBasic(this);
             }
 
-            public override TResult Accept<TResult>(IRNodeVisitor<TResult> visitor)
+            public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
             {
                 throw new NotImplementedException();
             }

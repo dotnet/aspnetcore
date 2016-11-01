@@ -8,13 +8,13 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
-    public class DefaultIRBuilderTest
+    public class DefaultRazorIRBuilderTest
     {
         [Fact]
         public void Ctor_CreatesEmptyBuilder()
         {
             // Arrange & Act
-            var builder = new DefaultIRBuilder();
+            var builder = new DefaultRazorIRBuilder();
             var current = builder.Current;
 
             // Assert
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         public void Push_WhenEmpty_AddsNode()
         {
             // Arrange
-            var builder = new DefaultIRBuilder();
+            var builder = new DefaultRazorIRBuilder();
             var node = new BasicIRNode();
 
             // Act
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         public void Push_WhenNonEmpty_SetsUpParentAndChild()
         {
             // Arrange
-            var builder = new DefaultIRBuilder();
+            var builder = new DefaultRazorIRBuilder();
 
             var parent = new BasicIRNode();
             builder.Push(parent);
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         public void Pop_ThrowsWhenEmpty()
         {
             // Arrange
-            var builder = new DefaultIRBuilder();
+            var builder = new DefaultRazorIRBuilder();
 
             // Act & Assert
             ExceptionAssert.Throws<InvalidOperationException>(
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         public void Pop_SingleNodeDepth_RemovesAndReturnsNode()
         {
             // Arrange
-            var builder = new DefaultIRBuilder();
+            var builder = new DefaultRazorIRBuilder();
 
             var node = new BasicIRNode();
             builder.Push(node);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         public void Pop_MultipleNodeDepth_RemovesAndReturnsNode()
         {
             // Arrange
-            var builder = new DefaultIRBuilder();
+            var builder = new DefaultRazorIRBuilder();
 
             var parent = new BasicIRNode();
             builder.Push(parent);
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         public void Add_DoesPushAndPop()
         {
             // Arrange
-            var builder = new DefaultIRBuilder();
+            var builder = new DefaultRazorIRBuilder();
 
             var parent = new BasicIRNode();
             builder.Push(parent);
@@ -125,18 +125,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             Assert.Collection(parent.Children, n => Assert.Same(node, n));
         }
 
-        private class BasicIRNode : IRNode
+        private class BasicIRNode : RazorIRNode
         {
-            public override IList<IRNode> Children { get; } = new List<IRNode>();
+            public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 
-            public override IRNode Parent { get; set; }
+            public override RazorIRNode Parent { get; set; }
 
-            public override void Accept(IRNodeVisitor visitor)
+            public override void Accept(RazorIRNodeVisitor visitor)
             {
                 throw new NotImplementedException();
             }
 
-            public override TResult Accept<TResult>(IRNodeVisitor<TResult> visitor)
+            public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
             {
                 throw new NotImplementedException();
             }

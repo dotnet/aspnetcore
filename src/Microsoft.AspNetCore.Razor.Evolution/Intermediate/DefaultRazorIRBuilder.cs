@@ -6,17 +6,17 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
-    internal class DefaultIRBuilder : IRBuilder
+    internal class DefaultRazorIRBuilder : RazorIRBuilder
     {
-        private readonly List<IRNode> _stack;
+        private readonly List<RazorIRNode> _stack;
         private int _depth;
 
-        public DefaultIRBuilder()
+        public DefaultRazorIRBuilder()
         {
-            _stack = new List<IRNode>();
+            _stack = new List<RazorIRNode>();
         }
 
-        public override IRNode Current
+        public override RazorIRNode Current
         {
             get
             {
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             }
         }
 
-        public override void Add(IRNode node)
+        public override void Add(RazorIRNode node)
         {
             if (node == null)
             {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             Pop();
         }
 
-        public override IRNode Pop()
+        public override RazorIRNode Pop()
         {
             if (_depth == 0)
             {
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             return node;
         }
 
-        public override void Push(IRNode node)
+        public override void Push(RazorIRNode node)
         {
             if (node == null)
             {

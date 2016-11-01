@@ -3,9 +3,9 @@
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
-    public abstract class IRNodeWalker : IRNodeVisitor
+    public abstract class RazorIRNodeWalker : RazorIRNodeVisitor
     {
-        public override void VisitDefault(IRNode node)
+        public override void VisitDefault(RazorIRNode node)
         {
             var children = node.Children;
             for (var i = 0; i < node.Children.Count; i++)

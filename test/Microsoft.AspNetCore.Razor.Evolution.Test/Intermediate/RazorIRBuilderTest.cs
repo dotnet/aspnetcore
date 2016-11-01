@@ -5,16 +5,16 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
-    public class IRBuilderTest
+    public class RazorIRBuilderTest
     {
         [Fact]
         public void Document_CreatesDocumentNode()
         {
             // Arrange & Act 
-            var builder = IRBuilder.Document();
+            var builder = RazorIRBuilder.Document();
 
             // Assert
-            Assert.IsType<IRDocument>(builder.Current);
+            Assert.IsType<RazorIRDocument>(builder.Current);
         }
     }
 }
