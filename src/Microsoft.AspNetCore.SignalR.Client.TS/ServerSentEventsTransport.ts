@@ -13,21 +13,36 @@ class ServerSentEventsTransport implements ITransport {
         this.queryString = queryString;
         this.url = url;
         let tmp = `${this.url}/sse?${this.queryString}`;
-        try {
-            this.eventSource = new EventSource(`${this.url}/sse?${this.queryString}`);
 
-            this.eventSource.onmessage = (e: MessageEvent) => {
-                this.onDataReceived(e.data);
-            };
-            this.eventSource.onerror = (e: Event) => {
-                // todo: handle errors
+        return new Promise((resolve, reject) => {
+            let eventSource = new EventSource(`${this.url}/sse?${this.queryString}`);
+
+            try {
+                let thisEventSourceTransport = this;
+                eventSource.onmessage = (e: MessageEvent) => {
+                    if (thisEventSourceTransport.onDataReceived) {
+                        thisEventSourceTransport.onDataReceived(e.data);
+                    }
+                };
+
+                eventSource.onerror = (e: Event) => {
+                    reject();
+
+                    // don't report an error if the transport did not start successfully
+                    if (thisEventSourceTransport.eventSource && thisEventSourceTransport.onError) {
+                        thisEventSourceTransport.onError(e);
+                    }
+                }
+
+                eventSource.onopen = () => {
+                    thisEventSourceTransport.eventSource = eventSource;
+                    resolve();
+                }
             }
-        }
-        catch (e) {
-            return Promise.reject(e);
-        }
-
-        return Promise.resolve();
+            catch (e) {
+                return Promise.reject(e);
+            }
+        });
     }
 
     send(data: any): Promise<void> {
@@ -35,7 +50,10 @@ class ServerSentEventsTransport implements ITransport {
     }
 
     stop(): void {
-        this.eventSource.close();
+        if (this.eventSource) {
+            this.eventSource.close();
+            this.eventSource = null;
+        }
     }
 
     onDataReceived: DataReceived;

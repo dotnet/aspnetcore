@@ -11,13 +11,12 @@ class Connection {
     private queryString: string;
     private connectionId: string;
     private transport: ITransport;
-    private dataReceivedCallback: DataReceived;
-    private errorHandler: ErrorHandler;
+    private dataReceivedCallback: DataReceived = (data: any) => { };
+    private connectionClosedCallback: ConnectionClosed = (error?: any) => { };
 
     constructor(url: string, queryString: string = "") {
         this.url = url;
         this.queryString = queryString;
-
         this.connectionState = ConnectionState.Disconnected;
     }
 
@@ -75,7 +74,7 @@ class Connection {
     private tryStartTransport(transports: ITransport[], index: number): Promise<ITransport> {
         let thisConnection = this;
         transports[index].onDataReceived = data => thisConnection.dataReceivedCallback(data);
-        transports[index].onError = e => thisConnection.errorHandler(e);
+        transports[index].onError = e => thisConnection.stopConnection(e);
 
         return transports[index].connect(this.url, this.queryString)
             .then(() => {
@@ -102,18 +101,23 @@ class Connection {
 
     stop(): void {
         if (this.connectionState != ConnectionState.Connected) {
-            throw new Error("Cannot stop the connection if is not in the 'Connected' State");
+            throw new Error("Cannot stop the connection if it is not in the 'Connected' State");
         }
 
+        this.stopConnection();
+    }
+
+    private stopConnection(error?: any) {
         this.transport.stop();
         this.connectionState = ConnectionState.Disconnected;
+        this.connectionClosedCallback(error);
     }
 
     set dataReceived(callback: DataReceived) {
         this.dataReceivedCallback = callback;
     }
 
-    set onError(callback: ErrorHandler) {
-        this.errorHandler = callback;
+    set connectionClosed(callback: ConnectionClosed) {
+        this.connectionClosedCallback = callback;
     }
 }

@@ -6,40 +6,52 @@ class LongPollingTransport implements ITransport {
     connect(url: string, queryString: string): Promise<void> {
         this.url = url;
         this.queryString = queryString;
-        this.pollXhr = new XMLHttpRequest();
-        // TODO: resolve promise on open sending? + reject on error
         this.poll(url + "/poll?" + this.queryString)
         return Promise.resolve();
     }
 
     private poll(url: string): void {
-        //TODO: timeout
-        this.pollXhr.open("GET", url, true);
-        this.pollXhr.send();
-        this.pollXhr.onload = () => {
-            if (this.pollXhr.status >= 200 && this.pollXhr.status < 300) {
-                this.onDataReceived(this.pollXhr.response);
-                this.poll(url);
+        let thisLongPollingTransport = this;
+        let pollXhr = new XMLHttpRequest();
+
+        pollXhr.onload = () => {
+            if (pollXhr.status == 200) {
+                if (thisLongPollingTransport.onDataReceived) {
+                    thisLongPollingTransport.onDataReceived(pollXhr.response);
+                }
+                thisLongPollingTransport.poll(url);
+            }
+            else if (this.pollXhr.status == 204) {
+                // TODO: closed event?
             }
             else {
-                //TODO: handle error
-                /*
-                    {
-                        status: xhr.status,
-                        statusText: xhr.statusText
-                    };
-                }*/
-            };
-
-            this.pollXhr.onerror = () => {
-                /*
-                reject({
-                    status: xhr.status,
-                    statusText: xhr.statusText
-                });*/
-                //TODO: handle error
-            };
+                if (thisLongPollingTransport.onError) {
+                    thisLongPollingTransport.onError({
+                        status: pollXhr.status,
+                        statusText: pollXhr.statusText
+                    });
+                }
+            }
         };
+
+        pollXhr.onerror = () => {
+            if (thisLongPollingTransport.onError) {
+                thisLongPollingTransport.onError({
+                    status: pollXhr.status,
+                    statusText: pollXhr.statusText
+                });
+            }
+        };
+
+        pollXhr.ontimeout = () => {
+            thisLongPollingTransport.poll(url);
+        }
+
+        this.pollXhr = pollXhr;
+        this.pollXhr.open("GET", url, true);
+        // TODO: consider making timeout configurable
+        this.pollXhr.timeout = 110000;
+        this.pollXhr.send();
     }
 
     send(data: any): Promise<void> {
@@ -47,7 +59,10 @@ class LongPollingTransport implements ITransport {
     }
 
     stop(): void {
-        this.pollXhr.abort();
+        if (this.pollXhr) {
+            this.pollXhr.abort();
+            this.pollXhr = null;
+        }
     }
 
     onDataReceived: DataReceived;

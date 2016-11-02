@@ -93,4 +93,8 @@ class RpcConnection {
     on(methodName: string, method: (...args: any[]) => void) {
         this.methods[methodName] = method;
     }
+
+    set connectionClosed(callback: ConnectionClosed) {
+        this.connection.connectionClosed = callback;
+    }
 }

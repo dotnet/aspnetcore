@@ -25,20 +25,35 @@
 
             document.getElementById('head1').innerHTML = transports ? transports.join(', ') : "auto (WebSockets)";
 
-            let connectButton = document.getElementById('connect');
             let connection = new RpcConnection(`http://${document.location.host}/hubs`, 'formatType=json&format=text');
             connection.on('Send', msg => {
                 addLine(msg); });
-            let isConnected = false;
+            connection.connectionClosed = e => {
+                if (e) {
+                    addLine('Connection closed with error: ' + e, 'red');
+                }
+                else {
+                    addLine('Disconnected', 'green');
+                }
+            }
 
+            let isConnected = false;
+            let connectButton = document.getElementById('connect');
             connectButton.addEventListener('click', () => {
                 connection.start(transports)
                 .then(() => {
                     isConnected = true;
+                    addLine('Connected successfully', 'green');
                 })
                 .catch(err => {
-                    addLine(err, true);
+                    addLine(err, 'red');
                 });
+            });
+
+            let disconnectButton = document.getElementById('disconnect');
+            disconnectButton.addEventListener('click', () => {
+                connection.stop();
+                isConnected = false;
             });
 
             document.getElementById('sendmessage').addEventListener('submit', event => {
@@ -54,7 +69,7 @@
                         }
                     })
                     .catch(err => {
-                        addLine(err, true);
+                        addLine(err, 'red');
                     });
                 }
 
@@ -62,10 +77,10 @@
             });
         });
 
-        function addLine(line, isError) {
+        function addLine(line, color) {
             var child = document.createElement('li');
-            if (isError === true) {
-                child.style.color = 'red';
+            if (color) {
+                child.style.color = color;
             }
             child.innerText = line;
             document.getElementById('messages').appendChild(child);
@@ -81,6 +96,7 @@
         </select>
 
         <input type="button" id="connect" value="Connect" />
+        <input type="button" id="disconnect" value="Disconnect" />
     </div>
 
     <form id="sendmessage">

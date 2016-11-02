@@ -5,33 +5,52 @@ class WebSocketTransport implements ITransport {
         return new Promise((resolve, reject) => {
             url = url.replace(/^http/, "ws");
             let connectUrl = url + "/ws?" + queryString;
-            this.webSocket = new WebSocket(connectUrl);
-            this.webSocket.onopen = (event: Event) => {
+
+            let webSocket = new WebSocket(connectUrl);
+            let thisWebSocketTransport = this;
+
+            webSocket.onopen = (event: Event) => {
                 console.log(`WebSocket connected to ${connectUrl}`);
+                thisWebSocketTransport.webSocket = webSocket;
                 resolve();
             };
 
-            this.webSocket.onerror = (event: Event) => {
-                // TODO: also handle when connection was opened successfully
+            webSocket.onerror = (event: Event) => {
                 reject();
             };
 
-            this.webSocket.onmessage = (message: MessageEvent) => {
+            webSocket.onmessage = (message: MessageEvent) => {
                 console.log(`(WebSockets transport) data received: ${message.data}`);
-                if (this.onDataReceived) {
-                    this.onDataReceived(message.data);
+                if (thisWebSocketTransport.onDataReceived) {
+                    thisWebSocketTransport.onDataReceived(message.data);
+                }
+            }
+
+            webSocket.onclose = (event: CloseEvent) => {
+                // webSocket will be null if the transport did not start successfully
+                if (thisWebSocketTransport.webSocket && event.wasClean === false) {
+                    if (thisWebSocketTransport.onError) {
+                        thisWebSocketTransport.onError(event);
+                    }
                 }
             }
         });
     }
 
     send(data: any): Promise<void> {
-        this.webSocket.send(data);
-        return Promise.resolve();
+        if (this.webSocket && this.webSocket.readyState === WebSocket.OPEN) {
+            this.webSocket.send(data);
+            return Promise.resolve();
+        }
+
+        return Promise.reject("WebSocket is not in OPEN state");
     }
 
     stop(): void {
-        this.webSocket.close();
+        if (this.webSocket) {
+            this.webSocket.close();
+            this.webSocket = null;
+        }
     }
 
     onDataReceived: DataReceived;
