@@ -29,15 +29,31 @@ namespace NuGetPackager
         public async Task PackAsync(string nuspec, string config, string outputDir)
         {
             var project = ProjectContext.Create(Path.GetDirectoryName(nuspec), FrameworkConstants.CommonFrameworks.NetCoreApp10);
-            var props = "configuration=" + config;
             var idx = 0;
+            var props = "";
+            var first = false;
             foreach (var depVersion in GetDependencies(project).OrderBy(p => p.Item1).Select(p => p.Item2))
             {
-                props += $";dep_{++idx}={depVersion}";
-            }
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    props += ";";
+                }
 
-            var buildCommand = Command.CreateDotNet("build", 
-                new[] { project.ProjectFile.ProjectFilePath, "--configuration", config },
+                props += $"dep_{++idx}={depVersion}";
+            }
+            var publishDir = Path.Combine(Directory.GetCurrentDirectory(), "artifacts/build", project.ProjectFile.Name);
+            if (Directory.Exists(publishDir))
+            {
+                Directory.Delete(publishDir, recursive: true);
+            }
+            Directory.CreateDirectory(publishDir);
+
+            var buildCommand = Command.CreateDotNet("publish",
+                new[] { project.ProjectFile.ProjectFilePath, "--configuration", config, "--output", publishDir },
                  configuration: config);
 
             if (buildCommand.Execute().ExitCode != 0)
@@ -53,7 +69,8 @@ namespace NuGetPackager
                 "-Verbosity", "detailed",
                 "-OutputDirectory", outputDir,
                 "-Version", version,
-                "-Properties", props);
+                "-Properties", props,
+                "-BasePath", publishDir);
         }
 
         private IEnumerable<Tuple<string, string>> GetDependencies(ProjectContext context)
@@ -136,7 +153,7 @@ namespace NuGetPackager
             }
 
             Console.WriteLine("log : Downloading nuget.exe 3.5.0-rc1".Bold().Black());
-            
+
             var response = await new HttpClient().GetAsync("https://dist.nuget.org/win-x86-commandline/v3.5.0-rc1/NuGet.exe");
             using (var file = new FileStream(nugetPath, FileMode.CreateNew))
             {
