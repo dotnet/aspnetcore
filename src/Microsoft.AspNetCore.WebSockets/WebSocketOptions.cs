@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Builder
         {
             KeepAliveInterval = TimeSpan.FromMinutes(2);
             ReceiveBufferSize = 4 * 1024;
-            ReplaceFeature = false;
         }
 
         /// <summary>
@@ -28,11 +27,5 @@ namespace Microsoft.AspNetCore.Builder
         /// The default is 4kb.
         /// </summary>
         public int ReceiveBufferSize { get; set; }
-
-        /// <summary>
-        /// Gets or sets if the middleware should replace the WebSocket implementation provided by
-        /// a component earlier in the stack. This is false by default.
-        /// </summary>
-        public bool ReplaceFeature { get; set; }
     }
 }

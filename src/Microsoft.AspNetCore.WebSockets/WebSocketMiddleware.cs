@@ -40,12 +40,9 @@ namespace Microsoft.AspNetCore.WebSockets
         {
             // Detect if an opaque upgrade is available. If so, add a websocket upgrade.
             var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
-            if (upgradeFeature != null)
+            if (upgradeFeature != null && context.Features.Get<IHttpWebSocketFeature>() == null)
             {
-                if (_options.ReplaceFeature || context.Features.Get<IHttpWebSocketFeature>() == null)
-                {
-                    context.Features.Set<IHttpWebSocketFeature>(new UpgradeHandshake(context, upgradeFeature, _options));
-                }
+                context.Features.Set<IHttpWebSocketFeature>(new UpgradeHandshake(context, upgradeFeature, _options));
             }
 
             return _next(context);
