@@ -83,14 +83,14 @@ namespace Microsoft.AspNetCore.SignalR
             _lifetimeManager = lifetimeManager;
         }
 
-        public void Add(string groupName)
+        public Task Add(string groupName)
         {
-            _lifetimeManager.AddGroup(_connection, groupName);
+            return _lifetimeManager.AddGroup(_connection, groupName);
         }
 
-        public void Remove(string groupName)
+        public Task Remove(string groupName)
         {
-            _lifetimeManager.RemoveGroup(_connection, groupName);
+            return _lifetimeManager.RemoveGroup(_connection, groupName);
         }
     }
 }

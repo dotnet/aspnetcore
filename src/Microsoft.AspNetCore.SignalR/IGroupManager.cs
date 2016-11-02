@@ -1,8 +1,10 @@
-﻿namespace Microsoft.AspNetCore.SignalR
+﻿using System.Threading.Tasks;
+
+namespace Microsoft.AspNetCore.SignalR
 {
     public interface IGroupManager
     {
-        void Add(string groupName);
-        void Remove(string groupName);
+        Task Add(string groupName);
+        Task Remove(string groupName);
     }
 }

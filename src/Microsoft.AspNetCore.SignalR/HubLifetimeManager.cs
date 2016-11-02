@@ -17,9 +17,9 @@ namespace Microsoft.AspNetCore.SignalR
 
         public abstract Task InvokeUser(string userId, string methodName, params object[] args);
 
-        public abstract void AddGroup(Connection connection, string groupName);
+        public abstract Task AddGroup(Connection connection, string groupName);
 
-        public abstract void RemoveGroup(Connection connection, string groupName);
+        public abstract Task RemoveGroup(Connection connection, string groupName);
     }
 
 }

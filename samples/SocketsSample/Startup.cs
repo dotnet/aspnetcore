@@ -16,6 +16,7 @@ namespace SocketsSample
             services.AddRouting();
 
             services.AddSignalR();
+                    // .AddRedis();
 
             services.AddSingleton<ChatEndPoint>();
             services.AddSingleton<ProtobufSerializer>();

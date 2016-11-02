@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR
             _registry = registry;
         }
 
-        public override void AddGroup(Connection connection, string groupName)
+        public override Task AddGroup(Connection connection, string groupName)
         {
             var groups = connection.Metadata.GetOrAdd("groups", k => new HashSet<string>());
 
@@ -25,9 +25,11 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 groups.Add(groupName);
             }
+
+            return Task.CompletedTask;
         }
 
-        public override void RemoveGroup(Connection connection, string groupName)
+        public override Task RemoveGroup(Connection connection, string groupName)
         {
             var groups = connection.Metadata.Get<HashSet<string>>("groups");
 
@@ -35,6 +37,8 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 groups.Remove(groupName);
             }
+
+            return Task.CompletedTask;
         }
 
         public override Task InvokeAll(string methodName, params object[] args)

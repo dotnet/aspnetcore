@@ -3,6 +3,9 @@
     "Microsoft.AspNetCore.SignalR": {
       "target": "project"
     },
+    "Microsoft.AspNetCore.SignalR.Redis": {
+      "target": "project"
+    },
     "Microsoft.AspNetCore.Sockets": {
       "target": "project"
     },

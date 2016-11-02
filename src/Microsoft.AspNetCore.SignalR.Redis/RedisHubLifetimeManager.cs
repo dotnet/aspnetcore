@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Channels;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
 namespace Microsoft.AspNetCore.SignalR.Redis
@@ -15,17 +13,22 @@ namespace Microsoft.AspNetCore.SignalR.Redis
     public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposable
     {
         private readonly InvocationAdapterRegistry _registry;
-        private readonly ConnectionMultiplexer _redis;
+        private readonly ConnectionMultiplexer _redisServerConnection;
         private readonly ISubscriber _bus;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly RedisOptions _options;
 
-        public RedisHubLifetimeManager(InvocationAdapterRegistry registry, ILoggerFactory loggerFactory)
+        public RedisHubLifetimeManager(InvocationAdapterRegistry registry,
+                                       ILoggerFactory loggerFactory,
+                                       IOptions<RedisOptions> options)
         {
-            var writer = new LoggerTextWriter(loggerFactory.CreateLogger<RedisHubLifetimeManager<THub>>());
             _loggerFactory = loggerFactory;
-            _redis = ConnectionMultiplexer.Connect("localhost", writer);
-            _bus = _redis.GetSubscriber();
             _registry = registry;
+            _options = options.Value;
+
+            var writer = new LoggerTextWriter(loggerFactory.CreateLogger<RedisHubLifetimeManager<THub>>());
+            _redisServerConnection = _options.Connect(writer);
+            _bus = _redisServerConnection.GetSubscriber();
         }
 
         public override Task InvokeAll(string methodName, params object[] args)
@@ -86,92 +89,74 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             }
         }
 
-        public override Task OnConnectedAsync(Connection connection)
+        public override async Task OnConnectedAsync(Connection connection)
         {
-            var subs = connection.Metadata.GetOrAdd("subscriptions", k => new List<IDisposable>());
-
-            subs.Add(Subscribe(typeof(THub).Name, connection));
-            subs.Add(Subscribe(typeof(THub).Name + "." + connection.ConnectionId, connection));
-            subs.Add(Subscribe(typeof(THub).Name + "." + connection.User.Identity.Name, connection));
-
-            return Task.CompletedTask;
+            await SubscribeAsync(typeof(THub).Name, connection);
+            await SubscribeAsync(typeof(THub).Name + "." + connection.ConnectionId, connection);
+            await SubscribeAsync(typeof(THub).Name + "." + connection.User.Identity.Name, connection);
         }
 
         public override Task OnDisconnectedAsync(Connection connection)
         {
-            var subs = connection.Metadata.Get<IList<IDisposable>>("subscriptions");
+            var redisConnection = connection.Metadata.Get<ConnectionMultiplexer>("redis");
 
-            if (subs != null)
+            if (redisConnection == null)
             {
-                foreach (var sub in subs)
-                {
-                    sub.Dispose();
-                }
+                return Task.CompletedTask;
             }
 
-            connection.Metadata.Get<ConnectionMultiplexer>("redis")?.Dispose();
+            redisConnection.GetSubscriber().UnsubscribeAll();
+            redisConnection.Close(allowCommandsToComplete: true);
 
             return Task.CompletedTask;
         }
 
-        public override void AddGroup(Connection connection, string groupName)
+        public override Task AddGroup(Connection connection, string groupName)
         {
-            var groups = connection.Metadata.GetOrAdd("groups", k => new ConcurrentDictionary<string, IDisposable>());
             var key = typeof(THub).Name + "." + groupName;
-            groups.TryAdd(key, Subscribe(key, connection));
+            return SubscribeAsync(key, connection);
         }
 
-        public override void RemoveGroup(Connection connection, string groupName)
+        public override Task RemoveGroup(Connection connection, string groupName)
         {
             var key = typeof(THub) + "." + groupName;
-            var groups = connection.Metadata.Get<ConcurrentDictionary<string, IDisposable>>("groups");
-
-            IDisposable subscription;
-            if (groups != null && groups.TryRemove(key, out subscription))
-            {
-                subscription.Dispose();
-            }
+            return UnsubscribeAsync(key, connection);
         }
 
-        private IDisposable Subscribe(string channel, Connection connection)
+        private Task SubscribeAsync(string channel, Connection connection)
         {
-            var muxer = connection.Metadata.GetOrAdd("redis", k =>
+            var redisConnection = connection.Metadata.GetOrAdd("redis", k =>
             {
                 var logger = _loggerFactory.CreateLogger("REDIS_" + connection.ConnectionId);
-                return ConnectionMultiplexer.Connect("localhost", new LoggerTextWriter(logger));
+                // TODO: Async
+                return _options.Connect(new LoggerTextWriter(logger));
             });
 
-            var subscriber = muxer.GetSubscriber();
+            var subscriber = redisConnection.GetSubscriber();
 
-            subscriber.SubscribeAsync(channel, (c, data) =>
+            return subscriber.SubscribeAsync(channel, (c, data) =>
             {
                 connection.Channel.Output.WriteAsync((byte[])data);
             });
+        }
 
-            return new DisposableAction(() =>
+        private Task UnsubscribeAsync(string channel, Connection connection)
+        {
+            var redisConnection = connection.Metadata.Get<ConnectionMultiplexer>("redis");
+
+            if (redisConnection == null)
             {
-                subscriber.Unsubscribe(channel);
-            });
+                return Task.CompletedTask;
+            }
+
+            var subscriber = redisConnection.GetSubscriber();
+
+            return subscriber.UnsubscribeAsync(channel);
         }
 
         public void Dispose()
         {
-            _redis.Dispose();
-        }
-
-        private class DisposableAction : IDisposable
-        {
-            private Action _action;
-
-            public DisposableAction(Action action)
-            {
-                _action = action;
-            }
-
-            public void Dispose()
-            {
-                Interlocked.Exchange(ref _action, () => { }).Invoke();
-            }
+            _redisServerConnection.Dispose();
         }
 
         private class LoggerTextWriter : TextWriter
