@@ -49,7 +49,7 @@ namespace SocketsSample
             app.UseRpc(invocationAdapters =>
             {
                 invocationAdapters.AddInvocationAdapter("protobuf", new ProtobufInvocationAdapter(app.ApplicationServices));
-                invocationAdapters.AddInvocationAdapter("json", new JsonInvocationAdapter());
+                invocationAdapters.AddInvocationAdapter("json", new JsonNetInvocationAdapter());
                 invocationAdapters.AddInvocationAdapter("line", new LineInvocationAdapter());
             });
         }

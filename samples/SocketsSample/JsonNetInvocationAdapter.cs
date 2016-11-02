@@ -6,11 +6,11 @@ using Newtonsoft.Json;
 
 namespace SocketsSample
 {
-    public class JsonInvocationAdapter : IInvocationAdapter
+    public class JsonNetInvocationAdapter : IInvocationAdapter
     {
         private JsonSerializer _serializer = new JsonSerializer();
 
-        public JsonInvocationAdapter()
+        public JsonNetInvocationAdapter()
         {
         }
 
