@@ -89,11 +89,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             }
         }
 
-        public override async Task OnConnectedAsync(Connection connection)
+        public override Task OnConnectedAsync(Connection connection)
         {
-            await SubscribeAsync(typeof(THub).Name, connection);
-            await SubscribeAsync(typeof(THub).Name + "." + connection.ConnectionId, connection);
-            await SubscribeAsync(typeof(THub).Name + "." + connection.User.Identity.Name, connection);
+            var task1 = SubscribeAsync(typeof(THub).Name, connection);
+            var task2 = SubscribeAsync(typeof(THub).Name + "." + connection.ConnectionId, connection);
+            var task3 = SubscribeAsync(typeof(THub).Name + "." + connection.User.Identity.Name, connection);
+
+            return Task.WhenAll(task2, task2, task3);
         }
 
         public override Task OnDisconnectedAsync(Connection connection)
