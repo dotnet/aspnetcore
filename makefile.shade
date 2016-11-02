@@ -11,24 +11,7 @@ var AUTHORS='Microsoft Open Technologies, Inc.'
 use-standard-lifecycle
 k-standard-goals
 
-#xunit-test
- @{
-    foreach (var project in Files.Include("test/*/project.json"))
-    {
-        var projectDir = Path.GetDirectoryName(project);
-        var projectName = Path.GetFileName(projectDir);
-        var targetDir = Path.Combine(projectDir, "bin", E("Configuration"), "netcoreapp1.0");
-        var depsFile = Path.Combine(targetDir, projectName + ".deps.json");
-        var configFile = Path.Combine(targetDir, projectName + ".runtimeconfig.json");
-        var assembly = Path.Combine(targetDir, projectName + ".dll");
-        var home = Environment.GetEnvironmentVariable("USERPROFILE") ?? Environment.GetEnvironmentVariable("HOME");
-        var packageCache = Environment.GetEnvironmentVariable("NUGET_PACKAGES") ?? Path.Combine(home, ".nuget/packages");
-        Exec(".build/.dotnet/dotnet", "exec --depsfile \"" + depsFile + "\""
-                + " --runtimeconfig \"" + configFile + "\" "
-                + "\"" + Path.Combine(packageCache, "dotnet-test-xunit/2.2.0-preview2-build1029/lib/netcoreapp1.0/dotnet-test-xunit.dll") + "\" "
-                + "\"" + assembly+ "\" ");
-    }
- }
+#xunit-test .xunit-test-msbuild
 
 #build-pack .build-compile target='compile'
     @{

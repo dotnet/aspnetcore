@@ -33,7 +33,7 @@ cd $PSScriptRoot
 $repoFolder = $PSScriptRoot
 $env:REPO_FOLDER = $repoFolder
 
-$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/dev.zip"
+$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/feature/msbuild.zip"
 if ($env:KOREBUILD_ZIP)
 {
     $koreBuildZip=$env:KOREBUILD_ZIP
@@ -63,10 +63,5 @@ if (!(Test-Path $buildFolder)) {
         Remove-Item -Recurse -Force $tempFolder
     }
 }
-
-$env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
-$dotnetHome = "$buildFolder\.dotnet"
-mkdir $dotnetHome  -ErrorAction Ignore | Out-Null
-& .\dotnet-install.ps1 -Version $(Get-Content .\CliToolVersion.txt) -InstallDir $dotnetHome
 
 &"$buildFile" $args
