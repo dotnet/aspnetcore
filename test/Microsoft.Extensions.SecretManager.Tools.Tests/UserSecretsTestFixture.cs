@@ -45,7 +45,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Tests
     <Compile Include=""**\*.cs"" Exclude=""Excluded.cs"" />
 
     <PackageReference Include=""Microsoft.NET.Sdk"" Version=""1.0.0-*"" PrivateAssets=""All"" />
-    <PackageReference Include=""Microsoft.NETCore.App"" Version=""1.0.0"" />
+    <PackageReference Include=""Microsoft.NETCore.App"" Version=""1.0.1"" />
   </ItemGroup>
 
   <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />

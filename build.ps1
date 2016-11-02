@@ -68,6 +68,5 @@ $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 $dotnetHome = "$buildFolder\.dotnet"
 mkdir $dotnetHome  -ErrorAction Ignore | Out-Null
 & .\dotnet-install.ps1 -Version $(Get-Content .\CliToolVersion.txt) -InstallDir $dotnetHome
-& .\dotnet-install.ps1 -Version 1.1.0-preview1-001100-00 -Channel release/1.1.0 -SharedRuntime -InstallDir $dotnetHome
 
 &"$buildFile" $args

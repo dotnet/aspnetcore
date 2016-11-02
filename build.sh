@@ -47,6 +47,5 @@ export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 dotnetHome="$buildFolder/.dotnet"
 mkdir -p $dotnetHome
 ./dotnet-install.sh --install-dir $dotnetHome --version $(cat CliToolVersion.txt)
-./dotnet-install.sh --install-dir $dotnetHome --version 1.1.0-preview1-001100-00 --channel release/1.1.0 --shared-runtime
 
 $buildFile -r $repoFolder "$@"
