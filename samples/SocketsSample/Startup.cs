@@ -15,8 +15,8 @@ namespace SocketsSample
         {
             services.AddRouting();
 
-            services.AddSingleton<IPubSub, Bus>();
-            services.AddSingleton(typeof(HubLifetimeManager<>), typeof(PubSubHubLifetimeManager<>));
+            services.AddSingleton(typeof(HubLifetimeManager<>), typeof(DefaultHubLifetimeManager<>));
+            // services.AddSingleton(typeof(HubLifetimeManager<>), typeof(RedisHubLifetimeManager<>));
             services.AddSingleton(typeof(HubEndPoint<>), typeof(HubEndPoint<>));
             services.AddSingleton(typeof(RpcEndpoint<>), typeof(RpcEndpoint<>));
 
