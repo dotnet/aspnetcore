@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SocketsSample.Hubs;
+using SocketsSample.Protobuf;
 
 namespace SocketsSample
 {
@@ -20,7 +21,6 @@ namespace SocketsSample
 
             services.AddSingleton<ChatEndPoint>();
             services.AddSingleton<ProtobufSerializer>();
-            services.AddSingleton<InvocationAdapterRegistry>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -35,16 +35,20 @@ namespace SocketsSample
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<Chat>("/hubs");
+            });
+
             app.UseSockets(routes =>
             {
-                routes.MapSocketEndpoint<HubEndPoint<Chat>>("/hubs");
                 routes.MapSocketEndpoint<ChatEndPoint>("/chat");
                 routes.MapSocketEndpoint<RpcEndpoint<Echo>>("/jsonrpc");
             });
 
             app.UseRpc(invocationAdapters =>
             {
-                invocationAdapters.AddInvocationAdapter("protobuf", new Protobuf.ProtobufInvocationAdapter(app.ApplicationServices));
+                invocationAdapters.AddInvocationAdapter("protobuf", new ProtobufInvocationAdapter(app.ApplicationServices));
                 invocationAdapters.AddInvocationAdapter("json", new JsonInvocationAdapter());
                 invocationAdapters.AddInvocationAdapter("line", new LineInvocationAdapter());
             });

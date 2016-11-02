@@ -14,6 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton(typeof(IHubContext<>), typeof(HubContext<>));
             services.AddSingleton(typeof(HubEndPoint<>), typeof(HubEndPoint<>));
             services.AddSingleton(typeof(RpcEndpoint<>), typeof(RpcEndpoint<>));
+            services.AddSingleton<InvocationAdapterRegistry>();
 
             return new SignalRBuilder(services);
         }
