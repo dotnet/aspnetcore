@@ -146,15 +146,15 @@ namespace NuGetPackager
                 return Environment.GetEnvironmentVariable("KOREBUILD_NUGET_EXE");
             }
 
-            var nugetPath = Path.Combine(_baseDir, ".build", "nuget.3.5.0-rc1.exe");
+            var nugetPath = Path.Combine(_baseDir, ".build", "nuget.3.5.0.exe");
             if (File.Exists(nugetPath))
             {
                 return nugetPath;
             }
 
-            Console.WriteLine("log : Downloading nuget.exe 3.5.0-rc1".Bold().Black());
+            Console.WriteLine("log : Downloading nuget.exe 3.5.0");
 
-            var response = await new HttpClient().GetAsync("https://dist.nuget.org/win-x86-commandline/v3.5.0-rc1/NuGet.exe");
+            var response = await new HttpClient().GetAsync("https://dist.nuget.org/win-x86-commandline/v3.5.0/NuGet.exe");
             using (var file = new FileStream(nugetPath, FileMode.CreateNew))
             {
                 response.EnsureSuccessStatusCode();
