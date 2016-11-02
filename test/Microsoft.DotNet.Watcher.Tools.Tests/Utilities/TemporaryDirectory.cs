@@ -11,7 +11,7 @@ namespace Microsoft.DotNetWatcher.Tools.Tests
     {
         private List<TemporaryCSharpProject> _projects = new List<TemporaryCSharpProject>();
         private List<TemporaryDirectory> _subdirs = new List<TemporaryDirectory>();
-        private List<string> _files = new List<string>();
+        private Dictionary<string, string> _files = new Dictionary<string, string>();
         private TemporaryDirectory _parent;
 
         public TemporaryDirectory()
@@ -47,9 +47,9 @@ namespace Microsoft.DotNetWatcher.Tools.Tests
             return project;
         }
 
-        public TemporaryDirectory WithFile(string name)
+        public TemporaryDirectory WithFile(string name, string contents = "")
         {
-            _files.Add(name);
+            _files[name] = contents;
             return this;
         }
 
@@ -78,7 +78,7 @@ namespace Microsoft.DotNetWatcher.Tools.Tests
 
             foreach (var file in _files)
             {
-                CreateFile(file, string.Empty);
+                CreateFile(file.Key, file.Value);
             }
         }
 
