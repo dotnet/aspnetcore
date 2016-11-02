@@ -118,7 +118,15 @@ namespace SocketsSample
 
                     using (var scope = _serviceScopeFactory.CreateScope())
                     {
-                        var value = scope.ServiceProvider.GetService<T>() ?? Activator.CreateInstance<T>();
+                        var value = scope.ServiceProvider.GetService<T>();
+
+                        bool created = false;
+
+                        if (value == null)
+                        {
+                            value = Activator.CreateInstance<T>();
+                            created = true;
+                        }
 
                         BeforeInvoke(connection, value);
 
@@ -145,6 +153,12 @@ namespace SocketsSample
                         finally
                         {
                             AfterInvoke(connection, value);
+                        }
+
+                        if (created)
+                        {
+                            // Dispose the object if it's disposable and we created it
+                            (value as IDisposable)?.Dispose();
                         }
                     }
 

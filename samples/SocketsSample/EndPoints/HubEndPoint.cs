@@ -68,14 +68,13 @@ namespace SocketsSample
             }
         }
 
-        protected override void BeforeInvoke(Connection connection, THub endpoint)
+        protected override void BeforeInvoke(Connection connection, THub hub)
         {
-            Initialize(connection, endpoint);
+            Initialize(connection, hub);
         }
 
-        private void Initialize(Connection connection, THub endpoint)
+        private void Initialize(Connection connection, THub hub)
         {
-            var hub = endpoint;
             hub.Clients = this;
             hub.Context = new HubCallerContext(connection);
             hub.Groups = new GroupManager<THub>(connection, _lifetimeManager);

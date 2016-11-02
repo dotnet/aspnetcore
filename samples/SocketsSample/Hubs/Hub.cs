@@ -1,9 +1,57 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace SocketsSample.Hubs
 {
-    public class Hub
+    public class Hub : IDisposable
     {
+        private bool _disposed;
+        private IHubConnectionContext _clients;
+        private HubCallerContext _context;
+        private IGroupManager _groups;
+
+        public IHubConnectionContext Clients
+        {
+            get
+            {
+                CheckDisposed();
+                return _clients;
+            }
+            set
+            {
+                CheckDisposed();
+                _clients = value;
+            }
+        }
+
+        public HubCallerContext Context
+        {
+            get
+            {
+                CheckDisposed();
+                return _context;
+            }
+            set
+            {
+                CheckDisposed();
+                _context = value;
+            }
+        }
+
+        public IGroupManager Groups
+        {
+            get
+            {
+                CheckDisposed();
+                return _groups;
+            }
+            set
+            {
+                CheckDisposed();
+                _groups = value;
+            }
+        }
+
         public virtual Task OnConnectedAsync()
         {
             return Task.CompletedTask;
@@ -14,10 +62,28 @@ namespace SocketsSample.Hubs
             return Task.CompletedTask;
         }
 
-        public IHubConnectionContext Clients { get; set; }
+        protected virtual void Dispose(bool disposing)
+        {
+        }
 
-        public HubCallerContext Context { get; set; }
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
 
-        public IGroupManager Groups { get; set; }
+            Dispose(true);
+
+            _disposed = true;
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
+        }
     }
 }

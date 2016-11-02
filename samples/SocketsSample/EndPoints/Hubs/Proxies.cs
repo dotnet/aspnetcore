@@ -51,7 +51,6 @@ namespace SocketsSample.EndPoints.Hubs
 
         public Task Invoke(string method, params object[] args)
         {
-            // TODO: More than just chat
             return _lifetimeManager.InvokeAll(method, args);
         }
     }
@@ -77,7 +76,7 @@ namespace SocketsSample.EndPoints.Hubs
     public class GroupManager<THub> : IGroupManager
     {
         private readonly Connection _connection;
-        private HubLifetimeManager<THub> _lifetimeManager;
+        private readonly HubLifetimeManager<THub> _lifetimeManager;
 
         public GroupManager(Connection connection, HubLifetimeManager<THub> lifetimeManager)
         {

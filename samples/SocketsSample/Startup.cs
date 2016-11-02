@@ -21,8 +21,6 @@ namespace SocketsSample
             services.AddSingleton(typeof(RpcEndpoint<>), typeof(RpcEndpoint<>));
 
             services.AddSingleton<ChatEndPoint>();
-            services.AddSingleton<Chat>();
-
             services.AddSingleton<ProtobufSerializer>();
             services.AddSingleton<InvocationAdapterRegistry>();
         }
