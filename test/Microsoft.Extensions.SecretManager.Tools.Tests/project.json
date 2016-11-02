@@ -4,7 +4,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "dotnet-test-xunit": "2.2.0-*",
+    "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "Microsoft.Extensions.SecretManager.Tools": "1.0.0-*",
     "xunit": "2.2.0-*"
   },

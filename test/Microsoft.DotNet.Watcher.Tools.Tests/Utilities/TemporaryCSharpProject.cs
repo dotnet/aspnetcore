@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace Microsoft.DotNetWatcher.Tools.Tests
@@ -28,14 +29,17 @@ namespace Microsoft.DotNetWatcher.Tools.Tests
 
         private readonly string _filename;
         private readonly TemporaryDirectory _directory;
-        private string[] _tfms;
         private List<string> _items = new List<string>();
+        private List<string> _properties = new List<string>();
 
         public TemporaryCSharpProject(string name, TemporaryDirectory directory)
         {
             Name = name;
             _filename = name + ".csproj";
             _directory = directory;
+
+            // workaround CLI issue
+            WithProperty("SkipInvalidConfigurations", "true");
         }
 
         public string Name { get; }
@@ -43,7 +47,28 @@ namespace Microsoft.DotNetWatcher.Tools.Tests
 
         public TemporaryCSharpProject WithTargetFrameworks(params string[] tfms)
         {
-            _tfms = tfms;
+            Debug.Assert(tfms.Length > 0);
+            var propertySpec = new PropertySpec
+            {
+                Value = string.Join(";", tfms)
+            };
+            propertySpec.Name = tfms.Length == 1
+                ? "TargetFramework"
+                : "TargetFrameworks";
+
+            return WithProperty(propertySpec);
+        }
+
+        public TemporaryCSharpProject WithProperty(string name, string value)
+            => WithProperty(new PropertySpec { Name = name, Value = value });
+
+        public TemporaryCSharpProject WithProperty(PropertySpec property)
+        {
+            var sb = new StringBuilder();
+            sb.Append('<').Append(property.Name).Append('>')
+                .Append(property.Value)
+                .Append("</").Append(property.Name).Append('>');
+            _properties.Add(sb.ToString());
             return this;
         }
 
@@ -84,13 +109,7 @@ namespace Microsoft.DotNetWatcher.Tools.Tests
 
         public void Create()
         {
-            var tfm = _tfms == null || _tfms.Length == 0
-                ? string.Empty
-                : _tfms.Length == 1
-                    ? $"<TargetFramework>{_tfms[0]}</TargetFramework>"
-                    : $"<TargetFrameworks>{string.Join(";", _tfms)}</TargetFrameworks>";
-
-            _directory.CreateFile(_filename, string.Format(Template, tfm, string.Join("\r\n", _items)));
+            _directory.CreateFile(_filename, string.Format(Template, string.Join("\r\n", _properties), string.Join("\r\n", _items)));
         }
 
         public class ItemSpec
@@ -101,6 +120,12 @@ namespace Microsoft.DotNetWatcher.Tools.Tests
             public string Remove { get; set; }
             public bool Watch { get; set; } = true;
             public string Condition { get; set; }
+        }
+
+        public class PropertySpec
+        {
+            public string Name { get; set; }
+            public string Value { get; set; }
         }
     }
 }

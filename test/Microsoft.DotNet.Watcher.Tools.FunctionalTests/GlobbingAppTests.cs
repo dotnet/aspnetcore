@@ -200,7 +200,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 StartedFile = StatusFile + ".started";
 
                 Scenario.AddTestProjectFolder(TestAppName);
-                Scenario.Restore3(TestAppName);
+                Scenario.Restore(TestAppName);
 
                 TestAppFolder = Path.Combine(Scenario.WorkFolder, TestAppName);
             }
@@ -210,7 +210,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 // Wait for the process to start
                 using (var wait = new WaitForFileToChange(StartedFile))
                 {
-                    RunDotNetWatch(new[] { "run3", StatusFile }, Path.Combine(Scenario.WorkFolder, TestAppName));
+                    RunDotNetWatch(new[] { "run", StatusFile }, Path.Combine(Scenario.WorkFolder, TestAppName));
 
                     wait.Wait(_defaultTimeout,
                         expectedToChange: true,

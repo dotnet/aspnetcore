@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 Scenario.AddTestProjectFolder(AppWithDeps);
                 Scenario.AddTestProjectFolder(Dependency);
 
-                Scenario.Restore3(AppWithDeps); // restore3 should be transitive
+                Scenario.Restore(AppWithDeps); // restore3 should be transitive
 
                 AppWithDepsFolder = Path.Combine(Scenario.WorkFolder, AppWithDeps);
                 DependencyFolder = Path.Combine(Scenario.WorkFolder, Dependency);
@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 // Wait for the process to start
                 using (var wait = new WaitForFileToChange(StatusFile))
                 {
-                    RunDotNetWatch(new[] { "run3", StatusFile }, Path.Combine(Scenario.WorkFolder, AppWithDeps));
+                    RunDotNetWatch(new[] { "run", StatusFile }, Path.Combine(Scenario.WorkFolder, AppWithDeps));
 
                     wait.Wait(_defaultTimeout,
                         expectedToChange: true,

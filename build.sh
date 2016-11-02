@@ -2,7 +2,7 @@
 repoFolder="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $repoFolder
 
-koreBuildZip="https://github.com/aspnet/KoreBuild/archive/feature/msbuild.zip"
+koreBuildZip="https://github.com/aspnet/KoreBuild/archive/dev.zip"
 if [ ! -z $KOREBUILD_ZIP ]; then
     koreBuildZip=$KOREBUILD_ZIP
 fi
@@ -42,5 +42,11 @@ if test ! -d $buildFolder; then
         rm -rf $tempFolder
     fi
 fi
+
+export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+dotnetHome="$buildFolder/.dotnet"
+mkdir -p $dotnetHome
+./dotnet-install.sh --install-dir $dotnetHome --version $(cat CliToolVersion.txt)
+./dotnet-install.sh --install-dir $dotnetHome --version 1.1.0 --channel release/1.1.0 --shared-runtime
 
 $buildFile -r $repoFolder "$@"

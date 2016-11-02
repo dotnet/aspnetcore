@@ -57,41 +57,14 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             }
         }
 
-        public void Restore(string project = null)
-        {
-            if (project == null)
-            {
-                project = WorkFolder;
-            }
-            else
-            {
-                project = Path.Combine(WorkFolder, project);
-            }
-
-            _logger?.WriteLine($"Restoring project in {project}");
-
-            var restore = Command
-                .CreateDotNet("restore", new[] { project })
-                .CaptureStdErr()
-                .CaptureStdOut()
-                .OnErrorLine(l => _logger?.WriteLine(l))
-                .OnOutputLine(l => _logger?.WriteLine(l))
-                .Execute();
-
-            if (restore.ExitCode != 0)
-            {
-                throw new Exception($"Exit code {restore.ExitCode}");
-            }
-        }
-
-        public void Restore3(string project)
+        public void Restore(string project)
         {
             project = Path.Combine(WorkFolder, project);
 
             _logger?.WriteLine($"Restoring msbuild project in {project}");
 
             var restore = Command
-                .CreateDotNet("restore3", new [] { "/v:m" })
+                .Create(new Muxer().MuxerPath, new[] { "restore", "/p:SkipInvalidConfigurations=true" })
                 .WorkingDirectory(project)
                 .CaptureStdErr()
                 .CaptureStdOut()

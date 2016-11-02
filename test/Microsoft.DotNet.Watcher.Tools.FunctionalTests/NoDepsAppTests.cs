@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 // Wait for the process to start
                 using (var wait = new WaitForFileToChange(scenario.StartedFile))
                 {
-                    scenario.RunDotNetWatch(new[] { "run3", "-f", "netcoreapp1.0", scenario.StatusFile, "--no-exit" });
+                    scenario.RunDotNetWatch(new[] { "run", scenario.StatusFile, "--no-exit" });
 
                     wait.Wait(_defaultTimeout,
                         expectedToChange: true,
@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 // Wait for the process to start
                 using (var wait = new WaitForFileToChange(scenario.StartedFile))
                 {
-                    scenario.RunDotNetWatch(new[] { "run3", "-f", "netcoreapp1.0", scenario.StatusFile });
+                    scenario.RunDotNetWatch(new[] { "run", scenario.StatusFile });
 
                     wait.Wait(_defaultTimeout,
                         expectedToChange: true,
@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 StartedFile = StatusFile + ".started";
 
                 Scenario.AddTestProjectFolder(TestAppName);
-                Scenario.Restore3(TestAppName);
+                Scenario.Restore(TestAppName);
 
                 TestAppFolder = Path.Combine(Scenario.WorkFolder, TestAppName);
             }

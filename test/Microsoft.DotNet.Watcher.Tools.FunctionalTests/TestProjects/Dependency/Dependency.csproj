@@ -8,8 +8,8 @@
   <ItemGroup>
     <Compile Include="**\*.cs" />
     <EmbeddedResource Include="**\*.resx" />
-    <PackageReference Include="NETStandard.Library" Version="1.6.1-*" />
-    <PackageReference Include="Microsoft.NET.Sdk" Version="1.0.0-*" PrivateAssets="All" />
+    <PackageReference Include="NETStandard.Library" Version="1.6.0" />
+    <PackageReference Include="Microsoft.NET.Sdk" Version="1.0.0-alpha-20161026-2" PrivateAssets="All" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
