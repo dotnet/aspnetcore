@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -59,6 +60,11 @@ namespace Microsoft.AspNetCore.Mvc
                 return ViewContext?.HttpContext?.User;
             }
         }
+
+        /// <summary>
+        /// Gets the <see cref="ClaimsPrincipal"/> for the current user.
+        /// </summary>
+        public ClaimsPrincipal UserClaimsPrincipal => ViewContext?.HttpContext?.User;
 
         /// <summary>
         /// Gets the <see cref="RouteData"/> for the current request.
