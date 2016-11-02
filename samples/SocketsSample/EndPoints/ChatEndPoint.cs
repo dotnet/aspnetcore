@@ -8,9 +8,12 @@ namespace SocketsSample
 {
     public class ChatEndPoint : EndPoint
     {
+        public ConnectionList Connections { get; } = new ConnectionList();
 
         public override async Task OnConnected(Connection connection)
         {
+            Connections.Add(connection);
+
             await Broadcast($"{connection.ConnectionId} connected ({connection.Metadata["transport"]})");
 
             while (true)
@@ -32,6 +35,8 @@ namespace SocketsSample
                     connection.Channel.Input.Advance(input.End);
                 }
             }
+
+            Connections.Remove(connection);
 
             await Broadcast($"{connection.ConnectionId} disconnected ({connection.Metadata["transport"]})");
         }

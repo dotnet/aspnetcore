@@ -42,11 +42,11 @@
 
                     delete calls[response.Id];
 
-                    if (response.error) {
-                        cb.error(response.error);
+                    if (response.Error) {
+                        cb.error(response.Error);
                     }
                     else {
-                        cb.success(response.result);
+                        cb.success(response.Result);
                     }
                 }
                 else {

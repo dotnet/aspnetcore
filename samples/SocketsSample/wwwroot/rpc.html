@@ -16,15 +16,15 @@
             ws.onmessage = function (event) {
                 var response = JSON.parse(event.data);
 
-                var cb = calls[response.id];
+                var cb = calls[response.Id];
 
-                delete calls[response.id];
+                delete calls[response.Id];
 
-                if (response.error) {
-                    cb.error(response.error);
+                if (response.Error) {
+                    cb.error(response.Error);
                 }
                 else {
-                    cb.success(response.result);
+                    cb.success(response.Result);
                 }
             };
 
@@ -35,7 +35,7 @@
             this.invoke = function (method, args) {
                 return new Promise((resolve, reject) => {
                     calls[id] = { success: resolve, error: reject };
-                    ws.send(JSON.stringify({ method: method, params: args, id: id }));
+                    ws.send(JSON.stringify({ method: method, arguments: args, id: id }));
                     id++;
                 });
             };

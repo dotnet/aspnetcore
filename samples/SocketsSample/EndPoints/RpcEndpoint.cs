@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -8,34 +7,26 @@ using Channels;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using SocketsSample.Protobuf;
 
 namespace SocketsSample
 {
-    public class RpcEndpoint : EndPoint
+    public class RpcEndpoint<T> : EndPoint where T : class
     {
         private readonly Dictionary<string, Func<Connection, InvocationDescriptor, InvocationResultDescriptor>> _callbacks
             = new Dictionary<string, Func<Connection, InvocationDescriptor, InvocationResultDescriptor>>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Type[]> _paramTypes = new Dictionary<string, Type[]>();
 
-        private readonly ILogger<RpcEndpoint> _logger;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger _logger;
+        private readonly InvocationAdapterRegistry _registry;
+        protected readonly IServiceScopeFactory _serviceScopeFactory;
 
-
-        public RpcEndpoint(ILogger<RpcEndpoint> logger, IServiceProvider serviceProvider)
+        public RpcEndpoint(InvocationAdapterRegistry registry, ILoggerFactory loggerFactory, IServiceScopeFactory serviceScopeFactory)
         {
-            // TODO: Discover end points
-            _logger = logger;
-            _serviceProvider = serviceProvider;
+            _logger = loggerFactory.CreateLogger<RpcEndpoint<T>>();
+            _registry = registry;
+            _serviceScopeFactory = serviceScopeFactory;
 
-            DiscoverEndpoints();
-        }
-
-        protected virtual void DiscoverEndpoints()
-        {
-            RegisterRPCEndPoint(typeof(Echo));
+            RegisterRPCEndPoint();
         }
 
         public override async Task OnConnected(Connection connection)
@@ -44,16 +35,14 @@ namespace SocketsSample
             await Task.Yield();
 
             var stream = connection.Channel.GetStream();
-            var invocationAdapter =
-                _serviceProvider
-                    .GetRequiredService<InvocationAdapterRegistry>()
-                    .GetInvocationAdapter((string)connection.Metadata["formatType"]);
+            var invocationAdapter = _registry.GetInvocationAdapter((string)connection.Metadata["formatType"]);
 
             while (true)
             {
                 var invocationDescriptor =
                     await invocationAdapter.ReadInvocationDescriptor(
-                            stream, methodName => {
+                            stream, methodName =>
+                            {
                                 Type[] types;
                                 // TODO: null or throw?
                                 return _paramTypes.TryGetValue(methodName, out types) ? types : null;
@@ -90,12 +79,19 @@ namespace SocketsSample
             }
         }
 
-        protected virtual void Initialize(Connection connection, object endpoint)
+        protected virtual void BeforeInvoke(Connection connection, T endpoint)
         {
         }
 
-        protected void RegisterRPCEndPoint(Type type)
+        protected virtual void AfterInvoke(Connection connection, T endpoint)
         {
+
+        }
+
+        protected void RegisterRPCEndPoint()
+        {
+            var type = typeof(T);
+
             foreach (var methodInfo in type.GetTypeInfo().DeclaredMethods.Where(m => m.IsPublic))
             {
                 var methodName = type.FullName + "." + methodInfo.Name;
@@ -115,21 +111,22 @@ namespace SocketsSample
 
                 _callbacks[methodName] = (connection, invocationDescriptor) =>
                 {
-                    var invocationResult = new InvocationResultDescriptor();
-                    invocationResult.Id = invocationDescriptor.Id;
-
-                    var scopeFactory = _serviceProvider.GetRequiredService<IServiceScopeFactory>();
-
-                    // Scope per call so that deps injected get disposed
-                    using (var scope = scopeFactory.CreateScope())
+                    var invocationResult = new InvocationResultDescriptor()
                     {
-                        object value = scope.ServiceProvider.GetService(type) ?? Activator.CreateInstance(type);
+                        Id = invocationDescriptor.Id
+                    };
 
-                        Initialize(connection, value);
+                    using (var scope = _serviceScopeFactory.CreateScope())
+                    {
+                        var value = scope.ServiceProvider.GetService<T>() ?? Activator.CreateInstance<T>();
+
+                        BeforeInvoke(connection, value);
 
                         try
                         {
-                            var args = invocationDescriptor.Arguments
+                            var arguments = invocationDescriptor.Arguments ?? Array.Empty<object>();
+
+                            var args = arguments
                                 .Zip(parameters, (a, p) => Convert.ChangeType(a, p.ParameterType))
                                 .ToArray();
 
@@ -137,11 +134,17 @@ namespace SocketsSample
                         }
                         catch (TargetInvocationException ex)
                         {
+                            _logger.LogError(0, ex, "Failed to invoke RPC method");
                             invocationResult.Error = ex.InnerException.Message;
                         }
                         catch (Exception ex)
                         {
+                            _logger.LogError(0, ex, "Failed to invoke RPC method");
                             invocationResult.Error = ex.Message;
+                        }
+                        finally
+                        {
+                            AfterInvoke(connection, value);
                         }
                     }
 

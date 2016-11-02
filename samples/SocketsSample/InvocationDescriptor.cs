@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SocketsSample
 {
@@ -12,5 +9,10 @@ namespace SocketsSample
         public string Method { get; set; }
 
         public object[] Arguments { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Id}: {Method}({(Arguments ?? new object[0]).Length})";
+        }
     }
 }

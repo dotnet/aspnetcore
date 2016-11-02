@@ -8,11 +8,6 @@ namespace Microsoft.AspNetCore.Sockets
     public abstract class EndPoint
     {
         /// <summary>
-        /// Live list of connections for this <see cref="EndPoint"/>
-        /// </summary>
-        public ConnectionList Connections { get; } = new ConnectionList();
-
-        /// <summary>
         /// Called when a new connection is accepted to the endpoint
         /// </summary>
         /// <param name="connection">The new <see cref="Connection"/></param>

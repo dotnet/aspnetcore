@@ -94,11 +94,7 @@ namespace Microsoft.AspNetCore.Sockets
                             state.Connection.Channel.Dispose();
 
                             await endpointTask;
-
-                            endpoint.Connections.Remove(state.Connection);
                         };
-
-                        endpoint.Connections.Add(state.Connection);
 
                         endpointTask = endpoint.OnConnected(state.Connection);
                         state.Connection.Metadata["endpoint"] = endpointTask;
@@ -124,8 +120,6 @@ namespace Microsoft.AspNetCore.Sockets
                         state.Connection.Channel.Dispose();
 
                         await transportTask;
-
-                        endpoint.Connections.Remove(state.Connection);
                     }
 
                     // Mark the connection as inactive
@@ -143,8 +137,6 @@ namespace Microsoft.AspNetCore.Sockets
             // Register this transport for disconnect
             RegisterDisconnect(context, connection);
 
-            endpoint.Connections.Add(connection);
-
             // Call into the end point passing the connection
             var endpointTask = endpoint.OnConnected(connection);
 
@@ -159,8 +151,6 @@ namespace Microsoft.AspNetCore.Sockets
 
             // Wait for both
             await Task.WhenAll(endpointTask, transportTask);
-
-            endpoint.Connections.Remove(connection);
         }
 
         private static void RegisterLongPollingDisconnect(HttpContext context, Connection connection)

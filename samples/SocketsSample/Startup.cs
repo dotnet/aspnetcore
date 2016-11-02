@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SocketsSample.EndPoints.Hubs;
+using SocketsSample.Hubs;
 
 namespace SocketsSample
 {
@@ -16,9 +15,13 @@ namespace SocketsSample
         {
             services.AddRouting();
 
-            services.AddSingleton<HubEndpoint>();
-            services.AddSingleton<RpcEndpoint>();
+            services.AddSingleton<IPubSub, Bus>();
+            services.AddSingleton(typeof(HubLifetimeManager<>), typeof(PubSubHubLifetimeManager<>));
+            services.AddSingleton(typeof(HubEndPoint<>), typeof(HubEndPoint<>));
+            services.AddSingleton(typeof(RpcEndpoint<>), typeof(RpcEndpoint<>));
+
             services.AddSingleton<ChatEndPoint>();
+            services.AddSingleton<Chat>();
 
             services.AddSingleton<ProtobufSerializer>();
             services.AddSingleton<InvocationAdapterRegistry>();
@@ -36,12 +39,11 @@ namespace SocketsSample
                 app.UseDeveloperExceptionPage();
             }
 
-
             app.UseSockets(routes =>
             {
-                routes.MapSocketEndpoint<HubEndpoint>("/hubs");
+                routes.MapSocketEndpoint<HubEndPoint<Chat>>("/hubs");
                 routes.MapSocketEndpoint<ChatEndPoint>("/chat");
-                routes.MapSocketEndpoint<RpcEndpoint>("/jsonrpc");
+                routes.MapSocketEndpoint<RpcEndpoint<Echo>>("/jsonrpc");
             });
 
             app.UseRpc(invocationAdapters =>

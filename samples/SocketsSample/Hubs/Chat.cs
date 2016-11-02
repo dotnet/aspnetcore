@@ -1,20 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace SocketsSample.Hubs
 {
     public class Chat : Hub
     {
-        public void Send(string message)
+        public override async Task OnConnectedAsync()
         {
-            Clients.All.Invoke("Send", message);
+            await Clients.All.Invoke("Send", Context.Connection.ConnectionId + " joined");
         }
 
-        public Person EchoPerson(Person p)
+        public override async Task OnDisconnectedAsync()
         {
-            return p;
+            await Clients.All.Invoke("Send", Context.Connection.ConnectionId + " left");
+        }
+
+        public Task Send(string message)
+        {
+            return Clients.All.Invoke("Send", Context.ConnectionId + ": " + message);
         }
     }
 }
