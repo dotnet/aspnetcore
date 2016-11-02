@@ -1,0 +1,14 @@
+﻿{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "Microsoft.AspNetCore.Sockets": {
+      "target": "project"
+    }
+  },
+
+  "frameworks": {
+    "netstandard1.6": {
+    }
+  }
+}

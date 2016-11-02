@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SocketsSample.EndPoints.Hubs;
 using SocketsSample.Hubs;
 
 namespace SocketsSample
@@ -15,10 +15,7 @@ namespace SocketsSample
         {
             services.AddRouting();
 
-            services.AddSingleton(typeof(HubLifetimeManager<>), typeof(DefaultHubLifetimeManager<>));
-            // services.AddSingleton(typeof(HubLifetimeManager<>), typeof(RedisHubLifetimeManager<>));
-            services.AddSingleton(typeof(HubEndPoint<>), typeof(HubEndPoint<>));
-            services.AddSingleton(typeof(RpcEndpoint<>), typeof(RpcEndpoint<>));
+            services.AddSignalR();
 
             services.AddSingleton<ChatEndPoint>();
             services.AddSingleton<ProtobufSerializer>();

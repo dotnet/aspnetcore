@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace SocketsSample.Hubs
+namespace Microsoft.AspNetCore.SignalR
 {
     public class Hub : IDisposable
     {

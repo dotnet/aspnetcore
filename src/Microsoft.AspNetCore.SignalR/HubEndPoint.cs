@@ -3,10 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SocketsSample.EndPoints.Hubs;
-using SocketsSample.Hubs;
 
-namespace SocketsSample
+namespace Microsoft.AspNetCore.SignalR
 {
     public class HubEndPoint<THub> : RpcEndpoint<THub>, IHubConnectionContext where THub : Hub
     {

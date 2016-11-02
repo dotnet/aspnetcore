@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Sockets;
 
-namespace SocketsSample.Hubs
+namespace Microsoft.AspNetCore.SignalR
 {
     public class HubCallerContext
     {

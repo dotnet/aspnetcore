@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SocketsSample
+namespace Microsoft.AspNetCore.SignalR
 {
     public class InvocationDescriptor
     {

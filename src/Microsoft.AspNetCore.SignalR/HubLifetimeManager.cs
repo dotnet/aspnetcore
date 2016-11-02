@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets;
 
-namespace SocketsSample.EndPoints.Hubs
+namespace Microsoft.AspNetCore.SignalR
 {
     public abstract class HubLifetimeManager<THub>
     {

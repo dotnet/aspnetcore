@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace SocketsSample
+namespace Microsoft.AspNetCore.SignalR
 {
     public interface IInvocationAdapter
     {

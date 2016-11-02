@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Sockets;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace SocketsSample
+namespace Microsoft.AspNetCore.SignalR
 {
     public class InvocationAdapterRegistry
     {

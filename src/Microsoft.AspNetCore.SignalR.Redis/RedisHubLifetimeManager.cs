@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 
-namespace SocketsSample.EndPoints.Hubs
+namespace Microsoft.AspNetCore.SignalR.Redis
 {
     public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposable
     {

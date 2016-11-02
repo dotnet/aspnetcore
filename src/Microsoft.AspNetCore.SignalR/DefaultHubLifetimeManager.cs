@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Channels;
 using Microsoft.AspNetCore.Sockets;
 
-namespace SocketsSample.EndPoints.Hubs
+namespace Microsoft.AspNetCore.SignalR
 {
     public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub>
     {

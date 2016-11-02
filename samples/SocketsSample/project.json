@@ -1,5 +1,8 @@
 ﻿{
   "dependencies": {
+    "Microsoft.AspNetCore.SignalR": {
+      "target": "project"
+    },
     "Microsoft.AspNetCore.Sockets": {
       "target": "project"
     },
@@ -8,7 +11,6 @@
       "type": "platform"
     },
     "Newtonsoft.Json": "9.0.1",
-    "StackExchange.Redis": "1.1.*",
     "Microsoft.AspNetCore.Diagnostics": "1.1.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.1.0-*",
     "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0-*",

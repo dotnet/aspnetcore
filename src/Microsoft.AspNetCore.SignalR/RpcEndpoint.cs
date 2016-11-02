@@ -8,8 +8,9 @@ using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace SocketsSample
+namespace Microsoft.AspNetCore.SignalR
 {
+    // REVIEW: Should there be an RPC package?
     public class RpcEndpoint<T> : EndPoint where T : class
     {
         private readonly Dictionary<string, Func<Connection, InvocationDescriptor, InvocationResultDescriptor>> _callbacks

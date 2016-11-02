@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Google.Protobuf;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace SocketsSample.Protobuf

@@ -1,4 +1,4 @@
-﻿namespace SocketsSample.Hubs
+﻿namespace Microsoft.AspNetCore.SignalR
 {
     public interface IGroupManager
     {

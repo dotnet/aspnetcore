@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace SocketsSample.Hubs
+namespace Microsoft.AspNetCore.SignalR
 {
     public interface IClientProxy
     {

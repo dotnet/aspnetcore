@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets;
-using SocketsSample.Hubs;
 
-namespace SocketsSample.EndPoints.Hubs
+namespace Microsoft.AspNetCore.SignalR
 {
     public class UserProxy<THub> : IClientProxy
     {
