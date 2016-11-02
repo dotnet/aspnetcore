@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 var model = new ErrorPageModel();
                 var runtimeType = Microsoft.Extensions.Internal.RuntimeEnvironment.RuntimeType;
                 model.RuntimeDisplayName = (runtimeType == "CoreCLR") ? ".NET Core" : runtimeType == "CLR" ? ".NET Framework" : "Mono";
-#if NETSTANDARD1_3
+#if NETSTANDARD1_3 || NETSTANDARD1_5
                 var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).GetTypeInfo().Assembly;
                 var assemblyVersion = new AssemblyName(systemRuntimeAssembly.FullName).Version.ToString();
                 var clrVersion = assemblyVersion;
