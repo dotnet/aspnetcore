@@ -883,12 +883,64 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Contains(selectorModel.AttributeRouteModel.Attribute, action.Attributes);
         }
 
+        [Fact]
+        public void ControllerDispose_ExplicitlyImplemented_IDisposableMethods_AreTreatedAs_NonActions()
+        {
+            // Arrange
+            var builder = new TestApplicationModelProvider();
+            var typeInfo = typeof(DerivedFromControllerAndExplicitIDisposableImplementationController).GetTypeInfo();
+            var context = new ApplicationModelProviderContext(new[] { typeInfo });
+
+            // Act
+            builder.OnProvidersExecuting(context);
+
+            // Assert
+            var model = Assert.Single(context.Result.Controllers);
+            Assert.Empty(model.Actions);
+        }
+
+        [Fact]
+        public void ControllerDispose_MethodsNamedDispose_AreTreatedAsActions()
+        {
+            // Arrange
+            var builder = new TestApplicationModelProvider();
+            var typeInfo = typeof(DerivedFromControllerAndHidesBaseDisposeMethodController).GetTypeInfo();
+            var context = new ApplicationModelProviderContext(new[] { typeInfo });
+
+            // Act
+            builder.OnProvidersExecuting(context);
+
+            // Assert
+            var model = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(model.Actions);
+
+            // Make sure that the Dispose method is from the derived controller and not the base 'Controller' type
+            Assert.Equal(typeInfo, action.ActionMethod.DeclaringType.GetTypeInfo());
+        }
+
         private IList<AttributeRouteModel> GetAttributeRoutes(IList<SelectorModel> selectors)
         {
             return selectors
                 .Where(sm => sm.AttributeRouteModel != null)
                 .Select(sm => sm.AttributeRouteModel)
                 .ToList();
+        }
+
+        private class DerivedFromControllerAndExplicitIDisposableImplementationController
+            : Mvc.Controller, IDisposable
+        {
+            void IDisposable.Dispose()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class DerivedFromControllerAndHidesBaseDisposeMethodController : Mvc.Controller
+        {
+            public new void Dispose()
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class BaseClassWithAttributeRoutesController
