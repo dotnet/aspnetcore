@@ -4,13 +4,15 @@ dotnet-watch
 
 ### How To Install
 
-Add `Microsoft.DotNet.Watcher.Tools` to the `tools` section of your `project.json` file:
+Add `Microsoft.DotNet.Watcher.Tools` to the `tools` section of your `project.json` file.
+
+Use the version "1.0.0-preview2-final" if you are using .NET Core 1.0.0 and use "1.0.0-preview3-final" if you are using .NET Core 1.1.0.
 
 ```
 {
 ...
   "tools": {
-    "Microsoft.DotNet.Watcher.Tools": "1.0.0-*"
+    "Microsoft.DotNet.Watcher.Tools": "1.0.0-preview2-final" //"1.0.0-preview3-final" for .NET Core 1.1.0
   }
 ...
 }
