@@ -10,6 +10,9 @@
       "mappings": {
         "FindUserSecretsProperty.targets": "./FindUserSecretsProperty.targets"
       }
+    },
+    "compile": {
+      "include": "../Shared/**/*.cs"
     }
   },
   "description": "Command line tool to manage user secrets for Microsoft.Extensions.Configuration.",
@@ -35,10 +38,9 @@
     ]
   },
   "dependencies": {
-    "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
-    "Microsoft.Extensions.CommandLineUtils": "1.1.0-*",
-    "Microsoft.Extensions.Configuration.UserSecrets": "1.1.0-*",
-    "Microsoft.Extensions.Logging": "1.1.0-*",
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-preview2-003121",
+    "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0",
+    "Microsoft.Extensions.Logging": "1.0.0",
     "Microsoft.NETCore.App": {
       "version": "1.0.1",
       "type": "platform"

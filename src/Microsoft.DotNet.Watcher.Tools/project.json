@@ -21,6 +21,9 @@
       "mappings": {
         "dotnetwatch.targets": "dotnetwatch.targets"
       }
+    },
+    "compile": {
+      "include": "../Shared/**/*.cs"
     }
   },
   "publishOptions": {
@@ -29,13 +32,12 @@
     ]
   },
   "dependencies": {
-    "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
-    "Microsoft.Extensions.CommandLineUtils": "1.1.0-*",
-    "Microsoft.Extensions.Logging": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.1.0-*",
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-preview2-003121",
+    "Microsoft.Extensions.Logging": "1.0.0",
+    "Microsoft.Extensions.Logging.Console": "1.0.0",
     "Microsoft.Extensions.Process.Sources": {
       "type": "build",
-      "version": "1.1.0-*"
+      "version": "1.0.0"
     },
     "Microsoft.NETCore.App": {
       "type": "platform",

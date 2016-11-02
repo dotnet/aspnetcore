@@ -3,9 +3,10 @@
 
 using System.IO;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.SecretManager.Tools.Internal;
+using Microsoft.Extensions.Logging;
 using Xunit;
+using System;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Tests
 {
@@ -75,7 +76,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             var secretStore = new TestSecretsStore();
             var command = new SetCommand("key", null);
 
-            var ex = Assert.Throws< Microsoft.DotNet.Cli.Utils.GracefulException>(
+            var ex = Assert.Throws<Microsoft.DotNet.Cli.Utils.GracefulException>(
                 () => command.Execute(new CommandContext(secretStore, NullLogger.Instance, testConsole)));
             Assert.Equal(Resources.FormatError_MissingArgument("value"), ex.Message);
         }
@@ -96,6 +97,27 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             {
                 // noop
             }
+        }
+    }
+
+    public class NullLogger : ILogger
+    {
+        public static NullLogger Instance = new NullLogger();
+
+        private class NullScope : IDisposable
+        {
+            public void Dispose()
+            {
+            }
+        }
+        public IDisposable BeginScope<TState>(TState state)
+            => new NullScope();
+
+        public bool IsEnabled(LogLevel logLevel)
+            => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        {
         }
     }
 }
