@@ -26,7 +26,11 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
             }
 
             _secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
-            
+
+            // workaround bug in configuration
+            var secretDir = Path.GetDirectoryName(_secretsFilePath);
+            Directory.CreateDirectory(secretDir);
+
             logger.LogDebug(Resources.Message_Secret_File_Path, _secretsFilePath);
             _secrets = Load(userSecretsId);
         }
