@@ -11,25 +11,11 @@ namespace Microsoft.Extensions.DependencyInjection
         public static ISignalRBuilder AddSignalR(this IServiceCollection services)
         {
             services.AddSingleton(typeof(HubLifetimeManager<>), typeof(DefaultHubLifetimeManager<>));
+            services.AddSingleton(typeof(IHubContext<>), typeof(HubContext<>));
             services.AddSingleton(typeof(HubEndPoint<>), typeof(HubEndPoint<>));
             services.AddSingleton(typeof(RpcEndpoint<>), typeof(RpcEndpoint<>));
 
             return new SignalRBuilder(services);
         }
-    }
-
-    public interface ISignalRBuilder
-    {
-        IServiceCollection Services { get; }
-    }
-
-    public class SignalRBuilder : ISignalRBuilder
-    {
-        public SignalRBuilder(IServiceCollection services)
-        {
-            Services = services;
-        }
-
-        public IServiceCollection Services { get; }
     }
 }

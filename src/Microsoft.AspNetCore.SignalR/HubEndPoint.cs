@@ -6,36 +6,21 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public class HubEndPoint<THub> : RpcEndpoint<THub>, IHubConnectionContext where THub : Hub
+    public class HubEndPoint<THub> : RpcEndpoint<THub> where THub : Hub
     {
         private readonly AllClientProxy<THub> _all;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
+        private readonly IHubContext<THub> _hubContext;
 
         public HubEndPoint(HubLifetimeManager<THub> lifetimeManager,
+                           IHubContext<THub> hubContext,
                            InvocationAdapterRegistry registry,
                            ILoggerFactory loggerFactory,
                            IServiceScopeFactory serviceScopeFactory)
             : base(registry, loggerFactory, serviceScopeFactory)
         {
             _lifetimeManager = lifetimeManager;
-            _all = new AllClientProxy<THub>(_lifetimeManager);
-        }
-
-        public virtual IClientProxy All => _all;
-
-        public virtual IClientProxy Client(string connectionId)
-        {
-            return new SingleClientProxy<THub>(_lifetimeManager, connectionId);
-        }
-
-        public virtual IClientProxy Group(string groupName)
-        {
-            return new GroupProxy<THub>(_lifetimeManager, groupName);
-        }
-
-        public virtual IClientProxy User(string userId)
-        {
-            return new UserProxy<THub>(_lifetimeManager, userId);
+            _hubContext = hubContext;
         }
 
         public override async Task OnConnected(Connection connection)
@@ -73,7 +58,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         private void Initialize(Connection connection, THub hub)
         {
-            hub.Clients = this;
+            hub.Clients = _hubContext.Clients;
             hub.Context = new HubCallerContext(connection);
             hub.Groups = new GroupManager<THub>(connection, _lifetimeManager);
         }
