@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             return null;
         }
 
-        public Task<int> ExecAsync(string args)
+        public async Task<int> ExecAsync(string args, CancellationToken cancellationToken)
         {
             var process = new Process()
             {
@@ -44,11 +45,23 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             };
             var tcs = new TaskCompletionSource<int>();
 
-            process.Exited += (_, __) => tcs.TrySetResult(process.ExitCode);
+            using (cancellationToken.Register(() => Cancel(process, tcs)))
+            {
+                process.Exited += (_, __) => tcs.TrySetResult(process.ExitCode);
 
-            process.Start();
+                process.Start();
 
-            return tcs.Task;
+                return await tcs.Task;
+            }
+        }
+
+        private static void Cancel(Process process, TaskCompletionSource<int> tcs)
+        {
+            if (process != null && !process.HasExited)
+            {
+                process.Kill();
+            }
+            tcs.TrySetCanceled();
         }
     }
 }

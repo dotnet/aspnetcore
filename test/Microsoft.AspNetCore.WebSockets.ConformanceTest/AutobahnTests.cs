@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -39,20 +40,23 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
 
             var loggerFactory = new LoggerFactory(); // No logging by default! It's very loud...
 
-            if(string.Equals(Environment.GetEnvironmentVariable("AUTOBAHN_SUITES_LOG"), "1", StringComparison.Ordinal))
+            if (string.Equals(Environment.GetEnvironmentVariable("AUTOBAHN_SUITES_LOG"), "1", StringComparison.Ordinal))
             {
                 loggerFactory.AddConsole();
             }
 
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(TimeSpan.FromMinutes(5)); // These tests generally complete in just over 1 minute.
+
             AutobahnResult result;
             using (var tester = new AutobahnTester(loggerFactory, spec))
             {
-                await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: false, environment: "ManagedSockets");
+                await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token);
 
                 // Windows-only IIS tests, and Kestrel SSL tests (due to: https://github.com/aspnet/WebSockets/issues/102)
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: true, environment: "ManagedSockets");
+                    await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: true, environment: "ManagedSockets", cancellationToken: cts.Token);
 
                     if (IsWindows8OrHigher())
                     {
@@ -60,12 +64,12 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
                         {
                             // IIS Express tests are a bit flaky, some tests fail occasionally or get non-strict passes
                             // https://github.com/aspnet/WebSockets/issues/100
-                            await tester.DeployTestAndAddToSpec(ServerType.IISExpress, ssl: false, environment: "ManagedSockets", expectationConfig: expect => expect
+                            await tester.DeployTestAndAddToSpec(ServerType.IISExpress, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token, expectationConfig: expect => expect
                                 .OkOrFail(Enumerable.Range(1, 20).Select(i => $"5.{i}").ToArray()) // 5.* occasionally fail on IIS express
                                 .OkOrNonStrict("3.2", "3.3", "3.4", "4.1.3", "4.1.4", "4.1.5", "4.2.3", "4.2.4", "4.2.5", "5.15")); // These occasionally get non-strict results
                         }
 
-                        await tester.DeployTestAndAddToSpec(ServerType.WebListener, ssl: false, environment: "ManagedSockets", expectationConfig: expect => expect
+                        await tester.DeployTestAndAddToSpec(ServerType.WebListener, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token, expectationConfig: expect => expect
                             .OkOrNonStrict("4.2.4"));
                     }
                 }
@@ -73,9 +77,12 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
                 // REQUIRES a build of WebListener that supports native WebSockets, which we don't have right now
                 //await tester.DeployTestAndAddToSpec(ServerType.WebListener, ssl: false, environment: "NativeSockets");
 
-                result = await tester.Run();
+                result = await tester.Run(cts.Token);
                 tester.Verify(result);
             }
+
+            // If it hasn't been cancelled yet, cancel the token just to be sure
+            cts.Cancel();
         }
 
         private bool IsWindows8OrHigher()

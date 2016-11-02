@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             Spec = baseSpec;
         }
 
-        public async Task<AutobahnResult> Run()
+        public async Task<AutobahnResult> Run(CancellationToken cancellationToken)
         {
             var specFile = Path.GetTempFileName();
             try
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
 
                 // Run the test (write something to the console so people know this will take a while...)
                 _logger.LogInformation("Now launching Autobahn Test Suite. This will take a while.");
-                var exitCode = await Wstest.Default.ExecAsync("-m fuzzingclient -s " + specFile);
+                var exitCode = await Wstest.Default.ExecAsync("-m fuzzingclient -s " + specFile, cancellationToken);
                 if (exitCode != 0)
                 {
                     throw new Exception("wstest failed");
@@ -56,6 +56,8 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
                     File.Delete(specFile);
                 }
             }
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             // Parse the output.
             var outputFile = Path.Combine(Directory.GetCurrentDirectory(), Spec.OutputDirectory, "index.json");
@@ -84,7 +86,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             Assert.True(failures.Length == 0, "Autobahn results did not meet expectations:" + Environment.NewLine + failures.ToString());
         }
 
-        public async Task DeployTestAndAddToSpec(ServerType server, bool ssl, string environment, Action<AutobahnExpectations> expectationConfig = null)
+        public async Task DeployTestAndAddToSpec(ServerType server, bool ssl, string environment, CancellationToken cancellationToken, Action<AutobahnExpectations> expectationConfig = null)
         {
             var port = Interlocked.Increment(ref _nextPort);
             var baseUrl = ssl ? $"https://localhost:{port}" : $"http://localhost:{port}";
@@ -104,6 +106,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             var deployer = ApplicationDeployerFactory.Create(parameters, logger);
             var result = deployer.Deploy();
             _deployers.Add(deployer);
+            cancellationToken.ThrowIfCancellationRequested();
 
 #if NET451
             System.Net.ServicePointManager.ServerCertificateValidationCallback = (_, __, ___, ____) => true;
@@ -123,9 +126,12 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             // Make sure the server works
             var resp = await RetryHelper.RetryRequest(() =>
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 return client.GetAsync(result.ApplicationBaseUri);
-            }, logger, result.HostShutdownToken, retryCount: 5);
+            }, logger, CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, result.HostShutdownToken).Token, retryCount: 5);
             resp.EnsureSuccessStatusCode();
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             // Add to the current spec
             var wsUrl = result.ApplicationBaseUri.Replace("https://", "wss://").Replace("http://", "ws://");
@@ -134,6 +140,8 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             var expectations = new AutobahnExpectations(server, ssl, environment);
             expectationConfig?.Invoke(expectations);
             _expectations.Add(expectations);
+
+            cancellationToken.ThrowIfCancellationRequested();
         }
 
         public void Dispose()
