@@ -12,7 +12,7 @@
     ]
   },
   "dependencies": {
-    "Libuv": "1.9.0-*",
+    "Libuv": "1.9.1",
     "Microsoft.AspNetCore.Hosting": "1.1.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.TaskCache.Sources": {
