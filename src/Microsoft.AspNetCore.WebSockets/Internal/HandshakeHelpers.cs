@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.WebSockets.Internal
 {
-    public static class HandshakeHelpers
+    internal static class HandshakeHelpers
     {
         /// <summary>
         /// Gets request headers needed process the handshake on the server.
@@ -76,7 +76,6 @@ namespace Microsoft.AspNetCore.WebSockets.Internal
 
         /// <summary>
         /// Validates the Sec-WebSocket-Key request header
-        /// "The value of this header field MUST be a nonce consisting of a randomly selected 16-byte value that has been base64-encoded."
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
@@ -97,14 +96,13 @@ namespace Microsoft.AspNetCore.WebSockets.Internal
             }
         }
 
-        /// <summary>
-        /// "...the base64-encoded SHA-1 of the concatenation of the |Sec-WebSocket-Key| (as a string, not base64-decoded) with the string
-        /// '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'"
-        /// </summary>
-        /// <param name="requestKey"></param>
-        /// <returns></returns>
         public static string CreateResponseKey(string requestKey)
         {
+            // "The value of this header field is constructed by concatenating /key/, defined above in step 4
+            // in Section 4.2.2, with the string "258EAFA5- E914-47DA-95CA-C5AB0DC85B11", taking the SHA-1 hash of
+            // this concatenated value to obtain a 20-byte value and base64-encoding"
+            // https://tools.ietf.org/html/rfc6455#section-4.2.2
+
             if (requestKey == null)
             {
                 throw new ArgumentNullException(nameof(requestKey));
