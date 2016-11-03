@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
         private Task SubscribeAsync(string channel, Connection connection)
         {
-            var redisConnection = connection.Metadata.GetOrAdd("redis", k =>
+            var redisConnection = connection.Metadata.GetOrAdd("redis", _ =>
             {
                 var logger = _loggerFactory.CreateLogger("REDIS_" + connection.ConnectionId);
                 // TODO: Async

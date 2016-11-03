@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.SignalR
             await Task.Yield();
 
             var stream = connection.Channel.GetStream();
-            var invocationAdapter = _registry.GetInvocationAdapter((string)connection.Metadata["formatType"]);
+            var invocationAdapter = _registry.GetInvocationAdapter(connection.Metadata.Get<string>("formatType"));
 
             while (true)
             {

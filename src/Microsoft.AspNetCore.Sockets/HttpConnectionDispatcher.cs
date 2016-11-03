@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Sockets
                     else
                     {
                         // Get the endpoint task from connection state
-                        endpointTask = (Task)state.Connection.Metadata["endpoint"];
+                        endpointTask = state.Connection.Metadata.Get<Task>("endpoint");
                     }
 
                     var resultTask = await Task.WhenAny(endpointTask, transportTask);

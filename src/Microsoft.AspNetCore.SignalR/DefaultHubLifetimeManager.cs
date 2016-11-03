@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         public override Task AddGroupAsync(Connection connection, string groupName)
         {
-            var groups = connection.Metadata.GetOrAdd("groups", k => new HashSet<string>());
+            var groups = connection.Metadata.GetOrAdd("groups", _ => new HashSet<string>());
 
             lock (groups)
             {
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.SignalR
                     continue;
                 }
 
-                var invocationAdapter = _registry.GetInvocationAdapter((string)connection.Metadata["formatType"]);
+                var invocationAdapter = _registry.GetInvocationAdapter(connection.Metadata.Get<string>("formatType"));
 
                 tasks.Add(invocationAdapter.WriteInvocationDescriptorAsync(message, connection.Channel.GetStream()));
             }
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.SignalR
         {
             var connection = _connections[connectionId];
 
-            var invocationAdapter = _registry.GetInvocationAdapter((string)connection.Metadata["formatType"]);
+            var invocationAdapter = _registry.GetInvocationAdapter(connection.Metadata.Get<string>("formatType"));
 
             var message = new InvocationDescriptor
             {
