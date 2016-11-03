@@ -47,6 +47,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         /// <inheritdoc />
         public IEnumerable<string> GetReferencePaths()
         {
+            if (Assembly.IsDynamic)
+            {
+                // Skip loading process for dynamic assemblies. This prevents DependencyContextLoader from reading the
+                // .deps.json file from either manifest resources or the assembly location, which will fail.
+                return Enumerable.Empty<string>();
+            }
+
             var dependencyContext = DependencyContext.Load(Assembly);
             if (dependencyContext != null)
             {
