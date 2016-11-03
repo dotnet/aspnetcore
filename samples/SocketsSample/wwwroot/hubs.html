@@ -39,7 +39,7 @@
 
             let isConnected = false;
             let connectButton = document.getElementById('connect');
-            connectButton.addEventListener('click', () => {
+            connectButton.addEventListener('click', event => {
                 connection.start(transports)
                 .then(() => {
                     isConnected = true;
@@ -48,6 +48,8 @@
                 .catch(err => {
                     addLine(err, 'red');
                 });
+
+                event.preventDefault();
             });
 
             let disconnectButton = document.getElementById('disconnect');
@@ -64,7 +66,7 @@
                     .then(result => {
                         console.log("invocation completed successfully: " + (result === null ? '(null)' : result));
 
-                        if (result != null) {
+                        if (result) {
                             addLine(result);
                         }
                     })
