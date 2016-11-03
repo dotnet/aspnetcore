@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using ChatSample.Data;
+using ChatSample.Hubs;
+using ChatSample.Models;
+using ChatSample.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -9,11 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using ChatSample.Data;
-using ChatSample.Models;
-using ChatSample.Services;
-using ChatSample.Hubs;
-using ChatSample;
 
 namespace ChatSample
 {
@@ -56,6 +51,7 @@ namespace ChatSample
             services.AddTransient<ISmsSender, AuthMessageSender>();
 
             services.AddSignalR();
+
             services.AddAuthentication();
         }
 
@@ -84,12 +80,7 @@ namespace ChatSample
 
             app.UseSignalR(routes =>
             {
-                routes.MapHub<Chat>("/hubs");
-            });
-
-            app.UseRpc(invocationAdapters =>
-            {
-                invocationAdapters.AddInvocationAdapter("json", new JsonNetInvocationAdapter());
+                routes.MapHub<Chat>("/chat");
             });
 
             app.UseMvc(routes =>

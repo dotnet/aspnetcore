@@ -1,10 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 
-namespace SocketsSample
+namespace Microsoft.AspNetCore.SignalR
 {
     public class JsonNetInvocationAdapter : IInvocationAdapter
     {
@@ -17,6 +16,7 @@ namespace SocketsSample
         public async Task<InvocationDescriptor> ReadInvocationDescriptor(Stream stream, Func<string, Type[]> getParams)
         {
             var reader = new JsonTextReader(new StreamReader(stream));
+            // REVIEW: Task.Run()
             return await Task.Run(() => _serializer.Deserialize<InvocationDescriptor>(reader));
         }
 

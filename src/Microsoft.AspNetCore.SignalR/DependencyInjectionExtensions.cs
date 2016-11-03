@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -14,9 +13,17 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton(typeof(IHubContext<>), typeof(HubContext<>));
             services.AddSingleton(typeof(HubEndPoint<>), typeof(HubEndPoint<>));
             services.AddSingleton(typeof(RpcEndpoint<>), typeof(RpcEndpoint<>));
+            services.AddSingleton<IConfigureOptions<SignalROptions>, SignalROptionsSetup>();
+            services.AddSingleton<JsonNetInvocationAdapter>();
             services.AddSingleton<InvocationAdapterRegistry>();
 
             return new SignalRBuilder(services);
+        }
+
+        public static ISignalRBuilder AddSignalROptions(this ISignalRBuilder builder, Action<SignalROptions> configure)
+        {
+            builder.Services.Configure(configure);
+            return builder;
         }
     }
 }

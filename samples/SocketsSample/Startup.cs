@@ -16,8 +16,16 @@ namespace SocketsSample
         {
             services.AddRouting();
 
-            services.AddSignalR();
-                    // .AddRedis();
+            services.AddSingleton<ProtobufInvocationAdapter>();
+            services.AddSingleton<LineInvocationAdapter>();
+
+            services.AddSignalR()
+                    .AddSignalROptions(options =>
+                    {
+                        options.RegisterInvocationAdapter<ProtobufInvocationAdapter>("protobuf");
+                        options.RegisterInvocationAdapter<LineInvocationAdapter>("line");
+                    });
+                 // .AddRedis();
 
             services.AddSingleton<ChatEndPoint>();
             services.AddSingleton<ProtobufSerializer>();
@@ -44,13 +52,6 @@ namespace SocketsSample
             {
                 routes.MapSocketEndpoint<ChatEndPoint>("/chat");
                 routes.MapSocketEndpoint<RpcEndpoint<Echo>>("/jsonrpc");
-            });
-
-            app.UseRpc(invocationAdapters =>
-            {
-                invocationAdapters.AddInvocationAdapter("protobuf", new ProtobufInvocationAdapter(app.ApplicationServices));
-                invocationAdapters.AddInvocationAdapter("json", new JsonNetInvocationAdapter());
-                invocationAdapters.AddInvocationAdapter("line", new LineInvocationAdapter());
             });
         }
     }

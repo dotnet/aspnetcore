@@ -1,22 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR
 {
     public class InvocationAdapterRegistry
     {
-        private Dictionary<string, IInvocationAdapter> _invocationAdapters = new Dictionary<string, IInvocationAdapter>();
+        private readonly IServiceProvider _serviceProvider;
+        private readonly SignalROptions _options;
 
-        public void RegisterInvocationAdapter(string format, IInvocationAdapter adapter)
+        public InvocationAdapterRegistry(IOptions<SignalROptions> options, IServiceProvider serviceProvider)
         {
-            _invocationAdapters[format] = adapter;
+            _options = options.Value;
+            _serviceProvider = serviceProvider;
         }
 
         public IInvocationAdapter GetInvocationAdapter(string format)
         {
-            IInvocationAdapter value;
+            Type type;
+            if (_options._invocationMappings.TryGetValue(format, out type))
+            {
+                return _serviceProvider.GetRequiredService(type) as IInvocationAdapter;
+            }
 
-            return _invocationAdapters.TryGetValue(format, out value) ? value : null;
+            return null;
         }
     }
 }
