@@ -4,6 +4,8 @@
 
 @*<link rel="stylesheet" href="~/css/chat.css" />*@
 
+<script src="~/js/signalr-client.js"></script>
+
 <script>
         function hubConnection(url) {
             var ws = new WebSocket(url);
@@ -80,22 +82,20 @@
 
 
         document.addEventListener('DOMContentLoaded', () => {
-            run('json');
-        });
+            let connection = new RpcConnection(`http://${document.location.host}/hubs`, 'formatType=json&format=text');
 
-        function run(formatType) {
-            var conn = new hubConnection(`ws://${document.location.host}/hubs/ws?formatType=${formatType}`);
-
-            conn.on('Send', function (message) {
+            connection.on('Send', function (message) {
                 var child = document.createElement('li');
                 child.innerText = message;
                 document.getElementById('messages').appendChild(child);
             });
 
+            connection.start();
+
             document.getElementById('sendmessage').addEventListener('submit', event => {
                 let data = document.getElementById('new-message').value;
 
-                conn.invoke('ChatSample.Hubs.Chat.Send', [data], formatType).catch(err => {
+                connection.invoke('ChatSample.Hubs.Chat.Send', data, 'json').catch(err => {
                     var child = document.createElement('li');
                     child.style.color = 'red';
                     child.innerText = err;
@@ -104,8 +104,7 @@
 
                 event.preventDefault();
             });
-        };
-
+        });
 </script>
 
 <div id="chat-area">

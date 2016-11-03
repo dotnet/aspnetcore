@@ -34,3 +34,4 @@ launchSettings.json
 *.nuget.props
 *.nuget.targets
 autobahnreports/
+signalr-client.js
