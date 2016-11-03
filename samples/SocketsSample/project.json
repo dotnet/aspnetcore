@@ -55,6 +55,7 @@
   },
 
   "scripts": {
+    "precompile": [ "tsc --project ../../src/Microsoft.AspNetCore.SignalR.Client.TS/ --out wwwroot/js/signalr-client.js" ],
     "postpublish": [ "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%" ]
   }
 }
