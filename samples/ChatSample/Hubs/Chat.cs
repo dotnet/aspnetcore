@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace ChatSample.Hubs
 {
+    // TODO: Make this work
+    [Authorize]
     public class Chat : Hub
     {
         public override Task OnConnectedAsync()

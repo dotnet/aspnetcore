@@ -86,6 +86,13 @@ namespace Microsoft.AspNetCore.Sockets
                     // Mark the connection as active
                     state.Active = true;
 
+                    RegisterLongPollingDisconnect(context, state.Connection);
+
+                    var longPolling = new LongPolling(state.Connection);
+
+                    // Start the transport
+                    var transportTask = longPolling.ProcessRequest(context);
+
                     Task endpointTask = null;
 
                     // Raise OnConnected for new connections only since polls happen all the time
@@ -112,13 +119,6 @@ namespace Microsoft.AspNetCore.Sockets
                         endpointTask = (Task)state.Connection.Metadata["endpoint"];
                     }
 
-                    RegisterLongPollingDisconnect(context, state.Connection);
-
-                    var longPolling = new LongPolling(state.Connection);
-
-                    // Start the transport
-                    var transportTask = longPolling.ProcessRequest(context);
-
                     var resultTask = await Task.WhenAny(endpointTask, transportTask);
 
                     if (resultTask == endpointTask)
@@ -144,11 +144,11 @@ namespace Microsoft.AspNetCore.Sockets
             // Register this transport for disconnect
             RegisterDisconnect(context, connection);
 
-            // Call into the end point passing the connection
-            var endpointTask = endpoint.OnConnected(connection);
-
             // Start the transport
             var transportTask = transport.ProcessRequest(context);
+
+            // Call into the end point passing the connection
+            var endpointTask = endpoint.OnConnected(connection);
 
             // Wait for any of them to end
             await Task.WhenAny(endpointTask, transportTask);
