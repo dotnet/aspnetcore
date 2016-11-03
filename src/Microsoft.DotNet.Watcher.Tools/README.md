@@ -21,20 +21,20 @@ Use the version "1.0.0-preview2-final" if you are using .NET Core 1.0.0 and use 
 ```
 
 **MSBuild**
-Install `Microsoft.DotNet.Watcher.Tools` as a `DotNetCliReference` to your project.
+Install `Microsoft.DotNet.Watcher.Tools` as a `DotNetCliToolReference` to your project.
 
 ```xml
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="1.0.0-rc1-final" />
+    <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="1.0.0-msbuild1-final" />
   </ItemGroup>
 ```
 
 
 ### How To Use
 
-    dotnet watch [-?|-h|--help]
+The command must be executed in the directory that contains the project to be watched.
 
-    dotnet watch [options] [[--] <args>...]
+    Usage: dotnet watch [options] [[--] <args>...]
 
     Options:
       -?|-h|--help  Show help information
