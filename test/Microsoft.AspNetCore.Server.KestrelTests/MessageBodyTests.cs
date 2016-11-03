@@ -196,10 +196,42 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             using (var input = new TestInput())
             {
                 var ex = Assert.Throws<BadHttpRequestException>(() =>
-                    MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders { HeaderTransferEncoding = "chunked, not-chunked" }, input.FrameContext));
+                    MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderTransferEncoding = "chunked, not-chunked" }, input.FrameContext));
 
                 Assert.Equal(400, ex.StatusCode);
                 Assert.Equal("Final transfer coding is not \"chunked\": \"chunked, not-chunked\"", ex.Message);
+            }
+        }
+
+        [Theory]
+        [InlineData("POST")]
+        [InlineData("PUT")]
+        public void ForThrowsWhenMethodRequiresLengthButNoContentLengthOrTransferEncodingIsSet(string method)
+        {
+            using (var input = new TestInput())
+            {
+                input.FrameContext.Method = method;
+                var ex = Assert.Throws<BadHttpRequestException>(() =>
+                    MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders(), input.FrameContext));
+
+                Assert.Equal(411, ex.StatusCode);
+                Assert.Equal($"{method} request contains no Content-Length or Transfer-Encoding header", ex.Message);
+            }
+        }
+
+        [Theory]
+        [InlineData("POST")]
+        [InlineData("PUT")]
+        public void ForThrowsWhenMethodRequiresLengthButNoContentLengthSetHttp10(string method)
+        {
+            using (var input = new TestInput())
+            {
+                input.FrameContext.Method = method;
+                var ex = Assert.Throws<BadHttpRequestException>(() =>
+                    MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders(), input.FrameContext));
+
+                Assert.Equal(400, ex.StatusCode);
+                Assert.Equal($"{method} request contains no Content-Length header", ex.Message);
             }
         }
 

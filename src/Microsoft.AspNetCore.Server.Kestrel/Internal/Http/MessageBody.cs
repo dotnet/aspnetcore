@@ -6,6 +6,7 @@ using System.IO;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
@@ -266,17 +267,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 return new ForChunkedEncoding(keepAlive, headers, context);
             }
 
-            var unparsedContentLength = headers.HeaderContentLength.ToString();
-            if (unparsedContentLength.Length > 0)
+            var unparsedContentLength = headers.HeaderContentLength;
+            if (unparsedContentLength.Count > 0)
             {
-                long contentLength;
-                if (!long.TryParse(unparsedContentLength, out contentLength) || contentLength < 0)
+                try
+                {
+                    var contentLength = FrameHeaders.ParseContentLength(unparsedContentLength);
+                    return new ForContentLength(keepAlive, contentLength, context);
+                }
+                catch (InvalidOperationException)
                 {
                     context.RejectRequest(RequestRejectionReason.InvalidContentLength, unparsedContentLength);
                 }
-                else
+            }
+
+            // Avoid slowing down most common case
+            if (!object.ReferenceEquals(context.Method, HttpMethods.Get))
+            {
+                // If we got here, request contains no Content-Length or Transfer-Encoding header.
+                // Reject with 411 Length Required.
+                if (HttpMethods.IsPost(context.Method) || HttpMethods.IsPut(context.Method))
                 {
-                    return new ForContentLength(keepAlive, contentLength, context);
+                    var requestRejectionReason = httpVersion == HttpVersion.Http11 ? RequestRejectionReason.LengthRequired : RequestRejectionReason.LengthRequiredHttp10;
+                    context.RejectRequest(requestRejectionReason, context.Method);
                 }
             }
 
