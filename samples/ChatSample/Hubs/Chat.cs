@@ -28,7 +28,7 @@ namespace ChatSample.Hubs
 
         public async Task Send(string message)
         {
-            await Clients.All.Invoke("Send", $"{Context.User.Identity.Name}: {message}");
+            await Clients.All.InvokeAsync("Send", $"{Context.User.Identity.Name}: {message}");
         }
     }
 }

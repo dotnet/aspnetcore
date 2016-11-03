@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.SignalR
             _userId = userId;
         }
 
-        public Task Invoke(string method, params object[] args)
+        public Task InvokeAsync(string method, params object[] args)
         {
-            return _lifetimeManager.InvokeUser(_userId, method, args);
+            return _lifetimeManager.InvokeUserAsync(_userId, method, args);
         }
     }
 
@@ -33,9 +33,9 @@ namespace Microsoft.AspNetCore.SignalR
             _groupName = groupName;
         }
 
-        public Task Invoke(string method, params object[] args)
+        public Task InvokeAsync(string method, params object[] args)
         {
-            return _lifetimeManager.InvokeGroup(_groupName, method, args);
+            return _lifetimeManager.InvokeGroupAsync(_groupName, method, args);
         }
     }
 
@@ -48,9 +48,9 @@ namespace Microsoft.AspNetCore.SignalR
             _lifetimeManager = lifetimeManager;
         }
 
-        public Task Invoke(string method, params object[] args)
+        public Task InvokeAsync(string method, params object[] args)
         {
-            return _lifetimeManager.InvokeAll(method, args);
+            return _lifetimeManager.InvokeAllAsync(method, args);
         }
     }
 
@@ -66,9 +66,9 @@ namespace Microsoft.AspNetCore.SignalR
             _connectionId = connectionId;
         }
 
-        public Task Invoke(string method, params object[] args)
+        public Task InvokeAsync(string method, params object[] args)
         {
-            return _lifetimeManager.InvokeConnection(_connectionId, method, args);
+            return _lifetimeManager.InvokeConnectionAsync(_connectionId, method, args);
         }
     }
 
@@ -85,12 +85,12 @@ namespace Microsoft.AspNetCore.SignalR
 
         public Task Add(string groupName)
         {
-            return _lifetimeManager.AddGroup(_connection, groupName);
+            return _lifetimeManager.AddGroupAsync(_connection, groupName);
         }
 
         public Task Remove(string groupName)
         {
-            return _lifetimeManager.RemoveGroup(_connection, groupName);
+            return _lifetimeManager.RemoveGroupAsync(_connection, groupName);
         }
     }
 }

@@ -9,7 +9,7 @@ namespace SocketsSample
 {
     public class LineInvocationAdapter : IInvocationAdapter
     {
-        public async Task<InvocationDescriptor> ReadInvocationDescriptor(Stream stream, Func<string, Type[]> getParams)
+        public async Task<InvocationDescriptor> ReadInvocationDescriptorAsync(Stream stream, Func<string, Type[]> getParams)
         {
             var streamReader = new StreamReader(stream);
             var line = await streamReader.ReadLineAsync();
@@ -30,13 +30,13 @@ namespace SocketsSample
             };
         }
 
-        public async Task WriteInvocationDescriptor(InvocationDescriptor invocationDescriptor, Stream stream)
+        public async Task WriteInvocationDescriptorAsync(InvocationDescriptor invocationDescriptor, Stream stream)
         {
             var msg = $"CI{invocationDescriptor.Id},M{invocationDescriptor.Method},{string.Join(",", invocationDescriptor.Arguments.Select(a => a.ToString()))}\n";
             await WriteAsync(msg, stream);
         }
 
-        public async Task WriteInvocationResult(InvocationResultDescriptor resultDescriptor, Stream stream)
+        public async Task WriteInvocationResultAsync(InvocationResultDescriptor resultDescriptor, Stream stream)
         {
             if (string.IsNullOrEmpty(resultDescriptor.Error))
             {

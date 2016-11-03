@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR
             _registry = registry;
         }
 
-        public override Task AddGroup(Connection connection, string groupName)
+        public override Task AddGroupAsync(Connection connection, string groupName)
         {
             var groups = connection.Metadata.GetOrAdd("groups", k => new HashSet<string>());
 
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.CompletedTask;
         }
 
-        public override Task RemoveGroup(Connection connection, string groupName)
+        public override Task RemoveGroupAsync(Connection connection, string groupName)
         {
             var groups = connection.Metadata.Get<HashSet<string>>("groups");
 
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.CompletedTask;
         }
 
-        public override Task InvokeAll(string methodName, params object[] args)
+        public override Task InvokeAllAsync(string methodName, params object[] args)
         {
             return InvokeAllWhere(methodName, args, c => true);
         }
@@ -65,13 +65,13 @@ namespace Microsoft.AspNetCore.SignalR
 
                 var invocationAdapter = _registry.GetInvocationAdapter((string)connection.Metadata["formatType"]);
 
-                tasks.Add(invocationAdapter.WriteInvocationDescriptor(message, connection.Channel.GetStream()));
+                tasks.Add(invocationAdapter.WriteInvocationDescriptorAsync(message, connection.Channel.GetStream()));
             }
 
             return Task.WhenAll(tasks);
         }
 
-        public override Task InvokeConnection(string connectionId, string methodName, params object[] args)
+        public override Task InvokeConnectionAsync(string connectionId, string methodName, params object[] args)
         {
             var connection = _connections[connectionId];
 
@@ -83,10 +83,10 @@ namespace Microsoft.AspNetCore.SignalR
                 Arguments = args
             };
 
-            return invocationAdapter.WriteInvocationDescriptor(message, connection.Channel.GetStream());
+            return invocationAdapter.WriteInvocationDescriptorAsync(message, connection.Channel.GetStream());
         }
 
-        public override Task InvokeGroup(string groupName, string methodName, params object[] args)
+        public override Task InvokeGroupAsync(string groupName, string methodName, params object[] args)
         {
             return InvokeAllWhere(methodName, args, connection =>
             {
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.SignalR
             });
         }
 
-        public override Task InvokeUser(string userId, string methodName, params object[] args)
+        public override Task InvokeUserAsync(string userId, string methodName, params object[] args)
         {
             return InvokeAllWhere(methodName, args, connection =>
             {

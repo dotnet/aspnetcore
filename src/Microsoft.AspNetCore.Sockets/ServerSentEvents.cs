@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Sockets
             _channel = (HttpChannel)connection.Channel;
         }
 
-        public async Task ProcessRequest(HttpContext context)
+        public async Task ProcessRequestAsync(HttpContext context)
         {
             context.Response.ContentType = "text/event-stream";
             context.Response.Headers["Cache-Control"] = "no-cache";

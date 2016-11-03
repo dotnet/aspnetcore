@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Sockets
             _messageType = format == Format.Binary ? WebSocketMessageType.Binary : WebSocketMessageType.Text;
         }
 
-        public async Task ProcessRequest(HttpContext context)
+        public async Task ProcessRequestAsync(HttpContext context)
         {
             if (!context.WebSockets.IsWebSocketRequest)
             {

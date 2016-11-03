@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.SignalR
             RegisterRPCEndPoint();
         }
 
-        public override async Task OnConnected(Connection connection)
+        public override async Task OnConnectedAsync(Connection connection)
         {
             // TODO: Dispatch from the caller
             await Task.Yield();
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.SignalR
             while (true)
             {
                 var invocationDescriptor =
-                    await invocationAdapter.ReadInvocationDescriptor(
+                    await invocationAdapter.ReadInvocationDescriptorAsync(
                             stream, methodName =>
                             {
                                 Type[] types;
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.SignalR
                     };
                 }
 
-                await invocationAdapter.WriteInvocationResult(result, stream);
+                await invocationAdapter.WriteInvocationResultAsync(result, stream);
             }
         }
 

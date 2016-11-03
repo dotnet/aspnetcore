@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var ms = new MemoryStream();
                 context.Request.Path = "/getid";
                 context.Response.Body = ms;
-                await dispatcher.Execute<TestEndPoint>("", context);
+                await dispatcher.ExecuteAsync<TestEndPoint>("", context);
 
                 var id = Encoding.UTF8.GetString(ms.ToArray());
 
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.Request.Query = qs;
                 await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 {
-                    await dispatcher.Execute<TestEndPoint>("", context);
+                    await dispatcher.ExecuteAsync<TestEndPoint>("", context);
                 });
             }
         }
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.Request.Query = qs;
                 await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 {
-                    await dispatcher.Execute<TestEndPoint>("", context);
+                    await dispatcher.ExecuteAsync<TestEndPoint>("", context);
                 });
             }
         }
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.Request.Path = "/send";
                 await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 {
-                    await dispatcher.Execute<TestEndPoint>("", context);
+                    await dispatcher.ExecuteAsync<TestEndPoint>("", context);
                 });
             }
         }
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
     public class TestEndPoint : EndPoint
     {
-        public override Task OnConnected(Connection connection)
+        public override Task OnConnectedAsync(Connection connection)
         {
             throw new NotImplementedException();
         }

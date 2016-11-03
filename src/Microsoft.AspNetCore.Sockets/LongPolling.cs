@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Sockets
             _channel = (HttpChannel)connection.Channel;
         }
 
-        public async Task ProcessRequest(HttpContext context)
+        public async Task ProcessRequestAsync(HttpContext context)
         {
             var result = await _channel.Output.ReadAsync();
             var buffer = result.Buffer;

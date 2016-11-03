@@ -8,17 +8,17 @@ namespace SocketsSample.Hubs
     {
         public override async Task OnConnectedAsync()
         {
-            await Clients.All.Invoke("Send", Context.Connection.ConnectionId + " joined");
+            await Clients.All.InvokeAsync("Send", Context.Connection.ConnectionId + " joined");
         }
 
         public override async Task OnDisconnectedAsync()
         {
-            await Clients.All.Invoke("Send", Context.Connection.ConnectionId + " left");
+            await Clients.All.InvokeAsync("Send", Context.Connection.ConnectionId + " left");
         }
 
         public Task Send(string message)
         {
-            return Clients.All.Invoke("Send", Context.ConnectionId + ": " + message);
+            return Clients.All.InvokeAsync("Send", Context.ConnectionId + ": " + message);
         }
     }
 }

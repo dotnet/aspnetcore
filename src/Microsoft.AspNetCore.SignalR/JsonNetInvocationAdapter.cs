@@ -13,20 +13,20 @@ namespace Microsoft.AspNetCore.SignalR
         {
         }
 
-        public async Task<InvocationDescriptor> ReadInvocationDescriptor(Stream stream, Func<string, Type[]> getParams)
+        public async Task<InvocationDescriptor> ReadInvocationDescriptorAsync(Stream stream, Func<string, Type[]> getParams)
         {
             var reader = new JsonTextReader(new StreamReader(stream));
             // REVIEW: Task.Run()
             return await Task.Run(() => _serializer.Deserialize<InvocationDescriptor>(reader));
         }
 
-        public Task WriteInvocationResult(InvocationResultDescriptor resultDescriptor, Stream stream)
+        public Task WriteInvocationResultAsync(InvocationResultDescriptor resultDescriptor, Stream stream)
         {
             Write(resultDescriptor, stream);
             return Task.FromResult(0);
         }
 
-        public Task WriteInvocationDescriptor(InvocationDescriptor invocationDescriptor, Stream stream)
+        public Task WriteInvocationDescriptorAsync(InvocationDescriptor invocationDescriptor, Stream stream)
         {
             Write(invocationDescriptor, stream);
             return Task.FromResult(0);

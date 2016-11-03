@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 channel.Output.CompleteWriter();
 
-                await sse.ProcessRequest(context);
+                await sse.ProcessRequestAsync(context);
 
                 Assert.Equal("text/event-stream", context.Response.ContentType);
                 Assert.Equal("no-cache", context.Response.Headers["Cache-Control"]);
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 channel.Output.CompleteWriter();
 
-                await sse.ProcessRequest(context);
+                await sse.ProcessRequestAsync(context);
 
                 var expected = "data: Hello World\n\n";
                 Assert.Equal(expected, Encoding.UTF8.GetString(ms.ToArray()));

@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             _bus = _redisServerConnection.GetSubscriber();
         }
 
-        public override Task InvokeAll(string methodName, params object[] args)
+        public override Task InvokeAllAsync(string methodName, params object[] args)
         {
             var message = new InvocationDescriptor
             {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return PublishAsync(typeof(THub).Name, message);
         }
 
-        public override Task InvokeConnection(string connectionId, string methodName, params object[] args)
+        public override Task InvokeConnectionAsync(string connectionId, string methodName, params object[] args)
         {
             var message = new InvocationDescriptor
             {
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return PublishAsync(typeof(THub) + "." + connectionId, message);
         }
 
-        public override Task InvokeGroup(string groupName, string methodName, params object[] args)
+        public override Task InvokeGroupAsync(string groupName, string methodName, params object[] args)
         {
             var message = new InvocationDescriptor
             {
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return PublishAsync(typeof(THub) + "." + groupName, message);
         }
 
-        public override Task InvokeUser(string userId, string methodName, params object[] args)
+        public override Task InvokeUserAsync(string userId, string methodName, params object[] args)
         {
             var message = new InvocationDescriptor
             {
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             // BAD
             using (var ms = new MemoryStream())
             {
-                invocationAdapter.WriteInvocationDescriptor(message, ms);
+                invocationAdapter.WriteInvocationDescriptorAsync(message, ms);
 
                 return _bus.PublishAsync(channel, ms.ToArray());
             }
@@ -113,13 +113,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return Task.CompletedTask;
         }
 
-        public override Task AddGroup(Connection connection, string groupName)
+        public override Task AddGroupAsync(Connection connection, string groupName)
         {
             var key = typeof(THub).Name + "." + groupName;
             return SubscribeAsync(key, connection);
         }
 
-        public override Task RemoveGroup(Connection connection, string groupName)
+        public override Task RemoveGroupAsync(Connection connection, string groupName)
         {
             var key = typeof(THub) + "." + groupName;
             return UnsubscribeAsync(key, connection);

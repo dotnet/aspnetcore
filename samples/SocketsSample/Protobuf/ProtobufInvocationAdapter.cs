@@ -16,7 +16,7 @@ namespace SocketsSample.Protobuf
             _serviceProvider = serviceProvider;
         }
 
-        public async Task<InvocationDescriptor> ReadInvocationDescriptor(Stream stream, Func<string, Type[]> getParams)
+        public async Task<InvocationDescriptor> ReadInvocationDescriptorAsync(Stream stream, Func<string, Type[]> getParams)
         {
             return await Task.Run(() => CreateInvocationDescriptorInt(stream, getParams));
         }
@@ -59,7 +59,7 @@ namespace SocketsSample.Protobuf
             return Task.FromResult(invocationDescriptor);
         }
 
-        public async Task WriteInvocationResult(InvocationResultDescriptor resultDescriptor, Stream stream)
+        public async Task WriteInvocationResultAsync(InvocationResultDescriptor resultDescriptor, Stream stream)
         {
             var outputStream = new CodedOutputStream(stream, leaveOpen: true);
             outputStream.WriteMessage(new RpcMessageKind() { MessageKind = RpcMessageKind.Types.Kind.Result });
@@ -101,7 +101,7 @@ namespace SocketsSample.Protobuf
             await stream.FlushAsync();
         }
 
-        public async Task WriteInvocationDescriptor(InvocationDescriptor invocationDescriptor, Stream stream)
+        public async Task WriteInvocationDescriptorAsync(InvocationDescriptor invocationDescriptor, Stream stream)
         {
             var outputStream = new CodedOutputStream(stream, leaveOpen: true);
             outputStream.WriteMessage(new RpcMessageKind() { MessageKind = RpcMessageKind.Types.Kind.Invocation });

@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.Sockets
         /// </summary>
         /// <param name="context"></param>
         /// <returns>A <see cref="Task"/> that completes when the transport has finished processing</returns>
-        Task ProcessRequest(HttpContext context);
+        Task ProcessRequestAsync(HttpContext context);
     }
 }

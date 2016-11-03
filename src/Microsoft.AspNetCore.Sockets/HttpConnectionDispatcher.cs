@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Sockets
             _channelFactory = factory;
         }
 
-        public async Task Execute<TEndPoint>(string path, HttpContext context) where TEndPoint : EndPoint
+        public async Task ExecuteAsync<TEndPoint>(string path, HttpContext context) where TEndPoint : EndPoint
         {
             if (context.Request.Path.StartsWithSegments(path + "/getid"))
             {
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Sockets
                     var longPolling = new LongPolling(state.Connection);
 
                     // Start the transport
-                    var transportTask = longPolling.ProcessRequest(context);
+                    var transportTask = longPolling.ProcessRequestAsync(context);
 
                     Task endpointTask = null;
 
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Sockets
                             await endpointTask;
                         };
 
-                        endpointTask = endpoint.OnConnected(state.Connection);
+                        endpointTask = endpoint.OnConnectedAsync(state.Connection);
                         state.Connection.Metadata["endpoint"] = endpointTask;
                     }
                     else
@@ -145,10 +145,10 @@ namespace Microsoft.AspNetCore.Sockets
             RegisterDisconnect(context, connection);
 
             // Start the transport
-            var transportTask = transport.ProcessRequest(context);
+            var transportTask = transport.ProcessRequestAsync(context);
 
             // Call into the end point passing the connection
-            var endpointTask = endpoint.OnConnected(connection);
+            var endpointTask = endpoint.OnConnectedAsync(connection);
 
             // Wait for any of them to end
             await Task.WhenAny(endpointTask, transportTask);

@@ -8,7 +8,6 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class HubEndPoint<THub> : RpcEndpoint<THub> where THub : Hub
     {
-        private readonly AllClientProxy<THub> _all;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
         private readonly IHubContext<THub> _hubContext;
 
@@ -23,7 +22,7 @@ namespace Microsoft.AspNetCore.SignalR
             _hubContext = hubContext;
         }
 
-        public override async Task OnConnected(Connection connection)
+        public override async Task OnConnectedAsync(Connection connection)
         {
             try
             {
@@ -36,7 +35,7 @@ namespace Microsoft.AspNetCore.SignalR
                     await hub.OnConnectedAsync();
                 }
 
-                await base.OnConnected(connection);
+                await base.OnConnectedAsync(connection);
             }
             finally
             {
@@ -61,11 +60,6 @@ namespace Microsoft.AspNetCore.SignalR
             hub.Clients = _hubContext.Clients;
             hub.Context = new HubCallerContext(connection);
             hub.Groups = new GroupManager<THub>(connection, _lifetimeManager);
-        }
-
-        protected override void AfterInvoke(Connection connection, THub endpoint)
-        {
-            // Poison the hub make sure it can't be used after invocation
         }
     }
 }

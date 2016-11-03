@@ -10,7 +10,7 @@ namespace SocketsSample
     {
         public ConnectionList Connections { get; } = new ConnectionList();
 
-        public override async Task OnConnected(Connection connection)
+        public override async Task OnConnectedAsync(Connection connection)
         {
             Connections.Add(connection);
 

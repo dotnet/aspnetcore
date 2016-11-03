@@ -6,10 +6,10 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public interface IInvocationAdapter
     {
-        Task<InvocationDescriptor> ReadInvocationDescriptor(Stream stream, Func<string, Type[]> getParams);
+        Task<InvocationDescriptor> ReadInvocationDescriptorAsync(Stream stream, Func<string, Type[]> getParams);
 
-        Task WriteInvocationResult(InvocationResultDescriptor resultDescriptor, Stream stream);
+        Task WriteInvocationResultAsync(InvocationResultDescriptor resultDescriptor, Stream stream);
 
-        Task WriteInvocationDescriptor(InvocationDescriptor invocationDescriptor, Stream stream);
+        Task WriteInvocationDescriptorAsync(InvocationDescriptor invocationDescriptor, Stream stream);
     }
 }

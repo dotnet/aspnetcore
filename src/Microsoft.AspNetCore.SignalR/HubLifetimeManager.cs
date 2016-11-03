@@ -9,17 +9,17 @@ namespace Microsoft.AspNetCore.SignalR
 
         public abstract Task OnDisconnectedAsync(Connection connection);
 
-        public abstract Task InvokeAll(string methodName, params object[] args);
+        public abstract Task InvokeAllAsync(string methodName, params object[] args);
 
-        public abstract Task InvokeConnection(string connectionId, string methodName, params object[] args);
+        public abstract Task InvokeConnectionAsync(string connectionId, string methodName, params object[] args);
 
-        public abstract Task InvokeGroup(string groupName, string methodName, params object[] args);
+        public abstract Task InvokeGroupAsync(string groupName, string methodName, params object[] args);
 
-        public abstract Task InvokeUser(string userId, string methodName, params object[] args);
+        public abstract Task InvokeUserAsync(string userId, string methodName, params object[] args);
 
-        public abstract Task AddGroup(Connection connection, string groupName);
+        public abstract Task AddGroupAsync(Connection connection, string groupName);
 
-        public abstract Task RemoveGroup(Connection connection, string groupName);
+        public abstract Task RemoveGroupAsync(Connection connection, string groupName);
     }
 
 }

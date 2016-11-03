@@ -22,22 +22,22 @@ namespace Microsoft.AspNetCore.Builder
             app.UseRouter(routes.Build());
             return app;
         }
+    }
 
-        public class SocketRouteBuilder
+    public class SocketRouteBuilder
+    {
+        private readonly HttpConnectionDispatcher _dispatcher;
+        private readonly RouteBuilder _routes;
+
+        public SocketRouteBuilder(RouteBuilder routes, HttpConnectionDispatcher dispatcher)
         {
-            private readonly HttpConnectionDispatcher _dispatcher;
-            private readonly RouteBuilder _routes;
+            _routes = routes;
+            _dispatcher = dispatcher;
+        }
 
-            public SocketRouteBuilder(RouteBuilder routes, HttpConnectionDispatcher dispatcher)
-            {
-                _routes = routes;
-                _dispatcher = dispatcher;
-            }
-
-            public void MapSocketEndpoint<TEndPoint>(string path) where TEndPoint : EndPoint
-            {
-                _routes.AddPrefixRoute(path, new RouteHandler(c => _dispatcher.Execute<TEndPoint>(path, c)));
-            }
+        public void MapSocketEndpoint<TEndPoint>(string path) where TEndPoint : EndPoint
+        {
+            _routes.AddPrefixRoute(path, new RouteHandler(c => _dispatcher.ExecuteAsync<TEndPoint>(path, c)));
         }
     }
 }
