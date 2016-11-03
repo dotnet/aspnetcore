@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     StringComparison.Ordinal));
 
             var tagHelperDescriptors = viewComponentDescriptors
-                .Where(d => !d.Parameters.Any(p => p.ParameterType.GetTypeInfo().ContainsGenericParameters))
+                .Where(d => !d.MethodInfo.ContainsGenericParameters)
                 .Select(viewComponentDescriptor => CreateDescriptor(viewComponentDescriptor));
 
             return tagHelperDescriptors;
