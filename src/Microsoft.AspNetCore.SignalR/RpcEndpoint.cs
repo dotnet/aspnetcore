@@ -144,8 +144,11 @@ namespace Microsoft.AspNetCore.SignalR
                             if (resultTask != null)
                             {
                                 await resultTask;
-                                var property = resultTask.GetType().GetProperty("Result");
-                                invocationResult.Result = property?.GetValue(resultTask);
+                                if (methodInfo.ReturnType.GetTypeInfo().IsGenericType)
+                                {
+                                    var property = resultTask.GetType().GetProperty("Result");
+                                    invocationResult.Result = property?.GetValue(resultTask);
+                                }
                             }
                             else
                             {
