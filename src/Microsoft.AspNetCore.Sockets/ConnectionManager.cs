@@ -5,7 +5,7 @@ using Channels;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public class ConnectionManager
+    public class ConnectionManager : IDisposable
     {
         private ConcurrentDictionary<string, ConnectionState> _connections = new ConcurrentDictionary<string, ConnectionState>();
         private Timer _timer;
@@ -88,6 +88,29 @@ namespace Microsoft.AspNetCore.Sockets
                     else
                     {
 
+                    }
+                }
+            }
+        }
+
+        public void Dispose()
+        {
+            // Stop firing the timer
+            _timer.Dispose();
+
+            foreach (var c in _connections)
+            {
+                ConnectionState s;
+                if (_connections.TryRemove(c.Key, out s))
+                {
+                    // Longpolling connections should do this
+                    if (s.Close != null)
+                    {
+                        s.Close();
+                    }
+                    else
+                    {
+                        s.Connection.Channel.Dispose();
                     }
                 }
             }

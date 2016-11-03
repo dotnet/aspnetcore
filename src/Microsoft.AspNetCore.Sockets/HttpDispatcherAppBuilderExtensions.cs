@@ -1,8 +1,10 @@
 ﻿using System;
 using Channels;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -12,7 +14,13 @@ namespace Microsoft.AspNetCore.Builder
         {
             var manager = new ConnectionManager();
             var factory = new ChannelFactory();
+
             var dispatcher = new HttpConnectionDispatcher(manager, factory);
+
+            // Dispose the connection manager when application shutdown is triggered
+            var lifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
+            lifetime.ApplicationStopping.Register(state => ((IDisposable)state).Dispose(), manager);
+
             var routes = new RouteBuilder(app);
 
             callback(new SocketRouteBuilder(routes, dispatcher));
