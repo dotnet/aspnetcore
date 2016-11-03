@@ -5,14 +5,14 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.DotNet.Watcher.Tools": "1.0.0-*",
+    "Microsoft.DotNet.Watcher.Tools": "1.1.0-*",
     "xunit": "2.2.0-*"
   },
   "frameworks": {
-    "netcoreapp1.0": {
+    "netcoreapp1.1": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.1.0-*",
+          "version": "1.1.0",
           "type": "platform"
         }
       }

@@ -11,7 +11,7 @@ Add `Microsoft.Extensions.SecretManager.Tools` to the `tools` section of your `p
 {
     ..
     "tools": {
-        "Microsoft.Extensions.SecretManager.Tools": "1.0.0-*"
+        "Microsoft.Extensions.SecretManager.Tools": "1.0.0-preview4-final"  // "1.1.0-preview4-final" for .NET Core 1.1.0
     }
     ...
 }
