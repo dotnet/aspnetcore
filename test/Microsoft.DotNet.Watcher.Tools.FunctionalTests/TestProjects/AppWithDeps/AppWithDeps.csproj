@@ -9,7 +9,7 @@
     <Compile Include="**\*.cs" />
     <EmbeddedResource Include="**\*.resx" />
     <ProjectReference Include="..\Dependency\Dependency.csproj" />
-    <PackageReference Include="Microsoft.NET.Sdk" Version="1.0.0-alpha-20161026-2" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.NET.Sdk" Version="1.0.0-alpha-20161029-1" PrivateAssets="All" />
     <PackageReference Include="Microsoft.NETCore.App" Version="1.0.1" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
