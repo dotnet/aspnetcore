@@ -44,6 +44,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                 GetTagHelperChunk("Baz"),
                 GetNestedViewComponentTagHelperChunk("Foo", visitedTagHelperChunks),
                 GetViewComponentTagHelperChunk("Bar", visitedTagHelperChunks),
+                GetIndexerViewComponentTagHelperChunk(
+                    "Bee",
+                    visitedTagHelperChunks,
+                    "System.Collections.Generic.Dictionary<global::System.String, global::System.Collections.Generic.List<global::System.Int32>>"),
             };
         }
 
@@ -102,6 +106,53 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                 RequiredAttributes = new[]
                 {
                     requiredAttribute
+                }
+            };
+
+            tagHelperDescriptor.PropertyBag.Add(
+                ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey,
+                name);
+
+            var tagHelperChunk = new TagHelperChunk(
+                $"vc:{name.ToLowerInvariant()}",
+                TagMode.SelfClosing,
+                new List<TagHelperAttributeTracker>(),
+                new[]
+                {
+                    tagHelperDescriptor
+                });
+
+            return tagHelperChunk;
+        }
+
+        private static TagHelperChunk GetIndexerViewComponentTagHelperChunk(string name, bool visitedTagHelperChunks, string attributeTypeName)
+        {
+            var typeName = visitedTagHelperChunks ? $"{_testNamespace}.{_testClass}.{name}Type" : $"{name}Type";
+
+            var attribute = new TagHelperAttributeDescriptor
+            {
+                Name = "attribute",
+                PropertyName = "Attribute",
+                TypeName = attributeTypeName
+            };
+
+            var indexerAttribute = new TagHelperAttributeDescriptor
+            {
+                Name = attribute.Name + "-",
+                PropertyName = attribute.PropertyName,
+                TypeName = attributeTypeName,
+                IsIndexer = true
+            };
+
+            var tagHelperDescriptor = new TagHelperDescriptor
+            {
+                AssemblyName = $"{name}Assembly",
+                TagName = name.ToLowerInvariant(),
+                TypeName = typeName,
+                Attributes = new[]
+                {
+                    attribute,
+                    indexerAttribute
                 }
             };
 

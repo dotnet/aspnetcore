@@ -131,9 +131,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host.Internal
                 $"global::{_context.ViewContextTypeName}",
                 ViewContextVariable);
 
+            var indexerAttributes = descriptor.Attributes.Where(a => a.IsIndexer);
+
             foreach (var attribute in descriptor.Attributes)
             {
+                if (attribute.IsIndexer)
+                {
+                    continue;
+                }
+
                 Writer.WriteAutoPropertyDeclaration("public", attribute.TypeName, attribute.PropertyName);
+
+                if (indexerAttributes.Any(a => string.Equals(a.PropertyName, attribute.PropertyName, StringComparison.Ordinal)))
+                {
+                    Writer.Write(" = ")
+                        .WriteStartNewObject(attribute.TypeName)
+                        .WriteEndMethodInvocation();
+                }
             }
         }
 
@@ -173,7 +187,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host.Internal
 
         private string[] GetMethodParameters(TagHelperDescriptor descriptor)
         {
-            var propertyNames = descriptor.Attributes.Select(attribute => attribute.PropertyName);
+            var propertyNames = descriptor.Attributes.Where(a => !a.IsIndexer).Select(attribute => attribute.PropertyName);
             var joinedPropertyNames = string.Join(", ", propertyNames);
             var parametersString = $" new {{ { joinedPropertyNames } }}";
 

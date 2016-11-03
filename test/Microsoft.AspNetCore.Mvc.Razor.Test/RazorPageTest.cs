@@ -1501,7 +1501,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return new ViewContext(
                 actionContext,
                 viewMock.Object,
-                new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary()),
                 Mock.Of<ITempDataDictionary>(),
                 writer,
                 new HtmlHelperOptions());

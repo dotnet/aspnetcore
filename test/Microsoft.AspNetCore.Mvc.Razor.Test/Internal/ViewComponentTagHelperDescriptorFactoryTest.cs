@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Razor.Host;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.TagHelpers.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
             var descriptors = factory.CreateDescriptors(assemblyName);
 
             // Assert
-            Assert.Equal(expectedDescriptors, descriptors, TagHelperDescriptorComparer.Default);
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
         }
 
         public static TheoryData TypeData
@@ -219,7 +220,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
                         {
                             Name = "test-enum",
                             PropertyName = "testEnum",
-                            TypeName = typeof(TestEnum).FullName,
+                            TypeName = ViewComponentTagHelperDescriptorFactory.GetCSharpTypeName(typeof(TestEnum)),
                             IsEnum = true
                         },
 
@@ -273,14 +274,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
                         {
                             Name = "foo",
                             PropertyName = "Foo",
-                            TypeName = "System.Collections.Generic.List<global::System.String>"
+                            TypeName = ViewComponentTagHelperDescriptorFactory.GetCSharpTypeName(typeof(List<string>))
                         },
 
                         new TagHelperAttributeDescriptor
                         {
                             Name = "bar",
                             PropertyName = "Bar",
-                            TypeName = "System.Collections.Generic.Dictionary<global::System.String, global::System.Int32>"
+                            TypeName = ViewComponentTagHelperDescriptorFactory.GetCSharpTypeName(typeof(Dictionary<string, int>))
+                        },
+
+                        new TagHelperAttributeDescriptor
+                        {
+                            Name = "bar-",
+                            PropertyName = "Bar",
+                            TypeName = typeof(int).FullName,
+                            IsIndexer = true
                         }
                     },
                     RequiredAttributes = new List<TagHelperRequiredAttributeDescriptor>
@@ -288,11 +297,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
                         new TagHelperRequiredAttributeDescriptor
                         {
                             Name = "foo"
-                        },
-
-                        new TagHelperRequiredAttributeDescriptor
-                        {
-                            Name = "bar"
                         }
                     }
                 };

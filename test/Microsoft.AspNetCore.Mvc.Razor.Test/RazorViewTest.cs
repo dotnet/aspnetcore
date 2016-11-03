@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public async Task RenderAsync_AsPartial_ActivatesViews_WithThePassedInViewContext()
         {
             // Arrange
-            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
             var page = new TestableRazorPage(v =>
             {
                 // viewData is assigned to ViewContext by the activator
@@ -1672,7 +1672,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return new ViewContext(
                 actionContext,
                 view,
-                new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary()),
                 Mock.Of<ITempDataDictionary>(),
                 new StringWriter(),
                 new HtmlHelperOptions());

@@ -22,6 +22,10 @@
     "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.1.0-*",
     "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.1.0-*",
     "Microsoft.AspNetCore.Mvc.Razor": "1.1.0-*",
+    "Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources": {
+      "version": "1.1.0-*",
+      "type": "build"
+    },
     "Microsoft.AspNetCore.Mvc.TestCommon": {
       "version": "1.1.0-*",
       "type": "build"

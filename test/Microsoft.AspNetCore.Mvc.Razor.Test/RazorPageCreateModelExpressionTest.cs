@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private static ViewContext CreateViewContext()
         {
             var provider = new TestModelMetadataProvider();
-            var viewData = new ViewDataDictionary<RazorPageCreateModelExpressionModel>(provider);
+            var viewData = new ViewDataDictionary<RazorPageCreateModelExpressionModel>(provider, new ModelStateDictionary());
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IModelMetadataProvider>(provider);
             serviceCollection.AddSingleton<ExpressionTextCache, ExpressionTextCache>();

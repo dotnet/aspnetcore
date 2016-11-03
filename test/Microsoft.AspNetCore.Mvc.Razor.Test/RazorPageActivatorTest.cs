@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var viewContext = new ViewContext(
                 actionContext,
                 Mock.Of<IView>(),
-                new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary()),
                 Mock.Of<ITempDataDictionary>(),
                 TextWriter.Null,
                 new HtmlHelperOptions());
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var viewContext = new ViewContext(
                 actionContext,
                 Mock.Of<IView>(),
-                new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary()),
                 Mock.Of<ITempDataDictionary>(),
                 TextWriter.Null,
                 new HtmlHelperOptions());
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             };
 
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
-            var viewData = new ViewDataDictionary<object>(new EmptyModelMetadataProvider())
+            var viewData = new ViewDataDictionary<object>(new EmptyModelMetadataProvider(), new ModelStateDictionary())
             {
                 Model = new MyModel()
             };
@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             };
 
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
-            var viewData = new ViewDataDictionary<MyModel>(new EmptyModelMetadataProvider())
+            var viewData = new ViewDataDictionary<MyModel>(new EmptyModelMetadataProvider(), new ModelStateDictionary())
             {
                 Model = new MyModel()
             };
@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             };
 
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
-            var viewData = new ViewDataDictionary<object>(new EmptyModelMetadataProvider());
+            var viewData = new ViewDataDictionary<object>(new EmptyModelMetadataProvider(), new ModelStateDictionary());
             var viewContext = new ViewContext(
                 actionContext,
                 Mock.Of<IView>(),
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var viewContext = new ViewContext(
                 actionContext,
                 Mock.Of<IView>(),
-                new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary()),
                 Mock.Of<ITempDataDictionary>(),
                 TextWriter.Null,
                 new HtmlHelperOptions());
@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var viewContext = new ViewContext(
                 actionContext,
                 Mock.Of<IView>(),
-                new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary()),
                 Mock.Of<ITempDataDictionary>(),
                 TextWriter.Null,
                 new HtmlHelperOptions());

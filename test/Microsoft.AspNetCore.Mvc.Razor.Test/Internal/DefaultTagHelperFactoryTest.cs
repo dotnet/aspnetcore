@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         {
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
             var metadataProvider = new EmptyModelMetadataProvider();
-            var viewData = new ViewDataDictionary(metadataProvider);
+            var viewData = new ViewDataDictionary(metadataProvider, new ModelStateDictionary());
             var viewContext = new ViewContext(
                 actionContext,
                 Mock.Of<IView>(),
