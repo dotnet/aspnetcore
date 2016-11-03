@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
     {
         public ConfigurationOptions Options { get; set; } = new ConfigurationOptions();
 
-        public Func<ConnectionMultiplexer> Factory { get; set; }
+        public Func<TextWriter, ConnectionMultiplexer> Factory { get; set; }
 
         // TODO: Async
         internal ConnectionMultiplexer Connect(TextWriter log)
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 return ConnectionMultiplexer.Connect(Options, log);
             }
 
-            return Factory();
+            return Factory(log);
         }
     }
 }
