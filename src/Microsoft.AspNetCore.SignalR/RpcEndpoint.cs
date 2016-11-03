@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.SignalR
     // REVIEW: Should there be an RPC package?
     public class RpcEndpoint<T> : EndPoint where T : class
     {
-        private readonly Dictionary<string, Func<Connection, InvocationDescriptor, InvocationResultDescriptor>> _callbacks
-            = new Dictionary<string, Func<Connection, InvocationDescriptor, InvocationResultDescriptor>>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Func<Connection, InvocationDescriptor, Task<InvocationResultDescriptor>>> _callbacks
+            = new Dictionary<string, Func<Connection, InvocationDescriptor, Task<InvocationResultDescriptor>>>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Type[]> _paramTypes = new Dictionary<string, Type[]>();
 
         private readonly ILogger _logger;
@@ -61,10 +61,10 @@ namespace Microsoft.AspNetCore.SignalR
                 }
 
                 InvocationResultDescriptor result;
-                Func<Connection, InvocationDescriptor, InvocationResultDescriptor> callback;
+                Func<Connection, InvocationDescriptor, Task<InvocationResultDescriptor>> callback;
                 if (_callbacks.TryGetValue(invocationDescriptor.Method, out callback))
                 {
-                    result = callback(connection, invocationDescriptor);
+                    result = await callback(connection, invocationDescriptor);
                 }
                 else
                 {
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.SignalR
                     _logger.LogDebug("RPC method '{methodName}' is bound", methodName);
                 }
 
-                _callbacks[methodName] = (connection, invocationDescriptor) =>
+                _callbacks[methodName] = async (connection, invocationDescriptor) =>
                 {
                     var invocationResult = new InvocationResultDescriptor()
                     {
@@ -139,7 +139,18 @@ namespace Microsoft.AspNetCore.SignalR
                                 .Zip(parameters, (a, p) => Convert.ChangeType(a, p.ParameterType))
                                 .ToArray();
 
-                            invocationResult.Result = methodInfo.Invoke(value, args);
+                            var result = methodInfo.Invoke(value, args);
+                            var resultTask = result as Task;
+                            if (resultTask != null)
+                            {
+                                await resultTask;
+                                var property = resultTask.GetType().GetProperty("Result");
+                                invocationResult.Result = property?.GetValue(resultTask);
+                            }
+                            else
+                            {
+                                invocationResult.Result = result;
+                            }
                         }
                         catch (TargetInvocationException ex)
                         {
