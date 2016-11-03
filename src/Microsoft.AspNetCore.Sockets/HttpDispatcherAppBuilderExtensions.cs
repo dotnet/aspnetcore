@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Builder
             _dispatcher = dispatcher;
         }
 
-        public void MapSocketEndpoint<TEndPoint>(string path) where TEndPoint : EndPoint
+        public void MapEndpoint<TEndPoint>(string path) where TEndPoint : EndPoint
         {
             _routes.AddPrefixRoute(path, new RouteHandler(c => _dispatcher.ExecuteAsync<TEndPoint>(path, c)));
         }

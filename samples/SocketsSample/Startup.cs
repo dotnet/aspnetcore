@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SocketsSample.Hubs;
@@ -50,8 +49,7 @@ namespace SocketsSample
 
             app.UseSockets(routes =>
             {
-                routes.MapSocketEndpoint<ChatEndPoint>("/chat");
-                routes.MapSocketEndpoint<RpcEndpoint<Echo>>("/jsonrpc");
+                routes.MapEndpoint<ChatEndPoint>("/chat");
             });
         }
     }

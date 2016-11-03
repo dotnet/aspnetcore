@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Builder
 
         public void MapHub<THub>(string path) where THub : Hub
         {
-            _routes.MapSocketEndpoint<HubEndPoint<THub>>(path);
+            _routes.MapEndpoint<HubEndPoint<THub>>(path);
         }
     }
 }

@@ -12,7 +12,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton(typeof(HubLifetimeManager<>), typeof(DefaultHubLifetimeManager<>));
             services.AddSingleton(typeof(IHubContext<>), typeof(HubContext<>));
             services.AddSingleton(typeof(HubEndPoint<>), typeof(HubEndPoint<>));
-            services.AddSingleton(typeof(RpcEndpoint<>), typeof(RpcEndpoint<>));
             services.AddSingleton<IConfigureOptions<SignalROptions>, SignalROptionsSetup>();
             services.AddSingleton<JsonNetInvocationAdapter>();
             services.AddSingleton<InvocationAdapterRegistry>();
