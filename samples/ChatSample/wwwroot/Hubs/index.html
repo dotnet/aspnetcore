@@ -1,0 +1,132 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script>
+        function hubConnection(url) {
+            var ws = new WebSocket(url);
+            var id = 0;
+            var calls = {};
+            var methods = {};
+
+            ws.onopen = function () {
+                console.log('Opened!');
+            };
+
+            ws.onmessage = function (event) {
+
+                let response = {};
+
+                if (document.getElementById('formatType').value == 'line') {
+                    let parts = event.data.split(',');
+                    if (event.data[0] == 'R') {
+                        response.Id = parts[0].slice(2);
+                        response.Result = parts[1].slice(1);
+                    }
+                    else if (event.data[0] == 'C') {
+                        response.Method = parts[1].slice(1);
+                        response.Arguments = parts.slice(2).join();
+                    }
+                    else {
+                        response.error = parts[0].slice(1);
+                    }
+                }
+                else {
+                    response = JSON.parse(event.data);
+                }
+
+                // Response
+                if (response.Id) {
+                    var cb = calls[response.Id];
+
+                    delete calls[response.Id];
+
+                    if (response.Error) {
+                        cb.error(response.Error);
+                    }
+                    else {
+                        cb.success(response.Result);
+                    }
+                }
+                else {
+                    // Reverse JSON RPC
+                    methods[response.Method](response.Arguments);
+                }
+            };
+
+            ws.onclose = function (event) {
+                console.log('Closed!');
+            };
+
+            this.invoke = function (method, args, formatType) {
+                return new Promise((resolve, reject) => {
+                    calls[id] = { success: resolve, error: reject };
+                    if (formatType == 'line') {
+                        ws.send(`CI${id},M${method},${args.join()}\n`);
+                    }
+                    else {
+                        ws.send(JSON.stringify({ method: method, arguments: args, id: id }));
+                    }
+                    id++;
+                });
+            };
+
+            this.on = function (method, fn) {
+                methods[method] = fn;
+            };
+        }
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            //let connectButton = document.getElementById('connect');
+            //connectButton.addEventListener('click', () => {
+                run(document.getElementById('formatType').value);
+            //    connectButton.disabled = true;
+            //});
+        });
+
+        function run(formatType) {
+            var conn = new hubConnection(`ws://${document.location.host}/hubs/ws?formatType=${formatType}`);
+
+            conn.on('Send', function (message) {
+                var child = document.createElement('li');
+                child.innerText = message;
+                document.getElementById('messages').appendChild(child);
+            });
+
+            document.getElementById('sendmessage').addEventListener('submit', event => {
+                let data = document.getElementById('data').value;
+
+                conn.invoke('ChatSample.Hubs.Chat.Send', [data], formatType).catch(err => {
+                    var child = document.createElement('li');
+                    child.style.color = 'red';
+                    child.innerText = err;
+                    document.getElementById('messages').appendChild(child);
+                });
+
+                event.preventDefault();
+            });
+        };
+
+    </script>
+</head>
+<body>
+    <h1>WebSockets</h1>
+    <div>
+        <select id="formatType">
+            <option value="json">json</option>
+            <option value="line">line</option>
+        </select>
+
+        <input type="button" id="connect" value="Connect" />
+    </div>
+
+    <form id="sendmessage">
+        <input type="text" id="data" />
+        <input type="submit" value="Send" />
+    </form>
+
+    <ul id="messages"></ul>
+</body>
+</html>
