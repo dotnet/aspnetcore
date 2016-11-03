@@ -202,6 +202,22 @@ namespace Microsoft.AspNetCore.Rewrite
             return string.Format(CultureInfo.CurrentCulture, GetString("Error_UrlRewriteParseError"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// Rules using the '{0}' server variable are not supported
+        /// </summary>
+        internal static string Error_UnsupportedServerVariable
+        {
+            get { return GetString("Error_UnsupportedServerVariable"); }
+        }
+
+        /// <summary>
+        /// Rules using the '{0}' server variable are not supported
+        /// </summary>
+        internal static string FormatError_UnsupportedServerVariable(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_UnsupportedServerVariable"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             {
                 // TODO Add all server variables here.
                 case "ALL_RAW":
-                    throw new NotSupportedException("Rules using the ALL_RAW server variable are not supported");
+                    throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
                 case "APP_POOL_ID":
-                    throw new NotSupportedException("Rules using the APP_POOL_ID server variable are not supported");
+                    throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
                 case "CONTENT_LENGTH":
                     return new HeaderSegment(HeaderNames.ContentLength);
                 case "CONTENT_TYPE":
@@ -41,13 +41,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                 case "LOCAL_ADDR":
                     return new LocalAddressSegment();
                 case "HTTP_PROXY_CONNECTION":
-                    throw new NotSupportedException("Rules using the HTTP_PROXY_CONNECTION server variable are not supported");
+                    throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
                 case "QUERY_STRING":
                     return new QueryStringSegment();
                 case "REMOTE_ADDR":
                     return new RemoteAddressSegment();
                 case "REMOTE_HOST":
-                    throw new NotSupportedException("Rules using the REMOTE_HOST server variable are not supported");
+                    throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
                 case "REMOTE_PORT":
                     return new RemotePortSegment();
                 case "REQUEST_FILENAME":
