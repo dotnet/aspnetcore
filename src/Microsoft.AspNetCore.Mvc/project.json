@@ -30,10 +30,6 @@
     "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.1.0-*",
     "Microsoft.Extensions.Caching.Memory": "1.1.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
-    "Microsoft.Extensions.PropertyHelper.Sources": {
-      "version": "1.1.0-*",
-      "type": "build"
-    },
     "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {

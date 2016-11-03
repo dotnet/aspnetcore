@@ -30,10 +30,6 @@
       "version": "1.1.0-*",
       "type": "build"
     },
-    "Microsoft.Extensions.Logging.Abstractions": {
-      "version": "1.1.0-*",
-      "type": "build"
-    },
     "Microsoft.Extensions.Primitives": "1.1.0-*",
     "Microsoft.Extensions.PropertyHelper.Sources": {
       "version": "1.1.0-*",
