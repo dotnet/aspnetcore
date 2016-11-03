@@ -6,11 +6,11 @@ namespace Microsoft.AspNetCore.Sockets
 {
     public class ConnectionMetadata
     {
-        private ConcurrentDictionary<string, object> _metadata = new ConcurrentDictionary<string, object>();
+        private ConcurrentDictionary<object, object> _metadata = new ConcurrentDictionary<object, object>();
 
         public Format Format { get; set; } = Format.Text;
 
-        public object this[string key]
+        public object this[object key]
         {
             get
             {
@@ -24,12 +24,12 @@ namespace Microsoft.AspNetCore.Sockets
             }
         }
 
-        public T GetOrAdd<T>(string key, Func<string, T> factory)
+        public T GetOrAdd<T>(object key, Func<object, T> factory)
         {
             return (T)_metadata.GetOrAdd(key, k => factory(k));
         }
 
-        public T Get<T>(string key)
+        public T Get<T>(object key)
         {
             return (T)this[key];
         }
