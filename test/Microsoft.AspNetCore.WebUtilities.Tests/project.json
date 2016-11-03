@@ -5,7 +5,8 @@
     "xunit": "2.2.0-*"
   },
   "buildOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "testRunner": "xunit",
   "frameworks": {
