@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -233,12 +234,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        public async Task ConnectionResetAbortsRequest()
+        public async Task ConnectionResetPriorToRequestIsLoggedAsDebug()
         {
             var connectionStarted = new SemaphoreSlim(0);
-            var connectionErrorLogged = new SemaphoreSlim(0);
+            var connectionResetLogged = new SemaphoreSlim(0);
             var testSink = new ConnectionErrorTestSink(
-                () => connectionStarted.Release(), () => connectionErrorLogged.Release());
+                () => connectionStarted.Release(), () => connectionResetLogged.Release(), () => { });
             var builder = new WebHostBuilder()
                 .UseLoggerFactory(new TestLoggerFactory(testSink, true))
                 .UseKestrel()
@@ -257,16 +258,118 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
                     // Wait until connection is established
                     Assert.True(await connectionStarted.WaitAsync(_semaphoreWaitTimeout));
+
                     // Force a reset
                     socket.LingerState = new LingerOption(true, 0);
                 }
 
                 // Wait until connection error is logged
-                Assert.True(await connectionErrorLogged.WaitAsync(_semaphoreWaitTimeout));
+                Assert.True(await connectionResetLogged.WaitAsync(_semaphoreWaitTimeout));
+
+                // Check the no log level higher than Debug was used for a reset before a request
+                Assert.Equal(LogLevel.Debug, testSink.MaxLogLevel);
 
                 // Check for expected message
-                Assert.NotNull(testSink.ConnectionErrorMessage);
-                Assert.Contains("ECONNRESET", testSink.ConnectionErrorMessage);
+                Assert.NotNull(testSink.ConnectionResetMessage);
+                Assert.Contains("reset", testSink.ConnectionResetMessage);
+            }
+        }
+
+        [Fact]
+        public async Task ConnectionResetBetweenRequestsIsLoggedAsDebug()
+        {
+            var connectionStarted = new SemaphoreSlim(0);
+            var connectionResetLogged = new SemaphoreSlim(0);
+            var testSink = new ConnectionErrorTestSink(
+                () => { }, () => connectionResetLogged.Release(), () => { });
+            var builder = new WebHostBuilder()
+                .UseLoggerFactory(new TestLoggerFactory(testSink, true))
+                .UseKestrel()
+                .UseUrls($"http://127.0.0.1:0")
+                .Configure(app => app.Run(context =>
+                {
+                    connectionStarted.Release();
+                    return Task.FromResult(0);
+                }));
+
+            using (var host = builder.Build())
+            {
+                host.Start();
+
+                using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+                {
+                    socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
+                    socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n\r\n"));
+
+                    // Wait until connection is established
+                    Assert.True(await connectionStarted.WaitAsync(_semaphoreWaitTimeout));
+
+                    // Force a reset
+                    socket.LingerState = new LingerOption(true, 0);
+                }
+
+                // Wait until connection error is logged
+                Assert.True(await connectionResetLogged.WaitAsync(_semaphoreWaitTimeout));
+
+                // Check the no log level higher than Debug was used for a reset between a requests
+                Assert.Equal(LogLevel.Debug, testSink.MaxLogLevel);
+
+                // Check for expected message
+                Assert.NotNull(testSink.ConnectionResetMessage);
+                Assert.Contains("reset", testSink.ConnectionResetMessage);
+            }
+        }
+
+        [Fact]
+        public async Task ConnectionResetMidRequestIsLoggedAsInformation()
+        {
+            var connectionStarted = new SemaphoreSlim(0);
+            var connectionResetLogged = new SemaphoreSlim(0);
+            var requestProcessingErrorLogged = new SemaphoreSlim(0);
+            var testSink = new ConnectionErrorTestSink(
+                () => connectionStarted.Release(), () => connectionResetLogged.Release(), () => requestProcessingErrorLogged.Release());
+            var builder = new WebHostBuilder()
+                .UseLoggerFactory(new TestLoggerFactory(testSink, true))
+                .UseKestrel()
+                .UseUrls($"http://127.0.0.1:0")
+                .Configure(app => app.Run(context =>
+                {
+                    return Task.FromResult(0);
+                }));
+
+            using (var host = builder.Build())
+            {
+                host.Start();
+
+                using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+                {
+                    socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
+                    socket.Send(Encoding.ASCII.GetBytes("GET"));
+
+                    // Wait until connection is established
+                    Assert.True(await connectionStarted.WaitAsync(_semaphoreWaitTimeout));
+
+                    // Ensure "GET" has been processed
+                    // Sadly, there is no event/log for starting request line processing
+                    await Task.Delay(1000);
+
+                    // Force a reset, give some time for the "GET" to be processed
+                    socket.LingerState = new LingerOption(true, 0);
+                }
+
+                // Wait until connection error and request processingError is logged
+                var waitAsyncResults = await Task.WhenAll(connectionResetLogged.WaitAsync(_semaphoreWaitTimeout), requestProcessingErrorLogged.WaitAsync(_semaphoreWaitTimeout));
+
+                Assert.All(waitAsyncResults, Assert.True);
+
+                // Check the no log level lower than Information was used for a reset mid-request
+                Assert.Equal(LogLevel.Information, testSink.MaxLogLevel);
+
+                // Check for expected message
+                Assert.NotNull(testSink.ConnectionResetMessage);
+                Assert.Contains("reset", testSink.ConnectionResetMessage);
+                Assert.NotNull(testSink.RequestProcessingErrorMessage);
+                Assert.Contains("abnormal", testSink.RequestProcessingErrorMessage);
             }
         }
 
@@ -357,15 +460,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private class ConnectionErrorTestSink : ITestSink
         {
             private readonly Action _connectionStarted;
-            private readonly Action _connectionErrorLogged;
+            private readonly Action _connectionResetLogged;
+            private readonly Action _requestProcessingErrorLogged;
 
-            public ConnectionErrorTestSink(Action connectionStarted, Action connectionErrorLogged)
+            public ConnectionErrorTestSink(
+                Action connectionStarted,
+                Action connectionResetLogged,
+                Action requestProcessingErrorLogged)
             {
                 _connectionStarted = connectionStarted;
-                _connectionErrorLogged = connectionErrorLogged;
+                _connectionResetLogged = connectionResetLogged;
+                _requestProcessingErrorLogged = requestProcessingErrorLogged;
             }
 
-            public string ConnectionErrorMessage { get; set; }
+            public LogLevel MaxLogLevel { get; set; }
+
+            public string ConnectionResetMessage { get; set; }
+
+            public string RequestProcessingErrorMessage { get; set; }
 
             public Func<BeginScopeContext, bool> BeginEnabled { get; set; }
 
@@ -381,17 +493,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             public void Write(WriteContext context)
             {
+                if (context.LoggerName == "Microsoft.AspNetCore.Server.Kestrel" && context.LogLevel > MaxLogLevel)
+                {
+                    MaxLogLevel = context.LogLevel;
+                }
+
                 const int connectionStartEventId = 1;
-                const int connectionErrorEventId = 14;
+                const int connectionResetEventId = 19;
+                const int requestProcessingErrorEventId = 20;
 
                 if (context.EventId.Id == connectionStartEventId)
                 {
                     _connectionStarted();
                 }
-                else if (context.EventId.Id == connectionErrorEventId)
+                else if (context.EventId.Id == connectionResetEventId)
                 {
-                    ConnectionErrorMessage = context.Exception?.Message;
-                    _connectionErrorLogged();
+                    ConnectionResetMessage = context.Formatter(context.State, context.Exception);
+                    _connectionResetLogged();
+                }
+                else if (context.EventId.Id == requestProcessingErrorEventId)
+                {
+                    RequestProcessingErrorMessage = context.Formatter(context.State, context.Exception);
+                    _requestProcessingErrorLogged();
                 }
             }
         }

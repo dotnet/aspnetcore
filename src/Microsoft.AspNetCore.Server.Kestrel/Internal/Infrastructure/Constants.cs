@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         public const int ListenBacklog = 128;
 
         public const int EOF = -4095;
+        public static readonly int? ECONNRESET = GetECONNRESET();
         public static readonly int? EADDRINUSE = GetEADDRINUSE();
 
         /// <summary>
@@ -19,11 +20,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         public const string ServerName = "Kestrel";
 
+        private static int? GetECONNRESET()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return -4077;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return -104;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return -54;
+            }
+            return null;
+        }
+
         private static int? GetEADDRINUSE()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-               return -4091;
+                return -4091;
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {

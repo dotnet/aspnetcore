@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private KestrelServerOptions ServerOptions { get; }
         private IPEndPoint LocalEndPoint => ConnectionContext.LocalEndPoint;
         private IPEndPoint RemoteEndPoint => ConnectionContext.RemoteEndPoint;
-        private string ConnectionId => ConnectionContext.ConnectionId;
+        protected string ConnectionId => ConnectionContext.ConnectionId;
 
         public string ConnectionIdFeature { get; set; }
         public IPAddress RemoteIpAddress { get; set; }

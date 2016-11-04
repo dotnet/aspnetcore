@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
@@ -29,21 +31,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         /// </summary>
         public override async Task RequestProcessingAsync()
         {
+            var requestLineStatus = RequestLineStatus.Empty;
+
             try
             {
                 while (!_requestProcessingStopping)
                 {
                     ConnectionControl.SetTimeout(_keepAliveMilliseconds, TimeoutAction.CloseConnection);
 
-                    while (!_requestProcessingStopping && TakeStartLine(SocketInput) != RequestLineStatus.Done)
+                    while (!_requestProcessingStopping)
                     {
+                        requestLineStatus = TakeStartLine(SocketInput);
+
+                        if (requestLineStatus == RequestLineStatus.Done)
+                        {
+                            break;
+                        }
+
                         if (SocketInput.CheckFinOrThrow())
                         {
                             // We need to attempt to consume start lines and headers even after
                             // SocketInput.RemoteIntakeFin is set to true to ensure we don't close a
                             // connection without giving the application a chance to respond to a request
                             // sent immediately before the a FIN from the client.
-                            var requestLineStatus = TakeStartLine(SocketInput);
+                            requestLineStatus = TakeStartLine(SocketInput);
 
                             if (requestLineStatus == RequestLineStatus.Empty)
                             {
@@ -187,6 +198,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 // Handle BadHttpRequestException thrown during request line or header parsing.
                 // SetBadRequestState logs the error.
                 SetBadRequestState(ex);
+            }
+            catch (IOException ex) when (ex.InnerException is UvException)
+            {
+                // Don't log ECONNRESET errors made between requests. Browsers like IE will reset connections regularly.
+                if (requestLineStatus != RequestLineStatus.Empty ||
+                    ((UvException)ex.InnerException).StatusCode != Constants.ECONNRESET)
+                {
+                    Log.RequestProcessingError(ConnectionId, ex);
+                }
             }
             catch (Exception ex)
             {

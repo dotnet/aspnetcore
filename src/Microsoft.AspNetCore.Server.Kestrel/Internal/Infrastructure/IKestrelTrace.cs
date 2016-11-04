@@ -31,6 +31,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         void ConnectionError(string connectionId, Exception ex);
 
+        void ConnectionReset(string connectionId);
+
+        void RequestProcessingError(string connectionId, Exception ex);
+
         void ConnectionDisconnectedWrite(string connectionId, int count, Exception ex);
 
         void ConnectionHeadResponseBodyWrite(string connectionId, long count);

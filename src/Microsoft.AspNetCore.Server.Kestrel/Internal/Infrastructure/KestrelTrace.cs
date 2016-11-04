@@ -27,6 +27,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
         private static readonly Action<ILogger, string, long, Exception> _connectionHeadResponseBodyWrite;
         private static readonly Action<ILogger, Exception> _notAllConnectionsClosedGracefully;
         private static readonly Action<ILogger, string, string, Exception> _connectionBadRequest;
+        private static readonly Action<ILogger, string, Exception> _connectionReset;
+        private static readonly Action<ILogger, string, Exception> _requestProcessingError;
 
         protected readonly ILogger _logger;
 
@@ -45,11 +47,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             // ConnectionWrite: Reserved: 11
             // ConnectionWriteCallback: Reserved: 12
             _applicationError = LoggerMessage.Define<string>(LogLevel.Error, 13, @"Connection id ""{ConnectionId}"": An unhandled exception was thrown by the application.");
-            _connectionError = LoggerMessage.Define<string>(LogLevel.Information, 14, @"Connection id ""{ConnectionId}"" communication error");
+            _connectionError = LoggerMessage.Define<string>(LogLevel.Information, 14, @"Connection id ""{ConnectionId}"" communication error.");
             _connectionDisconnectedWrite = LoggerMessage.Define<string, int>(LogLevel.Debug, 15, @"Connection id ""{ConnectionId}"" write of ""{count}"" bytes to disconnected client.");
             _notAllConnectionsClosedGracefully = LoggerMessage.Define(LogLevel.Debug, 16, "Some connections failed to close gracefully during server shutdown.");
             _connectionBadRequest = LoggerMessage.Define<string, string>(LogLevel.Information, 17, @"Connection id ""{ConnectionId}"" bad request data: ""{message}""");
             _connectionHeadResponseBodyWrite = LoggerMessage.Define<string, long>(LogLevel.Debug, 18, @"Connection id ""{ConnectionId}"" write of ""{count}"" body bytes to non-body HEAD response.");
+            _connectionReset = LoggerMessage.Define<string>(LogLevel.Debug, 19, @"Connection id ""{ConnectionId}"" reset.");
+            _requestProcessingError = LoggerMessage.Define<string>(LogLevel.Information, 20, @"Connection id ""{ConnectionId}"" request processing ended abnormally.");
         }
 
         public KestrelTrace(ILogger logger)
@@ -148,6 +152,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
         public void ConnectionBadRequest(string connectionId, BadHttpRequestException ex)
         {
             _connectionBadRequest(_logger, connectionId, ex.Message, ex);
+        }
+
+        public virtual void ConnectionReset(string connectionId)
+        {
+            _connectionReset(_logger, connectionId, null);
+        }
+
+        public virtual void RequestProcessingError(string connectionId, Exception ex)
+        {
+            _requestProcessingError(_logger, connectionId, ex);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)

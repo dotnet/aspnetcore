@@ -393,7 +393,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             else
             {
                 CompleteAllWrites();
-                _log.ConnectionError(_connectionId, error);
+
+                // Log connection resets at a lower (Debug) level.
+                if (status == Constants.ECONNRESET)
+                {
+                    _log.ConnectionReset(_connectionId);
+                }
+                else
+                {
+                    _log.ConnectionError(_connectionId, error);
+                }
             }
 
             if (!_postingWrite && _nextWriteContext != null)

@@ -262,7 +262,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 Exception uvError;
                 handle.Libuv.Check(status, out uvError);
-                Log.ConnectionError(ConnectionId, uvError);
+
+                // Log connection resets at a lower (Debug) level.
+                if (status == Constants.ECONNRESET)
+                {
+                    Log.ConnectionReset(ConnectionId);
+                }
+                else
+                {
+                    Log.ConnectionError(ConnectionId, uvError);
+                }
+
                 error = new IOException(uvError.Message, uvError);
             }
 
