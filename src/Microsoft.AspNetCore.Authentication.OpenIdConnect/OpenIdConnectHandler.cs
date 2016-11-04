@@ -208,6 +208,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             message.State = Options.StateDataFormat.Protect(properties);
 
+            if (string.IsNullOrEmpty(message.IssuerAddress))
+            {
+                throw new InvalidOperationException(
+                    "Cannot redirect to the end session endpoint, the configuration may be missing or invalid.");
+            }
+
             if (Options.AuthenticationMethod == OpenIdConnectRedirectBehavior.RedirectGet)
             {
                 var redirectUri = message.CreateLogoutRequestUrl();
@@ -355,6 +361,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             properties.Items.Add(OpenIdConnectDefaults.RedirectUriForCodePropertiesKey, message.RedirectUri);
 
             message.State = Options.StateDataFormat.Protect(properties);
+
+            if (string.IsNullOrEmpty(message.IssuerAddress))
+            {
+                throw new InvalidOperationException(
+                    "Cannot redirect to the authorization endpoint, the configuration may be missing or invalid.");
+            }
 
             if (Options.AuthenticationMethod == OpenIdConnectRedirectBehavior.RedirectGet)
             {

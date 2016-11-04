@@ -135,6 +135,17 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             Assert.Equal("http://www.example.com/specific_redirect_uri", properties.RedirectUri, true);
         }
 
+        [Fact]
+        public async Task SignOut_WithMissingConfig_Throws()
+        {
+            var setting = new TestSettings(opt => opt.Configuration = new OpenIdConnectConfiguration());
+
+            var server = setting.CreateTestServer();
+
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync(DefaultHost + TestServerBuilder.Signout));
+            Assert.Equal("Cannot redirect to the end session endpoint, the configuration may be missing or invalid.", exception.Message);
+        }
+
         // Test Cases for calculating the expiration time of cookie from cookie name
         [Fact]
         public void NonceCookieExpirationTime()

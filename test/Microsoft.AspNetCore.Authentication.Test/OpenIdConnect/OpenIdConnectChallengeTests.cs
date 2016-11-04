@@ -222,6 +222,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
         {
             var newMessage = new MockOpenIdConnectMessage
             {
+                IssuerAddress = "http://example.com/",
                 TestAuthorizeEndpoint = $"http://example.com/{Guid.NewGuid()}/oauth2/signin"
             };
 
@@ -321,6 +322,17 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             var secondCookie = transaction.SetCookie.Skip(1).First();
             Assert.StartsWith(".AspNetCore.Correlation.OpenIdConnect.", secondCookie);
             Assert.Contains("expires", secondCookie);
+        }
+
+        [Fact]
+        public async Task Challenge_WithEmptyConfig_Fails()
+        {
+            var settings = new TestSettings(
+                opt => opt.Configuration = new OpenIdConnectConfiguration());
+
+            var server = settings.CreateTestServer();
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync(ChallengeEndpoint));
+            Assert.Equal("Cannot redirect to the authorization endpoint, the configuration may be missing or invalid.", exception.Message);
         }
     }
 }
