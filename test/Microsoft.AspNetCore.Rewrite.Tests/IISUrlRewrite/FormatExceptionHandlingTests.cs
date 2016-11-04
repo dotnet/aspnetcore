@@ -240,14 +240,14 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
     <rules>
         <rule name=""Remove trailing slash"">
             <match url = ""(.*)/$""/>
-            <conditions trackingAllCaptures=""foo"">
+            <conditions trackAllCaptures=""foo"">
                 <add input=""{REQUEST_FILENAME}""/>
             </conditions>
             <action type=""Redirect"" url =""{R:1}"" />
         </rule>
     </rules>
 </rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'The trackingAllCaptures parameter 'foo' was not recognized'. Line number '5': '14'.")]
+            "Could not parse the UrlRewrite file. Message: 'The trackAllCaptures parameter 'foo' was not recognized'. Line number '5': '14'.")]
         [InlineData(
 @"<rewrite>
     <rules>

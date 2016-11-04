@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             // If there are no conditions specified
             if (_conditions == null)
             {
-                AddUrlConditions(LogicalGrouping.MatchAll, trackingAllCaptures: false);
+                AddUrlConditions(LogicalGrouping.MatchAll, trackAllCaptures: false);
             }
 
             switch (patternSyntax)
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             }
         }
 
-        public void AddUrlConditions(LogicalGrouping logicalGrouping, bool trackingAllCaptures)
+        public void AddUrlConditions(LogicalGrouping logicalGrouping, bool trackAllCaptures)
         {
             _conditions = new List<Condition>();
             _matchAny = logicalGrouping == LogicalGrouping.MatchAny;

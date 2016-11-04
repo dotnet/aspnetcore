@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
         public const string Rule = "rule";
         public const string Rules = "rules";
         public const string StopProcessing = "stopProcessing";
-        public const string TrackingAllCaptures = "trackingAllCaptures";
+        public const string TrackAllCaptures = "trackAllCaptures";
         public const string Type = "type";
         public const string Url = "url";
     }

@@ -109,8 +109,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             }
 
             var grouping = ParseEnum(conditions, RewriteTags.LogicalGrouping, LogicalGrouping.MatchAll);
-            var trackingAllCaptures = ParseBool(conditions, RewriteTags.TrackingAllCaptures, defaultValue: false);
-            builder.AddUrlConditions(grouping, trackingAllCaptures);
+            var trackAllCaptures = ParseBool(conditions, RewriteTags.TrackAllCaptures, defaultValue: false);
+            builder.AddUrlConditions(grouping, trackAllCaptures);
 
             foreach (var cond in conditions.Elements(RewriteTags.Add))
             {
