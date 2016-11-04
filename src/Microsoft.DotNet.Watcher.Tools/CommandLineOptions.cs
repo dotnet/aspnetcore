@@ -28,6 +28,13 @@ namespace Microsoft.DotNet.Watcher
                 Error = stderr,
                 AllowArgumentSeparator = true,
                 ExtendedHelpText = @"
+Environment variables:
+
+  DOTNET_USE_POLLING_FILE_WATCHER
+  When set to '1' or 'true', dotnet-watch will poll the file system for
+  changes. This is required for some file systems, such as network shares,
+  Docker mounted volumes, and other virtual file systems.
+
 Remarks:
   The special option '--' is used to delimit the end of the options and
   the beginning of arguments that will be passed to the child dotnet process.
