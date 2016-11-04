@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -170,7 +171,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
             if (groupNames != null)
             {
-                foreach (var group in groupNames)
+                // Copy the groups to an array here because they get removed from this collection
+                // in RemoveGroupAsync
+                foreach (var group in groupNames.ToArray())
                 {
                     tasks.Add(RemoveGroupAsync(connection, group));
                 }
@@ -184,7 +187,11 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             var groupChannel = typeof(THub).FullName + "." + groupName;
 
             var groupNames = connection.Metadata.GetOrAdd("group", _ => new HashSet<string>());
-            groupNames.Add(groupName);
+
+            lock (groupNames)
+            {
+                groupNames.Add(groupName);
+            }
 
             var group = _groups.GetOrAdd(groupChannel, _ => new GroupData());
 
@@ -234,7 +241,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             }
 
             var groupNames = connection.Metadata.Get<HashSet<string>>("group");
-            groupNames?.Remove(groupName);
+            if (groupNames != null)
+            {
+                lock (groupNames)
+                {
+                    groupNames.Remove(groupName);
+                }
+            }
 
             await group.Lock.WaitAsync();
             try
