@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             });
         }
 
-        public override Task InvokeAllAsync(string methodName, params object[] args)
+        public override Task InvokeAllAsync(string methodName, object[] args)
         {
             var message = new InvocationDescriptor
             {
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return PublishAsync(typeof(THub).FullName, message);
         }
 
-        public override Task InvokeConnectionAsync(string connectionId, string methodName, params object[] args)
+        public override Task InvokeConnectionAsync(string connectionId, string methodName, object[] args)
         {
             var message = new InvocationDescriptor
             {
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return PublishAsync(typeof(THub).FullName + "." + connectionId, message);
         }
 
-        public override Task InvokeGroupAsync(string groupName, string methodName, params object[] args)
+        public override Task InvokeGroupAsync(string groupName, string methodName, object[] args)
         {
             var message = new InvocationDescriptor
             {
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return PublishAsync(typeof(THub).FullName + "." + groupName, message);
         }
 
-        public override Task InvokeUserAsync(string userId, string methodName, params object[] args)
+        public override Task InvokeUserAsync(string userId, string methodName, object[] args)
         {
             var message = new InvocationDescriptor
             {

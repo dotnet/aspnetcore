@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.CompletedTask;
         }
 
-        public override Task InvokeAllAsync(string methodName, params object[] args)
+        public override Task InvokeAllAsync(string methodName, object[] args)
         {
             return InvokeAllWhere(methodName, args, c => true);
         }
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.WhenAll(tasks);
         }
 
-        public override Task InvokeConnectionAsync(string connectionId, string methodName, params object[] args)
+        public override Task InvokeConnectionAsync(string connectionId, string methodName, object[] args)
         {
             var connection = _connections[connectionId];
 
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.SignalR
             return invocationAdapter.WriteInvocationDescriptorAsync(message, connection.Channel.GetStream());
         }
 
-        public override Task InvokeGroupAsync(string groupName, string methodName, params object[] args)
+        public override Task InvokeGroupAsync(string groupName, string methodName, object[] args)
         {
             return InvokeAllWhere(methodName, args, connection =>
             {
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.SignalR
             });
         }
 
-        public override Task InvokeUserAsync(string userId, string methodName, params object[] args)
+        public override Task InvokeUserAsync(string userId, string methodName, object[] args)
         {
             return InvokeAllWhere(methodName, args, connection =>
             {
