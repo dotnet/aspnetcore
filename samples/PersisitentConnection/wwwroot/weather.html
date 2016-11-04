@@ -5,10 +5,12 @@
     <title>Social weather</title>
 </head>
 <body>
-    <div>
+    <div id="weatherDiv" display="none">
+        <p>Weather: <span id="current" /></p>
     </div>
     <form id="reportWeather" action="#">
-        <input type="number" id="temperature" />
+        <label for="temperature">Temperature</label><input type="number" id="temperature" value="72"/>
+        <label for="weather">Weather</label>
         <select id="weather">
             <option value="Sunny">Sunny</option>
             <option value="MostlySunny">Mostly Sunny</option>
@@ -17,34 +19,53 @@
             <option value="MostlyCloudy">Mostly Cloudy</option>
             <option value="Cloudy">Cloudy</option>
         </select>
+        <label for="zipCode">Zip</label><input type="text" id="zipCode" />
         <input type="submit" value="Send report" />
     </form>
+    <div>
+        <p>Status: <span id="status" /></p>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            function get(id) {
+                return document.getElementById(id);
+            }
+
+            function updateStatus(text, color) {
+                var span = get('status');
+                span.innerHTML = text;
+                span.style.color = color;
+            }
 
             let connectUrl = `ws://${document.location.host}/weather/ws?formatType=json`;
-            var webSocket = new WebSocket(connectUrl);
+            let webSocket = new WebSocket(connectUrl);
             webSocket.onopen = event => {
-                console.log(`WebSocket connected to ${connectUrl}`);
+                updateStatus('Connected', 'green');
             };
 
             webSocket.onerror = event => {
+                updateStatus('Error occurred', 'green');
             };
 
-            webSocket.onmessage = message => {
+            webSocket.onmessage = event => {
+                get('weatherDiv').style.display = 'block';
+                let weatherReport = JSON.parse(event.data);
+                get('current').innerHTML = event.data;
             }
 
             webSocket.onclose = event => {
+                updateStatus(`WebSocket closed. Reason: ${event.code}`, event.wasClean ? 'green' : 'red')
             }
 
-            document.getElementById('reportWeather').addEventListener('submit', event => {
+            get('reportWeather').addEventListener('submit', event => {
+                let weather = get('weather');
 
                 webSocket.send(
                     JSON.stringify({
-                        Temperature: '49',
-                        Weather: 'Cloudy',
+                        Temperature: get('temperature').value,
+                        Weather: weather.options[weather.selectedIndex].value,
                         ReportTime: Date.now(),
-                        ZipCode: "98034"
+                        ZipCode: get('zipCode').value
                     }));
 
                 event.preventDefault();
