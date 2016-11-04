@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
@@ -188,6 +189,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     Assert.False(responseBodyPersisted);
                 }
             }
+        }
+
+        [Fact]
+        public void CanUpgradeRequestWithConnectionKeepAliveUpgradeHeader()
+        {
+            var dataRead = false;
+            var builder = new WebHostBuilder()
+               .UseKestrel()
+               .UseUrls($"http://127.0.0.1:0")
+               .Configure(app =>
+               {
+                   app.Run(async context =>
+                   {
+                       var stream = await context.Features.Get<IHttpUpgradeFeature>().UpgradeAsync();
+                       var data = new byte[3];
+                       var bytesRead = 0;
+
+                       while (bytesRead < 3)
+                       {
+                           bytesRead += await stream.ReadAsync(data, bytesRead, data.Length - bytesRead);
+                       }
+
+                       dataRead = Encoding.ASCII.GetString(data, 0, 3) == "abc";
+                   });
+               });
+
+            using (var host = builder.Build())
+            {
+                host.Start();
+
+                using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+                {
+                    socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
+                    socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nConnection: keep-alive, upgrade\r\n\r\n"));
+                    socket.Send(Encoding.ASCII.GetBytes("abc"));
+
+                    while (socket.Receive(new byte[1024]) > 0) ;
+                }
+            }
+
+            Assert.True(dataRead);
         }
 
         [Fact]
