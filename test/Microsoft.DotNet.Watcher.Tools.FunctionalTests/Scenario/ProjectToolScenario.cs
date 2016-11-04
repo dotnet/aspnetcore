@@ -9,7 +9,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ProjectModel;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
@@ -98,10 +97,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             args.Add("exec");
 
             args.Add("--depsfile");
-            args.Add(Path.Combine(AppContext.BaseDirectory, thisAssembly + FileNameSuffixes.DepsJson));
+            args.Add(Path.Combine(AppContext.BaseDirectory, thisAssembly + ".deps.json"));
 
             args.Add("--runtimeconfig");
-            args.Add(Path.Combine(AppContext.BaseDirectory, thisAssembly + FileNameSuffixes.RuntimeConfigJson));
+            args.Add(Path.Combine(AppContext.BaseDirectory, thisAssembly + ".runtimeconfig.json"));
 
             args.Add(Path.Combine(AppContext.BaseDirectory, "dotnet-watch.dll"));
 
