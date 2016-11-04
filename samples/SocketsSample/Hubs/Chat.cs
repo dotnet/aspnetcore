@@ -20,5 +20,24 @@ namespace SocketsSample.Hubs
         {
             return Clients.All.InvokeAsync("Send", Context.ConnectionId + ": " + message);
         }
+
+        public Task SendToGroup(string groupName, string message)
+        {
+            return Clients.Group(groupName).InvokeAsync("Send", Context.ConnectionId + ": " + message);
+        }
+
+        public async Task JoinGroup(string groupName)
+        {
+            await Clients.Group(groupName).InvokeAsync("Send", Context.Connection.ConnectionId + " joined " + groupName);
+
+            await Groups.AddAsync(groupName);
+        }
+
+        public async Task LeaveGroup(string groupName)
+        {
+            await Groups.RemoveAsync(groupName);
+
+            await Clients.Group(groupName).InvokeAsync("Send", Context.Connection.ConnectionId + " left " + groupName);
+        }
     }
 }

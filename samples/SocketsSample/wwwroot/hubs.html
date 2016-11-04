@@ -5,6 +5,7 @@
     <title></title>
     <script src="js/signalr-client.js"></script>
     <script>
+        var isConnected = false;
         function getParameterByName(name, url) {
             if (!url) {
                 url = window.location.href;
@@ -17,52 +18,19 @@
             return decodeURIComponent(results[2].replace(/\+/g, " "));
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            var transports = getParameterByName('transport');
-            if (transports != null) {
-                transports = transports.split(',')
-            }
-
-            document.getElementById('head1').innerHTML = transports ? transports.join(', ') : "auto (WebSockets)";
-
-            let connection = new RpcConnection(`http://${document.location.host}/hubs`, 'formatType=json&format=text');
-            connection.on('Send', msg => {
-                addLine(msg); });
-            connection.connectionClosed = e => {
-                if (e) {
-                    addLine('Connection closed with error: ' + e, 'red');
-                }
-                else {
-                    addLine('Disconnected', 'green');
-                }
-            }
-
-            let isConnected = false;
-            let connectButton = document.getElementById('connect');
-            connectButton.addEventListener('click', event => {
-                connection.start(transports)
-                .then(() => {
-                    isConnected = true;
-                    addLine('Connected successfully', 'green');
-                })
-                .catch(err => {
-                    addLine(err, 'red');
-                });
-
+        function click(id, callback) {
+            document.getElementById(id).addEventListener('click', event => {
+                callback(event);
                 event.preventDefault();
             });
+        }
 
-            let disconnectButton = document.getElementById('disconnect');
-            disconnectButton.addEventListener('click', () => {
-                connection.stop();
-                isConnected = false;
-            });
-
-            document.getElementById('sendmessage').addEventListener('submit', event => {
-                let data = document.getElementById('data').value;
-
-                if (isConnected) {
-                    connection.invoke('SocketsSample.Hubs.Chat.Send', data)
+        function invoke(connection, method, ...args) {
+            if (!isConnected) {
+                return;
+            }
+            var argsArray = Array.prototype.slice.call(arguments);
+            connection.invoke.apply(connection, argsArray.slice(1))
                     .then(result => {
                         console.log("invocation completed successfully: " + (result === null ? '(null)' : result));
 
@@ -73,9 +41,69 @@
                     .catch(err => {
                         addLine(err, 'red');
                     });
-                }
+        }
 
-                event.preventDefault();
+        function getText(id) {
+            return document.getElementById(id).value;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            var transports = getParameterByName('transport');
+            if (transports != null) {
+                transports = transports.split(',')
+            }
+
+            document.getElementById('head1').innerHTML = transports ? transports.join(', ') : "auto (WebSockets)";
+
+            let connection = new RpcConnection(`http://${document.location.host}/hubs`, 'formatType=json&format=text');
+            connection.on('Send', msg => {
+                addLine(msg);
+            });
+
+            connection.connectionClosed = e => {
+                if (e) {
+                    addLine('Connection closed with error: ' + e, 'red');
+                }
+                else {
+                    addLine('Disconnected', 'green');
+                }
+            }
+
+            click('connect', event => {
+                connection.start(transports)
+                    .then(() => {
+                        isConnected = true;
+                        addLine('Connected successfully', 'green');
+                    })
+                .catch(err => {
+                    addLine(err, 'red');
+                });
+            });
+
+            click('disconnect', event => {
+                connection.stop();
+                isConnected = false;
+            });
+
+            click('broadcast', event => {
+                let data = getText('msg');
+                invoke(connection, 'SocketsSample.Hubs.Chat.Send', data);
+            });
+
+            click('join-group', event => {
+                let groupName = getText('msg');
+                invoke(connection, 'SocketsSample.Hubs.Chat.JoinGroup', groupName);
+            });
+
+            click('leave-group', event => {
+                let groupName = getText('msg');
+                invoke(connection, 'SocketsSample.Hubs.Chat.LeaveGroup', groupName);
+            });
+
+            click('groupmsg', event => {
+                let groupName = getText('target');
+                let message = getText('message');
+                invoke(connection, 'SocketsSample.Hubs.Chat.SendToGroup', groupName, message);
             });
         });
 
@@ -101,9 +129,36 @@
         <input type="button" id="disconnect" value="Disconnect" />
     </div>
 
-    <form id="sendmessage">
-      <input type="text" id="data" />
-      <input type="submit" value="Send" />
+
+    <h4>To Everybody</h4>
+    <form class="form-inline">
+        <div class="input-append">
+            <input type="text" id="msg" placeholder="Type a message, name or group" />
+            <input type="button" id="broadcast" class="btn" value="Broadcast" />
+            <input type="button" id="broadcast-exceptme" class="btn" value="Broadcast (All Except Me)" />
+            <input type="button" id="join" class="btn" value="Enter Name" />
+            <input type="button" id="join-group" class="btn" value="Join Group" />
+            <input type="button" id="leave-group" class="btn" value="Leave Group" />
+        </div>
+    </form>
+
+    <h4>To Me</h4>
+    <form class="form-inline">
+        <div class="input-append">
+            <input type="text" id="me" placeholder="Type a message" />
+            <input type="button" id="send" class="btn" value="Send to me" />
+        </div>
+    </form>
+
+    <h4>Private Message</h4>
+    <form class="form-inline">
+        <div class="input-prepend input-append">
+            <input type="text" name="message" id="message" placeholder="Type a message" />
+            <input type="text" name="user" id="target" placeholder="Type a user or group name" />
+
+            <input type="button" id="privatemsg" class="btn" value="Send to user" />
+            <input type="button" id="groupmsg" class="btn" value="Send to group" />
+        </div>
     </form>
 
     <ul id="messages"></ul>
