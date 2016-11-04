@@ -68,13 +68,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         "POST / HTTP/1.0",
                         "Transfer-Encoding: chunked",
                         "",
                         "5", "Hello",
                         "6", " World",
                         "0",
+                         "",
                          "");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
@@ -94,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         "POST / HTTP/1.0",
                         "Transfer-Encoding: chunked",
                         "Connection: keep-alive",
@@ -143,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         "POST / HTTP/1.1",
                         "Content-Length: 5",
                         "",
@@ -254,8 +255,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(fullRequest);
-
+                    await connection.Send(fullRequest);
                     await connection.ReceiveEnd(expectedFullResponse);
                 }
             }
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendAllTryEnd(
+                    await connection.SendAll(
                         "POST / HTTP/1.1",
                         $"{transferEncodingHeaderLine}",
                         $"{headerLine}",
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendAllTryEnd(
+                    await connection.SendAll(
                         "POST / HTTP/1.1",
                         $"{transferEncodingHeaderLine}",
                         $"{headerLine}",
@@ -423,8 +423,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(fullRequest);
-
+                    await connection.Send(fullRequest);
                     await connection.ReceiveEnd(expectedFullResponse);
                 }
             }

@@ -29,12 +29,17 @@ namespace Microsoft.AspNetCore.Testing
         }
 
         public TestServer(RequestDelegate app, TestServiceContext context, string serverAddress)
+            : this(app, context, serverAddress, null)
+        {
+        }
+
+        public TestServer(RequestDelegate app, TestServiceContext context, string serverAddress, IHttpContextFactory httpContextFactory)
         {
             Context = context;
 
             context.FrameFactory = connectionContext =>
             {
-                return new Frame<HttpContext>(new DummyApplication(app), connectionContext);
+                return new Frame<HttpContext>(new DummyApplication(app, httpContextFactory), connectionContext);
             };
 
             try

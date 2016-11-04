@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendAllTryEnd(request);
+                    await connection.SendAll(request);
                     await ReceiveBadRequestResponse(connection, "400 Bad Request", server.Context.DateHeaderValue);
                 }
             }
@@ -88,15 +88,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendAllTryEnd(request);
+                    await connection.SendAll(request);
                     await ReceiveBadRequestResponse(connection, "505 HTTP Version Not Supported", server.Context.DateHeaderValue);
                 }
             }
         }
 
         [Theory]
-        // Missing final CRLF
-        [InlineData("Header-1: value1\r\nHeader-2: value2\r\n")]
         // Leading whitespace
         [InlineData(" Header-1: value1\r\nHeader-2: value2\r\n\r\n")]
         [InlineData("\tHeader-1: value1\r\nHeader-2: value2\r\n\r\n")]
@@ -124,7 +122,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendAllTryEnd($"GET / HTTP/1.1\r\n{rawHeaders}");
+                    await connection.SendAll($"GET / HTTP/1.1\r\n{rawHeaders}");
                     await ReceiveBadRequestResponse(connection, "400 Bad Request", server.Context.DateHeaderValue);
                 }
             }
@@ -137,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendAllTryEnd(
+                    await connection.SendAll(
                         "GET / HTTP/1.1",
                         "H\u00eb\u00e4d\u00ebr: value",
                         "",
@@ -168,7 +166,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendAllTryEnd($"GET {path} HTTP/1.1\r\n");
+                    await connection.SendAll($"GET {path} HTTP/1.1\r\n");
                     await ReceiveBadRequestResponse(connection, "400 Bad Request", server.Context.DateHeaderValue);
                 }
             }
@@ -183,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd($"{method} / HTTP/1.1\r\n\r\n");
+                    await connection.Send($"{method} / HTTP/1.1\r\n\r\n");
                     await ReceiveBadRequestResponse(connection, "411 Length Required", server.Context.DateHeaderValue);
                 }
             }
@@ -198,7 +196,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd($"{method} / HTTP/1.0\r\n\r\n");
+                    await connection.Send($"{method} / HTTP/1.0\r\n\r\n");
                     await ReceiveBadRequestResponse(connection, "400 Bad Request", server.Context.DateHeaderValue);
                 }
             }

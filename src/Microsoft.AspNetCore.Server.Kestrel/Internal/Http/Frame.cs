@@ -564,6 +564,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
                 else
                 {
+                    CheckLastWrite();
                     Output.Write(data);
                 }
             }
@@ -599,6 +600,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
                 else
                 {
+                    CheckLastWrite();
                     return Output.WriteAsync(data, cancellationToken: cancellationToken);
                 }
             }
@@ -631,6 +633,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
                 else
                 {
+                    CheckLastWrite();
                     await Output.WriteAsync(data, cancellationToken: cancellationToken);
                 }
             }
@@ -656,6 +659,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
 
             _responseBytesWritten += count;
+        }
+
+        private void CheckLastWrite()
+        {
+            var responseHeaders = FrameResponseHeaders;
+
+            // Prevent firing request aborted token if this is the last write, to avoid
+            // aborting the request if the app is still running when the client receives
+            // the final bytes of the response and gracefully closes the connection.
+            //
+            // Called after VerifyAndUpdateWrite(), so _responseBytesWritten has already been updated.
+            if (responseHeaders != null &&
+                !responseHeaders.HasTransferEncoding &&
+                responseHeaders.HasContentLength &&
+                _responseBytesWritten == responseHeaders.HeaderContentLengthValue.Value)
+            {
+                _abortedCts = null;
+            }
         }
 
         protected void VerifyResponseContentLength()
@@ -838,6 +859,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private async Task WriteAutoChunkSuffixAwaited()
         {
+            // For the same reason we call CheckLastWrite() in Content-Length responses.
+            _abortedCts = null;
+
             await WriteChunkedResponseSuffix();
 
             if (_keepAlive)

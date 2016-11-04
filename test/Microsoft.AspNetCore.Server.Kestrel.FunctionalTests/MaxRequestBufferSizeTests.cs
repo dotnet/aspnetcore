@@ -103,7 +103,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         }
 
                         Assert.Equal(data.Length, bytesWritten);
-                        socket.Shutdown(SocketShutdown.Send);
                         clientFinishedSendingRequestBody.Set();
                     };
 

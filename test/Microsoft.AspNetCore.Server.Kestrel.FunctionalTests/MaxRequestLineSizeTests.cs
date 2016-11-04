@@ -25,13 +25,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [InlineData("DELETE /a%20b%20c/d%20e?f=ghi HTTP/1.1\r\n\r\n", 1027)]
         public async Task ServerAcceptsRequestLineWithinLimit(string request, int limit)
         {
-            var maxRequestLineSize = limit;
-
             using (var server = CreateServer(limit))
             {
                 using (var connection = new TestConnection(server.Port))
                 {
-                    await connection.SendEnd(request);
+                    await connection.Send(request);
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -57,8 +55,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 using (var connection = new TestConnection(server.Port))
                 {
-                    await connection.SendAllTryEnd($"{requestLine}\r\n");
-                    await connection.Receive(
+                    await connection.SendAll(requestLine);
+                    await connection.ReceiveForcedEnd(
                         "HTTP/1.1 414 URI Too Long",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",

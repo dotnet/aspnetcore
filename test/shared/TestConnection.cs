@@ -50,22 +50,6 @@ namespace Microsoft.AspNetCore.Testing
             _stream.Flush();
         }
 
-        public async Task SendAllTryEnd(params string[] lines)
-        {
-            await SendAll(lines);
-
-            try
-            {
-                _socket.Shutdown(SocketShutdown.Send);
-            }
-            catch (IOException)
-            {
-                // The server may forcefully close the connection (usually due to a bad request),
-                // so an IOException: "An existing connection was forcibly closed by the remote host"
-                // isn't guaranteed but not unexpected.
-            }
-        }
-
         public async Task Send(params string[] lines)
         {
             var text = string.Join("\r\n", lines);
@@ -82,12 +66,6 @@ namespace Microsoft.AspNetCore.Testing
             _stream.Flush();
         }
 
-        public async Task SendEnd(params string[] lines)
-        {
-            await Send(lines);
-            _socket.Shutdown(SocketShutdown.Send);
-        }
-
         public async Task Receive(params string[] lines)
         {
             var expected = string.Join("\r\n", lines);
@@ -95,6 +73,7 @@ namespace Microsoft.AspNetCore.Testing
             var offset = 0;
             while (offset < expected.Length)
             {
+                var data = new byte[expected.Length];
                 var task = _reader.ReadAsync(actual, offset, actual.Length - offset);
                 if (!Debugger.IsAttached)
                 {
@@ -108,12 +87,13 @@ namespace Microsoft.AspNetCore.Testing
                 offset += count;
             }
 
-            Assert.Equal(expected, new String(actual, 0, offset));
+            Assert.Equal(expected, new string(actual, 0, offset));
         }
 
         public async Task ReceiveEnd(params string[] lines)
         {
             await Receive(lines);
+            _socket.Shutdown(SocketShutdown.Send);
             var ch = new char[128];
             var count = await _reader.ReadAsync(ch, 0, 128).TimeoutAfter(TimeSpan.FromMinutes(1));
             var text = new string(ch, 0, count);
@@ -139,11 +119,16 @@ namespace Microsoft.AspNetCore.Testing
             }
         }
 
+        public void Shutdown(SocketShutdown how)
+        {
+            _socket.Shutdown(how);
+        }
+
         public Task WaitForConnectionClose()
         {
             var tcs = new TaskCompletionSource<object>();
             var eventArgs = new SocketAsyncEventArgs();
-            eventArgs.SetBuffer(new byte[1], 0, 1);
+            eventArgs.SetBuffer(new byte[128], 0, 128);
             eventArgs.Completed += ReceiveAsyncCompleted;
             eventArgs.UserToken = tcs;
 
@@ -157,10 +142,15 @@ namespace Microsoft.AspNetCore.Testing
 
         private void ReceiveAsyncCompleted(object sender, SocketAsyncEventArgs e)
         {
+            var tcs = (TaskCompletionSource<object>)e.UserToken;
             if (e.BytesTransferred == 0)
             {
-                var tcs = (TaskCompletionSource<object>)e.UserToken;
                 tcs.SetResult(null);
+            }
+            else
+            {
+                tcs.SetException(new IOException(
+                    $"Expected connection close, received data instead: \"{_reader.CurrentEncoding.GetString(e.Buffer, 0, e.BytesTransferred)}\""));
             }
         }
 

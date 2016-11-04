@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Filter;
 using Microsoft.AspNetCore.Server.Kestrel.Filter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
@@ -200,7 +201,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 _frame.Input = _filteredStreamAdapter.SocketInput;
                 _frame.Output = _filteredStreamAdapter.SocketOutput;
 
-                _readInputTask = _filteredStreamAdapter.ReadInputAsync();
+                // Don't attempt to read input if connection has already closed.
+                // This can happen if a client opens a connection and immediately closes it.
+                _readInputTask = _socketClosedTcs.Task.Status == TaskStatus.WaitingForActivation ?
+                    _filteredStreamAdapter.ReadInputAsync() :
+                    TaskCache.CompletedTask;
             }
 
             _frame.PrepareRequest = _filterContext.PrepareRequest;
@@ -278,7 +283,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             Input.IncomingComplete(readCount, error);
 
-            if (errorDone)
+            if (!normalRead)
             {
                 Abort(error);
             }

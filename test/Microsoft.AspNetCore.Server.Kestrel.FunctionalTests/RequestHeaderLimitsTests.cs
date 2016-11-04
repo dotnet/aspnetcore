@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 using (var connection = new TestConnection(server.Port))
                 {
-                    await connection.SendEnd($"GET / HTTP/1.1\r\n{headers}\r\n");
+                    await connection.Send($"GET / HTTP/1.1\r\n{headers}\r\n");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 using (var connection = new TestConnection(server.Port))
                 {
-                    await connection.SendEnd($"GET / HTTP/1.1\r\n{headers}\r\n");
+                    await connection.Send($"GET / HTTP/1.1\r\n{headers}\r\n");
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 using (var connection = new TestConnection(server.Port))
                 {
-                    await connection.SendAllTryEnd($"GET / HTTP/1.1\r\n{headers}\r\n");
+                    await connection.SendAll($"GET / HTTP/1.1\r\n{headers}\r\n");
                     await connection.ReceiveForcedEnd(
                         "HTTP/1.1 431 Request Header Fields Too Large",
                         "Connection: close",
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 using (var connection = new TestConnection(server.Port))
                 {
-                    await connection.SendAllTryEnd($"GET / HTTP/1.1\r\n{headers}\r\n");
+                    await connection.SendAll($"GET / HTTP/1.1\r\n{headers}\r\n");
                     await connection.ReceiveForcedEnd(
                         "HTTP/1.1 431 Request Header Fields Too Large",
                         "Connection: close",

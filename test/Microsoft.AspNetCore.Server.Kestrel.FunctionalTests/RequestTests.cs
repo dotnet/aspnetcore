@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -417,6 +418,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 Assert.True(await appDone.WaitAsync(_semaphoreWaitTimeout));
                 Assert.True(expectedExceptionThrown);
+            }
+        }
+
+        [Fact]
+        public async Task RequestAbortedTokenFiredOnClientFIN()
+        {
+            var appStarted = new SemaphoreSlim(0);
+            var requestAborted = new SemaphoreSlim(0);
+            var builder = new WebHostBuilder()
+                .UseKestrel()
+                .UseUrls($"http://127.0.0.1:0")
+                .Configure(app => app.Run(async context =>
+                {
+                    appStarted.Release();
+
+                    var token = context.RequestAborted;
+                    token.Register(() => requestAborted.Release(2));
+                    await requestAborted.WaitAsync().TimeoutAfter(TimeSpan.FromSeconds(10));
+                }));
+
+            using (var host = builder.Build())
+            {
+                host.Start();
+
+                using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+                {
+                    socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
+                    socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n\r\n"));
+                    await appStarted.WaitAsync();
+                    socket.Shutdown(SocketShutdown.Send);
+                    await requestAborted.WaitAsync().TimeoutAfter(TimeSpan.FromSeconds(10));
+                }
             }
         }
 

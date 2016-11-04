@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         "GET / HTTP/1.1",
                         "",
                         "GET / HTTP/1.0",

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         "GET /%41%CC%8A/A/../B/%41%CC%8A HTTP/1.1",
                         "",
                         "");
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         $"GET {requestTarget} HTTP/1.1",
                         "",
                         "");
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         $"GET {requestTarget} HTTP/1.1",
                         "",
                         "");

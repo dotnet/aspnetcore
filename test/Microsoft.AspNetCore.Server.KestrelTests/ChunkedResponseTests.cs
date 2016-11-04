@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         "GET / HTTP/1.1",
                         "",
                         "");
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         "GET / HTTP/1.0",
                         "Connection: keep-alive",
                         "",
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         "GET / HTTP/1.1",
                         "Connection: close",
                         "",
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         "GET / HTTP/1.1",
                         "",
                         "");
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         "GET / HTTP/1.1",
                         "",
                         "");
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         "GET / HTTP/1.1",
                         "",
                         "");
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         "GET / HTTP/1.1",
                         "",
                         "");
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ConnectionClosedIfExeptionThrownAfterWrite(TestServiceContext testContext)
+        public async Task ConnectionClosedIfExceptionThrownAfterWrite(TestServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>
             {
@@ -295,7 +295,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task ConnectionClosedIfExeptionThrownAfterZeroLengthWrite(TestServiceContext testContext)
+        public async Task ConnectionClosedIfExceptionThrownAfterZeroLengthWrite(TestServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>
             {
@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         "GET / HTTP/1.1",
                         "",
                         "");
@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         "GET / HTTP/1.1",
                         "",
                         "");

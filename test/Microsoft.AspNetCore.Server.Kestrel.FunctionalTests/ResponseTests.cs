@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -288,26 +287,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     disposedTcs.TrySetResult(c.Response.StatusCode);
                 });
 
-            var hostBuilder = new WebHostBuilder()
-                .UseKestrel()
-                .UseUrls("http://127.0.0.1:0")
-                .ConfigureServices(services => services.AddSingleton<IHttpContextFactory>(mockHttpContextFactory.Object))
-                .Configure(app =>
-                {
-                    app.Run(handler);
-                });
-
-            using (var host = hostBuilder.Build())
+            using (var server = new TestServer(handler, new TestServiceContext(), "http://127.0.0.1:0", mockHttpContextFactory.Object))
             {
-                host.Start();
-
                 if (!sendMalformedRequest)
                 {
                     using (var client = new HttpClient())
                     {
                         try
                         {
-                            var response = await client.GetAsync($"http://localhost:{host.GetPort()}/");
+                            var response = await client.GetAsync($"http://127.0.0.1:{server.Port}/");
                             Assert.Equal(expectedClientStatusCode, response.StatusCode);
                         }
                         catch
@@ -321,14 +309,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
                 else
                 {
-                    using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+                    using (var connection = new TestConnection(server.Port))
                     {
-                        socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
-                        socket.Send(Encoding.ASCII.GetBytes(
-                            "POST / HTTP/1.1\r\n" +
-                            "Transfer-Encoding: chunked\r\n" +
-                            "\r\n" +
-                            "wrong"));
+                        await connection.Send(
+                            "POST / HTTP/1.1",
+                            "Transfer-Encoding: chunked",
+                            "",
+                            "gg");
+                        await connection.ReceiveForcedEnd(
+                            "HTTP/1.1 400 Bad Request",
+                            "Connection: close",
+                            $"Date: {server.Context.DateHeaderValue}",
+                            "Content-Length: 0",
+                            "",
+                            "");
                     }
                 }
 
@@ -453,13 +447,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task ResponseBodyNotWrittenOnHeadResponseAndLoggedOnlyOnce()
         {
-            var mockKestrelTrace = new Mock<IKestrelTrace>();
+            const string response = "hello, world";
 
-            using (var server = new TestServer(async httpContext =>
-            {
-                await httpContext.Response.WriteAsync("hello, world");
-                await httpContext.Response.Body.FlushAsync();
-            }, new TestServiceContext { Log = mockKestrelTrace.Object }))
+            var logTcs = new TaskCompletionSource<object>();
+            var mockKestrelTrace = new Mock<IKestrelTrace>();
+            mockKestrelTrace
+                .Setup(trace => trace.ConnectionHeadResponseBodyWrite(It.IsAny<string>(), response.Length))
+                .Callback<string, long>((connectionId, count) => logTcs.SetResult(null));
+
+                using (var server = new TestServer(async httpContext =>
+                {
+                    await httpContext.Response.WriteAsync(response);
+                    await httpContext.Response.Body.FlushAsync();
+                }, new TestServiceContext { Log = mockKestrelTrace.Object }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -472,11 +472,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
+
+                    // Wait for message to be logged before disposing the socket.
+                    // Disposing the socket will abort the connection and Frame._requestAborted
+                    // might be 1 by the time ProduceEnd() gets called and the message is logged.
+                    await logTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
                 }
             }
 
             mockKestrelTrace.Verify(kestrelTrace =>
-                kestrelTrace.ConnectionHeadResponseBodyWrite(It.IsAny<string>(), "hello, world".Length), Times.Once);
+                kestrelTrace.ConnectionHeadResponseBodyWrite(It.IsAny<string>(), response.Length), Times.Once);
         }
 
         [Fact]
@@ -533,7 +538,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "GET / HTTP/1.1",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.ReceiveForcedEnd(
                         $"HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 11",
@@ -566,7 +571,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "GET / HTTP/1.1",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.ReceiveForcedEnd(
                         $"HTTP/1.1 500 Internal Server Error",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -633,7 +638,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "GET / HTTP/1.1",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.ReceiveForcedEnd(
                         $"HTTP/1.1 500 Internal Server Error",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -858,7 +863,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         "GET / HTTP/1.1",
                         "",
                         "");
@@ -880,7 +885,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task AppCanWriteOwnBadRequestResponse()
         {
             var expectedResponse = string.Empty;
-            var responseWrittenTcs = new TaskCompletionSource<object>();
+            var responseWritten = new SemaphoreSlim(0);
 
             using (var server = new TestServer(async httpContext =>
             {
@@ -894,18 +899,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     httpContext.Response.StatusCode = 400;
                     httpContext.Response.ContentLength = ex.Message.Length;
                     await httpContext.Response.WriteAsync(ex.Message);
-                    responseWrittenTcs.SetResult(null);
+                    responseWritten.Release();
                 }
             }, new TestServiceContext()))
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         "POST / HTTP/1.1",
                         "Transfer-Encoding: chunked",
                         "",
-                        "bad");
-                    await responseWrittenTcs.Task;
+                        "wrong");
+                    await responseWritten.WaitAsync();
                     await connection.ReceiveEnd(
                         "HTTP/1.1 400 Bad Request",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -935,7 +940,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "GET / HTTP/1.1",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -951,7 +956,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "Connection: keep-alive",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -982,7 +987,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "GET / HTTP/1.1",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
                         "Connection: keep-alive",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -998,7 +1003,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "Connection: keep-alive",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
                         "Connection: keep-alive",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -1036,7 +1041,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "hello, world");
 
                     // Make sure connection was kept open
-                    await connection.SendEnd(
+                    await connection.Send(
                         "GET / HTTP/1.1",
                         "",
                         "");
