@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
@@ -182,6 +183,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
 
             await tcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+        }
+
+        // Regression test for https://github.com/aspnet/KestrelHttpServer/pull/1197
+        [Fact]
+        public void ConnectionFilterDoesNotLeakBlock()
+        {
+            var loggerFactory = new HandshakeErrorLoggerFactory();
+
+            var hostBuilder = new WebHostBuilder()
+                .UseKestrel(options =>
+                {
+                    options.UseHttps(@"TestResources/testCert.pfx", "testPassword");
+                })
+                .UseUrls("https://127.0.0.1:0/")
+                .UseLoggerFactory(loggerFactory)
+                .Configure(app => { });
+
+            using (var host = hostBuilder.Build())
+            {
+                host.Start();
+
+                using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+                {
+                    socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
+
+                    // Close socket immediately
+                    socket.LingerState = new LingerOption(true, 0);
+                }
+            }
         }
 
         private class HandshakeErrorLoggerFactory : ILoggerFactory

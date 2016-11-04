@@ -154,15 +154,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         // Called on Libuv thread
         public virtual void OnSocketClosed()
         {
-            if (_filteredStreamAdapter != null)
+            _frame.FrameStartedTask.ContinueWith((task, state) =>
             {
-                Task.WhenAll(_readInputTask, _frame.StopAsync()).ContinueWith((task, state) =>
+                var connection = (Connection)state;
+
+                if (_filteredStreamAdapter != null)
                 {
-                    var connection = (Connection)state;
-                    connection._filterContext.Connection.Dispose();
-                    connection._filteredStreamAdapter.Dispose();
-                }, this);
-            }
+                    Task.WhenAll(_readInputTask, _frame.StopAsync()).ContinueWith((task2, state2) =>
+                    {
+                        var connection2 = (Connection)state2;
+                        connection2._filterContext.Connection.Dispose();
+                        connection2._filteredStreamAdapter.Dispose();
+                    }, connection);
+                }
+            }, this);
 
             SocketInput.Dispose();
             _socketClosedTcs.TrySetResult(null);
@@ -199,7 +204,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
 
             _frame.PrepareRequest = _filterContext.PrepareRequest;
-
             _frame.Start();
         }
 

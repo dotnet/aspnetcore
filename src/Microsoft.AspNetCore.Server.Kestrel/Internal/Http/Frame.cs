@@ -51,6 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
+        private TaskCompletionSource<object> _frameStartedTcs = new TaskCompletionSource<object>();
         private Task _requestProcessingTask;
         protected volatile bool _requestProcessingStopping; // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
         protected int _requestAborted;
@@ -204,6 +205,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public Stream ResponseBody { get; set; }
 
         public Stream DuplexStream { get; set; }
+
+        public Task FrameStartedTask => _frameStartedTcs.Task;
 
         public CancellationToken RequestAborted
         {
@@ -366,6 +369,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     default(CancellationToken),
                     TaskCreationOptions.DenyChildAttach,
                     TaskScheduler.Default).Unwrap();
+            _frameStartedTcs.SetResult(null);
         }
 
         /// <summary>
