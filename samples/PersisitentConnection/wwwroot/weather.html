@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Social weather</title>
+</head>
+<body>
+    <div>
+    </div>
+    <form id="reportWeather" action="#">
+        <input type="number" id="temperature" />
+        <select id="weather">
+            <option value="Sunny">Sunny</option>
+            <option value="MostlySunny">Mostly Sunny</option>
+            <option value="PartlySunny">Partly Sunny</option>
+            <option value="PartlyCloudy">Partly Cloudy</option>
+            <option value="MostlyCloudy">Mostly Cloudy</option>
+            <option value="Cloudy">Cloudy</option>
+        </select>
+        <input type="submit" value="Send report" />
+    </form>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            let connectUrl = `ws://${document.location.host}/weather/ws?formatType=json`;
+            var webSocket = new WebSocket(connectUrl);
+            webSocket.onopen = event => {
+                console.log(`WebSocket connected to ${connectUrl}`);
+            };
+
+            webSocket.onerror = event => {
+            };
+
+            webSocket.onmessage = message => {
+            }
+
+            webSocket.onclose = event => {
+            }
+
+            document.getElementById('reportWeather').addEventListener('submit', event => {
+
+                webSocket.send(
+                    JSON.stringify({
+                        Temperature: '49',
+                        Weather: 'Cloudy',
+                        ReportTime: Date.now()
+                    }));
+
+                event.preventDefault();
+            });
+        });
+    </script>
+</body>
+</html>
