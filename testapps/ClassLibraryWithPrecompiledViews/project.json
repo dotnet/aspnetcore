@@ -13,14 +13,14 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Mvc": "1.1.0-*",
-    "Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design": {
-      "version": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Design": {
+      "version": "1.1.0-*",
       "target": "package",
       "type": "build"
     }
   },
   "tools": {
-    "Microsoft.AspNetCore.Mvc.Razor.Precompilation.Tools": "1.0.0-*"
+    "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tools": "1.1.0-*"
   },
   "frameworks": {
     "netcoreapp1.0": {

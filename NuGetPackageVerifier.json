@@ -4,8 +4,8 @@
       "AdxVerificationCompositeRule"
     ],
     "packages": {
-      "Microsoft.AspNetCore.Mvc.Razor.Precompilation.Design": { },
-      "Microsoft.AspNetCore.Mvc.Razor.Precompilation.Tools": { }
+      "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Design": {},
+      "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tools": {}
     }
   },
   "Default": { // Rules to run for packages not listed in any other set.
