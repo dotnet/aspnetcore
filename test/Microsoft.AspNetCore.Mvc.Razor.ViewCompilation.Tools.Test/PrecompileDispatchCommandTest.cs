@@ -70,22 +70,6 @@ Options:
         }
 
         [Fact]
-        public void RunPrintsError_IfFrameworkIfNotSpecified()
-        {
-            // Arrange
-            var expected = "Option -f|--framework does not have a value.";
-            var args = new string[0];
-
-            // Act
-            var result = Execute(args);
-
-            // Assert
-            Assert.Equal(1, result.ExitCode);
-            Assert.Empty(result.Out);
-            Assert.Equal(expected, result.Error.Trim());
-        }
-
-        [Fact]
         public void RunPrintsError_IfOutputPathIfNotSpecified()
         {
             // Arrange

@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Design.Internal;
 using Microsoft.DotNet.InternalAbstractions;
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
                 dispatchArgs.Add(CommonOptions.EmbedViewSourceTemplate);
             }
 
-            var compilerOptions = runtimeContext.ProjectFile.GetCompilerOptions(TargetFramework, Configuration);
+            var compilerOptions = runtimeContext.ProjectFile.GetCompilerOptions(runtimeContext.TargetFramework, Configuration);
             if (!string.IsNullOrEmpty(compilerOptions.KeyFile))
             {
                 dispatchArgs.Add(StrongNameOptions.StrongNameKeyPath);
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             var toolName = typeof(Design.Program).GetTypeInfo().Assembly.GetName().Name;
             var dispatchCommand = DotnetToolDispatcher.CreateDispatchCommand(
                 dispatchArgs,
-                TargetFramework,
+                runtimeContext.TargetFramework,
                 Configuration,
                 outputPath: outputPaths.RuntimeOutputPath,
                 buildBasePath: null,
@@ -144,12 +144,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             ProjectPath = GetProjectPath(Options.ProjectArgument.Value);
             Configuration = ConfigurationOption.Value() ?? DotNet.Cli.Utils.Constants.DefaultConfiguration;
 
-            if (!FrameworkOption.HasValue())
+            if (FrameworkOption.HasValue())
             {
-                Application.Error.WriteLine($"Option {FrameworkOption.Template} does not have a value.");
-                return false;
+                TargetFramework = NuGetFramework.Parse(FrameworkOption.Value());
             }
-            TargetFramework = NuGetFramework.Parse(FrameworkOption.Value());
 
             if (!OutputPathOption.HasValue())
             {
@@ -188,18 +186,28 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
         private ProjectContext GetRuntimeContext()
         {
             var workspace = new BuildWorkspace(ProjectReaderSettings.ReadFromEnvironment());
-
-            var projectContext = workspace.GetProjectContext(ProjectPath, TargetFramework);
-            if (projectContext == null)
+            var projectContexts = ProjectContext.CreateContextForEachFramework(ProjectPath).ToArray();
+            ProjectContext projectContext;
+            if (TargetFramework != null)
             {
-                Debug.Assert(FrameworkOption.HasValue());
-                throw new InvalidOperationException($"Project '{ProjectPath}' does not support framework: {FrameworkOption.Value()}");
+                projectContext = projectContexts.FirstOrDefault(context => context.TargetFramework == TargetFramework);
+                if (projectContext == null)
+                {
+                    throw new InvalidOperationException($"Project '{ProjectPath}' does not support framework: {FrameworkOption.Value()}");
+                }
+            }
+            else if (projectContexts.Length == 1)
+            {
+                projectContext = projectContexts[0];
+            }
+            else
+            {
+                throw new InvalidOperationException($"Project '{ProjectPath}' targets multiple frameworks. Specify one using '{FrameworkOption.Template}.");
             }
 
-            var runtimeContext = workspace.GetRuntimeContext(
+            return workspace.GetRuntimeContext(
                 projectContext,
                 RuntimeEnvironmentRidExtensions.GetAllCandidateRuntimeIdentifiers());
-            return runtimeContext;
         }
     }
 }
