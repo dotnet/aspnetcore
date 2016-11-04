@@ -29,5 +29,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
         {
             return TaskCache.CompletedTask;
         }
+
+        public void Flush()
+        {
+        }
+
+        public Task FlushAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            return TaskCache.CompletedTask;
+        }
     }
 }

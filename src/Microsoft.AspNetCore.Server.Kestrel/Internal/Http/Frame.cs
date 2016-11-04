@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
     {
         private static readonly ArraySegment<byte> _endChunkedResponseBytes = CreateAsciiByteArraySegment("0\r\n\r\n");
         private static readonly ArraySegment<byte> _continueBytes = CreateAsciiByteArraySegment("HTTP/1.1 100 Continue\r\n\r\n");
-        private static readonly ArraySegment<byte> _emptyData = new ArraySegment<byte>(new byte[0]);
 
         private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
@@ -506,13 +505,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public void Flush()
         {
             ProduceStartAndFireOnStarting().GetAwaiter().GetResult();
-            SocketOutput.Write(_emptyData);
+            SocketOutput.Flush();
         }
 
         public async Task FlushAsync(CancellationToken cancellationToken)
         {
             await ProduceStartAndFireOnStarting();
-            await SocketOutput.WriteAsync(_emptyData, cancellationToken: cancellationToken);
+            await SocketOutput.FlushAsync(cancellationToken);
         }
 
         public void Write(ArraySegment<byte> data)
@@ -768,7 +767,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             ProduceStart(appCompleted: true);
 
             // Force flush
-            await SocketOutput.WriteAsync(_emptyData);
+            await SocketOutput.FlushAsync();
 
             await WriteSuffix();
         }

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Filter.Internal
 {
@@ -34,11 +35,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter.Internal
 
         public void Write(ArraySegment<byte> buffer, bool chunk)
         {
-            if (buffer.Count == 0 )
-            {
-                return;
-            }
-
             if (chunk && buffer.Array != null)
             {
                 var beginChunkBytes = ChunkWriter.BeginChunkBytes(buffer.Count);
@@ -116,6 +112,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter.Internal
             }
 
             end.Block.Pool.Return(end.Block);
+        }
+
+        // Flush no-ops. We rely on connection filter streams to auto-flush.
+        public void Flush()
+        {
+        }
+
+        public Task FlushAsync(CancellationToken cancellationToken)
+        {
+            return TaskCache.CompletedTask;
         }
     }
 }

@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         // Well behaved WriteAsync users should await returned task, so there is no need to allocate more per connection by default
         private const int _initialTaskQueues = 1;
 
+        private static readonly ArraySegment<byte> _emptyData = new ArraySegment<byte>(new byte[0]);
         private static readonly WaitCallback _returnBlocks = (state) => ReturnBlocks((MemoryPoolBlock)state);
         private static readonly Action<object> _connectionCancellation = (state) => ((SocketOutput)state).CancellationTriggered();
 
@@ -532,6 +533,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
 
             return WriteAsync(buffer, cancellationToken, chunk);
+        }
+
+        void ISocketOutput.Flush()
+        {
+            WriteAsync(_emptyData, default(CancellationToken), isSync: true).GetAwaiter().GetResult();
+        }
+
+        Task ISocketOutput.FlushAsync(CancellationToken cancellationToken)
+        {
+            return WriteAsync(_emptyData, cancellationToken);
         }
 
         private static void BytesBetween(MemoryPoolIterator start, MemoryPoolIterator end, out int bytes, out int buffers)

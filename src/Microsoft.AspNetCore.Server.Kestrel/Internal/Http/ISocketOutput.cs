@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
     {
         void Write(ArraySegment<byte> buffer, bool chunk = false);
         Task WriteAsync(ArraySegment<byte> buffer, bool chunk = false, CancellationToken cancellationToken = default(CancellationToken));
+        void Flush();
+        Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Returns an iterator pointing to the tail of the response buffer. Response data can be appended
