@@ -9,7 +9,13 @@ namespace PersisitentConnection
 {
     public class PersistentConnectionLifeTimeManager
     {
+        private readonly FormatterResolver _formatterResolver;
         private readonly ConnectionList _connectionList = new ConnectionList();
+
+        public PersistentConnectionLifeTimeManager(FormatterResolver formatterResolver)
+        {
+            _formatterResolver = formatterResolver;
+        }
 
         public void OnConnectedAsync(Connection connection)
         {
@@ -25,8 +31,7 @@ namespace PersisitentConnection
         {
             foreach (var connection in _connectionList)
             {
-//                var formatType = connection.Metadata.Get<string>("formatType");
-                var formatter = new JsonStreamFormatter<T>();
+                var formatter = _formatterResolver.GetFormatter<T>(connection.Metadata.Get<string>("formatType"));
                 await formatter.WriteAsync(data, connection.Channel.GetStream());
             }
         }

@@ -14,6 +14,10 @@ namespace PersisitentConnection
         {
             services.AddRouting();
             services.AddSingleton<SocialWeatherEndPoint>();
+            services.AddTransient<PersistentConnectionLifeTimeManager>();
+            services.AddSingleton(typeof(JsonStreamFormatter<>), typeof(JsonStreamFormatter<>));
+            services.AddSingleton<ProtobufWeatherStreamFormatter>();
+            services.AddSingleton<FormatterResolver>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -28,6 +32,10 @@ namespace PersisitentConnection
 
             app.UseSockets(o => { o.MapEndpoint<SocialWeatherEndPoint>("/weather"); });
             app.UseStaticFiles();
+
+            var formatterResolver = app.ApplicationServices.GetRequiredService<FormatterResolver>();
+            formatterResolver.AddFormatter<WeatherReport, JsonStreamFormatter<WeatherReport>>("json");
+            formatterResolver.AddFormatter<WeatherReport, ProtobufWeatherStreamFormatter>("protobuf");
 
             app.Run(async (context) =>
             {

@@ -7,30 +7,32 @@ namespace PersisitentConnection
 {
     public class SocialWeatherEndPoint : EndPoint
     {
-        private readonly PersistentConnectionLifeTimeManager _lifetimeManager = new PersistentConnectionLifeTimeManager();
+        private readonly PersistentConnectionLifeTimeManager _lifetimeManager;
+        private readonly FormatterResolver _formatterResolver;
         private readonly ILogger<SocialWeatherEndPoint> _logger;
         private object _lockObj = new object();
         private WeatherReport _lastWeatherReport;
 
-        public SocialWeatherEndPoint(ILogger<SocialWeatherEndPoint> logger)
+        public SocialWeatherEndPoint(PersistentConnectionLifeTimeManager lifetimeManager,
+            FormatterResolver formatterResolver, ILogger<SocialWeatherEndPoint> logger)
         {
+            _lifetimeManager = lifetimeManager;
+            _formatterResolver = formatterResolver;
             _logger = logger;
         }
 
         public async override Task OnConnectedAsync(Connection connection)
         {
             _lifetimeManager.OnConnectedAsync(connection);
-            await DispatchMessagesAsync(connection);
+            await ProcessRequests(connection);
             _lifetimeManager.OnDisconnectedAsync(connection);
         }
 
-        public async Task DispatchMessagesAsync(Connection connection)
+        public async Task ProcessRequests(Connection connection)
         {
             var stream = connection.Channel.GetStream();
-            //var formatType = connection.Metadata.Get<string>("formatType");
-            //var formatterRegistry = _serviceProvider.GetRequiredService<FormatterRegistry>();
-            //var formatter = formatterRegistry.GetFormatter(formatType);
-            var formatter = new JsonStreamFormatter<WeatherReport>();
+            var formatter = _formatterResolver.GetFormatter<WeatherReport>(
+                connection.Metadata.Get<string>("formatType"));
 
             while (true)
             {

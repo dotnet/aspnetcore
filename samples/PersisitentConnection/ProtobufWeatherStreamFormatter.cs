@@ -4,14 +4,14 @@ using System.Threading.Tasks;
 
 namespace PersisitentConnection
 {
-    public class ProtobufWeatherStreamFormatter : IStreamFormatter<Weather>
+    public class ProtobufWeatherStreamFormatter : IStreamFormatter<WeatherReport>
     {
-        public Task<Weather> ReadAsync(Stream stream)
+        public Task<WeatherReport> ReadAsync(Stream stream)
         {
             throw new NotImplementedException();
         }
 
-        public Task WriteAsync(Weather value, Stream stream)
+        public Task WriteAsync(WeatherReport value, Stream stream)
         {
             throw new NotImplementedException();
         }

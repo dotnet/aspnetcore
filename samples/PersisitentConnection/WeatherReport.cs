@@ -14,5 +14,7 @@ namespace PersisitentConnection
         public long ReportTime { get; set; }
 
         public Weather Weather { get; set; }
+
+        public string ZipCode { get; set; }
     }
 }
