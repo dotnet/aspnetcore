@@ -26,7 +26,25 @@ namespace Microsoft.DotNet.Watcher
                 FullName = "Microsoft DotNet File Watcher",
                 Out = stdout,
                 Error = stderr,
-                AllowArgumentSeparator = true
+                AllowArgumentSeparator = true,
+                ExtendedHelpText = @"
+Remarks:
+  The special option '--' is used to delimit the end of the options and
+  the beginning of arguments that will be passed to the child dotnet process.
+  Its use is optional. When the special option '--' is not used,
+  dotnet-watch will use the first unrecognized argument as the beginning
+  of all arguments passed into the child dotnet process.
+
+  For example: dotnet watch -- --verbose run
+
+  Even though '--verbose' is an option dotnet-watch supports, the use of '--'
+  indicates that '--verbose' should be treated instead as an argument for
+  dotnet-run.
+
+Examples:
+  dotnet watch run
+  dotnet watch test
+"
             };
 
             app.HelpOption("-?|-h|--help");
