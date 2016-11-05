@@ -14,7 +14,10 @@
     "repository": {
       "type": "git",
       "url": "git://github.com/aspnet/websockets"
-    }
+    },
+    "tags": [
+      "aspnetcore"
+    ]
   },
   "dependencies": {
     "Microsoft.AspNetCore.Http.Extensions": "1.1.0-*",
