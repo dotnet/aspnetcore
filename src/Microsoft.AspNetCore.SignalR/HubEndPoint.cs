@@ -10,22 +10,34 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public class HubEndPoint<THub> : EndPoint where THub : Hub
+    public class HubEndPoint<THub> : HubEndPoint<THub, IClientProxy> where THub : Hub<IClientProxy>
+    {
+        public HubEndPoint(HubLifetimeManager<THub> lifetimeManager,
+                           IHubContext<THub> hubContext,
+                           InvocationAdapterRegistry registry,
+                           ILogger<HubEndPoint<THub>> logger,
+                           IServiceScopeFactory serviceScopeFactory) : base(lifetimeManager, hubContext, registry, logger, serviceScopeFactory)
+        {
+
+        }
+    }
+
+    public class HubEndPoint<THub, TClient> : EndPoint where THub : Hub<TClient>
     {
         private readonly Dictionary<string, Func<Connection, InvocationDescriptor, Task<InvocationResultDescriptor>>> _callbacks
             = new Dictionary<string, Func<Connection, InvocationDescriptor, Task<InvocationResultDescriptor>>>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Type[]> _paramTypes = new Dictionary<string, Type[]>();
 
         private readonly HubLifetimeManager<THub> _lifetimeManager;
-        private readonly IHubContext<THub> _hubContext;
-        private readonly ILogger<HubEndPoint<THub>> _logger;
+        private readonly IHubContext<THub, TClient> _hubContext;
+        private readonly ILogger<HubEndPoint<THub, TClient>> _logger;
         private readonly InvocationAdapterRegistry _registry;
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
         public HubEndPoint(HubLifetimeManager<THub> lifetimeManager,
-                           IHubContext<THub> hubContext,
+                           IHubContext<THub, TClient> hubContext,
                            InvocationAdapterRegistry registry,
-                           ILogger<HubEndPoint<THub>> logger,
+                           ILogger<HubEndPoint<THub, TClient>> logger,
                            IServiceScopeFactory serviceScopeFactory)
         {
             _lifetimeManager = lifetimeManager;

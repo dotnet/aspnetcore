@@ -7,15 +7,13 @@ namespace Microsoft.AspNetCore.SignalR
     {
         public HubCallerContext(Connection connection)
         {
-            ConnectionId = connection.ConnectionId;
-            User = connection.User;
             Connection = connection;
         }
 
         public Connection Connection { get; }
 
-        public ClaimsPrincipal User { get; }
+        public ClaimsPrincipal User => Connection.User;
 
-        public string ConnectionId { get; }
+        public string ConnectionId => Connection.ConnectionId;
     }
 }

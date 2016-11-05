@@ -5,8 +5,12 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public interface IHubContext<THub>
+    public interface IHubContext<THub, TClient>
     {
-        IHubConnectionContext Clients { get; }
+        IHubConnectionContext<TClient> Clients { get; }
+    }
+
+    public interface IHubContext<THub> : IHubContext<THub, IClientProxy>
+    {
     }
 }
