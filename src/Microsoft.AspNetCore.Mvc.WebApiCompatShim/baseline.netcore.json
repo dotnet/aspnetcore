@@ -1,0 +1,3070 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.WebApiCompatShim, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "System.Net.Http.HttpRequestMessageExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateErrorResponse",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "statusCode",
+              "Type": "System.Net.HttpStatusCode"
+            },
+            {
+              "Name": "message",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Net.Http.HttpResponseMessage",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateErrorResponse",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "statusCode",
+              "Type": "System.Net.HttpStatusCode"
+            },
+            {
+              "Name": "message",
+              "Type": "System.String"
+            },
+            {
+              "Name": "exception",
+              "Type": "System.Exception"
+            }
+          ],
+          "ReturnType": "System.Net.Http.HttpResponseMessage",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateErrorResponse",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "statusCode",
+              "Type": "System.Net.HttpStatusCode"
+            },
+            {
+              "Name": "exception",
+              "Type": "System.Exception"
+            }
+          ],
+          "ReturnType": "System.Net.Http.HttpResponseMessage",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateErrorResponse",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "statusCode",
+              "Type": "System.Net.HttpStatusCode"
+            },
+            {
+              "Name": "modelState",
+              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary"
+            }
+          ],
+          "ReturnType": "System.Net.Http.HttpResponseMessage",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateErrorResponse",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "statusCode",
+              "Type": "System.Net.HttpStatusCode"
+            },
+            {
+              "Name": "error",
+              "Type": "System.Web.Http.HttpError"
+            }
+          ],
+          "ReturnType": "System.Net.Http.HttpResponseMessage",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateResponse<T0>",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Net.Http.HttpResponseMessage",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateResponse<T0>",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "statusCode",
+              "Type": "System.Net.HttpStatusCode"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Net.Http.HttpResponseMessage",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateResponse<T0>",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "statusCode",
+              "Type": "System.Net.HttpStatusCode"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            },
+            {
+              "Name": "formatters",
+              "Type": "System.Collections.Generic.IEnumerable<System.Net.Http.Formatting.MediaTypeFormatter>"
+            }
+          ],
+          "ReturnType": "System.Net.Http.HttpResponseMessage",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateResponse<T0>",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "statusCode",
+              "Type": "System.Net.HttpStatusCode"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            },
+            {
+              "Name": "mediaType",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Net.Http.HttpResponseMessage",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateResponse<T0>",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "statusCode",
+              "Type": "System.Net.HttpStatusCode"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            },
+            {
+              "Name": "mediaType",
+              "Type": "System.Net.Http.Headers.MediaTypeHeaderValue"
+            }
+          ],
+          "ReturnType": "System.Net.Http.HttpResponseMessage",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateResponse<T0>",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "statusCode",
+              "Type": "System.Net.HttpStatusCode"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            },
+            {
+              "Name": "formatter",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
+            }
+          ],
+          "ReturnType": "System.Net.Http.HttpResponseMessage",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateResponse<T0>",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "statusCode",
+              "Type": "System.Net.HttpStatusCode"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            },
+            {
+              "Name": "formatter",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
+            },
+            {
+              "Name": "mediaType",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Net.Http.HttpResponseMessage",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateResponse<T0>",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "statusCode",
+              "Type": "System.Net.HttpStatusCode"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            },
+            {
+              "Name": "formatter",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
+            },
+            {
+              "Name": "mediaType",
+              "Type": "System.Net.Http.Headers.MediaTypeHeaderValue"
+            }
+          ],
+          "ReturnType": "System.Net.Http.HttpResponseMessage",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Net.Http.Formatting.ContentNegotiationResult",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Formatter",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Formatter",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MediaType",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.Headers.MediaTypeHeaderValue",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MediaType",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Net.Http.Headers.MediaTypeHeaderValue"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "formatter",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
+            },
+            {
+              "Name": "mediaType",
+              "Type": "System.Net.Http.Headers.MediaTypeHeaderValue"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Net.Http.Formatting.DefaultContentNegotiator",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "System.Net.Http.Formatting.IContentNegotiator"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ExcludeMatchOnTypeOnly",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Negotiate",
+          "Parameters": [
+            {
+              "Name": "type",
+              "Type": "System.Type"
+            },
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "formatters",
+              "Type": "System.Collections.Generic.IEnumerable<System.Net.Http.Formatting.MediaTypeFormatter>"
+            }
+          ],
+          "ReturnType": "System.Net.Http.Formatting.ContentNegotiationResult",
+          "Virtual": true,
+          "ImplementedInterface": "System.Net.Http.Formatting.IContentNegotiator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ComputeFormatterMatches",
+          "Parameters": [
+            {
+              "Name": "type",
+              "Type": "System.Type"
+            },
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "formatters",
+              "Type": "System.Collections.Generic.IEnumerable<System.Net.Http.Formatting.MediaTypeFormatter>"
+            }
+          ],
+          "ReturnType": "System.Collections.ObjectModel.Collection<System.Net.Http.Formatting.MediaTypeFormatterMatch>",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SelectResponseMediaTypeFormatter",
+          "Parameters": [
+            {
+              "Name": "matches",
+              "Type": "System.Collections.Generic.ICollection<System.Net.Http.Formatting.MediaTypeFormatterMatch>"
+            }
+          ],
+          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SelectResponseCharacterEncoding",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "formatter",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
+            }
+          ],
+          "ReturnType": "System.Text.Encoding",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MatchAcceptHeader",
+          "Parameters": [
+            {
+              "Name": "sortedAcceptValues",
+              "Type": "System.Collections.Generic.IEnumerable<System.Net.Http.Headers.MediaTypeWithQualityHeaderValue>"
+            },
+            {
+              "Name": "formatter",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
+            }
+          ],
+          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MatchRequestMediaType",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "formatter",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
+            }
+          ],
+          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ShouldMatchOnType",
+          "Parameters": [
+            {
+              "Name": "sortedAcceptValues",
+              "Type": "System.Collections.Generic.IEnumerable<System.Net.Http.Headers.MediaTypeWithQualityHeaderValue>"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MatchType",
+          "Parameters": [
+            {
+              "Name": "type",
+              "Type": "System.Type"
+            },
+            {
+              "Name": "formatter",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
+            }
+          ],
+          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SortMediaTypeWithQualityHeaderValuesByQFactor",
+          "Parameters": [
+            {
+              "Name": "headerValues",
+              "Type": "System.Collections.Generic.ICollection<System.Net.Http.Headers.MediaTypeWithQualityHeaderValue>"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IEnumerable<System.Net.Http.Headers.MediaTypeWithQualityHeaderValue>",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SortStringWithQualityHeaderValuesByQFactor",
+          "Parameters": [
+            {
+              "Name": "headerValues",
+              "Type": "System.Collections.Generic.ICollection<System.Net.Http.Headers.StringWithQualityHeaderValue>"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IEnumerable<System.Net.Http.Headers.StringWithQualityHeaderValue>",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UpdateBestMatch",
+          "Parameters": [
+            {
+              "Name": "current",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatterMatch"
+            },
+            {
+              "Name": "potentialReplacement",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatterMatch"
+            }
+          ],
+          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "excludeMatchOnTypeOnly",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Net.Http.Formatting.FormDataCollection",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String, System.String>>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetEnumerator",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.String, System.String>>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String, System.String>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "query",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Net.Http.Formatting.IContentNegotiator",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Negotiate",
+          "Parameters": [
+            {
+              "Name": "type",
+              "Type": "System.Type"
+            },
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "formatters",
+              "Type": "System.Collections.Generic.IEnumerable<System.Net.Http.Formatting.MediaTypeFormatter>"
+            }
+          ],
+          "ReturnType": "System.Net.Http.Formatting.ContentNegotiationResult",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Net.Http.Formatting.MediaTypeFormatterMatch",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Formatter",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MediaType",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.Headers.MediaTypeHeaderValue",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Quality",
+          "Parameters": [],
+          "ReturnType": "System.Double",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Ranking",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterMatchRanking",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "formatter",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatter"
+            },
+            {
+              "Name": "mediaType",
+              "Type": "System.Net.Http.Headers.MediaTypeHeaderValue"
+            },
+            {
+              "Name": "quality",
+              "Type": "System.Nullable<System.Double>"
+            },
+            {
+              "Name": "ranking",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatterMatchRanking"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Net.Http.Formatting.MediaTypeFormatterMatchRanking",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "None",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "MatchOnCanWriteType",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "MatchOnRequestAcceptHeaderLiteral",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        },
+        {
+          "Kind": "Field",
+          "Name": "MatchOnRequestAcceptHeaderSubtypeMediaRange",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "3"
+        },
+        {
+          "Kind": "Field",
+          "Name": "MatchOnRequestAcceptHeaderAllMediaRange",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "4"
+        },
+        {
+          "Kind": "Field",
+          "Name": "MatchOnRequestMediaType",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "5"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Web.Http.ApiController",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "System.IDisposable"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ActionContext",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ActionContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ControllerContext",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ControllerContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ControllerContext",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Mvc.ControllerContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Context",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.HttpContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MetadataProvider",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MetadataProvider",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ObjectValidator",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IObjectModelValidator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ObjectValidator",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IObjectModelValidator"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ModelState",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Request",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.HttpRequestMessage",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Request",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Url",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.IUrlHelper",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Url",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Mvc.IUrlHelper"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_User",
+          "Parameters": [],
+          "ReturnType": "System.Security.Principal.IPrincipal",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "BadRequest",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.BadRequestResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "BadRequest",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Web.Http.BadRequestErrorMessageResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "BadRequest",
+          "Parameters": [
+            {
+              "Name": "modelState",
+              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary"
+            }
+          ],
+          "ReturnType": "System.Web.Http.InvalidModelStateResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Conflict",
+          "Parameters": [],
+          "ReturnType": "System.Web.Http.ConflictResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Content<T0>",
+          "Parameters": [
+            {
+              "Name": "statusCode",
+              "Type": "System.Net.HttpStatusCode"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Web.Http.NegotiatedContentResult<T0>",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Created",
+          "Parameters": [
+            {
+              "Name": "location",
+              "Type": "System.String"
+            },
+            {
+              "Name": "content",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.CreatedResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Created",
+          "Parameters": [
+            {
+              "Name": "uri",
+              "Type": "System.Uri"
+            },
+            {
+              "Name": "content",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.CreatedResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreatedAtRoute",
+          "Parameters": [
+            {
+              "Name": "routeName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "routeValues",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "content",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.CreatedAtRouteResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InternalServerError",
+          "Parameters": [],
+          "ReturnType": "System.Web.Http.InternalServerErrorResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InternalServerError",
+          "Parameters": [
+            {
+              "Name": "exception",
+              "Type": "System.Exception"
+            }
+          ],
+          "ReturnType": "System.Web.Http.ExceptionResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Json<T0>",
+          "Parameters": [
+            {
+              "Name": "content",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.JsonResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Json<T0>",
+          "Parameters": [
+            {
+              "Name": "content",
+              "Type": "T0"
+            },
+            {
+              "Name": "serializerSettings",
+              "Type": "Newtonsoft.Json.JsonSerializerSettings"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.JsonResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Json<T0>",
+          "Parameters": [
+            {
+              "Name": "content",
+              "Type": "T0"
+            },
+            {
+              "Name": "serializerSettings",
+              "Type": "Newtonsoft.Json.JsonSerializerSettings"
+            },
+            {
+              "Name": "encoding",
+              "Type": "System.Text.Encoding"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.JsonResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "NotFound",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.NotFoundResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Ok",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.OkResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Ok<T0>",
+          "Parameters": [
+            {
+              "Name": "content",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.OkObjectResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Redirect",
+          "Parameters": [
+            {
+              "Name": "location",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.RedirectResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Redirect",
+          "Parameters": [
+            {
+              "Name": "location",
+              "Type": "System.Uri"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.RedirectResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RedirectToRoute",
+          "Parameters": [
+            {
+              "Name": "routeName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "routeValues",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.RedirectToRouteResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ResponseMessage",
+          "Parameters": [
+            {
+              "Name": "response",
+              "Type": "System.Net.Http.HttpResponseMessage"
+            }
+          ],
+          "ReturnType": "System.Web.Http.ResponseMessageResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StatusCode",
+          "Parameters": [
+            {
+              "Name": "status",
+              "Type": "System.Net.HttpStatusCode"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.StatusCodeResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Validate<T0>",
+          "Parameters": [
+            {
+              "Name": "entity",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TEntity",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Validate<T0>",
+          "Parameters": [
+            {
+              "Name": "entity",
+              "Type": "T0"
+            },
+            {
+              "Name": "keyPrefix",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TEntity",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [
+            {
+              "Name": "disposing",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Web.Http.BadRequestErrorMessageResult",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Mvc.ObjectResult",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Message",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ExecuteResultAsync",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.ActionContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.IActionResult",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Web.Http.ConflictResult",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Mvc.StatusCodeResult",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Web.Http.ExceptionResult",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Mvc.ObjectResult",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Exception",
+          "Parameters": [],
+          "ReturnType": "System.Exception",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IncludeErrorDetail",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ExecuteResultAsync",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.ActionContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.IActionResult",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "exception",
+              "Type": "System.Exception"
+            },
+            {
+              "Name": "includeErrorDetail",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Web.Http.HttpError",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "System.Collections.Generic.Dictionary<System.String, System.Object>",
+      "ImplementedInterfaces": [
+        "System.Xml.Serialization.IXmlSerializable"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Message",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Message",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ModelState",
+          "Parameters": [],
+          "ReturnType": "System.Web.Http.HttpError",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MessageDetail",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MessageDetail",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ExceptionMessage",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ExceptionMessage",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ExceptionType",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ExceptionType",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_StackTrace",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_StackTrace",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_InnerException",
+          "Parameters": [],
+          "ReturnType": "System.Web.Http.HttpError",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetPropertyValue<T0>",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TValue",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "exception",
+              "Type": "System.Exception"
+            },
+            {
+              "Name": "includeErrorDetail",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "modelState",
+              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary"
+            },
+            {
+              "Name": "includeErrorDetail",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Web.Http.HttpErrorKeys",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "MessageKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "MessageDetailKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "ModelStateKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "ExceptionMessageKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "ExceptionTypeKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "StackTraceKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "InnerExceptionKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "MessageLanguageKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "ErrorCodeKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Web.Http.HttpResponseException",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Exception",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Response",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.HttpResponseMessage",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "statusCode",
+              "Type": "System.Net.HttpStatusCode"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "response",
+              "Type": "System.Net.Http.HttpResponseMessage"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Web.Http.InternalServerErrorResult",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Mvc.StatusCodeResult",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Web.Http.InvalidModelStateResult",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Mvc.ObjectResult",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ModelState",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IncludeErrorDetail",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ExecuteResultAsync",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.ActionContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.IActionResult",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "modelState",
+              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary"
+            },
+            {
+              "Name": "includeErrorDetail",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Web.Http.NegotiatedContentResult<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Mvc.ObjectResult",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Content",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ExecuteResultAsync",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.ActionContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.IActionResult",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "statusCode",
+              "Type": "System.Net.HttpStatusCode"
+            },
+            {
+              "Name": "content",
+              "Type": "T0"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "T",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "System.Web.Http.ResponseMessageResult",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Mvc.ObjectResult",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Response",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.HttpResponseMessage",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "response",
+              "Type": "System.Net.Http.HttpResponseMessage"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Web.Http.FromUriAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Attribute",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.ModelBinding.IOptionalBinderMetadata",
+        "Microsoft.AspNetCore.Mvc.ModelBinding.IBindingSourceMetadata",
+        "Microsoft.AspNetCore.Mvc.ModelBinding.IModelNameProvider"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_BindingSource",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ModelBinding.IBindingSourceMetadata",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IsOptional",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ModelBinding.IOptionalBinderMetadata",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_IsOptional",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ModelBinding.IModelNameProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Name",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Builder.WebApiCompatShimRouteBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "MapWebApiRoute",
+          "Parameters": [
+            {
+              "Name": "routeCollectionBuilder",
+              "Type": "Microsoft.AspNetCore.Routing.IRouteBuilder"
+            },
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "template",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Routing.IRouteBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MapWebApiRoute",
+          "Parameters": [
+            {
+              "Name": "routeCollectionBuilder",
+              "Type": "Microsoft.AspNetCore.Routing.IRouteBuilder"
+            },
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "template",
+              "Type": "System.String"
+            },
+            {
+              "Name": "defaults",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Routing.IRouteBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MapWebApiRoute",
+          "Parameters": [
+            {
+              "Name": "routeCollectionBuilder",
+              "Type": "Microsoft.AspNetCore.Routing.IRouteBuilder"
+            },
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "template",
+              "Type": "System.String"
+            },
+            {
+              "Name": "defaults",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "constraints",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Routing.IRouteBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MapWebApiRoute",
+          "Parameters": [
+            {
+              "Name": "routeCollectionBuilder",
+              "Type": "Microsoft.AspNetCore.Routing.IRouteBuilder"
+            },
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "template",
+              "Type": "System.String"
+            },
+            {
+              "Name": "defaults",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "constraints",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "dataTokens",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Routing.IRouteBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.ModelBinding.IOptionalBinderMetadata",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_IsOptional",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.FormDataCollectionExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "NormalizeJQueryToMvc",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetJQueryNameValuePairs",
+          "Parameters": [
+            {
+              "Name": "formData",
+              "Type": "System.Net.Http.Formatting.FormDataCollection"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String, System.String>>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.HttpResponseExceptionActionFilter",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.Filters.IActionFilter",
+        "Microsoft.AspNetCore.Mvc.Filters.IOrderedFilter"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Order",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Filters.IOrderedFilter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Order",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnActionExecuting",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Filters.IActionFilter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnActionExecuted",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Filters.IActionFilter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.OverloadActionConstraint",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Order",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Accept",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.ActionConstraints.ActionConstraintContext"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraint",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.WebApiCompatShimOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Formatters",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.Formatting.MediaTypeFormatterCollection",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Formatters",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Net.Http.Formatting.MediaTypeFormatterCollection"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.WebApiCompatShimOptionsSetup",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>",
+        "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.WebApiCompatShim.WebApiCompatShimOptions>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Name",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Configure",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Mvc.MvcOptions"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Configure",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.WebApiCompatShimOptions"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.WebApiCompatShim.WebApiCompatShimOptions>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "DefaultAreaName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.IUseWebApiActionConventions",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.IUseWebApiOverloading",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.IUseWebApiParameterConventions",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.IUseWebApiRoutes",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.UseWebApiActionConventionsAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Attribute",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.WebApiCompatShim.IUseWebApiActionConventions"
+      ],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.UseWebApiOverloadingAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Attribute",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.WebApiCompatShim.IUseWebApiOverloading"
+      ],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.UseWebApiParameterConventionsAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Attribute",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.WebApiCompatShim.IUseWebApiParameterConventions"
+      ],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.UseWebApiRoutesAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Attribute",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.WebApiCompatShim.IUseWebApiRoutes"
+      ],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.WebApiActionConventionsApplicationModelConvention",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.ApplicationModels.IControllerModelConvention"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Apply",
+          "Parameters": [
+            {
+              "Name": "controller",
+              "Type": "Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerModel"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ApplicationModels.IControllerModelConvention",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.WebApiOverloadingApplicationModelConvention",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.ApplicationModels.IActionModelConvention"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Apply",
+          "Parameters": [
+            {
+              "Name": "action",
+              "Type": "Microsoft.AspNetCore.Mvc.ApplicationModels.ActionModel"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ApplicationModels.IActionModelConvention",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.WebApiParameterConventionsApplicationModelConvention",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.ApplicationModels.IActionModelConvention"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Apply",
+          "Parameters": [
+            {
+              "Name": "action",
+              "Type": "Microsoft.AspNetCore.Mvc.ApplicationModels.ActionModel"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ApplicationModels.IActionModelConvention",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.WebApiRoutesApplicationModelConvention",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.ApplicationModels.IControllerModelConvention"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Apply",
+          "Parameters": [
+            {
+              "Name": "controller",
+              "Type": "Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerModel"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ApplicationModels.IControllerModelConvention",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "area",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.HttpResponseMessageOutputFormatter",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CanWriteResult",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteAsync",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.HttpRequestMessageFeature",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.WebApiCompatShim.IHttpRequestMessageFeature"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_HttpRequestMessage",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.HttpRequestMessage",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.IHttpRequestMessageFeature",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_HttpRequestMessage",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.IHttpRequestMessageFeature",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "httpContext",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.HttpRequestMessageHttpContextExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetHttpRequestMessage",
+          "Parameters": [
+            {
+              "Name": "httpContext",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Net.Http.HttpRequestMessage",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.HttpRequestMessageModelBinder",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "BindModelAsync",
+          "Parameters": [
+            {
+              "Name": "bindingContext",
+              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.HttpRequestMessageModelBinderProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetBinder",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.WebApiCompatShim.IHttpRequestMessageFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_HttpRequestMessage",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.HttpRequestMessage",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_HttpRequestMessage",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.WebApiCompatShimMvcBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddWebApiConventions",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}
