@@ -1,11 +1,10 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Channels;
 using Microsoft.AspNetCore.Sockets;
 
-namespace PersisitentConnection
+namespace SocialWeather
 {
     public class PersistentConnectionLifeTimeManager
     {

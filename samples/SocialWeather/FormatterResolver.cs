@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace PersisitentConnection
+namespace SocialWeather
 {
     public class FormatterResolver
     {

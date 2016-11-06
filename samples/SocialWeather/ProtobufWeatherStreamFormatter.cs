@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace PersisitentConnection
+namespace SocialWeather
 {
     public class ProtobufWeatherStreamFormatter : IStreamFormatter<WeatherReport>
     {

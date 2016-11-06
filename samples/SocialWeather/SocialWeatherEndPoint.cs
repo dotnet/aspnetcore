@@ -3,7 +3,7 @@ using Channels;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Logging;
 
-namespace PersisitentConnection
+namespace SocialWeather
 {
     public class SocialWeatherEndPoint : EndPoint
     {

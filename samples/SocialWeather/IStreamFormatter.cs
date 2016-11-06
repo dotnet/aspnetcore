@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace PersisitentConnection
+namespace SocialWeather
 {
     public interface IStreamFormatter<T>
     {

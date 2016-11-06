@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace PersisitentConnection
+namespace SocialWeather
 {
     public class JsonStreamFormatter<T> : IStreamFormatter<T>
     {
