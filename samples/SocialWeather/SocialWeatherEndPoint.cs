@@ -34,9 +34,9 @@ namespace SocialWeather
             var formatter = _formatterResolver.GetFormatter<WeatherReport>(
                 connection.Metadata.Get<string>("formatType"));
 
-            while (true)
+            WeatherReport weatherReport;
+            while ((weatherReport = await formatter.ReadAsync(stream)) != null)
             {
-                var weatherReport = await formatter.ReadAsync(stream);
                 lock(_lockObj)
                 {
                     _lastWeatherReport = weatherReport;

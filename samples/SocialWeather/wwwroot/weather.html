@@ -5,9 +5,6 @@
     <title>Social weather</title>
 </head>
 <body>
-    <div id="weatherDiv" display="none">
-        <p>Weather: <span id="current" /></p>
-    </div>
     <form id="reportWeather" action="#">
         <label for="temperature">Temperature</label><input type="number" id="temperature" value="72"/>
         <label for="weather">Weather</label>
@@ -19,18 +16,43 @@
             <option value="MostlyCloudy">Mostly Cloudy</option>
             <option value="Cloudy">Cloudy</option>
         </select>
-        <label for="zipCode">Zip</label><input type="text" id="zipCode" />
+        <label for="zipCode">Zip</label><input type="text" id="zipCode" value="98052" />
         <input type="submit" value="Send report" />
     </form>
+    <div>
+        <h3>Weather reports</h3>
+        <table id="reportsTable"></table>
+    </div>
     <div>
         <p>Status: <span id="status" /></p>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            function get(id) {
-                return document.getElementById(id);
-            }
+        function get(id) {
+            return document.getElementById(id);
+        }
 
+        function updateReport(report) {
+            if (report.ZipCode) {
+                let row = get('report' + report.ZipCode);
+                if (row) {
+                    while (row.hasChildNodes()) {
+                        row.removeChild(row.lastChild);
+                    }
+                }
+                else {
+                    row = document.createElement('tr');
+                    row.id = 'report' + report.ZipCode;
+                    get('reportsTable').appendChild(row);
+                }
+                row.innerHTML = `
+                    <td>${report.ZipCode}</td>
+                    <td>${report.Temperature}&#8457; </td>
+                    <td>${report.Weather.match(/[A-Z][a-z]+|[0-9]+/g).join(" ")}</td>
+                    <td>${report.ReportTime}</td>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
             function updateStatus(text, color) {
                 var span = get('status');
                 span.innerHTML = text;
@@ -48,9 +70,7 @@
             };
 
             webSocket.onmessage = event => {
-                get('weatherDiv').style.display = 'block';
-                let weatherReport = JSON.parse(event.data);
-                get('current').innerHTML = event.data;
+                updateReport(JSON.parse(event.data));
             }
 
             webSocket.onclose = event => {
