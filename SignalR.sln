@@ -39,7 +39,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WebSocketsTestApp", "test\W
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ChatSample", "samples\ChatSample\ChatSample.xproj", "{300979F6-A02E-407A-B8DF-F6200806C18D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SocialWeather", "samples\PersisitentConnection\SocialWeather.xproj", "{8D789F94-CB74-45FD-ACE7-92AF6E55042E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SocialWeather", "samples\SocialWeather\SocialWeather.xproj", "{8D789F94-CB74-45FD-ACE7-92AF6E55042E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
