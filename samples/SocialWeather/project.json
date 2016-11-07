@@ -12,7 +12,8 @@
     "Microsoft.AspNetCore.Sockets": {
       "target": "project"
     },
-    "Microsoft.AspNetCore.StaticFiles": "1.1.0-*"
+    "Microsoft.AspNetCore.StaticFiles": "1.1.0-*",
+    "Google.Protobuf": "3.1.0"
   },
 
   "tools": {
