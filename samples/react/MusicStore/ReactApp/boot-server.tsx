@@ -5,19 +5,29 @@ import { match, RouterContext } from 'react-router';
 import createMemoryHistory from 'history/lib/createMemoryHistory';
 import { routes } from './routes';
 import configureStore from './configureStore';
-React;
+type BootResult = { html?: string, globals?: { [key: string]: any }, redirectUrl?: string};
 
 export default function (params: any): Promise<{ html: string }> {
-    return new Promise<{ html: string, globals: { [key: string]: any } }>((resolve, reject) => {
+    return new Promise<BootResult>((resolve, reject) => {
         // Match the incoming request against the list of client-side routes
         match({ routes, location: params.location }, (error, redirectLocation, renderProps: any) => {
             if (error) {
                 throw error;
             }
 
+            // If there's a redirection, just send this information back to the host application
+            if (redirectLocation) {
+                resolve({ redirectUrl: redirectLocation.pathname });
+                return;
+            }
+
+            // If it didn't match any route, renderProps will be undefined
+            if (!renderProps) {
+                throw new Error(`The location '${ params.url }' doesn't match any route configured in react-router.`);
+            }
+
             // Build an instance of the application
-            const history = createMemoryHistory(params.url);
-            const store = configureStore(history);
+            const store = configureStore();
             const app = (
                 <Provider store={ store }>
                     <RouterContext {...renderProps} />

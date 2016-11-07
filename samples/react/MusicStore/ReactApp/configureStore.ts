@@ -1,28 +1,22 @@
-import { createStore, applyMiddleware, compose, combineReducers } from 'redux';
-import * as thunkModule from 'redux-thunk';
-import { syncHistory, routeReducer } from 'react-router-redux';
+import { createStore, applyMiddleware, compose, combineReducers, GenericStoreEnhancer } from 'redux';
+import thunk from 'redux-thunk';
+import { routerReducer } from 'react-router-redux';
 import * as Store from './store';
 import { typedToPlain } from 'redux-typed';
 
-export default function configureStore(history: HistoryModule.History, initialState?: Store.ApplicationState) {
-    // Build middleware
-    const thunk = (thunkModule as any).default; // Workaround for TypeScript not importing thunk module as expected
-    const reduxRouterMiddleware = syncHistory(history);
-    const middlewares = [thunk, reduxRouterMiddleware, typedToPlain];
-    const devToolsExtension = null;//(window as any).devToolsExtension; // If devTools is installed, connect to it
-
-    const finalCreateStore = compose(
-        applyMiddleware(...middlewares),
+export default function configureStore(initialState?: Store.ApplicationState) {
+    // Build middleware. These are functions that can process the actions before they reach the store.
+    const windowIfDefined = typeof window === 'undefined' ? null : window as any;
+    // If devTools is installed, connect to it
+    const devToolsExtension = windowIfDefined && windowIfDefined.devToolsExtension as () => GenericStoreEnhancer;
+    const createStoreWithMiddleware = compose(
+        applyMiddleware(thunk, typedToPlain),
         devToolsExtension ? devToolsExtension() : f => f
-    )(createStore)
+    )(createStore);
 
-    // Combine all reducers
+    // Combine all reducers and instantiate the app-wide store instance
     const allReducers = buildRootReducer(Store.reducers);
-
-    const store = finalCreateStore(allReducers, initialState) as Redux.Store;
-
-    // Required for replaying actions from devtools to work
-    reduxRouterMiddleware.listenForReplays(store);
+    const store = createStoreWithMiddleware(allReducers, initialState) as Redux.Store<Store.ApplicationState>;
 
     // Enable Webpack hot module replacement for reducers
     if (module.hot) {
@@ -36,5 +30,5 @@ export default function configureStore(history: HistoryModule.History, initialSt
 }
 
 function buildRootReducer(allReducers) {
-    return combineReducers(Object.assign({}, allReducers, { routing: routeReducer })) as Redux.Reducer;
+    return combineReducers<Store.ApplicationState>(Object.assign({}, allReducers, { routing: routerReducer }));
 }

@@ -4,7 +4,8 @@
     "target": "es6",
     "jsx": "preserve",
     "sourceMap": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "types": [ "webpack-env", "whatwg-fetch" ]
   },
   "exclude": [
       "node_modules"

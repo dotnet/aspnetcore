@@ -1,21 +1,25 @@
+import './styles/styles.css';
+import 'bootstrap/dist/css/bootstrap.css';
+
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { browserHistory, Router } from 'react-router';
 import { Provider } from 'react-redux';
-React; // Need this reference otherwise TypeScript doesn't think we're using it and ignores the import
-
-import './styles/styles.css';
-import 'bootstrap/dist/css/bootstrap.css';
-import configureStore from './configureStore';
+import { syncHistoryWithStore } from 'react-router-redux';
 import { routes } from './routes';
+import configureStore from './configureStore';
 import { ApplicationState }  from './store';
 
+// Get the application-wide store instance, prepopulating with state from the server where available.
 const initialState = (window as any).initialReduxState as ApplicationState;
-const store = configureStore(browserHistory, initialState);
+const store = configureStore(initialState);
+const history = syncHistoryWithStore(browserHistory, store);
 
+// This code starts up the React app when it runs in a browser. It sets up the routing configuration
+// and injects the app into a DOM element.
 ReactDOM.render(
     <Provider store={ store }>
-        <Router history={ browserHistory } children={ routes } />
+        <Router history={ history } children={ routes } />
     </Provider>,
     document.getElementById('react-app')
 );
