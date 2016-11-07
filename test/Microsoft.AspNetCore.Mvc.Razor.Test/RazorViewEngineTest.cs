@@ -1283,6 +1283,35 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
             Assert.Equal(expected, result.SearchedLocations);
         }
 
+        [Fact]
+        public void CreateCacheResult_LogsPrecompiledViewFound()
+        {
+            // Arrange
+            var sink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+            var relativePath = "/Views/Foo/details.cshtml";
+            var pageFactory = new Mock<IRazorPageFactoryProvider>();
+            pageFactory
+                .Setup(p => p.CreateFactory(relativePath))
+                .Returns(new RazorPageFactoryResult(() => Mock.Of<IRazorPage>(), new IChangeToken[0], isPrecompiled: true))
+                .Verifiable();
+
+            var viewEngine = new RazorViewEngine(
+                pageFactory.Object,
+                Mock.Of<IRazorPageActivator>(),
+                new HtmlTestEncoder(),
+                GetOptionsAccessor(expanders: null),
+                loggerFactory);
+
+            // Act
+            var result = viewEngine.CreateCacheResult(null, relativePath, false);
+
+            // Assert
+            var logMessage = Assert.Single(sink.Writes);
+            Assert.Equal($"Using precompiled view for '{relativePath}'.", logMessage.State.ToString());
+        }
+
         [Theory]
         [InlineData("/Test-View.cshtml")]
         [InlineData("~/Test-View.CSHTML")]

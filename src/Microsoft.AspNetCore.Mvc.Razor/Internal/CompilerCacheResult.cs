@@ -33,6 +33,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// </summary>
         /// <param name="relativePath">Path of the view file relative to the application base.</param>
         /// <param name="compilationResult">The <see cref="Compilation.CompilationResult"/>.</param>
+        /// <param name="isPrecompiled"><c>true</c> if the view is precompiled, <c>false</c> otherwise.</param>
+        public CompilerCacheResult(string relativePath, CompilationResult compilationResult, bool isPrecompiled)
+            : this(relativePath, compilationResult, EmptyArray<IChangeToken>.Instance)
+        {
+            IsPrecompiled = isPrecompiled;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="CompilerCacheResult"/> with the specified
+        /// <see cref="Compilation.CompilationResult"/>.
+        /// </summary>
+        /// <param name="relativePath">Path of the view file relative to the application base.</param>
+        /// <param name="compilationResult">The <see cref="Compilation.CompilationResult"/>.</param>
         /// <param name="expirationTokens">One or more <see cref="IChangeToken"/> instances that indicate when
         /// this result has expired.</param>
         public CompilerCacheResult(string relativePath, CompilationResult compilationResult, IList<IChangeToken> expirationTokens)
@@ -51,9 +64,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             var propertyBindExpression = Expression.Bind(pathProperty, Expression.Constant(relativePath));
             var objectInitializeExpression = Expression.MemberInit(newExpression, propertyBindExpression);
-            PageFactory =  Expression
+            PageFactory = Expression
                 .Lambda<Func<IRazorPage>>(objectInitializeExpression)
                 .Compile();
+            IsPrecompiled = false;
         }
 
         /// <summary>
@@ -71,6 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             ExpirationTokens = expirationTokens;
             PageFactory = null;
+            IsPrecompiled = false;
         }
 
         /// <summary>
@@ -87,5 +102,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// Gets a delegate that creates an instance of the <see cref="IRazorPage"/>.
         /// </summary>
         public Func<IRazorPage> PageFactory { get; }
+
+        /// <summary>
+        /// Gets a value that determines if the view is precompiled.
+        /// </summary>
+        public bool IsPrecompiled { get; }
     }
 }

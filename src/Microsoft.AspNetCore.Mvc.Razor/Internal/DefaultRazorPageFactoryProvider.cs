@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var result = CompilerCache.GetOrAdd(relativePath, _compileDelegate);
             if (result.Success)
             {
-                return new RazorPageFactoryResult(result.PageFactory, result.ExpirationTokens);
+                return new RazorPageFactoryResult(result.PageFactory, result.ExpirationTokens, result.IsPrecompiled);
             }
             else
             {

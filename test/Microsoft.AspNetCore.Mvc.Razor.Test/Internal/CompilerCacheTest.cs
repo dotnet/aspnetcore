@@ -241,6 +241,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             // Assert
             Assert.True(result.Success);
+            Assert.True(result.IsPrecompiled);
             Assert.IsType<PreCompile>(result.PageFactory());
         }
 

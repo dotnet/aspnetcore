@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             ExpirationTokens = expirationTokens;
             RazorPageFactory = null;
+            IsPrecompiled = false;
         }
 
         /// <summary>
@@ -37,6 +38,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public RazorPageFactoryResult(
             Func<IRazorPage> razorPageFactory,
             IList<IChangeToken> expirationTokens)
+            : this(razorPageFactory, expirationTokens, isPrecompiled: false)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RazorPageFactoryResult"/> with the
+        /// specified <see cref="IRazorPage"/> factory.
+        /// </summary>
+        /// <param name="razorPageFactory">The <see cref="IRazorPage"/> factory.</param>
+        /// <param name="expirationTokens">One or more <see cref="IChangeToken"/> instances.</param>
+        /// <param name="isPrecompiled"><c>true</c> if the view is precompiled, <c>false</c> otherwise.</param>
+        public RazorPageFactoryResult(
+            Func<IRazorPage> razorPageFactory,
+            IList<IChangeToken> expirationTokens,
+            bool isPrecompiled)
         {
             if (razorPageFactory == null)
             {
@@ -50,6 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             RazorPageFactory = razorPageFactory;
             ExpirationTokens = expirationTokens;
+            IsPrecompiled = isPrecompiled;
         }
 
         /// <summary>
@@ -68,5 +85,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// Gets a value that determines if the page was successfully located.
         /// </summary>
         public bool Success => RazorPageFactory != null;
+
+        /// <summary>
+        /// Gets a value that determines if the view is precompiled.
+        /// </summary>
+        public bool IsPrecompiled { get; }
     }
 }

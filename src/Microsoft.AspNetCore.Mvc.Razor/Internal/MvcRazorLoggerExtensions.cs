@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         private static readonly Action<ILogger, string, string, Exception> _viewLookupCacheMiss;
         private static readonly Action<ILogger, string, string, Exception> _viewLookupCacheHit;
+        private static readonly Action<ILogger, string, Exception> _precompiledViewFound;
 
         static MvcRazorLoggerExtensions()
         {
@@ -41,6 +42,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 LogLevel.Debug,
                 2,
                 "View lookup cache hit for view '{ViewName}' in controller '{ControllerName}'.");
+
+            _precompiledViewFound = LoggerMessage.Define<string>(
+                LogLevel.Debug,
+                3,
+                "Using precompiled view for '{RelativePath}'.");
 
             _generatedCodeToAssemblyCompilationStart = LoggerMessage.Define<string>(
                 LogLevel.Debug,
@@ -77,6 +83,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         public static void ViewLookupCacheHit(this ILogger logger, string viewName, string controllerName)
         {
             _viewLookupCacheHit(logger, viewName, controllerName, null);
+        }
+
+        public static void PrecompiledViewFound(this ILogger logger, string relativePath)
+        {
+            _precompiledViewFound(logger, relativePath, null);
         }
 
         public static void GeneratedCodeToAssemblyCompilationStart(this ILogger logger, string filePath)
