@@ -2,7 +2,7 @@ import * as url from 'url';
 import * as domain from 'domain';
 import * as domainContext from 'domain-context';
 const isomorphicFetch = require('isomorphic-fetch');
-const isBrowser: boolean = (new Function('try { return this === window; } catch (e) { return false; }'))();
+const isNode = typeof process === 'object' && process.versions && !!process.versions.node;
 
 // Not using a symbol, because this may need to run in a version of Node.js that doesn't support them
 const domainTaskStateKey = '__DOMAIN_TASK_INTERNAL_FETCH_BASEURL__DO_NOT_REFERENCE_THIS__';
@@ -17,7 +17,7 @@ function issueRequest(baseUrl: string, req: string | Request, init?: RequestInit
         } else {
             req = url.resolve(baseUrl, req as string);
         }
-    } else if (!isBrowser) {
+    } else if (isNode) {
         // TODO: Consider only throwing if it's a relative URL, since absolute ones would work fine
         throw new Error(`
             When running outside the browser (e.g., in Node.js), you must specify a base URL
