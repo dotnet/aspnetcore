@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -767,11 +768,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendEnd(
+                    await connection.Send(
                         "HEAD / HTTP/1.1",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 42",
@@ -782,26 +783,95 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        public async Task HeadResponseCanContainContentLengthHeaderButBodyNotWritten()
+        public async Task HeadResponseBodyNotWrittenWithAsyncWrite()
         {
+            var flushed = new SemaphoreSlim(0, 1);
+
             using (var server = new TestServer(async httpContext =>
             {
                 httpContext.Response.ContentLength = 12;
+                await httpContext.Response.WriteAsync("hello, world");
+                await flushed.WaitAsync();
+            }, new TestServiceContext()))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "HEAD / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 12",
+                        "",
+                        "");
+
+                    flushed.Release();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task HeadResponseBodyNotWrittenWithSyncWrite()
+        {
+            var flushed = new SemaphoreSlim(0, 1);
+
+            using (var server = new TestServer(httpContext =>
+            {
+                httpContext.Response.ContentLength = 12;
+                httpContext.Response.Body.Write(Encoding.ASCII.GetBytes("hello, world"), 0, 12);
+                flushed.Wait();
+                return TaskCache.CompletedTask;
+            }, new TestServiceContext()))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "HEAD / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 12",
+                        "",
+                        "");
+
+                    flushed.Release();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ZeroLengthWritesFlushHeaders()
+        {
+            var flushed = new SemaphoreSlim(0, 1);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.ContentLength = 12;
+                await httpContext.Response.WriteAsync("");
+                flushed.Wait();
                 await httpContext.Response.WriteAsync("hello, world");
             }, new TestServiceContext()))
             {
                 using (var connection = server.CreateConnection())
                 {
                     await connection.SendEnd(
-                        "HEAD / HTTP/1.1",
+                        "GET / HTTP/1.1",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 12",
                         "",
                         "");
+
+                    flushed.Release();
+
+                    await connection.ReceiveEnd("hello, world");
                 }
             }
         }

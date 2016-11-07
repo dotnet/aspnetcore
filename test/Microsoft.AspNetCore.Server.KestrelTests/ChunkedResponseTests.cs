@@ -194,6 +194,48 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
+        public async Task ZeroLengthWritesFlushHeaders(TestServiceContext testContext)
+        {
+            var flushed = new SemaphoreSlim(0, 1);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+                await response.WriteAsync("");
+
+                await flushed.WaitAsync();
+
+                await response.WriteAsync("Hello World!");
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "");
+
+                    flushed.Release();
+
+                    await connection.ReceiveEnd(
+                        "c",
+                        "Hello World!",
+                        "0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
         public async Task EmptyResponseBodyHandledCorrectlyWithZeroLengthWrite(TestServiceContext testContext)
         {
             using (var server = new TestServer(async httpContext =>
