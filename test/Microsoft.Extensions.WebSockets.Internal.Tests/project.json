@@ -2,6 +2,7 @@
   "buildOptions": {
     "warningsAsErrors": true
   },
+
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.Extensions.WebSockets.Internal": "0.1.0-*",

@@ -2,6 +2,7 @@
   "buildOptions": {
     "warningsAsErrors": true
   },
+
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Http": "1.1.0-*",

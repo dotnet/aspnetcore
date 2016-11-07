@@ -1,5 +1,26 @@
 ﻿{
   "version": "0.1.0-*",
+  "description": "Components for providing real-time bi-directional communication across the Web.",
+
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/signalr"
+    },
+    "tags": [
+      "aspnetcore",
+      "signalr"
+    ]
+  },
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk",
+    "nowarn": [
+      "CS1591"
+    ],
+    "xmlDoc": true
+  },
+
   "dependencies": {
     "Channels": "0.2.0-beta-*",
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.1.0-*",

@@ -1,18 +1,34 @@
 {
-    "version": "0.1.0-*",
-    "buildOptions": {
-        "warningsAsErrors": true,
-        "allowUnsafe": true
-    },
-    "description": "Low-allocation Push-oriented WebSockets based on Channels",
-    "dependencies": {
-        "Channels": "0.2.0-beta-*",
-        "Channels.Text.Primitives": "0.2.0-beta-*",
-        "NETStandard.Library": "1.6.0"
-    },
+  "version": "0.1.0-*",
+  "description": "WebSockets client and server components.",
 
-    "frameworks": {
-        "net46": {},
-        "netstandard1.3": {}
-    }
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/signalr"
+    },
+    "tags": [
+      "aspnetcore",
+      "signalr"
+    ]
+  },
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk",
+    "nowarn": [
+      "CS1591"
+    ],
+    "xmlDoc": true
+  },
+
+  "description": "Low-allocation Push-oriented WebSockets based on Channels",
+  "dependencies": {
+    "Channels": "0.2.0-beta-*",
+    "Channels.Text.Primitives": "0.2.0-beta-*",
+    "NETStandard.Library": "1.6.1-*"
+  },
+
+  "frameworks": {
+    "netstandard1.3": {}
+  }
 }

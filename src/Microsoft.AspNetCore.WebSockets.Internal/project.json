@@ -1,19 +1,35 @@
 ﻿{
-    "version": "0.1.0-*",
-    "buildOptions": {
-        "warningsAsErrors": true
-    },
-    "description": "Low-allocation Push-oriented WebSockets Middleware based on Channels",
-    "dependencies": {
-        "Microsoft.AspNetCore.Http.Abstractions": "1.1.0-*",
-        "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
-        "Microsoft.Extensions.WebSockets.Internal": "0.1.0-*",
-        "NETStandard.Library": "1.6.1-*"
-    },
+  "version": "0.1.0-*",
+  "description": "WebSockets support for ASP.NET Core.",
 
-    "frameworks": {
-        "net46": {},
-        "netstandard1.3": {
-        }
-    }
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/signalr"
+    },
+    "tags": [
+      "aspnetcore",
+      "signalr"
+    ]
+  },
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk",
+    "nowarn": [
+      "CS1591"
+    ],
+    "xmlDoc": true
+  },
+
+  "dependencies": {
+    "Microsoft.AspNetCore.Http.Abstractions": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
+    "Microsoft.Extensions.WebSockets.Internal": "0.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
+  },
+
+  "frameworks": {
+    "net46": {},
+    "netstandard1.3": {}
+  }
 }

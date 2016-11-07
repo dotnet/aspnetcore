@@ -1,4 +1,8 @@
 {
+  "buildOptions": {
+    "warningsAsErrors": true
+  },
+
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Server.IntegrationTesting": "0.2.0-*",

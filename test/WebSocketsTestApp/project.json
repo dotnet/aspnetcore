@@ -25,9 +25,9 @@
     }
   },
   "buildOptions": {
-    "emitEntryPoint": true,
-    "preserveCompilationContext": true
+    "warningsAsErrors": true
   },
+
   "runtimeOptions": {
     "configProperties": {
       "System.GC.Server": true
