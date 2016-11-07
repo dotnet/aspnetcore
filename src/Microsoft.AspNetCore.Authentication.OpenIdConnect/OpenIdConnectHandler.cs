@@ -541,7 +541,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                     Logger.ReceivedIdToken();
                     ticket = ValidateToken(authorizationResponse.IdToken, properties, validationParameters, out jwt);
 
-                    nonce = jwt?.Payload.Nonce;
+                    nonce = jwt.Payload.Nonce;
                     if (!string.IsNullOrEmpty(nonce))
                     {
                         nonce = ReadNonceCookie(nonce);
@@ -599,22 +599,25 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                     authorizationResponse = tokenResponseReceivedContext.ProtocolMessage;
                     tokenEndpointResponse = tokenResponseReceivedContext.TokenEndpointResponse;
 
-                    // We only have to process the IdToken if we didn't already get one in the AuthorizationResponse
+                    // no need to validate signature when token is received using "code flow" as per spec
+                    // [http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation].
+                    validationParameters.RequireSignedTokens = false;
+
+                    // At least a cursory validation is required on the new IdToken, even if we've already validated the one from the authorization response.
+                    // And we'll want to validate the new JWT in ValidateTokenResponse.
+                    JwtSecurityToken tokenEndpointJwt;
+                    var tokenEndpointTicket = ValidateToken(tokenEndpointResponse.IdToken, properties, validationParameters, out tokenEndpointJwt);
+
+                    // Avoid reading & deleting the nonce cookie, running the event, etc, if it was already done as part of the authorization response validation.
                     if (ticket == null)
                     {
-                        // no need to validate signature when token is received using "code flow" as per spec
-                        // [http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation].
-                        validationParameters.RequireSignedTokens = false;
-
-                        ticket = ValidateToken(tokenEndpointResponse.IdToken, properties, validationParameters, out jwt);
-
-                        nonce = jwt?.Payload.Nonce;
+                        nonce = tokenEndpointJwt.Payload.Nonce;
                         if (!string.IsNullOrEmpty(nonce))
                         {
                             nonce = ReadNonceCookie(nonce);
                         }
 
-                        var tokenValidatedContext = await RunTokenValidatedEventAsync(authorizationResponse, tokenEndpointResponse, properties, ticket, jwt, nonce);
+                        var tokenValidatedContext = await RunTokenValidatedEventAsync(authorizationResponse, tokenEndpointResponse, properties, tokenEndpointTicket, tokenEndpointJwt, nonce);
                         if (tokenValidatedContext.CheckEventResult(out result))
                         {
                             return result;
@@ -625,6 +628,15 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                         ticket = tokenValidatedContext.Ticket;
                         jwt = tokenValidatedContext.SecurityToken;
                         nonce = tokenValidatedContext.Nonce;
+                    }
+                    else
+                    {
+                        if (!string.Equals(jwt.Subject, tokenEndpointJwt.Subject, StringComparison.Ordinal))
+                        {
+                            throw new SecurityTokenException("The sub claim does not match in the id_token's from the authorization and token endpoints.");
+                        }
+
+                        jwt = tokenEndpointJwt;
                     }
 
                     // Validate the token response if it wasn't provided manually
