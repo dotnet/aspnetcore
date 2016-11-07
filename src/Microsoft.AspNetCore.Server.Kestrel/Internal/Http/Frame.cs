@@ -520,6 +520,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public void Write(ArraySegment<byte> data)
         {
+            // For the first write, ensure headers are flushed if Write(Chunked)isn't called.
+            var firstWrite = !HasResponseStarted;
+
             VerifyAndUpdateWrite(data.Count);
             ProduceStartAndFireOnStarting().GetAwaiter().GetResult();
 
@@ -529,6 +532,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {
                     if (data.Count == 0)
                     {
+                        if (firstWrite)
+                        {
+                            Flush();
+                        }
                         return;
                     }
                     WriteChunked(data);
@@ -541,6 +548,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             else
             {
                 HandleNonBodyResponseWrite();
+
+                if (firstWrite)
+                {
+                    Flush();
+                }
             }
         }
 
@@ -581,14 +593,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             await ProduceStartAndFireOnStarting();
 
+            // WriteAsyncAwaited is only called for the first write to the body.
+            // Ensure headers are flushed if Write(Chunked)Async isn't called.
             if (_canHaveBody)
             {
                 if (_autoChunk)
                 {
                     if (data.Count == 0)
                     {
+                        await FlushAsync(cancellationToken);
                         return;
                     }
+
                     await WriteChunkedAsync(data, cancellationToken);
                 }
                 else
@@ -599,7 +615,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             else
             {
                 HandleNonBodyResponseWrite();
-                return;
+                await FlushAsync(cancellationToken);
             }
         }
 
