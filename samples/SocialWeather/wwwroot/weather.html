@@ -21,7 +21,14 @@
     </form>
     <div>
         <h3>Weather reports</h3>
-        <table id="reportsTable"></table>
+        <table id="reportsTable">
+            <tr>
+                <th>ZipCode</th>
+                <th>Temperature</th>
+                <th>Weather</th>
+                <th>Updated on:</th>
+            </tr>
+        </table>
     </div>
     <div>
         <p>Status: <span id="status" /></p>
@@ -87,7 +94,6 @@
                         ReportTime: Date.now(),
                         ZipCode: get('zipCode').value
                     }));
-
                 event.preventDefault();
             });
         });
