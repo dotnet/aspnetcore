@@ -52,7 +52,7 @@ Make sure you've installed the `Microsoft.AspNetCore.SpaServices` NuGet package 
 
 Now go to your `Views/_ViewImports.cshtml` file, and add the following line:
 
-    @addTagHelper "*, Microsoft.AspNetCore.SpaServices"
+    @addTagHelper *, Microsoft.AspNetCore.SpaServices
 
 ### 2. Use asp-prerender-* in a view
 
@@ -131,44 +131,53 @@ This can be useful if, for example, you want to avoid loading the same data twic
 
 ### 4. Enabling webpack build tooling
 
-Of course, rather than writing your `boot-server` module and your entire SPA in plain ES5 JavaScript, it's quite likely that you'll want to write your client-side code in TypeScript or at least ES2015 code. To enable this, you can either:
+Of course, rather than writing your `boot-server` module and your entire SPA in plain ES5 JavaScript, it's quite likely that you'll want to write your client-side code in TypeScript or at least ES2015 code. To enable this, you need to set up a build system.
 
- * Set up some build tool such as Babel to transpile to ES5, and always remember to run this to generate plain ES5 `.js` files before you run your application
- * Or, more conveniently, use [webpack](https://webpack.github.io/) along with the `asp-prerender-webpack-config` attribute so that `Microsoft.AspNetCore.SpaServices` can automatically build your boot module and the SPA code that it references. Then there's no need for `.js` files even to be written to disk - the build process is all dynamic and in memory.
+#### Example: Configuring Webpack to build TypeScript
 
-To enable webpack builds for your server-side prerendering, amend your MVC view to specify the location of your webpack configuration file using an `asp-prerender-webpack-config` attribute, e.g.:
+Let's say you want to write your boot module and SPA code in TypeScript, and build it using Webpack. First ensure that `webpack` is installed, along with the libraries needed for TypeScript compilation:
 
-    <div id="my-spa" asp-prerender-module="ClientApp/boot-server"
-                     asp-prerender-webpack-config="webpack.config.js"></div>
-
-You'll also need to install the NPM module `aspnet-webpack` if you don't have it already, e.g.:
-
-    npm install --save aspnet-webpack
-
-This includes webpack as well as the server-side code needed to invoke it from ASP.NET Core at runtime.
-
-Now, assuming you have a working webpack configuration at `webpack.config.js`, your boot module and SPA code will dynamically be built using webpack.
-
-#### Example: Configuring webpack to build TypeScript
-
-Let's say you want to write your boot module and SPA code in TypeScript. First ensure that `aspnet-webpack` is installed, along with the libraries needed for TypeScript compilation:
-
-    npm install --save aspnet-webpack ts-loader typescript
+    npm install -g webpack
+    npm install --save ts-loader typescript
 
 Next, create a file `webpack.config.js` at the root of your project, containing:
 
 ```javascript
+var path = require('path');
+
 module.exports = {
+    entry: { 'main-server': './ClientApp/boot-server.ts' },
     resolve: { extensions: [ '', '.js', '.ts' ] },
+    output: {
+        path: path.join(__dirname, './ClientApp/dist'),
+        filename: '[name].js',
+        libraryTarget: 'commonjs'
+    },
     module: {
         loaders: [
             { test: /\.ts$/, loader: 'ts-loader' }
         ]
-    }
+    },
+    target: 'node',
+    devtool: 'inline-source-map'
 };
 ```
 
 This tells webpack that it should compile `.ts` files using TypeScript, and that when looking for modules by name (e.g., `boot-server`), it should also find files with `.js` and `.ts` extensions.
+
+If you don't already have a `tsconfig.json` file at the root of your project, add one now. Make sure your `tsconfig.json` includes `"es6"` in its `"lib"` array so that TypeScript knows about intrinsics such as `Promise`. Here's an example `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "target": "es5",
+    "sourceMap": true,
+    "lib": [ "es6", "dom" ]
+  },
+  "exclude": [ "bin", "node_modules" ]
+}
+```
 
 Now you can delete `ClientApp/boot-server.js`, and in its place, create `ClientApp/boot-server.ts`, containing the TypeScript equivalent of what you had before:
 
@@ -186,12 +195,9 @@ export default function (params: any): Promise<{ html: string}> {
 }
 ```
 
-Finally, you can tell `SpaServices` to use the Webpack environment you've just set up. In your MVC view where you use `aspnet-prerender-module`, also specify `aspnet-prerender-webpack-config`:
+Finally, run `webpack` on the command line to build `ClientApp/dist/main-server.js`. Then you can tell `SpaServices` to use that file for server-side prerendering. In your MVC view where you use `aspnet-prerender-module`, update the attribute value:
 
-    <div id="my-spa" asp-prerender-module="ClientApp/boot-server"
-                     asp-prerender-webpack-config="webpack.config.js"></div>
-
-Now your `boot-server.ts` code should get executed when your ASP.NET Core page is rendered, and since it's TypeScript, it can of course reference any other TypeScript modules, which means your entire SPA can be written in TypeScript and executed on the server.
+    <div id="my-spa" asp-prerender-module="ClientApp/dist/main-server"></div>
 
 Webpack is a broad and powerful tool and can do far more than just invoke the TypeScript compiler. To learn more, see the [webpack website](https://webpack.github.io/).
 
@@ -278,30 +284,7 @@ You can now run your React code on the client by adding the following to one of 
     <div id="my-spa"></div>
     <script src="/dist/main.js"></script>
 
-#### Running React code on the server
-
-Now you have React code being built using Webpack, you can enable server-side prerendering using the `aspnet-prerender-*` tag helpers as follows:
-
-    <div id="my-spa" asp-prerender-module="ClientApp/boot-server"
-                     asp-prerender-webpack-config="webpack.config.js"></div>
-
-... along with the following boot module at `ClientApp/boot-server.jsx`:
-
-```javascript
-import * as React from 'react';
-import { renderToString } from 'react-dom/server';
-import { HelloMessage } from './react-app';
-
-export default function (params) {
-    return new Promise((resolve, reject) => {
-        resolve({
-            html: renderToString(<HelloMessage message="from the server" />)
-        });
-    });
-}
-```
-
-Now you should find that your React app is rendered in the page even before any JavaScript is loaded in the browser (or even if JavaScript is disabled in the browser).
+If you want to enable server-side prerendering too, follow the same process as described under [server-side prerendering](#server-side-prerendering).
 
 #### Realistic React apps and Redux
 
