@@ -51,10 +51,14 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             Assert.Equal("http://example.com/foo", response.Headers.Location.OriginalString);
         }
 
-        [Fact]
-        public async Task CheckRedirectToHttps()
+        [Theory]
+        [InlineData(StatusCodes.Status301MovedPermanently)]
+        [InlineData(StatusCodes.Status302Found)]
+        [InlineData(StatusCodes.Status307TemporaryRedirect)]
+        [InlineData(StatusCodes.Status308PermanentRedirect)]
+        public async Task CheckRedirectToHttps(int statusCode)
         {
-            var options = new RewriteOptions().AddRedirectToHttps(statusCode: StatusCodes.Status301MovedPermanently);
+            var options = new RewriteOptions().AddRedirectToHttps(statusCode: statusCode);
             var builder = new WebHostBuilder()
             .Configure(app =>
             {
@@ -65,8 +69,44 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             var response = await server.CreateClient().GetAsync(new Uri("http://example.com"));
 
             Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
+            Assert.Equal(statusCode, (int)response.StatusCode);
         }
 
+        [Fact]
+        public async Task CheckPermanentRedirectToHttps()
+        {
+            var options = new RewriteOptions().AddRedirectToHttpsPermanent();
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetAsync(new Uri("http://example.com"));
+
+            Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
+            Assert.Equal(StatusCodes.Status301MovedPermanently, (int)response.StatusCode);
+        }
+
+        [Theory]
+        [InlineData(25, "https://example.com:25/")]
+        [InlineData(-25, "https://example.com/")]
+        public async Task CheckRedirectToHttpsWithSslPort(int sslPort,string expected)
+        {
+            var options = new RewriteOptions().AddRedirectToHttps(statusCode: StatusCodes.Status301MovedPermanently, sslPort:sslPort);
+            var builder = new WebHostBuilder()
+            .Configure(app =>
+            {
+                app.UseRewriter(options);
+            });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetAsync(new Uri("http://example.com"));
+
+            Assert.Equal(expected, response.Headers.Location.OriginalString);
+            Assert.Equal(StatusCodes.Status301MovedPermanently, (int)response.StatusCode);
+        }
 
         [Fact]
         public async Task CheckIfEmptyStringRedirectCorrectly()

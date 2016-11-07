@@ -4,6 +4,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Rewrite.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal
 {
@@ -29,9 +30,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
                 }
 
                 var req = context.HttpContext.Request;
-
                 var newUrl = new StringBuilder().Append("https://").Append(host).Append(req.PathBase).Append(req.Path).Append(req.QueryString);
-                context.HttpContext.Response.Redirect(newUrl.ToString());
+                var response = context.HttpContext.Response;
+                response.StatusCode = StatusCode;
+                response.Headers[HeaderNames.Location] = newUrl.ToString();
                 context.Result = RuleResult.EndResponse;
                 context.Logger?.RedirectedToHttps();
             }
