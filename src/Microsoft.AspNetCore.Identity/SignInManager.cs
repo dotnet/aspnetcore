@@ -301,10 +301,6 @@ namespace Microsoft.AspNetCore.Identity
                 return error;
             }
 
-            if (await IsLockedOut(user))
-            {
-                return await LockedOut(user);
-            }
             if (await UserManager.CheckPasswordAsync(user, password))
             {
                 await ResetLockout(user);
