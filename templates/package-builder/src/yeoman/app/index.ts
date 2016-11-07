@@ -2,9 +2,12 @@ import * as path from 'path';
 import * as yeoman from 'yeoman-generator';
 import * as uuid from 'node-uuid';
 import * as glob from 'glob';
+import * as semver from 'semver';
+import { execSync } from 'child_process';
 import npmWhich = require('npm-which');
 const yosay = require('yosay');
 const toPascalCase = require('to-pascal-case');
+const isWindows = /^win/.test(process.platform);
 
 type YeomanPrompt = (opt: yeoman.IPromptOptions | yeoman.IPromptOptions[], callback: (answers: any) => void) => void;
 const optionOrPrompt: YeomanPrompt = require('yeoman-option-or-prompt');
@@ -25,6 +28,10 @@ class MyGenerator extends yeoman.Base {
         super(args, options);
         this._optionOrPrompt = optionOrPrompt;
         this.log(yosay('Welcome to the ASP.NET Core Single-Page App generator!'));
+
+        if (isWindows) {
+            assertNpmVersionIsAtLeast('3.0.0');
+        }
     }
 
     prompting() {
@@ -107,6 +114,14 @@ function getPathToExecutable(executableName: string) {
         return npmWhich(__dirname).sync(executableName);
     } catch(ex) {
         return null;
+    }
+}
+
+function assertNpmVersionIsAtLeast(minVersion: string) {
+    const runningVersion = execSync('npm -v').toString();
+    if (!semver.gte(runningVersion, minVersion, /* loose */ true)) {
+        console.error(`This generator requires NPM version ${minVersion} or later. You are running NPM version ${runningVersion}`);
+        process.exit(0);
     }
 }
 
