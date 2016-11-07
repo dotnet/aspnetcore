@@ -106,6 +106,7 @@ namespace Microsoft.Extensions.Localization
                 }
 
                 var value = GetStringSafely(name, null);
+
                 return new LocalizedString(name, value ?? name, resourceNotFound: value == null);
             }
         }
@@ -122,6 +123,7 @@ namespace Microsoft.Extensions.Localization
 
                 var format = GetStringSafely(name, null);
                 var value = string.Format(format ?? name, arguments);
+
                 return new LocalizedString(name, value, resourceNotFound: format == null);
             }
         }

@@ -137,6 +137,7 @@ namespace Microsoft.Extensions.Localization.Tests
                     {
                         var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
                         var requestCulture = requestCultureFeature.RequestCulture;
+
                         Assert.Equal("ar-YE", requestCulture.Culture.Name);
                         Assert.Equal("ar-YE", requestCulture.UICulture.Name);
                         return Task.FromResult(0);

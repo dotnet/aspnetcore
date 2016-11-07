@@ -106,6 +106,7 @@ namespace Microsoft.AspNetCore.Localization.Routing
                     {
                         var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
                         var requestCulture = requestCultureFeature.RequestCulture;
+
                         return context.Response.WriteAsync(
                                     $"{requestCulture.Culture.Name},{requestCulture.UICulture.Name}");
                     });
@@ -168,6 +169,7 @@ namespace Microsoft.AspNetCore.Localization.Routing
                             {
                                 var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
                                 var requestCulture = requestCultureFeature.RequestCulture;
+
                                 return context.Response.WriteAsync(
                                     $"{requestCulture.Culture.Name},{requestCulture.UICulture.Name}");
                             });

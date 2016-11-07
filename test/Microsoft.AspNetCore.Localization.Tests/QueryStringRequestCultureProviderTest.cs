@@ -273,6 +273,7 @@ namespace Microsoft.Extensions.Localization.Tests
                         }
                     };
                     var provider = new QueryStringRequestCultureProvider();
+
                     provider.QueryStringKey = "c";
                     provider.UIQueryStringKey = "uic";
                     options.RequestCultureProviders.Insert(0, provider);

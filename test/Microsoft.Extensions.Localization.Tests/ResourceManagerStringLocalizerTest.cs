@@ -56,7 +56,6 @@ namespace Microsoft.Extensions.Localization.Tests
             var resourceManager2 = new TestResourceManager(baseName, resourceAssembly2.Assembly);
             var resourceStreamManager1 = new TestResourceStringProvider(resourceNamesCache, resourceAssembly1, baseName);
             var resourceStreamManager2 = new TestResourceStringProvider(resourceNamesCache, resourceAssembly2, baseName);
-
             var localizer1 = new ResourceManagerStringLocalizer(
                 resourceManager1,
                 resourceStreamManager1,
@@ -194,17 +193,15 @@ namespace Microsoft.Extensions.Localization.Tests
 
         public class TestAssemblyWrapper : AssemblyWrapper
         {
-            private readonly string _name;
-
             public TestAssemblyWrapper(string name = nameof(TestAssemblyWrapper))
                 : base(typeof(TestAssemblyWrapper).GetTypeInfo().Assembly)
             {
-                _name = name;
+                FullName = name;
             }
 
             public int GetManifestResourceStreamCallCount { get; private set; }
 
-            public override string FullName => _name;
+            public override string FullName { get; }
 
             public override Stream GetManifestResourceStream(string name)
             {

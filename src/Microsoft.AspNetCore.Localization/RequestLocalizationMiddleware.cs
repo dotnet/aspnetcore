@@ -14,7 +14,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Localization
 {
     /// <summary>
-    /// Enables automatic setting of the culture for <see cref="Http.HttpRequest"/>s based on information
+    /// Enables automatic setting of the culture for <see cref="HttpRequest"/>s based on information
     /// sent by the client in headers and logic provided by the application.
     /// </summary>
     public class RequestLocalizationMiddleware

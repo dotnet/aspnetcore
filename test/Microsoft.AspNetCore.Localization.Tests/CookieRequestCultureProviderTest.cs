@@ -93,6 +93,7 @@ namespace Microsoft.Extensions.Localization.Tests
             using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
+
                 client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue("Preferences", "uic=ar-SA").ToString());
                 var response = await client.GetAsync(string.Empty);
             }

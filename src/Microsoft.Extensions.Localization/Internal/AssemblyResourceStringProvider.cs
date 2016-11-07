@@ -15,8 +15,6 @@ namespace Microsoft.Extensions.Localization.Internal
     public class AssemblyResourceStringProvider : IResourceStringProvider
     {
         private const string AssemblyElementDelimiter = ", ";
-        private static readonly string[] _assemblyElementDelimiterArray = new[] { AssemblyElementDelimiter };
-        private static readonly char[] _assemblyEqualDelimiter = new[] { '=' };
 
         private readonly AssemblyWrapper _assembly;
         private readonly string _resourceBaseName;
@@ -65,6 +63,7 @@ namespace Microsoft.Extensions.Localization.Internal
         public IList<string> GetAllResourceStrings(CultureInfo culture, bool throwOnMissing)
         {
             var cacheKey = GetResourceCacheKey(culture);
+
             return _resourceNamesCache.GetOrAdd(cacheKey, _ =>
             {
                 var assembly = GetAssembly(culture);

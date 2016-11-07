@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Localization
     /// <summary>
     /// Provides strings for <typeparamref name="TResourceSource"/>.
     /// </summary>
-    /// <typeparam name="TResourceSource">The <see cref="System.Type"/> to provide strings for.</typeparam>
+    /// <typeparam name="TResourceSource">The <see cref="Type"/> to provide strings for.</typeparam>
     public class StringLocalizer<TResourceSource> : IStringLocalizer<TResourceSource>
     {
         private IStringLocalizer _localizer;

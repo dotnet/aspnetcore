@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         public Task Localization_CustomCulture_AllOS()
         {
             var testRunner = new TestRunner(_applicationPath);
+
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64,
@@ -32,6 +33,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         public Task Localization_CustomCulture_Windows()
         {
             var testRunner = new TestRunner(_applicationPath);
+
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.Clr,
                 RuntimeArchitecture.x64,
@@ -45,6 +47,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         public Task Localization_ResourcesInClassLibrary_ReturnLocalizedValue_AllOS()
         {
             var testRunner = new TestRunner(_applicationPath);
+
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64,
@@ -60,6 +63,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         public Task Localization_ResourcesInClassLibrary_ReturnLocalizedValue_Windows()
         {
             var testRunner = new TestRunner(_applicationPath);
+
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.Clr,
                 RuntimeArchitecture.x64,
@@ -73,6 +77,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         public Task Localization_ResourcesInFolder_ReturnLocalizedValue_AllOS()
         {
             var testRunner = new TestRunner(_applicationPath);
+
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64,
@@ -88,6 +93,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         public Task Localization_ResourcesInFolder_ReturnLocalizedValue_Windows()
         {
             var testRunner = new TestRunner(_applicationPath);
+
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.Clr,
                 RuntimeArchitecture.x64,
@@ -101,6 +107,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         public Task Localization_ResourcesInFolder_ReturnLocalizedValue_WithCultureFallback_AllOS()
         {
             var testRunner = new TestRunner(_applicationPath);
+
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64,
@@ -116,6 +123,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         public Task Localization_ResourcesInFolder_ReturnLocalizedValue_WithCultureFallback_Windows()
         {
             var testRunner = new TestRunner(_applicationPath);
+
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.Clr,
                 RuntimeArchitecture.x64,
@@ -129,6 +137,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         public Task Localization_ResourcesInFolder_ReturnNonLocalizedValue_CultureHierarchyTooDeep_AllOS()
         {
             var testRunner = new TestRunner(_applicationPath);
+
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64,
@@ -144,6 +153,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         public Task Localization_ResourcesInFolder_ReturnNonLocalizedValue_CultureHierarchyTooDeep_Windows()
         {
             var testRunner = new TestRunner(_applicationPath);
+
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.Clr,
                 RuntimeArchitecture.x64,
@@ -157,6 +167,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         public Task Localization_ResourcesAtRootFolder_ReturnLocalizedValue_AllOS()
         {
             var testRunner = new TestRunner(_applicationPath);
+
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64,
@@ -172,6 +183,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         public Task Localization_ResourcesAtRootFolder_ReturnLocalizedValue_Windows()
         {
             var testRunner = new TestRunner(_applicationPath);
+
             return testRunner.RunTestAndVerifyResponse(
                 RuntimeFlavor.Clr,
                 RuntimeArchitecture.x64,

@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         public Task RunSite_WindowsOnly()
         {
             var testRunner = new TestRunner(_applicationPath);
+
             return testRunner.RunTestAndVerifyResponseHeading(
                 RuntimeFlavor.Clr,
                 RuntimeArchitecture.x64,
@@ -27,10 +28,12 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 "fr-FR",
                 "<h1>Bonjour</h1>");
         }
+
         [Fact]
         public Task RunSite_AnyOS()
         {
             var testRunner = new TestRunner(_applicationPath);
+
             return testRunner.RunTestAndVerifyResponseHeading(
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64,

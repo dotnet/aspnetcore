@@ -19,6 +19,5 @@ namespace Microsoft.AspNetCore.Localization
 
         /// <inheritdoc />
         public abstract Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext httpContext);
-
     }
 }
