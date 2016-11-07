@@ -1,0 +1,18 @@
+{
+    "version": "0.1.0-*",
+    "buildOptions": {
+        "warningsAsErrors": true,
+        "allowUnsafe": true
+    },
+    "description": "Low-allocation Push-oriented WebSockets based on Channels",
+    "dependencies": {
+        "Channels": "0.2.0-beta-*",
+        "Channels.Text.Primitives": "0.2.0-beta-*",
+        "NETStandard.Library": "1.6.0"
+    },
+
+    "frameworks": {
+        "net46": {},
+        "netstandard1.3": {}
+    }
+}

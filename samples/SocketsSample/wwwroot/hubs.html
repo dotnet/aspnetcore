@@ -1,0 +1,166 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="js/signalr-client.js"></script>
+    <script>
+        var isConnected = false;
+        function getParameterByName(name, url) {
+            if (!url) {
+                url = window.location.href;
+            }
+            name = name.replace(/[\[\]]/g, "\\$&");
+            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        }
+
+        function click(id, callback) {
+            document.getElementById(id).addEventListener('click', event => {
+                callback(event);
+                event.preventDefault();
+            });
+        }
+
+        function invoke(connection, method, ...args) {
+            if (!isConnected) {
+                return;
+            }
+            var argsArray = Array.prototype.slice.call(arguments);
+            connection.invoke.apply(connection, argsArray.slice(1))
+                    .then(result => {
+                        console.log("invocation completed successfully: " + (result === null ? '(null)' : result));
+
+                        if (result) {
+                            addLine(result);
+                        }
+                    })
+                    .catch(err => {
+                        addLine(err, 'red');
+                    });
+        }
+
+        function getText(id) {
+            return document.getElementById(id).value;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            var transports = getParameterByName('transport');
+            if (transports != null) {
+                transports = transports.split(',')
+            }
+
+            document.getElementById('head1').innerHTML = transports ? transports.join(', ') : "auto (WebSockets)";
+
+            let connection = new RpcConnection(`http://${document.location.host}/hubs`, 'formatType=json&format=text');
+            connection.on('Send', msg => {
+                addLine(msg);
+            });
+
+            connection.connectionClosed = e => {
+                if (e) {
+                    addLine('Connection closed with error: ' + e, 'red');
+                }
+                else {
+                    addLine('Disconnected', 'green');
+                }
+            }
+
+            click('connect', event => {
+                connection.start(transports)
+                    .then(() => {
+                        isConnected = true;
+                        addLine('Connected successfully', 'green');
+                    })
+                .catch(err => {
+                    addLine(err, 'red');
+                });
+            });
+
+            click('disconnect', event => {
+                connection.stop();
+                isConnected = false;
+            });
+
+            click('broadcast', event => {
+                let data = getText('msg');
+                invoke(connection, 'SocketsSample.Hubs.Chat.Send', data);
+            });
+
+            click('join-group', event => {
+                let groupName = getText('msg');
+                invoke(connection, 'SocketsSample.Hubs.Chat.JoinGroup', groupName);
+            });
+
+            click('leave-group', event => {
+                let groupName = getText('msg');
+                invoke(connection, 'SocketsSample.Hubs.Chat.LeaveGroup', groupName);
+            });
+
+            click('groupmsg', event => {
+                let groupName = getText('target');
+                let message = getText('message');
+                invoke(connection, 'SocketsSample.Hubs.Chat.SendToGroup', groupName, message);
+            });
+        });
+
+        function addLine(line, color) {
+            var child = document.createElement('li');
+            if (color) {
+                child.style.color = color;
+            }
+            child.innerText = line;
+            document.getElementById('messages').appendChild(child);
+        }
+    </script>
+</head>
+<body>
+    <h1 id="head1"></h1>
+    <div>
+        <select id="formatType">
+            <option value="json">json</option>
+            <option value="line">line</option>
+        </select>
+
+        <input type="button" id="connect" value="Connect" />
+        <input type="button" id="disconnect" value="Disconnect" />
+    </div>
+
+
+    <h4>To Everybody</h4>
+    <form class="form-inline">
+        <div class="input-append">
+            <input type="text" id="msg" placeholder="Type a message, name or group" />
+            <input type="button" id="broadcast" class="btn" value="Broadcast" />
+            <input type="button" id="broadcast-exceptme" class="btn" value="Broadcast (All Except Me)" />
+            <input type="button" id="join" class="btn" value="Enter Name" />
+            <input type="button" id="join-group" class="btn" value="Join Group" />
+            <input type="button" id="leave-group" class="btn" value="Leave Group" />
+        </div>
+    </form>
+
+    <h4>To Me</h4>
+    <form class="form-inline">
+        <div class="input-append">
+            <input type="text" id="me" placeholder="Type a message" />
+            <input type="button" id="send" class="btn" value="Send to me" />
+        </div>
+    </form>
+
+    <h4>Private Message</h4>
+    <form class="form-inline">
+        <div class="input-prepend input-append">
+            <input type="text" name="message" id="message" placeholder="Type a message" />
+            <input type="text" name="user" id="target" placeholder="Type a user or group name" />
+
+            <input type="button" id="privatemsg" class="btn" value="Send to user" />
+            <input type="button" id="groupmsg" class="btn" value="Send to group" />
+        </div>
+    </form>
+
+    <ul id="messages"></ul>
+</body>
+</html>

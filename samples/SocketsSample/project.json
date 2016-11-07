@@ -1,0 +1,61 @@
+﻿{
+  "dependencies": {
+    "Microsoft.AspNetCore.SignalR": {
+      "target": "project"
+    },
+    "Microsoft.AspNetCore.SignalR.Redis": {
+      "target": "project"
+    },
+    "Microsoft.AspNetCore.Sockets": {
+      "target": "project"
+    },
+    "Microsoft.NETCore.App": {
+      "version": "1.0.0",
+      "type": "platform"
+    },
+    "Newtonsoft.Json": "9.0.1",
+    "Microsoft.AspNetCore.Diagnostics": "1.1.0-*",
+    "Microsoft.AspNetCore.StaticFiles": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.WebListener": "0.1.0",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.1.0-*",
+    "Google.Protobuf": "3.1.0"
+  },
+
+  "tools": {
+    "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.0.0-preview2-final"
+  },
+
+  "frameworks": {
+    "netcoreapp1.0": {
+      "imports": [
+        "dotnet5.6",
+        "portable-net45+win8"
+      ]
+    }
+  },
+
+  "buildOptions": {
+    "emitEntryPoint": true,
+    "preserveCompilationContext": true
+  },
+
+  "runtimeOptions": {
+    "configProperties": {
+      "System.GC.Server": true
+    }
+  },
+
+  "publishOptions": {
+    "include": [
+      "wwwroot",
+      "web.config"
+    ]
+  },
+
+  "scripts": {
+    "precompile": [ "tsc --project ../../src/Microsoft.AspNetCore.SignalR.Client.TS/ --out wwwroot/js/signalr-client.js" ],
+    "postpublish": [ "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%" ]
+  }
+}

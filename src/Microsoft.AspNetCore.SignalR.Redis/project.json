@@ -1,0 +1,14 @@
+﻿{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "Microsoft.AspNetCore.SignalR": {
+      "target": "project"
+    },
+    "StackExchange.Redis": "1.1.*"
+  },
+
+  "frameworks": {
+    "netstandard1.6": {}
+  }
+}
