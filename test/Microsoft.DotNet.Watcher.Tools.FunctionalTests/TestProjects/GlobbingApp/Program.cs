@@ -3,37 +3,20 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 
 namespace ConsoleApplication
 {
     public class Program
     {
-        private static readonly int processId = Process.GetCurrentProcess().Id;
-
         public static void Main(string[] args)
         {
-            ConsoleWrite("GlobbingApp started.");
-
-            File.AppendAllLines(args[0], new string[] { $"{processId}" });
-            
-            File.WriteAllText(args[0] + ".started", "");
-            Block();
-        }
-
-        private static void ConsoleWrite(string text)
-        {
-            Console.WriteLine($"[{processId}] {text}");
-        }
-
-        private static void Block()
-        {
-            while (true)
-            {
-                ConsoleWrite("Blocked...");
-                Thread.Sleep(1000);
-            }
+            Console.WriteLine("Started");
+            Console.WriteLine("PID = " + Process.GetCurrentProcess().Id);
+            Console.WriteLine("Defined types = " + typeof(Program).GetTypeInfo().Assembly.DefinedTypes.Count());
+            Thread.Sleep(Timeout.Infinite);
         }
     }
 }

@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Microsoft.DotNet.Cli.Utils;
@@ -58,12 +56,21 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         public void Restore(string project)
         {
-            project = Path.Combine(WorkFolder, project);
-
             _logger?.WriteLine($"Restoring msbuild project in {project}");
+            ExecuteCommand(project, "restore");
+        }
 
-            var restore = Command
-                .Create(new Muxer().MuxerPath, new[] { "restore", "/p:SkipInvalidConfigurations=true" })
+        public void Build(string project)
+        {
+            _logger?.WriteLine($"Building {project}");
+            ExecuteCommand(project, "build");
+        }
+
+        private void ExecuteCommand(string project, params string[] arguments)
+        {
+            project = Path.Combine(WorkFolder, project);
+            var command = Command
+                .Create(new Muxer().MuxerPath, arguments)
                 .WorkingDirectory(project)
                 .CaptureStdErr()
                 .CaptureStdOut()
@@ -71,9 +78,9 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 .OnOutputLine(l => _logger?.WriteLine(l))
                 .Execute();
 
-            if (restore.ExitCode != 0)
+            if (command.ExitCode != 0)
             {
-                throw new Exception($"Exit code {restore.ExitCode}");
+                throw new InvalidOperationException($"Exit code {command.ExitCode}");
             }
         }
 
@@ -88,7 +95,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             File.Copy(nugetConfigFilePath, tempNugetConfigFile);
         }
 
-        public Process ExecuteDotnetWatch(IEnumerable<string> arguments, string workDir, IDictionary<string, string> environmentVariables = null)
+        public IEnumerable<string> GetDotnetWatchArguments()
         {
             // this launches a new .NET Core process using the runtime of the current test app
             // and the version of dotnet-watch that this test app is compiled against
@@ -104,32 +111,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
             args.Add(Path.Combine(AppContext.BaseDirectory, "dotnet-watch.dll"));
 
-            var argsStr = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args.Concat(arguments));
-
-            _logger?.WriteLine($"Running dotnet {argsStr} in {workDir}");
-
-            var psi = new ProcessStartInfo(new Muxer().MuxerPath, argsStr)
-            {
-                UseShellExecute = false,
-                WorkingDirectory = workDir
-            };
-
-            if (environmentVariables != null)
-            {
-                foreach (var newEnvVar in environmentVariables)
-                {
-                    var varKey = newEnvVar.Key;
-                    var varValue = newEnvVar.Value;
-#if NET451
-                    psi.EnvironmentVariables[varKey] = varValue;
-
-#else
-                    psi.Environment[varKey] = varValue;
-#endif
-                }
-            }
-
-            return Process.Start(psi);
+            return args;
         }
 
         private static string FindNugetConfig()

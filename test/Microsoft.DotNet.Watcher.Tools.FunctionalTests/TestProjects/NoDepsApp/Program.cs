@@ -3,41 +3,21 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Threading;
 
 namespace ConsoleApplication
 {
     public class Program
     {
-        private static readonly int processId = Process.GetCurrentProcess().Id;
-
         public static void Main(string[] args)
         {
-            ConsoleWrite("NoDepsApp started.");
-
-            File.AppendAllLines(args[0], new string[] { $"{processId}" });
-            
-            File.WriteAllText(args[0] + ".started", "");
-
-            if (args.Length > 1 && args[1] == "--no-exit")
+            Console.WriteLine("Started");
+            Console.WriteLine($"PID = " + Process.GetCurrentProcess().Id);
+            if (args.Length > 0 && args[0] == "--no-exit")
             {
-                Block();
+                Thread.Sleep(Timeout.Infinite);
             }
-        }
-
-        private static void ConsoleWrite(string text)
-        {
-            Console.WriteLine($"[{processId}] {text}");
-        }
-
-        private static void Block()
-        {
-            while (true)
-            {
-                ConsoleWrite("Blocked...");
-                Thread.Sleep(1000);
-            }
+            Console.WriteLine("Exiting");
         }
     }
 }

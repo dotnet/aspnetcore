@@ -19,7 +19,6 @@ mono:
 os:
   - linux
   - osx
-osx_image: xcode7.1
 branches:
   only:
     - master

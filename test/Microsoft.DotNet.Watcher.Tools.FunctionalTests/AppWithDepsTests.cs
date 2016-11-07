@@ -3,80 +3,51 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
-    public class AppWithDepsTests
+    public class AppWithDepsTests : IDisposable
     {
-        private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(30);
-
-        private readonly ITestOutputHelper _logger;
+        private readonly AppWithDeps _app;
 
         public AppWithDepsTests(ITestOutputHelper logger)
         {
-            _logger = logger;
+            _app = new AppWithDeps(logger);
+            _app.Prepare();
         }
 
-        // Change a file included in compilation
         [Fact]
-        public void ChangeFileInDependency()
+        public async Task ChangeFileInDependency()
         {
-            using (var scenario = new AppWithDepsScenario(_logger))
-            {
-                scenario.Start();
-                using (var wait = new WaitForFileToChange(scenario.StartedFile))
-                {
-                    var fileToChange = Path.Combine(scenario.DependencyFolder, "Foo.cs");
-                    var programCs = File.ReadAllText(fileToChange);
-                    File.WriteAllText(fileToChange, programCs);
+            await _app.StartWatcher().OrTimeout();
 
-                    wait.Wait(_defaultTimeout,
-                        expectedToChange: true,
-                        errorMessage: $"Process did not restart because {scenario.StartedFile} was not changed");
-                }
-            }
+            var fileToChange = Path.Combine(_app.DependencyFolder, "Foo.cs");
+            var programCs = File.ReadAllText(fileToChange);
+            File.WriteAllText(fileToChange, programCs);
+
+            await _app.HasRestarted().OrTimeout();
         }
 
-        private class AppWithDepsScenario : DotNetWatchScenario
+        public void Dispose()
         {
-            private const string AppWithDeps = "AppWithDeps";
+            _app.Dispose();
+        }
+
+        private class AppWithDeps : WatchableApp
+        {
             private const string Dependency = "Dependency";
 
-            public AppWithDepsScenario(ITestOutputHelper logger)
-                : base(logger)
+            public AppWithDeps(ITestOutputHelper logger)
+                : base("AppWithDeps", logger)
             {
-                StatusFile = Path.Combine(Scenario.TempFolder, "status");
-                StartedFile = StatusFile + ".started";
-
-                Scenario.AddTestProjectFolder(AppWithDeps);
                 Scenario.AddTestProjectFolder(Dependency);
 
-                Scenario.Restore(AppWithDeps); // restore3 should be transitive
-
-                AppWithDepsFolder = Path.Combine(Scenario.WorkFolder, AppWithDeps);
                 DependencyFolder = Path.Combine(Scenario.WorkFolder, Dependency);
             }
 
-            public void Start()
-            {
-                // Wait for the process to start
-                using (var wait = new WaitForFileToChange(StatusFile))
-                {
-                    RunDotNetWatch(new[] { "run", StatusFile }, Path.Combine(Scenario.WorkFolder, AppWithDeps));
-
-                    wait.Wait(_defaultTimeout,
-                        expectedToChange: true,
-                        errorMessage: $"File not created: {StatusFile}");
-                }
-
-                Waiters.WaitForFileToBeReadable(StatusFile, _defaultTimeout);
-            }
-
-            public string StatusFile { get; private set; }
-            public string StartedFile { get; private set; }
-            public string AppWithDepsFolder { get; private set; }
             public string DependencyFolder { get; private set; }
         }
     }
