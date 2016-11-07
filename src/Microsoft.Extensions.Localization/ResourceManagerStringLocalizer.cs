@@ -22,6 +22,7 @@ namespace Microsoft.Extensions.Localization
         private readonly IResourceNamesCache _resourceNamesCache;
         private readonly ResourceManager _resourceManager;
         private readonly IResourceStringProvider _resourceStringProvider;
+        private readonly AssemblyWrapper _resourceAssemblyWrapper;
         private readonly string _resourceBaseName;
 
         /// <summary>
@@ -37,18 +38,32 @@ namespace Microsoft.Extensions.Localization
             string baseName,
             IResourceNamesCache resourceNamesCache)
             : this(
-                  resourceManager,
-                  new AssemblyResourceStringProvider(
-                      resourceNamesCache,
-                      new AssemblyWrapper(resourceAssembly),
-                      baseName),
-                  baseName,
-                  resourceNamesCache)
+                resourceManager,
+                new AssemblyWrapper(resourceAssembly),
+                baseName,
+                resourceNamesCache)
         {
             if (resourceAssembly == null)
             {
                 throw new ArgumentNullException(nameof(resourceAssembly));
             }
+        }
+
+        /// <summary>
+        /// Intended for testing purposes only.
+        /// </summary>
+        public ResourceManagerStringLocalizer(
+            ResourceManager resourceManager,
+            AssemblyWrapper resourceAssemblyWrapper,
+            string baseName,
+            IResourceNamesCache resourceNamesCache)
+            : this(
+                  resourceManager,
+                  new AssemblyResourceStringProvider(resourceNamesCache, resourceAssemblyWrapper, baseName),
+                  baseName,
+                  resourceNamesCache)
+        {
+            _resourceAssemblyWrapper = resourceAssemblyWrapper;
         }
 
         /// <summary>
