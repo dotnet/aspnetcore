@@ -18,23 +18,23 @@ namespace Microsoft.AspNetCore.Razor.Parser
 
         internal static ISet<string> DefaultKeywords = new HashSet<string>()
         {
-            SyntaxConstants.CSharp.TagHelperPrefixKeyword,
             SyntaxConstants.CSharp.AddTagHelperKeyword,
             SyntaxConstants.CSharp.RemoveTagHelperKeyword,
-            "if",
+            SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+            "class",
             "do",
-            "try",
             "for",
             "foreach",
-            "while",
-            "switch",
-            "lock",
-            "using",
-            "section",
-            "inherits",
             "functions",
+            "if",
+            "inherits",
+            "lock",
             "namespace",
-            "class",
+            "section",
+            "switch",
+            "try",
+            "using",
+            "while",
         };
 
         private Dictionary<string, Action> _directiveParsers = new Dictionary<string, Action>();
@@ -476,7 +476,7 @@ namespace Microsoft.AspNetCore.Razor.Parser
                         Accept(dot);
                     }
                 }
-                else if (!At(CSharpSymbolType.WhiteSpace) && !At(CSharpSymbolType.NewLine))
+                else if (!(At(CSharpSymbolType.WhiteSpace) || At(CSharpSymbolType.NewLine)))
                 {
                     PutCurrentBack();
                 }
