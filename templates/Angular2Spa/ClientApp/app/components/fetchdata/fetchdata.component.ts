@@ -3,7 +3,7 @@ import { Http } from '@angular/http';
 
 @Component({
     selector: 'fetchdata',
-    template: require('./fetchdata.component.html')
+    templateUrl: './fetchdata.component.html'
 })
 export class FetchDataComponent {
     public forecasts: WeatherForecast[];

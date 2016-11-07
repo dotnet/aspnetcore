@@ -13,6 +13,7 @@
     "@angular/router": "3.0.2",
     "@types/node": "^6.0.42",
     "angular2-platform-node": "~2.0.11",
+    "angular2-template-loader": "^0.6.0",
     "angular2-universal": "~2.0.11",
     "angular2-universal-polyfills": "~2.0.11",
     "aspnet-prerendering": "^1.0.7",
@@ -25,6 +26,7 @@
     "expose-loader": "^0.7.1",
     "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.9.0",
+    "html-loader": "^0.4.4",
     "isomorphic-fetch": "^2.2.1",
     "jquery": "^2.2.1",
     "preboot": "^4.5.2",
@@ -37,8 +39,8 @@
     "url-loader": "^0.5.7",
     "webpack": "^1.13.2",
     "webpack-hot-middleware": "^2.12.2",
-    "webpack-node-externals": "^1.4.3",
     "webpack-merge": "^0.14.1",
+    "webpack-node-externals": "^1.4.3",
     "zone.js": "^0.6.25"
   }
 }
