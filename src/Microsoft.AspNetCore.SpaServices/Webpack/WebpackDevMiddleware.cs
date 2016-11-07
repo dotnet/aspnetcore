@@ -47,6 +47,14 @@ namespace Microsoft.AspNetCore.Builder
                 nodeServicesOptions.ProjectPath = options.ProjectPath;
             }
 
+            if (options.EnvironmentVariables != null)
+            {
+                foreach (var kvp in options.EnvironmentVariables)
+                {
+                    nodeServicesOptions.EnvironmentVariables[kvp.Key] = kvp.Value;
+                }
+            }
+
             var nodeServices = NodeServicesFactory.CreateNodeServices(nodeServicesOptions);
 
             // Get a filename matching the middleware Node script
