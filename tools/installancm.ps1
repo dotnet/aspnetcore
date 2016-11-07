@@ -253,10 +253,19 @@ function Update-File([string]$SourceFilePath, [string]$DestinationFilePath) {
     {
         if (Test-Path $BackupFilePath)
         {
-            Say ("    Delete the existing backup file: $BackupFilePath")
-            Remove-Item $BackupFilePath -Force -Confirm:$false
+            $backupFileRemoved = $false
+            if ( ((get-item $DestinationFilePath).CreationTime -gt (get-item $BackupFilePath).CreationTime) -and ((get-item $DestinationFilePath).CreationTime -gt (get-item $SourceFilePath).CreationTime) )
+            {
+                $backupFileRemoved = $true
+                Say ('    Delete the existing "$BackupFilePath" because "$DestinationFilePath" is newer than both "$BackupFilePath" and "$SourceFilePath"')
+                Remove-Item $BackupFilePath -Force -Confirm:$false
+            }
+            else
+            {
+                Say-Verbose ('     Skipping to delete the existing backupfile because "$DestinationFilePath" is not newer than $BackupFilePath"')
+            }
         }
-        if (Test-Path $BackupFilePath)
+        if ($backupFileRemoved -and (Test-Path $BackupFilePath))
         {
             throw ("$LogHeader Can't delete $BackupFilePath")
         }
@@ -303,7 +312,7 @@ function Update-File([string]$SourceFilePath, [string]$DestinationFilePath) {
     }
     else
     {
-        Say ("    Skipping the file $Destination that is already identical to $Source ")
+        Say ("    Skipping $Destination that is already identical to $Source ")
     }
 }
 
