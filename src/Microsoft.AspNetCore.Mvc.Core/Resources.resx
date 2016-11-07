@@ -379,4 +379,8 @@
   <data name="VaryByQueryKeys_Requires_ResponseCachingMiddleware" xml:space="preserve">
     <value>'{0}' requires the response cache middleware.</value>
   </data>
+  <data name="CandidateResolver_DifferentCasedReference" xml:space="preserve">
+    <value>A duplicate entry for library reference {0} was found. Please check that all package references in all projects use the same casing for the same package references.</value>
+    <comment>{0} is the dependency name.</comment>
+  </data>
 </root>

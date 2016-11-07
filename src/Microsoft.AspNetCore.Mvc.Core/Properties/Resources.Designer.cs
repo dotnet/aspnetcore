@@ -1354,6 +1354,22 @@ namespace Microsoft.AspNetCore.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("VaryByQueryKeys_Requires_ResponseCachingMiddleware"), p0);
         }
 
+        /// <summary>
+        /// A duplicate entry for library reference {0} was found. Please check that all package references in all projects use the same casing for the same package references.
+        /// </summary>
+        internal static string CandidateResolver_DifferentCasedReference
+        {
+            get { return GetString("CandidateResolver_DifferentCasedReference"); }
+        }
+
+        /// <summary>
+        /// A duplicate entry for library reference {0} was found. Please check that all package references in all projects use the same casing for the same package references.
+        /// </summary>
+        internal static string FormatCandidateResolver_DifferentCasedReference(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("CandidateResolver_DifferentCasedReference"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

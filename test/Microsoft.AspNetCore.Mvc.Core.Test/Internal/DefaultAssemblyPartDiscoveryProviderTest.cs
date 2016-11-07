@@ -15,6 +15,31 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             typeof(DefaultAssemblyPartDiscoveryProviderTests).GetTypeInfo().Assembly;
 
         [Fact]
+        public void CandidateResolver_ThrowsIfDependencyContextContainsDuplicateRuntimeLibraryNames()
+        {
+            // Arrange 
+            var upperCaseLibrary = "Microsoft.AspNetCore.Mvc";
+            var mixedCaseLibrary = "microsoft.aspNetCore.mvc";
+
+            var dependencyContext = new DependencyContext(
+                new TargetInfo("framework", "runtime", "signature", isPortable: true),
+                CompilationOptions.Default,
+                new CompilationLibrary[0],
+                new[]
+                {
+                     GetLibrary(mixedCaseLibrary),
+                     GetLibrary(upperCaseLibrary),
+                },
+                Enumerable.Empty<RuntimeFallbacks>());
+
+            // Act
+            var exception = Assert.Throws<InvalidOperationException>(() => DefaultAssemblyPartDiscoveryProvider.GetCandidateLibraries(dependencyContext));
+
+            // Assert
+            Assert.Equal($"A duplicate entry for library reference {upperCaseLibrary} was found. Please check that all package references in all projects use the same casing for the same package references.", exception.Message);
+        }
+
+        [Fact]
         public void GetCandidateLibraries_IgnoresMvcAssemblies()
         {
             // Arrange

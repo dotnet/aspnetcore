@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
@@ -73,8 +74,17 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             public CandidateResolver(IReadOnlyList<RuntimeLibrary> dependencies, ISet<string> referenceAssemblies)
             {
-                _dependencies = dependencies
-                    .ToDictionary(d => d.Name, d => CreateDependency(d, referenceAssemblies), StringComparer.OrdinalIgnoreCase);
+                var dependenciesWithNoDuplicates = new Dictionary<string, Dependency>(StringComparer.OrdinalIgnoreCase);
+                foreach (var dependency in dependencies)
+                {
+                    if (dependenciesWithNoDuplicates.ContainsKey(dependency.Name))
+                    {
+                        throw new InvalidOperationException(Resources.FormatCandidateResolver_DifferentCasedReference(dependency.Name));
+                    }
+                    dependenciesWithNoDuplicates.Add(dependency.Name, CreateDependency(dependency, referenceAssemblies));
+                }
+
+                _dependencies = dependenciesWithNoDuplicates;
             }
 
             private Dependency CreateDependency(RuntimeLibrary library, ISet<string> referenceAssemblies)
