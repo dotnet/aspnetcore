@@ -184,13 +184,7 @@ namespace Microsoft.AspNetCore.SignalR
 
                         try
                         {
-                            var arguments = invocationDescriptor.Arguments ?? EmptyArray;
-
-                            var args = arguments
-                                .Zip(parameters, (a, p) => Convert.ChangeType(a, p.ParameterType))
-                                .ToArray();
-
-                            var result = methodInfo.Invoke(hub, args);
+                            var result = methodInfo.Invoke(hub, invocationDescriptor.Arguments);
                             var resultTask = result as Task;
                             if (resultTask != null)
                             {

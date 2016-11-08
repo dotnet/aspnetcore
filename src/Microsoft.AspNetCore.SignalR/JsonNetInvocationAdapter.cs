@@ -3,8 +3,10 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.SignalR
 {
@@ -16,11 +18,30 @@ namespace Microsoft.AspNetCore.SignalR
         {
         }
 
-        public async Task<InvocationDescriptor> ReadInvocationDescriptorAsync(Stream stream, Func<string, Type[]> getParams)
+        public Task<InvocationDescriptor> ReadInvocationDescriptorAsync(Stream stream, Func<string, Type[]> getParams)
         {
             var reader = new JsonTextReader(new StreamReader(stream));
             // REVIEW: Task.Run()
-            return await Task.Run(() => _serializer.Deserialize<InvocationDescriptor>(reader));
+            return Task.Run(() =>
+            {
+                var jsonInvocation = _serializer.Deserialize<JsonNetInvocationDescriptor>(reader);
+                var invocation = new InvocationDescriptor
+                {
+                    Id = jsonInvocation.Id,
+                    Method = jsonInvocation.Method,
+                };
+
+                var paramTypes = getParams(jsonInvocation.Method);
+                invocation.Arguments = new object[paramTypes.Length];
+
+                for (int i = 0; i < paramTypes.Length; i++)
+                {
+                    var paramType = paramTypes[i];
+                    invocation.Arguments[i] = jsonInvocation.Arguments[i].ToObject(paramType, _serializer);
+                }
+
+                return invocation;
+            });
         }
 
         public Task WriteInvocationResultAsync(InvocationResultDescriptor resultDescriptor, Stream stream)
@@ -40,6 +61,15 @@ namespace Microsoft.AspNetCore.SignalR
             var writer = new JsonTextWriter(new StreamWriter(stream));
             _serializer.Serialize(writer, value);
             writer.Flush();
+        }
+
+        private class JsonNetInvocationDescriptor
+        {
+            public string Id { get; set; }
+
+            public string Method { get; set; }
+
+            public JArray Arguments { get; set; }
         }
     }
 }
