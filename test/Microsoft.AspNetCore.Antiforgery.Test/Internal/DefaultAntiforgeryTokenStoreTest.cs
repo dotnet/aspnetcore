@@ -274,10 +274,12 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         [Theory]
-        [InlineData("/")]
-        [InlineData("/vdir1")]
-        [InlineData("/vdir1/vdir2")]
-        public void SaveCookieToken_SetsCookieWithApproriatePathBase(string requestPathBase)
+        [InlineData(null, "/")]
+        [InlineData("", "/")]
+        [InlineData("/", "/")]
+        [InlineData("/vdir1", "/vdir1")]
+        [InlineData("/vdir1/vdir2", "/vdir1/vdir2")]
+        public void SaveCookieToken_SetsCookieWithApproriatePathBase(string requestPathBase, string expectedCookiePath)
         {
             // Arrange
             var token = "serialized-value";
@@ -305,7 +307,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.Equal(_cookieName, cookies.Key);
             Assert.Equal("serialized-value", cookies.Value);
             Assert.True(cookies.Options.HttpOnly);
-            Assert.Equal(requestPathBase, cookies.Options.Path);
+            Assert.Equal(expectedCookiePath, cookies.Options.Path);
         }
 
         [Fact]

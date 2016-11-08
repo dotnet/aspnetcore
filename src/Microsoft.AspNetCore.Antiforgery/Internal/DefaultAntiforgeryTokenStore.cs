@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             var options = new CookieOptions();
             options.HttpOnly = true;
-            options.Path = _options.CookiePath ?? httpContext.Request.PathBase;
+            options.Path = _options.CookiePath ?? GetPathBase(httpContext);
             options.Domain = _options.CookieDomain;
             // Note: don't use "newCookie.Secure = _options.RequireSSL;" since the default
             // value of newCookie.Secure is populated out of band.
@@ -81,6 +81,16 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             }
 
             httpContext.Response.Cookies.Append(_options.CookieName, token, options);
+        }
+
+        private string GetPathBase(HttpContext httpContext)
+        {
+            var pathBase = httpContext.Request.PathBase.ToString();
+            if (string.IsNullOrEmpty(pathBase))
+            {
+                pathBase = "/";
+            }
+            return pathBase;
         }
     }
 }

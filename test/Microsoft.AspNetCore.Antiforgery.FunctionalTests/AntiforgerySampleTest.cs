@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Antiforgery.FunctionalTests
@@ -26,11 +27,19 @@ namespace Microsoft.AspNetCore.Antiforgery.FunctionalTests
             var response = await Client.GetAsync("http://localhost/Index.html");
 
             // Assert
-            var cookie = RetrieveAntiforgeryCookie(response);
-            Assert.NotNull(cookie.Value);
+            var setCookieHeaderValue = RetrieveAntiforgeryCookie(response);
+            Assert.NotNull(setCookieHeaderValue);
+            Assert.False(string.IsNullOrEmpty(setCookieHeaderValue.Value));
+            Assert.Null(setCookieHeaderValue.Domain);
+            Assert.Equal("/", setCookieHeaderValue.Path);
+            Assert.False(setCookieHeaderValue.Secure);
 
-            var token = RetrieveAntiforgeryToken(response);
-            Assert.NotNull(token.Value);
+            setCookieHeaderValue = RetrieveAntiforgeryToken(response);
+            Assert.NotNull(setCookieHeaderValue);
+            Assert.False(string.IsNullOrEmpty(setCookieHeaderValue.Value));
+            Assert.Null(setCookieHeaderValue.Domain);
+            Assert.Equal("/", setCookieHeaderValue.Path);
+            Assert.False(setCookieHeaderValue.Secure);
         }
 
         [Fact]
@@ -49,7 +58,7 @@ namespace Microsoft.AspNetCore.Antiforgery.FunctionalTests
             });
 
             // Assert
-            Assert.Contains($"The required antiforgery cookie \"{cookie.Key}\" is not present.", exception.Message);
+            Assert.Contains($"The required antiforgery cookie \"{cookie.Name}\" is not present.", exception.Message);
         }
 
         [Fact]
@@ -63,8 +72,8 @@ namespace Microsoft.AspNetCore.Antiforgery.FunctionalTests
 
             var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "http://localhost/api/items");
 
+            httpRequestMessage.Headers.Add("Cookie", $"{cookie.Name}={cookie.Value}");
             httpRequestMessage.Headers.Add("X-XSRF-TOKEN", token.Value);
-            httpRequestMessage.Headers.Add("Cookie", $"{cookie.Key}={cookie.Value}");
 
             // Act
             var response = await Client.SendAsync(httpRequestMessage);
@@ -73,24 +82,20 @@ namespace Microsoft.AspNetCore.Antiforgery.FunctionalTests
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         }
 
-        private static KeyValuePair<string, string> RetrieveAntiforgeryToken(HttpResponseMessage response)
+        private static SetCookieHeaderValue RetrieveAntiforgeryToken(HttpResponseMessage response)
         {
-            return GetCookie(response, 1);
+            return response.Headers.GetValues(HeaderNames.SetCookie)
+                .Select(setCookieValue => SetCookieHeaderValue.Parse(setCookieValue))
+                .Where(setCookieHeaderValue => setCookieHeaderValue.Name == "XSRF-TOKEN")
+                .FirstOrDefault();
         }
 
-        private static KeyValuePair<string, string> RetrieveAntiforgeryCookie(HttpResponseMessage response)
+        private static SetCookieHeaderValue RetrieveAntiforgeryCookie(HttpResponseMessage response)
         {
-            return GetCookie(response, 0);
-        }
-
-        private static KeyValuePair<string, string> GetCookie(HttpResponseMessage response, int index)
-        {
-            var setCookieArray = response.Headers.GetValues("Set-Cookie").ToArray();
-            var cookie = setCookieArray[index].Split(';').First().Split('=');
-            var cookieKey = cookie[0];
-            var cookieData = cookie[1];
-
-            return new KeyValuePair<string, string>(cookieKey, cookieData);
+            return response.Headers.GetValues(HeaderNames.SetCookie)
+                .Select(setCookieValue => SetCookieHeaderValue.Parse(setCookieValue))
+                .Where(setCookieHeaderValue => setCookieHeaderValue.Name.StartsWith(".AspNetCore.Antiforgery."))
+                .FirstOrDefault();
         }
     }
 }
