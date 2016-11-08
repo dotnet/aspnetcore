@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
     /// </summary>
     public class SelfHostDeployer : ApplicationDeployer
     {
-        private Process _hostProcess;
+        public Process HostProcess { get; private set; }
 
         public SelfHostDeployer(DeploymentParameters deploymentParameters, ILogger logger)
             : base(deploymentParameters, logger)
@@ -103,32 +103,32 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
             AddEnvironmentVariablesToProcess(startInfo, DeploymentParameters.EnvironmentVariables);
 
-            _hostProcess = new Process() { StartInfo = startInfo };
-            _hostProcess.ErrorDataReceived += (sender, dataArgs) => { Logger.LogError(dataArgs.Data ?? string.Empty); };
-            _hostProcess.OutputDataReceived += (sender, dataArgs) => { Logger.LogInformation(dataArgs.Data ?? string.Empty); };
-            _hostProcess.EnableRaisingEvents = true;
+            HostProcess = new Process() { StartInfo = startInfo };
+            HostProcess.ErrorDataReceived += (sender, dataArgs) => { Logger.LogError(dataArgs.Data ?? string.Empty); };
+            HostProcess.OutputDataReceived += (sender, dataArgs) => { Logger.LogInformation(dataArgs.Data ?? string.Empty); };
+            HostProcess.EnableRaisingEvents = true;
             var hostExitTokenSource = new CancellationTokenSource();
-            _hostProcess.Exited += (sender, e) =>
+            HostProcess.Exited += (sender, e) =>
             {
                 TriggerHostShutdown(hostExitTokenSource);
             };
-            _hostProcess.Start();
-            _hostProcess.BeginErrorReadLine();
-            _hostProcess.BeginOutputReadLine();
+            HostProcess.Start();
+            HostProcess.BeginErrorReadLine();
+            HostProcess.BeginOutputReadLine();
 
-            if (_hostProcess.HasExited)
+            if (HostProcess.HasExited)
             {
-                Logger.LogError("Host process {processName} exited with code {exitCode} or failed to start.", startInfo.FileName, _hostProcess.ExitCode);
+                Logger.LogError("Host process {processName} exited with code {exitCode} or failed to start.", startInfo.FileName, HostProcess.ExitCode);
                 throw new Exception("Failed to start host");
             }
 
-            Logger.LogInformation("Started {fileName}. Process Id : {processId}", startInfo.FileName, _hostProcess.Id);
+            Logger.LogInformation("Started {fileName}. Process Id : {processId}", startInfo.FileName, HostProcess.Id);
             return hostExitTokenSource.Token;
         }
 
         public override void Dispose()
         {
-            ShutDownIfAnyHostProcess(_hostProcess);
+            ShutDownIfAnyHostProcess(HostProcess);
 
             if (DeploymentParameters.PublishApplicationBeforeDeployment)
             {
