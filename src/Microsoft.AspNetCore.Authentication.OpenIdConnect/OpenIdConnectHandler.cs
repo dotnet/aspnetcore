@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// Redirect user to the identity provider for sign out
         /// </summary>
         /// <returns>A task executing the sign out procedure</returns>
-        protected override async Task HandleSignOutAsync(SignOutContext context)
+        protected override async Task HandleSignOutAsync(SignOutContext signout)
         {
             Logger.EnteringOpenIdAuthenticationHandlerHandleSignOutAsync(GetType().FullName);
 
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             };
 
             // Get the post redirect URI.
-            var properties = new AuthenticationProperties(context.Properties);
+            var properties = new AuthenticationProperties(signout.Properties);
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
                 properties.RedirectUri = BuildRedirectUriIfRelative(Options.PostLogoutRedirectUri);
