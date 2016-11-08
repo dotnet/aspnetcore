@@ -19,6 +19,7 @@
         <label for="zipCode">Zip</label><input type="text" id="zipCode" value="98052" />
         <input type="submit" value="Send report" />
     </form>
+    <br />
     <div>
         <h3>Weather reports</h3>
         <table id="reportsTable">
@@ -55,7 +56,7 @@
                     <td>${report.ZipCode}</td>
                     <td>${report.Temperature}&#8457; </td>
                     <td>${report.Weather.match(/[A-Z][a-z]+|[0-9]+/g).join(" ")}</td>
-                    <td>${report.ReportTime}</td>`;
+                    <td>${new Date(report.ReportTime)}</td>`;
             }
         }
 
