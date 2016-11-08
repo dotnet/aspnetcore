@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Sockets
         {
             if (!context.WebSockets.IsWebSocketRequest)
             {
-                await Task.CompletedTask;
                 return;
             }
 

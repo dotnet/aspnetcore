@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Channels;
 using Microsoft.AspNetCore.Sockets;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.SignalR
 {
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.SignalR
                 groups.Add(groupName);
             }
 
-            return Task.CompletedTask;
+            return TaskCache.CompletedTask;
         }
 
         public override Task RemoveGroupAsync(Connection connection, string groupName)
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.SignalR
                 groups.Remove(groupName);
             }
 
-            return Task.CompletedTask;
+            return TaskCache.CompletedTask;
         }
 
         public override Task InvokeAllAsync(string methodName, object[] args)
@@ -109,13 +110,13 @@ namespace Microsoft.AspNetCore.SignalR
         public override Task OnConnectedAsync(Connection connection)
         {
             _connections.Add(connection);
-            return Task.CompletedTask;
+            return TaskCache.CompletedTask;
         }
 
         public override Task OnDisconnectedAsync(Connection connection)
         {
             _connections.Remove(connection);
-            return Task.CompletedTask;
+            return TaskCache.CompletedTask;
         }
     }
 

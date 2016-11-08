@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Channels;
+using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.Extensions.WebSockets.Internal.Tests
@@ -22,7 +23,7 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
                     var client = pair.ClientSocket.ExecuteAsync(_ =>
                     {
                         Assert.False(true, "did not expect the client to receive any frames!");
-                        return Task.CompletedTask;
+                        return TaskCache.CompletedTask;
                     });
 
                     // Send Frames

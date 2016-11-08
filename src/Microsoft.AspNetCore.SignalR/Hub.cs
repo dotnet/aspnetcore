@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.SignalR
 {
@@ -62,12 +63,12 @@ namespace Microsoft.AspNetCore.SignalR
 
         public virtual Task OnConnectedAsync()
         {
-            return Task.CompletedTask;
+            return TaskCache.CompletedTask;
         }
 
         public virtual Task OnDisconnectedAsync()
         {
-            return Task.CompletedTask;
+            return TaskCache.CompletedTask;
         }
 
         protected virtual void Dispose(bool disposing)

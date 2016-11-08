@@ -5,6 +5,7 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using Channels;
+using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.Extensions.WebSockets.Internal.Tests
@@ -182,7 +183,7 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
                         executeTask = connection.ExecuteAsync(f =>
                         {
                             Assert.False(true, "Did not expect to receive any messages");
-                            return Task.CompletedTask;
+                            return TaskCache.CompletedTask;
                         });
                         await producer(connection).OrTimeout();
                         inbound.CompleteWriter();

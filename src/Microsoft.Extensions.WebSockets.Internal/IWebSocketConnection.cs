@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.WebSockets.Internal
 {
@@ -129,7 +130,7 @@ namespace Microsoft.Extensions.WebSockets.Internal
             connection.ExecuteAsync((frame, _) =>
             {
                 messageHandler(frame);
-                return Task.CompletedTask;
+                return TaskCache.CompletedTask;
             }, null);
 
         /// <summary>
@@ -143,7 +144,7 @@ namespace Microsoft.Extensions.WebSockets.Internal
             connection.ExecuteAsync((frame, s) =>
             {
                 messageHandler(frame, s);
-                return Task.CompletedTask;
+                return TaskCache.CompletedTask;
             }, state);
 
         /// <summary>

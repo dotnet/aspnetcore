@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly Dictionary<string, Func<Connection, InvocationDescriptor, Task<InvocationResultDescriptor>>> _callbacks
             = new Dictionary<string, Func<Connection, InvocationDescriptor, Task<InvocationResultDescriptor>>>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Type[]> _paramTypes = new Dictionary<string, Type[]>();
+        private static object[] EmptyArray = new object[0];
 
         private readonly HubLifetimeManager<THub> _lifetimeManager;
         private readonly IHubContext<THub, TClient> _hubContext;
@@ -183,7 +184,7 @@ namespace Microsoft.AspNetCore.SignalR
 
                         try
                         {
-                            var arguments = invocationDescriptor.Arguments ?? Array.Empty<object>();
+                            var arguments = invocationDescriptor.Arguments ?? EmptyArray;
 
                             var args = arguments
                                 .Zip(parameters, (a, p) => Convert.ChangeType(a, p.ParameterType))
