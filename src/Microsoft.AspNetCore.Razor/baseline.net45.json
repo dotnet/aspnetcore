@@ -2410,22 +2410,6 @@
           "GenericParameter": []
         },
         {
-          "Kind": "Method",
-          "Name": "get_DebugDisplay",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_Remaining",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [
