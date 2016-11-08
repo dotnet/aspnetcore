@@ -10,8 +10,6 @@ namespace SocialWeather
         private readonly PersistentConnectionLifeTimeManager _lifetimeManager;
         private readonly FormatterResolver _formatterResolver;
         private readonly ILogger<SocialWeatherEndPoint> _logger;
-        private object _lockObj = new object();
-        private WeatherReport _lastWeatherReport;
 
         public SocialWeatherEndPoint(PersistentConnectionLifeTimeManager lifetimeManager,
             FormatterResolver formatterResolver, ILogger<SocialWeatherEndPoint> logger)
@@ -37,10 +35,6 @@ namespace SocialWeather
             WeatherReport weatherReport;
             while ((weatherReport = await formatter.ReadAsync(stream)) != null)
             {
-                lock(_lockObj)
-                {
-                    _lastWeatherReport = weatherReport;
-                }
                 await _lifetimeManager.SendToAllAsync(weatherReport);
             }
         }
