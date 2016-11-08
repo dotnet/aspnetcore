@@ -1,0 +1,888 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNet.Identity.AspNetCoreCompat, Version=0.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNet.Identity.CoreCompat.IdentityDbContext<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNet.Identity.CoreCompat.IdentityDbContext<T0, Microsoft.AspNet.Identity.CoreCompat.IdentityRole, System.String, Microsoft.AspNet.Identity.CoreCompat.IdentityUserLogin, Microsoft.AspNet.Identity.EntityFramework.IdentityUserRole, Microsoft.AspNet.Identity.EntityFramework.IdentityUserClaim, Microsoft.AspNet.Identity.CoreCompat.IdentityRoleClaim>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "model",
+              "Type": "System.Data.Entity.Infrastructure.DbCompiledModel"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "nameOrConnectionString",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "nameOrConnectionString",
+              "Type": "System.String"
+            },
+            {
+              "Name": "model",
+              "Type": "System.Data.Entity.Infrastructure.DbCompiledModel"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "existingConnection",
+              "Type": "System.Data.Common.DbConnection"
+            },
+            {
+              "Name": "contextOwnsConnection",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "existingConnection",
+              "Type": "System.Data.Common.DbConnection"
+            },
+            {
+              "Name": "model",
+              "Type": "System.Data.Entity.Infrastructure.DbCompiledModel"
+            },
+            {
+              "Name": "contextOwnsConnection",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TUser",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNet.Identity.CoreCompat.IdentityUser"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNet.Identity.CoreCompat.IdentityDbContext<T0, T1, T2, T3, T4, T5, T6>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNet.Identity.EntityFramework.IdentityDbContext<T0, T1, T2, T3, T4, T5>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "OnModelCreating",
+          "Parameters": [
+            {
+              "Name": "modelBuilder",
+              "Type": "System.Data.Entity.DbModelBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ValidateEntity",
+          "Parameters": [
+            {
+              "Name": "entityEntry",
+              "Type": "System.Data.Entity.Infrastructure.DbEntityEntry"
+            },
+            {
+              "Name": "items",
+              "Type": "System.Collections.Generic.IDictionary<System.Object, System.Object>"
+            }
+          ],
+          "ReturnType": "System.Data.Entity.Validation.DbEntityValidationResult",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_RoleClaims",
+          "Parameters": [],
+          "ReturnType": "System.Data.Entity.IDbSet<T6>",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_RoleClaims",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Data.Entity.IDbSet<T6>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "model",
+              "Type": "System.Data.Entity.Infrastructure.DbCompiledModel"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "nameOrConnectionString",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "nameOrConnectionString",
+              "Type": "System.String"
+            },
+            {
+              "Name": "model",
+              "Type": "System.Data.Entity.Infrastructure.DbCompiledModel"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "existingConnection",
+              "Type": "System.Data.Common.DbConnection"
+            },
+            {
+              "Name": "contextOwnsConnection",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "existingConnection",
+              "Type": "System.Data.Common.DbConnection"
+            },
+            {
+              "Name": "model",
+              "Type": "System.Data.Entity.Infrastructure.DbCompiledModel"
+            },
+            {
+              "Name": "contextOwnsConnection",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TUser",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNet.Identity.CoreCompat.IdentityUser<T2, T3, T4, T5>"
+          ]
+        },
+        {
+          "ParameterName": "TRole",
+          "ParameterPosition": 1,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNet.Identity.CoreCompat.IdentityRole<T2, T4>"
+          ]
+        },
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 2,
+          "BaseTypeOrInterfaces": []
+        },
+        {
+          "ParameterName": "TUserLogin",
+          "ParameterPosition": 3,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNet.Identity.CoreCompat.IdentityUserLogin<T2>"
+          ]
+        },
+        {
+          "ParameterName": "TUserRole",
+          "ParameterPosition": 4,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNet.Identity.EntityFramework.IdentityUserRole<T2>"
+          ]
+        },
+        {
+          "ParameterName": "TUserClaim",
+          "ParameterPosition": 5,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNet.Identity.EntityFramework.IdentityUserClaim<T2>"
+          ]
+        },
+        {
+          "ParameterName": "TRoleClaim",
+          "ParameterPosition": 6,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNet.Identity.CoreCompat.IdentityRoleClaim<T2>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNet.Identity.CoreCompat.IdentityRole",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNet.Identity.CoreCompat.IdentityRole<System.String, Microsoft.AspNet.Identity.EntityFramework.IdentityUserRole>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "roleName",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNet.Identity.CoreCompat.IdentityRole<T0, T1>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNet.Identity.EntityFramework.IdentityRole<T0, T1>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_NormalizedName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_NormalizedName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ConcurrencyStamp",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ConcurrencyStamp",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Claims",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.ICollection<Microsoft.AspNet.Identity.CoreCompat.IdentityRoleClaim<T0>>",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        },
+        {
+          "ParameterName": "TUserRole",
+          "ParameterPosition": 1,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNet.Identity.EntityFramework.IdentityUserRole<T0>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNet.Identity.CoreCompat.IdentityRoleClaim",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNet.Identity.CoreCompat.IdentityRoleClaim<System.String>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNet.Identity.CoreCompat.IdentityRoleClaim<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Id",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Id",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_RoleId",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_RoleId",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ClaimType",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ClaimType",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ClaimValue",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ClaimValue",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNet.Identity.CoreCompat.IdentityUser",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNet.Identity.CoreCompat.IdentityUser<System.String, Microsoft.AspNet.Identity.CoreCompat.IdentityUserLogin, Microsoft.AspNet.Identity.EntityFramework.IdentityUserRole, Microsoft.AspNet.Identity.EntityFramework.IdentityUserClaim>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "userName",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNet.Identity.CoreCompat.IdentityUser<T0, T1, T2, T3>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNet.Identity.EntityFramework.IdentityUser<T0, T1, T2, T3>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_NormalizedUserName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_NormalizedUserName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_NormalizedEmail",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_NormalizedEmail",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ConcurrencyStamp",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ConcurrencyStamp",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        },
+        {
+          "ParameterName": "TUserLogin",
+          "ParameterPosition": 1,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNet.Identity.CoreCompat.IdentityUserLogin<T0>"
+          ]
+        },
+        {
+          "ParameterName": "TUserRole",
+          "ParameterPosition": 2,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNet.Identity.EntityFramework.IdentityUserRole<T0>"
+          ]
+        },
+        {
+          "ParameterName": "TUserClaim",
+          "ParameterPosition": 3,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNet.Identity.EntityFramework.IdentityUserClaim<T0>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNet.Identity.CoreCompat.IdentityUserLogin",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNet.Identity.CoreCompat.IdentityUserLogin<System.String>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNet.Identity.CoreCompat.IdentityUserLogin<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNet.Identity.EntityFramework.IdentityUserLogin<T0>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ProviderDisplayName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ProviderDisplayName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNet.Identity.CoreCompat.UserStore<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNet.Identity.CoreCompat.UserStore<T0, Microsoft.AspNet.Identity.CoreCompat.IdentityRole, System.String, Microsoft.AspNet.Identity.CoreCompat.IdentityUserLogin, Microsoft.AspNet.Identity.EntityFramework.IdentityUserRole, Microsoft.AspNet.Identity.EntityFramework.IdentityUserClaim>",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNet.Identity.IUserStore<T0>"
+      ],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "System.Data.Entity.DbContext"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TUser",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNet.Identity.CoreCompat.IdentityUser"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNet.Identity.CoreCompat.UserStore<T0, T1, T2, T3, T4, T5>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNet.Identity.EntityFramework.UserStore<T0, T1, T2, T3, T4, T5>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "System.Data.Entity.DbContext"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TUser",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNet.Identity.CoreCompat.IdentityUser<T2, T3, T4, T5>"
+          ]
+        },
+        {
+          "ParameterName": "TRole",
+          "ParameterPosition": 1,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNet.Identity.CoreCompat.IdentityRole<T2, T4>"
+          ]
+        },
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 2,
+          "BaseTypeOrInterfaces": [
+            "System.IEquatable<T2>"
+          ]
+        },
+        {
+          "ParameterName": "TUserLogin",
+          "ParameterPosition": 3,
+          "New": true,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNet.Identity.CoreCompat.IdentityUserLogin<T2>"
+          ]
+        },
+        {
+          "ParameterName": "TUserRole",
+          "ParameterPosition": 4,
+          "New": true,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNet.Identity.EntityFramework.IdentityUserRole<T2>"
+          ]
+        },
+        {
+          "ParameterName": "TUserClaim",
+          "ParameterPosition": 5,
+          "New": true,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNet.Identity.EntityFramework.IdentityUserClaim<T2>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Owin.CookieInterop",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateSharedDataFormat",
+          "Parameters": [
+            {
+              "Name": "keyDirectory",
+              "Type": "System.IO.DirectoryInfo"
+            },
+            {
+              "Name": "authenticationType",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Owin.Security.ISecureDataFormat<Microsoft.Owin.Security.AuthenticationTicket>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ],
+  "SourceFilters": []
+}

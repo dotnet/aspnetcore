@@ -1,0 +1,4060 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Identity.EntityFrameworkCore, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.IdentityEntityFrameworkBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddEntityFrameworkStores<T0>",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Identity.IdentityBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Identity.IdentityBuilder",
+          "Static": true,
+          "New": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TContext",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.EntityFrameworkCore.DbContext"
+              ]
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddEntityFrameworkStores<T0, T1>",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Identity.IdentityBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Identity.IdentityBuilder",
+          "Static": true,
+          "New": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TContext",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.EntityFrameworkCore.DbContext"
+              ]
+            },
+            {
+              "ParameterName": "TKey",
+              "ParameterPosition": 1,
+              "BaseTypeOrInterfaces": [
+                "System.IEquatable<T1>"
+              ]
+            }
+          ]
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole, System.String>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.EntityFrameworkCore.DbContextOptions"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<T0, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole, System.String>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.EntityFrameworkCore.DbContextOptions"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TUser",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<T0, T1, T2>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<T0, T1, T2, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<T2>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T2>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<T2>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<T2>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserToken<T2>>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.EntityFrameworkCore.DbContextOptions"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TUser",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<T2>"
+          ]
+        },
+        {
+          "ParameterName": "TRole",
+          "ParameterPosition": 1,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<T2>"
+          ]
+        },
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 2,
+          "BaseTypeOrInterfaces": [
+            "System.IEquatable<T2>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<T0, T1, T2, T3, T4, T5, T6, T7>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "BaseType": "Microsoft.EntityFrameworkCore.DbContext",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Users",
+          "Parameters": [],
+          "ReturnType": "Microsoft.EntityFrameworkCore.DbSet<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Users",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.EntityFrameworkCore.DbSet<T0>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_UserClaims",
+          "Parameters": [],
+          "ReturnType": "Microsoft.EntityFrameworkCore.DbSet<T3>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_UserClaims",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.EntityFrameworkCore.DbSet<T3>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_UserLogins",
+          "Parameters": [],
+          "ReturnType": "Microsoft.EntityFrameworkCore.DbSet<T5>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_UserLogins",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.EntityFrameworkCore.DbSet<T5>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_UserRoles",
+          "Parameters": [],
+          "ReturnType": "Microsoft.EntityFrameworkCore.DbSet<T4>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_UserRoles",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.EntityFrameworkCore.DbSet<T4>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_UserTokens",
+          "Parameters": [],
+          "ReturnType": "Microsoft.EntityFrameworkCore.DbSet<T7>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_UserTokens",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.EntityFrameworkCore.DbSet<T7>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Roles",
+          "Parameters": [],
+          "ReturnType": "Microsoft.EntityFrameworkCore.DbSet<T1>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Roles",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.EntityFrameworkCore.DbSet<T1>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_RoleClaims",
+          "Parameters": [],
+          "ReturnType": "Microsoft.EntityFrameworkCore.DbSet<T6>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_RoleClaims",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.EntityFrameworkCore.DbSet<T6>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnModelCreating",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.EntityFrameworkCore.ModelBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.EntityFrameworkCore.DbContextOptions"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TUser",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<T2, T3, T4, T5>"
+          ]
+        },
+        {
+          "ParameterName": "TRole",
+          "ParameterPosition": 1,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<T2, T4, T6>"
+          ]
+        },
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 2,
+          "BaseTypeOrInterfaces": [
+            "System.IEquatable<T2>"
+          ]
+        },
+        {
+          "ParameterName": "TUserClaim",
+          "ParameterPosition": 3,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<T2>"
+          ]
+        },
+        {
+          "ParameterName": "TUserRole",
+          "ParameterPosition": 4,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T2>"
+          ]
+        },
+        {
+          "ParameterName": "TUserLogin",
+          "ParameterPosition": 5,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<T2>"
+          ]
+        },
+        {
+          "ParameterName": "TRoleClaim",
+          "ParameterPosition": 6,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<T2>"
+          ]
+        },
+        {
+          "ParameterName": "TUserToken",
+          "ParameterPosition": 7,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserToken<T2>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<System.String>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "roleName",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<T0, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T0>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<T0>>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "System.IEquatable<T0>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<T0, T1, T2>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Users",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.ICollection<T1>",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Claims",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.ICollection<T2>",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Id",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Id",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Name",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_NormalizedName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_NormalizedName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ConcurrencyStamp",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ConcurrencyStamp",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "roleName",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "System.IEquatable<T0>"
+          ]
+        },
+        {
+          "ParameterName": "TUserRole",
+          "ParameterPosition": 1,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T0>"
+          ]
+        },
+        {
+          "ParameterName": "TRoleClaim",
+          "ParameterPosition": 2,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<T0>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Id",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Id",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_RoleId",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_RoleId",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ClaimType",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ClaimType",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ClaimValue",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ClaimValue",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToClaim",
+          "Parameters": [],
+          "ReturnType": "System.Security.Claims.Claim",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InitializeFromClaim",
+          "Parameters": [
+            {
+              "Name": "other",
+              "Type": "System.Security.Claims.Claim"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "System.IEquatable<T0>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<System.String>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "userName",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<T0, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<T0>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T0>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<T0>>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "System.IEquatable<T0>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<T0, T1, T2, T3>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Id",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Id",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_UserName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_UserName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_NormalizedUserName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_NormalizedUserName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Email",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Email",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_NormalizedEmail",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_NormalizedEmail",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_EmailConfirmed",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_EmailConfirmed",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_PasswordHash",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_PasswordHash",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SecurityStamp",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SecurityStamp",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ConcurrencyStamp",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ConcurrencyStamp",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_PhoneNumber",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_PhoneNumber",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_PhoneNumberConfirmed",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_PhoneNumberConfirmed",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_TwoFactorEnabled",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_TwoFactorEnabled",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_LockoutEnd",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.DateTimeOffset>",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_LockoutEnd",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.DateTimeOffset>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_LockoutEnabled",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_LockoutEnabled",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_AccessFailedCount",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AccessFailedCount",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Roles",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.ICollection<T2>",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Claims",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.ICollection<T1>",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Logins",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.ICollection<T3>",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "userName",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "System.IEquatable<T0>"
+          ]
+        },
+        {
+          "ParameterName": "TUserClaim",
+          "ParameterPosition": 1,
+          "BaseTypeOrInterfaces": []
+        },
+        {
+          "ParameterName": "TUserRole",
+          "ParameterPosition": 2,
+          "BaseTypeOrInterfaces": []
+        },
+        {
+          "ParameterName": "TUserLogin",
+          "ParameterPosition": 3,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Id",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Id",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_UserId",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_UserId",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ClaimType",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ClaimType",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ClaimValue",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ClaimValue",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToClaim",
+          "Parameters": [],
+          "ReturnType": "System.Security.Claims.Claim",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InitializeFromClaim",
+          "Parameters": [
+            {
+              "Name": "claim",
+              "Type": "System.Security.Claims.Claim"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "System.IEquatable<T0>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_LoginProvider",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_LoginProvider",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ProviderKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ProviderKey",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ProviderDisplayName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ProviderDisplayName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_UserId",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_UserId",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "System.IEquatable<T0>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_UserId",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_UserId",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_RoleId",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_RoleId",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "System.IEquatable<T0>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserToken<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_UserId",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_UserId",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_LoginProvider",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_LoginProvider",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Name",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Value",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Value",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "System.IEquatable<T0>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<T0, Microsoft.EntityFrameworkCore.DbContext, System.String>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.EntityFrameworkCore.DbContext"
+            },
+            {
+              "Name": "describer",
+              "Type": "Microsoft.AspNetCore.Identity.IdentityErrorDescriber",
+              "DefaultValue": "null"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TRole",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<System.String>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<T0, T1>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<T0, T1, System.String>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "T1"
+            },
+            {
+              "Name": "describer",
+              "Type": "Microsoft.AspNetCore.Identity.IdentityErrorDescriber",
+              "DefaultValue": "null"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TRole",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<System.String>"
+          ]
+        },
+        {
+          "ParameterName": "TContext",
+          "ParameterPosition": 1,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.EntityFrameworkCore.DbContext"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<T0, T1, T2>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<T0, T1, T2, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T2>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<T2>>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateRoleClaim",
+          "Parameters": [
+            {
+              "Name": "role",
+              "Type": "T0"
+            },
+            {
+              "Name": "claim",
+              "Type": "System.Security.Claims.Claim"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<T2>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "T1"
+            },
+            {
+              "Name": "describer",
+              "Type": "Microsoft.AspNetCore.Identity.IdentityErrorDescriber",
+              "DefaultValue": "null"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TRole",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<T2>"
+          ]
+        },
+        {
+          "ParameterName": "TContext",
+          "ParameterPosition": 1,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.EntityFrameworkCore.DbContext"
+          ]
+        },
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 2,
+          "BaseTypeOrInterfaces": [
+            "System.IEquatable<T2>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<T0, T1, T2, T3, T4>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Identity.IQueryableRoleStore<T0>",
+        "Microsoft.AspNetCore.Identity.IRoleClaimStore<T0>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Context",
+          "Parameters": [],
+          "ReturnType": "T1",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ErrorDescriber",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Identity.IdentityErrorDescriber",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ErrorDescriber",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Identity.IdentityErrorDescriber"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_AutoSaveChanges",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AutoSaveChanges",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateAsync",
+          "Parameters": [
+            {
+              "Name": "role",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IRoleStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UpdateAsync",
+          "Parameters": [
+            {
+              "Name": "role",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IRoleStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "DeleteAsync",
+          "Parameters": [
+            {
+              "Name": "role",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IRoleStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetRoleIdAsync",
+          "Parameters": [
+            {
+              "Name": "role",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.String>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IRoleStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetRoleNameAsync",
+          "Parameters": [
+            {
+              "Name": "role",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.String>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IRoleStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetRoleNameAsync",
+          "Parameters": [
+            {
+              "Name": "role",
+              "Type": "T0"
+            },
+            {
+              "Name": "roleName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IRoleStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ConvertIdFromString",
+          "Parameters": [
+            {
+              "Name": "id",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T2",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ConvertIdToString",
+          "Parameters": [
+            {
+              "Name": "id",
+              "Type": "T2"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "FindByIdAsync",
+          "Parameters": [
+            {
+              "Name": "id",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IRoleStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "FindByNameAsync",
+          "Parameters": [
+            {
+              "Name": "normalizedName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IRoleStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetNormalizedRoleNameAsync",
+          "Parameters": [
+            {
+              "Name": "role",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.String>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IRoleStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetNormalizedRoleNameAsync",
+          "Parameters": [
+            {
+              "Name": "role",
+              "Type": "T0"
+            },
+            {
+              "Name": "normalizedName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IRoleStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ThrowIfDisposed",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetClaimsAsync",
+          "Parameters": [
+            {
+              "Name": "role",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Collections.Generic.IList<System.Security.Claims.Claim>>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IRoleClaimStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddClaimAsync",
+          "Parameters": [
+            {
+              "Name": "role",
+              "Type": "T0"
+            },
+            {
+              "Name": "claim",
+              "Type": "System.Security.Claims.Claim"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IRoleClaimStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RemoveClaimAsync",
+          "Parameters": [
+            {
+              "Name": "role",
+              "Type": "T0"
+            },
+            {
+              "Name": "claim",
+              "Type": "System.Security.Claims.Claim"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IRoleClaimStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Roles",
+          "Parameters": [],
+          "ReturnType": "System.Linq.IQueryable<T0>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IQueryableRoleStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateRoleClaim",
+          "Parameters": [
+            {
+              "Name": "role",
+              "Type": "T0"
+            },
+            {
+              "Name": "claim",
+              "Type": "System.Security.Claims.Claim"
+            }
+          ],
+          "ReturnType": "T4",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "T1"
+            },
+            {
+              "Name": "describer",
+              "Type": "Microsoft.AspNetCore.Identity.IdentityErrorDescriber",
+              "DefaultValue": "null"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TRole",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<T2, T3, T4>"
+          ]
+        },
+        {
+          "ParameterName": "TContext",
+          "ParameterPosition": 1,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.EntityFrameworkCore.DbContext"
+          ]
+        },
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 2,
+          "BaseTypeOrInterfaces": [
+            "System.IEquatable<T2>"
+          ]
+        },
+        {
+          "ParameterName": "TUserRole",
+          "ParameterPosition": 3,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T2>"
+          ]
+        },
+        {
+          "ParameterName": "TRoleClaim",
+          "ParameterPosition": 4,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<T2>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<System.String>>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.EntityFrameworkCore.DbContext"
+            },
+            {
+              "Name": "describer",
+              "Type": "Microsoft.AspNetCore.Identity.IdentityErrorDescriber",
+              "DefaultValue": "null"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<T0, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole, Microsoft.EntityFrameworkCore.DbContext, System.String>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.EntityFrameworkCore.DbContext"
+            },
+            {
+              "Name": "describer",
+              "Type": "Microsoft.AspNetCore.Identity.IdentityErrorDescriber",
+              "DefaultValue": "null"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TUser",
+          "ParameterPosition": 0,
+          "New": true,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<System.String>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<T0, T1, T2>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<T0, T1, T2, System.String>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "T2"
+            },
+            {
+              "Name": "describer",
+              "Type": "Microsoft.AspNetCore.Identity.IdentityErrorDescriber",
+              "DefaultValue": "null"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TUser",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<System.String>"
+          ]
+        },
+        {
+          "ParameterName": "TRole",
+          "ParameterPosition": 1,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<System.String>"
+          ]
+        },
+        {
+          "ParameterName": "TContext",
+          "ParameterPosition": 2,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.EntityFrameworkCore.DbContext"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<T0, T1, T2, T3>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<T0, T1, T2, T3, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<T3>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T3>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<T3>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserToken<T3>>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateUserRole",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "role",
+              "Type": "T1"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T3>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateUserClaim",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "claim",
+              "Type": "System.Security.Claims.Claim"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<T3>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateUserLogin",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "login",
+              "Type": "Microsoft.AspNetCore.Identity.UserLoginInfo"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<T3>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateUserToken",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "loginProvider",
+              "Type": "System.String"
+            },
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserToken<T3>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "T2"
+            },
+            {
+              "Name": "describer",
+              "Type": "Microsoft.AspNetCore.Identity.IdentityErrorDescriber",
+              "DefaultValue": "null"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TUser",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<T3>"
+          ]
+        },
+        {
+          "ParameterName": "TRole",
+          "ParameterPosition": 1,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<T3>"
+          ]
+        },
+        {
+          "ParameterName": "TContext",
+          "ParameterPosition": 2,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.EntityFrameworkCore.DbContext"
+          ]
+        },
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 3,
+          "BaseTypeOrInterfaces": [
+            "System.IEquatable<T3>"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<T0, T1, T2, T3, T4, T5, T6, T7>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Identity.IUserLoginStore<T0>",
+        "Microsoft.AspNetCore.Identity.IUserRoleStore<T0>",
+        "Microsoft.AspNetCore.Identity.IUserClaimStore<T0>",
+        "Microsoft.AspNetCore.Identity.IUserPasswordStore<T0>",
+        "Microsoft.AspNetCore.Identity.IUserSecurityStampStore<T0>",
+        "Microsoft.AspNetCore.Identity.IUserEmailStore<T0>",
+        "Microsoft.AspNetCore.Identity.IUserLockoutStore<T0>",
+        "Microsoft.AspNetCore.Identity.IUserPhoneNumberStore<T0>",
+        "Microsoft.AspNetCore.Identity.IQueryableUserStore<T0>",
+        "Microsoft.AspNetCore.Identity.IUserTwoFactorStore<T0>",
+        "Microsoft.AspNetCore.Identity.IUserAuthenticationTokenStore<T0>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Context",
+          "Parameters": [],
+          "ReturnType": "T2",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ErrorDescriber",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Identity.IdentityErrorDescriber",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ErrorDescriber",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Identity.IdentityErrorDescriber"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateUserRole",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "role",
+              "Type": "T1"
+            }
+          ],
+          "ReturnType": "T5",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateUserClaim",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "claim",
+              "Type": "System.Security.Claims.Claim"
+            }
+          ],
+          "ReturnType": "T4",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateUserLogin",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "login",
+              "Type": "Microsoft.AspNetCore.Identity.UserLoginInfo"
+            }
+          ],
+          "ReturnType": "T6",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateUserToken",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "loginProvider",
+              "Type": "System.String"
+            },
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T7",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_AutoSaveChanges",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AutoSaveChanges",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SaveChanges",
+          "Parameters": [
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetUserIdAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.String>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetUserNameAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.String>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetUserNameAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "userName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetNormalizedUserNameAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.String>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetNormalizedUserNameAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "normalizedName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UpdateAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "DeleteAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "FindByIdAsync",
+          "Parameters": [
+            {
+              "Name": "userId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ConvertIdFromString",
+          "Parameters": [
+            {
+              "Name": "id",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T3",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ConvertIdToString",
+          "Parameters": [
+            {
+              "Name": "id",
+              "Type": "T3"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "FindByNameAsync",
+          "Parameters": [
+            {
+              "Name": "normalizedUserName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Users",
+          "Parameters": [],
+          "ReturnType": "System.Linq.IQueryable<T0>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IQueryableUserStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetPasswordHashAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "passwordHash",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserPasswordStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetPasswordHashAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.String>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserPasswordStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HasPasswordAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserPasswordStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddToRoleAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "normalizedRoleName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserRoleStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RemoveFromRoleAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "normalizedRoleName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserRoleStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetRolesAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Collections.Generic.IList<System.String>>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserRoleStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsInRoleAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "normalizedRoleName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserRoleStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ThrowIfDisposed",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetClaimsAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Collections.Generic.IList<System.Security.Claims.Claim>>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserClaimStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddClaimsAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "claims",
+              "Type": "System.Collections.Generic.IEnumerable<System.Security.Claims.Claim>"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserClaimStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ReplaceClaimAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "claim",
+              "Type": "System.Security.Claims.Claim"
+            },
+            {
+              "Name": "newClaim",
+              "Type": "System.Security.Claims.Claim"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserClaimStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RemoveClaimsAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "claims",
+              "Type": "System.Collections.Generic.IEnumerable<System.Security.Claims.Claim>"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserClaimStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddLoginAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "login",
+              "Type": "Microsoft.AspNetCore.Identity.UserLoginInfo"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserLoginStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RemoveLoginAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "loginProvider",
+              "Type": "System.String"
+            },
+            {
+              "Name": "providerKey",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserLoginStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetLoginsAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.UserLoginInfo>>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserLoginStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "FindByLoginAsync",
+          "Parameters": [
+            {
+              "Name": "loginProvider",
+              "Type": "System.String"
+            },
+            {
+              "Name": "providerKey",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserLoginStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetEmailConfirmedAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserEmailStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetEmailConfirmedAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "confirmed",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserEmailStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetEmailAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "email",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserEmailStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetEmailAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.String>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserEmailStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetNormalizedEmailAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.String>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserEmailStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetNormalizedEmailAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "normalizedEmail",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserEmailStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "FindByEmailAsync",
+          "Parameters": [
+            {
+              "Name": "normalizedEmail",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserEmailStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetLockoutEndDateAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Nullable<System.DateTimeOffset>>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserLockoutStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetLockoutEndDateAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "lockoutEnd",
+              "Type": "System.Nullable<System.DateTimeOffset>"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserLockoutStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IncrementAccessFailedCountAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Int32>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserLockoutStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ResetAccessFailedCountAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserLockoutStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetAccessFailedCountAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Int32>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserLockoutStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetLockoutEnabledAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserLockoutStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetLockoutEnabledAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "enabled",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserLockoutStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetPhoneNumberAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "phoneNumber",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserPhoneNumberStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetPhoneNumberAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.String>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserPhoneNumberStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetPhoneNumberConfirmedAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserPhoneNumberStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetPhoneNumberConfirmedAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "confirmed",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserPhoneNumberStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetSecurityStampAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "stamp",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserSecurityStampStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetSecurityStampAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.String>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserSecurityStampStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetTwoFactorEnabledAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "enabled",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserTwoFactorStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetTwoFactorEnabledAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserTwoFactorStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetUsersForClaimAsync",
+          "Parameters": [
+            {
+              "Name": "claim",
+              "Type": "System.Security.Claims.Claim"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Collections.Generic.IList<T0>>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserClaimStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetUsersInRoleAsync",
+          "Parameters": [
+            {
+              "Name": "normalizedRoleName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Collections.Generic.IList<T0>>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserRoleStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetTokenAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "loginProvider",
+              "Type": "System.String"
+            },
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserAuthenticationTokenStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RemoveTokenAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "loginProvider",
+              "Type": "System.String"
+            },
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserAuthenticationTokenStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetTokenAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "T0"
+            },
+            {
+              "Name": "loginProvider",
+              "Type": "System.String"
+            },
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.String>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Identity.IUserAuthenticationTokenStore<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "T2"
+            },
+            {
+              "Name": "describer",
+              "Type": "Microsoft.AspNetCore.Identity.IdentityErrorDescriber",
+              "DefaultValue": "null"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TUser",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<T3, T4, T5, T6>"
+          ]
+        },
+        {
+          "ParameterName": "TRole",
+          "ParameterPosition": 1,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<T3, T5, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<T3>>"
+          ]
+        },
+        {
+          "ParameterName": "TContext",
+          "ParameterPosition": 2,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.EntityFrameworkCore.DbContext"
+          ]
+        },
+        {
+          "ParameterName": "TKey",
+          "ParameterPosition": 3,
+          "BaseTypeOrInterfaces": [
+            "System.IEquatable<T3>"
+          ]
+        },
+        {
+          "ParameterName": "TUserClaim",
+          "ParameterPosition": 4,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<T3>"
+          ]
+        },
+        {
+          "ParameterName": "TUserRole",
+          "ParameterPosition": 5,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T3>"
+          ]
+        },
+        {
+          "ParameterName": "TUserLogin",
+          "ParameterPosition": 6,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<T3>"
+          ]
+        },
+        {
+          "ParameterName": "TUserToken",
+          "ParameterPosition": 7,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserToken<T3>"
+          ]
+        }
+      ]
+    }
+  ],
+  "SourceFilters": []
+}
