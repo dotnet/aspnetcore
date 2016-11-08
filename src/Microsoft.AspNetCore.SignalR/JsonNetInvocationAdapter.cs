@@ -25,6 +25,11 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.Run(() =>
             {
                 var jsonInvocation = _serializer.Deserialize<JsonNetInvocationDescriptor>(reader);
+                if (jsonInvocation == null)
+                {
+                    return null;
+                }
+
                 var invocation = new InvocationDescriptor
                 {
                     Id = jsonInvocation.Id,
