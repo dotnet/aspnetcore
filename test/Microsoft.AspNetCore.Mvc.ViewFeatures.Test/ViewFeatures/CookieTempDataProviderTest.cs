@@ -91,6 +91,47 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void SaveTempData_SetsSecureAttributeOnCookie_OnlyIfRequestIsSecure(bool isSecure)
+        {
+            // Arrange
+            var values = new Dictionary<string, object>();
+            values.Add("int", 10);
+            var tempDataProviderStore = new TempDataSerializer();
+            var expectedDataToProtect = tempDataProviderStore.Serialize(values);
+            var expectedDataInCookie = Base64UrlTextEncoder.Encode(expectedDataToProtect);
+            var dataProtector = new PassThroughDataProtector();
+            var tempDataProvider = GetProvider(dataProtector);
+            var responseCookies = new MockResponseCookieCollection();
+            var httpContext = new Mock<HttpContext>();
+            httpContext
+                .SetupGet(hc => hc.Request.PathBase)
+                .Returns("/");
+            httpContext
+                .SetupGet(hc => hc.Request.IsHttps)
+                .Returns(isSecure);
+            httpContext
+                .Setup(hc => hc.Response.Cookies)
+                .Returns(responseCookies);
+
+            // Act
+            tempDataProvider.SaveTempData(httpContext.Object, values);
+
+            // Assert
+            Assert.Equal(1, responseCookies.Count);
+            var cookieInfo = responseCookies[CookieTempDataProvider.CookieName];
+            Assert.NotNull(cookieInfo);
+            Assert.Equal(expectedDataInCookie, cookieInfo.Value);
+            Assert.Equal(expectedDataToProtect, dataProtector.PlainTextToProtect);
+            Assert.Equal("/", cookieInfo.Options.Path);
+            Assert.Equal(isSecure, cookieInfo.Options.Secure);
+            Assert.True(cookieInfo.Options.HttpOnly);
+            Assert.Null(cookieInfo.Options.Expires);
+            Assert.Null(cookieInfo.Options.Domain);
+        }
+
+        [Theory]
         [InlineData(null, "/")]
         [InlineData("", "/")]
         [InlineData("/", "/")]
@@ -113,6 +154,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 .SetupGet(hc => hc.Request.PathBase)
                 .Returns(pathBase);
             httpContext
+                .SetupGet(hc => hc.Request.IsHttps)
+                .Returns(false);
+            httpContext
                 .Setup(hc => hc.Response.Cookies)
                 .Returns(responseCookies);
 
@@ -126,7 +170,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Equal(expectedDataInCookie, cookieInfo.Value);
             Assert.Equal(expectedDataToProtect, dataProtector.PlainTextToProtect);
             Assert.Equal(expectedCookiePath, cookieInfo.Options.Path);
-            Assert.True(cookieInfo.Options.Secure);
+            Assert.False(cookieInfo.Options.Secure);
             Assert.True(cookieInfo.Options.HttpOnly);
             Assert.Null(cookieInfo.Options.Expires);
             Assert.Null(cookieInfo.Options.Domain);
@@ -155,6 +199,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var responseCookies = new MockResponseCookieCollection();
             var httpContext = new Mock<HttpContext>();
             httpContext
+                .SetupGet(hc => hc.Request.IsHttps)
+                .Returns(false);
+            httpContext
                 .SetupGet(hc => hc.Request.PathBase)
                 .Returns(requestPathBase);
             httpContext
@@ -172,7 +219,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Equal(expectedDataToProtect, dataProtector.PlainTextToProtect);
             Assert.Equal(expectedCookiePath, cookieInfo.Options.Path);
             Assert.Equal(expectedDomain, cookieInfo.Options.Domain);
-            Assert.True(cookieInfo.Options.Secure);
+            Assert.False(cookieInfo.Options.Secure);
             Assert.True(cookieInfo.Options.HttpOnly);
             Assert.Null(cookieInfo.Options.Expires);
         }

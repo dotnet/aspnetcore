@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 Path = string.IsNullOrEmpty(_options.Value.Path) ? GetPathBase(context) : _options.Value.Path,
                 Domain = string.IsNullOrEmpty(_options.Value.Domain) ? null : _options.Value.Domain,
                 HttpOnly = true,
-                Secure = true
+                Secure = context.Request.IsHttps,
             };
 
             var hasValues = (values != null && values.Count > 0);

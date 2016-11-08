@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 Assert.NotNull(cookieTempDataProviderCookie.Value);
                 Assert.Equal("/", cookieTempDataProviderCookie.Path);
                 Assert.Null(cookieTempDataProviderCookie.Domain);
-                Assert.True(cookieTempDataProviderCookie.Secure);
+                Assert.False(cookieTempDataProviderCookie.Secure);
             }
 
             // Act 2
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.NotNull(setCookieHeader);
             Assert.Equal("/", setCookieHeader.Path);
             Assert.Null(setCookieHeader.Domain);
-            Assert.True(setCookieHeader.Secure);
+            Assert.False(setCookieHeader.Secure);
             Assert.Null(setCookieHeader.Expires);
 
             // Act 2
@@ -133,6 +133,36 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Null(setCookieHeader.Domain);
             Assert.NotNull(setCookieHeader.Expires);
             Assert.True(setCookieHeader.Expires < DateTimeOffset.Now); // expired cookie
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task CookieTempDataProviderCookie_SetsSecureAttributeOnCookie_OnlyIfRequestIsSecure(bool secureRequest)
+        {
+            // Arrange
+            var protocol = secureRequest ? "https" : "http";
+            var nameValueCollection = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("value", "Foo"),
+            };
+            var content = new FormUrlEncodedContent(nameValueCollection);
+
+            // Act
+            var response = await Client.PostAsync($"{protocol}://localhost/TempData/SetTempData", content);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            IEnumerable<string> setCookieValues;
+            Assert.True(response.Headers.TryGetValues(HeaderNames.SetCookie, out setCookieValues));
+            var setCookieHeader = setCookieValues
+                .Select(setCookieValue => SetCookieHeaderValue.Parse(setCookieValue))
+                .FirstOrDefault(setCookieHeaderValue => setCookieHeaderValue.Name == CookieTempDataProvider.CookieName);
+            Assert.NotNull(setCookieHeader);
+            Assert.Equal("/", setCookieHeader.Path);
+            Assert.Null(setCookieHeader.Domain);
+            Assert.Equal(secureRequest, setCookieHeader.Secure);
+            Assert.Null(setCookieHeader.Expires);
         }
     }
 }
