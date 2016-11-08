@@ -36,3 +36,4 @@ node_modules/
 *.nuget.targets
 autobahnreports/
 signalr-client.js
+site.min.css
