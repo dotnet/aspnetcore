@@ -91,9 +91,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         [Theory]
-        [InlineData("/")]
-        [InlineData("/vdir1")]
-        public void SaveTempData_DefaultProviderOptions_SetsCookie_WithAppropriateCookieOptions(string pathBase)
+        [InlineData(null, "/")]
+        [InlineData("", "/")]
+        [InlineData("/", "/")]
+        [InlineData("/vdir1", "/vdir1")]
+        public void SaveTempData_DefaultProviderOptions_SetsCookie_WithAppropriateCookieOptions(
+            string pathBase,
+            string expectedCookiePath)
         {
             // Arrange
             var values = new Dictionary<string, object>();
@@ -121,7 +125,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.NotNull(cookieInfo);
             Assert.Equal(expectedDataInCookie, cookieInfo.Value);
             Assert.Equal(expectedDataToProtect, dataProtector.PlainTextToProtect);
-            Assert.Equal(pathBase, cookieInfo.Options.Path);
+            Assert.Equal(expectedCookiePath, cookieInfo.Options.Path);
             Assert.True(cookieInfo.Options.Secure);
             Assert.True(cookieInfo.Options.HttpOnly);
             Assert.Null(cookieInfo.Options.Expires);
@@ -129,6 +133,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         [Theory]
+        [InlineData(null, null, null, "/", null)]
+        [InlineData("", null, null, "/", null)]
         [InlineData("/", null, null, "/", null)]
         [InlineData("/", "/vdir1", null, "/vdir1", null)]
         [InlineData("/", "/vdir1", ".abc.com", "/vdir1", ".abc.com")]
