@@ -383,4 +383,8 @@
     <value>A duplicate entry for library reference {0} was found. Please check that all package references in all projects use the same casing for the same package references.</value>
     <comment>{0} is the dependency name.</comment>
   </data>
+  <data name="MiddlewareFilterConfigurationProvider_CreateConfigureDelegate_CannotCreateType" xml:space="preserve">
+    <value>Unable to create an instance of type '{0}'. The type specified in {1} must not be abstract and must have a parameterless constructor.</value>
+    <comment>0 is the type to configure. 1 is the name of the parameter, configurationType.</comment>
+  </data>
 </root>
