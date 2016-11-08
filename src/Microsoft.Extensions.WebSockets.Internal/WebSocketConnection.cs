@@ -18,11 +18,11 @@ namespace Microsoft.Extensions.WebSockets.Internal
     /// <remarks>
     /// <para>
     /// This type is thread-safe under the following condition: No two threads attempt to call either
-    /// <see cref="ReceiveAsync"/> or <see cref="SendAsync"/> simultaneously. Different threads may call each method, but the same method
+    /// <see cref="ExecuteAsync"/> or <see cref="SendAsync"/> simultaneously. Different threads may call each method, but the same method
     /// cannot be re-entered while it is being run in a different thread.
     /// </para>
     /// <para>
-    /// The general pattern of having a single thread running <see cref="ReceiveAsync"/> and a separate thread running <see cref="SendAsync"/> will
+    /// The general pattern of having a single thread running <see cref="ExecuteAsync"/> and a separate thread running <see cref="SendAsync"/> will
     /// be thread-safe, as each method interacts with completely separate state.
     /// </para>
     /// </remarks>

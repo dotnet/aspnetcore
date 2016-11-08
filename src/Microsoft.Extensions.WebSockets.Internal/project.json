@@ -1,6 +1,6 @@
 {
   "version": "0.1.0-*",
-  "description": "WebSockets client and server components.",
+  "description": "Low-allocation Push-oriented WebSockets based on Channels",
 
   "packOptions": {
     "repository": {
@@ -18,10 +18,10 @@
     "nowarn": [
       "CS1591"
     ],
-    "xmlDoc": true
+    "xmlDoc": true,
+    "allowUnsafe": true
   },
 
-  "description": "Low-allocation Push-oriented WebSockets based on Channels",
   "dependencies": {
     "Channels": "0.2.0-beta-*",
     "Channels.Text.Primitives": "0.2.0-beta-*",
