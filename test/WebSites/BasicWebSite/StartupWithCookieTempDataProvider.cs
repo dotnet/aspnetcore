@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BasicWebSite
@@ -11,8 +10,9 @@ namespace BasicWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
-            services.AddSingleton<ITempDataProvider, CookieTempDataProvider>();
+            services
+                .AddMvc()
+                .AddCookieTempDataProvider();
         }
 
         public void Configure(IApplicationBuilder app)

@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -33,6 +35,100 @@ namespace Microsoft.Extensions.DependencyInjection
             // Assert
             var descriptor = Assert.Single(services.ToList(), d => d.ServiceType == typeof(IViewComponentActivator));
             Assert.Equal(typeof(ServiceBasedViewComponentActivator), descriptor.ImplementationType);
+        }
+
+        [Fact]
+        public void AddCookieTempDataProvider_RegistersExpectedTempDataProvider()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = services.AddMvc();
+
+            // Act
+            builder.AddCookieTempDataProvider();
+
+            // Assert
+            var descriptor = Assert.Single(services, item => item.ServiceType == typeof(ITempDataProvider));
+            Assert.Equal(typeof(CookieTempDataProvider), descriptor.ImplementationType);
+        }
+
+        [Fact]
+        public void AddCookieTempDataProvider_DoesNotRegisterOptionsConfiguration()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = services.AddMvc();
+
+            // Act
+            builder.AddCookieTempDataProvider();
+
+            // Assert
+            Assert.DoesNotContain(
+                services,
+                item => item.ServiceType == typeof(IConfigureOptions<CookieTempDataProviderOptions>));
+        }
+
+        [Fact]
+        public void AddCookieTempDataProviderWithSetupAction_RegistersExpectedTempDataProvider()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = services.AddMvc();
+
+            // Act
+            builder.AddCookieTempDataProvider(options => { });
+
+            // Assert
+            var descriptor = Assert.Single(services, item => item.ServiceType == typeof(ITempDataProvider));
+            Assert.Equal(typeof(CookieTempDataProvider), descriptor.ImplementationType);
+        }
+
+        [Fact]
+        public void AddCookieTempDataProviderWithSetupAction_RegistersOptionsConfiguration()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = services.AddMvc();
+
+            // Act
+            builder.AddCookieTempDataProvider(options => { });
+
+            // Assert
+            Assert.Single(
+                services,
+                item => item.ServiceType == typeof(IConfigureOptions<CookieTempDataProviderOptions>));
+        }
+
+        [Fact]
+        public void AddCookieTempDataProvider_RegistersExpectedTempDataProvider_IfCalledTwice()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = services.AddMvc();
+
+            // Act
+            builder.AddCookieTempDataProvider();
+            builder.AddCookieTempDataProvider();
+
+            // Assert
+            var descriptor = Assert.Single(services, item => item.ServiceType == typeof(ITempDataProvider));
+            Assert.Equal(typeof(CookieTempDataProvider), descriptor.ImplementationType);
+        }
+
+        [Fact]
+        public void AddCookieTempDataProviderWithSetupAction_RegistersExpectedTempDataProvider_IfCalledTwice()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = services.AddMvc();
+
+            // Act
+            builder.AddCookieTempDataProvider(options => { });
+            builder.AddCookieTempDataProvider(options => { });
+
+            // Assert
+            var descriptor = Assert.Single(services, item => item.ServiceType == typeof(ITempDataProvider));
+            Assert.Equal(typeof(CookieTempDataProvider), descriptor.ImplementationType);
         }
 
         [Fact]

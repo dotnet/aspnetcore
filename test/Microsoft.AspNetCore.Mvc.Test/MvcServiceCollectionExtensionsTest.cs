@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
@@ -28,13 +29,11 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Moq;
 using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json;
 using Xunit;
-using Microsoft.Extensions.ObjectPool;
-using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -274,6 +273,35 @@ namespace Microsoft.AspNetCore.Mvc
                     scope.ServiceProvider.GetService(typeof(IEnumerable<>).MakeGenericType(serviceType));
                 }
             }
+        }
+
+        [Fact]
+        public void AddMvc_RegistersExpectedTempDataProvider()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            // Act
+            services.AddMvc();
+
+            // Assert
+            var descriptor = Assert.Single(services, item => item.ServiceType == typeof(ITempDataProvider));
+            Assert.Equal(typeof(SessionStateTempDataProvider), descriptor.ImplementationType);
+        }
+
+        [Fact]
+        public void AddMvc_DoesNotRegisterCookieTempDataOptionsConfiguration()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+
+            // Act
+            var builder = services.AddMvc();
+
+            // Assert
+            Assert.DoesNotContain(
+                services,
+                item => item.ServiceType == typeof(IConfigureOptions<CookieTempDataProviderOptions>));
         }
 
         private IEnumerable<Type> SingleRegistrationServiceTypes
