@@ -369,6 +369,8 @@ else
 {
     $ExtractFilesRootPath = $ExtractFilesTo
 }
+
+# Try with solution output path
 $aspnetCorex64From = $ExtractFilesRootPath + "\x64\aspnetcore.dll"
 $aspnetCoreWin32From = $ExtractFilesRootPath + "\Win32\aspnetcore.dll"
 $aspnetCoreSchemax64From = $ExtractFilesRootPath + "\x64\aspnetcore_schema.xml"
@@ -382,6 +384,24 @@ $aspnetCoreSchemaWin32To = "${env:ProgramFiles(x86)}\IIS Express\config\schema\a
 $aspnetCorex64IISTo = "$env:windir\system32\inetsrv\aspnetcore.dll"
 $aspnetCoreWin32IISTo = "$env:windir\syswow64\inetsrv\aspnetcore.dll"
 $aspnetCoreSchemax64IISTo = "$env:windir\system32\inetsrv\config\schema\aspnetcore_schema.xml"
+
+# if this is not solution output path, use nuget package directory structure
+if (-not (Test-Path $aspnetCorex64From))
+{
+    $aspnetCorex64From = $ExtractFilesRootPath + "\runtimes\win7-x64\native\aspnetcore.dll"
+    $aspnetCoreWin32From = $ExtractFilesRootPath + "\runtimes\win7-x86\native\aspnetcore.dll"
+    $aspnetCoreSchemax64From = $ExtractFilesRootPath + "\aspnetcore_schema.xml"
+    $aspnetCoreSchemaWin32From = $ExtractFilesRootPath + "\aspnetcore_schema.xml"
+
+    $aspnetCorex64To = "$env:ProgramFiles\IIS Express\aspnetcore.dll"
+    $aspnetCoreWin32To = "${env:ProgramFiles(x86)}\IIS Express\aspnetcore.dll"
+    $aspnetCoreSchemax64To = "$env:ProgramFiles\IIS Express\config\schema\aspnetcore_schema.xml"
+    $aspnetCoreSchemaWin32To = "${env:ProgramFiles(x86)}\IIS Express\config\schema\aspnetcore_schema.xml"
+
+    $aspnetCorex64IISTo = "$env:windir\system32\inetsrv\aspnetcore.dll"
+    $aspnetCoreWin32IISTo = "$env:windir\syswow64\inetsrv\aspnetcore.dll"
+    $aspnetCoreSchemax64IISTo = "$env:windir\system32\inetsrv\config\schema\aspnetcore_schema.xml"
+}
 
 $is64BitMachine = $env:PROCESSOR_ARCHITECTURE.ToLower() -eq "amd64"
 $isIISExpressInstalled = Test-Path $aspnetCorex64To
