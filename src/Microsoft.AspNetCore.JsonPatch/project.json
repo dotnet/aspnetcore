@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "description": "ASP.NET Core support for JSON PATCH.",
   "buildOptions": {
     "warningsAsErrors": true,
@@ -25,7 +25,7 @@
     "Newtonsoft.Json": "9.0.1",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "type": "build",
-      "version": "1.1.0-*"
+      "version": "1.2.0-*"
     }
   },
   "frameworks": {
