@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "description": "ASP.NET Core HTML abstractions used for building HTML content.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.Html.HtmlString\r\nMicrosoft.AspNetCore.Html.IHtmlContent",
   "packOptions": {
     "repository": {

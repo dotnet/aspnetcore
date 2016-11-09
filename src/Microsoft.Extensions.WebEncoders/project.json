@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "description": "Contains registration and configuration APIs to add the core framework encoders to a dependency injection container.",
   "packOptions": {
     "repository": {
@@ -20,8 +20,8 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0-*",
-    "Microsoft.Extensions.Options": "1.1.0-*",
+    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.2.0-*",
+    "Microsoft.Extensions.Options": "1.2.0-*",
     "NETStandard.Library": "1.6.1-*",
     "System.Text.Encodings.Web": "4.3.0-*"
   },
