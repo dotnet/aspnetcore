@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "description": "ASP.NET Core middleware that enables an application to use cookie based authentication.",
   "packOptions": {
     "repository": {
@@ -24,17 +24,19 @@
     ]
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Authentication": "1.1.0-*",
+    "Microsoft.AspNetCore.Authentication": {
+      "target": "project"
+    },
     "Microsoft.AspNetCore.ChunkingCookieManager.Sources": {
-      "version": "1.1.0-*",
-      "type": "build"
+      "type": "build",
+      "target": "project"
     },
-    "Microsoft.Extensions.Options": "1.1.0-*",
+    "Microsoft.Extensions.Options": "1.2.0-*",
     "Microsoft.Extensions.TaskCache.Sources": {
-      "version": "1.1.0-*",
+      "version": "1.2.0-*",
       "type": "build"
     },
-    "Microsoft.Extensions.WebEncoders": "1.1.0-*",
+    "Microsoft.Extensions.WebEncoders": "1.2.0-*",
     "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
