@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "description": "HTTP header parser implementations.",
   "packOptions": {
     "repository": {
@@ -19,7 +19,7 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.Extensions.Primitives": "1.1.0-*",
+    "Microsoft.Extensions.Primitives": "1.2.0-*",
     "NETStandard.Library": "1.6.1-*",
     "System.Buffers": "4.3.0-*",
     "System.Diagnostics.Contracts": "4.3.0-*"
