@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "description": "Razor view compilation for compiling CSHTML files into DLLs.",
   "packOptions": {
     "repository": {
@@ -29,10 +29,10 @@
       "target": "project"
     },
     "Microsoft.DotNet.Cli.Utils": "1.0.0-preview2-003121",
-    "Microsoft.Extensions.CommandLineUtils": "1.1.0-*",
+    "Microsoft.Extensions.CommandLineUtils": "1.2.0-*",
     "Microsoft.Extensions.DotnetToolDispatcher.Sources": {
       "type": "build",
-      "version": "1.1.0-*"
+      "version": "1.2.0-*"
     }
   },
   "frameworks": {

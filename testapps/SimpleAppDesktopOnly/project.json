@@ -4,15 +4,15 @@
     "preserveCompilationContext": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc": "1.1.0-*",
+    "Microsoft.AspNetCore.Mvc": "1.2.0-*",
     "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Design": {
-      "version": "1.1.0-*",
+      "version": "1.2.0-*",
       "target": "package",
       "type": "build"
     },
-    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
-    "Microsoft.Extensions.Configuration.CommandLine": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.1.0-*"
+    "Microsoft.AspNetCore.Server.Kestrel": "1.2.0-*",
+    "Microsoft.Extensions.Configuration.CommandLine": "1.2.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.2.0-*"
   },
   "tools": {
     "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tools": "1.1.0-*"
