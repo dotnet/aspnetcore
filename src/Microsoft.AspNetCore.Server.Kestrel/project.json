@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "description": "ASP.NET Core Kestrel cross-platform web server.",
   "packOptions": {
     "repository": {
@@ -13,10 +13,10 @@
   },
   "dependencies": {
     "Libuv": "1.9.1",
-    "Microsoft.AspNetCore.Hosting": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
+    "Microsoft.AspNetCore.Hosting": "1.2.0-*",
+    "Microsoft.Extensions.Logging.Abstractions": "1.2.0-*",
     "Microsoft.Extensions.TaskCache.Sources": {
-      "version": "1.1.0-*",
+      "version": "1.2.0-*",
       "type": "build"
     },
     "NETStandard.Library": "1.6.1-*",
