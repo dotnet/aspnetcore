@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "description": ".NET HTTP server that uses the Windows HTTP Server API.",
   "packOptions": {
     "tags": [
@@ -8,8 +8,8 @@
     ]
   },
   "dependencies": {
-    "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
-    "Microsoft.Extensions.Primitives": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Abstractions": "1.2.0-*",
+    "Microsoft.Extensions.Primitives": "1.2.0-*",
     "NETStandard.Library": "1.6.1-*"
   },
   "buildOptions": {
@@ -33,7 +33,7 @@
       "dependencies": {
         "Microsoft.Extensions.RuntimeEnvironment.Sources": {
           "type": "build",
-          "version": "1.1.0-*"
+          "version": "1.2.0-*"
         },
         "System.Diagnostics.Contracts": "4.3.0-*",
         "System.Net.WebSockets": "4.3.0-*",

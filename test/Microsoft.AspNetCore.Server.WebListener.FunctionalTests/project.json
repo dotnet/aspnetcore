@@ -6,8 +6,8 @@
   "testRunner": "xunit",
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.AspNetCore.Server.WebListener": "1.1.0-*",
-    "Microsoft.AspNetCore.Testing": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.WebListener": "1.2.0-*",
+    "Microsoft.AspNetCore.Testing": "1.2.0-*",
     "xunit": "2.2.0-*"
   },
   "frameworks": {
