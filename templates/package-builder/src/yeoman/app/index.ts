@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import * as yeoman from 'yeoman-generator';
 import * as uuid from 'node-uuid';
@@ -9,15 +10,35 @@ const yosay = require('yosay');
 const toPascalCase = require('to-pascal-case');
 const isWindows = /^win/.test(process.platform);
 
+// Paths matching these regexes will only be included if the user wants tests
+const testSpecificPaths = [
+    /\.spec.ts$/,               // Files ending '.spec.ts'
+    /(^|\/|\\)test($|\/|\\)/    // Files under any directory called 'test'
+];
+
+// These NPM dependencies will only be included if the user wants tests
+const testSpecificNpmPackages = [
+    "@types/chai",
+    "@types/jasmine",
+    "chai",
+    "jasmine-core",
+    "karma",
+    "karma-chai",
+    "karma-chrome-launcher",
+    "karma-cli",
+    "karma-jasmine",
+    "karma-webpack"
+];
+
 type YeomanPrompt = (opt: yeoman.IPromptOptions | yeoman.IPromptOptions[], callback: (answers: any) => void) => void;
 const optionOrPrompt: YeomanPrompt = require('yeoman-option-or-prompt');
 
 const templates = [
-    { value: 'angular-2', name: 'Angular 2' },
-    { value: 'aurelia', name: 'Aurelia' },
-    { value: 'knockout', name: 'Knockout' },
-    { value: 'react', name: 'React' },
-    { value: 'react-redux', name: 'React with Redux' }
+    { value: 'angular-2', name: 'Angular 2', tests: true },
+    { value: 'aurelia', name: 'Aurelia', tests: false },
+    { value: 'knockout', name: 'Knockout', tests: false },
+    { value: 'react', name: 'React', tests: false },
+    { value: 'react-redux', name: 'React with Redux', tests: false }
 ];
 
 class MyGenerator extends yeoman.Base {
@@ -35,24 +56,40 @@ class MyGenerator extends yeoman.Base {
     }
 
     prompting() {
-        const done = this.async();
-
         this.option('projectguid');
+
+        const done = this.async();
         this._optionOrPrompt([{
             type: 'list',
             name: 'framework',
             message: 'Framework',
             choices: templates
-        }, {
-            type: 'input',
-            name: 'name',
-            message: 'Your project name',
-            default: this.appname
-        }], answers => {
-            this._answers = answers;
-            this._answers.namePascalCase = toPascalCase(answers.name);
-            this._answers.projectGuid = this.options['projectguid'] || uuid.v4();
-            done();
+        }], frameworkAnswer => {
+            const frameworkChoice = templates.filter(t => t.value === frameworkAnswer.framework)[0];
+            const furtherQuestions = [{
+                type: 'input',
+                name: 'name',
+                message: 'Your project name',
+                default: this.appname
+            }];
+
+            if (frameworkChoice.tests) {
+                furtherQuestions.unshift({
+                    type: 'confirm',
+                    name: 'tests',
+                    message: 'Do you want to include unit tests?',
+                    default: true as any
+                });
+            }
+
+            this._optionOrPrompt(furtherQuestions, answers => {
+                answers.framework = frameworkAnswer.framework;
+                this._answers = answers;
+                this._answers.framework = frameworkAnswer.framework;
+                this._answers.namePascalCase = toPascalCase(answers.name);
+                this._answers.projectGuid = this.options['projectguid'] || uuid.v4();
+                done();
+            });
         });
     }
 
@@ -79,11 +116,27 @@ class MyGenerator extends yeoman.Base {
                 outputFn = path.join(path.dirname(fn), 'node_modules', '_placeholder.txt');
             }
 
-            this.fs.copyTpl(
-                path.join(templateRoot, fn),
-                this.destinationPath(outputFn),
-                this._answers
-            );
+            // Exclude test-specific files (unless the user has said they want tests)
+            const isTestSpecificFile = testSpecificPaths.some(regex => regex.test(outputFn));
+            if (this._answers.tests || !isTestSpecificFile) {
+                const inputFullPath = path.join(templateRoot, fn);
+                if (path.basename(fn) === 'package.json') {
+                    // Special handling for package.json, because we rewrite it dynamically
+                    this.fs.writeJSON(
+                        this.destinationPath(outputFn),
+                        rewritePackageJson(JSON.parse(fs.readFileSync(inputFullPath, 'utf8')), this._answers.tests),
+                        /* replacer */ null,
+                        /* space */ 2
+                    );
+                } else {
+                    // Regular file - copy as template
+                    this.fs.copyTpl(
+                        inputFullPath,
+                        this.destinationPath(outputFn),
+                        this._answers
+                    );
+                }
+            }
         });
     }
 
@@ -123,6 +176,35 @@ function assertNpmVersionIsAtLeast(minVersion: string) {
         console.error(`This generator requires NPM version ${minVersion} or later. You are running NPM version ${runningVersion}`);
         process.exit(0);
     }
+}
+
+function rewritePackageJson(contents, includeTests) {
+    if (!includeTests) {
+        // Delete any test-specific packages from dependencies and devDependencies
+        ['dependencies', 'devDependencies'].forEach(dependencyListName => {
+            var packageList = contents[dependencyListName];
+            if (packageList) {
+                testSpecificNpmPackages.forEach(packageToRemove => {
+                    delete packageList[packageToRemove];
+                });
+
+                if (Object.getOwnPropertyNames(packageList).length === 0) {
+                    delete contents[dependencyListName];
+                }
+            }
+        });
+
+        // Delete any script called 'test'
+        const scripts = contents.scripts;
+        if (scripts.test) {
+            delete scripts.test;
+            if (Object.getOwnPropertyNames(scripts).length === 0) {
+                delete contents.scripts;
+            }
+        }
+    }
+
+    return contents;
 }
 
 declare var module: any;
