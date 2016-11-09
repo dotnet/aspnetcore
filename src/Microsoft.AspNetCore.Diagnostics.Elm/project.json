@@ -22,14 +22,14 @@
   "dependencies": {
     "Microsoft.AspNetCore.DiagnosticsViewPage.Sources": {
       "type": "build",
-      "version": "1.1.0-*"
+      "target": "project"
     },
-    "Microsoft.AspNetCore.Http.Abstractions": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
-    "Microsoft.Extensions.Options": "1.1.0-*",
+    "Microsoft.AspNetCore.Http.Abstractions": "1.2.0-*",
+    "Microsoft.Extensions.Logging.Abstractions": "1.2.0-*",
+    "Microsoft.Extensions.Options": "1.2.0-*",
     "Microsoft.Extensions.RazorViews.Sources": {
       "type": "build",
-      "version": "1.1.0-*"
+      "version": "1.2.0-*"
     },
     "NETStandard.Library": "1.6.1-*"
   },

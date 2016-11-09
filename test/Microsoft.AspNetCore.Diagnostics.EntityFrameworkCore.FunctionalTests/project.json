@@ -1,8 +1,8 @@
 {
   "dependencies": {
     "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests": "1.0.0",
-    "Microsoft.AspNetCore.TestHost": "1.1.0-*",
-    "Microsoft.EntityFrameworkCore.SqlServer": "1.1.0-*"
+    "Microsoft.AspNetCore.TestHost": "1.2.0-*",
+    "Microsoft.EntityFrameworkCore.SqlServer": "1.2.0-*"
   },
   "testRunner": "xunit",
   "frameworks": {

@@ -1,11 +1,11 @@
 {
   "dependencies": {
-    "Microsoft.AspNetCore.Diagnostics": "1.1.0-*",
-    "Microsoft.AspNetCore.MiddlewareAnalysis": "1.1.0-*",
-    "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
-    "Microsoft.Extensions.DiagnosticAdapter": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.1.0-*"
+    "Microsoft.AspNetCore.Diagnostics": "1.2.0-*",
+    "Microsoft.AspNetCore.MiddlewareAnalysis": "1.2.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.2.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.2.0-*",
+    "Microsoft.Extensions.DiagnosticAdapter": "1.2.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.2.0-*"
   },
   "buildOptions": {
     "emitEntryPoint": true
