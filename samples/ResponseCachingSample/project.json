@@ -1,9 +1,9 @@
 {
   "dependencies": {
-    "Microsoft.AspNetCore.ResponseCaching": "1.1.0-*",
-    "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
-    "Microsoft.Extensions.Caching.Memory": "1.1.0-*"
+    "Microsoft.AspNetCore.ResponseCaching": "1.2.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.2.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.2.0-*",
+    "Microsoft.Extensions.Caching.Memory": "1.2.0-*"
   },
   "buildOptions": {
     "emitEntryPoint": true
