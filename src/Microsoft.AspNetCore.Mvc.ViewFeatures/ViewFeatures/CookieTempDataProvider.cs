@@ -63,13 +63,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             var cookieOptions = new CookieOptions()
             {
-                // Check for PathBase as it can empty in which case the clients would not send the cookie
-                // in subsequent requests.
-                Path = string.IsNullOrEmpty(_options.Value.Path) ? GetPathBase(context) : _options.Value.Path,
                 Domain = string.IsNullOrEmpty(_options.Value.Domain) ? null : _options.Value.Domain,
                 HttpOnly = true,
                 Secure = context.Request.IsHttps,
             };
+            SetCookiePath(context, cookieOptions);
 
             var hasValues = (values != null && values.Count > 0);
             if (hasValues)
@@ -85,14 +83,20 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
         }
 
-        private string GetPathBase(HttpContext httpContext)
+        private void SetCookiePath(HttpContext httpContext, CookieOptions cookieOptions)
         {
-            var pathBase = httpContext.Request.PathBase.ToString();
-            if (string.IsNullOrEmpty(pathBase))
+            if (!string.IsNullOrEmpty(_options.Value.Path))
             {
-                pathBase = "/";
+                cookieOptions.Path = _options.Value.Path;
             }
-            return pathBase;
+            else
+            {
+                var pathBase = httpContext.Request.PathBase.ToString();
+                if (!string.IsNullOrEmpty(pathBase))
+                {
+                    cookieOptions.Path = pathBase;
+                }
+            }
         }
     }
 }

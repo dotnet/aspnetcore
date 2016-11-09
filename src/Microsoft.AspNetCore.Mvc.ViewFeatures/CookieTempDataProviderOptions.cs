@@ -12,7 +12,9 @@ namespace Microsoft.AspNetCore.Mvc
     public class CookieTempDataProviderOptions
     {
         /// <summary>
-        /// The path set for a cookie. If not specified, current request's <see cref="HttpRequest.PathBase"/> value is used.
+        /// The path set on the cookie. If set to <c>null</c>, the "path" attribute on the cookie is set to the current
+        /// request's <see cref="HttpRequest.PathBase"/> value. If the value of <see cref="HttpRequest.PathBase"/> is
+        /// <c>null</c> or empty, then the "path" attribute is set to the value of <see cref="CookieOptions.Path"/>.
         /// </summary>
         public string Path { get; set; }
 
