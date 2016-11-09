@@ -1,6 +1,9 @@
 {
   "name": "Angular2Spa",
   "version": "0.0.0",
+  "scripts": {
+    "test": "karma start ClientApp/test/karma.conf.js"
+  },
   "dependencies": {
     "@angular/common": "2.0.2",
     "@angular/compiler": "2.0.2",
@@ -42,5 +45,17 @@
     "webpack-merge": "^0.14.1",
     "webpack-node-externals": "^1.4.3",
     "zone.js": "^0.6.25"
+  },
+  "devDependencies": {
+    "@types/chai": "^3.4.34",
+    "@types/jasmine": "^2.5.37",
+    "chai": "^3.5.0",
+    "jasmine-core": "^2.5.2",
+    "karma": "^1.3.0",
+    "karma-chai": "^0.1.0",
+    "karma-chrome-launcher": "^2.0.0",
+    "karma-cli": "^1.0.1",
+    "karma-jasmine": "^1.0.2",
+    "karma-webpack": "^1.8.0"
   }
 }

@@ -7,6 +7,7 @@ var allFilenamesExceptJavaScript = /\.(?!js(\?|$))([^.]+(\?|$))/;
 
 // Configuration in common to both client-side and server-side bundles
 var sharedConfig = {
+    context: __dirname,
     resolve: { extensions: [ '', '.js', '.ts' ] },
     output: {
         filename: '[name].js',
