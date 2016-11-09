@@ -1,6 +1,6 @@
 {
   "description": "ASP.NET Core Identity provider that uses Entity Framework Core.",
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
@@ -19,10 +19,12 @@
     ]
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Identity": "1.1.0-*",
-    "Microsoft.EntityFrameworkCore.Relational": "1.1.0-*",
+    "Microsoft.AspNetCore.Identity": {
+      "target": "project"
+    },
+    "Microsoft.EntityFrameworkCore.Relational": "1.2.0-*",
     "Microsoft.Extensions.TaskCache.Sources": {
-      "version": "1.1.0-*",
+      "version": "1.2.0-*",
       "type": "build"
     },
     "NETStandard.Library": "1.6.1-*"

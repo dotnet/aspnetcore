@@ -8,12 +8,12 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.AspNetCore.Hosting": "1.1.0-*",
-    "Microsoft.AspNetCore.Http": "1.1.0-*",
-    "Microsoft.AspNetCore.Identity": "1.1.0-*",
-    "Microsoft.AspNetCore.Testing": "1.1.0-*",
-    "Microsoft.Extensions.Configuration": "1.1.0-*",
-    "Microsoft.Extensions.Options.ConfigurationExtensions": "1.1.0-*",
+    "Microsoft.AspNetCore.Hosting": "1.2.0-*",
+    "Microsoft.AspNetCore.Http": "1.2.0-*",
+    "Microsoft.AspNetCore.Identity": "1.2.0-*",
+    "Microsoft.AspNetCore.Testing": "1.2.0-*",
+    "Microsoft.Extensions.Configuration": "1.2.0-*",
+    "Microsoft.Extensions.Options.ConfigurationExtensions": "1.2.0-*",
     "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"
   },
