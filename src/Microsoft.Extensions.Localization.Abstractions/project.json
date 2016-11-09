@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "description": "Abstractions of application localization services.\r\nCommonly used types:\r\nMicrosoft.Extensions.Localization.IStringLocalizer\r\nMicrosoft.Extensions.Localization.IStringLocalizer<T>",
   "packOptions": {
     "repository": {

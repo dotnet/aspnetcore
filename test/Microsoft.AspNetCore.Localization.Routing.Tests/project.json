@@ -4,9 +4,9 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.AspNetCore.Localization.Routing": "1.1.0-*",
-    "Microsoft.AspNetCore.Routing": "1.1.0-*",
-    "Microsoft.AspNetCore.TestHost": "1.1.0-*",
+    "Microsoft.AspNetCore.Localization.Routing": "1.2.0-*",
+    "Microsoft.AspNetCore.Routing": "1.2.0-*",
+    "Microsoft.AspNetCore.TestHost": "1.2.0-*",
     "xunit": "2.2.0-*"
   },
   "testRunner": "xunit",

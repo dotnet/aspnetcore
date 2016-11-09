@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "description": "Provides cached instances of CultureInfo using a generated list of known culture names for use in scenarios where unbounded CultureInfo creation is undesirable.",
   "packOptions": {
     "repository": {
