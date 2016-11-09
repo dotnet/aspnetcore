@@ -2,13 +2,13 @@
   "version": "1.0.0",
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.AspNetCore.Razor": "1.1.0-*",
-    "Microsoft.AspNetCore.Razor.Runtime": "1.1.0-*",
+    "Microsoft.AspNetCore.Razor": "1.2.0-*",
+    "Microsoft.AspNetCore.Razor.Runtime": "1.2.0-*",
     "Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources": {
-      "version": "1.1.0-*",
+      "version": "1.2.0-*",
       "type": "build"
     },
-    "Microsoft.AspNetCore.Testing": "1.1.0-*",
+    "Microsoft.AspNetCore.Testing": "1.2.0-*",
     "Moq": "4.6.36-*",
     "Newtonsoft.Json": "9.0.1",
     "xunit": "2.2.0-*"
