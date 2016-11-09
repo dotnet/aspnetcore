@@ -1,13 +1,13 @@
 {
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.AspNetCore.DataProtection.Abstractions": "1.1.0-*",
-    "Microsoft.AspNetCore.DataProtection.Extensions": "1.1.0-*",
+    "Microsoft.AspNetCore.DataProtection.Abstractions": "1.2.0-*",
+    "Microsoft.AspNetCore.DataProtection.Extensions": "1.2.0-*",
     "Microsoft.AspNetCore.DataProtection.Test.Shared": {
       "type": "build",
       "version": "1.0.0-*"
     },
-    "Microsoft.AspNetCore.Testing": "1.1.0-*",
+    "Microsoft.AspNetCore.Testing": "1.2.0-*",
     "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"
   },
