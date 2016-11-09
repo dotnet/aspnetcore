@@ -3,13 +3,13 @@
     "emitEntryPoint": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
-    "Microsoft.AspNetCore.Session": "1.1.0-*",
-    "Microsoft.Extensions.Caching.Memory": "1.1.0-*",
-    "Microsoft.Extensions.Caching.Redis": "1.1.0-*",
-    "Microsoft.Extensions.Caching.SqlServer": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.1.0-*"
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.2.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.2.0-*",
+    "Microsoft.AspNetCore.Session": "1.2.0-*",
+    "Microsoft.Extensions.Caching.Memory": "1.2.0-*",
+    "Microsoft.Extensions.Caching.Redis": "1.2.0-*",
+    "Microsoft.Extensions.Caching.SqlServer": "1.2.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.2.0-*"
   },
   "publishOptions": {
     "include": [
