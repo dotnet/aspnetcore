@@ -1,8 +1,8 @@
 {
   "dependencies": {
     "Microsoft.AspNetCore.Rewrite": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel.Https": "1.1.0-*"
+    "Microsoft.AspNetCore.Server.Kestrel": "1.2.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel.Https": "1.2.0-*"
   },
   "buildOptions": {
     "emitEntryPoint": true,
