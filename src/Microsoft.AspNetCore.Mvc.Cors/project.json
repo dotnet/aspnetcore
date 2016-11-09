@@ -1,6 +1,6 @@
 {
   "description": "ASP.NET Core MVC cross-origin resource sharing (CORS) features.",
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "packOptions": {
     "repository": {
       "type": "git",
@@ -21,8 +21,10 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Cors": "1.1.0-*",
-    "Microsoft.AspNetCore.Mvc.Core": "1.1.0-*",
+    "Microsoft.AspNetCore.Cors": "1.2.0-*",
+    "Microsoft.AspNetCore.Mvc.Core": {
+      "target": "project"
+    },
     "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {

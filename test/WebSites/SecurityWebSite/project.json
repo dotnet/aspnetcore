@@ -4,10 +4,10 @@
     "preserveCompilationContext": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Authentication.Cookies": "1.1.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
-    "Microsoft.AspNetCore.Mvc": "1.1.0-*",
-    "Microsoft.AspNetCore.Hosting": "1.1.0-*"
+    "Microsoft.AspNetCore.Authentication.Cookies": "1.2.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.2.0-*",
+    "Microsoft.AspNetCore.Mvc": "1.2.0-*",
+    "Microsoft.AspNetCore.Hosting": "1.2.0-*"
   },
   "frameworks": {
     "netcoreapp1.1": {
@@ -28,7 +28,9 @@
     ]
   },
   "scripts": {
-    "postpublish": [ "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%" ]
+    "postpublish": [
+      "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%"
+    ]
   },
   "tools": {
     "Microsoft.AspNetCore.Razor.Tools": "1.0.0-preview2-final",
