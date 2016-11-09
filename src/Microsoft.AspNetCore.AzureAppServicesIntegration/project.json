@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0-*",
+  "version": "1.1.0-*",
   "description": "ASP.NET Core integration with Azure AppServices.",
   "packOptions": {
     "repository": {
