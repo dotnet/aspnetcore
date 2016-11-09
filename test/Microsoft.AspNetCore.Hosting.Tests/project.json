@@ -15,11 +15,11 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.AspNetCore.Hosting": "1.1.0-*",
-    "Microsoft.AspNetCore.Owin": "1.1.0-*",
-    "Microsoft.AspNetCore.Testing": "1.1.0-*",
-    "Microsoft.Extensions.Options": "1.1.0-*",
-    "Microsoft.Extensions.PlatformAbstractions": "1.1.0-*",
+    "Microsoft.AspNetCore.Hosting": "1.2.0-*",
+    "Microsoft.AspNetCore.Owin": "1.2.0-*",
+    "Microsoft.AspNetCore.Testing": "1.2.0-*",
+    "Microsoft.Extensions.Options": "1.2.0-*",
+    "Microsoft.Extensions.PlatformAbstractions": "1.2.0-*",
     "xunit": "2.2.0-*"
   },
   "frameworks": {

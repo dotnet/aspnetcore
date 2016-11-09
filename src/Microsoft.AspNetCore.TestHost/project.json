@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
@@ -21,7 +21,9 @@
     ]
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Hosting": "1.1.0-*",
+    "Microsoft.AspNetCore.Hosting": {
+      "target": "project"
+    },
     "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
