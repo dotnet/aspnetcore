@@ -5,7 +5,7 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.Extensions.SecretManager.Tools": "1.1.0-*",
+    "Microsoft.Extensions.SecretManager.Tools": "1.2.0-*",
     "xunit": "2.2.0-*"
   },
   "testRunner": "xunit",
