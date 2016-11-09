@@ -32,11 +32,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             }
 
             var parser = new RazorParser();
+            var sourceContent = new char[source.Length];
+            source.CopyTo(0, sourceContent, 0, source.Length);
 
-            using (var reader = source.CreateReader())
-            {
-                return parser.Parse(reader);
-            }
+            return parser.Parse(sourceContent);
         }
 
         internal abstract IReadOnlyList<RazorError> Diagnostics { get; }

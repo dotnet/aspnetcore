@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         private class ExposedTokenizer : Tokenizer<CSharpSymbol, CSharpSymbolType>
         {
             public ExposedTokenizer(string input)
-                : base(new SeekableTextReader(new StringReader(input)))
+                : base(new SeekableTextReader(input))
             {
             }
 

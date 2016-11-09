@@ -13,12 +13,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         private SourceLocation _location = SourceLocation.Zero;
         private char? _current;
 
-        public SeekableTextReader(TextReader source)
-            : this(source.ReadToEnd())
-        {
-        }
+        public SeekableTextReader(string source) : this(source.ToCharArray()) { }
 
-        public SeekableTextReader(string source)
+        public SeekableTextReader(char[] source)
         {
             if (source == null)
             {

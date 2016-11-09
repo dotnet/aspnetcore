@@ -2,38 +2,67 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
     internal class DefaultRazorSourceDocument : RazorSourceDocument
     {
-        private MemoryStream _stream;
+        private readonly string _content;
 
-        public DefaultRazorSourceDocument(MemoryStream stream, Encoding encoding, string filename)
+        public DefaultRazorSourceDocument(string content, Encoding encoding, string filename)
         {
-            if (stream == null)
+            if (content == null)
             {
-                throw new ArgumentNullException(nameof(stream));
+                throw new ArgumentNullException(nameof(content));
             }
 
-            _stream = stream;
+            if (encoding == null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
+            }
+
+            _content = content;
             Encoding = encoding;
             Filename = filename;
         }
 
-        public Encoding Encoding { get; }
+        public override char this[int position] => _content[position];
+
+        public override Encoding Encoding { get; }
 
         public override string Filename { get; }
 
-        public override TextReader CreateReader()
-        {
-            var copy = new MemoryStream(_stream.ToArray());
+        public override int Length => _content.Length;
 
-            return Encoding == null
-                ? new StreamReader(copy, detectEncodingFromByteOrderMarks: true)
-                : new StreamReader(copy, Encoding);
+        public override void CopyTo(int sourceIndex, char[] destination, int destinationIndex, int count)
+        {
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+
+            if (sourceIndex < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(sourceIndex));
+            }
+
+            if (destinationIndex < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(destinationIndex));
+            }
+
+            if (count < 0 || count > Length - sourceIndex || count > destination.Length - destinationIndex)
+            {
+                throw new ArgumentOutOfRangeException(nameof(count));
+            }
+
+            if (count == 0)
+            {
+                return;
+            }
+
+            _content.CopyTo(sourceIndex, destination, destinationIndex, count);
         }
     }
 }

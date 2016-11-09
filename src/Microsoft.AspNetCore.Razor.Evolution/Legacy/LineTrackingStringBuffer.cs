@@ -15,6 +15,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         private TextLine _endLine;
 
         public LineTrackingStringBuffer(string content)
+            : this(content.ToCharArray())
+        {
+        }
+
+        public LineTrackingStringBuffer(char[] content)
         {
             _endLine = new TextLine(0, 0);
             _lines = new List<TextLine>() { _endLine };
@@ -43,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             return new CharacterReference(line.Content[idx], new SourceLocation(absoluteIndex, line.Index, idx));
         }
 
-        private void Append(string content)
+        private void Append(char[] content)
         {
             for (int i = 0; i < content.Length; i++)
             {

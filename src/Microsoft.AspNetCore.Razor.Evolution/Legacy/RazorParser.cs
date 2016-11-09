@@ -13,17 +13,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public bool DesignTimeMode { get; set; }
 
-        public virtual RazorSyntaxTree Parse(TextReader input)
-        {
-            var reader = new SeekableTextReader(input);
+        public virtual RazorSyntaxTree Parse(TextReader input) => Parse(input.ReadToEnd());
 
-            return Parse((ITextDocument)reader);
-        }
+        public virtual RazorSyntaxTree Parse(string input) => Parse(((ITextDocument)new SeekableTextReader(input)));
 
-        public virtual RazorSyntaxTree Parse(ITextDocument input)
-        {
-            return ParseCore(input);
-        }
+        public virtual RazorSyntaxTree Parse(char[] input) => Parse(((ITextDocument)new SeekableTextReader(input)));
+
+        public virtual RazorSyntaxTree Parse(ITextDocument input) => ParseCore(input);
 
         private RazorSyntaxTree ParseCore(ITextDocument input)
         {

@@ -9,6 +9,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 {
     public abstract class RazorSourceDocument
     {
+        public abstract Encoding Encoding { get; }
+
+        public abstract string Filename { get; }
+
+        public abstract char this[int position] { get; }
+
+        public abstract int Length { get; }
+
+        public abstract void CopyTo(int sourceIndex, char[] destination, int destinationIndex, int count);
+
         public static RazorSourceDocument ReadFrom(Stream stream, string filename)
         {
             if (stream == null)
@@ -36,14 +46,31 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         private static RazorSourceDocument ReadFromInternal(Stream stream, string filename, Encoding encoding)
         {
-            var memoryStream = new MemoryStream();
-            stream.CopyTo(memoryStream);
+            var reader = new StreamReader(
+                stream,
+                encoding ?? Encoding.UTF8,
+                detectEncodingFromByteOrderMarks: true,
+                bufferSize: (int)stream.Length,
+                leaveOpen: true);
 
-            return new DefaultRazorSourceDocument(memoryStream, encoding, filename);
+            using (reader)
+            {
+                var content = reader.ReadToEnd();
+
+                if (encoding == null)
+                {
+                    encoding = reader.CurrentEncoding;
+                }
+                else if (encoding != reader.CurrentEncoding)
+                {
+                    throw new InvalidOperationException(
+                        Resources.FormatMismatchedContentEncoding(
+                            encoding.EncodingName,
+                            reader.CurrentEncoding.EncodingName));
+                }
+
+                return new DefaultRazorSourceDocument(content, encoding, filename);
+            }
         }
-
-        public abstract string Filename { get; }
-
-        public abstract TextReader CreateReader();
     }
 }

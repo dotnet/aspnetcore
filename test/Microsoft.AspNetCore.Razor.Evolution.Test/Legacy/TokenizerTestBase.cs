@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Text;
 using Xunit;
 
@@ -21,45 +20,42 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             // Arrange
             var success = true;
             var output = new StringBuilder();
-            using (StringReader reader = new StringReader(input))
+            using (var source = new SeekableTextReader(input))
             {
-                using (SeekableTextReader source = new SeekableTextReader(reader))
+                var tokenizer = (Tokenizer<TSymbol, TSymbolType>)CreateTokenizer(source);
+                var counter = 0;
+                TSymbol current = null;
+                while ((current = tokenizer.NextSymbol()) != null)
                 {
-                    var tokenizer = (Tokenizer<TSymbol, TSymbolType>)CreateTokenizer(source);
-                    var counter = 0;
-                    TSymbol current = null;
-                    while ((current = tokenizer.NextSymbol()) != null)
+                    if (counter >= expectedSymbols.Length)
                     {
-                        if (counter >= expectedSymbols.Length)
+                        output.AppendLine(string.Format("F: Expected: << Nothing >>; Actual: {0}", current));
+                        success = false;
+                    }
+                    else if (ReferenceEquals(expectedSymbols[counter], IgnoreRemaining))
+                    {
+                        output.AppendLine(string.Format("P: Ignored {0}", current));
+                    }
+                    else
+                    {
+                        if (!Equals(expectedSymbols[counter], current))
                         {
-                            output.AppendLine(string.Format("F: Expected: << Nothing >>; Actual: {0}", current));
+                            output.AppendLine(string.Format("F: Expected: {0}; Actual: {1}", expectedSymbols[counter], current));
                             success = false;
-                        }
-                        else if (ReferenceEquals(expectedSymbols[counter], IgnoreRemaining))
-                        {
-                            output.AppendLine(string.Format("P: Ignored {0}", current));
                         }
                         else
                         {
-                            if (!Equals(expectedSymbols[counter], current))
-                            {
-                                output.AppendLine(string.Format("F: Expected: {0}; Actual: {1}", expectedSymbols[counter], current));
-                                success = false;
-                            }
-                            else
-                            {
-                                output.AppendLine(string.Format("P: Expected: {0}", expectedSymbols[counter]));
-                            }
-                            counter++;
+                            output.AppendLine(string.Format("P: Expected: {0}", expectedSymbols[counter]));
                         }
+                        counter++;
                     }
-                    if (counter < expectedSymbols.Length && !ReferenceEquals(expectedSymbols[counter], IgnoreRemaining))
+                }
+                if (counter < expectedSymbols.Length && !ReferenceEquals(expectedSymbols[counter], IgnoreRemaining))
+                {
+                    success = false;
+                    for (; counter < expectedSymbols.Length; counter++)
                     {
-                        success = false;
-                        for (; counter < expectedSymbols.Length; counter++)
-                        {
-                            output.AppendLine(string.Format("F: Expected: {0}; Actual: << None >>", expectedSymbols[counter]));
-                        }
+                        output.AppendLine(string.Format("F: Expected: {0}; Actual: << None >>", expectedSymbols[counter]));
                     }
                 }
             }

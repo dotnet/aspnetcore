@@ -120,6 +120,9 @@
   <data name="IRBuilder_PopInvalid" xml:space="preserve">
     <value>The '{0}' operation is not valid when the builder is empty.</value>
   </data>
+  <data name="MismatchedContentEncoding" xml:space="preserve">
+    <value>The specified encoding '{0}' does not match the content's encoding '{1}'.</value>
+  </data>
   <data name="PhaseDependencyMissing" xml:space="preserve">
     <value>The '{0}' phase requires a '{1}' provided by the '{2}'.</value>
   </data>

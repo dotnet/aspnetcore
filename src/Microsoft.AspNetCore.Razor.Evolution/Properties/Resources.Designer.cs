@@ -27,6 +27,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         }
 
         /// <summary>
+        /// The specified encoding '{0}' does not match the content's encoding '{1}'.
+        /// </summary>
+        internal static string MismatchedContentEncoding
+        {
+            get { return GetString("MismatchedContentEncoding"); }
+        }
+
+        /// <summary>
+        /// The specified encoding '{0}' does not match the content's encoding '{1}'.
+        /// </summary>
+        internal static string FormatMismatchedContentEncoding(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("MismatchedContentEncoding"), p0, p1);
+        }
+
+        /// <summary>
         /// The '{0}' phase requires a '{1}' provided by the '{2}'.
         /// </summary>
         internal static string PhaseDependencyMissing

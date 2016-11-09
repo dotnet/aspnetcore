@@ -11,11 +11,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [Fact]
         public void CanParseStuff()
         {
-            
             var parser = new RazorParser();
             var sourceDocument = TestRazorSourceDocument.CreateResource("TestFiles/Source/BasicMarkup.cshtml");
-            var documentReader = sourceDocument.CreateReader();
-            var output = parser.Parse(documentReader);
+            var sourceContent = new char[sourceDocument.Length];
+            sourceDocument.CopyTo(0, sourceContent, 0, sourceDocument.Length);
+            var output = parser.Parse(sourceContent);
 
             Assert.NotNull(output);
         }
