@@ -1,9 +1,9 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "dependencies": {
     "Microsoft.AspNetCore.AzureAppServicesIntegration": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.1.0-*"
+    "Microsoft.AspNetCore.Server.Kestrel": "1.2.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.2.0-*"
   },
   "buildOptions": {
     "emitEntryPoint": true
@@ -17,7 +17,10 @@
           "type": "platform"
         }
       },
-      "imports": [ "portable-net40+sl5+win8+wp8+wpa81", "portable-net45+win8+wp8+wpa81" ]
+      "imports": [
+        "portable-net40+sl5+win8+wp8+wpa81",
+        "portable-net45+win8+wp8+wpa81"
+      ]
     }
   },
   "publishOptions": {

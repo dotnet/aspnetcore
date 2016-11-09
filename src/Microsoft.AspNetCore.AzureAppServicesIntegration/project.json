@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.2.0-*",
   "description": "ASP.NET Core integration with Azure AppServices.",
   "packOptions": {
     "repository": {
@@ -13,16 +13,19 @@
     ]
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Hosting.Abstractions": "1.1.0-*",
-    "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0-*",
+    "Microsoft.AspNetCore.Hosting.Abstractions": "1.2.0-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.2.0-*",
     "Microsoft.Extensions.Logging.AzureAppServices": "1.0.0-*"
   },
   "frameworks": {
     "net451": {
-      "frameworkAssemblies": { }
+      "frameworkAssemblies": {}
     },
     "netstandard1.3": {
-      "imports": [ "portable-net40+sl5+win8+wp8+wpa81", "portable-net45+win8+wp8+wpa81" ]
+      "imports": [
+        "portable-net40+sl5+win8+wp8+wpa81",
+        "portable-net45+win8+wp8+wpa81"
+      ]
     }
   },
   "buildOptions": {
