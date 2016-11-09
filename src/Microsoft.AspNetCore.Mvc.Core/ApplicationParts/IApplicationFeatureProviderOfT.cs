@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
     public interface IApplicationFeatureProvider<TFeature> : IApplicationFeatureProvider
     {
         /// <summary>
-        /// Updates the <paramref name="feature"/> intance.
+        /// Updates the <paramref name="feature"/> instance.
         /// </summary>
         /// <param name="parts">The list of <see cref="ApplicationPart"/>s of the
         /// application.
