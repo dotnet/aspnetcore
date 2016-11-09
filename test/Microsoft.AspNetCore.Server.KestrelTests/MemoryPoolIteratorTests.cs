@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             for (int i = 0; i < Vector<byte>.Count; i++)
             {
                 Vector<byte> vector = new Vector<byte>(bytes);
-                Assert.Equal(i, MemoryPoolIterator.LocateFirstFoundByte(ref vector));
+                Assert.Equal(i, MemoryPoolIterator.LocateFirstFoundByte(vector));
                 bytes[i] = 0;
             }
 
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 bytes[i] = 1;
                 Vector<byte> vector = new Vector<byte>(bytes);
-                Assert.Equal(i, MemoryPoolIterator.LocateFirstFoundByte(ref vector));
+                Assert.Equal(i, MemoryPoolIterator.LocateFirstFoundByte(vector));
                 bytes[i] = 0;
             }
         }

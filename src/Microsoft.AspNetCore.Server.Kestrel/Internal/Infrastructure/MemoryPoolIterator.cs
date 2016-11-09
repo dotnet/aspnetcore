@@ -316,7 +316,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
                         _block = block;
 
-                        var firstEqualByteIndex = LocateFirstFoundByte(ref byte0Equals);
+                        var firstEqualByteIndex = LocateFirstFoundByte(byte0Equals);
                         var vectorBytesScanned = firstEqualByteIndex + 1;
 
                         if (bytesScanned + vectorBytesScanned > limit)
@@ -420,7 +420,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
                             _block = block;
 
-                            var firstEqualByteIndex = LocateFirstFoundByte(ref byte0Equals);
+                            var firstEqualByteIndex = LocateFirstFoundByte(byte0Equals);
 
                             if (_block == limit.Block && index + firstEqualByteIndex > limit.Index)
                             {
@@ -478,8 +478,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             var index = _index;
             var wasLastBlock = block.Next == null;
             var following = block.End - index;
-            int byte0Index = int.MaxValue;
-            int byte1Index = int.MaxValue;
+            int byteIndex = int.MaxValue;
 
             while (true)
             {
@@ -512,19 +511,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                         {
                             var data = new Vector<byte>(array, index);
 
-                            var byte0Equals = Vector.Equals(data, GetVector(byte0));
-                            if (!byte0Equals.Equals(Vector<byte>.Zero))
+                            var byteEquals = Vector.Equals(data, GetVector(byte0));
+                            byteEquals = Vector.ConditionalSelect(byteEquals, byteEquals, Vector.Equals(data, GetVector(byte1)));
+
+                            if (!byteEquals.Equals(Vector<byte>.Zero))
                             {
-                                byte0Index = LocateFirstFoundByte(ref byte0Equals);
+                                byteIndex = LocateFirstFoundByte(byteEquals);
                             }
 
-                            var byte1Equals = Vector.Equals(data, GetVector(byte1));
-                            if (!byte1Equals.Equals(Vector<byte>.Zero))
-                            {
-                                byte1Index = LocateFirstFoundByte(ref byte1Equals);
-                            }
-
-                            if (byte0Index == int.MaxValue && byte1Index == int.MaxValue)
+                            if (byteIndex == int.MaxValue)
                             {
                                 following -= _vectorSpan;
                                 index += _vectorSpan;
@@ -542,21 +537,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
                             _block = block;
 
-                            if (byte0Index < byte1Index)
-                            {
-                                _index = index + byte0Index;
-
-                                if (block == limit.Block && _index > limit.Index)
-                                {
-                                    // Ensure iterator is left at limit position
-                                    _index = limit.Index;
-                                    return -1;
-                                }
-
-                                return byte0;
-                            }
-
-                            _index = index + byte1Index;
+                            _index = index + byteIndex;
 
                             if (block == limit.Block && _index > limit.Index)
                             {
@@ -565,7 +546,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                                 return -1;
                             }
 
-                            return byte1;
+                            _index = index + byteIndex;
+
+                            if (block == limit.Block && _index > limit.Index)
+                            {
+                                // Ensure iterator is left at limit position
+                                _index = limit.Index;
+                                return -1;
+                            }
+
+                            return block.Array[index + byteIndex];
                         }
 // Need unit tests to test Vector path
 #if !DEBUG
@@ -618,9 +608,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             var index = _index;
             var wasLastBlock = block.Next == null;
             var following = block.End - index;
-            int byte0Index = int.MaxValue;
-            int byte1Index = int.MaxValue;
-            int byte2Index = int.MaxValue;
+            int byteIndex = int.MaxValue;
 
             while (true)
             {
@@ -652,25 +640,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                         {
                             var data = new Vector<byte>(array, index);
 
-                            var byte0Equals = Vector.Equals(data, GetVector(byte0));
-                            if (!byte0Equals.Equals(Vector<byte>.Zero))
+                            var byteEquals = Vector.Equals(data, GetVector(byte0));
+                            byteEquals = Vector.ConditionalSelect(byteEquals, byteEquals, Vector.Equals(data, GetVector(byte1)));
+                            byteEquals = Vector.ConditionalSelect(byteEquals, byteEquals, Vector.Equals(data, GetVector(byte2)));
+
+                            if (!byteEquals.Equals(Vector<byte>.Zero))
                             {
-                                byte0Index = LocateFirstFoundByte(ref byte0Equals);
+                                byteIndex = LocateFirstFoundByte(byteEquals);
                             }
 
-                            var byte1Equals = Vector.Equals(data, GetVector(byte1));
-                            if (!byte1Equals.Equals(Vector<byte>.Zero))
-                            {
-                                byte1Index = LocateFirstFoundByte(ref byte1Equals);
-                            }
-
-                            var byte2Equals = Vector.Equals(data, GetVector(byte2));
-                            if (!byte2Equals.Equals(Vector<byte>.Zero))
-                            {
-                                byte2Index = LocateFirstFoundByte(ref byte2Equals);
-                            }
-
-                            if (byte0Index == int.MaxValue && byte1Index == int.MaxValue && byte2Index == int.MaxValue)
+                            if (byteIndex == int.MaxValue)
                             {
                                 following -= _vectorSpan;
                                 index += _vectorSpan;
@@ -688,35 +667,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
                             _block = block;
 
-                            int toReturn, toMove;
-                            if (byte0Index < byte1Index)
-                            {
-                                if (byte0Index < byte2Index)
-                                {
-                                    toReturn = byte0;
-                                    toMove = byte0Index;
-                                }
-                                else
-                                {
-                                    toReturn = byte2;
-                                    toMove = byte2Index;
-                                }
-                            }
-                            else
-                            {
-                                if (byte1Index < byte2Index)
-                                {
-                                    toReturn = byte1;
-                                    toMove = byte1Index;
-                                }
-                                else
-                                {
-                                    toReturn = byte2;
-                                    toMove = byte2Index;
-                                }
-                            }
-
-                            _index = index + toMove;
+                            _index = index + byteIndex;
 
                             if (block == limit.Block && _index > limit.Index)
                             {
@@ -725,7 +676,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                                 return -1;
                             }
 
-                            return toReturn;
+                            return block.Array[index + byteIndex];
                         }
 // Need unit tests to test Vector path
 #if !DEBUG
@@ -770,7 +721,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         /// <returns>The first index of the result vector</returns>
         // Force inlining (64 IL bytes, 91 bytes asm) Issue: https://github.com/dotnet/coreclr/issues/7386
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int LocateFirstFoundByte(ref Vector<byte> byteEquals)
+        internal static int LocateFirstFoundByte(Vector<byte> byteEquals)
         {
             var vector64 = Vector.AsVectorInt64(byteEquals);
             long longValue = 0;
