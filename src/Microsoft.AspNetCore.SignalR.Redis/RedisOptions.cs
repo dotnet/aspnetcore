@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Net;
 using StackExchange.Redis;
 
 namespace Microsoft.AspNetCore.SignalR.Redis
@@ -21,7 +22,8 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 // REVIEW: Should we do this?
                 if (Options.EndPoints.Count == 0)
                 {
-                    Options.EndPoints.Add("localhost");
+                    Options.EndPoints.Add(IPAddress.Loopback, 0);
+                    Options.SetDefaultPorts();
                 }
                 return ConnectionMultiplexer.Connect(Options, log);
             }
