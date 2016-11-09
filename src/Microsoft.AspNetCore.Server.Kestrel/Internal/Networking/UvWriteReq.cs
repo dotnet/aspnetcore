@@ -85,18 +85,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
                 _callback = null;
                 _state = null;
                 Unpin(this);
-
-                var block = start.Block;
-                for (var index = 0; index < nBuffers; index++)
-                {
-                    block = block.Next;
-                }
-
                 throw;
             }
         }
 
-        public unsafe void Write2(
+        public void Write(
+            UvStreamHandle handle,
+            ArraySegment<ArraySegment<byte>> bufs,
+            Action<UvWriteReq, int, Exception, object> callback,
+            object state)
+        {
+            WriteArraySegmentInternal(handle, bufs, sendHandle: null, callback: callback, state: state);
+        }
+
+        public void Write2(
+            UvStreamHandle handle,
+            ArraySegment<ArraySegment<byte>> bufs,
+            UvStreamHandle sendHandle,
+            Action<UvWriteReq, int, Exception, object> callback,
+            object state)
+        {
+            WriteArraySegmentInternal(handle, bufs, sendHandle, callback, state);
+        }
+
+        private unsafe void WriteArraySegmentInternal(
             UvStreamHandle handle,
             ArraySegment<ArraySegment<byte>> bufs,
             UvStreamHandle sendHandle,
@@ -133,7 +145,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
 
                 _callback = callback;
                 _state = state;
-                _uv.write2(this, handle, pBuffers, nBuffers, sendHandle, _uv_write_cb);
+
+                if (sendHandle == null)
+                {
+                    _uv.write(this, handle, pBuffers, nBuffers, _uv_write_cb);
+                }
+                else
+                {
+                    _uv.write2(this, handle, pBuffers, nBuffers, sendHandle, _uv_write_cb);
+                }
             }
             catch
             {
