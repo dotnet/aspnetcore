@@ -26,6 +26,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         public const string ServerName = "Kestrel";
 
+        // "Kestrel\0"
+        public const ulong PipeMessage = 0x006C65727473654B;
+
         private static int? GetECONNRESET()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

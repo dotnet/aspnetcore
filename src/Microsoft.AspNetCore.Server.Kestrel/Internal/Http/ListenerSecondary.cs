@@ -17,6 +17,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
     /// </summary>
     public abstract class ListenerSecondary : ListenerContext, IAsyncDisposable
     {
+        private static ArraySegment<ArraySegment<byte>> _pipeMessage =
+            new ArraySegment<ArraySegment<byte>>(new[] { new ArraySegment<byte>(BitConverter.GetBytes(Constants.PipeMessage)) });
+
         private string _pipeName;
         private IntPtr _ptr;
         private Libuv.uv_buf_t _buf;
@@ -89,6 +92,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 return;
             }
 
+            var writeReq = new UvWriteReq(Log);
+
             try
             {
                 DispatchPipe.ReadStart(
@@ -96,10 +101,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     (handle, status2, state) => ((ListenerSecondary)state).ReadStartCallback(handle, status2),
                     this);
 
-                tcs.SetResult(0);
+                writeReq.Init(Thread.Loop);
+                writeReq.Write(
+                    DispatchPipe,
+                    _pipeMessage,
+                    (req, status2, ex, state) =>
+                    {
+                        req.Dispose();
+
+                        if (ex != null)
+                        {
+                            tcs.SetException(ex);
+                        }
+                        else
+                        {
+                            tcs.SetResult(0);
+                        }
+                    },
+                    tcs);
             }
             catch (Exception ex)
             {
+                writeReq.Dispose();
                 DispatchPipe.Dispose();
                 tcs.SetException(ex);
             }
