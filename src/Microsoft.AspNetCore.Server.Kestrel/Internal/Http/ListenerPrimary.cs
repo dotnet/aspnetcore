@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
@@ -75,15 +76,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 dispatchPipe.Init(Thread.Loop, Thread.QueueCloseHandle, true);
                 pipe.Accept(dispatchPipe);
+
+                // Ensure client sends "Kestrel" before adding pipe to _dispatchPipes.
+                var readContext = new PipeReadContext(this);
+                dispatchPipe.ReadStart(
+                    (handle, status2, state) => ((PipeReadContext)state).AllocCallback(handle, status2),
+                    (handle, status2, state) => ((PipeReadContext)state).ReadCallback(handle, status2),
+                    readContext);
             }
             catch (UvException ex)
             {
                 dispatchPipe.Dispose();
                 Log.LogError(0, ex, "ListenerPrimary.OnListenPipe");
-                return;
             }
-
-            _dispatchPipes.Add(dispatchPipe);
         }
 
         protected override void DispatchConnection(UvStreamHandle socket)
@@ -177,6 +182,56 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         dispatchPipe.Dispose();
                     }
                 }, this).ConfigureAwait(false);
+            }
+        }
+
+        private class PipeReadContext
+        {
+            private readonly ListenerPrimary _listener;
+            private readonly IntPtr _bufPtr;
+            private GCHandle _bufHandle;
+            private int _bytesRead;
+
+            public PipeReadContext(ListenerPrimary listener)
+            {
+                _listener = listener;
+                _bufHandle = GCHandle.Alloc(new byte[8], GCHandleType.Pinned);
+                _bufPtr = _bufHandle.AddrOfPinnedObject();
+            }
+
+            public Libuv.uv_buf_t AllocCallback(UvStreamHandle dispatchPipe, int suggestedSize)
+            {
+                return dispatchPipe.Libuv.buf_init(_bufPtr + _bytesRead, 8 - _bytesRead);
+            }
+
+            public unsafe void ReadCallback(UvStreamHandle dispatchPipe, int status)
+            {
+                try
+                {
+                    dispatchPipe.Libuv.ThrowIfErrored(status);
+
+                    _bytesRead += status;
+
+                    if (_bytesRead == 8)
+                    {
+                        if (*(ulong*)_bufPtr == Constants.PipeMessage)
+                        {
+                            _listener._dispatchPipes.Add((UvPipeHandle) dispatchPipe);
+                            dispatchPipe.ReadStop();
+                            _bufHandle.Free();
+                        }
+                        else
+                        {
+                            throw new IOException("Bad data sent over Kestrel pipe.");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    dispatchPipe.Dispose();
+                    _bufHandle.Free();
+                    _listener.Log.LogError(0, ex, "ListenerPrimary.ReadCallback");
+                }
             }
         }
     }
