@@ -5,7 +5,7 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.AspNetCore.Buffering": "0.2.0-*",
+    "Microsoft.AspNetCore.Buffering": "0.3.0-*",
     "Microsoft.AspNetCore.TestHost": "1.2.0-*",
     "xunit": "2.2.0-*"
   },
