@@ -1,8 +1,8 @@
 {
   "dependencies": {
-    "AntiforgerySample": "1.1.0-*",
+    "AntiforgerySample": "1.2.0-*",
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.AspNetCore.TestHost": "1.1.0-*",
+    "Microsoft.AspNetCore.TestHost": "1.2.0-*",
     "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"
   },
