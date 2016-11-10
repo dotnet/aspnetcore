@@ -119,23 +119,25 @@ class MyGenerator extends yeoman.Base {
             // Exclude test-specific files (unless the user has said they want tests)
             const isTestSpecificFile = testSpecificPaths.some(regex => regex.test(outputFn));
             if (this._answers.tests || !isTestSpecificFile) {
-                const inputFullPath = path.join(templateRoot, fn);
+                let inputFullPath = path.join(templateRoot, fn);
+                let destinationFullPath = this.destinationPath(outputFn);
                 if (path.basename(fn) === 'package.json') {
                     // Special handling for package.json, because we rewrite it dynamically
+                    const tempPath = destinationFullPath + '.tmp';
                     this.fs.writeJSON(
-                        this.destinationPath(outputFn),
+                        tempPath,
                         rewritePackageJson(JSON.parse(fs.readFileSync(inputFullPath, 'utf8')), this._answers.tests),
                         /* replacer */ null,
                         /* space */ 2
                     );
-                } else {
-                    // Regular file - copy as template
-                    this.fs.copyTpl(
-                        inputFullPath,
-                        this.destinationPath(outputFn),
-                        this._answers
-                    );
+                    inputFullPath = tempPath;
                 }
+
+                this.fs.copyTpl(
+                    inputFullPath,
+                    destinationFullPath,
+                    this._answers
+                );
             }
         });
     }
@@ -196,7 +198,7 @@ function rewritePackageJson(contents, includeTests) {
 
         // Delete any script called 'test'
         const scripts = contents.scripts;
-        if (scripts.test) {
+        if (scripts && scripts.test) {
             delete scripts.test;
             if (Object.getOwnPropertyNames(scripts).length === 0) {
                 delete contents.scripts;
