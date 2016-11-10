@@ -27,11 +27,11 @@
       "type": "build"
     },
     "Microsoft.AspNetCore.Mvc.TestCommon": {
-      "version": "1.2.0-*",
+      "target": "project",
       "type": "build"
     },
     "Microsoft.AspNetCore.Mvc.TestDiagnosticListener.Sources": {
-      "version": "1.2.0-*",
+      "target": "project",
       "type": "build"
     },
     "Microsoft.AspNetCore.Testing": "1.2.0-*",

@@ -9,8 +9,8 @@
     "Microsoft.AspNetCore.Mvc": "1.2.0-*",
     "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.2.0-*",
     "Microsoft.AspNetCore.Mvc.TestCommon": {
-      "type": "build",
-      "version": "1.2.0-*"
+      "target": "project",
+      "type": "build"
     },
     "Microsoft.AspNetCore.Testing": "1.2.0-*",
     "Microsoft.DotNet.InternalAbstractions": "1.0.0",

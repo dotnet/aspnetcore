@@ -10,11 +10,11 @@
     "Microsoft.AspNetCore.Mvc": "1.2.0-*",
     "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.2.0-*",
     "Microsoft.AspNetCore.Mvc.TestCommon": {
-      "version": "1.2.0-*",
+      "target": "project",
       "type": "build"
     },
     "Microsoft.AspNetCore.Mvc.TestDiagnosticListener.Sources": {
-      "version": "1.2.0-*",
+      "target": "project",
       "type": "build"
     },
     "Microsoft.AspNetCore.ResponseCaching": "1.0.0-*",
