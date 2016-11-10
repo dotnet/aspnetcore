@@ -11,11 +11,11 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.AspNetCore.Testing": "1.1.0-*",
-    "Microsoft.DotNet.Watcher.Tools": "1.1.0-*",
+    "Microsoft.AspNetCore.Testing": "1.2.0-*",
+    "Microsoft.DotNet.Watcher.Tools": "1.2.0-*",
     "Microsoft.Extensions.Process.Sources": {
       "type": "build",
-      "version": "1.1.0-*"
+      "version": "1.2.0-*"
     },
     "xunit": "2.2.0-*"
   },
