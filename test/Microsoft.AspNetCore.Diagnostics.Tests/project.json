@@ -14,10 +14,12 @@
     }
   },
   "dependencies": {
-    "ClassLibraryWithPortablePdbs": "1.2.0-*",
+    "ClassLibraryWithPortablePdbs": {
+      "target": "project"
+    },
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Diagnostics": "1.2.0-*",
-    "Microsoft.AspNetCore.Diagnostics.Elm": "0.2.0-*",
+    "Microsoft.AspNetCore.Diagnostics.Elm": "0.3.0-*",
     "Microsoft.AspNetCore.TestHost": "1.2.0-*",
     "Microsoft.AspNetCore.Testing": "1.2.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.2.0-*",

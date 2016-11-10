@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "Microsoft.AspNetCore.Diagnostics.Elm": "0.2.0-*",
+    "Microsoft.AspNetCore.Diagnostics.Elm": "0.3.0-*",
     "Microsoft.AspNetCore.Server.IISIntegration": "1.2.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.2.0-*"
   },
