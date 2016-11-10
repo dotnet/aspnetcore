@@ -22,9 +22,11 @@
   },
 
   "dependencies": {
-    "Microsoft.AspNetCore.Http.Abstractions": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
-    "Microsoft.Extensions.WebSockets.Internal": "0.1.0-*",
+    "Microsoft.AspNetCore.Http.Abstractions": "1.2.0-*",
+    "Microsoft.Extensions.Logging.Abstractions": "1.2.0-*",
+    "Microsoft.Extensions.WebSockets.Internal": {
+      "target": "project"
+    },
     "NETStandard.Library": "1.6.1-*"
   },
 
