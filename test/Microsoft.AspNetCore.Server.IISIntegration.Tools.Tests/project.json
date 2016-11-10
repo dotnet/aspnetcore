@@ -1,0 +1,24 @@
+{
+  "dependencies": {
+    "dotnet-test-xunit": "1.0.0-rc3-000000-01",
+    "xunit": "2.1.0",
+    "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.1.0-preview4-final"
+  },
+  "frameworks": {
+    "netcoreapp1.0": {
+      "imports": [
+        "portable-dnxcore50+net45+win8+wp8+wpa81",
+        "dotnet",
+        "portable-net45+win8"
+      ],
+      "dependencies": {
+        "System.Diagnostics.Process": "4.3.0-*",
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.1.0-*"
+        }
+      }
+    }
+  },
+  "testRunner": "xunit"
+}
