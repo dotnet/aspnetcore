@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest
             var directoryInfo = new DirectoryInfo(applicationBasePath);
             do
             {
-                var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "Microsoft.AspNetCore.Sockets.sln"));
+                var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "SignalR.sln"));
                 if (solutionFileInfo.Exists)
                 {
                     return Path.GetFullPath(Path.Combine(directoryInfo.FullName, "test", projectName));
