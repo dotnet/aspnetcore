@@ -16,6 +16,6 @@ var localTscExists = '${ File.Exists(localTsc) }'
   var installCommand = 'install ${E("KOREBUILD_NPM_INSTALL_OPTIONS")} --prefix "${nodeDirectory}" typescript'
   npm npmCommand="${installCommand}" if="!localTscExists"
   @{
-    E("PATH", $"{nodeBin}{Path.PathSeparator}{E("PATH")}");
+    E("PATH", nodeBin + Path.PathSeparator + E("PATH"));
     Console.WriteLine("PATH:" + E("PATH"));
   }
