@@ -1,20 +1,22 @@
 import * as React from 'react';
 import { Link } from 'react-router';
-import { provide } from 'redux-typed';
+import { connect } from 'react-redux';
 import { ApplicationState }  from '../store';
 import * as WeatherForecastsState from '../store/WeatherForecasts';
 
-interface RouteParams {
-    startDateIndex: string;
-}
+// At runtime, Redux will merge together...
+type WeatherForecastProps =
+    WeatherForecastsState.WeatherForecastsState     // ... state we've requested from the Redux store
+    & typeof WeatherForecastsState.actionCreators   // ... plus action creators we've requested
+    & { params: { startDateIndex: string } };       // ... plus incoming routing parameters
 
 class FetchData extends React.Component<WeatherForecastProps, void> {
     componentWillMount() {
-        // This method runs when the component is first added to the page 
+        // This method runs when the component is first added to the page
         let startDateIndex = parseInt(this.props.params.startDateIndex) || 0;
         this.props.requestWeatherForecasts(startDateIndex);
     }
-    
+
     componentWillReceiveProps(nextProps: WeatherForecastProps) {
         // This method runs when incoming props (e.g., route params) change
         let startDateIndex = parseInt(nextProps.params.startDateIndex) || 0;
@@ -52,7 +54,7 @@ class FetchData extends React.Component<WeatherForecastProps, void> {
             </tbody>
         </table>;
     }
-    
+
     private renderPagination() {
         let prevStartDateIndex = this.props.startDateIndex - 5;
         let nextStartDateIndex = this.props.startDateIndex + 5;
@@ -65,10 +67,7 @@ class FetchData extends React.Component<WeatherForecastProps, void> {
     }
 }
 
-// Build the WeatherForecastProps type, which allows the component to be strongly typed
-const provider = provide(
-    (state: ApplicationState) => state.weatherForecasts, // Select which part of global state maps to this component
-    WeatherForecastsState.actionCreators                 // Select which action creators should be exposed to this component
-).withExternalProps<{ params: RouteParams }>();          // Also include a 'params' property on WeatherForecastProps
-type WeatherForecastProps = typeof provider.allProps;
-export default provider.connect(FetchData);
+export default connect(
+    (state: ApplicationState) => state.weatherForecasts, // Selects which state properties are merged into the component's props
+    WeatherForecastsState.actionCreators                 // Selects which action creators are merged into the component's props
+)(FetchData);

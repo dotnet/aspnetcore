@@ -1,8 +1,11 @@
 import * as React from 'react';
 import { Link } from 'react-router';
-import { provide } from 'redux-typed';
+import { connect } from 'react-redux';
 import { ApplicationState }  from '../store';
 import * as CounterStore from '../store/Counter';
+import * as WeatherForecasts from '../store/WeatherForecasts';
+
+type CounterProps = CounterStore.CounterState & typeof CounterStore.actionCreators;
 
 class Counter extends React.Component<CounterProps, void> {
     public render() {
@@ -18,10 +21,8 @@ class Counter extends React.Component<CounterProps, void> {
     }
 }
 
-// Build the CounterProps type, which allows the component to be strongly typed
-const provider = provide(
-    (state: ApplicationState) => state.counter, // Select which part of global state maps to this component
-    CounterStore.actionCreators                 // Select which action creators should be exposed to this component
-);
-type CounterProps = typeof provider.allProps;
-export default provider.connect(Counter);
+// Wire up the React component to the Redux store
+export default connect(
+    (state: ApplicationState) => state.counter, // Selects which state properties are merged into the component's props
+    CounterStore.actionCreators                 // Selects which action creators are merged into the component's props
+)(Counter);
