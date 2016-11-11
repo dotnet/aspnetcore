@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private readonly List<UvPipeHandle> _dispatchPipes = new List<UvPipeHandle>();
         private int _dispatchIndex;
         private string _pipeName;
+        private byte[] _pipeMessage;
         private IntPtr _fileCompletionInfoPtr;
         private bool _tryDetachFromIOCP = PlatformApis.IsWindows;
 
@@ -36,10 +37,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public async Task StartAsync(
             string pipeName,
+            byte[] pipeMessage,
             ServerAddress address,
             KestrelThread thread)
         {
             _pipeName = pipeName;
+            _pipeMessage = pipeMessage;
 
             if (_fileCompletionInfoPtr == IntPtr.Zero)
             {
@@ -187,7 +190,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private class PipeReadContext
         {
+            private const int _bufferLength = 16;
+
             private readonly ListenerPrimary _listener;
+            private readonly byte[] _buf = new byte[_bufferLength];
             private readonly IntPtr _bufPtr;
             private GCHandle _bufHandle;
             private int _bytesRead;
@@ -195,16 +201,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             public PipeReadContext(ListenerPrimary listener)
             {
                 _listener = listener;
-                _bufHandle = GCHandle.Alloc(new byte[8], GCHandleType.Pinned);
+                _bufHandle = GCHandle.Alloc(_buf, GCHandleType.Pinned);
                 _bufPtr = _bufHandle.AddrOfPinnedObject();
             }
 
             public Libuv.uv_buf_t AllocCallback(UvStreamHandle dispatchPipe, int suggestedSize)
             {
-                return dispatchPipe.Libuv.buf_init(_bufPtr + _bytesRead, 8 - _bytesRead);
+                return dispatchPipe.Libuv.buf_init(_bufPtr + _bytesRead, _bufferLength - _bytesRead);
             }
 
-            public unsafe void ReadCallback(UvStreamHandle dispatchPipe, int status)
+            public void ReadCallback(UvStreamHandle dispatchPipe, int status)
             {
                 try
                 {
@@ -212,9 +218,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                     _bytesRead += status;
 
-                    if (_bytesRead == 8)
+                    if (_bytesRead == _bufferLength)
                     {
-                        if (*(ulong*)_bufPtr == Constants.PipeMessage)
+                        var correctMessage = true;
+
+                        for (var i = 0; i < _bufferLength; i++)
+                        {
+                            if (_buf[i] != _listener._pipeMessage[i])
+                            {
+                                correctMessage = false;
+                            }
+                        }
+
+                        if (correctMessage)
                         {
                             _listener._dispatchPipes.Add((UvPipeHandle) dispatchPipe);
                             dispatchPipe.ReadStop();

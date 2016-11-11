@@ -57,6 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             try
             {
                 var pipeName = (Libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
+                var pipeMessage = Guid.NewGuid().ToByteArray();
 
                 var single = Threads.Count == 1;
                 var first = true;
@@ -78,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                             : new TcpListenerPrimary(this);
 
                         listeners.Add(listener);
-                        listener.StartAsync(pipeName, address, thread).Wait();
+                        listener.StartAsync(pipeName, pipeMessage, address, thread).Wait();
                     }
                     else
                     {
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                             ? (ListenerSecondary) new PipeListenerSecondary(this)
                             : new TcpListenerSecondary(this);
                         listeners.Add(listener);
-                        listener.StartAsync(pipeName, address, thread).Wait();
+                        listener.StartAsync(pipeName, pipeMessage, address, thread).Wait();
                     }
 
                     first = false;

@@ -17,10 +17,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
     /// </summary>
     public abstract class ListenerSecondary : ListenerContext, IAsyncDisposable
     {
-        private static ArraySegment<ArraySegment<byte>> _pipeMessage =
-            new ArraySegment<ArraySegment<byte>>(new[] { new ArraySegment<byte>(BitConverter.GetBytes(Constants.PipeMessage)) });
-
         private string _pipeName;
+        private byte[] _pipeMessage;
         private IntPtr _ptr;
         private Libuv.uv_buf_t _buf;
         private bool _closed;
@@ -34,10 +32,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public Task StartAsync(
             string pipeName,
+            byte[] pipeMessage,
             ServerAddress address,
             KestrelThread thread)
         {
             _pipeName = pipeName;
+            _pipeMessage = pipeMessage;
             _buf = thread.Loop.Libuv.buf_init(_ptr, 4);
 
             ServerAddress = address;
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 writeReq.Init(Thread.Loop);
                 writeReq.Write(
                     DispatchPipe,
-                    _pipeMessage,
+                    new ArraySegment<ArraySegment<byte>>(new [] { new ArraySegment<byte>(_pipeMessage) }),
                     (req, status2, ex, state) =>
                     {
                         req.Dispose();

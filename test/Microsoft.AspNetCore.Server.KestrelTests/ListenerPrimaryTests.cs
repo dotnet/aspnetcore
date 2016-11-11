@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
@@ -55,12 +57,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 var address = ServerAddress.FromUrl("http://127.0.0.1:0/");
                 var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
+                var pipeMessage = Guid.NewGuid().ToByteArray();
 
                 // Start primary listener
                 var kestrelThreadPrimary = new KestrelThread(kestrelEngine);
                 await kestrelThreadPrimary.StartAsync();
                 var listenerPrimary = new TcpListenerPrimary(serviceContextPrimary);
-                await listenerPrimary.StartAsync(pipeName, address, kestrelThreadPrimary);
+                await listenerPrimary.StartAsync(pipeName, pipeMessage, address, kestrelThreadPrimary);
 
                 // Until a secondary listener is added, TCP connections get dispatched directly
                 Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
@@ -70,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var kestrelThreadSecondary = new KestrelThread(kestrelEngine);
                 await kestrelThreadSecondary.StartAsync();
                 var listenerSecondary = new TcpListenerSecondary(serviceContextSecondary);
-                await listenerSecondary.StartAsync(pipeName, address, kestrelThreadSecondary);
+                await listenerSecondary.StartAsync(pipeName, pipeMessage, address, kestrelThreadSecondary);
 
                 // Once a secondary listener is added, TCP connections start getting dispatched to it
                 Assert.Equal("Secondary", await HttpClientSlim.GetStringAsync(address.ToString()));
@@ -128,18 +131,19 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 var address = ServerAddress.FromUrl("http://127.0.0.1:0/");
                 var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
+                var pipeMessage = Guid.NewGuid().ToByteArray();
 
                 // Start primary listener
                 var kestrelThreadPrimary = new KestrelThread(kestrelEngine);
                 await kestrelThreadPrimary.StartAsync();
                 var listenerPrimary = new TcpListenerPrimary(serviceContextPrimary);
-                await listenerPrimary.StartAsync(pipeName, address, kestrelThreadPrimary);
+                await listenerPrimary.StartAsync(pipeName, pipeMessage, address, kestrelThreadPrimary);
 
                 // Add secondary listener
                 var kestrelThreadSecondary = new KestrelThread(kestrelEngine);
                 await kestrelThreadSecondary.StartAsync();
                 var listenerSecondary = new TcpListenerSecondary(serviceContextSecondary);
-                await listenerSecondary.StartAsync(pipeName, address, kestrelThreadSecondary);
+                await listenerSecondary.StartAsync(pipeName, pipeMessage, address, kestrelThreadSecondary);
 
                 // TCP Connections get round-robined
                 Assert.Equal("Secondary", await HttpClientSlim.GetStringAsync(address.ToString()));
@@ -199,7 +203,78 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             Assert.Equal(1, primaryTrace.Logger.TotalErrorsLogged);
             var errorMessage = primaryTrace.Logger.Messages.First(m => m.LogLevel == LogLevel.Error);
-            Assert.Contains("EOF", errorMessage.Exception.ToString());
+            Assert.Equal(Constants.EOF, Assert.IsType<UvException>(errorMessage.Exception).StatusCode);
+        }
+
+        [Fact]
+        public async Task PipeConnectionsWithWrongMessageAreLoggedAndIgnored()
+        {
+            var libuv = new Libuv();
+
+            var primaryTrace = new TestKestrelTrace();
+
+            var serviceContextPrimary = new TestServiceContext
+            {
+                Log = primaryTrace,
+                FrameFactory = context =>
+                {
+                    return new Frame<DefaultHttpContext>(new TestApplication(c =>
+                    {
+                        return c.Response.WriteAsync("Primary");
+                    }), context);
+                }
+            };
+
+            var serviceContextSecondary = new ServiceContext
+            {
+                Log = new TestKestrelTrace(),
+                AppLifetime = serviceContextPrimary.AppLifetime,
+                DateHeaderValueManager = serviceContextPrimary.DateHeaderValueManager,
+                ServerOptions = serviceContextPrimary.ServerOptions,
+                ThreadPool = serviceContextPrimary.ThreadPool,
+                FrameFactory = context =>
+                {
+                    return new Frame<DefaultHttpContext>(new TestApplication(c =>
+                    {
+                        return c.Response.WriteAsync("Secondary"); ;
+                    }), context);
+                }
+            };
+
+            using (var kestrelEngine = new KestrelEngine(libuv, serviceContextPrimary))
+            {
+                var address = ServerAddress.FromUrl("http://127.0.0.1:0/");
+                var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
+                var pipeMessage = Guid.NewGuid().ToByteArray();
+
+                // Start primary listener
+                var kestrelThreadPrimary = new KestrelThread(kestrelEngine);
+                await kestrelThreadPrimary.StartAsync();
+                var listenerPrimary = new TcpListenerPrimary(serviceContextPrimary);
+                await listenerPrimary.StartAsync(pipeName, pipeMessage, address, kestrelThreadPrimary);
+
+                // Add secondary listener with wrong pipe message
+                var kestrelThreadSecondary = new KestrelThread(kestrelEngine);
+                await kestrelThreadSecondary.StartAsync();
+                var listenerSecondary = new TcpListenerSecondary(serviceContextSecondary);
+                await listenerSecondary.StartAsync(pipeName, Guid.NewGuid().ToByteArray(), address, kestrelThreadSecondary);
+
+                // TCP Connections get round-robined
+                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
+                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
+                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
+
+                await listenerSecondary.DisposeAsync();
+                kestrelThreadSecondary.Stop(TimeSpan.FromSeconds(1));
+
+                await listenerPrimary.DisposeAsync();
+                kestrelThreadPrimary.Stop(TimeSpan.FromSeconds(1));
+            }
+
+            Assert.Equal(1, primaryTrace.Logger.TotalErrorsLogged);
+            var errorMessage = primaryTrace.Logger.Messages.First(m => m.LogLevel == LogLevel.Error);
+            Assert.IsType<IOException>(errorMessage.Exception);
+            Assert.Contains("Bad data", errorMessage.Exception.ToString());
         }
 
         private class TestApplication : IHttpApplication<DefaultHttpContext>
