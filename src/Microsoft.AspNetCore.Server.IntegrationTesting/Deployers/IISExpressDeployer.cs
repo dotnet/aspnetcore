@@ -5,8 +5,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
@@ -20,6 +21,16 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         public IISExpressDeployer(DeploymentParameters deploymentParameters, ILogger logger)
             : base(deploymentParameters, logger)
         {
+        }
+
+        public bool IsWin8OrLater
+        {
+            get
+            {
+                var win8Version = new Version(6, 2);
+
+                return (new Version(RuntimeEnvironment.OperatingSystemVersion) >= win8Version);
+            }
         }
 
         public override DeploymentResult Deploy()
@@ -56,6 +67,34 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             {
                 // Pass on the applicationhost.config to iis express. With this don't need to pass in the /path /port switches as they are in the applicationHost.config
                 // We take a copy of the original specified applicationHost.Config to prevent modifying the one in the repo.
+
+                if (DeploymentParameters.ServerConfigTemplateContent.Contains("[ANCMPath]"))
+                {
+                    string ancmPath;
+                    if (!IsWin8OrLater)
+                    {
+                        // The nupkg build of ANCM does not support Win7. https://github.com/aspnet/AspNetCoreModule/issues/40.
+                        ancmPath = @"%ProgramFiles%\IIS Express\aspnetcore.dll";
+                    }
+                    // Bin deployed by Microsoft.AspNetCore.AspNetCoreModule.nupkg
+                    else if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr
+                        && DeploymentParameters.ApplicationType == ApplicationType.Portable)
+                    {
+                        ancmPath = Path.Combine(contentRoot, @"runtimes\win7-x64\native\aspnetcore.dll");
+                    }
+                    else
+                    {
+                        ancmPath = Path.Combine(contentRoot, "aspnetcore.dll");
+                    }
+
+                    if (!File.Exists(ancmPath))
+                    {
+                        throw new FileNotFoundException("AspNetCoreModule could not be found.", ancmPath);
+                    }
+
+                    DeploymentParameters.ServerConfigTemplateContent =
+                        DeploymentParameters.ServerConfigTemplateContent.Replace("[ANCMPath]", ancmPath);
+                }
 
                 DeploymentParameters.ServerConfigTemplateContent =
                     DeploymentParameters.ServerConfigTemplateContent
