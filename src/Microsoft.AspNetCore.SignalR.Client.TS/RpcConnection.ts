@@ -50,8 +50,8 @@ class RpcConnection {
         }
     }
 
-    start(transportNames?:string[]): Promise<void> {
-        return this.connection.start(transportNames);
+    start(transportName? :string): Promise<void> {
+        return this.connection.start(transportName);
     }
 
     stop(): void {

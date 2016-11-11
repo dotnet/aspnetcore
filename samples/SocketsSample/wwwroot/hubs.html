@@ -48,12 +48,9 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            var transports = getParameterByName('transport');
-            if (transports != null) {
-                transports = transports.split(',')
-            }
+            let transport = getParameterByName('transport') || 'webSockets';
 
-            document.getElementById('head1').innerHTML = transports ? transports.join(', ') : "auto (WebSockets)";
+            document.getElementById('head1').innerHTML = transport;
 
             let connection = new RpcConnection(`http://${document.location.host}/hubs`, 'formatType=json&format=text');
             connection.on('Send', msg => {
@@ -70,7 +67,7 @@
             }
 
             click('connect', event => {
-                connection.start(transports)
+                connection.start(transport)
                     .then(() => {
                         isConnected = true;
                         addLine('Connected successfully', 'green');
