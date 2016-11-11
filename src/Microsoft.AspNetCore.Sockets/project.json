@@ -25,7 +25,7 @@
     "Channels": "0.2.0-beta-*",
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.2.0-*",
     "Microsoft.AspNetCore.Routing": "1.2.0-*",
-    "Microsoft.AspNetCore.WebSockets": "0.3.0-*",
+    "Microsoft.AspNetCore.WebSockets": "1.1.0-*",
     "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
