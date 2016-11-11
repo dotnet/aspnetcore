@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
                 RuntimeArchitecture.x64)
             {
                 PublishApplicationBeforeDeployment = true,
-                TargetFramework = flavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.0",
+                TargetFramework = flavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.1",
                 Configuration = "Release",
                 EnvironmentVariables =
                 {
