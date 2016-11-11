@@ -57,6 +57,7 @@ These are some of the most common repos:
 * [Identity](https://github.com/aspnet/Identity) - users and membership system
 * [MVC](https://github.com/aspnet/Mvc) - MVC framework for web apps and services
 * [Razor](https://github.com/aspnet/Razor) - template language and syntax for CSHTML files
+* [SignalR](https://github.com/aspnet/SignalR) - library to add real-time web functionality
 * [Templates](https://github.com/aspnet/Templates) - project templates for Visual Studio
 * [Tooling](https://github.com/aspnet/Tooling) - Visual Studio tooling, editors, and dialogs
 
