@@ -12,3 +12,4 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 ## Community Maintained Store Providers
 
  - [ASP.NET Identity MongoDB Provider](https://github.com/tugberkugurlu/AspNetCore.Identity.MongoDB)
+ - [ASP.NET Identity LinqToDB Provider](https://github.com/ili/LinqToDB.Identity)
