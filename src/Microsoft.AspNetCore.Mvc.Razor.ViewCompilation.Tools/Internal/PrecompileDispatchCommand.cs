@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             ProjectContext projectContext;
             if (TargetFramework != null)
             {
-                projectContext = projectContexts.FirstOrDefault(context => context.TargetFramework == TargetFramework);
+                projectContext = projectContexts.FirstOrDefault(context => context.TargetFramework.Equals(TargetFramework));
                 if (projectContext == null)
                 {
                     throw new InvalidOperationException($"Project '{ProjectPath}' does not support framework: {FrameworkOption.Value()}");

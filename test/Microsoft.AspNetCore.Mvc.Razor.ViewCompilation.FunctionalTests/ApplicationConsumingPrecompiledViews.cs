@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
                 ExecuteForClassLibrary(Command.CreateDotNet(
                     "razor-precompile",
-                    GetPrecompileArguments("netcoreapp1.0")));
+                    GetPrecompileArguments("netcoreapp1.1")));
 
                 var timestamp = "z" + DateTime.UtcNow.Ticks.ToString().PadLeft(18, '0');
                 var packCommand = Command
