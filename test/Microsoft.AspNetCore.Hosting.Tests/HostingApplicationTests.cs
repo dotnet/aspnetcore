@@ -22,7 +22,9 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             // Arrange
             var httpContextFactory = new HttpContextFactory(new DefaultObjectPoolProvider(), Options.Create(new FormOptions()), new HttpContextAccessor());
             var hostingApplication = new HostingApplication(ctx => Task.FromResult(0), new NullScopeLogger(), new NoopDiagnosticSource(), httpContextFactory);
-            var context = hostingApplication.CreateContext(new FeatureCollection());
+            var features = new FeatureCollection();
+            features.Set<IHttpRequestFeature>(new HttpRequestFeature());
+            var context = hostingApplication.CreateContext(features);
 
             // Act/Assert
             hostingApplication.DisposeContext(context, null);

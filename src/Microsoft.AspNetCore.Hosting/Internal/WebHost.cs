@@ -97,15 +97,15 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public virtual void Start()
         {
+            HostingEventSource.Log.HostStart();
+            _logger = _applicationServices.GetRequiredService<ILogger<WebHost>>();
+            _logger.Starting();
+
             Initialize();
 
             _applicationLifetime = _applicationServices.GetRequiredService<IApplicationLifetime>() as ApplicationLifetime;
-            _logger = _applicationServices.GetRequiredService<ILogger<WebHost>>();
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticSource>();
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
-
-            _logger.Starting();
-
             Server.Start(new HostingApplication(_application, _logger, diagnosticSource, httpContextFactory));
 
             _applicationLifetime?.NotifyStarted();
@@ -247,6 +247,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             (_hostingServiceProvider as IDisposable)?.Dispose();
             (_applicationServices as IDisposable)?.Dispose();
             _applicationLifetime?.NotifyStopped();
+
+            HostingEventSource.Log.HostStop();
         }
     }
 }
