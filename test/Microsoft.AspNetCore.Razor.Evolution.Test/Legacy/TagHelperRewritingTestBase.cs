@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNetCore.Razor.Evolution.TagHelpers;
+using Microsoft.AspNetCore.Razor.Evolution;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {

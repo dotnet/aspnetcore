@@ -32,6 +32,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             builder.Phases.Add(new DefaultRazorParsingPhase());
             builder.Phases.Add(new DefaultRazorSyntaxTreePhase());
+
+            builder.Features.Add(new TagHelperBinderSyntaxTreePass());
         }
 
         public abstract IReadOnlyList<IRazorEngineFeature> Features { get; }

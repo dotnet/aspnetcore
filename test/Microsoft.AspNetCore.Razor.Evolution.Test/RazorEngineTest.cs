@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Evolution;
 using Moq;
 using Xunit;
 
@@ -73,15 +74,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         private static void AssertDefaultFeatures(IEnumerable<IRazorEngineFeature> features)
         {
-            Assert.Empty(features);
-        }
-
-        private static void AssertDefaultPhases(IReadOnlyList<IRazorEnginePhase> features)
-        {
             Assert.Collection(
                 features,
-                f => Assert.IsType<DefaultRazorParsingPhase>(f),
-                f => Assert.IsType<DefaultRazorSyntaxTreePhase>(f));
+                feature => Assert.IsType<TagHelperBinderSyntaxTreePass>(feature));
+        }
+
+        private static void AssertDefaultPhases(IReadOnlyList<IRazorEnginePhase> phases)
+        {
+            Assert.Collection(
+                phases,
+                phase => Assert.IsType<DefaultRazorParsingPhase>(phase),
+                phase => Assert.IsType<DefaultRazorSyntaxTreePhase>(phase));
         }
     }
 }
