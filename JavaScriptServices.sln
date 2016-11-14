@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{E6E88944-4800-40BA-8AF5-069EA3ADFEB8}"
 EndProject
@@ -45,6 +45,10 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore", "samples\react\MusicStore\MusicStore.xproj", "{C870A92C-9E3F-4BF2-82B8-5758545A8B7C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Angular", "Angular", "{4867A616-83D6-48DC-964D-6AE743596631}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Aurelia", "templates\AureliaSpa\Aurelia.xproj", "{33D8DAD9-74F9-471D-8BAD-55F828FAA736}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "KnockoutSpa", "templates\KnockoutSpa\KnockoutSpa.xproj", "{85231B41-6998-49AE-ABD2-5124C83DBEF2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -108,6 +112,14 @@ Global
 		{C870A92C-9E3F-4BF2-82B8-5758545A8B7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C870A92C-9E3F-4BF2-82B8-5758545A8B7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C870A92C-9E3F-4BF2-82B8-5758545A8B7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33D8DAD9-74F9-471D-8BAD-55F828FAA736}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33D8DAD9-74F9-471D-8BAD-55F828FAA736}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33D8DAD9-74F9-471D-8BAD-55F828FAA736}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33D8DAD9-74F9-471D-8BAD-55F828FAA736}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85231B41-6998-49AE-ABD2-5124C83DBEF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85231B41-6998-49AE-ABD2-5124C83DBEF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85231B41-6998-49AE-ABD2-5124C83DBEF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85231B41-6998-49AE-ABD2-5124C83DBEF2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -126,5 +138,7 @@ Global
 		{E0EBA813-4478-4C02-B11D-FB3793113FE4} = {E6E88944-4800-40BA-8AF5-069EA3ADFEB8}
 		{C870A92C-9E3F-4BF2-82B8-5758545A8B7C} = {E0EBA813-4478-4C02-B11D-FB3793113FE4}
 		{4867A616-83D6-48DC-964D-6AE743596631} = {E6E88944-4800-40BA-8AF5-069EA3ADFEB8}
+		{33D8DAD9-74F9-471D-8BAD-55F828FAA736} = {727E6D58-6830-4792-96C6-E138A33959FB}
+		{85231B41-6998-49AE-ABD2-5124C83DBEF2} = {727E6D58-6830-4792-96C6-E138A33959FB}
 	EndGlobalSection
 EndGlobal
