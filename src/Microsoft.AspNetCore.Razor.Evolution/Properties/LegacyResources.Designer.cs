@@ -1079,6 +1079,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         }
 
         /// <summary>
+        /// Attribute '{0}' on tag helper element '{1}' requires a value. Tag helper bound attributes of type '{2}' cannot be empty or contain only whitespace.
+        /// </summary>
+        internal static string RewriterError_EmptyTagHelperBoundAttribute
+        {
+            get { return GetString("RewriterError_EmptyTagHelperBoundAttribute"); }
+        }
+
+        /// <summary>
+        /// Attribute '{0}' on tag helper element '{1}' requires a value. Tag helper bound attributes of type '{2}' cannot be empty or contain only whitespace.
+        /// </summary>
+        internal static string FormatRewriterError_EmptyTagHelperBoundAttribute(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("RewriterError_EmptyTagHelperBoundAttribute"), p0, p1, p2);
+        }
+
+        /// <summary>
         /// @section Header { ... }
         /// </summary>
         internal static string SectionExample_CS
@@ -1124,6 +1140,166 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         internal static string FormatSymbol_Unknown()
         {
             return GetString("Symbol_Unknown");
+        }
+
+        /// <summary>
+        /// The tag helper attribute '{0}' in element '{1}' is missing a key. The syntax is '&lt;{1} {0}{{ key }}="value"&gt;'.
+        /// </summary>
+        internal static string TagHelperBlockRewriter_IndexerAttributeNameMustIncludeKey
+        {
+            get { return GetString("TagHelperBlockRewriter_IndexerAttributeNameMustIncludeKey"); }
+        }
+
+        /// <summary>
+        /// The tag helper attribute '{0}' in element '{1}' is missing a key. The syntax is '&lt;{1} {0}{{ key }}="value"&gt;'.
+        /// </summary>
+        internal static string FormatTagHelperBlockRewriter_IndexerAttributeNameMustIncludeKey(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperBlockRewriter_IndexerAttributeNameMustIncludeKey"), p0, p1);
+        }
+
+        /// <summary>
+        /// TagHelper attributes must be well-formed.
+        /// </summary>
+        internal static string TagHelperBlockRewriter_TagHelperAttributeListMustBeWellFormed
+        {
+            get { return GetString("TagHelperBlockRewriter_TagHelperAttributeListMustBeWellFormed"); }
+        }
+
+        /// <summary>
+        /// TagHelper attributes must be well-formed.
+        /// </summary>
+        internal static string FormatTagHelperBlockRewriter_TagHelperAttributeListMustBeWellFormed()
+        {
+            return GetString("TagHelperBlockRewriter_TagHelperAttributeListMustBeWellFormed");
+        }
+
+        /// <summary>
+        /// The parent &lt;{0}&gt; tag helper does not allow non-tag content. Only child tag helper(s) targeting tag name(s) '{1}' are allowed.
+        /// </summary>
+        internal static string TagHelperParseTreeRewriter_CannotHaveNonTagContent
+        {
+            get { return GetString("TagHelperParseTreeRewriter_CannotHaveNonTagContent"); }
+        }
+
+        /// <summary>
+        /// The parent &lt;{0}&gt; tag helper does not allow non-tag content. Only child tag helper(s) targeting tag name(s) '{1}' are allowed.
+        /// </summary>
+        internal static string FormatTagHelperParseTreeRewriter_CannotHaveNonTagContent(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperParseTreeRewriter_CannotHaveNonTagContent"), p0, p1);
+        }
+
+        /// <summary>
+        /// Found an end tag (&lt;/{0}&gt;) for tag helper '{1}' with tag structure that disallows an end tag ('{2}').
+        /// </summary>
+        internal static string TagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag
+        {
+            get { return GetString("TagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag"); }
+        }
+
+        /// <summary>
+        /// Found an end tag (&lt;/{0}&gt;) for tag helper '{1}' with tag structure that disallows an end tag ('{2}').
+        /// </summary>
+        internal static string FormatTagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// Tag helpers '{0}' and '{1}' targeting element '{2}' must not expect different {3} values.
+        /// </summary>
+        internal static string TagHelperParseTreeRewriter_InconsistentTagStructure
+        {
+            get { return GetString("TagHelperParseTreeRewriter_InconsistentTagStructure"); }
+        }
+
+        /// <summary>
+        /// Tag helpers '{0}' and '{1}' targeting element '{2}' must not expect different {3} values.
+        /// </summary>
+        internal static string FormatTagHelperParseTreeRewriter_InconsistentTagStructure(object p0, object p1, object p2, object p3)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperParseTreeRewriter_InconsistentTagStructure"), p0, p1, p2, p3);
+        }
+
+        /// <summary>
+        /// The &lt;{0}&gt; tag is not allowed by parent &lt;{1}&gt; tag helper. Only child tags with name(s) '{2}' are allowed.
+        /// </summary>
+        internal static string TagHelperParseTreeRewriter_InvalidNestedTag
+        {
+            get { return GetString("TagHelperParseTreeRewriter_InvalidNestedTag"); }
+        }
+
+        /// <summary>
+        /// The &lt;{0}&gt; tag is not allowed by parent &lt;{1}&gt; tag helper. Only child tags with name(s) '{2}' are allowed.
+        /// </summary>
+        internal static string FormatTagHelperParseTreeRewriter_InvalidNestedTag(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperParseTreeRewriter_InvalidNestedTag"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// Found a malformed '{0}' tag helper. Tag helpers must have a start and end tag or be self closing.
+        /// </summary>
+        internal static string TagHelpersParseTreeRewriter_FoundMalformedTagHelper
+        {
+            get { return GetString("TagHelpersParseTreeRewriter_FoundMalformedTagHelper"); }
+        }
+
+        /// <summary>
+        /// Found a malformed '{0}' tag helper. Tag helpers must have a start and end tag or be self closing.
+        /// </summary>
+        internal static string FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpersParseTreeRewriter_FoundMalformedTagHelper"), p0);
+        }
+
+        /// <summary>
+        /// Missing close angle for tag helper '{0}'.
+        /// </summary>
+        internal static string TagHelpersParseTreeRewriter_MissingCloseAngle
+        {
+            get { return GetString("TagHelpersParseTreeRewriter_MissingCloseAngle"); }
+        }
+
+        /// <summary>
+        /// Missing close angle for tag helper '{0}'.
+        /// </summary>
+        internal static string FormatTagHelpersParseTreeRewriter_MissingCloseAngle(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpersParseTreeRewriter_MissingCloseAngle"), p0);
+        }
+
+        /// <summary>
+        /// Tag Helper '{0}'s attributes must have names.
+        /// </summary>
+        internal static string TagHelpers_AttributesMustHaveAName
+        {
+            get { return GetString("TagHelpers_AttributesMustHaveAName"); }
+        }
+
+        /// <summary>
+        /// Tag Helper '{0}'s attributes must have names.
+        /// </summary>
+        internal static string FormatTagHelpers_AttributesMustHaveAName(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_AttributesMustHaveAName"), p0);
+        }
+
+        /// <summary>
+        /// The tag helper '{0}' must not have C# in the element's attribute declaration area.
+        /// </summary>
+        internal static string TagHelpers_CannotHaveCSharpInTagDeclaration
+        {
+            get { return GetString("TagHelpers_CannotHaveCSharpInTagDeclaration"); }
+        }
+
+        /// <summary>
+        /// The tag helper '{0}' must not have C# in the element's attribute declaration area.
+        /// </summary>
+        internal static string FormatTagHelpers_CannotHaveCSharpInTagDeclaration(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_CannotHaveCSharpInTagDeclaration"), p0);
         }
 
         /// <summary>

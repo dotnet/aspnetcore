@@ -282,6 +282,35 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
+        private static void EvaluateTagHelperAttribute(
+            ErrorCollector collector,
+            TagHelperAttributeNode actual,
+            TagHelperAttributeNode expected)
+        {
+            if (actual.Name != expected.Name)
+            {
+                collector.AddError("{0} - FAILED :: Attribute names do not match", expected.Name);
+            }
+            else
+            {
+                collector.AddMessage("{0} - PASSED :: Attribute names match", expected.Name);
+            }
+
+            if (actual.ValueStyle != expected.ValueStyle)
+            {
+                collector.AddError("{0} - FAILED :: Attribute value styles do not match", expected.ValueStyle.ToString());
+            }
+            else
+            {
+                collector.AddMessage("{0} - PASSED :: Attribute value style match", expected.ValueStyle);
+            }
+
+            if (actual.ValueStyle != HtmlAttributeValueStyle.Minimized)
+            {
+                EvaluateSyntaxTreeNode(collector, actual.Value, expected.Value);
+            }
+        }
+
         private static void EvaluateSyntaxTreeNode(ErrorCollector collector, SyntaxTreeNode actual, SyntaxTreeNode expected)
         {
             if (actual == null)
@@ -327,6 +356,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
             else
             {
+                if (actual is TagHelperBlock)
+                {
+                    EvaluateTagHelperBlock(collector, actual as TagHelperBlock, expected as TagHelperBlock);
+                }
+
                 AddPassedMessage(collector, expected);
                 using (collector.Indent())
                 {
@@ -347,6 +381,50 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     {
                         collector.AddError("End of Node - FAILED :: Found Node: {0}", actualNodes.Current);
                     }
+                }
+            }
+        }
+
+        private static void EvaluateTagHelperBlock(ErrorCollector collector, TagHelperBlock actual, TagHelperBlock expected)
+        {
+            if (expected == null)
+            {
+                AddMismatchError(collector, actual, expected);
+            }
+            else
+            {
+                if (!string.Equals(expected.TagName, actual.TagName, StringComparison.Ordinal))
+                {
+                    collector.AddError(
+                        "{0} - FAILED :: TagName mismatch for TagHelperBlock :: ACTUAL: {1}",
+                        expected.TagName,
+                        actual.TagName);
+                }
+
+                if (expected.TagMode != actual.TagMode)
+                {
+                    collector.AddError(
+                        $"{expected.TagMode} - FAILED :: {nameof(TagMode)} for {nameof(TagHelperBlock)} " +
+                        $"{actual.TagName} :: ACTUAL: {actual.TagMode}");
+                }
+
+                var expectedAttributes = expected.Attributes.GetEnumerator();
+                var actualAttributes = actual.Attributes.GetEnumerator();
+
+                while (expectedAttributes.MoveNext())
+                {
+                    if (!actualAttributes.MoveNext())
+                    {
+                        collector.AddError("{0} - FAILED :: No more attributes on this node", expectedAttributes.Current);
+                    }
+                    else
+                    {
+                        EvaluateTagHelperAttribute(collector, actualAttributes.Current, expectedAttributes.Current);
+                    }
+                }
+                while (actualAttributes.MoveNext())
+                {
+                    collector.AddError("End of Attributes - FAILED :: Found Attribute: {0}", actualAttributes.Current.Name);
                 }
             }
         }

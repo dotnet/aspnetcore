@@ -82,6 +82,26 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
+        public Span FindFirstDescendentSpan()
+        {
+            SyntaxTreeNode current = this;
+            while (current != null && current.IsBlock)
+            {
+                current = ((Block)current).Children.FirstOrDefault();
+            }
+            return current as Span;
+        }
+
+        public Span FindLastDescendentSpan()
+        {
+            SyntaxTreeNode current = this;
+            while (current != null && current.IsBlock)
+            {
+                current = ((Block)current).Children.LastOrDefault();
+            }
+            return current as Span;
+        }
+
         public override string ToString()
         {
             return string.Format(

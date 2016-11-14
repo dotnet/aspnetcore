@@ -335,6 +335,9 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="Parser_Context_Not_Set" xml:space="preserve">
     <value>Parser was started with a null Context property.  The Context property must be set BEFORE calling any methods on the parser.</value>
   </data>
+  <data name="RewriterError_EmptyTagHelperBoundAttribute" xml:space="preserve">
+    <value>Attribute '{0}' on tag helper element '{1}' requires a value. Tag helper bound attributes of type '{2}' cannot be empty or contain only whitespace.</value>
+  </data>
   <data name="SectionExample_CS" xml:space="preserve">
     <value>@section Header { ... }</value>
     <comment>In CSHTML, the @section keyword is case-sensitive and lowercase (as with all C# keywords)</comment>
@@ -344,6 +347,36 @@ Instead, wrap the contents of the block in "{{}}":
   </data>
   <data name="Symbol_Unknown" xml:space="preserve">
     <value>&lt;&lt;unknown&gt;&gt;</value>
+  </data>
+  <data name="TagHelperBlockRewriter_IndexerAttributeNameMustIncludeKey" xml:space="preserve">
+    <value>The tag helper attribute '{0}' in element '{1}' is missing a key. The syntax is '&lt;{1} {0}{{ key }}="value"&gt;'.</value>
+  </data>
+  <data name="TagHelperBlockRewriter_TagHelperAttributeListMustBeWellFormed" xml:space="preserve">
+    <value>TagHelper attributes must be well-formed.</value>
+  </data>
+  <data name="TagHelperParseTreeRewriter_CannotHaveNonTagContent" xml:space="preserve">
+    <value>The parent &lt;{0}&gt; tag helper does not allow non-tag content. Only child tag helper(s) targeting tag name(s) '{1}' are allowed.</value>
+  </data>
+  <data name="TagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag" xml:space="preserve">
+    <value>Found an end tag (&lt;/{0}&gt;) for tag helper '{1}' with tag structure that disallows an end tag ('{2}').</value>
+  </data>
+  <data name="TagHelperParseTreeRewriter_InconsistentTagStructure" xml:space="preserve">
+    <value>Tag helpers '{0}' and '{1}' targeting element '{2}' must not expect different {3} values.</value>
+  </data>
+  <data name="TagHelperParseTreeRewriter_InvalidNestedTag" xml:space="preserve">
+    <value>The &lt;{0}&gt; tag is not allowed by parent &lt;{1}&gt; tag helper. Only child tags with name(s) '{2}' are allowed.</value>
+  </data>
+  <data name="TagHelpersParseTreeRewriter_FoundMalformedTagHelper" xml:space="preserve">
+    <value>Found a malformed '{0}' tag helper. Tag helpers must have a start and end tag or be self closing.</value>
+  </data>
+  <data name="TagHelpersParseTreeRewriter_MissingCloseAngle" xml:space="preserve">
+    <value>Missing close angle for tag helper '{0}'.</value>
+  </data>
+  <data name="TagHelpers_AttributesMustHaveAName" xml:space="preserve">
+    <value>Tag Helper '{0}'s attributes must have names.</value>
+  </data>
+  <data name="TagHelpers_CannotHaveCSharpInTagDeclaration" xml:space="preserve">
+    <value>The tag helper '{0}' must not have C# in the element's attribute declaration area.</value>
   </data>
   <data name="TokenizerView_CannotPutBack" xml:space="preserve">
     <value>In order to put a symbol back, it must have been the symbol which ended at the current position. The specified symbol ends at {0}, but the current position is {1}</value>

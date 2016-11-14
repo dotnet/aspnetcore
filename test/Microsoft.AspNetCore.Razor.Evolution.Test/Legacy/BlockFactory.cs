@@ -54,5 +54,27 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 _factory.Markup(content).Accepts(acceptedCharacters)
             );
         }
+
+        public Block TagHelperBlock(
+            string tagName,
+            TagMode tagMode,
+            SourceLocation start,
+            Block startTag,
+            SyntaxTreeNode[] children,
+            Block endTag)
+        {
+            var builder = new TagHelperBlockBuilder(
+                tagName,
+                tagMode,
+                attributes: new List<TagHelperAttributeNode>(),
+                children: children)
+            {
+                Start = start,
+                SourceStartTag = startTag,
+                SourceEndTag = endTag
+            };
+
+            return builder.Build();
+        }
     }
 }

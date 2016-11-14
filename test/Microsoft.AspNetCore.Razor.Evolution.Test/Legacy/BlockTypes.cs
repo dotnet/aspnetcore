@@ -125,6 +125,69 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         }
     }
 
+    internal class MarkupTagHelperBlock : TagHelperBlock
+    {
+        public MarkupTagHelperBlock(string tagName)
+            : this(tagName, tagMode: TagMode.StartTagAndEndTag, attributes: new List<TagHelperAttributeNode>())
+        {
+        }
+
+        public MarkupTagHelperBlock(string tagName, TagMode tagMode)
+            : this(tagName, tagMode, new List<TagHelperAttributeNode>())
+        {
+        }
+
+        public MarkupTagHelperBlock(
+            string tagName,
+            IList<TagHelperAttributeNode> attributes)
+            : this(tagName, TagMode.StartTagAndEndTag, attributes, children: new SyntaxTreeNode[0])
+        {
+        }
+
+        public MarkupTagHelperBlock(
+            string tagName,
+            TagMode tagMode,
+            IList<TagHelperAttributeNode> attributes)
+            : this(tagName, tagMode, attributes, new SyntaxTreeNode[0])
+        {
+        }
+
+        public MarkupTagHelperBlock(string tagName, params SyntaxTreeNode[] children)
+            : this(
+                  tagName,
+                  TagMode.StartTagAndEndTag,
+                  attributes: new List<TagHelperAttributeNode>(),
+                  children: children)
+        {
+        }
+
+        public MarkupTagHelperBlock(string tagName, TagMode tagMode, params SyntaxTreeNode[] children)
+            : this(tagName, tagMode, new List<TagHelperAttributeNode>(), children)
+        {
+        }
+
+        public MarkupTagHelperBlock(
+            string tagName,
+            IList<TagHelperAttributeNode> attributes,
+            params SyntaxTreeNode[] children)
+            : base(new TagHelperBlockBuilder(
+                tagName,
+                TagMode.StartTagAndEndTag,
+                attributes: attributes,
+                children: children))
+        {
+        }
+
+        public MarkupTagHelperBlock(
+            string tagName,
+            TagMode tagMode,
+            IList<TagHelperAttributeNode> attributes,
+            params SyntaxTreeNode[] children)
+            : base(new TagHelperBlockBuilder(tagName, tagMode, attributes, children))
+        {
+        }
+    }
+
     internal class SectionBlock : Block
     {
         private const BlockType ThisBlockType = BlockType.Section;

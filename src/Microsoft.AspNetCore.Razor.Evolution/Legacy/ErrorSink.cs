@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         /// <summary>
         /// <see cref="RazorError"/>s collected.
         /// </summary>
-        public IEnumerable<RazorError> Errors => _errors;
+        public IReadOnlyList<RazorError> Errors => _errors;
 
         /// <summary>
         /// Tracks the given <paramref name="error"/>.
