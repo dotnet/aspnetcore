@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -145,20 +146,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                 return string.Empty;
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
-                if (value == "HTTP/1.1")
+                // GetKnownVersion returns versions which ReferenceEquals interned string
+                // As most common path, check for this only in fast-path and inline 
+                if (ReferenceEquals(value, "HTTP/1.1"))
                 {
                     _httpVersion = Http.HttpVersion.Http11;
                 }
-                else if (value == "HTTP/1.0")
+                else if (ReferenceEquals(value, "HTTP/1.0"))
                 {
                     _httpVersion = Http.HttpVersion.Http10;
                 }
                 else
                 {
-                    _httpVersion = Http.HttpVersion.Unset;
+                    HttpVersionSetSlow(value);
                 }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void HttpVersionSetSlow(string value)
+        {
+            if (value == "HTTP/1.1")
+            {
+                _httpVersion = Http.HttpVersion.Http11;
+            }
+            else if (value == "HTTP/1.0")
+            {
+                _httpVersion = Http.HttpVersion.Http10;
+            }
+            else
+            {
+                _httpVersion = Http.HttpVersion.Unset;
             }
         }
 
