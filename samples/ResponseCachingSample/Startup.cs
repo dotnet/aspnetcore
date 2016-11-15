@@ -28,7 +28,7 @@ namespace ResponseCachingSample
                     Public = true,
                     MaxAge = TimeSpan.FromSeconds(10)
                 };
-                context.Response.Headers[HeaderNames.Vary] = new string[] { "Accept-Encoding", "Non-Existent" };
+                context.Response.Headers[HeaderNames.Vary] = new string[] { "Accept-Encoding" };
 
                 await context.Response.WriteAsync("Hello World! " + DateTime.UtcNow);
             });
