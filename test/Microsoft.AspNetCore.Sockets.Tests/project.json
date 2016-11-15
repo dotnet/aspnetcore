@@ -1,4 +1,4 @@
-﻿{
+{
   "buildOptions": {
     "warningsAsErrors": true
   },
@@ -7,6 +7,8 @@
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Http": "1.2.0-*",
     "Microsoft.AspNetCore.Sockets": "0.1.0-*",
+    "Microsoft.AspNetCore.Hosting": "1.1.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.1.0-*",
     "xunit": "2.2.0-*"
   },
   "frameworks": {

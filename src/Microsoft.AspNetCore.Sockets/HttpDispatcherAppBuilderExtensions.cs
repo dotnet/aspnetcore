@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -18,7 +19,8 @@ namespace Microsoft.AspNetCore.Builder
             var manager = new ConnectionManager();
             var factory = new ChannelFactory();
 
-            var dispatcher = new HttpConnectionDispatcher(manager, factory);
+            var loggerFactory = app.ApplicationServices.GetService<ILoggerFactory>();
+            var dispatcher = new HttpConnectionDispatcher(manager, factory, loggerFactory);
 
             // Dispose the connection manager when application shutdown is triggered
             var lifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
@@ -28,8 +30,7 @@ namespace Microsoft.AspNetCore.Builder
 
             callback(new SocketRouteBuilder(routes, dispatcher));
 
-            // TODO: Use new low allocating websocket API
-            app.UseWebSockets();
+            app.UseWebSocketConnections();
             app.UseRouter(routes.Build());
             return app;
         }

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var manager = new ConnectionManager();
             using (var factory = new ChannelFactory())
             {
-                var dispatcher = new HttpConnectionDispatcher(manager, factory);
+                var dispatcher = new HttpConnectionDispatcher(manager, factory, loggerFactory: null);
                 var context = new DefaultHttpContext();
                 var ms = new MemoryStream();
                 context.Request.Path = "/getid";
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             using (var factory = new ChannelFactory())
             {
-                var dispatcher = new HttpConnectionDispatcher(manager, factory);
+                var dispatcher = new HttpConnectionDispatcher(manager, factory, loggerFactory: null);
                 var context = new DefaultHttpContext();
                 context.Request.Path = "/send";
                 var values = new Dictionary<string, StringValues>();
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var manager = new ConnectionManager();
             using (var factory = new ChannelFactory())
             {
-                var dispatcher = new HttpConnectionDispatcher(manager, factory);
+                var dispatcher = new HttpConnectionDispatcher(manager, factory, loggerFactory: null);
                 var context = new DefaultHttpContext();
                 context.Request.Path = "/send";
                 var values = new Dictionary<string, StringValues>();
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var manager = new ConnectionManager();
             using (var factory = new ChannelFactory())
             {
-                var dispatcher = new HttpConnectionDispatcher(manager, factory);
+                var dispatcher = new HttpConnectionDispatcher(manager, factory, loggerFactory: null);
                 var context = new DefaultHttpContext();
                 context.Request.Path = "/send";
                 await Assert.ThrowsAsync<InvalidOperationException>(async () =>

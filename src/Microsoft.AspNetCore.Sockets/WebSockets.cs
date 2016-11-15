@@ -2,143 +2,155 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Net.WebSockets;
-using System.Threading;
 using System.Threading.Tasks;
 using Channels;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebSockets.Internal;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.WebSockets.Internal;
 
 namespace Microsoft.AspNetCore.Sockets
 {
     public class WebSockets : IHttpTransport
     {
-        private readonly HttpChannel _channel;
-        private readonly Connection _connection;
-        private readonly WebSocketMessageType _messageType;
+        private static readonly TimeSpan _closeTimeout = TimeSpan.FromSeconds(5);
+        private static readonly WebSocketAcceptContext EmptyContext = new WebSocketAcceptContext();
 
-        public WebSockets(Connection connection, Format format)
+        private readonly HttpChannel _channel;
+        private readonly WebSocketOpcode _opcode;
+        private readonly ILogger _logger;
+
+        public WebSockets(Connection connection, Format format, ILoggerFactory loggerFactory)
         {
-            _connection = connection;
             _channel = (HttpChannel)connection.Channel;
-            _messageType = format == Format.Binary ? WebSocketMessageType.Binary : WebSocketMessageType.Text;
+            _opcode = format == Format.Binary ? WebSocketOpcode.Binary : WebSocketOpcode.Text;
+
+            _logger = (ILogger)loggerFactory?.CreateLogger<WebSockets>() ?? NullLogger.Instance;
         }
 
         public async Task ProcessRequestAsync(HttpContext context)
         {
-            if (!context.WebSockets.IsWebSocketRequest)
+            var feature = context.Features.Get<IHttpWebSocketConnectionFeature>();
+            if (feature == null || !feature.IsWebSocketRequest)
             {
+                _logger.LogWarning("Unable to handle WebSocket request, there is no WebSocket feature available.");
                 return;
             }
 
-            var ws = await context.WebSockets.AcceptWebSocketAsync();
-
-            // REVIEW: Should we track this task? Leaving things like this alive usually causes memory leaks :)
-            // The reason we don't await this is because the channel is disposed after this loop returns
-            // and the sending loop is waiting for the channel to end before doing anything
-            // We could do a 2 stage shutdown but that could complicate the code...
-            var sending = StartSending(ws);
-
-            var outputBuffer = _channel.Input.Alloc();
-
-            while (!_channel.Input.Writing.IsCompleted)
+            using (var ws = await feature.AcceptWebSocketConnectionAsync(EmptyContext))
             {
-                // Make sure there's room to read (at least 2k)
-                outputBuffer.Ensure(2048);
+                _logger.LogInformation("Socket opened.");
 
-                ArraySegment<byte> segment;
-                if (!outputBuffer.Memory.TryGetArray(out segment))
+                // Begin sending and receiving. Receiving must be started first because ExecuteAsync enables SendAsync.
+                var receiving = ws.ExecuteAsync((frame, self) => ((WebSockets)self).HandleFrame(frame), this);
+                var sending = StartSending(ws);
+
+                // Wait for something to shut down.
+                var trigger = await Task.WhenAny(
+                    receiving,
+                    sending);
+
+                // What happened?
+                if (trigger == receiving)
                 {
-                    // REVIEW: Do we care about native buffers here?
-                    throw new InvalidOperationException("Managed buffers are required for Web Socket API");
-                }
+                    // Shutting down because we received a close frame from the client.
+                    // Complete the input writer so that the application knows there won't be any more input.
+                    _logger.LogDebug("Client closed connection with status code '{0}' ({1}). Signaling end-of-input to application", receiving.Result.Status, receiving.Result.Description);
+                    _channel.Input.CompleteWriter();
 
-                var result = await ws.ReceiveAsync(segment, CancellationToken.None);
+                    // Wait for the application to finish sending.
+                    _logger.LogDebug("Waiting for the application to finish sending data");
+                    await sending;
 
-                if (result.MessageType != WebSocketMessageType.Close)
-                {
-                    outputBuffer.Advance(result.Count);
-
-                    // Flush the written data to the channel
-                    await outputBuffer.FlushAsync();
-
-                    // Allocate a new buffer to further writing
-                    outputBuffer = _channel.Input.Alloc();
+                    // Send the server's close frame
+                    await ws.CloseAsync(WebSocketCloseStatus.NormalClosure);
                 }
                 else
                 {
-                    break;
+                    // The application finished sending. We're not going to keep the connection open,
+                    // so close it and wait for the client to ack the close
+                    _channel.Input.CompleteWriter();
+                    _logger.LogDebug("Application finished sending. Sending close frame.");
+                    await ws.CloseAsync(WebSocketCloseStatus.NormalClosure);
+
+                    _logger.LogDebug("Waiting for the client to close the socket");
+                    // TODO: Timeout.
+                    await receiving;
                 }
             }
-
-            await ws.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+            _logger.LogInformation("Socket closed.");
         }
 
-        private async Task StartSending(WebSocket ws)
+        private Task HandleFrame(WebSocketFrame frame)
         {
-            while (true)
+            // Is this a frame we care about?
+            if (!frame.Opcode.IsMessage())
             {
-                var result = await _channel.Output.ReadAsync();
-                var buffer = result.Buffer;
-
-                try
-                {
-                    if (buffer.IsEmpty && result.IsCompleted)
-                    {
-                        break;
-                    }
-
-                    foreach (var memory in buffer)
-                    {
-                        ArraySegment<byte> data;
-                        if (memory.TryGetArray(out data))
-                        {
-                            if (IsClosedOrClosedSent(ws))
-                            {
-                                break;
-                            }
-
-                            await ws.SendAsync(data, _messageType, endOfMessage: true, cancellationToken: CancellationToken.None);
-                        }
-                    }
-
-                }
-                catch (Exception)
-                {
-                    // Error writing, probably closed
-                    break;
-                }
-                finally
-                {
-                    _channel.Output.Advance(buffer.End);
-                }
+                return TaskCache.CompletedTask;
             }
 
-            // REVIEW: Should this ever happen?
-            if (!IsClosedOrClosedSent(ws))
-            {
-                // Close the output
-                await ws.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
-            }
+            LogFrame("Receiving", frame);
+
+            // Allocate space from the input channel
+            var outputBuffer = _channel.Input.Alloc();
+
+            // Append this buffer to the input channel
+            _logger.LogDebug($"Appending {frame.Payload.Length} bytes to Connection channel");
+            outputBuffer.Append(frame.Payload);
+
+            return outputBuffer.FlushAsync();
         }
 
-        private static bool IsClosedOrClosedSent(WebSocket webSocket)
+        private void LogFrame(string action, WebSocketFrame frame)
         {
-            var webSocketState = GetWebSocketState(webSocket);
-
-            return webSocketState == WebSocketState.Closed ||
-                   webSocketState == WebSocketState.CloseSent ||
-                   webSocketState == WebSocketState.Aborted;
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _logger.LogDebug(
+                    $"{action} frame: Opcode={frame.Opcode}, Fin={frame.EndOfMessage}, Payload={frame.Payload.Length} bytes");
+            }
         }
 
-        private static WebSocketState GetWebSocketState(WebSocket webSocket)
+        private async Task StartSending(IWebSocketConnection ws)
         {
             try
             {
-                return webSocket.State;
+                while (true)
+                {
+                    var result = await _channel.Output.ReadAsync();
+                    var buffer = result.Buffer;
+
+                    try
+                    {
+                        if (buffer.IsEmpty && result.IsCompleted)
+                        {
+                            break;
+                        }
+
+                        // Send the buffer in a frame
+                        var frame = new WebSocketFrame(
+                            endOfMessage: true,
+                            opcode: _opcode,
+                            payload: buffer);
+                        LogFrame("Sending", frame);
+                        await ws.SendAsync(frame);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError("Error writing frame to output: {0}", ex);
+                        break;
+                    }
+                    finally
+                    {
+                        _channel.Output.Advance(buffer.End);
+                    }
+                }
             }
-            catch (ObjectDisposedException)
+            finally
             {
-                return WebSocketState.Closed;
+                // No longer reading from the channel
+                _channel.Output.CompleteReader();
             }
         }
     }

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Sockets
@@ -15,11 +16,13 @@ namespace Microsoft.AspNetCore.Sockets
     {
         private readonly ConnectionManager _manager;
         private readonly ChannelFactory _channelFactory;
+        private readonly ILoggerFactory _loggerFactory;
 
-        public HttpConnectionDispatcher(ConnectionManager manager, ChannelFactory factory)
+        public HttpConnectionDispatcher(ConnectionManager manager, ChannelFactory factory, ILoggerFactory loggerFactory)
         {
             _manager = manager;
             _channelFactory = factory;
+            _loggerFactory = loggerFactory;
         }
 
         public async Task ExecuteAsync<TEndPoint>(string path, HttpContext context) where TEndPoint : EndPoint
@@ -72,7 +75,7 @@ namespace Microsoft.AspNetCore.Sockets
                     var formatType = (string)context.Request.Query["formatType"];
                     state.Connection.Metadata["formatType"] = string.IsNullOrEmpty(formatType) ? "json" : formatType;
 
-                    var ws = new WebSockets(state.Connection, format);
+                    var ws = new WebSockets(state.Connection, format, _loggerFactory);
 
                     await DoPersistentConnection(endpoint, ws, context, state.Connection);
 

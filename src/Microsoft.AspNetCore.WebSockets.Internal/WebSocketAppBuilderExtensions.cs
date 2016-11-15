@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Builder
             {
                 throw new ArgumentNullException(nameof(options));
             }
-            self.UseWebSocketConnections(channelFactory, options);
             self.UseMiddleware<WebSocketConnectionMiddleware>(channelFactory, options);
         }
     }

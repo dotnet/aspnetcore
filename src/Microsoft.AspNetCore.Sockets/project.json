@@ -25,7 +25,11 @@
     "Channels": "0.2.0-beta-*",
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.2.0-*",
     "Microsoft.AspNetCore.Routing": "1.2.0-*",
-    "Microsoft.AspNetCore.WebSockets": "1.1.0-*",
+    "Microsoft.AspNetCore.WebSockets.Internal": "0.1.0-*",
+    "Microsoft.Extensions.TaskCache.Sources": {
+      "version": "1.2.0-*",
+      "type": "build"
+    },
     "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
