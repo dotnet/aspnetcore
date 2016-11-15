@@ -5,7 +5,9 @@ using System;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 {
@@ -19,6 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                                                         0x02ul << 40 |
                                                         0x01ul << 48 ) + 1;
 
+        private static readonly Encoding _utf8 = Encoding.UTF8;
         private static readonly int _vectorSpan = Vector<byte>.Count;
 
         private MemoryPoolBlock _block;
@@ -1024,6 +1027,164 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             block.End = blockIndex;
             _block = block;
             _index = blockIndex;
+        }
+
+        public unsafe string GetAsciiString(ref MemoryPoolIterator end)
+        {
+            if (IsDefault || end.IsDefault)
+            {
+                return null;
+            }
+
+            var length = GetLength(end);
+
+            if (length == 0)
+            {
+                return null;
+            }
+
+            var inputOffset = Index;
+            var block = Block;
+
+            var asciiString = new string('\0', length);
+
+            fixed (char* outputStart = asciiString)
+            {
+                var output = outputStart;
+                var remaining = length;
+
+                var endBlock = end.Block;
+                var endIndex = end.Index;
+
+                var outputOffset = 0;
+                while (true)
+                {
+                    int following = (block != endBlock ? block.End : endIndex) - inputOffset;
+
+                    if (following > 0)
+                    {
+                        if (!AsciiUtilities.TryGetAsciiString(block.DataFixedPtr + inputOffset, output + outputOffset, following))
+                        {
+                            throw BadHttpRequestException.GetException(RequestRejectionReason.NonAsciiOrNullCharactersInInputString);
+                        }
+
+                        outputOffset += following;
+                        remaining -= following;
+                    }
+
+                    if (remaining == 0)
+                    {
+                        break;
+                    }
+
+                    block = block.Next;
+                    inputOffset = block.Start;
+                }
+            }
+
+            return asciiString;
+        }
+
+        public string GetUtf8String(ref MemoryPoolIterator end)
+        {
+            if (IsDefault || end.IsDefault)
+            {
+                return default(string);
+            }
+            if (end.Block == Block)
+            {
+                return _utf8.GetString(Block.Array, Index, end.Index - Index);
+            }
+
+            var decoder = _utf8.GetDecoder();
+
+            var length = GetLength(end);
+            var charLength = length;
+            // Worse case is 1 byte = 1 char
+            var chars = new char[charLength];
+            var charIndex = 0;
+
+            var block = Block;
+            var index = Index;
+            var remaining = length;
+            while (true)
+            {
+                int bytesUsed;
+                int charsUsed;
+                bool completed;
+                var following = block.End - index;
+                if (remaining <= following)
+                {
+                    decoder.Convert(
+                        block.Array,
+                        index,
+                        remaining,
+                        chars,
+                        charIndex,
+                        charLength - charIndex,
+                        true,
+                        out bytesUsed,
+                        out charsUsed,
+                        out completed);
+                    return new string(chars, 0, charIndex + charsUsed);
+                }
+                else if (block.Next == null)
+                {
+                    decoder.Convert(
+                        block.Array,
+                        index,
+                        following,
+                        chars,
+                        charIndex,
+                        charLength - charIndex,
+                        true,
+                        out bytesUsed,
+                        out charsUsed,
+                        out completed);
+                    return new string(chars, 0, charIndex + charsUsed);
+                }
+                else
+                {
+                    decoder.Convert(
+                        block.Array,
+                        index,
+                        following,
+                        chars,
+                        charIndex,
+                        charLength - charIndex,
+                        false,
+                        out bytesUsed,
+                        out charsUsed,
+                        out completed);
+                    charIndex += charsUsed;
+                    remaining -= following;
+                    block = block.Next;
+                    index = block.Start;
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ArraySegment<byte> GetArraySegment(MemoryPoolIterator end)
+        {
+            if (IsDefault || end.IsDefault)
+            {
+                return default(ArraySegment<byte>);
+            }
+            if (end.Block == Block)
+            {
+                return new ArraySegment<byte>(Block.Array, Index, end.Index - Index);
+            }
+
+            return GetArraySegmentMultiBlock(ref end);
+        }
+
+        private ArraySegment<byte> GetArraySegmentMultiBlock(ref MemoryPoolIterator end)
+        {
+            var length = GetLength(end);
+            var array = new byte[length];
+            CopyTo(array, 0, length, out length);
+            return new ArraySegment<byte>(array, 0, length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

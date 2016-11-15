@@ -975,7 +975,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxInvalidRequestLineChars) : string.Empty);
                     }
 
-                    method = begin.GetAsciiString(scan);
+                    method = begin.GetAsciiString(ref scan);
 
                     if (method == null)
                     {
@@ -1031,7 +1031,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         RejectRequest(RequestRejectionReason.InvalidRequestLine,
                             Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxInvalidRequestLineChars) : string.Empty);
                     }
-                    queryString = begin.GetAsciiString(scan);
+                    queryString = begin.GetAsciiString(ref scan);
                 }
 
                 var queryEnd = scan;
@@ -1081,16 +1081,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 if (needDecode)
                 {
                     // Read raw target before mutating memory.
-                    rawTarget = pathBegin.GetAsciiString(queryEnd);
+                    rawTarget = pathBegin.GetAsciiString(ref queryEnd);
 
                     // URI was encoded, unescape and then parse as utf8
                     pathEnd = UrlPathDecoder.Unescape(pathBegin, pathEnd);
-                    requestUrlPath = pathBegin.GetUtf8String(pathEnd);
+                    requestUrlPath = pathBegin.GetUtf8String(ref pathEnd);
                 }
                 else
                 {
                     // URI wasn't encoded, parse as ASCII
-                    requestUrlPath = pathBegin.GetAsciiString(pathEnd);
+                    requestUrlPath = pathBegin.GetAsciiString(ref pathEnd);
 
                     if (queryString.Length == 0)
                     {
@@ -1100,7 +1100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     }
                     else
                     {
-                        rawTarget = pathBegin.GetAsciiString(queryEnd);
+                        rawTarget = pathBegin.GetAsciiString(ref queryEnd);
                     }
                 }
 
@@ -1341,7 +1341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     } while (ch != ByteCR);
 
                     var name = beginName.GetArraySegment(endName);
-                    var value = beginValue.GetAsciiString(endValue);
+                    var value = beginValue.GetAsciiString(ref endValue);
 
                     consumed = scan;
                     requestHeaders.Append(name.Array, name.Offset, name.Count, value);

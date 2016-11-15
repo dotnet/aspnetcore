@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
@@ -71,62 +72,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
         }
 
-        public unsafe static string GetAsciiString(this MemoryPoolIterator start, MemoryPoolIterator end)
-        {
-            if (start.IsDefault || end.IsDefault)
-            {
-                return null;
-            }
-
-            var length = start.GetLength(end);
-
-            if (length == 0)
-            {
-                return null;
-            }
-
-            var inputOffset = start.Index;
-            var block = start.Block;
-
-            var asciiString = new string('\0', length);
-
-            fixed (char* outputStart = asciiString)
-            {
-                var output = outputStart;
-                var remaining = length;
-
-                var endBlock = end.Block;
-                var endIndex = end.Index;
-
-                var outputOffset = 0;
-                while (true)
-                {
-                    int following = (block != endBlock ? block.End : endIndex) - inputOffset;
-
-                    if (following > 0)
-                    {
-                        if (!AsciiUtilities.TryGetAsciiString(block.DataFixedPtr + inputOffset, output + outputOffset, following))
-                        {
-                            throw BadHttpRequestException.GetException(RequestRejectionReason.NonAsciiOrNullCharactersInInputString);
-                        }
-
-                        outputOffset += following;
-                        remaining -= following;
-                    }
-
-                    if (remaining == 0)
-                    {
-                        break;
-                    }
-
-                    block = block.Next;
-                    inputOffset = block.Start;
-                }
-            }
-
-            return asciiString;
-        }
-
         public static string GetAsciiStringEscaped(this MemoryPoolIterator start, MemoryPoolIterator end, int maxChars)
         {
             var sb = new StringBuilder();
@@ -145,102 +90,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
 
             return sb.ToString();
-        }
-
-        public static string GetUtf8String(this MemoryPoolIterator start, MemoryPoolIterator end)
-        {
-            if (start.IsDefault || end.IsDefault)
-            {
-                return default(string);
-            }
-            if (end.Block == start.Block)
-            {
-                return _utf8.GetString(start.Block.Array, start.Index, end.Index - start.Index);
-            }
-
-            var decoder = _utf8.GetDecoder();
-
-            var length = start.GetLength(end);
-            var charLength = length;
-            // Worse case is 1 byte = 1 char
-            var chars = new char[charLength];
-            var charIndex = 0;
-
-            var block = start.Block;
-            var index = start.Index;
-            var remaining = length;
-            while (true)
-            {
-                int bytesUsed;
-                int charsUsed;
-                bool completed;
-                var following = block.End - index;
-                if (remaining <= following)
-                {
-                    decoder.Convert(
-                        block.Array,
-                        index,
-                        remaining,
-                        chars,
-                        charIndex,
-                        charLength - charIndex,
-                        true,
-                        out bytesUsed,
-                        out charsUsed,
-                        out completed);
-                    return new string(chars, 0, charIndex + charsUsed);
-                }
-                else if (block.Next == null)
-                {
-                    decoder.Convert(
-                        block.Array,
-                        index,
-                        following,
-                        chars,
-                        charIndex,
-                        charLength - charIndex,
-                        true,
-                        out bytesUsed,
-                        out charsUsed,
-                        out completed);
-                    return new string(chars, 0, charIndex + charsUsed);
-                }
-                else
-                {
-                    decoder.Convert(
-                        block.Array,
-                        index,
-                        following,
-                        chars,
-                        charIndex,
-                        charLength - charIndex,
-                        false,
-                        out bytesUsed,
-                        out charsUsed,
-                        out completed);
-                    charIndex += charsUsed;
-                    remaining -= following;
-                    block = block.Next;
-                    index = block.Start;
-                }
-            }
-        }
-
-        public static ArraySegment<byte> GetArraySegment(this MemoryPoolIterator start, MemoryPoolIterator end)
-        {
-            if (start.IsDefault || end.IsDefault)
-            {
-                return default(ArraySegment<byte>);
-            }
-            if (end.Block == start.Block)
-            {
-                return new ArraySegment<byte>(start.Block.Array, start.Index, end.Index - start.Index);
-            }
-
-            var length = start.GetLength(end);
-            var array = new byte[length];
-            start.CopyTo(array, 0, length, out length);
-            return new ArraySegment<byte>(array, 0, length);
         }
 
         public static ArraySegment<byte> PeekArraySegment(this MemoryPoolIterator iter)
@@ -283,6 +132,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         /// <param name="begin">The iterator from which to start the known string lookup.</param>
         /// <param name="knownMethod">A reference to a pre-allocated known string, if the input matches any.</param>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool GetKnownMethod(this MemoryPoolIterator begin, out string knownMethod)
         {
             knownMethod = null;
@@ -323,6 +173,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         /// <param name="begin">The iterator from which to start the known string lookup.</param>
         /// <param name="knownVersion">A reference to a pre-allocated known string, if the input matches any.</param>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool GetKnownVersion(this MemoryPoolIterator begin, out string knownVersion)
         {
             knownVersion = null;
