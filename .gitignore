@@ -30,3 +30,5 @@ runtimes/
 .build/
 .testPublish/
 launchSettings.json
+BenchmarkDotNet.Artifacts/
+BDN.Generated/

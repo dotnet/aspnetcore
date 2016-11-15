@@ -1,0 +1,29 @@
+﻿{
+  "version": "1.0.0-*",
+  "buildOptions": {
+    "emitEntryPoint": true
+  },
+
+  "dependencies": {
+    "BenchmarkDotNet": "0.10.0",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.2.0-*"
+  },
+
+  "frameworks": {
+    "net46": {},
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.1-*",
+          "type": "platform"
+        }
+      }
+    }
+  },
+
+  "runtimeOptions": {
+    "configProperties": {
+      "System.GC.Server": true
+    }
+  }
+}
