@@ -76,7 +76,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             Assert.Collection(
                 features,
-                feature => Assert.IsType<TagHelperBinderSyntaxTreePass>(feature));
+                feature => Assert.IsType<TagHelperBinderSyntaxTreePass>(feature),
+                feature => Assert.IsType<HtmlNodeOptimizationPass>(feature));
         }
 
         private static void AssertDefaultPhases(IReadOnlyList<IRazorEnginePhase> phases)

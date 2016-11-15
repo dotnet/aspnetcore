@@ -560,14 +560,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
                     if (literalGenerator != null)
                     {
-                        if (literalGenerator.ValueGenerator == null || literalGenerator.ValueGenerator.Value == null)
-                        {
-                            newChunkGenerator = new MarkupChunkGenerator();
-                        }
-                        else
-                        {
-                            newChunkGenerator = literalGenerator.ValueGenerator.Value;
-                        }
+                        newChunkGenerator = new MarkupChunkGenerator();
                     }
                     else if (isDynamic && childSpan.ChunkGenerator == SpanChunkGenerator.Null)
                     {

@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             builder.Phases.Add(new DefaultRazorIRLoweringPhase());
 
             builder.Features.Add(new TagHelperBinderSyntaxTreePass());
+            builder.Features.Add(new HtmlNodeOptimizationPass());
         }
 
         public abstract IReadOnlyList<IRazorEngineFeature> Features { get; }

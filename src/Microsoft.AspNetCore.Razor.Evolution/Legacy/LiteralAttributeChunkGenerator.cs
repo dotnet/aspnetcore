@@ -8,14 +8,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
     internal class LiteralAttributeChunkGenerator : SpanChunkGenerator
     {
-        public LiteralAttributeChunkGenerator(
-            LocationTagged<string> prefix,
-            LocationTagged<SpanChunkGenerator> valueGenerator)
-        {
-            Prefix = prefix;
-            ValueGenerator = valueGenerator;
-        }
-
         public LiteralAttributeChunkGenerator(LocationTagged<string> prefix, LocationTagged<string> value)
         {
             Prefix = prefix;
@@ -25,8 +17,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         public LocationTagged<string> Prefix { get; }
 
         public LocationTagged<string> Value { get; }
-
-        public LocationTagged<SpanChunkGenerator> ValueGenerator { get; }
 
         public override void Accept(ParserVisitor visitor, Span span)
         {
@@ -53,14 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public override string ToString()
         {
-            if (ValueGenerator == null)
-            {
-                return string.Format(CultureInfo.CurrentCulture, "LitAttr:{0:F},{1:F}", Prefix, Value);
-            }
-            else
-            {
-                return string.Format(CultureInfo.CurrentCulture, "LitAttr:{0:F},<Sub:{1:F}>", Prefix, ValueGenerator);
-            }
+            return string.Format(CultureInfo.CurrentCulture, "LitAttr:{0:F}", Prefix);
         }
 
         public override bool Equals(object obj)
@@ -68,8 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var other = obj as LiteralAttributeChunkGenerator;
             return other != null &&
                 Equals(other.Prefix, Prefix) &&
-                Equals(other.Value, Value) &&
-                Equals(other.ValueGenerator, ValueGenerator);
+                Equals(other.Value, Value);
         }
 
         public override int GetHashCode()
@@ -78,7 +60,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             hashCodeCombiner.Add(Prefix);
             hashCodeCombiner.Add(Value);
-            hashCodeCombiner.Add(ValueGenerator);
 
             return hashCodeCombiner;
         }
