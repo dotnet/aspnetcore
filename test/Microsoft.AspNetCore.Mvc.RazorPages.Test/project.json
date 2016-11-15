@@ -1,6 +1,7 @@
 {
   "buildOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
@@ -9,6 +10,7 @@
       "target": "project"
     },
     "Microsoft.DotNet.InternalAbstractions": "1.0.0",
+    "Microsoft.Extensions.DependencyInjection": "1.2.0-*",
     "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"
   },

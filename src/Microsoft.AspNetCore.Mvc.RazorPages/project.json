@@ -1,4 +1,4 @@
-{
+﻿{
   "description": "ASP.NET Core MVC Razor Pages.",
   "version": "1.0.0-*",
   "packOptions": {
@@ -22,10 +22,18 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc.ViewFeatures": {
+    "Microsoft.AspNetCore.Mvc.Razor": {
       "target": "project"
     },
     "Microsoft.AspNetCore.Razor.Evolution": "1.0.0-*",
+    "Microsoft.Extensions.PropertyActivator.Sources": {
+      "version": "1.2.0-*",
+      "type": "build"
+    },
+    "Microsoft.Extensions.PropertyHelper.Sources": {
+      "version": "1.2.0-*",
+      "type": "build"
+    },
     "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {

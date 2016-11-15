@@ -123,4 +123,10 @@
   <data name="RazorProject_PathMustStartWithForwardSlash" xml:space="preserve">
     <value>Path must begin with a forward slash '/'.</value>
   </data>
+  <data name="PropertyOfTypeCannotBeNull" xml:space="preserve">
+    <value>The '{0}' property of '{1}' must not be null.</value>
+  </data>
+  <data name="ActivatedInstance_MustBeAnInstanceOf" xml:space="preserve">
+    <value>Page created by '{0}' must be an instance of '{1}'.</value>
+  </data>
 </root>
