@@ -446,7 +446,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         [Fact]
-        public void EaluatePolicy_DoesCaseSensitiveComparison()
+        public void EvaluatePolicy_DoesCaseSensitiveComparison()
         {
             // Arrange
             var corsService = new CorsService(new TestCorsOptions());

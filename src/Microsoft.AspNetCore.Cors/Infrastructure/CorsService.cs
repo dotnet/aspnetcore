@@ -5,9 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNetCore.Cors.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
@@ -17,12 +19,23 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
     public class CorsService : ICorsService
     {
         private readonly CorsOptions _options;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Creates a new instance of the <see cref="CorsService"/>.
         /// </summary>
         /// <param name="options">The option model representing <see cref="CorsOptions"/>.</param>
         public CorsService(IOptions<CorsOptions> options)
+            :this(options, loggerFactory: null)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="CorsService"/>.
+        /// </summary>
+        /// <param name="options">The option model representing <see cref="CorsOptions"/>.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        public CorsService(IOptions<CorsOptions> options, ILoggerFactory loggerFactory)
         {
             if (options == null)
             {
@@ -30,6 +43,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             }
 
             _options = options.Value;
+            _logger = loggerFactory?.CreateLogger<CorsService>();
         }
 
         /// <summary>
@@ -70,6 +84,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 !StringValues.IsNullOrEmpty(accessControlRequestMethod))
             {
                 EvaluatePreflightRequest(context, policy, corsResult);
+                _logger?.IsPreflightRequest();
             }
             else
             {
@@ -87,6 +102,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 return;
             }
 
+            _logger?.RequestHasOriginHeader();
             AddOriginToResult(origin, policy, result);
             result.SupportsCredentials = policy.SupportsCredentials;
             AddHeaderValues(result.AllowedExposedHeaders, policy.ExposedHeaders);
@@ -100,6 +116,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 return;
             }
 
+            _logger?.RequestHasOriginHeader();
             var accessControlRequestMethod = context.Request.Headers[CorsConstants.AccessControlRequestMethod];
             if (StringValues.IsNullOrEmpty(accessControlRequestMethod))
             {
