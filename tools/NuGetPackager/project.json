@@ -8,8 +8,8 @@
       "type": "platform",
       "version": "1.1.0"
     },
-    "Microsoft.DotNet.ProjectModel": "1.0.0-*",
-    "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
+    "Microsoft.DotNet.ProjectModel": "1.0.0-rc3-1-003177",
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-preview2-1-003177",
     "Microsoft.Extensions.CommandLineUtils": "1.1.0-*"
   },
 

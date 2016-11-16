@@ -14,7 +14,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-preview2-1-003177",
     "Microsoft.Extensions.CommandLineUtils": "1.2.0-*",
     "Microsoft.Extensions.Logging": "1.2.0-*",
     "Microsoft.Extensions.Logging.Console": "1.2.0-*",
