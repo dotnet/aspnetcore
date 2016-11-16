@@ -60,6 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private bool IsEndMultiBlock()
         {
             var block = _block.Next;
@@ -95,14 +96,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 return block.Array[index];
             }
 
-            return TakeMultiBlock(block, index);
+            return TakeMultiBlock();
         }
 
-        private int TakeMultiBlock(MemoryPoolBlock block, int index)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private int TakeMultiBlock()
         {
+            var block = _block;
             var wasLastBlock = block.Next == null;
             do
             {
+                int index;
                 if (wasLastBlock)
                 {
                     return -1;
@@ -143,13 +147,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             SkipMultiBlock(bytesToSkip, following);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private void SkipMultiBlock(int bytesToSkip, int following)
         {
             var wasLastBlock = _block.Next == null;
             var block = _block;
-            var index = _index;
             while (true)
             {
+                int index;
                 if (wasLastBlock)
                 {
                     throw new InvalidOperationException("Attempted to skip more bytes than available.");
@@ -189,14 +194,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 return block.Array[index];
             }
 
-            return PeekMultiBlock(block, index);
+            return PeekMultiBlock();
         }
 
-        private static int PeekMultiBlock(MemoryPoolBlock block, int index)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private int PeekMultiBlock()
         {
+            var block = _block;
             var wasLastBlock = block.Next == null;
             do
             {
+                int index;
                 if (wasLastBlock)
                 {
                     return -1;
@@ -238,6 +246,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             return TryPeekLongMultiBlock(ref longValue, blockBytes);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private unsafe bool TryPeekLongMultiBlock(ref ulong longValue, int blockBytes)
         {
             var wasLastBlock = _block.Next == null;
@@ -780,6 +789,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         /// </summary>
         /// <param name="data">The byte to be saved.</param>
         /// <returns>true if the operation successes. false if can't find available space.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Put(byte data)
         {
             if (_block == null)
@@ -789,18 +799,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
             var block = _block;
             var index = _index;
-            while (true)
-            {
-                var wasLastBlock = block.Next == null;
 
-                if (index < block.End)
-                {
-                    _block = block;
-                    _index = index + 1;
-                    block.Array[index] = data;
-                    return true;
-                }
-                else if (wasLastBlock)
+            if (index < block.End)
+            {
+                _index = index + 1;
+                block.Array[index] = data;
+                return true;
+            }
+
+            return PutMultiBlock(data);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private bool PutMultiBlock(byte data)
+        {
+            var block = _block;
+            var wasLastBlock = block.Next == null;
+            do
+            {
+                int index;
+                if (wasLastBlock)
                 {
                     return false;
                 }
@@ -809,7 +827,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                     block = block.Next;
                     index = block.Start;
                 }
-            }
+
+                wasLastBlock = block.Next == null;
+
+                if (index < block.End)
+                {
+                    _block = block;
+                    _index = index + 1;
+                    block.Array[index] = data;
+                    break;
+                }
+            } while (true);
+
+            return true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -825,10 +855,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 return end._index - _index;
             }
 
-            return GetLengthMultiBlock(end);
+            return GetLengthMultiBlock(ref end);
         }
 
-        public int GetLengthMultiBlock(MemoryPoolIterator end)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public int GetLengthMultiBlock(ref MemoryPoolIterator end)
         {
             var block = _block;
             var index = _index;
@@ -1179,6 +1210,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             return GetArraySegmentMultiBlock(ref end);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private ArraySegment<byte> GetArraySegmentMultiBlock(ref MemoryPoolIterator end)
         {
             var length = GetLength(end);
