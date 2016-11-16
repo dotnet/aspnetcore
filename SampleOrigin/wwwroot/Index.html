@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <script type="text/javascript">
+        
+        function createCORSRequest(method, url) {          
+            var request = new XMLHttpRequest();
+            request.open(method, url, true);
+            return request;
+        }
+
+        // Make the CORS request.
+        function makeCORSRequest(method) {
+
+            // Destination server with CORS enabled.
+            var url = 'http://destination.sample.com/api';
+            var request = createCORSRequest(method , url);
+
+            if (!request) {
+                alert('CORS not supported');
+                return;
+            }
+            
+            // Response handlers.
+            request.onload = function () {
+                var text = request.responseText;
+                alert('Response from CORS '+method+' request to ' + url + ': ' + text);
+            };
+
+            request.onerror = function () {
+                alert('There was an error making the request for method ' + method);
+            };
+
+            request.send();
+        }
+
+    </script>
+    <title></title>
+</head>
+<body>
+    <form method="post">
+            <input id="clickMe" type="button" value="CORS Request" onclick="makeCORSRequest('GET');" />
+    </form>
+    <form method="post">
+        <input id="clickMe" type="button" value="Invalid CORS Request" onclick="makeCORSRequest('DELETE');" />
+    </form>
+</body>
+</html>

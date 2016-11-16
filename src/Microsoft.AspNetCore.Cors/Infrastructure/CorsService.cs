@@ -83,8 +83,8 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             if (string.Equals(context.Request.Method, CorsConstants.PreflightHttpMethod, StringComparison.OrdinalIgnoreCase) &&
                 !StringValues.IsNullOrEmpty(accessControlRequestMethod))
             {
-                EvaluatePreflightRequest(context, policy, corsResult);
                 _logger?.IsPreflightRequest();
+                EvaluatePreflightRequest(context, policy, corsResult);
             }
             else
             {
@@ -105,6 +105,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             _logger?.RequestHasOriginHeader();
             AddOriginToResult(origin, policy, result);
             result.SupportsCredentials = policy.SupportsCredentials;
+            _logger?.PolicySuccess();
             AddHeaderValues(result.AllowedExposedHeaders, policy.ExposedHeaders);
         }
 
@@ -141,7 +142,8 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
                 if (!found)
                 {
-                    return;
+                    _logger?.PolicyFailure($"Request method {accessControlRequestMethod} not allowed in CORS policy.");
+                    return;                    
                 }
             }
 
@@ -150,6 +152,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 !requestHeaders.All(header => CorsConstants.SimpleRequestHeaders.Contains(header, StringComparer.OrdinalIgnoreCase) ||
                                               policy.Headers.Contains(header, StringComparer.OrdinalIgnoreCase)))
             {
+                _logger?.PolicyFailure($"One or more request header(s) not allowed in CORS policy.");
                 return;
             }
 
@@ -157,7 +160,8 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             result.SupportsCredentials = policy.SupportsCredentials;
             result.PreflightMaxAge = policy.PreflightMaxAge;
             result.AllowedMethods.Add(accessControlRequestMethod);
-            AddHeaderValues(result.AllowedHeaders, requestHeaders);
+            _logger?.PolicySuccess();
+            AddHeaderValues(result.AllowedHeaders, requestHeaders);         
         }
 
         /// <inheritdoc />

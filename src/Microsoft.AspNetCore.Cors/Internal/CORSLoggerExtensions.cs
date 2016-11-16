@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Cors.Internal
             _policyFailure = LoggerMessage.Define<string>(
                 LogLevel.Information,
                 3,
-                "Policy execution failed. '{FailureReason}'");
+                "Policy execution failed. {FailureReason}");
         }
 
         public static void IsPreflightRequest(this ILogger logger)
@@ -46,10 +46,11 @@ namespace Microsoft.AspNetCore.Cors.Internal
             _requestHasOriginHeader(logger, null);
         }
 
-        public static void PolicySuccess(this ILogger logger, string failureReason)
+        public static void PolicySuccess(this ILogger logger)
         {
             _policySuccess(logger, null);
         }
+
         public static void PolicyFailure(this ILogger logger, string failureReason)
         {
             _policyFailure(logger, failureReason, null);
