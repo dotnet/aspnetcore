@@ -2,34 +2,6 @@
     ViewData["Title"] = "Chat";
 }
 
-<script src="~/js/signalr-client.js"></script>
-<script>
-        document.addEventListener('DOMContentLoaded', () => {
-            let connection = new RpcConnection(`http://${document.location.host}/chat`, 'formatType=json&format=text');
-
-            connection.on('Send', function (message) {
-                var child = document.createElement('li');
-                child.innerText = message;
-                document.getElementById('messages').appendChild(child);
-            });
-
-            connection.start();
-
-            document.getElementById('sendmessage').addEventListener('submit', event => {
-                let data = document.getElementById('new-message').value;
-
-                connection.invoke('ChatSample.Hubs.Chat.Send', data, 'json').catch(err => {
-                    var child = document.createElement('li');
-                    child.style.color = 'red';
-                    child.innerText = err;
-                    document.getElementById('messages').appendChild(child);
-                });
-
-                event.preventDefault();
-            });
-        });
-</script>
-
 <div id="chat-area">
     <ul id="messages"></ul>
     <ul id="users"></ul>
@@ -40,3 +12,28 @@
         <input type="submit" id="send" value="Send" class="send" />
     </form>
 </div>
+<script src="lib/signalr-client/signalr-client.js"></script>
+<script>
+let connection = new signalR.RpcConnection(`http://${document.location.host}/chat`, 'formatType=json&format=text');
+
+connection.on('Send', function (message) {
+    var child = document.createElement('li');
+    child.innerText = message;
+    document.getElementById('messages').appendChild(child);
+});
+
+connection.start();
+
+document.getElementById('sendmessage').addEventListener('submit', event => {
+    let data = document.getElementById('new-message').value;
+
+    connection.invoke('ChatSample.Hubs.Chat.Send', data, 'json').catch(err => {
+        var child = document.createElement('li');
+        child.style.color = 'red';
+        child.innerText = err;
+        document.getElementById('messages').appendChild(child);
+    });
+
+    event.preventDefault();
+});
+</script>

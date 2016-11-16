@@ -1,3 +1,5 @@
+import { ITransport, WebSocketTransport, ServerSentEventsTransport, LongPollingTransport } from "./Transports"
+import { HttpClient } from "./HttpClient"
 
 enum ConnectionState {
     Disconnected,
@@ -5,7 +7,7 @@ enum ConnectionState {
     Connected
 }
 
-class Connection {
+export class Connection {
     private connectionState: ConnectionState;
     private url: string;
     private queryString: string;

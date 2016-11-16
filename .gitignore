@@ -35,7 +35,7 @@ node_modules/
 *.nuget.props
 *.nuget.targets
 autobahnreports/
-signalr-client.js
 site.min.css
 .idea/
 .vscode/
+signalr-client/

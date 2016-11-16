@@ -44,7 +44,9 @@
   },
 
   "scripts": {
-    "precompile": [ "tsc --project ../../src/Microsoft.AspNetCore.SignalR.Client.TS/ --out wwwroot/js/signalr-client.js" ],
+    "precompile": [
+      "npm install",
+      "npm run gulp -- --gulpfile %project:Directory%/../../src/Microsoft.AspNetCore.SignalR.Client.TS/gulpfile.js bundle-client --bundleOutDir %project:Directory%/wwwroot/lib/signalr-client/" ],
     "postpublish": [ "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%" ]
   }
 }

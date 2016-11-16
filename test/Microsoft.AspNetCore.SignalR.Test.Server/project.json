@@ -39,7 +39,7 @@
   },
 
   "scripts": {
-    "precompile": [ "npm install", "gulp copy-jasmine"],
+    "precompile": [ "npm install", "npm run gulp -- --gulpfile %project:Directory%/gulpfile.js copy-jasmine"],
     "postpublish": [ "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%" ]
   }
 }

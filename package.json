@@ -6,19 +6,27 @@
   "directories": {
     "test": "test"
   },
-  "scripts": {},
+  "scripts": {
+    "gulp": "gulp"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aspnet/SignalR.git"
   },
   "author": "Microsoft",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/aspnet/SignalR/issues"
   },
   "homepage": "https://github.com/aspnet/SignalR#readme",
   "devDependencies": {
+    "browserify": "^13.1.1",
+    "del": "^2.2.2",
     "gulp": "^3.9.1",
-    "jasmine": "^2.5.2"
+    "gulp-typescript": "^3.1.3",
+    "jasmine": "^2.5.2",
+    "typescript": "^2.0.10",
+    "vinyl-source-stream": "^1.1.0",
+    "yargs": "^6.4.0"
   }
 }

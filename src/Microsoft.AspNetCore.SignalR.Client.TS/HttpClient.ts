@@ -1,4 +1,4 @@
-class HttpClient {
+export class HttpClient {
     get(url: string): Promise<string> {
         return this.xhr("GET", url);
     }

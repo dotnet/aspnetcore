@@ -91,7 +91,9 @@
   },
 
   "scripts": {
-    "precompile": [ "dotnet bundle", "tsc --project ../../src/Microsoft.AspNetCore.SignalR.Client.TS/ --out wwwroot/js/signalr-client.js" ],
+    "precompile": [ "dotnet bundle",
+      "npm install",
+      "npm run gulp -- --gulpfile %project:Directory%/../../src/Microsoft.AspNetCore.SignalR.Client.TS/gulpfile.js bundle-client --bundleOutDir %project:Directory%/wwwroot/lib/signalr-client/" ],
     "prepublish": [ "bower install" ],
     "postpublish": [ "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%" ]
   }

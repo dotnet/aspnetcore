@@ -1,3 +1,5 @@
+import { Connection } from "./Connection"
+
 interface InvocationDescriptor {
     readonly Id: string;
     readonly Method: string;
@@ -10,7 +12,7 @@ interface InvocationResultDescriptor {
     readonly Result: any;
 }
 
-class RpcConnection {
+export class RpcConnection {
     private connection: Connection;
     private callbacks: Map<string, (any) => void>;
     private methods: Map<string, (...args:any[]) => void>;
