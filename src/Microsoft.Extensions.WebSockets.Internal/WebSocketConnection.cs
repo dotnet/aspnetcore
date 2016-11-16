@@ -5,10 +5,10 @@ using System;
 using System.Binary;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO.Pipelines;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Channels;
 
 namespace Microsoft.Extensions.WebSockets.Internal
 {
@@ -29,8 +29,8 @@ namespace Microsoft.Extensions.WebSockets.Internal
     {
         private WebSocketOptions _options;
         private readonly byte[] _maskingKeyBuffer;
-        private readonly IReadableChannel _inbound;
-        private readonly IWritableChannel _outbound;
+        private readonly IPipelineReader _inbound;
+        private readonly IPipelineWriter _outbound;
         private readonly CancellationTokenSource _terminateReceiveCts = new CancellationTokenSource();
         private readonly Timer _pinger;
         private readonly CancellationTokenSource _timerCts = new CancellationTokenSource();
@@ -45,36 +45,36 @@ namespace Microsoft.Extensions.WebSockets.Internal
         public WebSocketConnectionState State { get; private set; } = WebSocketConnectionState.Created;
 
         /// <summary>
-        /// Constructs a new, unmasked, <see cref="WebSocketConnection"/> from an <see cref="IReadableChannel"/> and an <see cref="IWritableChannel"/> that represents an established WebSocket connection (i.e. after handshaking)
+        /// Constructs a new, unmasked, <see cref="WebSocketConnection"/> from an <see cref="IPipelineReader"/> and an <see cref="IPipelineWriter"/> that represents an established WebSocket connection (i.e. after handshaking)
         /// </summary>
-        /// <param name="inbound">A <see cref="IReadableChannel"/> from which frames will be read when receiving.</param>
-        /// <param name="outbound">A <see cref="IWritableChannel"/> to which frame will be written when sending.</param>
-        public WebSocketConnection(IReadableChannel inbound, IWritableChannel outbound) : this(inbound, outbound, options: WebSocketOptions.DefaultUnmasked) { }
+        /// <param name="inbound">A <see cref="IPipelineReader"/> from which frames will be read when receiving.</param>
+        /// <param name="outbound">A <see cref="IPipelineWriter"/> to which frame will be written when sending.</param>
+        public WebSocketConnection(IPipelineReader inbound, IPipelineWriter outbound) : this(inbound, outbound, options: WebSocketOptions.DefaultUnmasked) { }
 
         /// <summary>
-        /// Constructs a new, unmasked, <see cref="WebSocketConnection"/> from an <see cref="IReadableChannel"/> and an <see cref="IWritableChannel"/> that represents an established WebSocket connection (i.e. after handshaking)
+        /// Constructs a new, unmasked, <see cref="WebSocketConnection"/> from an <see cref="IPipelineReader"/> and an <see cref="IPipelineWriter"/> that represents an established WebSocket connection (i.e. after handshaking)
         /// </summary>
-        /// <param name="inbound">A <see cref="IReadableChannel"/> from which frames will be read when receiving.</param>
-        /// <param name="outbound">A <see cref="IWritableChannel"/> to which frame will be written when sending.</param>
+        /// <param name="inbound">A <see cref="IPipelineReader"/> from which frames will be read when receiving.</param>
+        /// <param name="outbound">A <see cref="IPipelineWriter"/> to which frame will be written when sending.</param>
         /// <param name="subProtocol">The sub-protocol provided during handshaking</param>
-        public WebSocketConnection(IReadableChannel inbound, IWritableChannel outbound, string subProtocol) : this(inbound, outbound, subProtocol, options: WebSocketOptions.DefaultUnmasked) { }
+        public WebSocketConnection(IPipelineReader inbound, IPipelineWriter outbound, string subProtocol) : this(inbound, outbound, subProtocol, options: WebSocketOptions.DefaultUnmasked) { }
 
         /// <summary>
-        /// Constructs a new, <see cref="WebSocketConnection"/> from an <see cref="IReadableChannel"/> and an <see cref="IWritableChannel"/> that represents an established WebSocket connection (i.e. after handshaking)
+        /// Constructs a new, <see cref="WebSocketConnection"/> from an <see cref="IPipelineReader"/> and an <see cref="IPipelineWriter"/> that represents an established WebSocket connection (i.e. after handshaking)
         /// </summary>
-        /// <param name="inbound">A <see cref="IReadableChannel"/> from which frames will be read when receiving.</param>
-        /// <param name="outbound">A <see cref="IWritableChannel"/> to which frame will be written when sending.</param>
+        /// <param name="inbound">A <see cref="IPipelineReader"/> from which frames will be read when receiving.</param>
+        /// <param name="outbound">A <see cref="IPipelineWriter"/> to which frame will be written when sending.</param>
         /// <param name="options">A <see cref="WebSocketOptions"/> which provides the configuration options for the socket.</param>
-        public WebSocketConnection(IReadableChannel inbound, IWritableChannel outbound, WebSocketOptions options) : this(inbound, outbound, subProtocol: string.Empty, options: options) { }
+        public WebSocketConnection(IPipelineReader inbound, IPipelineWriter outbound, WebSocketOptions options) : this(inbound, outbound, subProtocol: string.Empty, options: options) { }
 
         /// <summary>
-        /// Constructs a new <see cref="WebSocketConnection"/> from an <see cref="IReadableChannel"/> and an <see cref="IWritableChannel"/> that represents an established WebSocket connection (i.e. after handshaking)
+        /// Constructs a new <see cref="WebSocketConnection"/> from an <see cref="IPipelineReader"/> and an <see cref="IPipelineWriter"/> that represents an established WebSocket connection (i.e. after handshaking)
         /// </summary>
-        /// <param name="inbound">A <see cref="IReadableChannel"/> from which frames will be read when receiving.</param>
-        /// <param name="outbound">A <see cref="IWritableChannel"/> to which frame will be written when sending.</param>
+        /// <param name="inbound">A <see cref="IPipelineReader"/> from which frames will be read when receiving.</param>
+        /// <param name="outbound">A <see cref="IPipelineWriter"/> to which frame will be written when sending.</param>
         /// <param name="subProtocol">The sub-protocol provided during handshaking</param>
         /// <param name="options">A <see cref="WebSocketOptions"/> which provides the configuration options for the socket.</param>
-        public WebSocketConnection(IReadableChannel inbound, IWritableChannel outbound, string subProtocol, WebSocketOptions options)
+        public WebSocketConnection(IPipelineReader inbound, IPipelineWriter outbound, string subProtocol, WebSocketOptions options)
         {
             _inbound = inbound;
             _outbound = outbound;

@@ -3,10 +3,10 @@
 
 using System;
 using System.Globalization;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Channels;
 using Xunit;
 
 namespace Microsoft.Extensions.WebSockets.Internal.Tests

@@ -3,17 +3,17 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Channels;
+using System.IO.Pipelines;
 
 namespace Microsoft.Extensions.WebSockets.Internal
 {
-    public static class ChannelExtensions
+    public static class PipelineReaderExtensions
     {
-        public static ValueTask<ChannelReadResult> ReadAtLeastAsync(this IReadableChannel input, int minimumRequiredBytes) => ReadAtLeastAsync(input, minimumRequiredBytes, CancellationToken.None);
+        public static ValueTask<ReadResult> ReadAtLeastAsync(this IPipelineReader input, int minimumRequiredBytes) => ReadAtLeastAsync(input, minimumRequiredBytes, CancellationToken.None);
 
         // TODO: Pull this up to Channels. We should be able to do it there without allocating a Task<T> in any case (rather than here where we can avoid allocation
         // only if the buffer is already ready and has enough data)
-        public static ValueTask<ChannelReadResult> ReadAtLeastAsync(this IReadableChannel input, int minimumRequiredBytes, CancellationToken cancellationToken)
+        public static ValueTask<ReadResult> ReadAtLeastAsync(this IPipelineReader input, int minimumRequiredBytes, CancellationToken cancellationToken)
         {
             var awaiter = input.ReadAsync(/* cancellationToken */);
 
@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.WebSockets.Internal
 
                 if (result.IsCompleted || result.Buffer.Length >= minimumRequiredBytes)
                 {
-                    return new ValueTask<ChannelReadResult>(result);
+                    return new ValueTask<ReadResult>(result);
                 }
 
                 // Buffer wasn't big enough, mark it as examined and continue to the "slow" path below
@@ -33,10 +33,10 @@ namespace Microsoft.Extensions.WebSockets.Internal
                     consumed: result.Buffer.Start,
                     examined: result.Buffer.End);
             }
-            return new ValueTask<ChannelReadResult>(ReadAtLeastSlowAsync(awaiter, input, minimumRequiredBytes, cancellationToken));
+            return new ValueTask<ReadResult>(ReadAtLeastSlowAsync(awaiter, input, minimumRequiredBytes, cancellationToken));
         }
 
-        private static async Task<ChannelReadResult> ReadAtLeastSlowAsync(ReadableChannelAwaitable awaitable, IReadableChannel input, int minimumRequiredBytes, CancellationToken cancellationToken)
+        private static async Task<ReadResult> ReadAtLeastSlowAsync(ReadableBufferAwaitable awaitable, IPipelineReader input, int minimumRequiredBytes, CancellationToken cancellationToken)
         {
             var result = await awaitable;
             while (!result.IsCompleted && result.Buffer.Length < minimumRequiredBytes)

@@ -23,8 +23,8 @@
   },
 
   "dependencies": {
-    "Channels": "0.2.0-beta-*",
-    "Channels.Text.Primitives": "0.2.0-beta-*",
+    "System.IO.Pipelines": "0.1.0-*",
+    "System.IO.Pipelines.Text.Primitives": "0.1.0-*",
     "Microsoft.Extensions.TaskCache.Sources": {
       "version": "1.2.0-*",
       "type": "build"

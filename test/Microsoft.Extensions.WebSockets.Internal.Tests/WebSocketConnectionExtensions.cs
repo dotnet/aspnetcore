@@ -3,16 +3,15 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Channels;
 
 namespace Microsoft.Extensions.WebSockets.Internal.Tests
 {
     public static class WebSocketConnectionExtensions
     {
-        public static async Task<WebSocketConnectionSummary> ExecuteAndCaptureFramesAsync(this IWebSocketConnection self)
+        public static async Task<WebSocketConnectionSummary> ExecuteAndCaptureFramesAsync(this IWebSocketConnection connection)
         {
             var frames = new List<WebSocketFrame>();
-            var closeResult = await self.ExecuteAsync(frame => frames.Add(frame.Copy()));
+            var closeResult = await connection.ExecuteAsync(frame => frames.Add(frame.Copy()));
             return new WebSocketConnectionSummary(frames, closeResult);
         }
     }

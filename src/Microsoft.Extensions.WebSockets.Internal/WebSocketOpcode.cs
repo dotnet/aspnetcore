@@ -48,15 +48,15 @@ namespace Microsoft.Extensions.WebSockets.Internal
     public static class WebSocketOpcodeExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsControl(this WebSocketOpcode self)
+        public static bool IsControl(this WebSocketOpcode opcode)
         {
-            return self >= WebSocketOpcode.Close;
+            return opcode >= WebSocketOpcode.Close;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsMessage(this WebSocketOpcode self)
+        public static bool IsMessage(this WebSocketOpcode opcode)
         {
-            return self < WebSocketOpcode.Close;
+            return opcode < WebSocketOpcode.Close;
         }
     }
 }

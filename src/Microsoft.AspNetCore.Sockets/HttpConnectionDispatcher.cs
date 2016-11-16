@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
-using Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,13 +15,13 @@ namespace Microsoft.AspNetCore.Sockets
     public class HttpConnectionDispatcher
     {
         private readonly ConnectionManager _manager;
-        private readonly ChannelFactory _channelFactory;
+        private readonly PipelineFactory _pipelineFactory;
         private readonly ILoggerFactory _loggerFactory;
 
-        public HttpConnectionDispatcher(ConnectionManager manager, ChannelFactory factory, ILoggerFactory loggerFactory)
+        public HttpConnectionDispatcher(ConnectionManager manager, PipelineFactory factory, ILoggerFactory loggerFactory)
         {
             _manager = manager;
-            _channelFactory = factory;
+            _pipelineFactory = factory;
             _loggerFactory = loggerFactory;
         }
 
@@ -169,13 +169,13 @@ namespace Microsoft.AspNetCore.Sockets
         private static void RegisterLongPollingDisconnect(HttpContext context, Connection connection)
         {
             // For long polling, we need to end the transport but not the overall connection so we write 0 bytes
-            context.RequestAborted.Register(state => ((HttpChannel)state).Output.WriteAsync(Span<byte>.Empty), connection.Channel);
+            context.RequestAborted.Register(state => ((HttpConnection)state).Output.WriteAsync(Span<byte>.Empty), connection.Channel);
         }
 
         private static void RegisterDisconnect(HttpContext context, Connection connection)
         {
             // We just kill the output writing as a signal to the transport that it is done
-            context.RequestAborted.Register(state => ((HttpChannel)state).Output.CompleteWriter(), connection.Channel);
+            context.RequestAborted.Register(state => ((HttpConnection)state).Output.CompleteWriter(), connection.Channel);
         }
 
         private Task ProcessGetId(HttpContext context)
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Sockets
             {
                 // If we received an HTTP POST for the connection id and it's not an HttpChannel then fail.
                 // You can't write to a TCP channel directly from here.
-                var httpChannel = state.Connection.Channel as HttpChannel;
+                var httpChannel = state.Connection.Channel as HttpConnection;
 
                 if (httpChannel == null)
                 {
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Sockets
             if (StringValues.IsNullOrEmpty(connectionId))
             {
                 isNewConnection = true;
-                var channel = new HttpChannel(_channelFactory);
+                var channel = new HttpConnection(_pipelineFactory);
                 connectionState = _manager.AddNewConnection(channel);
             }
             else
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Sockets
                 if (connectionState.Connection.Channel == null)
                 {
                     isNewConnection = true;
-                    connectionState.Connection.Channel = new HttpChannel(_channelFactory);
+                    connectionState.Connection.Channel = new HttpConnection(_pipelineFactory);
                     connectionState.Active = true;
                     connectionState.LastSeen = DateTimeOffset.UtcNow;
                 }

@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Threading.Tasks;
-using Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.WebSockets.Internal
         private HttpContext _context;
         private IHttpUpgradeFeature _upgradeFeature;
         private ILogger _logger;
-        private readonly ChannelFactory _channelFactory;
+        private readonly PipelineFactory _factory;
 
         public bool IsWebSocketRequest
         {
@@ -30,9 +30,9 @@ namespace Microsoft.AspNetCore.WebSockets.Internal
             }
         }
 
-        public WebSocketConnectionFeature(HttpContext context, ChannelFactory channelFactory, IHttpUpgradeFeature upgradeFeature, ILoggerFactory loggerFactory)
+        public WebSocketConnectionFeature(HttpContext context, PipelineFactory factory, IHttpUpgradeFeature upgradeFeature, ILoggerFactory loggerFactory)
         {
-            _channelFactory = channelFactory;
+            _factory = factory;
             _context = context;
             _upgradeFeature = upgradeFeature;
             _logger = loggerFactory.CreateLogger<WebSocketConnectionFeature>();
@@ -70,8 +70,8 @@ namespace Microsoft.AspNetCore.WebSockets.Internal
             _logger.LogDebug("Upgrading connection to WebSockets");
             var opaqueTransport = await _upgradeFeature.UpgradeAsync();
             var connection = new WebSocketConnection(
-                opaqueTransport.AsReadableChannel(),
-                _channelFactory.MakeWriteableChannel(opaqueTransport),
+                opaqueTransport.AsPipelineReader(),
+                _factory.CreateWriter(opaqueTransport),
                 subProtocol: subProtocol);
             return connection;
         }

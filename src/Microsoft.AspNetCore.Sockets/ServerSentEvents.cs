@@ -2,21 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Threading.Tasks;
-using Channels;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Sockets
 {
     public class ServerSentEvents : IHttpTransport
     {
-        private readonly HttpChannel _channel;
+        private readonly HttpConnection _channel;
         private readonly Connection _connection;
 
         public ServerSentEvents(Connection connection)
         {
             _connection = connection;
-            _channel = (HttpChannel)connection.Channel;
+            _channel = (HttpConnection)connection.Channel;
         }
 
         public async Task ProcessRequestAsync(HttpContext context)

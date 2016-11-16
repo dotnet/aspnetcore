@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Channels;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Sockets;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Builder
         public static IApplicationBuilder UseSockets(this IApplicationBuilder app, Action<SocketRouteBuilder> callback)
         {
             var manager = new ConnectionManager();
-            var factory = new ChannelFactory();
+            var factory = new PipelineFactory();
 
             var loggerFactory = app.ApplicationServices.GetService<ILoggerFactory>();
             var dispatcher = new HttpConnectionDispatcher(manager, factory, loggerFactory);

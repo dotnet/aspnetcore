@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.IO.Pipelines;
 using System.Threading;
-using Channels;
 
 namespace Microsoft.AspNetCore.Sockets
 {
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Sockets
             return state;
         }
 
-        public ConnectionState AddNewConnection(IChannel channel)
+        public ConnectionState AddNewConnection(IPipelineConnection connection)
         {
             string id = MakeNewConnectionId();
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Sockets
             {
                 Connection = new Connection
                 {
-                    Channel = channel,
+                    Channel = connection,
                     ConnectionId = id
                 },
                 LastSeen = DateTimeOffset.UtcNow,

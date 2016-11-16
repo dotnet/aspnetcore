@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Channels;
 using Microsoft.AspNetCore.Http;
 using Xunit;
 
@@ -18,11 +18,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task Set204StatusCodeWhenChannelComplete()
         {
-            using (var factory = new ChannelFactory())
+            using (var factory = new PipelineFactory())
             {
                 var connection = new Connection();
                 connection.ConnectionId = Guid.NewGuid().ToString();
-                var channel = new HttpChannel(factory);
+                var channel = new HttpConnection(factory);
                 connection.Channel = channel;
                 var context = new DefaultHttpContext();
                 var poll = new LongPolling(connection);
@@ -38,11 +38,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task NoFramingAddedWhenDataSent()
         {
-            using (var factory = new ChannelFactory())
+            using (var factory = new PipelineFactory())
             {
                 var connection = new Connection();
                 connection.ConnectionId = Guid.NewGuid().ToString();
-                var channel = new HttpChannel(factory);
+                var channel = new HttpConnection(factory);
                 connection.Channel = channel;
                 var context = new DefaultHttpContext();
                 var ms = new MemoryStream();

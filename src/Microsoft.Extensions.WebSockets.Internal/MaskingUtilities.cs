@@ -3,7 +3,7 @@
 
 using System;
 using System.Binary;
-using Channels;
+using System.IO.Pipelines;
 
 namespace Microsoft.Extensions.WebSockets.Internal
 {

@@ -2,25 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Channels;
+using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public class HttpChannel : IChannel
+    public class HttpConnection : IPipelineConnection
     {
-        public HttpChannel(ChannelFactory factory)
+        public HttpConnection(PipelineFactory factory)
         {
-            Input = factory.CreateChannel();
-            Output = factory.CreateChannel();
+            Input = factory.Create();
+            Output = factory.Create();
         }
 
-        IReadableChannel IChannel.Input => Input;
+        IPipelineReader IPipelineConnection.Input => Input;
 
-        IWritableChannel IChannel.Output => Output;
+        IPipelineWriter IPipelineConnection.Output => Output;
 
-        public Channel Input { get; }
+        public PipelineReaderWriter Input { get; }
 
-        public Channel Output { get; }
+        public PipelineReaderWriter Output { get; }
 
         public void Dispose()
         {

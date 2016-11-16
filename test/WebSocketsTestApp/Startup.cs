@@ -1,9 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
-using Channels;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -20,11 +20,11 @@ namespace WebSocketsTestApp
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ChannelFactory>();
+            services.AddSingleton<PipelineFactory>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, ChannelFactory channelFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, PipelineFactory pipelineFactory)
         {
             loggerFactory.AddConsole(LogLevel.Debug);
 
@@ -33,7 +33,7 @@ namespace WebSocketsTestApp
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseWebSocketConnections(new ChannelFactory());
+            app.UseWebSocketConnections(pipelineFactory);
 
             app.Use(async (context, next) =>
             {

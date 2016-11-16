@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Channels;
 using Microsoft.AspNetCore.Http;
 using Xunit;
 
@@ -18,16 +18,16 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task SSESetsContentType()
         {
-            using (var factory = new ChannelFactory())
+            using (var factory = new PipelineFactory())
             {
                 var connection = new Connection();
                 connection.ConnectionId = Guid.NewGuid().ToString();
-                var channel = new HttpChannel(factory);
-                connection.Channel = channel;
+                var httpConnection = new HttpConnection(factory);
+                connection.Channel = httpConnection;
                 var sse = new ServerSentEvents(connection);
                 var context = new DefaultHttpContext();
 
-                channel.Output.CompleteWriter();
+                httpConnection.Output.CompleteWriter();
 
                 await sse.ProcessRequestAsync(context);
 
@@ -39,20 +39,20 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task SSEAddsAppropriateFraming()
         {
-            using (var factory = new ChannelFactory())
+            using (var factory = new PipelineFactory())
             {
                 var connection = new Connection();
                 connection.ConnectionId = Guid.NewGuid().ToString();
-                var channel = new HttpChannel(factory);
-                connection.Channel = channel;
+                var httpConnection = new HttpConnection(factory);
+                connection.Channel = httpConnection;
                 var sse = new ServerSentEvents(connection);
                 var context = new DefaultHttpContext();
                 var ms = new MemoryStream();
                 context.Response.Body = ms;
 
-                await channel.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
+                await httpConnection.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
 
-                channel.Output.CompleteWriter();
+                httpConnection.Output.CompleteWriter();
 
                 await sse.ProcessRequestAsync(context);
 

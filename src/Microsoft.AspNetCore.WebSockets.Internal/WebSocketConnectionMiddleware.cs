@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Threading.Tasks;
-using Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
@@ -12,20 +12,20 @@ namespace Microsoft.AspNetCore.WebSockets.Internal
 {
     public class WebSocketConnectionMiddleware
     {
-        private readonly ChannelFactory _channelFactory;
+        private readonly PipelineFactory _factory;
         private readonly ILoggerFactory _loggerFactory;
         private readonly RequestDelegate _next;
         private readonly WebSocketConnectionOptions _options;
 
-        public WebSocketConnectionMiddleware(RequestDelegate next, ChannelFactory channelFactory, WebSocketConnectionOptions options, ILoggerFactory loggerFactory)
+        public WebSocketConnectionMiddleware(RequestDelegate next, PipelineFactory factory, WebSocketConnectionOptions options, ILoggerFactory loggerFactory)
         {
             if (next == null)
             {
                 throw new ArgumentNullException(nameof(next));
             }
-            if (channelFactory == null)
+            if (factory == null)
             {
-                throw new ArgumentNullException(nameof(channelFactory));
+                throw new ArgumentNullException(nameof(factory));
             }
             if (options == null)
             {
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.WebSockets.Internal
 
             _next = next;
             _loggerFactory = loggerFactory;
-            _channelFactory = channelFactory;
+            _factory = factory;
             _options = options;
         }
 
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.WebSockets.Internal
             {
                 if (_options.ReplaceFeature || context.Features.Get<IHttpWebSocketConnectionFeature>() == null)
                 {
-                    context.Features.Set<IHttpWebSocketConnectionFeature>(new WebSocketConnectionFeature(context, _channelFactory, upgradeFeature, _loggerFactory));
+                    context.Features.Set<IHttpWebSocketConnectionFeature>(new WebSocketConnectionFeature(context, _factory, upgradeFeature, _loggerFactory));
                 }
             }
 

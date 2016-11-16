@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Threading.Tasks;
-using Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebSockets.Internal;
 using Microsoft.Extensions.Internal;
@@ -18,13 +18,13 @@ namespace Microsoft.AspNetCore.Sockets
         private static readonly TimeSpan _closeTimeout = TimeSpan.FromSeconds(5);
         private static readonly WebSocketAcceptContext EmptyContext = new WebSocketAcceptContext();
 
-        private readonly HttpChannel _channel;
+        private readonly HttpConnection _channel;
         private readonly WebSocketOpcode _opcode;
         private readonly ILogger _logger;
 
         public WebSockets(Connection connection, Format format, ILoggerFactory loggerFactory)
         {
-            _channel = (HttpChannel)connection.Channel;
+            _channel = (HttpConnection)connection.Channel;
             _opcode = format == Format.Binary ? WebSocketOpcode.Binary : WebSocketOpcode.Text;
 
             _logger = (ILogger)loggerFactory?.CreateLogger<WebSockets>() ?? NullLogger.Instance;
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Sockets
                 _logger.LogInformation("Socket opened.");
 
                 // Begin sending and receiving. Receiving must be started first because ExecuteAsync enables SendAsync.
-                var receiving = ws.ExecuteAsync((frame, self) => ((WebSockets)self).HandleFrame(frame), this);
+                var receiving = ws.ExecuteAsync((frame, state) => ((WebSockets)state).HandleFrame(frame), this);
                 var sending = StartSending(ws);
 
                 // Wait for something to shut down.

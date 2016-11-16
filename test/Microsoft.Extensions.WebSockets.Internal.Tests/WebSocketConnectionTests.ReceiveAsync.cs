@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Channels;
 using Xunit;
 
 namespace Microsoft.Extensions.WebSockets.Internal.Tests
@@ -192,12 +192,12 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
             }
         }
 
-        private static async Task<WebSocketConnectionSummary> RunReceiveTest(Func<IWritableChannel, CancellationToken, Task> producer)
+        private static async Task<WebSocketConnectionSummary> RunReceiveTest(Func<IPipelineWriter, CancellationToken, Task> producer)
         {
-            using (var factory = new ChannelFactory())
+            using (var factory = new PipelineFactory())
             {
-                var outbound = factory.CreateChannel();
-                var inbound = factory.CreateChannel();
+                var outbound = factory.Create();
+                var inbound = factory.Create();
 
                 var timeoutToken = TestUtil.CreateTimeoutToken();
 

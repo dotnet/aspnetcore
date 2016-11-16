@@ -2,21 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Channels;
+using System.IO.Pipelines;
 
 namespace Microsoft.Extensions.WebSockets.Internal.Tests
 {
     internal class WebSocketPair : IDisposable
     {
-        private ChannelFactory _factory;
+        private PipelineFactory _factory;
 
-        public Channel ServerToClient { get; }
-        public Channel ClientToServer { get; }
+        public PipelineReaderWriter ServerToClient { get; }
+        public PipelineReaderWriter ClientToServer { get; }
 
         public IWebSocketConnection ClientSocket { get; }
         public IWebSocketConnection ServerSocket { get; }
 
-        public WebSocketPair(ChannelFactory factory, Channel serverToClient, Channel clientToServer, IWebSocketConnection clientSocket, IWebSocketConnection serverSocket)
+        public WebSocketPair(PipelineFactory factory, PipelineReaderWriter serverToClient, PipelineReaderWriter clientToServer, IWebSocketConnection clientSocket, IWebSocketConnection serverSocket)
         {
             _factory = factory;
             ServerToClient = serverToClient;
@@ -30,9 +30,9 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
         public static WebSocketPair Create(WebSocketOptions serverOptions, WebSocketOptions clientOptions)
         {
             // Create channels
-            var factory = new ChannelFactory();
-            var serverToClient = factory.CreateChannel();
-            var clientToServer = factory.CreateChannel();
+            var factory = new PipelineFactory();
+            var serverToClient = factory.Create();
+            var clientToServer = factory.Create();
 
             var serverSocket = new WebSocketConnection(clientToServer, serverToClient, options: serverOptions);
             var clientSocket = new WebSocketConnection(serverToClient, clientToServer, options: clientOptions);

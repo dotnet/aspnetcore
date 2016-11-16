@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task GetIdReservesConnectionIdAndReturnsIt()
         {
             var manager = new ConnectionManager();
-            using (var factory = new ChannelFactory())
+            using (var factory = new PipelineFactory())
             {
                 var dispatcher = new HttpConnectionDispatcher(manager, factory, loggerFactory: null);
                 var context = new DefaultHttpContext();
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var manager = new ConnectionManager();
             var state = manager.ReserveConnection();
 
-            using (var factory = new ChannelFactory())
+            using (var factory = new PipelineFactory())
             {
                 var dispatcher = new HttpConnectionDispatcher(manager, factory, loggerFactory: null);
                 var context = new DefaultHttpContext();
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task SendingToUnknownConnectionIdThrows()
         {
             var manager = new ConnectionManager();
-            using (var factory = new ChannelFactory())
+            using (var factory = new PipelineFactory())
             {
                 var dispatcher = new HttpConnectionDispatcher(manager, factory, loggerFactory: null);
                 var context = new DefaultHttpContext();
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task SendingWithoutConnectionIdThrows()
         {
             var manager = new ConnectionManager();
-            using (var factory = new ChannelFactory())
+            using (var factory = new PipelineFactory())
             {
                 var dispatcher = new HttpConnectionDispatcher(manager, factory, loggerFactory: null);
                 var context = new DefaultHttpContext();

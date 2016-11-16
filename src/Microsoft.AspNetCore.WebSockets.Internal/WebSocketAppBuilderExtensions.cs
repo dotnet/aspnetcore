@@ -2,39 +2,39 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Channels;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.WebSockets.Internal;
 
 namespace Microsoft.AspNetCore.Builder
 {
     public static class WebSocketAppBuilderExtensions
     {
-        public static void UseWebSocketConnections(this IApplicationBuilder self)
+        public static void UseWebSocketConnections(this IApplicationBuilder app)
         {
             // Only the GC can clean up this channel factory :(
-            self.UseWebSocketConnections(new ChannelFactory(), new WebSocketConnectionOptions());
+            app.UseWebSocketConnections(new PipelineFactory(), new WebSocketConnectionOptions());
         }
 
-        public static void UseWebSocketConnections(this IApplicationBuilder self, ChannelFactory channelFactory)
+        public static void UseWebSocketConnections(this IApplicationBuilder app, PipelineFactory factory)
         {
-            if (channelFactory == null)
+            if (factory == null)
             {
-                throw new ArgumentNullException(nameof(channelFactory));
+                throw new ArgumentNullException(nameof(factory));
             }
-            self.UseWebSocketConnections(channelFactory, new WebSocketConnectionOptions());
+            app.UseWebSocketConnections(factory, new WebSocketConnectionOptions());
         }
 
-        public static void UseWebSocketConnections(this IApplicationBuilder self, ChannelFactory channelFactory, WebSocketConnectionOptions options)
+        public static void UseWebSocketConnections(this IApplicationBuilder app, PipelineFactory factory, WebSocketConnectionOptions options)
         {
-            if (channelFactory == null)
+            if (factory == null)
             {
-                throw new ArgumentNullException(nameof(channelFactory));
+                throw new ArgumentNullException(nameof(factory));
             }
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
-            self.UseMiddleware<WebSocketConnectionMiddleware>(channelFactory, options);
+            app.UseMiddleware<WebSocketConnectionMiddleware>(factory, options);
         }
     }
 }

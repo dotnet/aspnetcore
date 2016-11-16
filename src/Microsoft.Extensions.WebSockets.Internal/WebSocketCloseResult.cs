@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Binary;
+using System.IO.Pipelines;
+using System.IO.Pipelines.Text.Primitives;
 using System.Text;
-using Channels;
-using Channels.Text.Primitives;
+using System.Text.Formatting;
 
 namespace Microsoft.Extensions.WebSockets.Internal
 {
@@ -70,7 +71,7 @@ namespace Microsoft.Extensions.WebSockets.Internal
             buffer.WriteBigEndian((ushort)Status);
             if (!string.IsNullOrEmpty(Description))
             {
-                buffer.WriteUtf8String(Description);
+                buffer.Append(Description, EncodingData.TextEncoding.Utf8);
             }
         }
     }

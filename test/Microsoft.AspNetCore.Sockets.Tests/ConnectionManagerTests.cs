@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Threading.Tasks;
-using Channels;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Sockets.Tests
@@ -42,8 +42,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public void AddNewConnection()
         {
-            using (var factory = new ChannelFactory())
-            using (var channel = new HttpChannel(factory))
+            using (var factory = new PipelineFactory())
+            using (var channel = new HttpConnection(factory))
             {
                 var connectionManager = new ConnectionManager();
                 var state = connectionManager.AddNewConnection(channel);
@@ -62,8 +62,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public void RemoveConnection()
         {
-            using (var factory = new ChannelFactory())
-            using (var channel = new HttpChannel(factory))
+            using (var factory = new PipelineFactory())
+            using (var channel = new HttpConnection(factory))
             {
                 var connectionManager = new ConnectionManager();
                 var state = connectionManager.AddNewConnection(channel);
