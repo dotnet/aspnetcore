@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 Arguments = args
             };
 
-            return PublishAsync(typeof(THub).FullName + "." + groupName, message);
+            return PublishAsync(typeof(THub).FullName + ".group." + groupName, message);
         }
 
         public override Task InvokeUserAsync(string userId, string methodName, object[] args)
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 Arguments = args
             };
 
-            return PublishAsync(typeof(THub).FullName + "." + userId, message);
+            return PublishAsync(typeof(THub).FullName + ".user." + userId, message);
         }
 
         private async Task PublishAsync(string channel, InvocationDescriptor message)
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
             if (connection.User.Identity.IsAuthenticated)
             {
-                var userChannel = typeof(THub).FullName + "." + connection.User.Identity.Name;
+                var userChannel = typeof(THub).FullName + ".user." + connection.User.Identity.Name;
                 redisSubscriptions.Add(userChannel);
 
                 var previousUserTask = Task.CompletedTask;
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
         public override async Task AddGroupAsync(Connection connection, string groupName)
         {
-            var groupChannel = typeof(THub).FullName + "." + groupName;
+            var groupChannel = typeof(THub).FullName + ".group." + groupName;
 
             var groupNames = connection.Metadata.GetOrAdd("group", _ => new HashSet<string>());
 
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
         public override async Task RemoveGroupAsync(Connection connection, string groupName)
         {
-            var groupChannel = typeof(THub).FullName + "." + groupName;
+            var groupChannel = typeof(THub).FullName + ".group." + groupName;
 
             GroupData group;
             if (!_groups.TryGetValue(groupChannel, out group))
