@@ -21,20 +21,18 @@ namespace Microsoft.AspNetCore.WebSockets.Internal
                 return false;
             }
 
+            foreach (var value in request.Headers.GetCommaSeparatedValues(Constants.Headers.Connection))
+            {
+                if (string.Equals(Constants.Headers.ConnectionUpgrade, value, StringComparison.OrdinalIgnoreCase))
+                {
+                    validConnection = true;
+                    break;
+                }
+            }
+
             foreach (var pair in request.Headers)
             {
-                if (string.Equals(Constants.Headers.Connection, pair.Key, StringComparison.OrdinalIgnoreCase))
-                {
-                    foreach (var value in pair.Value)
-                    {
-                        if (string.Equals(Constants.Headers.ConnectionUpgrade, value, StringComparison.OrdinalIgnoreCase))
-                        {
-                            validConnection = true;
-                            break;
-                        }
-                    }
-                }
-                else if (string.Equals(Constants.Headers.Upgrade, pair.Key, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(Constants.Headers.Upgrade, pair.Key, StringComparison.OrdinalIgnoreCase))
                 {
                     if (string.Equals(Constants.Headers.UpgradeWebSocket, pair.Value, StringComparison.OrdinalIgnoreCase))
                     {
