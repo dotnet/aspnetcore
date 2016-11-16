@@ -4,15 +4,15 @@
 
 This is the home page of the ASP.NET Core source code repositories and is intended for those contributing to ASP.NET Core or using bleeding edge nightly builds.
 
-ASP.NET Core is a new open-source and cross-platform framework for building modern cloud based internet connected applications, such as web apps, IoT apps and mobile backends. ASP.NET Core apps can run on .NET Core or on the full .NET Framework. It was architected to provide an optimized development framework for apps that are deployed to the cloud or run on-premises. It consists of modular components with minimal overhead, so you retain flexibility while constructing your solutions. You can develop and run your ASP.NET Core apps cross-platform on Windows, Mac and Linux. [Learn more about ASP.NET Core](https://docs.asp.net/en/latest/intro.html).
+ASP.NET Core is a new open-source and cross-platform framework for building modern cloud based internet connected applications, such as web apps, IoT apps and mobile backends. ASP.NET Core apps can run on .NET Core or on the full .NET Framework. It was architected to provide an optimized development framework for apps that are deployed to the cloud or run on-premises. It consists of modular components with minimal overhead, so you retain flexibility while constructing your solutions. You can develop and run your ASP.NET Core apps cross-platform on Windows, Mac and Linux. [Learn more about ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/).
 
 We are pleased to [announce](https://blogs.msdn.microsoft.com/webdev/2016/06/27/announcing-asp-net-core-1-0/) the release of ASP.NET Core 1.0!
 
 ## Get Started
 
-Follow the [Getting Started](https://docs.asp.net/en/latest/getting-started.html) instructions in the [ASP.NET Core docs](https://docs.asp.net).
+Follow the [Getting Started](https://docs.microsoft.com/en-us/aspnet/core/getting-started) instructions in the [ASP.NET Core docs](https://docs.microsoft.com/en-us/aspnet/index).
 
-Also checkout the [.NET Homepage](http://dot.net) for released versions of .NET, getting started guides, and learning resources.
+Also checkout the [.NET Homepage](https://www.microsoft.com/net) for released versions of .NET, getting started guides, and learning resources.
 
 ## Builds
 
@@ -20,7 +20,7 @@ If you want to use the latest dev build then you need to:
 
 - Obtain the latest [build of the .NET Core SDK](https://github.com/dotnet/cli#installers-and-binaries)
 - Add a NuGet.Config to your app with the following content:
-    
+
   ```xml
   <?xml version="1.0" encoding="utf-8"?>
   <configuration>
@@ -31,9 +31,9 @@ If you want to use the latest dev build then you need to:
       </packageSources>
   </configuration>
   ```
-    
+
   *NOTE: This NuGet.Config should be with your application unless you want nightly packages to potentially start being restored for other apps on the machine.*
-    
+
 - Change your applications dependencies to have a `*` to get the latest version (ex. `1.0.0-*`).
 
 Prerelease tooling builds for Visual Studio are available from the [Tooling](https://github.com/aspnet/tooling/#pre-release-builds) repo.
@@ -50,7 +50,7 @@ To follow along with the development of ASP.NET Core:
 These are some of the most common repos:
 
 * [DependencyInjection](https://github.com/aspnet/DependencyInjection) - basic dependency injection infrastructure and default implementation
-* [Docs](https://github.com/aspnet/Docs) - documentation sources for https://docs.asp.net/en/latest/
+* [Docs](https://github.com/aspnet/Docs) - documentation sources for https://docs.microsoft.com/en-us/aspnet/core/
 * [EntityFramework](https://github.com/aspnet/EntityFramework) - data access technology
 * [Identity](https://github.com/aspnet/Identity) - users and membership system
 * [MVC](https://github.com/aspnet/Mvc) - MVC framework for web apps and services
