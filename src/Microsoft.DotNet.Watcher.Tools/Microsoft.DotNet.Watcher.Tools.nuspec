@@ -25,6 +25,9 @@
     <file src="dotnet-watch.dll" target="lib\netcoreapp1.0\" />
     <file src="dotnet-watch.deps.json" target="lib\netcoreapp1.0\" />
     <file src="dotnet-watch.runtimeconfig.json" target="lib\netcoreapp1.0\" />
+    <file src="tools\DotNetWatchCommon.targets" target="tools\" />
+    <file src="tools\DotNetWatchInner.targets" target="tools\" />
+    <file src="tools\DotNetWatchOuter.targets" target="tools\" />
     <file src="tools\*.targets" target="tools\" />
   </files>
 </package>
