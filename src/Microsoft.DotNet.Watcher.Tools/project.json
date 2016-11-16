@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-msbuild1-final",
+  "version": "1.0.0-msbuild1-update1",
   "description": "Command line tool to watch for source file changes during development and restart the dotnet command.",
   "packOptions": {
     "tags": [
@@ -32,7 +32,7 @@
     ]
   },
   "dependencies": {
-    "Microsoft.DotNet.Cli.Utils": "1.0.0-preview3-004050",
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-preview3-004056",
     "Microsoft.Extensions.Logging": "1.0.0",
     "Microsoft.Extensions.Logging.Console": "1.0.0",
     "Microsoft.Extensions.Process.Sources": {
