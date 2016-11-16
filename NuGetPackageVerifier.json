@@ -5,6 +5,7 @@
         ],
         "packages": {
             "Microsoft.AspNetCore.Razor": { },
+            "Microsoft.AspNetCore.Razor.Evolution": { },
             "Microsoft.AspNetCore.Razor.Runtime": { }
         }
     },
