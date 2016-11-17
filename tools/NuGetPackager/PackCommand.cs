@@ -136,7 +136,13 @@ namespace NuGetPackager
             Console.WriteLine("command:   ".Bold().Blue() + pInfo.FileName);
             Console.WriteLine("arguments: ".Bold().Blue() + pInfo.Arguments);
 
-            Process.Start(pInfo).WaitForExit();
+            var process = Process.Start(pInfo);
+            process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                throw new InvalidOperationException("NuGet exited with non-zero code " + process.ExitCode);
+            }
         }
 
         private async Task<string> GetNugetExePath()
