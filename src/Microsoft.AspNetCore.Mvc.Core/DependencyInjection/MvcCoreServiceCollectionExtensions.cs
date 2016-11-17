@@ -87,7 +87,7 @@ namespace Microsoft.Extensions.DependencyInjection
         private static T GetServiceFromCollection<T>(IServiceCollection services)
         {
             return (T)services
-                .FirstOrDefault(d => d.ServiceType == typeof(T))
+                .LastOrDefault(d => d.ServiceType == typeof(T))
                 ?.ImplementationInstance;
         }
 
