@@ -518,7 +518,7 @@ if (env.IsDevelopment()) {
     app.UseWebpackDevMiddleware();
 }
 
-// You call to app.UseStaticFiles(); should be here
+// Your call to app.UseStaticFiles(); should be here
 ```
 
 Also check your webpack configuration at `webpack.config.js`. Since `UseWebpackDevMiddleware` needs to know which incoming requests to intercept, make sure you've specified a `publicPath` value on your `output`, for example:
