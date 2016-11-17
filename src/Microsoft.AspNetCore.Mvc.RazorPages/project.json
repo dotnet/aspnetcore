@@ -1,6 +1,6 @@
 ﻿{
   "description": "ASP.NET Core MVC Razor Pages.",
-  "version": "1.1.0-*",
+  "version": "1.0.0-*",
   "packOptions": {
     "repository": {
       "type": "git",
@@ -22,7 +22,7 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Razor.Evolution": "1.1.0-*",
+    "Microsoft.AspNetCore.Razor.Evolution": "1.0.0-*",
     "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
