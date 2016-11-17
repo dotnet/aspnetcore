@@ -129,7 +129,4 @@
   <data name="Error_QuietAndVerboseSpecified" xml:space="preserve">
     <value>Cannot specify both '--quiet' and '--verbose' options.</value>
   </data>
-  <data name="Error_StringNullOrEmpty" xml:space="preserve">
-    <value>Value cannot be null or an empty string.</value>
-  </data>
 </root>

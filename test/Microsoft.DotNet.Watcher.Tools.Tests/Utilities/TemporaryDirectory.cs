@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.DotNetWatcher.Tools.Tests
+namespace Microsoft.DotNet.Watcher.Tools.Tests
 {
     public class TemporaryDirectory : IDisposable
     {

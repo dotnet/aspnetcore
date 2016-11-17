@@ -11,22 +11,6 @@ namespace Microsoft.Extensions.SecretManager.Tools
             = new ResourceManager("Microsoft.Extensions.SecretManager.Tools.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// Value cannot be null or an empty string.
-        /// </summary>
-        internal static string Common_StringNullOrEmpty
-        {
-            get { return GetString("Common_StringNullOrEmpty"); }
-        }
-
-        /// <summary>
-        /// Value cannot be null or an empty string.
-        /// </summary>
-        internal static string FormatCommon_StringNullOrEmpty()
-        {
-            return GetString("Common_StringNullOrEmpty");
-        }
-
-        /// <summary>
         /// Command failed : {message}
         /// </summary>
         internal static string Error_Command_Failed

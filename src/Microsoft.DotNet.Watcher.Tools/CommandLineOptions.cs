@@ -1,12 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher
 {
@@ -17,7 +16,7 @@ namespace Microsoft.DotNet.Watcher
         public bool IsQuiet { get; private set; }
         public bool IsVerbose { get; private set; }
         public IList<string> RemainingArguments { get; private set; }
-        public static CommandLineOptions Parse(string[] args, TextWriter stdout, TextWriter stderr)
+        public static CommandLineOptions Parse(string[] args, IConsole console)
         {
             Ensure.NotNull(args, nameof(args));
 
@@ -25,8 +24,8 @@ namespace Microsoft.DotNet.Watcher
             {
                 Name = "dotnet watch",
                 FullName = "Microsoft DotNet File Watcher",
-                Out = stdout,
-                Error = stderr,
+                Out = console.Out,
+                Error = console.Error,
                 AllowArgumentSeparator = true,
                 ExtendedHelpText = @"
 Environment variables:
@@ -80,7 +79,7 @@ Examples:
 
             if (optQuiet.HasValue() && optVerbose.HasValue())
             {
-                stderr.WriteLine(Resources.Error_QuietAndVerboseSpecified.Bold().Red());
+                console.Error.WriteLine(Resources.Error_QuietAndVerboseSpecified.Bold().Red());
                 return null;
             }
 

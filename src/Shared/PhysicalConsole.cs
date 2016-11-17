@@ -4,13 +4,21 @@
 using System;
 using System.IO;
 
-namespace Microsoft.Extensions.SecretManager.Tools.Internal
+namespace Microsoft.Extensions.Tools.Internal
 {
     public class PhysicalConsole : IConsole
     {
-        private PhysicalConsole() { }
+        private PhysicalConsole()
+        {
+            Console.CancelKeyPress += (o, e) =>
+            {
+                CancelKeyPress?.Invoke(o, e);
+            };
+        }
 
         public static IConsole Singleton { get; } = new PhysicalConsole();
+
+        public event ConsoleCancelEventHandler CancelKeyPress;
         public TextWriter Error => Console.Error;
         public TextReader In => Console.In;
         public TextWriter Out => Console.Out;

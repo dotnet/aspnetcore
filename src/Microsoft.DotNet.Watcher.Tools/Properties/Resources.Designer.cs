@@ -74,22 +74,6 @@ namespace Microsoft.DotNet.Watcher.Tools
             return GetString("Error_QuietAndVerboseSpecified");
         }
 
-        /// <summary>
-        /// Value cannot be null or an empty string.
-        /// </summary>
-        internal static string Error_StringNullOrEmpty
-        {
-            get { return GetString("Error_StringNullOrEmpty"); }
-        }
-
-        /// <summary>
-        /// Value cannot be null or an empty string.
-        /// </summary>
-        internal static string FormatError_StringNullOrEmpty()
-        {
-            return GetString("Error_StringNullOrEmpty");
-        }
-
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

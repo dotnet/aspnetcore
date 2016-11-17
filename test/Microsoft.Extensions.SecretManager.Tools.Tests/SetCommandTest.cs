@@ -1,17 +1,27 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Collections.Generic;
 using Microsoft.Extensions.SecretManager.Tools.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Tools.Internal;
 using Xunit;
-using System;
+using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Tests
 {
+
     public class SetCommandTest
     {
+        private readonly ITestOutputHelper _output;
+
+        public SetCommandTest(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         [Fact]
         public void SetsFromPipedInput()
         {
@@ -21,7 +31,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
 ""Key2"": 1234,
 ""Key3"": false
 }";
-            var testConsole = new TestConsole
+            var testConsole = new TestConsole(_output)
             {
                 IsInputRedirected = true,
                 In = new StringReader(input)
@@ -48,7 +58,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
                    ""array"": [ 1, 2 ]
                 }";
 
-            var testConsole = new TestConsole
+            var testConsole = new TestConsole(_output)
             {
                 IsInputRedirected = true,
                 In = new StringReader(input)
@@ -68,7 +78,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         [Fact]
         public void OnlyPipesInIfNoArgs()
         {
-            var testConsole = new TestConsole
+            var testConsole = new TestConsole(_output)
             {
                 IsInputRedirected = true,
                 In = new StringReader("")

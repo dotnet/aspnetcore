@@ -9,6 +9,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Tools.Internal;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
@@ -20,10 +21,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
 
         public SecretsStore(string userSecretsId, ILogger logger)
         {
-            if (userSecretsId == null)
-            {
-                throw new ArgumentNullException(nameof(userSecretsId));
-            }
+            Ensure.NotNull(userSecretsId, nameof(userSecretsId));
 
             _secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
 

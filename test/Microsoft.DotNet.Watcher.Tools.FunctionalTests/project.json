@@ -15,6 +15,7 @@
     "Microsoft.DotNet.InternalAbstractions": "1.0.0",
     "Microsoft.AspNetCore.Testing": "1.0.0",
     "Microsoft.DotNet.Watcher.Tools": "1.0.0-*",
+    "Microsoft.DotNet.Watcher.Tools.Tests": "1.0.0-*",
     "Microsoft.Extensions.Process.Sources": {
       "type": "build",
       "version": "1.0.0"

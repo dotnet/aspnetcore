@@ -1,12 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 
-namespace Microsoft.Extensions.SecretManager.Tools.Internal
+namespace Microsoft.Extensions.Tools.Internal
 {
     public interface IConsole
     {
+        event ConsoleCancelEventHandler CancelKeyPress;
         TextWriter Out { get; }
         TextWriter Error { get; }
         TextReader In { get; }

@@ -1,3 +1,5 @@
+set -e
+
 dotnet build
 
 ../../.build/dotnet/dotnet exec \

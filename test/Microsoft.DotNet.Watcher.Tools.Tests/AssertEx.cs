@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using Xunit;
 
-namespace Microsoft.DotNetWatcher.Tools.Tests
+namespace Microsoft.DotNet.Watcher.Tools.Tests
 {
     public static class AssertEx
     {

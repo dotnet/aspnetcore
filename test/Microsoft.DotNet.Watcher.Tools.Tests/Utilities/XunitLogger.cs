@@ -5,7 +5,7 @@ using System;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
-namespace Microsoft.DotNetWatcher.Tools.Tests
+namespace Microsoft.DotNet.Watcher.Tools.Tests
 {
     internal class XunitLogger : ILogger
     {

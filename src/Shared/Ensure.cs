@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.DotNet.Watcher.Tools;
 
-namespace Microsoft.DotNet.Watcher.Internal
+namespace Microsoft.Extensions.Tools.Internal
 {
     internal static class Ensure
     {
@@ -22,7 +21,7 @@ namespace Microsoft.DotNet.Watcher.Internal
         {
             if (string.IsNullOrEmpty(obj))
             {
-                throw new ArgumentException(Resources.Error_StringNullOrEmpty, paramName);
+                throw new ArgumentException("Value cannot be null or an empty string.", paramName);
             }
             return obj;
         }

@@ -16,34 +16,36 @@ namespace Microsoft.DotNet.Watcher
     public class Program
     {
         private const string LoggerName = "DotNetWatcher";
-        private readonly CancellationToken _cancellationToken;
-        private readonly TextWriter _stdout;
-        private readonly TextWriter _stderr;
+        private readonly IConsole _console;
         private readonly string _workingDir;
 
-        public Program(TextWriter consoleOutput, TextWriter consoleError, string workingDir, CancellationToken cancellationToken)
+        public Program(IConsole console, string workingDir)
         {
-            Ensure.NotNull(consoleOutput, nameof(consoleOutput));
-            Ensure.NotNull(consoleError, nameof(consoleError));
+            Ensure.NotNull(console, nameof(console));
             Ensure.NotNullOrEmpty(workingDir, nameof(workingDir));
 
-            _cancellationToken = cancellationToken;
-            _stdout = consoleOutput;
-            _stderr = consoleError;
+            _console = console;
             _workingDir = workingDir;
         }
 
         public static int Main(string[] args)
         {
             HandleDebugSwitch(ref args);
+            return new Program(PhysicalConsole.Singleton, Directory.GetCurrentDirectory())
+                .RunAsync(args)
+                .GetAwaiter()
+                .GetResult();
+        }
 
+        public async Task<int> RunAsync(string[] args)
+        {
             using (CancellationTokenSource ctrlCTokenSource = new CancellationTokenSource())
             {
-                Console.CancelKeyPress += (sender, ev) =>
+                _console.CancelKeyPress += (sender, ev) =>
                 {
                     if (!ctrlCTokenSource.IsCancellationRequested)
                     {
-                        Console.WriteLine($"[{LoggerName}] Shutdown requested. Press Ctrl+C again to force exit.");
+                        _console.Out.WriteLine($"[{LoggerName}] Shutdown requested. Press Ctrl+C again to force exit.");
                         ev.Cancel = true;
                     }
                     else
@@ -55,10 +57,7 @@ namespace Microsoft.DotNet.Watcher
 
                 try
                 {
-                    return new Program(Console.Out, Console.Error, Directory.GetCurrentDirectory(), ctrlCTokenSource.Token)
-                        .MainInternalAsync(args)
-                        .GetAwaiter()
-                        .GetResult();
+                    return await MainInternalAsync(args, ctrlCTokenSource.Token);
                 }
                 catch (Exception ex)
                 {
@@ -68,16 +67,16 @@ namespace Microsoft.DotNet.Watcher
                         return 0;
                     }
 
-                    Console.Error.WriteLine(ex.ToString());
-                    Console.Error.WriteLine($"[{LoggerName}] An unexpected error occurred".Bold().Red());
+                    _console.Error.WriteLine(ex.ToString());
+                    _console.Error.WriteLine($"[{LoggerName}] An unexpected error occurred".Bold().Red());
                     return 1;
                 }
             }
         }
 
-        private async Task<int> MainInternalAsync(string[] args)
+        private async Task<int> MainInternalAsync(string[] args, CancellationToken cancellationToken)
         {
-            var options = CommandLineOptions.Parse(args, _stdout, _stdout);
+            var options = CommandLineOptions.Parse(args, _console);
             if (options == null)
             {
                 // invalid args syntax
@@ -105,7 +104,7 @@ namespace Microsoft.DotNet.Watcher
             }
             catch (FileNotFoundException ex)
             {
-                _stderr.WriteLine(ex.Message.Bold().Red());
+                _console.Error.WriteLine(ex.Message.Bold().Red());
                 return 1;
             }
 
@@ -119,7 +118,7 @@ namespace Microsoft.DotNet.Watcher
             };
 
             await new DotNetWatcher(logger)
-                    .WatchAsync(processInfo, fileSetFactory, _cancellationToken);
+                    .WatchAsync(processInfo, fileSetFactory, cancellationToken);
 
             return 0;
         }

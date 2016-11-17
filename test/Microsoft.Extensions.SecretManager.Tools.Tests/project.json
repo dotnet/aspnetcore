@@ -1,7 +1,8 @@
 {
   "buildOptions": {
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "compile": "../Shared/**/*.cs"
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-preview2-build1029",

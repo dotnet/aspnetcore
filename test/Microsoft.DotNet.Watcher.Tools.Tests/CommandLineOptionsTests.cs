@@ -4,12 +4,27 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.Extensions.Tools.Internal;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools.Tests
 {
     public class CommandLineOptionsTests
     {
+        private readonly IConsole _console;
+        private readonly StringBuilder _stdout = new StringBuilder();
+        private readonly StringBuilder _stderr = new StringBuilder();
+
+        public CommandLineOptionsTests(ITestOutputHelper output)
+        {
+            _console = new TestConsole(output)
+            {
+                Out = new StringWriter(_stdout),
+                Error = new StringWriter(_stderr),
+            };
+        }
+
         [Theory]
         [InlineData(new object[] { new[] { "-h" } })]
         [InlineData(new object[] { new[] { "-?" } })]
@@ -19,12 +34,10 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         [InlineData(new object[] { new string[0] })]
         public void HelpArgs(string[] args)
         {
-            var stdout = new StringBuilder();
-
-            var options = CommandLineOptions.Parse(args, new StringWriter(stdout), new StringWriter());
+            var options = CommandLineOptions.Parse(args, _console);
 
             Assert.True(options.IsHelp);
-            Assert.Contains("Usage: dotnet watch ", stdout.ToString());
+            Assert.Contains("Usage: dotnet watch ", _stdout.ToString());
         }
 
         [Theory]
@@ -34,22 +47,18 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         [InlineData(new[] { "--unrecognized-arg" }, new[] { "--unrecognized-arg" })]
         public void ParsesRemainingArgs(string[] args, string[] expected)
         {
-            var stdout = new StringBuilder();
-
-            var options = CommandLineOptions.Parse(args, new StringWriter(stdout), new StringWriter());
+            var options = CommandLineOptions.Parse(args, _console);
 
             Assert.Equal(expected, options.RemainingArguments.ToArray());
             Assert.False(options.IsHelp);
-            Assert.Empty(stdout.ToString());
+            Assert.Empty(_stdout.ToString());
         }
 
         [Fact]
         public void CannotHaveQuietAndVerbose()
         {
-            var sb = new StringBuilder();
-            var stderr = new StringWriter(sb);
-            Assert.Null(CommandLineOptions.Parse(new[] { "--quiet", "--verbose" }, new StringWriter(), stderr));
-            Assert.Contains(Resources.Error_QuietAndVerboseSpecified, sb.ToString());
+            Assert.Null(CommandLineOptions.Parse(new[] { "--quiet", "--verbose" }, _console));
+            Assert.Contains(Resources.Error_QuietAndVerboseSpecified, _stderr.ToString());
         }
     }
 }

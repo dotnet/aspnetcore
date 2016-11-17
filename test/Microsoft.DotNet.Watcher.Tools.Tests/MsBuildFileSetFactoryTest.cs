@@ -6,13 +6,12 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.DotNet.Watcher;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.DotNetWatcher.Tools.Tests
+namespace Microsoft.DotNet.Watcher.Tools.Tests
 {
     using ItemSpec = TemporaryCSharpProject.ItemSpec;
 

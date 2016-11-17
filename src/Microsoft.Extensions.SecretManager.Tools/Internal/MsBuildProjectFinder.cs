@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
 {
@@ -14,10 +15,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
 
         public MsBuildProjectFinder(string directory)
         {
-            if (string.IsNullOrEmpty(directory))
-            {
-                throw new ArgumentException(Resources.Common_StringNullOrEmpty, nameof(directory));
-            }
+            Ensure.NotNullOrEmpty(directory, nameof(directory));
 
             _directory = directory;
         }

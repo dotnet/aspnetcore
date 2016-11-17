@@ -2,7 +2,8 @@
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "debugType": "portable"
+    "debugType": "portable",
+    "compile": "../Shared/**/*.cs"
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-preview2-build1029",

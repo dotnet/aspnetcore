@@ -6,6 +6,7 @@ using System.IO;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.SecretManager.Tools.Internal;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.SecretManager.Tools
 {
@@ -39,29 +40,13 @@ namespace Microsoft.Extensions.SecretManager.Tools
         public ILogger Logger
         {
             get { return _logger; }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-
-                _logger = value;
-            }
+            set { _logger = Ensure.NotNull(value, nameof(value)); }
         }
 
         public CommandOutputProvider CommandOutputProvider
         {
             get { return _loggerProvider; }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-
-                _loggerProvider = value;
-            }
+            set { _loggerProvider = Ensure.NotNull(value, nameof(value)); }
         }
 
         public bool TryRun(string[] args, out int returnCode)
