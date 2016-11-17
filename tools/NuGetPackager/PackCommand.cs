@@ -31,7 +31,7 @@ namespace NuGetPackager
             var project = ProjectContext.Create(Path.GetDirectoryName(nuspec), FrameworkConstants.CommonFrameworks.NetCoreApp10);
             var idx = 0;
             var props = "";
-            var first = false;
+            var first = true;
             foreach (var depVersion in GetDependencies(project).OrderBy(p => p.Item1).Select(p => p.Item2))
             {
                 if (first)
