@@ -14,7 +14,7 @@
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.3-*",
+          "version": "1.0.3",
           "type": "platform"
         },
         "System.Net.Http": "4.1.1",
