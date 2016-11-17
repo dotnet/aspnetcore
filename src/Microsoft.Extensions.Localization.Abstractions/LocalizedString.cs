@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.Localization
         /// </summary>
         /// <param name="name">The name of the string in the resource it was loaded from.</param>
         /// <param name="value">The actual string.</param>
-        /// <param name="resourceNotFound">Whether the string was found in a resource. Set this to <c>false</c> to indicate an alternate string value was used.</param>
+        /// <param name="resourceNotFound">Whether the string was not found in a resource. Set this to <c>true</c> to indicate an alternate string value was used.</param>
         public LocalizedString(string name, string value, bool resourceNotFound)
         {
             if (name == null)
@@ -59,7 +59,7 @@ namespace Microsoft.Extensions.Localization
         public string Value { get; }
 
         /// <summary>
-        /// Whether the string was found in a resource. If <c>false</c>, an alternate string value was used.
+        /// Whether the string was not found in a resource. If <c>true</c>, an alternate string value was used.
         /// </summary>
         public bool ResourceNotFound { get; }
 
