@@ -11,6 +11,38 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             = new ResourceManager("Microsoft.AspNetCore.Identity.EntityFrameworkCore.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// AddEntityFrameworkStores can only be called with a role that derives from IdentityRole&lt;TKey&gt;. If you are specifying more generic arguments, use AddRoleStore&lt;TStore&gt;() where TStore is your custom IRoleStore that uses your generics instead.
+        /// </summary>
+        internal static string NotIdentityRole
+        {
+            get { return GetString("NotIdentityRole"); }
+        }
+
+        /// <summary>
+        /// AddEntityFrameworkStores can only be called with a role that derives from IdentityRole&lt;TKey&gt;. If you are specifying more generic arguments, use AddRoleStore&lt;TStore&gt;() where TStore is your custom IRoleStore that uses your generics instead.
+        /// </summary>
+        internal static string FormatNotIdentityRole()
+        {
+            return GetString("NotIdentityRole");
+        }
+
+        /// <summary>
+        /// AddEntityFrameworkStores can only be called with a user that derives from IdentityUser&lt;TKey&gt;. If you are specifying more generic arguments, use IdentityBuilder.AddUserStore&lt;TStore&gt;() where TStore is your custom IUserStore that uses your generics instead.
+        /// </summary>
+        internal static string NotIdentityUser
+        {
+            get { return GetString("NotIdentityUser"); }
+        }
+
+        /// <summary>
+        /// AddEntityFrameworkStores can only be called with a user that derives from IdentityUser&lt;TKey&gt;. If you are specifying more generic arguments, use IdentityBuilder.AddUserStore&lt;TStore&gt;() where TStore is your custom IUserStore that uses your generics instead.
+        /// </summary>
+        internal static string FormatNotIdentityUser()
+        {
+            return GetString("NotIdentityUser");
+        }
+
+        /// <summary>
         /// Role {0} does not exist.
         /// </summary>
         internal static string RoleNotFound

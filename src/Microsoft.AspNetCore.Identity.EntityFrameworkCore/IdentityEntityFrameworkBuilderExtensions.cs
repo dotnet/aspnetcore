@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Reflection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +24,8 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IdentityBuilder AddEntityFrameworkStores<TContext>(this IdentityBuilder builder)
             where TContext : DbContext
         {
-            builder.Services.TryAdd(GetDefaultServices(builder.UserType, builder.RoleType, typeof(TContext)));
+            var keyType = InferKeyType(typeof(TContext));
+            AddStores(builder.Services, builder.UserType, builder.RoleType, typeof(TContext), keyType);
             return builder;
         }
 
@@ -38,26 +40,44 @@ namespace Microsoft.Extensions.DependencyInjection
             where TContext : DbContext
             where TKey : IEquatable<TKey>
         {
-            builder.Services.TryAdd(GetDefaultServices(builder.UserType, builder.RoleType, typeof(TContext), typeof(TKey)));
+            AddStores(builder.Services, builder.UserType, builder.RoleType, typeof(TContext), typeof(TKey));
             return builder;
         }
 
-        private static IServiceCollection GetDefaultServices(Type userType, Type roleType, Type contextType, Type keyType = null)
+        private static void AddStores(IServiceCollection services, Type userType, Type roleType, Type contextType, Type keyType)
         {
-            Type userStoreType;
-            Type roleStoreType;
-            keyType = keyType ?? typeof(string);
-            userStoreType = typeof(UserStore<,,,>).MakeGenericType(userType, roleType, contextType, keyType);
-            roleStoreType = typeof(RoleStore<,,>).MakeGenericType(roleType, contextType, keyType);
-
-            var services = new ServiceCollection();
-            services.AddScoped(
+            var identityUserType = typeof(IdentityUser<>).MakeGenericType(keyType);
+            if (!identityUserType.GetTypeInfo().IsAssignableFrom(userType.GetTypeInfo()))
+            {
+                throw new InvalidOperationException(Resources.NotIdentityUser);
+            }
+            var identityRoleType = typeof(IdentityRole<>).MakeGenericType(keyType);
+            if (!identityRoleType.GetTypeInfo().IsAssignableFrom(roleType.GetTypeInfo()))
+            {
+                throw new InvalidOperationException(Resources.NotIdentityRole);
+            }
+            services.TryAddScoped(
                 typeof(IUserStore<>).MakeGenericType(userType),
-                userStoreType);
-            services.AddScoped(
+                typeof(UserStore<,,,>).MakeGenericType(userType, roleType, contextType, keyType));
+            services.TryAddScoped(
                 typeof(IRoleStore<>).MakeGenericType(roleType),
-                roleStoreType);
-            return services;
+                typeof(RoleStore<,,>).MakeGenericType(roleType, contextType, keyType));
+        }
+
+        private static Type InferKeyType(Type contextType)
+        {
+            var type = contextType.GetTypeInfo();
+            while (type.BaseType != null)
+            {
+                type = type.BaseType.GetTypeInfo();
+                var genericType = type.IsGenericType ? type.GetGenericTypeDefinition() : null;
+                if (genericType != null && genericType == typeof(IdentityDbContext<,,>))
+                {
+                    return type.GenericTypeArguments[2];
+                }
+            }
+            // Default is string
+            return typeof(string);
         }
     }
 }

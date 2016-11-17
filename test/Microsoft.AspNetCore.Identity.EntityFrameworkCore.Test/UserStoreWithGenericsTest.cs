@@ -84,6 +84,24 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         protected override Expression<Func<MyIdentityRole, bool>> RoleNameStartsWithPredicate(string roleName) => r => r.Name.StartsWith(roleName);
 
         [Fact]
+        public void AddEntityFrameworkStoresWithInvalidUserThrows()
+        {
+            var services = new ServiceCollection();
+            var builder = services.AddIdentity<IdentityUserWithGenerics, IdentityRole>();
+            var e = Assert.Throws<InvalidOperationException>(() => builder.AddEntityFrameworkStores<ContextWithGenerics>());
+            Assert.Contains("AddEntityFrameworkStores", e.Message);
+        }
+
+        [Fact]
+        public void AddEntityFrameworkStoresWithInvalidRoleThrows()
+        {
+            var services = new ServiceCollection();
+            var builder = services.AddIdentity<IdentityUser, MyIdentityRole>();
+            var e = Assert.Throws<InvalidOperationException>(() => builder.AddEntityFrameworkStores<ContextWithGenerics>());
+            Assert.Contains("AddEntityFrameworkStores", e.Message);
+        }
+
+        [Fact]
         public async Task CanAddRemoveUserClaimWithIssuer()
         {
             if (ShouldSkipDbTests())

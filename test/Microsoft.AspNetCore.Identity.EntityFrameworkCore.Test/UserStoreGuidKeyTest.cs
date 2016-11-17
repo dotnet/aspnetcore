@@ -51,5 +51,13 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         {
             services.AddSingleton<IRoleStore<GuidRole>>(new ApplicationRoleStore((TestDbContext)context));
         }
+
+        [Fact]
+        public void AddEntityFrameworkStoresCanInferKey()
+        {
+            var services = new ServiceCollection();
+            // This used to throw
+            var builder = services.AddIdentity<GuidUser, GuidRole>().AddEntityFrameworkStores<TestDbContext>();
+        }
     }
 }
