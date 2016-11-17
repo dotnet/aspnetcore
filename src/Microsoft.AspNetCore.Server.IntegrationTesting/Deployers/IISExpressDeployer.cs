@@ -4,9 +4,9 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IntegrationTesting
@@ -29,7 +29,16 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             {
                 var win8Version = new Version(6, 2);
 
-                return (new Version(RuntimeEnvironment.OperatingSystemVersion) >= win8Version);
+                return (new Version(Extensions.Internal.RuntimeEnvironment.OperatingSystemVersion) >= win8Version);
+            }
+        }
+
+        public bool Is64BitHost
+        {
+            get
+            {
+                return RuntimeInformation.OSArchitecture == Architecture.X64
+                    || RuntimeInformation.OSArchitecture == Architecture.Arm64;
             }
         }
 
@@ -71,6 +80,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 if (DeploymentParameters.ServerConfigTemplateContent.Contains("[ANCMPath]"))
                 {
                     string ancmPath;
+                    // We need to pick the bitness based the OS / IIS Express, not the application.
+                    // We'll eventually add support for choosing which IIS Express bitness to run: https://github.com/aspnet/Hosting/issues/880
+                    var ancmFile = Is64BitHost ? "aspnetcore_x64.dll" : "aspnetcore_x86.dll";
                     if (!IsWin8OrLater)
                     {
                         // The nupkg build of ANCM does not support Win7. https://github.com/aspnet/AspNetCoreModule/issues/40.
@@ -80,11 +92,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     else if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr
                         && DeploymentParameters.ApplicationType == ApplicationType.Portable)
                     {
-                        ancmPath = Path.Combine(contentRoot, @"runtimes\win7-x64\native\aspnetcore.dll");
+                        ancmPath = Path.Combine(contentRoot, @"runtimes\win7\native\", ancmFile);
                     }
                     else
                     {
-                        ancmPath = Path.Combine(contentRoot, "aspnetcore.dll");
+                        ancmPath = Path.Combine(contentRoot, ancmFile);
                     }
 
                     if (!File.Exists(ancmPath))
