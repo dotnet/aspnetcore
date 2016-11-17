@@ -3,11 +3,12 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
@@ -35,30 +36,42 @@ namespace Microsoft.DotNet.Watcher.Internal
                 cancellationToken.Register(() => processState.TryKill());
 
                 process.Start();
-                _logger.LogInformation("{execName} process id: {pid}", processSpec.ShortDisplayName(), process.Id);
 
-                await processState.Task;
+                if (processSpec.IsOutputCaptured)
+                {
+                    await Task.WhenAll(
+                        processState.Task,
+                        ConsumeStreamAsync(process.StandardOutput, processSpec.OutputCapture.AddLine),
+                        ConsumeStreamAsync(process.StandardError, processSpec.OutputCapture.AddLine)
+                    );
+                }
+                else
+                {
+                    _logger.LogInformation("{execName} process id: {pid}", processSpec.ShortDisplayName(), process.Id);
+                    await processState.Task;
+                }
 
                 exitCode = process.ExitCode;
             }
 
-            LogResult(processSpec, exitCode);
+            if (!processSpec.IsOutputCaptured)
+            {
+                LogResult(processSpec, exitCode);
+            }
 
             return exitCode;
         }
 
         private Process CreateProcess(ProcessSpec processSpec)
         {
-            var arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(processSpec.Arguments);
-
-            _logger.LogInformation("Running {execName} with the following arguments: {args}", processSpec.ShortDisplayName(), arguments);
-
             var startInfo = new ProcessStartInfo
             {
                 FileName = processSpec.Executable,
-                Arguments = arguments,
+                Arguments = ArgumentEscaper.EscapeAndConcatenate(processSpec.Arguments),
                 UseShellExecute = false,
-                WorkingDirectory = processSpec.WorkingDirectory
+                WorkingDirectory = processSpec.WorkingDirectory,
+                RedirectStandardOutput = processSpec.IsOutputCaptured,
+                RedirectStandardError = processSpec.IsOutputCaptured,
             };
             var process = new Process
             {
@@ -78,6 +91,15 @@ namespace Microsoft.DotNet.Watcher.Internal
             else
             {
                 _logger.LogError("{execName} exit code: {code}", processName, exitCode);
+            }
+        }
+
+        private static async Task ConsumeStreamAsync(StreamReader reader, Action<string> consume)
+        {
+            string line;
+            while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
+            {
+                consume?.Invoke(line);
             }
         }
 

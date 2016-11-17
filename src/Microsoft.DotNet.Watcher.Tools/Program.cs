@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher
 {
@@ -33,7 +35,7 @@ namespace Microsoft.DotNet.Watcher
 
         public static int Main(string[] args)
         {
-            DebugHelper.HandleDebugSwitch(ref args);
+            HandleDebugSwitch(ref args);
 
             using (CancellationTokenSource ctrlCTokenSource = new CancellationTokenSource())
             {
@@ -41,7 +43,7 @@ namespace Microsoft.DotNet.Watcher
                 {
                     if (!ctrlCTokenSource.IsCancellationRequested)
                     {
-                        Console.WriteLine($"[{LoggerName}] Shutdown requested. Press CTRL+C again to force exit.");
+                        Console.WriteLine($"[{LoggerName}] Shutdown requested. Press Ctrl+C again to force exit.");
                         ev.Cancel = true;
                     }
                     else
@@ -96,12 +98,22 @@ namespace Microsoft.DotNet.Watcher
             var logger = loggerFactory.CreateLogger(LoggerName);
 
             // TODO multiple projects should be easy enough to add here
-            var projectFile = MsBuildProjectFinder.FindMsBuildProject(_workingDir, options.Project);
+            string projectFile;
+            try
+            {
+                projectFile = MsBuildProjectFinder.FindMsBuildProject(_workingDir, options.Project);
+            }
+            catch (FileNotFoundException ex)
+            {
+                _stderr.WriteLine(ex.Message.Bold().Red());
+                return 1;
+            }
+
             var fileSetFactory = new MsBuildFileSetFactory(logger, projectFile);
 
             var processInfo = new ProcessSpec
             {
-                Executable = new Muxer().MuxerPath,
+                Executable = DotNetMuxer.MuxerPathOrDefault(),
                 WorkingDirectory = Path.GetDirectoryName(projectFile),
                 Arguments = options.RemainingArguments
             };
@@ -120,7 +132,7 @@ namespace Microsoft.DotNet.Watcher
             }
 
             bool globalVerbose;
-            bool.TryParse(Environment.GetEnvironmentVariable(CommandContext.Variables.Verbose), out globalVerbose);
+            bool.TryParse(Environment.GetEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE"), out globalVerbose);
 
             if (options.IsVerbose // dotnet watch --verbose
                 || globalVerbose) // dotnet --verbose watch
@@ -129,6 +141,18 @@ namespace Microsoft.DotNet.Watcher
             }
 
             return LogLevel.Information;
+        }
+
+        [Conditional("DEBUG")]
+        private static void HandleDebugSwitch(ref string[] args)
+        {
+            if (args.Length > 0 && string.Equals("--debug", args[0], StringComparison.OrdinalIgnoreCase))
+            {
+                args = args.Skip(1).ToArray();
+                Console.WriteLine("Waiting for debugger to attach. Press ENTER to continue");
+                Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
+                Console.ReadLine();
+            }
         }
     }
 }

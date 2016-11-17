@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using Xunit;
 
-namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
+namespace Microsoft.DotNet.Watcher.Tools.Tests
 {
     public class CommandLineOptionsTests
     {

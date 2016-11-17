@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Watcher.Tools;
 
 namespace Microsoft.DotNet.Watcher.Internal
@@ -35,12 +34,12 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                 if (projects.Count > 1)
                 {
-                    throw new GracefulException(Resources.FormatError_MultipleProjectsFound(projectPath));
+                    throw new FileNotFoundException(Resources.FormatError_MultipleProjectsFound(projectPath));
                 }
 
                 if (projects.Count == 0)
                 {
-                    throw new GracefulException(Resources.FormatError_NoProjectsFound(projectPath));
+                    throw new FileNotFoundException(Resources.FormatError_NoProjectsFound(projectPath));
                 }
 
                 return projects[0];
@@ -48,7 +47,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             if (!File.Exists(projectPath))
             {
-                throw new GracefulException(Resources.FormatError_ProjectPath_NotFound(projectPath));
+                throw new FileNotFoundException(Resources.FormatError_ProjectPath_NotFound(projectPath));
             }
 
             return projectPath;

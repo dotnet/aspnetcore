@@ -32,3 +32,4 @@ project.lock.json
 testWorkDir/
 *.nuget.props
 *.nuget.targets
+.idea/

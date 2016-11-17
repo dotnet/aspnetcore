@@ -7,11 +7,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.Watcher.Internal
         private readonly string _projectFile;
         private readonly string _watchTargetsDir;
         private readonly OutputSink _outputSink;
+        private readonly ProcessRunner _processRunner;
 
         public MsBuildFileSetFactory(ILogger logger, string projectFile)
             : this(logger, projectFile, new OutputSink())
@@ -40,6 +41,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             _projectFile = projectFile;
             _watchTargetsDir = FindWatchTargetsDir();
             _outputSink = outputSink;
+            _processRunner = new ProcessRunner(logger);
         }
 
         internal List<string> BuildFlags { get; } = new List<string>
@@ -71,20 +73,21 @@ namespace Microsoft.DotNet.Watcher.Internal
                     var capture = _outputSink.StartCapture();
                     // TODO adding files doesn't currently work. Need to provide a way to detect new files
                     // find files
-                    var exitCode = Command.CreateDotNet("msbuild",
-                        new[]
+                    var processSpec = new ProcessSpec
+                    {
+                        Executable = DotNetMuxer.MuxerPathOrDefault(),
+                        WorkingDirectory = projectDir,
+                        Arguments = new[]
                         {
-                            _projectFile,
+                            "msbuild",
+                             _projectFile,
                             $"/p:_DotNetWatchTargetsLocation={_watchTargetsDir}", // add our dotnet-watch targets
-                            $"/p:_DotNetWatchListFile={watchList}",
-                        }.Concat(BuildFlags))
-                        .CaptureStdErr()
-                        .CaptureStdOut()
-                        .OnErrorLine(l => capture.WriteErrorLine(l))
-                        .OnOutputLine(l => capture.WriteOutputLine(l))
-                        .WorkingDirectory(projectDir)
-                        .Execute()
-                        .ExitCode;
+                            $"/p:_DotNetWatchListFile={watchList}"
+                        }.Concat(BuildFlags),
+                        OutputCapture = capture
+                    };
+
+                    var exitCode = await _processRunner.RunAsync(processSpec, cancellationToken);
 
                     if (exitCode == 0)
                     {
@@ -104,9 +107,18 @@ namespace Microsoft.DotNet.Watcher.Internal
                         return fileset;
                     }
 
-                    _logger.LogError($"Error(s) finding watch items project file '{Path.GetFileName(_projectFile)}': ");
-                    _logger.LogError(capture.GetAllLines("[MSBUILD] : "));
-                    _logger.LogInformation("Fix the error to continue.");
+                    var sb = new StringBuilder()
+                        .Append("Error(s) finding watch items project file '")
+                        .Append(Path.GetFileName(_projectFile))
+                        .AppendLine("' :");
+
+                    foreach (var line in capture.Lines)
+                    {
+                        sb.Append("  [MSBUILD] :").AppendLine(line);
+                    }
+
+                    _logger.LogError(sb.ToString());
+                    _logger.LogInformation("Fix the error to continue or press Ctrl+C to exit.");
 
                     var fileSet = new FileSet(new[] { _projectFile });
 

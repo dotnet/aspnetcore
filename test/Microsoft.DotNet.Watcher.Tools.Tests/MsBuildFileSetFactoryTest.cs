@@ -264,7 +264,9 @@ namespace Microsoft.DotNetWatcher.Tools.Tests
 
             var fileset = await GetFileSet(filesetFactory);
 
-            _logger.LogInformation(output.Current.GetAllLines("Sink output: "));
+            _logger.LogInformation(string.Join(
+                Environment.NewLine,
+                output.Current.Lines.Select(l => "Sink output: " + l)));
 
             var includedProjects = new[] { "A", "B", "C", "D", "E", "F", "G" };
             AssertEx.EqualFileList(

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher
 {
@@ -44,6 +45,10 @@ namespace Microsoft.DotNet.Watcher
                 {
                     var fileSetTask = fileSetWatcher.GetChangedFileAsync(combinedCancellationSource.Token);
                     var processTask = _processRunner.RunAsync(processSpec, combinedCancellationSource.Token);
+
+                    _logger.LogInformation("Running {execName} with the following arguments: {args}",
+                        processSpec.ShortDisplayName(),
+                        ArgumentEscaper.EscapeAndConcatenate(processSpec.Arguments));
 
                     var finishedTask = await Task.WhenAny(processTask, fileSetTask, cancelledTaskSource.Task);
 
