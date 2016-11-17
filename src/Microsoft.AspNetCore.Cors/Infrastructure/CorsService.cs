@@ -97,23 +97,37 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         public virtual void EvaluateRequest(HttpContext context, CorsPolicy policy, CorsResult result)
         {
             var origin = context.Request.Headers[CorsConstants.Origin];
-            if (StringValues.IsNullOrEmpty(origin) || !policy.AllowAnyOrigin && !policy.Origins.Contains(origin))
+            if (StringValues.IsNullOrEmpty(origin))
             {
+                return;
+            }
+
+            if (!policy.AllowAnyOrigin && !policy.Origins.Contains(origin))
+            {
+                _logger?.RequestHasOriginHeader();
+                _logger.PolicyFailure($"Request origin {origin} does not have permission to access the resource.");
                 return;
             }
 
             _logger?.RequestHasOriginHeader();
             AddOriginToResult(origin, policy, result);
             result.SupportsCredentials = policy.SupportsCredentials;
-            _logger?.PolicySuccess();
             AddHeaderValues(result.AllowedExposedHeaders, policy.ExposedHeaders);
+            _logger?.PolicySuccess();
         }
 
         public virtual void EvaluatePreflightRequest(HttpContext context, CorsPolicy policy, CorsResult result)
         {
             var origin = context.Request.Headers[CorsConstants.Origin];
-            if (StringValues.IsNullOrEmpty(origin) || !policy.AllowAnyOrigin && !policy.Origins.Contains(origin))
+            if (StringValues.IsNullOrEmpty(origin))
             {
+                return;
+            }
+
+            if (!policy.AllowAnyOrigin && !policy.Origins.Contains(origin))
+            {
+                _logger?.RequestHasOriginHeader();
+                _logger.PolicyFailure($"Request origin {origin} does not have permission to access the resource.");
                 return;
             }
 
@@ -160,8 +174,8 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             result.SupportsCredentials = policy.SupportsCredentials;
             result.PreflightMaxAge = policy.PreflightMaxAge;
             result.AllowedMethods.Add(accessControlRequestMethod);
+            AddHeaderValues(result.AllowedHeaders, requestHeaders);
             _logger?.PolicySuccess();
-            AddHeaderValues(result.AllowedHeaders, requestHeaders);         
         }
 
         /// <inheritdoc />
