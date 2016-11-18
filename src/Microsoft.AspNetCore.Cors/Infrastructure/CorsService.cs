@@ -99,13 +99,14 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var origin = context.Request.Headers[CorsConstants.Origin];
             if (StringValues.IsNullOrEmpty(origin))
             {
+                _logger?.RequestDoesNotHaveOriginHeader();
                 return;
             }
 
             if (!policy.AllowAnyOrigin && !policy.Origins.Contains(origin))
             {
                 _logger?.RequestHasOriginHeader();
-                _logger.PolicyFailure($"Request origin {origin} does not have permission to access the resource.");
+                _logger?.PolicyFailure($"Request origin {origin} does not have permission to access the resource.");
                 return;
             }
 
@@ -121,13 +122,14 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var origin = context.Request.Headers[CorsConstants.Origin];
             if (StringValues.IsNullOrEmpty(origin))
             {
+                _logger?.RequestDoesNotHaveOriginHeader();
                 return;
             }
 
             if (!policy.AllowAnyOrigin && !policy.Origins.Contains(origin))
             {
                 _logger?.RequestHasOriginHeader();
-                _logger.PolicyFailure($"Request origin {origin} does not have permission to access the resource.");
+                _logger?.PolicyFailure($"Request origin {origin} does not have permission to access the resource.");
                 return;
             }
 

@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Cors.Internal
     {
         private static readonly Action<ILogger, Exception> _isPreflightRequest;
         private static readonly Action<ILogger, Exception> _requestHasOriginHeader;
+        private static readonly Action<ILogger, Exception> _requestDoesNotHaveOriginHeader;
         private static readonly Action<ILogger, Exception> _policySuccess;
         private static readonly Action<ILogger, string, Exception> _policyFailure;
 
@@ -18,21 +19,26 @@ namespace Microsoft.AspNetCore.Cors.Internal
             _isPreflightRequest = LoggerMessage.Define(
                 LogLevel.Debug,
                 1,
-                "The request is preflight.");
+                "This is a preflight request.");
 
             _requestHasOriginHeader = LoggerMessage.Define(
                 LogLevel.Debug,
                 2,
                 "The request has an origin header.");
 
+            _requestDoesNotHaveOriginHeader = LoggerMessage.Define(
+                LogLevel.Debug,
+                3,
+                "The request does not have an origin header.");
+
             _policySuccess = LoggerMessage.Define(
                 LogLevel.Information,
-                3,
+                4,
                 "Policy execution successful.");
 
             _policyFailure = LoggerMessage.Define<string>(
                 LogLevel.Information,
-                3,
+                5,
                 "Policy execution failed. {FailureReason}");
         }
 
@@ -44,6 +50,11 @@ namespace Microsoft.AspNetCore.Cors.Internal
         public static void RequestHasOriginHeader(this ILogger logger)
         {
             _requestHasOriginHeader(logger, null);
+        }
+
+        public static void RequestDoesNotHaveOriginHeader(this ILogger logger)
+        {
+            _requestDoesNotHaveOriginHeader(logger, null);
         }
 
         public static void PolicySuccess(this ILogger logger)

@@ -228,34 +228,38 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             Assert.Contains("PUT", result.AllowedMethods);
         }
 
-        public static TheoryData<string, string, string[], string> LoggingData
+        public static TheoryData<string, string, string[], string, string> PreflightRequests_LoggingData
         {
             get
             {
-                return new TheoryData<string, string, string[], string>
+                return new TheoryData<string, string, string[], string, string>
                 {
                     {
                         "http://example.com",
                         "PUT",
                         null,
+                        "The request has an origin header.",
                         "Policy execution failed. Request origin http://example.com does not have permission to access the resource."
                     },
                     {
-                        "http://allowedexample.com",
+                        "http://allowed.example.com",
                         "DELETE",
                         null,
+                        "The request has an origin header.",
                         "Policy execution failed. Request method DELETE not allowed in CORS policy."
                     },
                     {
-                        "http://allowedexample.com",
+                        "http://allowed.example.com",
                         "PUT",
                         new[] { "test" },
+                        "The request has an origin header.",
                         "Policy execution failed. One or more request header(s) not allowed in CORS policy."
                     },
                     {
-                        "http://allowedexample.com",
+                        "http://allowed.example.com",
                         "PUT",
                         null,
+                        "The request has an origin header.",
                         "Policy execution successful."
                     },
                 };
@@ -263,8 +267,8 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         [Theory]
-        [MemberData(nameof(LoggingData))]
-        public void EvaluatePolicy_LoggingForPreflightRequests(string origin, string method, string[] headers, string logMessage)
+        [MemberData(nameof(PreflightRequests_LoggingData))]
+        public void EvaluatePolicy_LoggingForPreflightRequests_HasOriginHeader(string origin, string method, string[] headers, string originLogMessage, string policyLogMessage)
         {
             var sink = new TestSink();
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
@@ -272,21 +276,59 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var corsService = new CorsService(new TestCorsOptions(), loggerFactory);
             var requestContext = GetHttpContext(method: "OPTIONS", origin: origin, accessControlRequestMethod: method, accessControlRequestHeaders: headers);
             var policy = new CorsPolicy();
-            policy.Origins.Add("http://allowedexample.com");
+            policy.Origins.Add("http://allowed.example.com");
             policy.Methods.Add("PUT");
 
             // Act
             var result = corsService.EvaluatePolicy(requestContext, policy);
 
-            Assert.Equal("The request is preflight.", sink.Writes[0].State.ToString());
-            Assert.Equal("The request has an origin header.", sink.Writes[1].State.ToString());
-            Assert.Equal(logMessage, sink.Writes[2].State.ToString());
+            Assert.Equal("This is a preflight request.", sink.Writes[0].State.ToString());
+            Assert.Equal(originLogMessage, sink.Writes[1].State.ToString());
+            Assert.Equal(policyLogMessage, sink.Writes[2].State.ToString());
+        }
+
+        [Fact]
+        public void EvaluatePolicy_LoggingForPreflightRequests_DoesNotHaveOriginHeader()
+        {
+            var sink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+            var corsService = new CorsService(new TestCorsOptions(), loggerFactory);
+            var requestContext = GetHttpContext(method: "OPTIONS", origin: null, accessControlRequestMethod: "PUT");
+            var policy = new CorsPolicy();
+            policy.Origins.Add("http://allowed.example.com");
+            policy.Methods.Add("PUT");
+
+            // Act
+            var result = corsService.EvaluatePolicy(requestContext, policy);
+
+            Assert.Equal("This is a preflight request.", sink.Writes[0].State.ToString());
+            Assert.Equal("The request does not have an origin header.", sink.Writes[1].State.ToString());
+        }
+
+        public static TheoryData<string, string, string> NonPreflightRequests_LoggingData
+        {
+            get
+            {
+                return new TheoryData<string, string, string>
+                {
+                    {
+                        "http://example.com",
+                        "The request has an origin header.",
+                        "Policy execution failed. Request origin http://example.com does not have permission to access the resource."
+                    },
+                    {
+                        "http://allowed.example.com",
+                        "The request has an origin header.",
+                        "Policy execution successful."
+                    }
+                };
+            }
         }
 
         [Theory]
-        [InlineData("http://allowedexample.com", "Policy execution successful.")]
-        [InlineData("http://example.com", "Policy execution failed. Request origin http://example.com does not have permission to access the resource.")]
-        public void EvaluatePolicy_LoggingForRequests(string origin, string logMessage)
+        [MemberData(nameof(NonPreflightRequests_LoggingData))]
+        public void EvaluatePolicy_LoggingForNonPreflightRequests_HasOriginHeader(string origin, string originlogMessage, string policyLogMessage)
         {
             var sink = new TestSink();
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
@@ -294,13 +336,31 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var corsService = new CorsService(new TestCorsOptions(), loggerFactory);
             var requestContext = GetHttpContext(origin: origin);
             var policy = new CorsPolicy();
-            policy.Origins.Add("http://allowedexample.com");
+            policy.Origins.Add("http://allowed.example.com");
 
             // Act
             var result = corsService.EvaluatePolicy(requestContext, policy);
 
-            Assert.Equal("The request has an origin header.", sink.Writes[0].State.ToString());
-            Assert.Equal(logMessage, sink.Writes[1].State.ToString());
+            Assert.Equal(originlogMessage, sink.Writes[0].State.ToString());
+            Assert.Equal(policyLogMessage, sink.Writes[1].State.ToString());
+        }
+
+        [Fact]
+        public void EvaluatePolicy_LoggingForNonPreflightRequests_DoesNotHaveOriginHeader()
+        {
+            var sink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+            var corsService = new CorsService(new TestCorsOptions(), loggerFactory);
+            var requestContext = GetHttpContext(origin: null);
+            var policy = new CorsPolicy();
+            policy.Origins.Add("http://allowed.example.com");
+
+            // Act
+            var result = corsService.EvaluatePolicy(requestContext, policy);
+
+            var logMessage = Assert.Single(sink.Writes);
+            Assert.Equal("The request does not have an origin header.", logMessage.State.ToString());
         }
 
         [Theory]

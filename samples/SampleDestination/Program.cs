@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 
 namespace SampleDestination
 {
@@ -12,14 +10,9 @@ namespace SampleDestination
     {
         public static void Main(string[] args)
         {
-            var config = new ConfigurationBuilder()
-        .SetBasePath(Directory.GetCurrentDirectory())
-        .AddJsonFile("hosting.json", optional: true)
-        .Build();
-
             var host = new WebHostBuilder()
                 .UseKestrel()
-                .UseConfiguration(config)
+                .UseUrls("http://*:5000")
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>()
