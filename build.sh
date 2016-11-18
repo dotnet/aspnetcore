@@ -38,7 +38,7 @@ if test ! -d $buildFolder; then
     chmod +x $buildFile
     
     # Cleanup
-    if test ! -d $tempFolder; then
+    if test -d $tempFolder; then
         rm -rf $tempFolder  
     fi
 fi
