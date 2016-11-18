@@ -30,6 +30,10 @@
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.2.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.2.0-*",
     "Microsoft.Extensions.Configuration.UserSecrets": "1.2.0-*",
+    "Microsoft.EntityFrameworkCore.Tools": {
+      "version": "1.2.0-*",
+        "type": "build"
+    },
     "Microsoft.Extensions.Logging": "1.2.0-*",
     "Microsoft.Extensions.Logging.Console": "1.2.0-*",
     "Microsoft.Extensions.Logging.Debug": "1.2.0-*",
@@ -49,7 +53,7 @@
     "BundlerMinifier.Core": "2.0.238",
     "Microsoft.AspNetCore.Razor.Tools": "1.2.0-*",
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.0.0-*",
-    "Microsoft.EntityFrameworkCore.Tools": "1.2.0-*",
+    "Microsoft.EntityFrameworkCore.Tools.DotNet": "1.2.0-*",
     "Microsoft.Extensions.SecretManager.Tools": "1.2.0-*",
     "Microsoft.VisualStudio.Web.CodeGeneration.Tools": {
       "version": "1.2.0-*",
