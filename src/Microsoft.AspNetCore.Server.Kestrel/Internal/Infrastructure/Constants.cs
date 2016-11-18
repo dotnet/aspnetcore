@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 {
@@ -12,6 +13,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         public const int EOF = -4095;
         public static readonly int? ECONNRESET = GetECONNRESET();
         public static readonly int? EADDRINUSE = GetEADDRINUSE();
+
+        public static readonly Encoding UTF8 = Encoding.UTF8;
 
         /// <summary>
         /// Prefix of host name used to specify Unix sockets in the configuration.

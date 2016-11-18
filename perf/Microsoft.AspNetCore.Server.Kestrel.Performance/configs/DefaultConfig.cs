@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 With(Platform.X64).
                 With(Jit.RyuJit).
                 With(BenchmarkDotNet.Environments.Runtime.Clr).
-                WithRemoveOutliers(true).
                 With(new GcMode() { Server = true }).
                 With(RunStrategy.Throughput).
                 WithLaunchCount(3).
@@ -28,10 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 WithTargetCount(10));
 
             Add(Job.Default.
-                With(Platform.X64).
-                With(Jit.RyuJit).
                 With(BenchmarkDotNet.Environments.Runtime.Core).
-                WithRemoveOutliers(true).
                 With(new GcMode() { Server = true }).
                 With(RunStrategy.Throughput).
                 WithLaunchCount(3).

@@ -6,14 +6,11 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 {
     public static class MemoryPoolIteratorExtensions
     {
-        private static readonly Encoding _utf8 = Encoding.UTF8;
-
         public const string Http10Version = "HTTP/1.0";
         public const string Http11Version = "HTTP/1.1";
 

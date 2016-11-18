@@ -43,6 +43,4 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         All = uint.MaxValue
     }
-
-
 }

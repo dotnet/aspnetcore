@@ -20,17 +20,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public override void ConnectionRead(string connectionId, int count)
         {
-            //_logger.LogDebug(1, @"Connection id ""{ConnectionId}"" recv {count} bytes.", connectionId, count);
         }
 
         public override void ConnectionWrite(string connectionId, int count)
         {
-            //_logger.LogDebug(1, @"Connection id ""{ConnectionId}"" send {count} bytes.", connectionId, count);
         }
 
         public override void ConnectionWriteCallback(string connectionId, int status)
         {
-            //_logger.LogDebug(1, @"Connection id ""{ConnectionId}"" send finished with status {status}.", connectionId, status);
         }
     }
 }

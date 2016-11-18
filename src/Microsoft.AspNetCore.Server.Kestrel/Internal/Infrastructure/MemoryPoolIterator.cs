@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                                                         0x02ul << 40 |
                                                         0x01ul << 48 ) + 1;
 
-        private static readonly Encoding _utf8 = Encoding.UTF8;
         private static readonly int _vectorSpan = Vector<byte>.Count;
 
         private MemoryPoolBlock _block;
@@ -1124,10 +1123,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
             if (end.Block == Block)
             {
-                return _utf8.GetString(Block.Array, Index, end.Index - Index);
+                return Constants.UTF8.GetString(Block.Array, Index, end.Index - Index);
             }
 
-            var decoder = _utf8.GetDecoder();
+            var decoder = Constants.UTF8.GetDecoder();
 
             var length = GetLength(end);
             var charLength = length;
