@@ -3,7 +3,7 @@
     "preserveCompilationContext": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc": "1.1.0-*"
+    "Microsoft.AspNetCore.Mvc": "1.1.0"
   },
   "frameworks": {
     "net451": {},

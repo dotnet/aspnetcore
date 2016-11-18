@@ -1,6 +1,6 @@
 {
   "description": "ASP.NET Core MVC metadata and validation system using System.ComponentModel.DataAnnotations.",
-  "version": "1.1.0-*",
+  "version": "1.1.0",
   "packOptions": {
     "repository": {
       "type": "git",
@@ -20,17 +20,17 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc.Core": "1.1.0-*",
+    "Microsoft.AspNetCore.Mvc.Core": "1.1.0",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
-      "version": "1.1.0-*",
+      "version": "1.1.0-rtm-22752",
       "type": "build"
     },
     "Microsoft.Extensions.CopyOnWriteDictionary.Sources": {
-      "version": "1.1.0-*",
+      "version": "1.1.0-rtm-22752",
       "type": "build"
     },
-    "Microsoft.Extensions.Localization": "1.1.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "Microsoft.Extensions.Localization": "1.1.0",
+    "NETStandard.Library": "1.6.1"
   },
   "frameworks": {
     "net451": {
@@ -40,7 +40,7 @@
     },
     "netstandard1.6": {
       "dependencies": {
-        "System.ComponentModel.Annotations": "4.3.0-*"
+        "System.ComponentModel.Annotations": "4.3.0"
       }
     }
   }

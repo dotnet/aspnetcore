@@ -1,6 +1,6 @@
 {
   "description": "ASP.NET Core MVC abstractions and interfaces for action invocation and dispatching, authorization, action filters, formatters, model binding, routing, validation, and more.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.Mvc.IActionResult",
-  "version": "1.1.0-*",
+  "version": "1.1.0",
   "packOptions": {
     "repository": {
       "type": "git",
@@ -20,32 +20,32 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Routing.Abstractions": "1.1.0-*",
+    "Microsoft.AspNetCore.Routing.Abstractions": "1.1.0",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
-      "version": "1.1.0-*",
+      "version": "1.1.0-rtm-22752",
       "type": "build"
     },
     "Microsoft.Extensions.CopyOnWriteDictionary.Sources": {
-      "version": "1.1.0-*",
+      "version": "1.1.0-rtm-22752",
       "type": "build"
     },
     "Microsoft.Extensions.HashCodeCombiner.Sources": {
-      "version": "1.1.0-*",
+      "version": "1.1.0-rtm-22752",
       "type": "build"
     },
     "Microsoft.Extensions.PropertyHelper.Sources": {
-      "version": "1.1.0-*",
+      "version": "1.1.0-rtm-22752",
       "type": "build"
     },
-    "Microsoft.Net.Http.Headers": "1.1.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "Microsoft.Net.Http.Headers": "1.1.0",
+    "NETStandard.Library": "1.6.1"
   },
   "frameworks": {
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "Microsoft.CSharp": "4.3.0-*",
-        "System.ComponentModel.TypeConverter": "4.3.0-*"
+        "Microsoft.CSharp": "4.3.0",
+        "System.ComponentModel.TypeConverter": "4.3.0"
       }
     }
   }

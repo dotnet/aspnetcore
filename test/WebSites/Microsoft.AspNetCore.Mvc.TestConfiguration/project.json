@@ -1,11 +1,11 @@
 {
   "dependencies": {
-    "Microsoft.AspNetCore.Http": "1.1.0-*",
-    "Microsoft.AspNetCore.Http.Extensions": "1.1.0-*",
-    "Microsoft.AspNetCore.Testing": "1.1.0-*",
-    "Microsoft.Extensions.Configuration": "1.1.0-*",
-    "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "Microsoft.AspNetCore.Http": "1.1.0",
+    "Microsoft.AspNetCore.Http.Extensions": "1.1.0",
+    "Microsoft.AspNetCore.Testing": "1.1.0-rtm-22752",
+    "Microsoft.Extensions.Configuration": "1.1.0",
+    "Microsoft.Extensions.DependencyInjection": "1.1.0",
+    "NETStandard.Library": "1.6.1"
   },
   "frameworks": {
     "net451": {},
