@@ -4,19 +4,19 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.AspNetCore.Routing": "1.1.0-*",
+    "Microsoft.AspNetCore.Routing": "1.1.0",
     "Microsoft.AspNetCore.Routing.DecisionTree.Sources": {
       "type": "build",
-      "version": "1.1.0-*"
+      "version": "1.1.0-rtm-22752"
     },
-    "Microsoft.AspNetCore.Testing": "1.1.0-*",
+    "Microsoft.AspNetCore.Testing": "1.1.0-rtm-22752",
     "xunit": "2.2.0-*"
   },
   "frameworks": {
     "netcoreapp1.1": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.1.0-*",
+          "version": "1.1.0",
           "type": "platform"
         }
       }
