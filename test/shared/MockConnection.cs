@@ -18,7 +18,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
         {
             ConnectionControl = this;
             RequestAbortedSource = new CancellationTokenSource();
-            ListenerContext = new ListenerContext(new ServiceContext { ServerOptions = options });
+            ListenerContext = new ListenerContext(new ServiceContext {ServerOptions = options})
+            {
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+            };
         }
 
         public override void Abort(Exception error = null)

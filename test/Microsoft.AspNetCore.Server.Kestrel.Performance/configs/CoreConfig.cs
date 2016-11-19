@@ -3,31 +3,21 @@
 
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Engines;
-using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Validators;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    public class DefaultConfig : ManualConfig
+    public class CoreConfig : ManualConfig
     {
-        public DefaultConfig()
+        public CoreConfig()
         {
             Add(JitOptimizationsValidator.FailOnError);
             Add(new RpsColumn());
 
             Add(Job.Default.
-                With(Platform.X64).
-                With(Jit.RyuJit).
-                With(BenchmarkDotNet.Environments.Runtime.Clr).
-                With(new GcMode() { Server = true }).
-                With(RunStrategy.Throughput).
-                WithLaunchCount(3).
-                WithWarmupCount(5).
-                WithTargetCount(10));
-
-            Add(Job.Default.
                 With(BenchmarkDotNet.Environments.Runtime.Core).
+                WithRemoveOutliers(false).
                 With(new GcMode() { Server = true }).
                 With(RunStrategy.Throughput).
                 WithLaunchCount(3).

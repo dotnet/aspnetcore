@@ -8,6 +8,8 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
+using Microsoft.AspNetCore.Testing;
 using RequestLineStatus = Microsoft.AspNetCore.Server.Kestrel.Internal.Http.Frame.RequestLineStatus;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
@@ -165,26 +167,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [Setup]
         public void Setup()
         {
-            Trace = new KestrelTrace(new MockKestrelTrace());
+            Trace = new KestrelTrace(new TestKestrelTrace());
             ThreadPool = new LoggingThreadPool(Trace);
             MemoryPool = new MemoryPool();
             SocketInput = new SocketInput(MemoryPool, ThreadPool);
 
-            var serviceContext = new ServiceContext
-            {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions(),
-                Log = Trace
-            };
-            var listenerContext = new ListenerContext(serviceContext)
-            {
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-            };
-            var connectionContext = new ConnectionContext(listenerContext)
-            {
-                ConnectionControl = new MockConnectionControl(),
-                SocketInput = SocketInput
-            };
+            var connectionContext = new MockConnection(new KestrelServerOptions());
+            connectionContext.SocketInput = SocketInput;
 
             Frame = new Frame<object>(application: null, context: connectionContext);
         }
