@@ -5,7 +5,7 @@ var extractLESS = new ExtractTextPlugin('my-styles.css');
 module.exports = {
     module: {
         loaders: [
-            { test: /\.less$/, loader: extractLESS.extract(['css', 'less']) },
+            { test: /\.less$/, loader: extractLESS.extract(['css-loader', 'less-loader']) },
         ]
     },
     plugins: [

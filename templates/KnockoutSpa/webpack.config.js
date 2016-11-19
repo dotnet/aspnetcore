@@ -14,10 +14,10 @@ module.exports = {
     },
     module: {
         loaders: [
-            { test: /\.ts$/, include: /ClientApp/, loader: 'ts', query: { silent: true } },
-            { test: /\.html$/, loader: 'raw' },
-            { test: /\.css$/, loader: isDevBuild ? 'style!css' : ExtractTextPlugin.extract(['css']) },
-            { test: /\.(png|jpg|jpeg|gif|svg)$/, loader: 'url', query: { limit: 25000 } }
+            { test: /\.ts$/, include: /ClientApp/, loader: 'ts-loader', query: { silent: true } },
+            { test: /\.html$/, loader: 'raw-loader' },
+            { test: /\.css$/, loader: isDevBuild ? 'style-loader!css-loader' : ExtractTextPlugin.extract(['css-loader']) },
+            { test: /\.(png|jpg|jpeg|gif|svg)$/, loader: 'url-loader', query: { limit: 25000 } }
         ]
     },
     plugins: [

@@ -16,7 +16,7 @@ var sharedConfig = () => ({
     module: {
         loaders: [
             { test: /\.tsx?$/, include: /ClientApp/, loader: 'babel-loader' },
-            { test: /\.tsx?$/, include: /ClientApp/, loader: 'ts', query: { silent: true } }
+            { test: /\.tsx?$/, include: /ClientApp/, loader: 'ts-loader', query: { silent: true } }
         ]
     }
 });
@@ -27,8 +27,8 @@ var clientBundleConfig = merge(sharedConfig(), {
     entry: { 'main-client': './ClientApp/boot-client.tsx' },
     module: {
         loaders: [
-            { test: /\.css$/, loader: ExtractTextPlugin.extract(['css']) },
-            { test: /\.(png|jpg|jpeg|gif|svg)$/, loader: 'url', query: { limit: 25000 } }
+            { test: /\.css$/, loader: ExtractTextPlugin.extract(['css-loader']) },
+            { test: /\.(png|jpg|jpeg|gif|svg)$/, loader: 'url-loader', query: { limit: 25000 } }
         ]
     },
     output: { path: path.join(__dirname, clientBundleOutputDir) },

@@ -15,10 +15,10 @@ var sharedConfig = {
     },
     module: {
         loaders: [
-            { test: /\.ts$/, include: /ClientApp/, loaders: ['ts?silent=true', 'angular2-template'] },
-            { test: /\.html$/, loader: 'html' },
-            { test: /\.css$/, loader: 'to-string!css' },
-            { test: /\.(png|jpg|jpeg|gif|svg)$/, loader: 'url', query: { limit: 25000 } }
+            { test: /\.ts$/, include: /ClientApp/, loaders: ['ts-loader?silent=true', 'angular2-template-loader'] },
+            { test: /\.html$/, loader: 'html-loader' },
+            { test: /\.css$/, loader: 'to-string-loader!css-loader' },
+            { test: /\.(png|jpg|jpeg|gif|svg)$/, loader: 'url-loader', query: { limit: 25000 } }
         ]
     }
 };

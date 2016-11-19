@@ -391,7 +391,7 @@ To make this work, the template has Webpack configured to inject the contents of
 
 ```javascript
 // This goes into webpack.config.js, in the module loaders array:
-{ test: /\.css/, include: /ClientApp/, loader: 'raw' }
+{ test: /\.css/, include: /ClientApp/, loader: 'raw-loader' }
 ```
 
 Now if you want to use LESS instead of plain CSS, you just need to include a LESS loader. Run the following in a command prompt at your project root:
@@ -403,10 +403,10 @@ npm install --save less-loader less
 Next, add the following loader configuration to the `loaders` array in `webpack.config.js`:
 
 ```javascript
-{ test: /\.less/, include: /ClientApp/, loader: 'raw!less' }
+{ test: /\.less/, include: /ClientApp/, loader: 'raw-loader!less-loader' }
 ```
 
-Notice how this chains together the `less` loader (which transforms `.less` syntax to plain CSS syntax), then the `raw` loader (which turn the result into a string literal). With this in place, you can reference `.less` files from your Angular 2 components in the obvious way:
+Notice how this chains together with `less-loader` (which transforms `.less` syntax to plain CSS syntax), then the `raw` loader (which turn the result into a string literal). With this in place, you can reference `.less` files from your Angular 2 components in the obvious way:
 
 ```javascript
 @Component({
@@ -447,7 +447,7 @@ npm install --save less-loader less
 Finally, tell Webpack to use this whenever it encounters a `.less` file. In `webpack.config.js`, add to the `loaders` array:
 
 ```
-{ test: /\.less/, loader: 'style!css!less' }
+{ test: /\.less/, loader: 'style-loader!css-loader!less-loader' }
 ```
 
 This means that when you `import` or `require` a `.less` file, it should pass it first to the LESS compiler to produce CSS, then the output goes to the CSS and Style loaders that know how to attach it dynamically to the page at runtime.
@@ -489,7 +489,7 @@ var extractStyles = new (require('extract-text-webpack-plugin'))('mystyles.css')
 This creates a plugin instance that will output text to a file called `mystyles.css`. You can now compile `.less` files and emit the resulting CSS text into that file. To do so, add the following to the `loaders` array in your Webpack configuration:
 
 ```javascript
-{ test: /\.less$/, loader: extractStyles.extract('css!less') }
+{ test: /\.less$/, loader: extractStyles.extract('css-loader!less-loader') }
 ```
 
 This tells Webpack that, whenever it finds a `.less` file, it should use the LESS loader to produce CSS, and then feed that CSS into the `extractStyles` object which you've already configured to write a file on disk called `mystyles.css`. Finally, for this to actually work, you need to include `extractStyles` in the list of active plugins. Just add that object to the `plugins` array in your Webpack config, e.g.:

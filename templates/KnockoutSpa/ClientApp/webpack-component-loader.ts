@@ -2,7 +2,7 @@ import * as ko from 'knockout';
 
 // This Knockout component loader integrates with Webpack's lazy-loaded bundle feature.
 // Having this means you can optionally declare components as follows:
-//   ko.components.register('my-component', require('bundle?lazy!../some-path-to-a-js-or-ts-module'));
+//   ko.components.register('my-component', require('bundle-loader?lazy!../some-path-to-a-js-or-ts-module'));
 // ... and then it will be loaded on demand instead of being loaded up front.
 ko.components.loaders.unshift({
     loadComponent: (name, componentConfig, callback) => {
