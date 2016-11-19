@@ -518,20 +518,25 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public void SkipThrowsWhenSkippingMoreBytesThanAvailableInMultipleBlocks()
         {
             // Arrange
-            var block = _pool.Lease();
-            block.End += 3;
+            var firstBlock = _pool.Lease();
+            firstBlock.End += 3;
 
-            var nextBlock = _pool.Lease();
-            nextBlock.End += 2;
-            block.Next = nextBlock;
+            var middleBlock = _pool.Lease();
+            middleBlock.End += 1;
+            firstBlock.Next = middleBlock;
 
-            var scan = block.GetIterator();
+            var finalBlock = _pool.Lease();
+            finalBlock.End += 2;
+            middleBlock.Next = finalBlock;
+
+            var scan = firstBlock.GetIterator();
 
             // Act/Assert
             Assert.ThrowsAny<InvalidOperationException>(() => scan.Skip(8));
 
-            _pool.Return(block);
-            _pool.Return(nextBlock);
+            _pool.Return(firstBlock);
+            _pool.Return(middleBlock);
+            _pool.Return(finalBlock);
         }
 
         [Theory]
