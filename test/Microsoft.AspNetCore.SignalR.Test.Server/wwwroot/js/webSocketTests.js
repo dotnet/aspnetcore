@@ -21,11 +21,11 @@ describe('WebSockets', function () {
             if (received === message) {
                 webSocket.close();
             }
-        }
+        };
 
         webSocket.onclose = event => {
             expect(event.wasClean).toBe(true);
             done();
-        }
+        };
     });
 });
