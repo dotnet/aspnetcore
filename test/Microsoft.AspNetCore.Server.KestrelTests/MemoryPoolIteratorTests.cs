@@ -1053,6 +1053,129 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
+        [Fact]
+        public void TestTake()
+        {
+            MemoryPoolBlock block0 = null;
+            MemoryPoolBlock block1 = null;
+            MemoryPoolBlock block2 = null;
+            MemoryPoolBlock emptyBlock0 = null;
+            MemoryPoolBlock emptyBlock1 = null;
+
+            var byteRange = Enumerable.Range(1, 127).Select(x => (byte)x).ToArray();
+            try
+            {
+                // Arrange
+                block0 = _pool.Lease();
+                block1 = _pool.Lease();
+                block2 = _pool.Lease();
+                emptyBlock0 = _pool.Lease();
+                emptyBlock1 = _pool.Lease();
+
+                block0.GetIterator().CopyFrom(byteRange);
+                block1.GetIterator().CopyFrom(byteRange);
+                block2.GetIterator().CopyFrom(byteRange);
+
+                var begin = block0.GetIterator();
+
+                // Single block
+                for (var i = 0; i < byteRange.Length; i++)
+                {
+                    var t = begin.Take();
+                    var b = byteRange[i];
+
+                    Assert.Equal(t, b);
+                }
+
+                Assert.Equal(begin.Take(), -1);
+
+                // Dual block
+                block0.Next = block1;
+                begin = block0.GetIterator();
+
+                for (var block = 0; block < 2; block++)
+                {
+                    for (var i = 0; i < byteRange.Length; i++)
+                    {
+                        var t = begin.Take();
+                        var b = byteRange[i];
+
+                        Assert.Equal(t, b);
+                    }
+                }
+
+                Assert.Equal(begin.Take(), -1);
+
+                // Multi block
+                block1.Next = emptyBlock0;
+                emptyBlock0.Next = emptyBlock1;
+                emptyBlock1.Next = block2;
+                begin = block0.GetIterator();
+
+                for (var block = 0; block < 3; block++)
+                {
+                    for (var i = 0; i < byteRange.Length; i++)
+                    {
+                        var t = begin.Take();
+                        var b = byteRange[i];
+
+                        Assert.Equal(t, b);
+                    }
+                }
+
+                Assert.Equal(begin.Take(), -1);
+            }
+            finally
+            {
+                if (block0 != null) _pool.Return(block0);
+                if (block1 != null) _pool.Return(block1);
+                if (block2 != null) _pool.Return(block2);
+                if (emptyBlock0 != null) _pool.Return(emptyBlock0);
+                if (emptyBlock1 != null) _pool.Return(emptyBlock1);
+            }
+        }
+
+        [Fact]
+        public void TestTakeEmptyBlocks()
+        {
+            MemoryPoolBlock emptyBlock0 = null;
+            MemoryPoolBlock emptyBlock1 = null;
+            MemoryPoolBlock emptyBlock2 = null;
+            try
+            {
+                // Arrange
+                emptyBlock0 = _pool.Lease();
+                emptyBlock1 = _pool.Lease();
+                emptyBlock2 = _pool.Lease();
+
+                var beginEmpty = emptyBlock0.GetIterator();
+
+                // Assert
+
+                // No blocks
+                Assert.Equal(default(MemoryPoolIterator).Take(), -1);
+
+                // Single empty block
+                Assert.Equal(beginEmpty.Take(), -1);
+
+                // Dual empty block
+                emptyBlock0.Next = emptyBlock1;
+                beginEmpty = emptyBlock0.GetIterator();
+                Assert.Equal(beginEmpty.Take(), -1);
+
+                // Multi empty block
+                emptyBlock1.Next = emptyBlock2;
+                beginEmpty = emptyBlock0.GetIterator();
+                Assert.Equal(beginEmpty.Take(), -1);
+            }
+            finally
+            {
+                if (emptyBlock0 != null) _pool.Return(emptyBlock0);
+                if (emptyBlock1 != null) _pool.Return(emptyBlock1);
+                if (emptyBlock2 != null) _pool.Return(emptyBlock2);
+            }
+        }
+
         [Theory]
         [InlineData("a", "a", 1)]
         [InlineData("ab", "a...", 1)]
