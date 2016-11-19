@@ -258,8 +258,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 return true;
             }
 
-            // wasLastBlock ? false : TryPeekLongMultiBlock(ref longValue, blockBytes);
-            return !wasLastBlock && TryPeekLongMultiBlock(ref longValue, blockBytes);
+            return wasLastBlock ? false : TryPeekLongMultiBlock(ref longValue, blockBytes);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -818,8 +817,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 return true;
             }
 
-            // wasLastBlock ? false : PutMultiBlock(data);
-            return !wasLastBlock && PutMultiBlock(data);
+            return wasLastBlock ? false : PutMultiBlock(data);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
