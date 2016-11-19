@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         public static readonly int? ECONNRESET = GetECONNRESET();
         public static readonly int? EADDRINUSE = GetEADDRINUSE();
 
-        public static readonly Encoding UTF8 = Encoding.UTF8;
-
         /// <summary>
         /// Prefix of host name used to specify Unix sockets in the configuration.
         /// </summary>

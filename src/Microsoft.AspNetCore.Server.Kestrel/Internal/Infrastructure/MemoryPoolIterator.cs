@@ -44,13 +44,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if (_block == null)
+                var block = _block;
+                if (block == null)
                 {
                     return true;
                 }
-                else if (_index < _block.End)
+                else if (_index < block.End)
                 {
                     return false;
+                }
+                else if (block.Next == null)
+                {
+                    return true;
                 }
                 else
                 {
@@ -63,14 +68,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         private bool IsEndMultiBlock()
         {
             var block = _block.Next;
-            while (block != null)
+            do
             {
                 if (block.Start < block.End)
                 {
                     return false; // subsequent block has data - IsEnd is false
                 }
                 block = block.Next;
-            }
+            } while (block != null);
+
             return true;
         }
 
@@ -88,6 +94,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
 
             var index = _index;
+            // Always set wasLastBlock before checking .End to avoid race which may cause data loss
+            var wasLastBlock = block.Next == null;
 
             if (index < block.End)
             {
@@ -95,28 +103,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 return block.Array[index];
             }
 
-            return TakeMultiBlock();
+            return wasLastBlock ? -1 : TakeMultiBlock();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private int TakeMultiBlock()
         {
             var block = _block;
-            var wasLastBlock = block.Next == null;
             do
             {
-                int index;
-                if (wasLastBlock)
-                {
-                    return -1;
-                }
-                else
-                {
-                    block = block.Next;
-                    index = block.Start;
-                }
+                block = block.Next;
+                var index = block.Start;
 
-                wasLastBlock = block.Next == null;
+                // Always set wasLastBlock before checking .End to avoid race which may cause data loss 
+                var wasLastBlock = block.Next == null;
 
                 if (index < block.End)
                 {
@@ -124,23 +124,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                     _index = index + 1;
                     return block.Array[index];
                 }
+
+                if (wasLastBlock)
+                {
+                    return -1;
+                }
             } while (true);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Skip(int bytesToSkip)
         {
-            if (_block == null)
+            var block = _block;
+            if (block == null)
             {
                 return;
             }
 
-            var following = _block.End - _index;
+            // Always set wasLastBlock before checking .End to avoid race which may cause data loss
+            var wasLastBlock = block.Next == null;
+            var following = block.End - _index;
 
             if (following >= bytesToSkip)
             {
                 _index += bytesToSkip;
                 return;
+            }
+
+            if (wasLastBlock)
+            {
+                ThrowInvalidOperationException_SkipMoreThanAvailable();
             }
 
             SkipMultiBlock(bytesToSkip, following);
@@ -149,23 +162,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void SkipMultiBlock(int bytesToSkip, int following)
         {
-            var wasLastBlock = _block.Next == null;
             var block = _block;
-            while (true)
+            do
             {
-                int index;
-                if (wasLastBlock)
-                {
-                    throw new InvalidOperationException("Attempted to skip more bytes than available.");
-                }
-                else
-                {
-                    bytesToSkip -= following;
-                    block = block.Next;
-                    index = block.Start;
-                }
+                bytesToSkip -= following;
+                block = block.Next;
+                var index = block.Start;
 
-                wasLastBlock = block.Next == null;
+                // Always set wasLastBlock before checking .End to avoid race which may cause data loss
+                var wasLastBlock = block.Next == null;
                 following = block.End - index;
 
                 if (following >= bytesToSkip)
@@ -174,7 +179,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                     _index = index + bytesToSkip;
                     return;
                 }
-            }
+
+                if (wasLastBlock)
+                {
+                    ThrowInvalidOperationException_SkipMoreThanAvailable();
+                }
+            } while (true);
+        }
+
+        private static void ThrowInvalidOperationException_SkipMoreThanAvailable()
+        {
+            throw new InvalidOperationException("Attempted to skip more bytes than available.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -188,37 +203,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
             var index = _index;
 
+            // Always set wasLastBlock before checking .End to avoid race which may cause data loss
+            var wasLastBlock = block.Next == null;
             if (index < block.End)
             {
                 return block.Array[index];
             }
 
-            return PeekMultiBlock();
+            return wasLastBlock ? -1 : PeekMultiBlock();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private int PeekMultiBlock()
         {
             var block = _block;
-            var wasLastBlock = block.Next == null;
             do
             {
-                int index;
-                if (wasLastBlock)
-                {
-                    return -1;
-                }
-                else
-                {
-                    block = block.Next;
-                    index = block.Start;
-                }
+                block = block.Next;
+                var index = block.Start;
 
-                wasLastBlock = block.Next == null;
+                // Always set wasLastBlock before checking .End to avoid race which may cause data loss 
+                var wasLastBlock = block.Next == null;
 
                 if (index < block.End)
                 {
                     return block.Array[index];
+                }
+                if (wasLastBlock)
+                {
+                    return -1;
                 }
             } while (true);
         }
@@ -229,60 +242,57 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         {
             longValue = 0;
 
-            if (_block == null)
+            var block = _block;
+            if (block == null)
             {
                 return false;
             }
 
-            var blockBytes = _block.End - _index;
+            // Always set wasLastBlock before checking .End to avoid race which may cause data loss 
+            var wasLastBlock = block.Next == null;
+            var blockBytes = block.End - _index;
 
             if (blockBytes >= sizeof(ulong))
             {
-                longValue = *(ulong*)(_block.DataFixedPtr + _index);
+                longValue = *(ulong*)(block.DataFixedPtr + _index);
                 return true;
             }
 
-            return TryPeekLongMultiBlock(ref longValue, blockBytes);
+            // wasLastBlock ? false : TryPeekLongMultiBlock(ref longValue, blockBytes);
+            return !wasLastBlock && TryPeekLongMultiBlock(ref longValue, blockBytes);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private unsafe bool TryPeekLongMultiBlock(ref ulong longValue, int blockBytes)
         {
-            var wasLastBlock = _block.Next == null;
-            if (wasLastBlock)
+            // Each block will be filled with at least 2048 bytes before the Next pointer is set, so a long
+            // will cross at most one block boundary assuming there are at least 8 bytes following the iterator.
+            var nextBytes = sizeof(ulong) - blockBytes;
+
+            var block = _block;
+            if (block.Next.End - block.Next.Start < nextBytes)
             {
                 return false;
             }
+
+            var nextLong = *(ulong*)(block.Next.DataFixedPtr + block.Next.Start);
+
+            if (blockBytes == 0)
+            {
+                // This case can not fall through to the else block since that would cause a 64-bit right shift
+                // on blockLong which is equivalent to no shift at all instead of shifting in all zeros.
+                // https://msdn.microsoft.com/en-us/library/xt18et0d.aspx
+                longValue = nextLong;
+            }
             else
             {
-                // Each block will be filled with at least 2048 bytes before the Next pointer is set, so a long
-                // will cross at most one block boundary assuming there are at least 8 bytes following the iterator.
-                var nextBytes = sizeof(ulong) - blockBytes;
+                var blockLong = *(ulong*)(block.DataFixedPtr + block.End - sizeof(ulong));
 
-                if (_block.Next.End - _block.Next.Start < nextBytes)
-                {
-                    return false;
-                }
-
-                var nextLong = *(ulong*)(_block.Next.DataFixedPtr + _block.Next.Start);
-
-                if (blockBytes == 0)
-                {
-                    // This case can not fall through to the else block since that would cause a 64-bit right shift
-                    // on blockLong which is equivalent to no shift at all instead of shifting in all zeros.
-                    // https://msdn.microsoft.com/en-us/library/xt18et0d.aspx
-                    longValue = nextLong;
-                }
-                else
-                {
-                    var blockLong = *(ulong*)(_block.DataFixedPtr + _block.End - sizeof(ulong));
-
-                    // Ensure that the right shift has a ulong operand so a logical shift is performed.
-                    longValue = (blockLong >> nextBytes * 8) | (nextLong << blockBytes * 8);
-                }
-
-                return true;
+                // Ensure that the right shift has a ulong operand so a logical shift is performed.
+                longValue = (blockLong >> nextBytes * 8) | (nextLong << blockBytes * 8);
             }
+
+            return true;
         }
 
         public int Seek(byte byte0)
@@ -799,6 +809,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             var block = _block;
             var index = _index;
 
+            // Always set wasLastBlock before checking .End to avoid race which may cause data loss
+            var wasLastBlock = block.Next == null;
             if (index < block.End)
             {
                 _index = index + 1;
@@ -806,28 +818,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 return true;
             }
 
-            return PutMultiBlock(data);
+            // wasLastBlock ? false : PutMultiBlock(data);
+            return !wasLastBlock && PutMultiBlock(data);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private bool PutMultiBlock(byte data)
         {
             var block = _block;
-            var wasLastBlock = block.Next == null;
             do
             {
-                int index;
-                if (wasLastBlock)
-                {
-                    return false;
-                }
-                else
-                {
-                    block = block.Next;
-                    index = block.Start;
-                }
+                block = block.Next;
+                var index = block.Start;
 
-                wasLastBlock = block.Next == null;
+                // Always set wasLastBlock before checking .End to avoid race which may cause data loss
+                var wasLastBlock = block.Next == null;
 
                 if (index < block.End)
                 {
@@ -835,6 +840,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                     _index = index + 1;
                     block.Array[index] = data;
                     break;
+                }
+                if (wasLastBlock)
+                {
+                    return false;
                 }
             } while (true);
 
@@ -1123,10 +1132,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
             if (end.Block == Block)
             {
-                return Constants.UTF8.GetString(Block.Array, Index, end.Index - Index);
+                return Encoding.UTF8.GetString(Block.Array, Index, end.Index - Index);
             }
 
-            var decoder = Constants.UTF8.GetDecoder();
+            var decoder = Encoding.UTF8.GetDecoder();
 
             var length = GetLength(end);
             var charLength = length;
