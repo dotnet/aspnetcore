@@ -994,6 +994,65 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.ThrowsAny<InvalidOperationException>(() => default(MemoryPoolIterator).Skip(1));
         }
 
+        [Fact]
+        public void TestGetArraySegment()
+        {
+            MemoryPoolBlock block0 = null;
+            MemoryPoolBlock block1 = null;
+
+            var byteRange = Enumerable.Range(1, 127).Select(x => (byte)x).ToArray();
+            try
+            {
+                // Arrange
+                block0 = _pool.Lease();
+                block1 = _pool.Lease();
+
+                block0.GetIterator().CopyFrom(byteRange);
+                block1.GetIterator().CopyFrom(byteRange);
+
+                block0.Next = block1;
+
+                var begin = block0.GetIterator();
+                var end0 = begin;
+                var end1 = begin;
+
+                end0.Skip(byteRange.Length);
+                end1.Skip(byteRange.Length * 2);
+
+                // Act
+                var as0 = begin.GetArraySegment(end0);
+                var as1 = begin.GetArraySegment(end1);
+
+                // Assert
+                Assert.Equal(as0.Count, byteRange.Length);
+                Assert.Equal(as1.Count, byteRange.Length * 2);
+
+                for (var i = 1; i < byteRange.Length; i++)
+                {
+                    var asb0 = as0.Array[i + as0.Offset];
+                    var asb1 = as1.Array[i + as1.Offset];
+                    var b = byteRange[i];
+
+                    Assert.Equal(asb0, b);
+                    Assert.Equal(asb1, b);
+                }
+
+                for (var i = 1 + byteRange.Length; i < byteRange.Length * 2; i++)
+                {
+                    var asb1 = as1.Array[i + as1.Offset];
+                    var b = byteRange[i - byteRange.Length];
+
+                    Assert.Equal(asb1, b);
+                }
+
+            }
+            finally
+            {
+                if (block0 != null) _pool.Return(block0);
+                if (block1 != null) _pool.Return(block1);
+            }
+        }
+
         [Theory]
         [InlineData("a", "a", 1)]
         [InlineData("ab", "a...", 1)]
