@@ -136,9 +136,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         public void Skip(int bytesToSkip)
         {
             var block = _block;
-            if (block == null)
+            if (block == null && bytesToSkip > 0)
             {
-                return;
+                ThrowInvalidOperationException_SkipMoreThanAvailable();
             }
 
             // Always set wasLastBlock before checking .End to avoid race which may cause data loss
@@ -307,12 +307,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         {
             bytesScanned = 0;
 
-            if (IsDefault || limit <= 0)
+            var block = _block;
+            if (block == null || limit <= 0)
             {
                 return -1;
             }
 
-            var block = _block;
             var index = _index;
             var wasLastBlock = block.Next == null;
             var following = block.End - index;
@@ -413,12 +413,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             byte byte0,
             ref MemoryPoolIterator limit)
         {
-            if (IsDefault)
+            var block = _block;
+            if (block == null)
             {
                 return -1;
             }
 
-            var block = _block;
             var index = _index;
             var wasLastBlock = block.Next == null;
             var following = block.End - index;
@@ -520,12 +520,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             byte byte1,
             ref MemoryPoolIterator limit)
         {
-            if (IsDefault)
+            var block = _block;
+            if (block == null)
             {
                 return -1;
             }
 
-            var block = _block;
             var index = _index;
             var wasLastBlock = block.Next == null;
             var following = block.End - index;
@@ -650,12 +650,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             byte byte2,
             ref MemoryPoolIterator limit)
         {
-            if (IsDefault)
+            var block = _block;
+            if (block == null)
             {
                 return -1;
             }
 
-            var block = _block;
             var index = _index;
             var wasLastBlock = block.Next == null;
             var following = block.End - index;
@@ -800,12 +800,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Put(byte data)
         {
-            if (_block == null)
+            var block = _block;
+            if (block == null)
             {
                 return false;
             }
 
-            var block = _block;
             var index = _index;
 
             // Always set wasLastBlock before checking .End to avoid race which may cause data loss
@@ -851,12 +851,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetLength(MemoryPoolIterator end)
         {
-            if (IsDefault || end.IsDefault)
+            var block = _block;
+            if (block == null || end.IsDefault)
             {
                 return -1;
             }
 
-            if (_block == end._block)
+            if (block == end._block)
             {
                 return end._index - _index;
             }
@@ -894,13 +895,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         public MemoryPoolIterator CopyTo(byte[] array, int offset, int count, out int actual)
         {
-            if (IsDefault)
+            var block = _block;
+            if (block == null)
             {
                 actual = 0;
                 return this;
             }
 
-            var block = _block;
             var index = _index;
             var remaining = count;
             while (true)
@@ -955,17 +956,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         public void CopyFrom(byte[] data, int offset, int count)
         {
-            if (IsDefault)
+            var block = _block;
+            if (block == null)
             {
                 return;
             }
 
-            Debug.Assert(_block != null);
-            Debug.Assert(_block.Next == null);
-            Debug.Assert(_block.End == _index);
+            Debug.Assert(block.Next == null);
+            Debug.Assert(block.End == _index);
 
-            var pool = _block.Pool;
-            var block = _block;
+            var pool = block.Pool;
             var blockIndex = _index;
 
             var bufferIndex = offset;
@@ -1002,17 +1002,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         public unsafe void CopyFromAscii(string data)
         {
-            if (IsDefault)
+            var block = _block;
+            if (block == null)
             {
                 return;
             }
 
-            Debug.Assert(_block != null);
-            Debug.Assert(_block.Next == null);
-            Debug.Assert(_block.End == _index);
+            Debug.Assert(block.Next == null);
+            Debug.Assert(block.End == _index);
 
-            var pool = _block.Pool;
-            var block = _block;
+            var pool = block.Pool;
             var blockIndex = _index;
             var length = data.Length;
 
@@ -1068,7 +1067,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         public unsafe string GetAsciiString(ref MemoryPoolIterator end)
         {
-            if (IsDefault || end.IsDefault)
+            var block = _block;
+            if (block == null || end.IsDefault)
             {
                 return null;
             }
@@ -1080,8 +1080,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 return null;
             }
 
-            var inputOffset = Index;
-            var block = Block;
+            var inputOffset = _index;
 
             var asciiString = new string('\0', length);
 
@@ -1124,13 +1123,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         public string GetUtf8String(ref MemoryPoolIterator end)
         {
-            if (IsDefault || end.IsDefault)
+            var block = _block;
+            if (block == null || end.IsDefault)
             {
                 return default(string);
             }
-            if (end.Block == Block)
+
+            var index = _index;
+            if (end.Block == block)
             {
-                return Encoding.UTF8.GetString(Block.Array, Index, end.Index - Index);
+                return Encoding.UTF8.GetString(block.Array, index, end.Index - index);
             }
 
             var decoder = Encoding.UTF8.GetDecoder();
@@ -1141,8 +1143,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             var chars = new char[charLength];
             var charIndex = 0;
 
-            var block = Block;
-            var index = Index;
             var remaining = length;
             while (true)
             {
@@ -1204,13 +1204,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ArraySegment<byte> GetArraySegment(MemoryPoolIterator end)
         {
-            if (IsDefault || end.IsDefault)
+            var block = _block;
+            if (block == null || end.IsDefault)
             {
                 return default(ArraySegment<byte>);
             }
-            if (end.Block == Block)
+
+            var index = _index;
+            if (end.Block == block)
             {
-                return new ArraySegment<byte>(Block.Array, Index, end.Index - Index);
+                return new ArraySegment<byte>(block.Array, index, end.Index - index);
             }
 
             return GetArraySegmentMultiBlock(ref end);

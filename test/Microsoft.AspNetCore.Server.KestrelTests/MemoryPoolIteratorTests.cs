@@ -966,6 +966,34 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
+        [Fact]
+        public void EmptyIteratorBehaviourIsValid()
+        {
+            const byte byteCr = (byte) '\n';
+            ulong longValue;
+            var end = default(MemoryPoolIterator);
+
+            Assert.False(default(MemoryPoolIterator).TryPeekLong(out longValue));
+            Assert.False(default(MemoryPoolIterator).Put(byteCr));
+            Assert.Null(default(MemoryPoolIterator).GetAsciiString(ref end));
+            Assert.Null(default(MemoryPoolIterator).GetUtf8String(ref end));
+            // Assert.Equal doesn't work for default(ArraySegments)
+            Assert.True(default(MemoryPoolIterator).GetArraySegment(end).Equals(default(ArraySegment<byte>)));
+            Assert.True(default(MemoryPoolIterator).IsDefault);
+            Assert.True(default(MemoryPoolIterator).IsEnd);
+            Assert.Equal(default(MemoryPoolIterator).Take(), -1);
+            Assert.Equal(default(MemoryPoolIterator).Peek(), -1);
+            Assert.Equal(default(MemoryPoolIterator).Seek(byteCr), -1);
+            Assert.Equal(default(MemoryPoolIterator).Seek(byteCr, ref end), -1);
+            Assert.Equal(default(MemoryPoolIterator).Seek(byteCr, byteCr), -1);
+            Assert.Equal(default(MemoryPoolIterator).Seek(byteCr, byteCr, byteCr), -1);
+
+            default(MemoryPoolIterator).CopyFrom(default(ArraySegment<byte>));
+            default(MemoryPoolIterator).CopyFromAscii("");
+            Assert.Equal(default(MemoryPoolIterator).GetLength(end), -1);
+            Assert.ThrowsAny<InvalidOperationException>(() => default(MemoryPoolIterator).Skip(1));
+        }
+
         [Theory]
         [InlineData("a", "a", 1)]
         [InlineData("ab", "a...", 1)]
