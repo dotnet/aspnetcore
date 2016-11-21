@@ -2236,6 +2236,14 @@ namespace Microsoft.AspNetCore.Identity
 
         private async Task<IdentityResult> ValidateUserInternal(TUser user)
         {
+            if (SupportsUserSecurityStamp)
+            {
+                var stamp = await GetSecurityStampAsync(user);
+                if (stamp == null)
+                {
+                    throw new InvalidOperationException(Resources.NullSecurityStamp);
+                }
+            }
             var errors = new List<IdentityError>();
             foreach (var v in UserValidators)
             {

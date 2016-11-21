@@ -251,6 +251,22 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
+        /// User security stamp cannot be null.
+        /// </summary>
+        internal static string NullSecurityStamp
+        {
+            get { return GetString("NullSecurityStamp"); }
+        }
+
+        /// <summary>
+        /// User security stamp cannot be null.
+        /// </summary>
+        internal static string FormatNullSecurityStamp()
+        {
+            return GetString("NullSecurityStamp");
+        }
+
+        /// <summary>
         /// Incorrect password.
         /// </summary>
         internal static string PasswordMismatch

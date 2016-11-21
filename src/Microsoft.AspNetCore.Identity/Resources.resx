@@ -177,6 +177,10 @@
     <value>No IUserTokenProvider named '{0}' is registered.</value>
     <comment>Error when there is no IUserTokenProvider</comment>
   </data>
+  <data name="NullSecurityStamp" xml:space="preserve">
+    <value>User security stamp cannot be null.</value>
+    <comment>Error when a user's security stamp is null.</comment>
+  </data>
   <data name="PasswordMismatch" xml:space="preserve">
     <value>Incorrect password.</value>
     <comment>Error when a password doesn't match</comment>

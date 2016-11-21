@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Returns the default <see cref="IdentityError"/>.
         /// </summary>
-        /// <returns>The default <see cref="IdentityError"/>,</returns>
+        /// <returns>The default <see cref="IdentityError"/>.</returns>
         public virtual IdentityError DefaultError()
         {
             return new IdentityError

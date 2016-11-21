@@ -484,6 +484,42 @@ namespace Microsoft.AspNetCore.Identity.Test
         }
 
         [Fact]
+        public async Task CreateFailsWithNullSecurityStamp()
+        {
+            // Setup
+            var store = new Mock<IUserSecurityStampStore<TestUser>>();
+            var manager = MockHelpers.TestUserManager(store.Object);
+            var user = new TestUser { UserName = "nulldude" };
+            store.Setup(s => s.GetSecurityStampAsync(user, It.IsAny<CancellationToken>())).ReturnsAsync(null).Verifiable();
+
+            // Act
+            // Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => manager.CreateAsync(user));
+            Assert.Contains(Resources.NullSecurityStamp, ex.Message);
+
+            store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task UpdateFailsWithNullSecurityStamp()
+        {
+            // Setup
+            var store = new Mock<IUserSecurityStampStore<TestUser>>();
+            var manager = MockHelpers.TestUserManager(store.Object);
+            var user = new TestUser { UserName = "nulldude" };
+            store.Setup(s => s.GetSecurityStampAsync(user, It.IsAny<CancellationToken>())).ReturnsAsync(null).Verifiable();
+
+            // Act
+            // Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => manager.UpdateAsync(user));
+            Assert.Contains(Resources.NullSecurityStamp, ex.Message);
+
+            store.VerifyAll();
+        }
+
+
+
+        [Fact]
         public async Task RemoveClaimsCallsStore()
         {
             // Setup

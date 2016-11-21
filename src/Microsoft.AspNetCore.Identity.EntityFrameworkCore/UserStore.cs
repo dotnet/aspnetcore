@@ -1247,6 +1247,10 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             {
                 throw new ArgumentNullException(nameof(user));
             }
+            if (stamp == null)
+            {
+                throw new ArgumentNullException(nameof(stamp));
+            }
             user.SecurityStamp = stamp;
             return TaskCache.CompletedTask;
         }
