@@ -6,6 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Design.Internal;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tools
@@ -148,6 +151,29 @@ Options:
             Assert.Equal(1, result.ExitCode);
             Assert.Empty(result.Out);
             Assert.Equal(expectedError, result.Error.Trim());
+        }
+
+        [Fact]
+        public void EmitAssembly_DoesNotWriteAssembliesToDisk_IfCompilationFails()
+        {
+            // Arrange
+            var assemblyDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            var assemblyPath = Path.Combine(assemblyDirectory, "out.dll");
+            var precompileRunCommand = new PrecompileRunCommand();
+            var syntaxTree = CSharpSyntaxTree.ParseText("using Microsoft.DoestNotExist");
+            var compilation = CSharpCompilation.Create("Test.dll", new[] { syntaxTree });
+
+            // Act
+            var emitResult = precompileRunCommand.EmitAssembly(
+                compilation,
+                new EmitOptions(),
+                assemblyPath,
+                new ResourceDescription[0]);
+
+            // Assert
+            Assert.False(emitResult.Success);
+            Assert.False(Directory.Exists(assemblyDirectory));
+            Assert.False(File.Exists(assemblyPath));
         }
 
         private static string GetToolVersion()

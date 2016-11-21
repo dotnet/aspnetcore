@@ -9,7 +9,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.CodeAnalysis;
@@ -104,7 +103,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Design.Internal
             var resources = GetResources(results);
 
             var assemblyPath = Path.Combine(OutputPathOption.Value(), precompileAssemblyName + ".dll");
-            var emitResult = EmitAssembly(compilation, assemblyPath, resources);
+            var emitResult = EmitAssembly(
+                compilation,
+                MvcServiceProvider.Compiler.EmitOptions,
+                assemblyPath,
+                resources);
 
             if (!emitResult.Success)
             {
@@ -143,23 +146,41 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Design.Internal
             return resources;
         }
 
-        private EmitResult EmitAssembly(
+        public EmitResult EmitAssembly(
             CSharpCompilation compilation,
+            EmitOptions emitOptions,
             string assemblyPath,
             ResourceDescription[] resources)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(assemblyPath));
-
             EmitResult emitResult;
-            using (var assemblyStream = File.OpenWrite(assemblyPath))
+            using (var assemblyStream = new MemoryStream())
             {
-                using (var pdbStream = File.OpenWrite(Path.ChangeExtension(assemblyPath, ".pdb")))
+                using (var pdbStream = new MemoryStream())
                 {
                     emitResult = compilation.Emit(
                         assemblyStream,
                         pdbStream,
                         manifestResources: resources,
-                        options: MvcServiceProvider.Compiler.EmitOptions);
+                        options: emitOptions);
+
+                    if (emitResult.Success)
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(assemblyPath));
+                        var pdbPath = Path.ChangeExtension(assemblyPath, ".pdb");
+                        assemblyStream.Position = 0;
+                        pdbStream.Position = 0;
+
+                        // Avoid writing to disk unless the compilation is successful.
+                        using (var assemblyFileStream = File.OpenWrite(assemblyPath))
+                        {
+                            assemblyStream.CopyTo(assemblyFileStream);
+                        }
+
+                        using (var pdbFileStream = File.OpenWrite(pdbPath))
+                        {
+                            pdbStream.CopyTo(pdbFileStream);
+                        }
+                    }
                 }
             }
 
