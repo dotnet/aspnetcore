@@ -10,6 +10,6 @@ module.exports = {
     },
     plugins: [
         extractLESS,
-        new webpack.optimize.UglifyJsPlugin({ minimize: true })
+        new webpack.optimize.UglifyJsPlugin({ minimize: true, compressor: { warnings: false } })
     ]
 };

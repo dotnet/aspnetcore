@@ -11,9 +11,10 @@
     "webpack-hot-middleware": "^2.7.1"
   },
   "dependencies": {
-    "aspnet-webpack": "^1.0.3",
     "aspnet-prerendering": "^1.0.4",
+    "aspnet-webpack": "^1.0.3",
     "ts-loader": "^0.8.1",
-    "typescript": "^1.7.5"
+    "typescript": "^2.0.0",
+    "webpack": "^1.13.3"
   }
 }

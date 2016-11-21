@@ -2,9 +2,10 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "module": "commonjs",
-    "target": "es6",
+    "target": "es5",
     "jsx": "preserve",
-    "sourceMap": true
+    "sourceMap": true,
+    "lib": ["es6", "dom"]
   },
   "exclude": [
       "node_modules"

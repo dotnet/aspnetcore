@@ -5,11 +5,11 @@
   },
   "dependencies": {
     "Microsoft.NETCore.App": {
-      "version": "1.0.0",
+      "version": "1.1.0",
       "type": "platform"
     },
-    "Microsoft.AspNetCore.NodeServices": "1.0.0-*",
-    "Microsoft.Extensions.DependencyInjection": "1.0.0"
+    "Microsoft.AspNetCore.NodeServices": "1.1.0-*",
+    "Microsoft.Extensions.DependencyInjection": "1.1.0"
   },
   "frameworks": {
     "netcoreapp1.0": {
