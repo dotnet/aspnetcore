@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Numerics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +23,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
     public abstract partial class Frame : IFrameControl
     {
+        // byte types don't have a data type annotation so we pre-cast them; to avoid in-place casts
+        private const byte ByteCR = (byte)'\r';
+        private const byte ByteLF = (byte)'\n';
+        private const byte ByteColon = (byte)':';
+        private const byte ByteSpace = (byte)' ';
+        private const byte ByteTab = (byte)'\t';
+        private const byte ByteQuestionMark = (byte)'?';
+        private const byte BytePercentage = (byte)'%';
+
         private static readonly ArraySegment<byte> _endChunkedResponseBytes = CreateAsciiByteArraySegment("0\r\n\r\n");
         private static readonly ArraySegment<byte> _continueBytes = CreateAsciiByteArraySegment("HTTP/1.1 100 Continue\r\n\r\n");
 
@@ -34,14 +42,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private static readonly byte[] _bytesContentLengthZero = Encoding.ASCII.GetBytes("\r\nContent-Length: 0");
         private static readonly byte[] _bytesEndHeaders = Encoding.ASCII.GetBytes("\r\n\r\n");
         private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: Kestrel");
-
-        private static Vector<byte> _vectorCRs = new Vector<byte>((byte)'\r');
-        private static Vector<byte> _vectorLFs = new Vector<byte>((byte)'\n');
-        private static Vector<byte> _vectorColons = new Vector<byte>((byte)':');
-        private static Vector<byte> _vectorSpaces = new Vector<byte>((byte)' ');
-        private static Vector<byte> _vectorTabs = new Vector<byte>((byte)'\t');
-        private static Vector<byte> _vectorQuestionMarks = new Vector<byte>((byte)'?');
-        private static Vector<byte> _vectorPercentages = new Vector<byte>((byte)'%');
 
         private readonly object _onStartingSync = new Object();
         private readonly object _onCompletedSync = new Object();
@@ -952,7 +952,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 _requestProcessingStatus = RequestProcessingStatus.RequestStarted;
 
                 int bytesScanned;
-                if (end.Seek(ref _vectorLFs, out bytesScanned, ServerOptions.Limits.MaxRequestLineSize) == -1)
+                if (end.Seek(ByteLF, out bytesScanned, ServerOptions.Limits.MaxRequestLineSize) == -1)
                 {
                     if (bytesScanned >= ServerOptions.Limits.MaxRequestLineSize)
                     {
@@ -969,13 +969,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 var begin = scan;
                 if (!begin.GetKnownMethod(out method))
                 {
-                    if (scan.Seek(ref _vectorSpaces, ref end) == -1)
+                    if (scan.Seek(ByteSpace, ref end) == -1)
                     {
                         RejectRequest(RequestRejectionReason.InvalidRequestLine,
                             Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxInvalidRequestLineChars) : string.Empty);
                     }
 
-                    method = begin.GetAsciiString(scan);
+                    method = begin.GetAsciiString(ref scan);
 
                     if (method == null)
                     {
@@ -1002,16 +1002,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 scan.Take();
                 begin = scan;
                 var needDecode = false;
-                var chFound = scan.Seek(ref _vectorSpaces, ref _vectorQuestionMarks, ref _vectorPercentages, ref end);
+                var chFound = scan.Seek(ByteSpace, ByteQuestionMark, BytePercentage, ref end);
                 if (chFound == -1)
                 {
                     RejectRequest(RequestRejectionReason.InvalidRequestLine,
                         Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxInvalidRequestLineChars) : string.Empty);
                 }
-                else if (chFound == '%')
+                else if (chFound == BytePercentage)
                 {
                     needDecode = true;
-                    chFound = scan.Seek(ref _vectorSpaces, ref _vectorQuestionMarks, ref end);
+                    chFound = scan.Seek(ByteSpace, ByteQuestionMark, ref end);
                     if (chFound == -1)
                     {
                         RejectRequest(RequestRejectionReason.InvalidRequestLine,
@@ -1023,20 +1023,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 var pathEnd = scan;
 
                 var queryString = "";
-                if (chFound == '?')
+                if (chFound == ByteQuestionMark)
                 {
                     begin = scan;
-                    if (scan.Seek(ref _vectorSpaces, ref end) == -1)
+                    if (scan.Seek(ByteSpace, ref end) == -1)
                     {
                         RejectRequest(RequestRejectionReason.InvalidRequestLine,
                             Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxInvalidRequestLineChars) : string.Empty);
                     }
-                    queryString = begin.GetAsciiString(scan);
+                    queryString = begin.GetAsciiString(ref scan);
                 }
 
                 var queryEnd = scan;
 
-                if (pathBegin.Peek() == ' ')
+                if (pathBegin.Peek() == ByteSpace)
                 {
                     RejectRequest(RequestRejectionReason.InvalidRequestLine,
                         Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxInvalidRequestLineChars) : string.Empty);
@@ -1044,7 +1044,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                 scan.Take();
                 begin = scan;
-                if (scan.Seek(ref _vectorCRs, ref end) == -1)
+                if (scan.Seek(ByteCR, ref end) == -1)
                 {
                     RejectRequest(RequestRejectionReason.InvalidRequestLine,
                         Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxInvalidRequestLineChars) : string.Empty);
@@ -1067,7 +1067,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
 
                 scan.Take(); // consume CR
-                if (scan.Take() != '\n')
+                if (scan.Take() != ByteLF)
                 {
                     RejectRequest(RequestRejectionReason.InvalidRequestLine,
                         Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxInvalidRequestLineChars) : string.Empty);
@@ -1081,16 +1081,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 if (needDecode)
                 {
                     // Read raw target before mutating memory.
-                    rawTarget = pathBegin.GetAsciiString(queryEnd);
+                    rawTarget = pathBegin.GetAsciiString(ref queryEnd);
 
                     // URI was encoded, unescape and then parse as utf8
                     pathEnd = UrlPathDecoder.Unescape(pathBegin, pathEnd);
-                    requestUrlPath = pathBegin.GetUtf8String(pathEnd);
+                    requestUrlPath = pathBegin.GetUtf8String(ref pathEnd);
                 }
                 else
                 {
                     // URI wasn't encoded, parse as ASCII
-                    requestUrlPath = pathBegin.GetAsciiString(pathEnd);
+                    requestUrlPath = pathBegin.GetAsciiString(ref pathEnd);
 
                     if (queryString.Length == 0)
                     {
@@ -1100,7 +1100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     }
                     else
                     {
-                        rawTarget = pathBegin.GetAsciiString(queryEnd);
+                        rawTarget = pathBegin.GetAsciiString(ref queryEnd);
                     }
                 }
 
@@ -1208,7 +1208,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     {
                         return false;
                     }
-                    else if (ch == '\r')
+                    else if (ch == ByteCR)
                     {
                         // Check for final CRLF.
                         end.Take();
@@ -1218,7 +1218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         {
                             return false;
                         }
-                        else if (ch == '\n')
+                        else if (ch == ByteLF)
                         {
                             ConnectionControl.CancelTimeout();
                             consumed = end;
@@ -1228,7 +1228,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         // Headers don't end in CRLF line.
                         RejectRequest(RequestRejectionReason.HeadersCorruptedInvalidHeaderSequence);
                     }
-                    else if (ch == ' ' || ch == '\t')
+                    else if (ch == ByteSpace || ch == ByteTab)
                     {
                         RejectRequest(RequestRejectionReason.HeaderLineMustNotStartWithWhitespace);
                     }
@@ -1241,7 +1241,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     }
 
                     int bytesScanned;
-                    if (end.Seek(ref _vectorLFs, out bytesScanned, _remainingRequestHeadersBytesAllowed) == -1)
+                    if (end.Seek(ByteLF, out bytesScanned, _remainingRequestHeadersBytesAllowed) == -1)
                     {
                         if (bytesScanned >= _remainingRequestHeadersBytesAllowed)
                         {
@@ -1254,7 +1254,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     }
 
                     var beginName = scan;
-                    if (scan.Seek(ref _vectorColons, ref end) == -1)
+                    if (scan.Seek(ByteColon, ref end) == -1)
                     {
                         RejectRequest(RequestRejectionReason.NoColonCharacterFoundInHeaderLine);
                     }
@@ -1263,7 +1263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     scan.Take();
 
                     var validateName = beginName;
-                    if (validateName.Seek(ref _vectorSpaces, ref _vectorTabs, ref endName) != -1)
+                    if (validateName.Seek(ByteSpace, ByteTab, ref endName) != -1)
                     {
                         RejectRequest(RequestRejectionReason.WhitespaceIsNotAllowedInHeaderName);
                     }
@@ -1271,14 +1271,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     var beginValue = scan;
                     ch = scan.Take();
 
-                    while (ch == ' ' || ch == '\t')
+                    while (ch == ByteSpace || ch == ByteTab)
                     {
                         beginValue = scan;
                         ch = scan.Take();
                     }
 
                     scan = beginValue;
-                    if (scan.Seek(ref _vectorCRs, ref end) == -1)
+                    if (scan.Seek(ByteCR, ref end) == -1)
                     {
                         RejectRequest(RequestRejectionReason.MissingCRInHeaderLine);
                     }
@@ -1287,7 +1287,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     ch = scan.Take(); // expecting '\n'
                     end = scan;
 
-                    if (ch != '\n')
+                    if (ch != ByteLF)
                     {
                         RejectRequest(RequestRejectionReason.HeaderValueMustNotContainCR);
                     }
@@ -1297,7 +1297,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     {
                         return false;
                     }
-                    else if (next == ' ' || next == '\t')
+                    else if (next == ByteSpace || next == ByteTab)
                     {
                         // From https://tools.ietf.org/html/rfc7230#section-3.2.4:
                         //
@@ -1330,18 +1330,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     var endValue = scan;
                     do
                     {
-                        ws.Seek(ref _vectorSpaces, ref _vectorTabs, ref _vectorCRs);
+                        ws.Seek(ByteSpace, ByteTab, ByteCR);
                         endValue = ws;
 
                         ch = ws.Take();
-                        while (ch == ' ' || ch == '\t')
+                        while (ch == ByteSpace || ch == ByteTab)
                         {
                             ch = ws.Take();
                         }
-                    } while (ch != '\r');
+                    } while (ch != ByteCR);
 
                     var name = beginName.GetArraySegment(endName);
-                    var value = beginValue.GetAsciiString(endValue);
+                    var value = beginValue.GetAsciiString(ref endValue);
 
                     consumed = scan;
                     requestHeaders.Append(name.Array, name.Offset, name.Count, value);

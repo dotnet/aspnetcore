@@ -4,12 +4,23 @@
 using System;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 {
     public struct MemoryPoolIterator
     {
+        private const ulong _xorPowerOfTwoToHighByte = (0x07ul       |
+                                                        0x06ul <<  8 |
+                                                        0x05ul << 16 |
+                                                        0x04ul << 24 |
+                                                        0x03ul << 32 |
+                                                        0x02ul << 40 |
+                                                        0x01ul << 48 ) + 1;
+
         private static readonly int _vectorSpan = Vector<byte>.Count;
 
         private MemoryPoolBlock _block;
@@ -30,36 +41,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         public bool IsEnd
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if (_block == null)
+                var block = _block;
+                if (block == null)
                 {
                     return true;
                 }
-                else if (_index < _block.End)
+                else if (_index < block.End)
                 {
                     return false;
                 }
-                else
+                else if (block.Next == null)
                 {
-                    var block = _block.Next;
-                    while (block != null)
-                    {
-                        if (block.Start < block.End)
-                        {
-                            return false; // subsequent block has data - IsEnd is false
-                        }
-                        block = block.Next;
-                    }
                     return true;
                 }
+                else
+                {
+                    return IsEndMultiBlock();
+                }
             }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private bool IsEndMultiBlock()
+        {
+            var block = _block.Next;
+            do
+            {
+                if (block.Start < block.End)
+                {
+                    return false; // subsequent block has data - IsEnd is false
+                }
+                block = block.Next;
+            } while (block != null);
+
+            return true;
         }
 
         public MemoryPoolBlock Block => _block;
 
         public int Index => _index;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int Take()
         {
             var block = _block;
@@ -69,6 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
 
             var index = _index;
+            // Always set wasLastBlock before checking .End to avoid race which may cause data loss
             var wasLastBlock = block.Next == null;
 
             if (index < block.End)
@@ -77,19 +103,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 return block.Array[index];
             }
 
+            return wasLastBlock ? -1 : TakeMultiBlock();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private int TakeMultiBlock()
+        {
+            var block = _block;
             do
             {
-                if (wasLastBlock)
-                {
-                    return -1;
-                }
-                else
-                {
-                    block = block.Next;
-                    index = block.Start;
-                }
+                block = block.Next;
+                var index = block.Start;
 
-                wasLastBlock = block.Next == null;
+                // Always set wasLastBlock before checking .End to avoid race which may cause data loss 
+                var wasLastBlock = block.Next == null;
 
                 if (index < block.End)
                 {
@@ -97,18 +124,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                     _index = index + 1;
                     return block.Array[index];
                 }
+
+                if (wasLastBlock)
+                {
+                    return -1;
+                }
             } while (true);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Skip(int bytesToSkip)
         {
-            if (_block == null)
+            var block = _block;
+            if (block == null && bytesToSkip > 0)
             {
-                return;
+                ThrowInvalidOperationException_SkipMoreThanAvailable();
             }
 
-            var wasLastBlock = _block.Next == null;
-            var following = _block.End - _index;
+            // Always set wasLastBlock before checking .End to avoid race which may cause data loss
+            var wasLastBlock = block.Next == null;
+            var following = block.End - _index;
 
             if (following >= bytesToSkip)
             {
@@ -116,22 +151,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 return;
             }
 
-            var block = _block;
-            var index = _index;
-            while (true)
+            if (wasLastBlock)
             {
-                if (wasLastBlock)
-                {
-                    throw new InvalidOperationException("Attempted to skip more bytes than available.");
-                }
-                else
-                {
-                    bytesToSkip -= following;
-                    block = block.Next;
-                    index = block.Start;
-                }
+                ThrowInvalidOperationException_SkipMoreThanAvailable();
+            }
 
-                wasLastBlock = block.Next == null;
+            SkipMultiBlock(bytesToSkip, following);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void SkipMultiBlock(int bytesToSkip, int following)
+        {
+            var block = _block;
+            do
+            {
+                bytesToSkip -= following;
+                block = block.Next;
+                var index = block.Start;
+
+                // Always set wasLastBlock before checking .End to avoid race which may cause data loss
+                var wasLastBlock = block.Next == null;
                 following = block.End - index;
 
                 if (following >= bytesToSkip)
@@ -140,9 +179,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                     _index = index + bytesToSkip;
                     return;
                 }
-            }
+
+                if (wasLastBlock)
+                {
+                    ThrowInvalidOperationException_SkipMoreThanAvailable();
+                }
+            } while (true);
         }
 
+        private static void ThrowInvalidOperationException_SkipMoreThanAvailable()
+        {
+            throw new InvalidOperationException("Attempted to skip more bytes than available.");
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int Peek()
         {
             var block = _block;
@@ -151,113 +201,123 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 return -1;
             }
 
-            var wasLastBlock = _block.Next == null;
             var index = _index;
 
+            // Always set wasLastBlock before checking .End to avoid race which may cause data loss
+            var wasLastBlock = block.Next == null;
             if (index < block.End)
             {
                 return block.Array[index];
             }
 
+            return wasLastBlock ? -1 : PeekMultiBlock();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private int PeekMultiBlock()
+        {
+            var block = _block;
             do
             {
-                if (wasLastBlock)
-                {
-                    return -1;
-                }
-                else
-                {
-                    block = block.Next;
-                    index = block.Start;
-                }
+                block = block.Next;
+                var index = block.Start;
 
-                wasLastBlock = block.Next == null;
+                // Always set wasLastBlock before checking .End to avoid race which may cause data loss 
+                var wasLastBlock = block.Next == null;
 
                 if (index < block.End)
                 {
                     return block.Array[index];
                 }
+                if (wasLastBlock)
+                {
+                    return -1;
+                }
             } while (true);
         }
 
         // NOTE: Little-endian only!
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe bool TryPeekLong(out ulong longValue)
         {
             longValue = 0;
 
-            if (_block == null)
+            var block = _block;
+            if (block == null)
             {
                 return false;
             }
 
-            var wasLastBlock = _block.Next == null;
-            var blockBytes = _block.End - _index;
+            // Always set wasLastBlock before checking .End to avoid race which may cause data loss 
+            var wasLastBlock = block.Next == null;
+            var blockBytes = block.End - _index;
 
             if (blockBytes >= sizeof(ulong))
             {
-                longValue = *(ulong*)(_block.DataFixedPtr + _index);
+                longValue = *(ulong*)(block.DataFixedPtr + _index);
                 return true;
             }
-            else if (wasLastBlock)
+
+            return wasLastBlock ? false : TryPeekLongMultiBlock(ref longValue, blockBytes);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private unsafe bool TryPeekLongMultiBlock(ref ulong longValue, int blockBytes)
+        {
+            // Each block will be filled with at least 2048 bytes before the Next pointer is set, so a long
+            // will cross at most one block boundary assuming there are at least 8 bytes following the iterator.
+            var nextBytes = sizeof(ulong) - blockBytes;
+
+            var block = _block;
+            if (block.Next.End - block.Next.Start < nextBytes)
             {
                 return false;
             }
+
+            var nextLong = *(ulong*)(block.Next.DataFixedPtr + block.Next.Start);
+
+            if (blockBytes == 0)
+            {
+                // This case can not fall through to the else block since that would cause a 64-bit right shift
+                // on blockLong which is equivalent to no shift at all instead of shifting in all zeros.
+                // https://msdn.microsoft.com/en-us/library/xt18et0d.aspx
+                longValue = nextLong;
+            }
             else
             {
-                // Each block will be filled with at least 2048 bytes before the Next pointer is set, so a long
-                // will cross at most one block boundary assuming there are at least 8 bytes following the iterator.
-                var nextBytes = sizeof(ulong) - blockBytes;
+                var blockLong = *(ulong*)(block.DataFixedPtr + block.End - sizeof(ulong));
 
-                if (_block.Next.End - _block.Next.Start < nextBytes)
-                {
-                    return false;
-                }
-
-                var nextLong = *(ulong*)(_block.Next.DataFixedPtr + _block.Next.Start);
-
-                if (blockBytes == 0)
-                {
-                    // This case can not fall through to the else block since that would cause a 64-bit right shift
-                    // on blockLong which is equivalent to no shift at all instead of shifting in all zeros.
-                    // https://msdn.microsoft.com/en-us/library/xt18et0d.aspx
-                    longValue = nextLong;
-                }
-                else
-                {
-                    var blockLong = *(ulong*)(_block.DataFixedPtr + _block.End - sizeof(ulong));
-
-                    // Ensure that the right shift has a ulong operand so a logical shift is performed.
-                    longValue = (blockLong >> nextBytes * 8) | (nextLong << blockBytes * 8);
-                }
-
-                return true;
+                // Ensure that the right shift has a ulong operand so a logical shift is performed.
+                longValue = (blockLong >> nextBytes * 8) | (nextLong << blockBytes * 8);
             }
+
+            return true;
         }
 
-        public int Seek(ref Vector<byte> byte0Vector)
+        public int Seek(byte byte0)
         {
             int bytesScanned;
-            return Seek(ref byte0Vector, out bytesScanned);
+            return Seek(byte0, out bytesScanned);
         }
 
         public unsafe int Seek(
-            ref Vector<byte> byte0Vector,
+            byte byte0,
             out int bytesScanned,
             int limit = int.MaxValue)
         {
             bytesScanned = 0;
 
-            if (IsDefault || limit <= 0)
+            var block = _block;
+            if (block == null || limit <= 0)
             {
                 return -1;
             }
 
-            var block = _block;
             var index = _index;
             var wasLastBlock = block.Next == null;
             var following = block.End - index;
             byte[] array;
-            var byte0 = byte0Vector[0];
+            var byte0Vector = GetVector(byte0);
 
             while (true)
             {
@@ -307,7 +367,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
                         _block = block;
 
-                        var firstEqualByteIndex = FindFirstEqualByte(ref byte0Equals);
+                        var firstEqualByteIndex = LocateFirstFoundByte(byte0Equals);
                         var vectorBytesScanned = firstEqualByteIndex + 1;
 
                         if (bytesScanned + vectorBytesScanned > limit)
@@ -350,20 +410,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         }
 
         public unsafe int Seek(
-            ref Vector<byte> byte0Vector,
+            byte byte0,
             ref MemoryPoolIterator limit)
         {
-            if (IsDefault)
+            var block = _block;
+            if (block == null)
             {
                 return -1;
             }
 
-            var block = _block;
             var index = _index;
             var wasLastBlock = block.Next == null;
             var following = block.End - index;
-            byte[] array;
-            var byte0 = byte0Vector[0];
 
             while (true)
             {
@@ -383,7 +441,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                     wasLastBlock = block.Next == null;
                     following = block.End - index;
                 }
-                array = block.Array;
+                var array = block.Array;
                 while (following > 0)
                 {
 // Need unit tests to test Vector path
@@ -394,7 +452,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 #endif
                         if (following >= _vectorSpan)
                         {
-                            var byte0Equals = Vector.Equals(new Vector<byte>(array, index), byte0Vector);
+                            var byte0Equals = Vector.Equals(new Vector<byte>(array, index), GetVector(byte0));
 
                             if (byte0Equals.Equals(Vector<byte>.Zero))
                             {
@@ -413,7 +471,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
                             _block = block;
 
-                            var firstEqualByteIndex = FindFirstEqualByte(ref byte0Equals);
+                            var firstEqualByteIndex = LocateFirstFoundByte(byte0Equals);
 
                             if (_block == limit.Block && index + firstEqualByteIndex > limit.Index)
                             {
@@ -451,31 +509,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
         }
 
-        public int Seek(ref Vector<byte> byte0Vector, ref Vector<byte> byte1Vector)
+        public int Seek(byte byte0, byte byte1)
         {
             var limit = new MemoryPoolIterator();
-            return Seek(ref byte0Vector, ref byte1Vector, ref limit);
+            return Seek(byte0, byte1, ref limit);
         }
 
         public unsafe int Seek(
-            ref Vector<byte> byte0Vector,
-            ref Vector<byte> byte1Vector,
+            byte byte0,
+            byte byte1,
             ref MemoryPoolIterator limit)
         {
-            if (IsDefault)
+            var block = _block;
+            if (block == null)
             {
                 return -1;
             }
 
-            var block = _block;
             var index = _index;
             var wasLastBlock = block.Next == null;
             var following = block.End - index;
-            byte[] array;
-            int byte0Index = int.MaxValue;
-            int byte1Index = int.MaxValue;
-            var byte0 = byte0Vector[0];
-            var byte1 = byte1Vector[0];
+            int byteIndex = int.MaxValue;
 
             while (true)
             {
@@ -494,7 +548,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                     wasLastBlock = block.Next == null;
                     following = block.End - index;
                 }
-                array = block.Array;
+                var array = block.Array;
                 while (following > 0)
                 {
 
@@ -507,19 +561,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                         if (following >= _vectorSpan)
                         {
                             var data = new Vector<byte>(array, index);
-                            var byte0Equals = Vector.Equals(data, byte0Vector);
-                            var byte1Equals = Vector.Equals(data, byte1Vector);
 
-                            if (!byte0Equals.Equals(Vector<byte>.Zero))
+                            var byteEquals = Vector.Equals(data, GetVector(byte0));
+                            byteEquals = Vector.ConditionalSelect(byteEquals, byteEquals, Vector.Equals(data, GetVector(byte1)));
+
+                            if (!byteEquals.Equals(Vector<byte>.Zero))
                             {
-                                byte0Index = FindFirstEqualByte(ref byte0Equals);
-                            }
-                            if (!byte1Equals.Equals(Vector<byte>.Zero))
-                            {
-                                byte1Index = FindFirstEqualByte(ref byte1Equals);
+                                byteIndex = LocateFirstFoundByte(byteEquals);
                             }
 
-                            if (byte0Index == int.MaxValue && byte1Index == int.MaxValue)
+                            if (byteIndex == int.MaxValue)
                             {
                                 following -= _vectorSpan;
                                 index += _vectorSpan;
@@ -537,21 +588,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
                             _block = block;
 
-                            if (byte0Index < byte1Index)
-                            {
-                                _index = index + byte0Index;
-
-                                if (block == limit.Block && _index > limit.Index)
-                                {
-                                    // Ensure iterator is left at limit position
-                                    _index = limit.Index;
-                                    return -1;
-                                }
-
-                                return byte0;
-                            }
-
-                            _index = index + byte1Index;
+                            _index = index + byteIndex;
 
                             if (block == limit.Block && _index > limit.Index)
                             {
@@ -560,7 +597,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                                 return -1;
                             }
 
-                            return byte1;
+                            _index = index + byteIndex;
+
+                            if (block == limit.Block && _index > limit.Index)
+                            {
+                                // Ensure iterator is left at limit position
+                                _index = limit.Index;
+                                return -1;
+                            }
+
+                            return block.Array[index + byteIndex];
                         }
 // Need unit tests to test Vector path
 #if !DEBUG
@@ -592,34 +638,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
         }
 
-        public int Seek(ref Vector<byte> byte0Vector, ref Vector<byte> byte1Vector, ref Vector<byte> byte2Vector)
+        public int Seek(byte byte0, byte byte1, byte byte2)
         {
             var limit = new MemoryPoolIterator();
-            return Seek(ref byte0Vector, ref byte1Vector, ref byte2Vector, ref limit);
+            return Seek(byte0, byte1, byte2, ref limit);
         }
 
         public unsafe int Seek(
-            ref Vector<byte> byte0Vector,
-            ref Vector<byte> byte1Vector,
-            ref Vector<byte> byte2Vector,
+            byte byte0,
+            byte byte1,
+            byte byte2,
             ref MemoryPoolIterator limit)
         {
-            if (IsDefault)
+            var block = _block;
+            if (block == null)
             {
                 return -1;
             }
 
-            var block = _block;
             var index = _index;
             var wasLastBlock = block.Next == null;
             var following = block.End - index;
-            byte[] array;
-            int byte0Index = int.MaxValue;
-            int byte1Index = int.MaxValue;
-            int byte2Index = int.MaxValue;
-            var byte0 = byte0Vector[0];
-            var byte1 = byte1Vector[0];
-            var byte2 = byte2Vector[0];
+            int byteIndex = int.MaxValue;
 
             while (true)
             {
@@ -638,7 +678,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                     wasLastBlock = block.Next == null;
                     following = block.End - index;
                 }
-                array = block.Array;
+                var array = block.Array;
                 while (following > 0)
                 {
 // Need unit tests to test Vector path
@@ -650,24 +690,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                         if (following >= _vectorSpan)
                         {
                             var data = new Vector<byte>(array, index);
-                            var byte0Equals = Vector.Equals(data, byte0Vector);
-                            var byte1Equals = Vector.Equals(data, byte1Vector);
-                            var byte2Equals = Vector.Equals(data, byte2Vector);
 
-                            if (!byte0Equals.Equals(Vector<byte>.Zero))
+                            var byteEquals = Vector.Equals(data, GetVector(byte0));
+                            byteEquals = Vector.ConditionalSelect(byteEquals, byteEquals, Vector.Equals(data, GetVector(byte1)));
+                            byteEquals = Vector.ConditionalSelect(byteEquals, byteEquals, Vector.Equals(data, GetVector(byte2)));
+
+                            if (!byteEquals.Equals(Vector<byte>.Zero))
                             {
-                                byte0Index = FindFirstEqualByte(ref byte0Equals);
-                            }
-                            if (!byte1Equals.Equals(Vector<byte>.Zero))
-                            {
-                                byte1Index = FindFirstEqualByte(ref byte1Equals);
-                            }
-                            if (!byte2Equals.Equals(Vector<byte>.Zero))
-                            {
-                                byte2Index = FindFirstEqualByte(ref byte2Equals);
+                                byteIndex = LocateFirstFoundByte(byteEquals);
                             }
 
-                            if (byte0Index == int.MaxValue && byte1Index == int.MaxValue && byte2Index == int.MaxValue)
+                            if (byteIndex == int.MaxValue)
                             {
                                 following -= _vectorSpan;
                                 index += _vectorSpan;
@@ -685,35 +718,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
                             _block = block;
 
-                            int toReturn, toMove;
-                            if (byte0Index < byte1Index)
-                            {
-                                if (byte0Index < byte2Index)
-                                {
-                                    toReturn = byte0;
-                                    toMove = byte0Index;
-                                }
-                                else
-                                {
-                                    toReturn = byte2;
-                                    toMove = byte2Index;
-                                }
-                            }
-                            else
-                            {
-                                if (byte1Index < byte2Index)
-                                {
-                                    toReturn = byte1;
-                                    toMove = byte1Index;
-                                }
-                                else
-                                {
-                                    toReturn = byte2;
-                                    toMove = byte2Index;
-                                }
-                            }
-
-                            _index = index + toMove;
+                            _index = index + byteIndex;
 
                             if (block == limit.Block && _index > limit.Index)
                             {
@@ -722,7 +727,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                                 return -1;
                             }
 
-                            return toReturn;
+                            return block.Array[index + byteIndex];
                         }
 // Need unit tests to test Vector path
 #if !DEBUG
@@ -761,60 +766,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         }
 
         /// <summary>
-        /// Find first byte
+        /// Locate the first of the found bytes
         /// </summary>
         /// <param  name="byteEquals"></param >
         /// <returns>The first index of the result vector</returns>
-        /// <exception cref="InvalidOperationException">byteEquals = 0</exception>
-        internal static int FindFirstEqualByte(ref Vector<byte> byteEquals)
+        // Force inlining (64 IL bytes, 91 bytes asm) Issue: https://github.com/dotnet/coreclr/issues/7386
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static int LocateFirstFoundByte(Vector<byte> byteEquals)
         {
-            if (!BitConverter.IsLittleEndian) return FindFirstEqualByteSlow(ref byteEquals);
-
-            // Quasi-tree search
-            var vector64 = Vector.AsVectorInt64(byteEquals);
-            for (var i = 0; i < Vector<long>.Count; i++)
+            var vector64 = Vector.AsVectorUInt64(byteEquals);
+            ulong longValue = 0;
+            var i = 0;
+            // Pattern unrolled by jit https://github.com/dotnet/coreclr/pull/8001
+            for (; i < Vector<ulong>.Count; i++)
             {
-                var longValue = vector64[i];
+                longValue = vector64[i];
                 if (longValue == 0) continue;
-
-                return (i << 3) +
-                    ((longValue & 0x00000000ffffffff) > 0
-                        ? (longValue & 0x000000000000ffff) > 0
-                            ? (longValue & 0x00000000000000ff) > 0 ? 0 : 1
-                            : (longValue & 0x0000000000ff0000) > 0 ? 2 : 3
-                        : (longValue & 0x0000ffff00000000) > 0
-                            ? (longValue & 0x000000ff00000000) > 0 ? 4 : 5
-                            : (longValue & 0x00ff000000000000) > 0 ? 6 : 7);
+                break;
             }
-            throw new InvalidOperationException();
-        }
 
-        // Internal for testing
-        internal static int FindFirstEqualByteSlow(ref Vector<byte> byteEquals)
-        {
-            // Quasi-tree search
-            var vector64 = Vector.AsVectorInt64(byteEquals);
-            for (var i = 0; i < Vector<long>.Count; i++)
-            {
-                var longValue = vector64[i];
-                if (longValue == 0) continue;
-
-                var shift = i << 1;
-                var offset = shift << 2;
-                var vector32 = Vector.AsVectorInt32(byteEquals);
-                if (vector32[shift] != 0)
-                {
-                    if (byteEquals[offset] != 0) return offset;
-                    if (byteEquals[offset + 1] != 0) return offset + 1;
-                    if (byteEquals[offset + 2] != 0) return offset + 2;
-                    return offset + 3;
-                }
-                if (byteEquals[offset + 4] != 0) return offset + 4;
-                if (byteEquals[offset + 5] != 0) return offset + 5;
-                if (byteEquals[offset + 6] != 0) return offset + 6;
-                return offset + 7;
-            }
-            throw new InvalidOperationException();
+            // Flag least significant power of two bit
+            var powerOfTwoFlag = (longValue ^ (longValue - 1));
+            // Shift all powers of two into the high byte and extract
+            var foundByteIndex = (int)((powerOfTwoFlag * _xorPowerOfTwoToHighByte) >> 57);
+            // Single LEA instruction with jitted const (using function result)
+            return i * 8 + foundByteIndex;
         }
 
         /// <summary>
@@ -822,17 +798,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         /// </summary>
         /// <param name="data">The byte to be saved.</param>
         /// <returns>true if the operation successes. false if can't find available space.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Put(byte data)
         {
-            if (_block == null)
+            var block = _block;
+            if (block == null)
             {
-                return false;
+                ThrowInvalidOperationException_PutPassedEndOfBlock();
             }
 
-            var block = _block;
             var index = _index;
-            while (true)
+
+            // Always set wasLastBlock before checking .End to avoid race which may cause data loss
+            var wasLastBlock = block.Next == null;
+            if (index < block.End)
             {
+                _index = index + 1;
+                block.Array[index] = data;
+                return true;
+            }
+
+            if (wasLastBlock)
+            {
+                ThrowInvalidOperationException_PutPassedEndOfBlock();
+            }
+
+            return PutMultiBlock(data);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private bool PutMultiBlock(byte data)
+        {
+            var block = _block;
+            do
+            {
+                block = block.Next;
+                var index = block.Start;
+
+                // Always set wasLastBlock before checking .End to avoid race which may cause data loss
                 var wasLastBlock = block.Next == null;
 
                 if (index < block.End)
@@ -840,27 +843,48 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                     _block = block;
                     _index = index + 1;
                     block.Array[index] = data;
-                    return true;
+                    break;
                 }
-                else if (wasLastBlock)
+                if (wasLastBlock)
                 {
+                    ThrowInvalidOperationException_PutPassedEndOfBlock();
                     return false;
                 }
-                else
-                {
-                    block = block.Next;
-                    index = block.Start;
-                }
-            }
+            } while (true);
+
+            return true;
         }
 
+        private static void ThrowInvalidOperationException_PutPassedEndOfBlock()
+        {
+            throw new InvalidOperationException("Attempted to put passed end of block.");
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetLength(MemoryPoolIterator end)
         {
-            if (IsDefault || end.IsDefault)
+            var block = _block;
+            if (block == null || end.IsDefault)
             {
-                return -1;
+                ThrowInvalidOperationException_GetLengthNullBlock();
             }
 
+            if (block == end._block)
+            {
+                return end._index - _index;
+            }
+
+            return GetLengthMultiBlock(ref end);
+        }
+
+        private static void ThrowInvalidOperationException_GetLengthNullBlock()
+        {
+            throw new InvalidOperationException("Attempted GetLength of non existent block.");
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public int GetLengthMultiBlock(ref MemoryPoolIterator end)
+        {
             var block = _block;
             var index = _index;
             var length = 0;
@@ -888,13 +912,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         public MemoryPoolIterator CopyTo(byte[] array, int offset, int count, out int actual)
         {
-            if (IsDefault)
+            var block = _block;
+            if (block == null)
             {
                 actual = 0;
                 return this;
             }
 
-            var block = _block;
             var index = _index;
             var remaining = count;
             while (true)
@@ -949,17 +973,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         public void CopyFrom(byte[] data, int offset, int count)
         {
-            if (IsDefault)
+            var block = _block;
+            if (block == null)
             {
                 return;
             }
 
-            Debug.Assert(_block != null);
-            Debug.Assert(_block.Next == null);
-            Debug.Assert(_block.End == _index);
+            Debug.Assert(block.Next == null);
+            Debug.Assert(block.End == _index);
 
-            var pool = _block.Pool;
-            var block = _block;
+            var pool = block.Pool;
             var blockIndex = _index;
 
             var bufferIndex = offset;
@@ -996,17 +1019,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         public unsafe void CopyFromAscii(string data)
         {
-            if (IsDefault)
+            var block = _block;
+            if (block == null)
             {
                 return;
             }
 
-            Debug.Assert(_block != null);
-            Debug.Assert(_block.Next == null);
-            Debug.Assert(_block.End == _index);
+            Debug.Assert(block.Next == null);
+            Debug.Assert(block.End == _index);
 
-            var pool = _block.Pool;
-            var block = _block;
+            var pool = block.Pool;
             var blockIndex = _index;
             var length = data.Length;
 
@@ -1059,5 +1081,178 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             _block = block;
             _index = blockIndex;
         }
+
+        public unsafe string GetAsciiString(ref MemoryPoolIterator end)
+        {
+            var block = _block;
+            if (block == null || end.IsDefault)
+            {
+                return null;
+            }
+
+            var length = GetLength(end);
+
+            if (length == 0)
+            {
+                return null;
+            }
+
+            var inputOffset = _index;
+
+            var asciiString = new string('\0', length);
+
+            fixed (char* outputStart = asciiString)
+            {
+                var output = outputStart;
+                var remaining = length;
+
+                var endBlock = end.Block;
+                var endIndex = end.Index;
+
+                var outputOffset = 0;
+                while (true)
+                {
+                    int following = (block != endBlock ? block.End : endIndex) - inputOffset;
+
+                    if (following > 0)
+                    {
+                        if (!AsciiUtilities.TryGetAsciiString(block.DataFixedPtr + inputOffset, output + outputOffset, following))
+                        {
+                            throw BadHttpRequestException.GetException(RequestRejectionReason.NonAsciiOrNullCharactersInInputString);
+                        }
+
+                        outputOffset += following;
+                        remaining -= following;
+                    }
+
+                    if (remaining == 0)
+                    {
+                        break;
+                    }
+
+                    block = block.Next;
+                    inputOffset = block.Start;
+                }
+            }
+
+            return asciiString;
+        }
+
+        public string GetUtf8String(ref MemoryPoolIterator end)
+        {
+            var block = _block;
+            if (block == null || end.IsDefault)
+            {
+                return default(string);
+            }
+
+            var index = _index;
+            if (end.Block == block)
+            {
+                return Encoding.UTF8.GetString(block.Array, index, end.Index - index);
+            }
+
+            var decoder = Encoding.UTF8.GetDecoder();
+
+            var length = GetLength(end);
+            var charLength = length;
+            // Worse case is 1 byte = 1 char
+            var chars = new char[charLength];
+            var charIndex = 0;
+
+            var remaining = length;
+            while (true)
+            {
+                int bytesUsed;
+                int charsUsed;
+                bool completed;
+                var following = block.End - index;
+                if (remaining <= following)
+                {
+                    decoder.Convert(
+                        block.Array,
+                        index,
+                        remaining,
+                        chars,
+                        charIndex,
+                        charLength - charIndex,
+                        true,
+                        out bytesUsed,
+                        out charsUsed,
+                        out completed);
+                    return new string(chars, 0, charIndex + charsUsed);
+                }
+                else if (block.Next == null)
+                {
+                    decoder.Convert(
+                        block.Array,
+                        index,
+                        following,
+                        chars,
+                        charIndex,
+                        charLength - charIndex,
+                        true,
+                        out bytesUsed,
+                        out charsUsed,
+                        out completed);
+                    return new string(chars, 0, charIndex + charsUsed);
+                }
+                else
+                {
+                    decoder.Convert(
+                        block.Array,
+                        index,
+                        following,
+                        chars,
+                        charIndex,
+                        charLength - charIndex,
+                        false,
+                        out bytesUsed,
+                        out charsUsed,
+                        out completed);
+                    charIndex += charsUsed;
+                    remaining -= following;
+                    block = block.Next;
+                    index = block.Start;
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ArraySegment<byte> GetArraySegment(MemoryPoolIterator end)
+        {
+            var block = _block;
+            if (block == null || end.IsDefault)
+            {
+                return default(ArraySegment<byte>);
+            }
+
+            var index = _index;
+            if (end.Block == block)
+            {
+                return new ArraySegment<byte>(block.Array, index, end.Index - index);
+            }
+
+            return GetArraySegmentMultiBlock(ref end);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private ArraySegment<byte> GetArraySegmentMultiBlock(ref MemoryPoolIterator end)
+        {
+            var length = GetLength(end);
+            var array = new byte[length];
+            CopyTo(array, 0, length, out length);
+            return new ArraySegment<byte>(array, 0, length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector<byte> GetVector(byte vectorByte)
+        {
+            // Vector<byte> .ctor doesn't become an intrinsic due to detection issue
+            // However this does cause it to become an intrinsic (with additional multiply and reg->reg copy)
+            // https://github.com/dotnet/coreclr/issues/7459#issuecomment-253965670
+            return Vector.AsVectorByte(new Vector<uint>(vectorByte * 0x01010101u));
+        }
+
     }
 }

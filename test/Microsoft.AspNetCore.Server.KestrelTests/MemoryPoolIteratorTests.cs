@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             for (int i = 0; i < Vector<byte>.Count; i++)
             {
                 Vector<byte> vector = new Vector<byte>(bytes);
-                Assert.Equal(i, MemoryPoolIterator.FindFirstEqualByte(ref vector));
+                Assert.Equal(i, MemoryPoolIterator.LocateFirstFoundByte(vector));
                 bytes[i] = 0;
             }
 
@@ -40,27 +40,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 bytes[i] = 1;
                 Vector<byte> vector = new Vector<byte>(bytes);
-                Assert.Equal(i, MemoryPoolIterator.FindFirstEqualByte(ref vector));
-                bytes[i] = 0;
-            }
-        }
-
-        [Fact]
-        public void TestFindFirstEqualByteSlow()
-        {
-            var bytes = Enumerable.Repeat<byte>(0xff, Vector<byte>.Count).ToArray();
-            for (int i = 0; i < Vector<byte>.Count; i++)
-            {
-                Vector<byte> vector = new Vector<byte>(bytes);
-                Assert.Equal(i, MemoryPoolIterator.FindFirstEqualByteSlow(ref vector));
-                bytes[i] = 0;
-            }
-
-            for (int i = 0; i < Vector<byte>.Count; i++)
-            {
-                bytes[i] = 1;
-                Vector<byte> vector = new Vector<byte>(bytes);
-                Assert.Equal(i, MemoryPoolIterator.FindFirstEqualByteSlow(ref vector));
+                Assert.Equal(i, MemoryPoolIterator.LocateFirstFoundByte(vector));
                 bytes[i] = 0;
             }
         }
@@ -98,21 +78,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             int found = -1;
             if (searchFor.Length == 1)
             {
-                var search0 = new Vector<byte>((byte) searchFor[0]);
-                found = begin.Seek(ref search0);
+                found = begin.Seek((byte)searchFor[0]);
             }
             else if (searchFor.Length == 2)
             {
-                var search0 = new Vector<byte>((byte) searchFor[0]);
-                var search1 = new Vector<byte>((byte) searchFor[1]);
-                found = begin.Seek(ref search0, ref search1);
+                found = begin.Seek((byte)searchFor[0], (byte)searchFor[1]);
             }
             else if (searchFor.Length == 3)
             {
-                var search0 = new Vector<byte>((byte) searchFor[0]);
-                var search1 = new Vector<byte>((byte) searchFor[1]);
-                var search2 = new Vector<byte>((byte) searchFor[2]);
-                found = begin.Seek(ref search0, ref search1, ref search2);
+                found = begin.Seek((byte)searchFor[0], (byte)searchFor[1], (byte)searchFor[2]);
             }
             else
             {
@@ -180,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
 
             // Can't put anything by the end
-            Assert.False(head.Put(0xFF));
+            Assert.ThrowsAny<InvalidOperationException>(() => head.Put(0xFF));
 
             for (var i = 0; i < 4; ++i)
             {
@@ -544,20 +518,25 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public void SkipThrowsWhenSkippingMoreBytesThanAvailableInMultipleBlocks()
         {
             // Arrange
-            var block = _pool.Lease();
-            block.End += 3;
+            var firstBlock = _pool.Lease();
+            firstBlock.End += 3;
 
-            var nextBlock = _pool.Lease();
-            nextBlock.End += 2;
-            block.Next = nextBlock;
+            var middleBlock = _pool.Lease();
+            middleBlock.End += 1;
+            firstBlock.Next = middleBlock;
 
-            var scan = block.GetIterator();
+            var finalBlock = _pool.Lease();
+            finalBlock.End += 2;
+            middleBlock.Next = finalBlock;
+
+            var scan = firstBlock.GetIterator();
 
             // Act/Assert
             Assert.ThrowsAny<InvalidOperationException>(() => scan.Skip(8));
 
-            _pool.Return(block);
-            _pool.Return(nextBlock);
+            _pool.Return(firstBlock);
+            _pool.Return(middleBlock);
+            _pool.Return(finalBlock);
         }
 
         [Theory]
@@ -759,7 +738,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             try
             {
                 // Arrange
-                var seekVector = new Vector<byte>((byte)seek);
 
                 block = _pool.Lease();
                 var chars = input.ToString().ToCharArray().Select(c => (byte)c).ToArray();
@@ -769,7 +747,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 // Act
                 int bytesScanned;
-                var returnValue = scan.Seek(ref seekVector, out bytesScanned, limit);
+                var returnValue = scan.Seek((byte)seek, out bytesScanned, limit);
 
                 // Assert
                 Assert.Equal(expectedBytesScanned, bytesScanned);
@@ -799,8 +777,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             try
             {
                 // Arrange
-                var seekVector = new Vector<byte>((byte)seek);
-
                 var input1 = input.Substring(0, input.Length / 2);
                 block1 = _pool.Lease();
                 var chars1 = input1.ToCharArray().Select(c => (byte)c).ToArray();
@@ -821,7 +797,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 // Act
                 int bytesScanned;
-                var returnValue = scan.Seek(ref seekVector, out bytesScanned, limit);
+                var returnValue = scan.Seek((byte)seek, out bytesScanned, limit);
 
                 // Assert
                 Assert.Equal(expectedBytesScanned, bytesScanned);
@@ -855,9 +831,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             try
             {
                 // Arrange
-                var seekVector = new Vector<byte>((byte)seek);
-                var limitAtVector = new Vector<byte>((byte)limitAt);
-                var afterSeekVector = new Vector<byte>((byte)'B');
+                var afterSeek = (byte)'B';
 
                 block = _pool.Lease();
                 var chars = input.ToCharArray().Select(c => (byte)c).ToArray();
@@ -872,13 +846,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var end = scan1;
 
                 // Act
-                var endReturnValue = end.Seek(ref limitAtVector);
-                var returnValue1 = scan1.Seek(ref seekVector, ref end);
-                var returnValue2_1 = scan2_1.Seek(ref seekVector, ref afterSeekVector, ref end);
-                var returnValue2_2 = scan2_2.Seek(ref afterSeekVector, ref seekVector, ref end);
-                var returnValue3_1 = scan3_1.Seek(ref seekVector, ref afterSeekVector, ref afterSeekVector, ref end);
-                var returnValue3_2 = scan3_2.Seek(ref afterSeekVector, ref seekVector, ref afterSeekVector, ref end);
-                var returnValue3_3 = scan3_3.Seek(ref afterSeekVector, ref afterSeekVector, ref seekVector, ref end);
+                var endReturnValue = end.Seek((byte)limitAt);
+                var returnValue1 = scan1.Seek((byte)seek, ref end);
+                var returnValue2_1 = scan2_1.Seek((byte)seek, afterSeek, ref end);
+                var returnValue2_2 = scan2_2.Seek(afterSeek, (byte)seek, ref end);
+                var returnValue3_1 = scan3_1.Seek((byte)seek, afterSeek, afterSeek, ref end);
+                var returnValue3_2 = scan3_2.Seek(afterSeek, (byte)seek, afterSeek, ref end);
+                var returnValue3_3 = scan3_3.Seek(afterSeek, afterSeek, (byte)seek, ref end);
 
                 // Assert
                 Assert.Equal(input.Contains(limitAt) ? limitAt : -1, endReturnValue);
@@ -922,9 +896,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             try
             {
                 // Arrange
-                var seekVector = new Vector<byte>((byte)seek);
-                var limitAtVector = new Vector<byte>((byte)limitAt);
-                var afterSeekVector = new Vector<byte>((byte)'B');
+                var afterSeek = (byte)'B';
 
                 var input1 = input.Substring(0, input.Length / 2);
                 block1 = _pool.Lease();
@@ -951,13 +923,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var end = scan1;
 
                 // Act
-                var endReturnValue = end.Seek(ref limitAtVector);
-                var returnValue1 = scan1.Seek(ref seekVector, ref end);
-                var returnValue2_1 = scan2_1.Seek(ref seekVector, ref afterSeekVector, ref end);
-                var returnValue2_2 = scan2_2.Seek(ref afterSeekVector, ref seekVector, ref end);
-                var returnValue3_1 = scan3_1.Seek(ref seekVector, ref afterSeekVector, ref afterSeekVector, ref end);
-                var returnValue3_2 = scan3_2.Seek(ref afterSeekVector, ref seekVector, ref afterSeekVector, ref end);
-                var returnValue3_3 = scan3_3.Seek(ref afterSeekVector, ref afterSeekVector, ref seekVector, ref end);
+                var endReturnValue = end.Seek((byte)limitAt);
+                var returnValue1 = scan1.Seek((byte)seek, ref end);
+                var returnValue2_1 = scan2_1.Seek((byte)seek, afterSeek, ref end);
+                var returnValue2_2 = scan2_2.Seek(afterSeek, (byte)seek, ref end);
+                var returnValue3_1 = scan3_1.Seek((byte)seek, afterSeek, afterSeek, ref end);
+                var returnValue3_2 = scan3_2.Seek(afterSeek, (byte)seek, afterSeek, ref end);
+                var returnValue3_3 = scan3_3.Seek(afterSeek, afterSeek, (byte)seek, ref end);
 
                 // Assert
                 Assert.Equal(input.Contains(limitAt) ? limitAt : -1, endReturnValue);
@@ -996,6 +968,216 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 if (block1 != null) _pool.Return(block1);
                 if (emptyBlock != null) _pool.Return(emptyBlock);
                 if (block2 != null) _pool.Return(block2);
+            }
+        }
+
+        [Fact]
+        public void EmptyIteratorBehaviourIsValid()
+        {
+            const byte byteCr = (byte) '\n';
+            ulong longValue;
+            var end = default(MemoryPoolIterator);
+
+            Assert.False(default(MemoryPoolIterator).TryPeekLong(out longValue));
+            Assert.Null(default(MemoryPoolIterator).GetAsciiString(ref end));
+            Assert.Null(default(MemoryPoolIterator).GetUtf8String(ref end));
+            // Assert.Equal doesn't work for default(ArraySegments)
+            Assert.True(default(MemoryPoolIterator).GetArraySegment(end).Equals(default(ArraySegment<byte>)));
+            Assert.True(default(MemoryPoolIterator).IsDefault);
+            Assert.True(default(MemoryPoolIterator).IsEnd);
+            Assert.Equal(default(MemoryPoolIterator).Take(), -1);
+            Assert.Equal(default(MemoryPoolIterator).Peek(), -1);
+            Assert.Equal(default(MemoryPoolIterator).Seek(byteCr), -1);
+            Assert.Equal(default(MemoryPoolIterator).Seek(byteCr, ref end), -1);
+            Assert.Equal(default(MemoryPoolIterator).Seek(byteCr, byteCr), -1);
+            Assert.Equal(default(MemoryPoolIterator).Seek(byteCr, byteCr, byteCr), -1);
+
+            default(MemoryPoolIterator).CopyFrom(default(ArraySegment<byte>));
+            default(MemoryPoolIterator).CopyFromAscii("");
+            Assert.ThrowsAny<InvalidOperationException>(() => default(MemoryPoolIterator).Put(byteCr));
+            Assert.ThrowsAny<InvalidOperationException>(() => default(MemoryPoolIterator).GetLength(end));
+            Assert.ThrowsAny<InvalidOperationException>(() => default(MemoryPoolIterator).Skip(1));
+        }
+
+        [Fact]
+        public void TestGetArraySegment()
+        {
+            MemoryPoolBlock block0 = null;
+            MemoryPoolBlock block1 = null;
+
+            var byteRange = Enumerable.Range(1, 127).Select(x => (byte)x).ToArray();
+            try
+            {
+                // Arrange
+                block0 = _pool.Lease();
+                block1 = _pool.Lease();
+
+                block0.GetIterator().CopyFrom(byteRange);
+                block1.GetIterator().CopyFrom(byteRange);
+
+                block0.Next = block1;
+
+                var begin = block0.GetIterator();
+                var end0 = begin;
+                var end1 = begin;
+
+                end0.Skip(byteRange.Length);
+                end1.Skip(byteRange.Length * 2);
+
+                // Act
+                var as0 = begin.GetArraySegment(end0);
+                var as1 = begin.GetArraySegment(end1);
+
+                // Assert
+                Assert.Equal(as0.Count, byteRange.Length);
+                Assert.Equal(as1.Count, byteRange.Length * 2);
+
+                for (var i = 1; i < byteRange.Length; i++)
+                {
+                    var asb0 = as0.Array[i + as0.Offset];
+                    var asb1 = as1.Array[i + as1.Offset];
+                    var b = byteRange[i];
+
+                    Assert.Equal(asb0, b);
+                    Assert.Equal(asb1, b);
+                }
+
+                for (var i = 1 + byteRange.Length; i < byteRange.Length * 2; i++)
+                {
+                    var asb1 = as1.Array[i + as1.Offset];
+                    var b = byteRange[i - byteRange.Length];
+
+                    Assert.Equal(asb1, b);
+                }
+
+            }
+            finally
+            {
+                if (block0 != null) _pool.Return(block0);
+                if (block1 != null) _pool.Return(block1);
+            }
+        }
+
+        [Fact]
+        public void TestTake()
+        {
+            MemoryPoolBlock block0 = null;
+            MemoryPoolBlock block1 = null;
+            MemoryPoolBlock block2 = null;
+            MemoryPoolBlock emptyBlock0 = null;
+            MemoryPoolBlock emptyBlock1 = null;
+
+            var byteRange = Enumerable.Range(1, 127).Select(x => (byte)x).ToArray();
+            try
+            {
+                // Arrange
+                block0 = _pool.Lease();
+                block1 = _pool.Lease();
+                block2 = _pool.Lease();
+                emptyBlock0 = _pool.Lease();
+                emptyBlock1 = _pool.Lease();
+
+                block0.GetIterator().CopyFrom(byteRange);
+                block1.GetIterator().CopyFrom(byteRange);
+                block2.GetIterator().CopyFrom(byteRange);
+
+                var begin = block0.GetIterator();
+
+                // Single block
+                for (var i = 0; i < byteRange.Length; i++)
+                {
+                    var t = begin.Take();
+                    var b = byteRange[i];
+
+                    Assert.Equal(t, b);
+                }
+
+                Assert.Equal(begin.Take(), -1);
+
+                // Dual block
+                block0.Next = block1;
+                begin = block0.GetIterator();
+
+                for (var block = 0; block < 2; block++)
+                {
+                    for (var i = 0; i < byteRange.Length; i++)
+                    {
+                        var t = begin.Take();
+                        var b = byteRange[i];
+
+                        Assert.Equal(t, b);
+                    }
+                }
+
+                Assert.Equal(begin.Take(), -1);
+
+                // Multi block
+                block1.Next = emptyBlock0;
+                emptyBlock0.Next = emptyBlock1;
+                emptyBlock1.Next = block2;
+                begin = block0.GetIterator();
+
+                for (var block = 0; block < 3; block++)
+                {
+                    for (var i = 0; i < byteRange.Length; i++)
+                    {
+                        var t = begin.Take();
+                        var b = byteRange[i];
+
+                        Assert.Equal(t, b);
+                    }
+                }
+
+                Assert.Equal(begin.Take(), -1);
+            }
+            finally
+            {
+                if (block0 != null) _pool.Return(block0);
+                if (block1 != null) _pool.Return(block1);
+                if (block2 != null) _pool.Return(block2);
+                if (emptyBlock0 != null) _pool.Return(emptyBlock0);
+                if (emptyBlock1 != null) _pool.Return(emptyBlock1);
+            }
+        }
+
+        [Fact]
+        public void TestTakeEmptyBlocks()
+        {
+            MemoryPoolBlock emptyBlock0 = null;
+            MemoryPoolBlock emptyBlock1 = null;
+            MemoryPoolBlock emptyBlock2 = null;
+            try
+            {
+                // Arrange
+                emptyBlock0 = _pool.Lease();
+                emptyBlock1 = _pool.Lease();
+                emptyBlock2 = _pool.Lease();
+
+                var beginEmpty = emptyBlock0.GetIterator();
+
+                // Assert
+
+                // No blocks
+                Assert.Equal(default(MemoryPoolIterator).Take(), -1);
+
+                // Single empty block
+                Assert.Equal(beginEmpty.Take(), -1);
+
+                // Dual empty block
+                emptyBlock0.Next = emptyBlock1;
+                beginEmpty = emptyBlock0.GetIterator();
+                Assert.Equal(beginEmpty.Take(), -1);
+
+                // Multi empty block
+                emptyBlock1.Next = emptyBlock2;
+                beginEmpty = emptyBlock0.GetIterator();
+                Assert.Equal(beginEmpty.Take(), -1);
+            }
+            finally
+            {
+                if (emptyBlock0 != null) _pool.Return(emptyBlock0);
+                if (emptyBlock1 != null) _pool.Return(emptyBlock1);
+                if (emptyBlock2 != null) _pool.Return(emptyBlock2);
             }
         }
 
