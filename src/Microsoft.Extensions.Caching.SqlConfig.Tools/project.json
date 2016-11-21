@@ -4,7 +4,8 @@
     "outputName": "dotnet-sql-cache",
     "emitEntryPoint": true,
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "compile": "../Shared/CommandLineApplicationExtensions.cs"
   },
   "description": "Command line tool to create tables and indexes in a Microsoft SQL Server database for distributed caching.",
   "packOptions": {

@@ -4,6 +4,7 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
@@ -36,11 +37,14 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
                 var description = "Creates table and indexes in Microsoft SQL Server database " +
                     "to be used for distributed caching";
 
-                var app = new CommandLineApplication();
-                app.Name = "dotnet-sql-cache";
-                app.Description = description;
-
+                var app = new CommandLineApplication
+                {
+                    Name = "dotnet sql-cache",
+                    FullName = "SQL Server Cache Command Line Tool",
+                    Description = description,
+                };
                 app.HelpOption("-?|-h|--help");
+                app.VersionOptionFromAssemblyAttributes(typeof(Program).GetTypeInfo().Assembly);
 
                 app.Command("create", command =>
                 {

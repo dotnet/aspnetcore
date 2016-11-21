@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
@@ -61,6 +62,7 @@ Examples:
                 CommandOptionType.NoValue);
             var optVerbose = app.Option("-v|--verbose", "Show verbose output",
                 CommandOptionType.NoValue);
+            app.VersionOptionFromAssemblyAttributes(typeof(Program).GetTypeInfo().Assembly);
 
             app.OnExecute(() =>
             {
