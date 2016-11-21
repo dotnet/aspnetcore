@@ -43,6 +43,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SocialWeather", "samples\So
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.SignalR.Test.Server", "test\Microsoft.AspNetCore.SignalR.Test.Server\Microsoft.AspNetCore.SignalR.Test.Server.xproj", "{A0BF246B-FE7D-4E12-99BF-FFDC131B85D8}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.SignalR.Tests", "test\Microsoft.AspNetCore.SignalR.Tests\Microsoft.AspNetCore.SignalR.Tests.xproj", "{1CE2B3BE-056C-41E3-A5F5-6A1EF1D288BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -105,6 +107,10 @@ Global
 		{A0BF246B-FE7D-4E12-99BF-FFDC131B85D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0BF246B-FE7D-4E12-99BF-FFDC131B85D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0BF246B-FE7D-4E12-99BF-FFDC131B85D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1CE2B3BE-056C-41E3-A5F5-6A1EF1D288BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CE2B3BE-056C-41E3-A5F5-6A1EF1D288BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CE2B3BE-056C-41E3-A5F5-6A1EF1D288BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CE2B3BE-056C-41E3-A5F5-6A1EF1D288BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -124,5 +130,6 @@ Global
 		{300979F6-A02E-407A-B8DF-F6200806C18D} = {C4BC9889-B49F-41B6-806B-F84941B2549B}
 		{8D789F94-CB74-45FD-ACE7-92AF6E55042E} = {C4BC9889-B49F-41B6-806B-F84941B2549B}
 		{A0BF246B-FE7D-4E12-99BF-FFDC131B85D8} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
+		{1CE2B3BE-056C-41E3-A5F5-6A1EF1D288BA} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
 	EndGlobalSection
 EndGlobal
