@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
-    internal class TestClientModelValidatorProvider : CompositeClientModelValidatorProvider
+    public class TestClientModelValidatorProvider : CompositeClientModelValidatorProvider
     {
         // Creates a provider with all the defaults - includes data annotations
         public static IClientModelValidatorProvider CreateDefaultProvider()

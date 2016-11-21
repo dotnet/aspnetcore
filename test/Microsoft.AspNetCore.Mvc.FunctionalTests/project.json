@@ -10,44 +10,80 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "SecurityWebSite": "1.0.0",
-    "ApiExplorerWebSite": "1.0.0",
-    "ApplicationModelWebSite": "1.0.0",
-    "BasicWebSite": "1.0.0",
-    "ControllersFromServicesWebSite": "1.0.0",
-    "CorsWebSite": "1.0.0",
+    "ApiExplorerWebSite": {
+      "target": "project"
+    },
+    "ApplicationModelWebSite": {
+      "target": "project"
+    },
+    "BasicWebSite": {
+      "target": "project"
+    },
+    "ControllersFromServicesWebSite": {
+      "target": "project"
+    },
+    "CorsWebSite": {
+      "target": "project"
+    },
     "dotnet-test-xunit": "2.2.0-*",
-    "ErrorPageMiddlewareWebSite": "1.0.0",
-    "FilesWebSite": "1.0.0",
-    "FiltersWebSite": "1.0.0",
-    "FormatterWebSite": "1.0.0",
-    "HtmlGenerationWebSite": "1.0.0",
+    "ErrorPageMiddlewareWebSite": {
+      "target": "project"
+    },
+    "FilesWebSite": {
+      "target": "project"
+    },
+    "FiltersWebSite": {
+      "target": "project"
+    },
+    "FormatterWebSite": {
+      "target": "project"
+    },
+    "HtmlGenerationWebSite": {
+      "target": "project"
+    },
     "Microsoft.AspNetCore.ChunkingCookieManager.Sources": {
       "version": "1.2.0-*",
       "type": "build"
     },
-    "Microsoft.AspNetCore.Mvc": "1.2.0-*",
-    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.2.0-*",
     "Microsoft.AspNetCore.Mvc.TestCommon": {
       "target": "project",
       "type": "build"
     },
-    "Microsoft.AspNetCore.Mvc.TestConfiguration": "1.0.0",
     "Microsoft.AspNetCore.TestHost": "1.2.0-*",
     "Microsoft.AspNetCore.WebUtilities": "1.2.0-*",
     "Microsoft.DotNet.InternalAbstractions": "1.0.0",
     "Microsoft.Extensions.Configuration.Json": "1.2.0-*",
     "Microsoft.Extensions.Logging.Testing": "1.2.0-*",
-    "MvcSandbox": "1.0.0",
-    "RazorPageExecutionInstrumentationWebSite": "1.0.0",
-    "RazorWebSite": "1.0.0",
-    "RoutingWebSite": "1.0.0",
-    "SimpleWebSite": "1.0.0",
-    "TagHelpersWebSite": "1.0.0",
-    "VersioningWebSite": "1.0.0",
-    "WebApiCompatShimWebSite": "1.0.0",
-    "XmlFormattersWebSite": "1.0.0",
-    "xunit": "2.2.0-*"
+    "MvcSandbox": {
+      "target": "project"
+    },
+    "RazorPageExecutionInstrumentationWebSite": {
+      "target": "project"
+    },
+    "RazorWebSite": {
+      "target": "project"
+    },
+    "RoutingWebSite": {
+      "target": "project"
+    },
+    "SecurityWebSite": {
+      "target": "project"
+    },
+    "SimpleWebSite": {
+      "target": "project"
+    },
+    "TagHelpersWebSite": {
+      "target": "project"
+    },
+    "VersioningWebSite": {
+      "target": "project"
+    },
+    "WebApiCompatShimWebSite": {
+      "target": "project"
+    },
+    "XmlFormattersWebSite": {
+      "target": "project"
+    }
   },
   "testRunner": "xunit",
   "frameworks": {

@@ -3,14 +3,6 @@
     "preserveCompilationContext": true,
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "compile": {
-      "include": [
-        "../Microsoft.AspNetCore.Mvc.Razor.Host.Test/TestFileProvider.cs",
-        "../Microsoft.AspNetCore.Mvc.Razor.Host.Test/TestFileInfo.cs",
-        "../Microsoft.AspNetCore.Mvc.Razor.Host.Test/TestFileTrigger.cs",
-        "../Microsoft.AspNetCore.Mvc.ViewFeatures.Test/Internal/TestViewBufferScope.cs"
-      ]
-    },
     "define": [
       "SOME_TEST_DEFINE"
     ]
@@ -19,28 +11,21 @@
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Http": "1.2.0-*",
     "Microsoft.AspNetCore.Mvc": "1.2.0-*",
-    "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.2.0-*",
-    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.2.0-*",
-    "Microsoft.AspNetCore.Mvc.Razor": "1.2.0-*",
     "Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources": {
       "version": "1.2.0-*",
       "type": "build"
     },
     "Microsoft.AspNetCore.Mvc.TestCommon": {
-      "target": "project",
-      "type": "build"
+      "target": "project"
     },
     "Microsoft.AspNetCore.Mvc.TestDiagnosticListener.Sources": {
       "target": "project",
       "type": "build"
     },
-    "Microsoft.AspNetCore.Testing": "1.2.0-*",
     "Microsoft.DotNet.InternalAbstractions": "1.0.0",
     "Microsoft.Extensions.DependencyInjection": "1.2.0-*",
     "Microsoft.Extensions.DiagnosticAdapter": "1.2.0-*",
-    "Microsoft.Extensions.Logging.Testing": "1.2.0-*",
-    "Moq": "4.6.36-*",
-    "xunit": "2.2.0-*"
+    "Microsoft.Extensions.Logging.Testing": "1.2.0-*"
   },
   "testRunner": "xunit",
   "frameworks": {

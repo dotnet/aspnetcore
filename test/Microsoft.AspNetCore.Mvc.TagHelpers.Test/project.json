@@ -6,12 +6,9 @@
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Http": "1.2.0-*",
-    "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.2.0-*",
-    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.2.0-*",
     "Microsoft.AspNetCore.Mvc.TagHelpers": "1.2.0-*",
     "Microsoft.AspNetCore.Mvc.TestCommon": {
-      "target": "project",
-      "type": "build"
+      "target": "project"
     },
     "Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources": {
       "version": "1.2.0-*",

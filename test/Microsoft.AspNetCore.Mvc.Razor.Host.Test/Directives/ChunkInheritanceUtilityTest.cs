@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO;
 using Microsoft.AspNetCore.Razor.Chunks;
 using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Xunit;
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Directives
 
             // Act
             var chunkTreeResults = utility.GetInheritedChunkTreeResults(
-                PlatformNormalizer.NormalizePath(@"Views\home\Index.cshtml"));
+                Path.Combine("Views", "home", "Index.cshtml"));
 
             // Assert
             Assert.Collection(chunkTreeResults,
@@ -127,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Directives
             var utility = new ChunkInheritanceUtility(host, cache, defaultChunks);
 
             // Act
-            var chunkTrees = utility.GetInheritedChunkTreeResults(PlatformNormalizer.NormalizePath(@"Views\home\Index.cshtml"));
+            var chunkTrees = utility.GetInheritedChunkTreeResults(Path.Combine("Views", "home", "Index.cshtml"));
 
             // Assert
             Assert.Empty(chunkTrees);

@@ -5,11 +5,8 @@
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Mvc": "1.2.0-*",
-    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.2.0-*",
-    "Microsoft.AspNetCore.Mvc.Localization": "1.2.0-*",
     "Microsoft.AspNetCore.Mvc.TestCommon": {
-      "target": "project",
-      "type": "build"
+      "target": "project"
     },
     "Microsoft.AspNetCore.Testing": "1.2.0-*",
     "Microsoft.DotNet.InternalAbstractions": "1.0.0",

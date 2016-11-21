@@ -24,12 +24,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return attr.FormatErrorMessage(field);
         }
 
-        public static string GetMaxLengthErrorMessage(int maximumLength, string field)
-        {
-            var attr = new MaxLengthAttribute(maximumLength);
-            return attr.FormatErrorMessage(field);
-        }
-
         public static string GetRegExErrorMessage(string pattern, string field)
         {
             var attr = new RegularExpressionAttribute(pattern);

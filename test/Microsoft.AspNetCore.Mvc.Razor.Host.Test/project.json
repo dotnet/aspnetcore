@@ -1,16 +1,10 @@
 {
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.AspNetCore.Mvc.Core": "1.2.0-*",
-    "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.2.0-*",
-    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.2.0-*",
     "Microsoft.AspNetCore.Mvc.Razor": "1.2.0-*",
-    "Microsoft.AspNetCore.Mvc.Razor.Host": "1.2.0-*",
     "Microsoft.AspNetCore.Mvc.TestCommon": {
-      "target": "project",
-      "type": "build"
+      "target": "project"
     },
-    "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.2.0-*",
     "Microsoft.AspNetCore.Testing": "1.2.0-*",
     "Microsoft.DotNet.InternalAbstractions": "1.0.0",
     "Moq": "4.6.36-*",

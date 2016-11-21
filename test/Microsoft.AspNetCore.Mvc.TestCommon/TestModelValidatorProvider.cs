@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
-    internal class TestModelValidatorProvider : CompositeModelValidatorProvider
+    public class TestModelValidatorProvider : CompositeModelValidatorProvider
     {
         // Creates a provider with all the defaults - includes data annotations
         public static CompositeModelValidatorProvider CreateDefaultProvider()
