@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Watcher
 
         public static int Main(string[] args)
         {
-            HandleDebugSwitch(ref args);
+            DebugHelper.HandleDebugSwitch(ref args);
             return new Program(PhysicalConsole.Singleton, Directory.GetCurrentDirectory())
                 .RunAsync(args)
                 .GetAwaiter()
@@ -140,18 +140,6 @@ namespace Microsoft.DotNet.Watcher
             }
 
             return LogLevel.Information;
-        }
-
-        [Conditional("DEBUG")]
-        private static void HandleDebugSwitch(ref string[] args)
-        {
-            if (args.Length > 0 && string.Equals("--debug", args[0], StringComparison.OrdinalIgnoreCase))
-            {
-                args = args.Skip(1).ToArray();
-                Console.WriteLine("Waiting for debugger to attach. Press ENTER to continue");
-                Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
-                Console.ReadLine();
-            }
         }
     }
 }

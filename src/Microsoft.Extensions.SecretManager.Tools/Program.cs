@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.SecretManager.Tools.Internal;
 using Microsoft.Extensions.Tools.Internal;
@@ -58,20 +57,8 @@ namespace Microsoft.Extensions.SecretManager.Tools
             }
             catch (Exception exception)
             {
-                if (exception is GracefulException)
-                {
-                    if (exception.InnerException != null)
-                    {
-                        Logger.LogInformation(exception.InnerException.Message);
-                    }
-
-                    Logger.LogError(exception.Message);
-                }
-                else
-                {
-                    Logger.LogDebug(exception.ToString());
-                    Logger.LogCritical(Resources.Error_Command_Failed, exception.Message);
-                }
+                Logger.LogDebug(exception.ToString());
+                Logger.LogCritical(Resources.Error_Command_Failed, exception.Message);
                 returnCode = 1;
                 return false;
             }
@@ -96,7 +83,17 @@ namespace Microsoft.Extensions.SecretManager.Tools
                 CommandOutputProvider.LogLevel = LogLevel.Debug;
             }
 
-            var userSecretsId = ResolveId(options);
+            string userSecretsId;
+            try
+            {
+                userSecretsId = ResolveId(options);
+            }
+            catch (Exception ex) when (ex is InvalidOperationException || ex is FileNotFoundException)
+            {
+                _logger.LogError(ex.Message);
+                return 1;
+            }
+
             var store = new SecretsStore(userSecretsId, Logger);
             var context = new Internal.CommandContext(store, Logger, _console);
             options.Command.Execute(context);

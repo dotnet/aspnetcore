@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Configuration.UserSecrets.Tests;
 using Microsoft.Extensions.Logging;
@@ -44,8 +43,8 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             var project = Path.Combine(_fixture.CreateProject(id), "TestProject.csproj");
             var secretManager = CreateProgram();
 
-            var ex = Assert.Throws<GracefulException>(() => secretManager.RunInternal("list", "-p", project));
-            Assert.Equal(Resources.FormatError_ProjectMissingId(project), ex.Message);
+            secretManager.RunInternal("list", "-p", project);
+            Assert.Contains(Resources.FormatError_ProjectMissingId(project), _logger.Messages);
         }
 
         [Fact]
@@ -54,8 +53,8 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             var project = Path.Combine(_fixture.CreateProject("<"), "TestProject.csproj");
             var secretManager = CreateProgram();
 
-            var ex = Assert.Throws<GracefulException>(() => secretManager.RunInternal("list", "-p", project));
-            Assert.Equal(Resources.FormatError_ProjectFailedToLoad(project), ex.Message);
+            secretManager.RunInternal("list", "-p", project);
+            Assert.Contains(Resources.FormatError_ProjectFailedToLoad(project), _logger.Messages);
         }
 
         [Fact]
@@ -64,8 +63,8 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             var projectPath = Path.Combine(_fixture.GetTempSecretProject(), "does_not_exist", "TestProject.csproj");
             var secretManager = CreateProgram();
 
-            var ex = Assert.Throws<GracefulException>(() => secretManager.RunInternal("list", "--project", projectPath));
-            Assert.Equal(Resources.FormatError_ProjectPath_NotFound(projectPath), ex.Message);
+            secretManager.RunInternal("list", "--project", projectPath);
+            Assert.Contains(Resources.FormatError_ProjectPath_NotFound(projectPath), _logger.Messages);
         }
 
         [Fact]

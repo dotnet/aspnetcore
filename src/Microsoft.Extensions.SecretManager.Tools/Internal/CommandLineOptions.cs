@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Reflection;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -37,7 +36,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
             var optionProject = app.Option("-p|--project <PROJECT>", "Path to project, default is current directory",
                 CommandOptionType.SingleValue, inherited: true);
 
-            var optionConfig = app.Option("-c|--configuration <CONFIGURATION>", $"The project configuration to use. Defaults to {Constants.DefaultConfiguration}",
+            var optionConfig = app.Option("-c|--configuration <CONFIGURATION>", $"The project configuration to use. Defaults to 'Debug'",
                 CommandOptionType.SingleValue, inherited: true);
 
             // the escape hatch if project evaluation fails, or if users want to alter a secret store other than the one
@@ -47,8 +46,8 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
 
             var options = new CommandLineOptions();
 
-            app.Command("set", c => SetCommand.Configure(c, options));
-            app.Command("remove", c => RemoveCommand.Configure(c, options));
+            app.Command("set", c => SetCommand.Configure(c, options, console));
+            app.Command("remove", c => RemoveCommand.Configure(c, options, console));
             app.Command("list", c => ListCommand.Configure(c, options));
             app.Command("clear", c => ClearCommand.Configure(c, options));
 

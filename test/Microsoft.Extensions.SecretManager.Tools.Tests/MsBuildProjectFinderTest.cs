@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.SecretManager.Tools.Internal;
 using Xunit;
 
@@ -34,7 +33,7 @@ namespace Microsoft.Extensions.SecretsManager.Tools.Tests
             {
                 var finder = new MsBuildProjectFinder(files.Root);
 
-                Assert.Throws<GracefulException>(() => finder.FindMsBuildProject(null));
+                Assert.Throws<FileNotFoundException>(() => finder.FindMsBuildProject(null));
             }
         }
 
@@ -46,7 +45,7 @@ namespace Microsoft.Extensions.SecretsManager.Tools.Tests
                 var finder = new MsBuildProjectFinder(files.Root);
                 files.Add("test.xproj", "");
 
-                Assert.Throws<GracefulException>(() => finder.FindMsBuildProject(null));
+                Assert.Throws<FileNotFoundException>(() => finder.FindMsBuildProject(null));
             }
         }
 
@@ -59,7 +58,7 @@ namespace Microsoft.Extensions.SecretsManager.Tools.Tests
                 files.Add("Test2.csproj", "");
                 var finder = new MsBuildProjectFinder(files.Root);
 
-                Assert.Throws<GracefulException>(() => finder.FindMsBuildProject(null));
+                Assert.Throws<FileNotFoundException>(() => finder.FindMsBuildProject(null));
             }
         }
 
@@ -70,7 +69,7 @@ namespace Microsoft.Extensions.SecretsManager.Tools.Tests
             {
                 var finder = new MsBuildProjectFinder(files.Root);
 
-                Assert.Throws<GracefulException>(() => finder.FindMsBuildProject("test.csproj"));
+                Assert.Throws<FileNotFoundException>(() => finder.FindMsBuildProject("test.csproj"));
             }
         }
 
@@ -80,7 +79,7 @@ namespace Microsoft.Extensions.SecretsManager.Tools.Tests
             var files = new TemporaryFileProvider();
             var finder = new MsBuildProjectFinder(files.Root);
             files.Dispose();
-            Assert.Throws<GracefulException>(() => finder.FindMsBuildProject(null));
+            Assert.Throws<FileNotFoundException>(() => finder.FindMsBuildProject(null));
         }
     }
 }

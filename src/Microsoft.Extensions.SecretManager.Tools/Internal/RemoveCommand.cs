@@ -1,9 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.DotNet.Cli.Utils;
+using System;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
 {
@@ -11,7 +12,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
     {
         private readonly string _keyName;
 
-        public static void Configure(CommandLineApplication command, CommandLineOptions options)
+        public static void Configure(CommandLineApplication command, CommandLineOptions options, IConsole console)
         {
             command.Description = "Removes the specified user secret";
             command.HelpOption();
@@ -21,10 +22,12 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
             {
                 if (keyArg.Value == null)
                 {
-                    throw new GracefulException("Missing parameter value for 'name'.\nUse the '--help' flag to see info.");
+                    console.Error.WriteLine(Resources.FormatError_MissingArgument("name").Red());
+                    return 1;
                 }
 
                 options.Command = new RemoveCommand(keyArg.Value);
+                return 0;
             });
         }
 

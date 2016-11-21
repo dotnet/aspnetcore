@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
                 In = new StringReader(input)
             };
             var secretStore = new TestSecretsStore();
-            var command = new SetCommand();
+            var command = new SetCommand.FromStdInStrategy();
 
             command.Execute(new CommandContext(secretStore, NullLogger.Instance, testConsole));
 
@@ -64,7 +64,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
                 In = new StringReader(input)
             };
             var secretStore = new TestSecretsStore();
-            var command = new SetCommand();
+            var command = new SetCommand.FromStdInStrategy();
 
             command.Execute(new CommandContext(secretStore, NullLogger.Instance, testConsole));
 
@@ -83,12 +83,8 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
                 IsInputRedirected = true,
                 In = new StringReader("")
             };
-            var secretStore = new TestSecretsStore();
-            var command = new SetCommand("key", null);
-
-            var ex = Assert.Throws<Microsoft.DotNet.Cli.Utils.GracefulException>(
-                () => command.Execute(new CommandContext(secretStore, NullLogger.Instance, testConsole)));
-            Assert.Equal(Resources.FormatError_MissingArgument("value"), ex.Message);
+            var options = CommandLineOptions.Parse(new [] { "set", "key", "value" }, testConsole);
+            Assert.IsType<SetCommand.ForOneValueStrategy>(options.Command);
         }
 
         private class TestSecretsStore : SecretsStore

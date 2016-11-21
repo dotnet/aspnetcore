@@ -3,11 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
 {
@@ -24,7 +25,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
             _logger = logger;
         }
 
-        public string Resolve(string project, string configuration = Constants.DefaultConfiguration)
+        public string Resolve(string project, string configuration = "Debug")
         {
             var finder = new MsBuildProjectFinder(_workingDirectory);
             var projectFile = finder.FindMsBuildProject(project);
@@ -35,32 +36,37 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
             var outputFile = Path.GetTempFileName();
             _tempFiles.Add(outputFile);
 
-            var commandOutput = new List<string>();
-            var commandResult = Command.CreateDotNet("msbuild",
-                new[] {
-                    targetFile,
-                    "/nologo",
-                    "/t:_FindUserSecretsProperty",
-                    $"/p:Project={projectFile}",
-                    $"/p:OutputFile={outputFile}",
-                    $"/p:Configuration={configuration}"
-                })
-                .CaptureStdErr()
-                .CaptureStdOut()
-                .OnErrorLine(l => commandOutput.Add(l))
-                .OnOutputLine(l => commandOutput.Add(l))
-                .Execute();
-
-            if (commandResult.ExitCode != 0)
+            var args = new[]
             {
-                _logger.LogDebug(string.Join(Environment.NewLine, commandOutput));
-                throw new GracefulException(Resources.FormatError_ProjectFailedToLoad(projectFile));
+                "msbuild",
+                targetFile,
+                "/nologo",
+                "/t:_FindUserSecretsProperty",
+                $"/p:Project={projectFile}",
+                $"/p:OutputFile={outputFile}",
+                $"/p:Configuration={configuration}"
+            };
+            var psi = new ProcessStartInfo
+            {
+                FileName = DotNetMuxer.MuxerPathOrDefault(),
+                Arguments = ArgumentEscaper.EscapeAndConcatenate(args),
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+            var process = Process.Start(psi);
+            process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                _logger.LogDebug(process.StandardOutput.ReadToEnd());
+                _logger.LogDebug(process.StandardError.ReadToEnd());
+                throw new InvalidOperationException(Resources.FormatError_ProjectFailedToLoad(projectFile));
             }
 
             var id = File.ReadAllText(outputFile)?.Trim();
             if (string.IsNullOrEmpty(id))
             {
-                throw new GracefulException(Resources.FormatError_ProjectMissingId(projectFile));
+                throw new InvalidOperationException(Resources.FormatError_ProjectMissingId(projectFile));
             }
 
             return id;
