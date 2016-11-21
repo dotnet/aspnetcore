@@ -30,5 +30,5 @@ To edit the policy, please see app.UseCors() method in the Startup.cs file of Sa
 
 If using Visual Studio to launch the request origin:
 Open Visual Studio and in the launchSettings.json file for the SampleOrigin project, change the launchUrl under SampleOrigin to 
-http://origin.example.com:8080. Using the dropdown near the Start button, choose SampleOrigin before pressing Start to ensure that it uses Kestrel 
+http://origin.example.com:5001. Using the dropdown near the Start button, choose SampleOrigin before pressing Start to ensure that it uses Kestrel 
 and not IIS Express. 
