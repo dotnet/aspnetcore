@@ -10,11 +10,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Microsoft.Extensions.Internal;
 using Moq;
 using Xunit;
 using Xunit.Sdk;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {

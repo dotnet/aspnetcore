@@ -774,10 +774,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int LocateFirstFoundByte(Vector<byte> byteEquals)
         {
-            var vector64 = Vector.AsVectorInt64(byteEquals);
-            long longValue = 0;
+            var vector64 = Vector.AsVectorUInt64(byteEquals);
+            ulong longValue = 0;
             var i = 0;
-            for (; i < Vector<long>.Count; i++)
+            // Pattern unrolled by jit https://github.com/dotnet/coreclr/pull/8001
+            for (; i < Vector<ulong>.Count; i++)
             {
                 longValue = vector64[i];
                 if (longValue == 0) continue;
@@ -785,7 +786,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
 
             // Flag least significant power of two bit
-            var powerOfTwoFlag = (ulong)(longValue ^ (longValue - 1));
+            var powerOfTwoFlag = (longValue ^ (longValue - 1));
             // Shift all powers of two into the high byte and extract
             var foundByteIndex = (int)((powerOfTwoFlag * _xorPowerOfTwoToHighByte) >> 57);
             // Single LEA instruction with jitted const (using function result)
@@ -803,7 +804,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             var block = _block;
             if (block == null)
             {
-                return false;
+                ThrowInvalidOperationException_PutPassedEndOfBlock();
             }
 
             var index = _index;
@@ -817,7 +818,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 return true;
             }
 
-            return wasLastBlock ? false : PutMultiBlock(data);
+            if (wasLastBlock)
+            {
+                ThrowInvalidOperationException_PutPassedEndOfBlock();
+            }
+
+            return PutMultiBlock(data);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -841,11 +847,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 }
                 if (wasLastBlock)
                 {
+                    ThrowInvalidOperationException_PutPassedEndOfBlock();
                     return false;
                 }
             } while (true);
 
             return true;
+        }
+
+        private static void ThrowInvalidOperationException_PutPassedEndOfBlock()
+        {
+            throw new InvalidOperationException("Attempted to put passed end of block.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -854,7 +866,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             var block = _block;
             if (block == null || end.IsDefault)
             {
-                return -1;
+                ThrowInvalidOperationException_GetLengthNullBlock();
             }
 
             if (block == end._block)
@@ -863,6 +875,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
 
             return GetLengthMultiBlock(ref end);
+        }
+
+        private static void ThrowInvalidOperationException_GetLengthNullBlock()
+        {
+            throw new InvalidOperationException("Attempted GetLength of non existent block.");
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -1234,7 +1251,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             // Vector<byte> .ctor doesn't become an intrinsic due to detection issue
             // However this does cause it to become an intrinsic (with additional multiply and reg->reg copy)
             // https://github.com/dotnet/coreclr/issues/7459#issuecomment-253965670
-            return Vector.AsVectorByte(new Vector<ulong>(vectorByte * 0x0101010101010101ul));
+            return Vector.AsVectorByte(new Vector<uint>(vectorByte * 0x01010101u));
         }
 
     }

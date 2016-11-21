@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
 
             // Can't put anything by the end
-            Assert.False(head.Put(0xFF));
+            Assert.ThrowsAny<InvalidOperationException>(() => head.Put(0xFF));
 
             for (var i = 0; i < 4; ++i)
             {
@@ -979,7 +979,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var end = default(MemoryPoolIterator);
 
             Assert.False(default(MemoryPoolIterator).TryPeekLong(out longValue));
-            Assert.False(default(MemoryPoolIterator).Put(byteCr));
             Assert.Null(default(MemoryPoolIterator).GetAsciiString(ref end));
             Assert.Null(default(MemoryPoolIterator).GetUtf8String(ref end));
             // Assert.Equal doesn't work for default(ArraySegments)
@@ -995,7 +994,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             default(MemoryPoolIterator).CopyFrom(default(ArraySegment<byte>));
             default(MemoryPoolIterator).CopyFromAscii("");
-            Assert.Equal(default(MemoryPoolIterator).GetLength(end), -1);
+            Assert.ThrowsAny<InvalidOperationException>(() => default(MemoryPoolIterator).Put(byteCr));
+            Assert.ThrowsAny<InvalidOperationException>(() => default(MemoryPoolIterator).GetLength(end));
             Assert.ThrowsAny<InvalidOperationException>(() => default(MemoryPoolIterator).Skip(1));
         }
 

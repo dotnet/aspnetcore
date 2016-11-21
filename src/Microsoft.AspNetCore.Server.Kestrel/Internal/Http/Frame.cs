@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
     public abstract partial class Frame : IFrameControl
     {
-        // byte consts don't have a data type annotation so we pre-cast them
+        // byte types don't have a data type annotation so we pre-cast them; to avoid in-place casts
         private const byte ByteCR = (byte)'\r';
         private const byte ByteLF = (byte)'\n';
         private const byte ByteColon = (byte)':';
