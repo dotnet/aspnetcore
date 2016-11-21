@@ -12,9 +12,8 @@ namespace SampleOrigin
         {
             var host = new WebHostBuilder()
                 .UseKestrel()
-                .UseUrls("http://*:8080")
+                .UseUrls("http://*:5001")
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,10 +20,21 @@ namespace SampleDestination
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole();
-            app.UseCors(policy => policy.WithOrigins("http://origin.example.com:8080"));
+
+            app.UseCors(policy => policy               
+                .WithOrigins("http://origin.example.com:5001")              
+                .WithMethods("PUT")
+                .WithHeaders("Content-Length"));
+
             app.Run(async context =>
             {
-                await context.Response.WriteAsync("Status code of your request: " + context.Response.StatusCode.ToString());
+                var responseHeaders = context.Response.Headers;
+                foreach (var responseHeader in responseHeaders)
+                {
+                    await context.Response.WriteAsync("\n"+responseHeader.Key+": "+responseHeader.Value);
+                }
+
+                await context.Response.WriteAsync("\nStatus code of your request: " + context.Response.StatusCode.ToString());
             });
         }
     }

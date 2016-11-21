@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// </summary>
         /// <param name="options">The option model representing <see cref="CorsOptions"/>.</param>
         public CorsService(IOptions<CorsOptions> options)
-            :this(options, loggerFactory: null)
+            : this(options, loggerFactory: null)
         {
         }
 
@@ -103,14 +103,14 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 return;
             }
 
+            _logger?.RequestHasOriginHeader(origin);
             if (!policy.AllowAnyOrigin && !policy.Origins.Contains(origin))
             {
-                _logger?.RequestHasOriginHeader();
-                _logger?.PolicyFailure($"Request origin {origin} does not have permission to access the resource.");
+                _logger?.PolicyFailure();
+                _logger?.OriginNotAllowed(origin);
                 return;
             }
 
-            _logger?.RequestHasOriginHeader();
             AddOriginToResult(origin, policy, result);
             result.SupportsCredentials = policy.SupportsCredentials;
             AddHeaderValues(result.AllowedExposedHeaders, policy.ExposedHeaders);
@@ -126,14 +126,14 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 return;
             }
 
+            _logger?.RequestHasOriginHeader(origin);
             if (!policy.AllowAnyOrigin && !policy.Origins.Contains(origin))
             {
-                _logger?.RequestHasOriginHeader();
-                _logger?.PolicyFailure($"Request origin {origin} does not have permission to access the resource.");
+                _logger?.PolicyFailure();
+                _logger?.OriginNotAllowed(origin);
                 return;
             }
 
-            _logger?.RequestHasOriginHeader();
             var accessControlRequestMethod = context.Request.Headers[CorsConstants.AccessControlRequestMethod];
             if (StringValues.IsNullOrEmpty(accessControlRequestMethod))
             {
@@ -158,18 +158,25 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
                 if (!found)
                 {
-                    _logger?.PolicyFailure($"Request method {accessControlRequestMethod} not allowed in CORS policy.");
-                    return;                    
+                    _logger?.PolicyFailure();
+                    _logger?.AccessControlMethodNotAllowed(accessControlRequestMethod);
+                    return;
                 }
             }
 
             if (!policy.AllowAnyHeader &&
-                requestHeaders != null &&
-                !requestHeaders.All(header => CorsConstants.SimpleRequestHeaders.Contains(header, StringComparer.OrdinalIgnoreCase) ||
-                                              policy.Headers.Contains(header, StringComparer.OrdinalIgnoreCase)))
+                requestHeaders != null)
             {
-                _logger?.PolicyFailure($"One or more request header(s) not allowed in CORS policy.");
-                return;
+                foreach (var requestHeader in requestHeaders)
+                {
+                    if (!CorsConstants.SimpleRequestHeaders.Contains(requestHeader, StringComparer.OrdinalIgnoreCase) &&
+                                                  !policy.Headers.Contains(requestHeader, StringComparer.OrdinalIgnoreCase))
+                    {
+                        _logger?.PolicyFailure();
+                        _logger?.RequestHeaderNotAllowed(requestHeader);
+                        return;
+                    }
+                }
             }
 
             AddOriginToResult(origin, policy, result);

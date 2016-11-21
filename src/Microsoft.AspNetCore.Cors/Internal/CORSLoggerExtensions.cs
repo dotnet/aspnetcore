@@ -9,22 +9,25 @@ namespace Microsoft.AspNetCore.Cors.Internal
     internal static class CORSLoggerExtensions
     {
         private static readonly Action<ILogger, Exception> _isPreflightRequest;
-        private static readonly Action<ILogger, Exception> _requestHasOriginHeader;
+        private static readonly Action<ILogger, string, Exception> _requestHasOriginHeader;
         private static readonly Action<ILogger, Exception> _requestDoesNotHaveOriginHeader;
         private static readonly Action<ILogger, Exception> _policySuccess;
-        private static readonly Action<ILogger, string, Exception> _policyFailure;
+        private static readonly Action<ILogger, Exception> _policyFailure;
+        private static readonly Action<ILogger, string, Exception> _originNotAllowed;
+        private static readonly Action<ILogger, string, Exception> _accessControlMethodNotAllowed;
+        private static readonly Action<ILogger, string, Exception> _requestHeaderNotAllowed;
 
         static CORSLoggerExtensions()
         {
             _isPreflightRequest = LoggerMessage.Define(
                 LogLevel.Debug,
                 1,
-                "This is a preflight request.");
+                "The request is a preflight request.");
 
-            _requestHasOriginHeader = LoggerMessage.Define(
+            _requestHasOriginHeader = LoggerMessage.Define<string>(
                 LogLevel.Debug,
                 2,
-                "The request has an origin header.");
+                "The request has an origin header: '{origin}'.");
 
             _requestDoesNotHaveOriginHeader = LoggerMessage.Define(
                 LogLevel.Debug,
@@ -36,10 +39,25 @@ namespace Microsoft.AspNetCore.Cors.Internal
                 4,
                 "Policy execution successful.");
 
-            _policyFailure = LoggerMessage.Define<string>(
+            _policyFailure = LoggerMessage.Define(
                 LogLevel.Information,
                 5,
-                "Policy execution failed. {FailureReason}");
+                "Policy execution failed.");
+
+            _originNotAllowed = LoggerMessage.Define<string>(
+                LogLevel.Information,
+                6,
+                "Request origin {origin} does not have permission to access the resource.");
+
+            _accessControlMethodNotAllowed = LoggerMessage.Define<string>(
+                LogLevel.Information,
+                7,
+                "Request method {accessControlRequestMethod} not allowed in CORS policy.");
+
+            _requestHeaderNotAllowed = LoggerMessage.Define<string>(
+                LogLevel.Information,
+                8,
+                "Request header '{requestHeader}' not allowed in CORS policy.");
         }
 
         public static void IsPreflightRequest(this ILogger logger)
@@ -47,9 +65,9 @@ namespace Microsoft.AspNetCore.Cors.Internal
             _isPreflightRequest(logger, null);
         }
 
-        public static void RequestHasOriginHeader(this ILogger logger)
+        public static void RequestHasOriginHeader(this ILogger logger, string origin)
         {
-            _requestHasOriginHeader(logger, null);
+            _requestHasOriginHeader(logger, origin, null);
         }
 
         public static void RequestDoesNotHaveOriginHeader(this ILogger logger)
@@ -62,9 +80,24 @@ namespace Microsoft.AspNetCore.Cors.Internal
             _policySuccess(logger, null);
         }
 
-        public static void PolicyFailure(this ILogger logger, string failureReason)
+        public static void PolicyFailure(this ILogger logger)
         {
-            _policyFailure(logger, failureReason, null);
+            _policyFailure(logger, null);
+        }
+
+        public static void OriginNotAllowed(this ILogger logger, string origin)
+        {
+            _originNotAllowed(logger, origin, null);
+        }
+
+        public static void AccessControlMethodNotAllowed(this ILogger logger, string accessControlMethod)
+        {
+            _accessControlMethodNotAllowed(logger, accessControlMethod, null);
+        }
+
+        public static void RequestHeaderNotAllowed(this ILogger logger, string requestHeader)
+        {
+            _requestHeaderNotAllowed(logger, requestHeader, null);
         }
     }
 }
