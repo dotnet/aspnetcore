@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var initialError = new RazorError("Initial test error", SourceLocation.Zero, length: 1);
             var expectedRewritingError = new RazorError(
                 LegacyResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper("form"),
-                new SourceLocation(Environment.NewLine.Length + 32, 2, 0),
+                new SourceLocation(Environment.NewLine.Length * 2 + 30, 2, 1),
                 length: 4);
             var erroredOriginalTree = RazorSyntaxTree.Create(originalTree.Root, new[] { initialError });
 
