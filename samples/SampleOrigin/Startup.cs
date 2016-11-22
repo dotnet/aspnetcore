@@ -18,19 +18,13 @@ namespace SampleOrigin
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole();
-            app.Run( context =>
-            {
-                var fileInfoProvider = env.WebRootFileProvider;
-                var fileInfo = fileInfoProvider.GetFileInfo("/Index.html");
-                context.Response.Headers.Add("Content-Type", "text/html; charset=utf-8");
-                return context.Response.SendFileAsync(fileInfo);
-            });
-
-            app.Run(async context =>
-            {
-                await context.Response.WriteAsync("Status code of your request: " + context.Response.StatusCode.ToString());
-            });
-
+            app.Run(context =>
+           {
+               var fileInfoProvider = env.WebRootFileProvider;
+               var fileInfo = fileInfoProvider.GetFileInfo("/Index.html");
+               context.Response.ContentType = "text/html";
+               return context.Response.SendFileAsync(fileInfo);
+           });
         }
     }
 }

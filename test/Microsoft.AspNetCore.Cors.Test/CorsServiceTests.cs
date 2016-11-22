@@ -236,32 +236,32 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 {
                     {
                         new LogData {
-                            origin = "http://example.com",
-                            method = "PUT",
-                            headers = null,
-                            originLogMessage = "The request has an origin header: 'http://example.com'.",
-                            policyLogMessage = "Policy execution failed.",
-                            failureReason = "Request origin http://example.com does not have permission to access the resource."
+                            Origin = "http://example.com",
+                            Method = "PUT",
+                            Headers = null,
+                            OriginLogMessage = "The request has an origin header: 'http://example.com'.",
+                            PolicyLogMessage = "Policy execution failed.",
+                            FailureReason = "Request origin http://example.com does not have permission to access the resource."
                         }
                     },
                     {
                         new LogData {
-                            origin = "http://allowed.example.com",
-                            method = "DELETE",
-                            headers = null,
-                            originLogMessage = "The request has an origin header: 'http://allowed.example.com'.",
-                            policyLogMessage = "Policy execution failed.",
-                            failureReason = "Request method DELETE not allowed in CORS policy."
+                            Origin = "http://allowed.example.com",
+                            Method = "DELETE",
+                            Headers = null,
+                            OriginLogMessage = "The request has an origin header: 'http://allowed.example.com'.",
+                            PolicyLogMessage = "Policy execution failed.",
+                            FailureReason = "Request method DELETE not allowed in CORS policy."
                         }
                     },
                     {
                         new LogData {
-                            origin = "http://allowed.example.com",
-                            method = "PUT",
-                            headers = new[] { "test" },
-                            originLogMessage = "The request has an origin header: 'http://allowed.example.com'.",
-                            policyLogMessage = "Policy execution failed.",
-                            failureReason = "Request header 'test' not allowed in CORS policy."
+                            Origin = "http://allowed.example.com",
+                            Method = "PUT",
+                            Headers = new[] { "test" },
+                            OriginLogMessage = "The request has an origin header: 'http://allowed.example.com'.",
+                            PolicyLogMessage = "Policy execution failed.",
+                            FailureReason = "Request header 'test' not allowed in CORS policy."
                         }
                     },
                 };
@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             var corsService = new CorsService(new TestCorsOptions(), loggerFactory);
-            var requestContext = GetHttpContext(method: "OPTIONS", origin: logData.origin, accessControlRequestMethod: logData.method, accessControlRequestHeaders: logData.headers);
+            var requestContext = GetHttpContext(method: "OPTIONS", origin: logData.Origin, accessControlRequestMethod: logData.Method, accessControlRequestHeaders: logData.Headers);
             var policy = new CorsPolicy();
             policy.Origins.Add("http://allowed.example.com");
             policy.Methods.Add("PUT");
@@ -285,9 +285,9 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var result = corsService.EvaluatePolicy(requestContext, policy);
 
             Assert.Equal("The request is a preflight request.", sink.Writes[0].State.ToString());
-            Assert.Equal(logData.originLogMessage, sink.Writes[1].State.ToString());
-            Assert.Equal(logData.policyLogMessage, sink.Writes[2].State.ToString());
-            Assert.Equal(logData.failureReason, sink.Writes[3].State.ToString());
+            Assert.Equal(logData.OriginLogMessage, sink.Writes[1].State.ToString());
+            Assert.Equal(logData.PolicyLogMessage, sink.Writes[2].State.ToString());
+            Assert.Equal(logData.FailureReason, sink.Writes[3].State.ToString());
         }
 
         [Fact]
@@ -1071,14 +1071,14 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             return context;
         }
 
-        public struct LogData
+        public class LogData
         {
-            public string origin { get; set; }
-            public string method { get; set; }
-            public string[] headers { get; set; }
-            public string originLogMessage { get; set; }
-            public string policyLogMessage { get; set; }
-            public string failureReason { get; set; }
+            public string Origin { get; set; }
+            public string Method { get; set; }
+            public string[] Headers { get; set; }
+            public string OriginLogMessage { get; set; }
+            public string PolicyLogMessage { get; set; }
+            public string FailureReason { get; set; }
         }
     }
 }

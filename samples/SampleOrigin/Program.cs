@@ -20,5 +20,4 @@ namespace SampleOrigin
             host.Run();
         }
     }
-
 }
