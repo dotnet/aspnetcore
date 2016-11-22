@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.AspNetCore.Server.IntegrationTesting": "0.2.0-*",
+    "Microsoft.AspNetCore.Server.IntegrationTesting": "0.3.0-*",
     "Microsoft.AspNetCore.Hosting": "1.2.0-*",
     "Microsoft.Extensions.Logging.Console": "1.2.0-*",
     "xunit": "2.2.0-*"
