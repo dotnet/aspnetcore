@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
@@ -84,6 +82,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         public override void GenerateEndParentChunk(Block target, ChunkGeneratorContext context)
         {
             //context.ChunkTreeBuilder.EndParentChunk();
+        }
+
+        public override void AcceptStart(ParserVisitor visitor, Block block)
+        {
+        }
+
+        public override void AcceptEnd(ParserVisitor visitor, Block block)
+        {
         }
     }
 }

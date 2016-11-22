@@ -42,10 +42,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             {
                 node = Pop();
             }
-            
+
             return node;
         }
-        
+
         public override RazorIRNode Pop()
         {
             if (_depth == 0)

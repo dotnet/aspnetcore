@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
     public class UsingStatementIRNode : RazorIRNode
     {
-        public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
+        public override IList<RazorIRNode> Children { get; } = EmptyArray;
 
         public override RazorIRNode Parent { get; set; }
 

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
     {
         public string Content { get; set; }
 
-        public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
+        public override IList<RazorIRNode> Children { get; } = EmptyArray;
 
         public override RazorIRNode Parent { get; set; }
 

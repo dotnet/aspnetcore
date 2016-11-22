@@ -86,6 +86,60 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             }
         }
 
+        public static void ConditionalAttribute(
+            string prefix,
+            string name,
+            string suffix,
+            RazorIRNode node,
+            params Action<RazorIRNode>[] valueValidators)
+        {
+            var attribute = Assert.IsType<HtmlAttributeIRNode>(node);
+
+            try
+            {
+                Assert.Equal(prefix, attribute.Prefix);
+                Assert.Equal(name, attribute.Name);
+                Assert.Equal(suffix, attribute.Suffix);
+
+                Children(attribute.Value, valueValidators);
+            }
+            catch (XunitException e)
+            {
+                throw new IRAssertException(attribute, attribute.Value.Children, e.Message, e);
+            }
+        }
+
+        public static void CSharpAttributeValue(string prefix, string expected, RazorIRNode node)
+        {
+            var attributeValue = Assert.IsType<CSharpAttributeValueIRNode>(node);
+
+            try
+            {
+                Assert.Equal(prefix, attributeValue.Prefix);
+
+                Children(attributeValue.Content, n => CSharpExpression(expected, n));
+            }
+            catch (XunitException e)
+            {
+                throw new IRAssertException(attributeValue, attributeValue.Content.Children, e.Message, e);
+            }
+        }
+
+        public static void LiteralAttributeValue(string prefix, string expected, RazorIRNode node)
+        {
+            var attributeValue = Assert.IsType<HtmlAttributeValueIRNode>(node);
+
+            try
+            {
+                Assert.Equal(prefix, attributeValue.Prefix);
+                Assert.Equal(expected, attributeValue.Content);
+            }
+            catch (XunitException e)
+            {
+                throw new IRAssertException(attributeValue, e.Message);
+            }
+        }
+
         public static void CSharpExpression(string expected, RazorIRNode node)
         {
             try
@@ -93,9 +147,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 var cSharp = Assert.IsType<CSharpExpressionIRNode>(node);
 
                 var content = new StringBuilder();
-                for (var i = 0; i < cSharp.Children.Count; i++)
+                for (var i = 0; i < cSharp.Content.Children.Count; i++)
                 {
-                    content.Append(((CSharpTokenIRNode)cSharp.Children[i]).Content);
+                    content.Append(((CSharpTokenIRNode)cSharp.Content.Children[i]).Content);
                 }
 
                 Assert.Equal(expected, content.ToString());
@@ -108,7 +162,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
         private class IRAssertException : XunitException
         {
-            public IRAssertException(RazorIRNode node, string userMessage) 
+            public IRAssertException(RazorIRNode node, string userMessage)
                 : base(Format(node, null, userMessage))
             {
                 Node = node;
@@ -119,7 +173,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             {
                 Node = node;
                 Nodes = nodes;
-            } 
+            }
 
             public IRAssertException(
                 RazorIRNode node,

@@ -15,17 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             return default(TResult);
         }
 
-        public virtual TResult VisitDirectiveToken(DirectiveTokenIRNode node)
-        {
-            return VisitDefault(node);
-        }
-
         public virtual TResult VisitTemplate(TemplateIRNode node)
-        {
-            return VisitDefault(node);
-        }
-
-        public virtual TResult VisitSection(SectionIRNode node)
         {
             return VisitDefault(node);
         }
@@ -65,16 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             return VisitDefault(node);
         }
 
-        public virtual TResult VisitSingleLineDirective(SingleLineDirectiveIRNode node)
-        {
-            return VisitDefault(node);
-        }
-
-        public virtual TResult VisitBlockDirective(BlockDirectiveIRNode node)
-        {
-            return VisitDefault(node);
-        }
-        public virtual TResult VisitMethodDeclaration(MethodDeclarationIRNode node)
+        public virtual TResult VisitRazorMethodDeclaration(RazorMethodDeclarationIRNode node)
         {
             return VisitDefault(node);
         }

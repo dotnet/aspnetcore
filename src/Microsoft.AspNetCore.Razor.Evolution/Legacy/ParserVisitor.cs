@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         public virtual void VisitBlock(Block block)
         {
             VisitStartBlock(block);
-            
+
             for (var i = 0; i < block.Children.Count; i++)
             {
                 block.Children[i].Accept(this);
@@ -69,14 +69,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
         }
 
-        public virtual void VisitSetBaseTypeSpan(SetBaseTypeChunkGenerator chunk, Span span)
-        {
-        }
-
-        public virtual void VisitTagHelperPrefixSpan(TagHelperPrefixDirectiveChunkGenerator chunk, Span span)
-        {
-        }
-
         public virtual void VisitTypeMemberSpan(TypeMemberChunkGenerator chunk, Span span)
         {
         }
@@ -85,15 +77,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
         }
 
-        public virtual void VisitRemoveTagHelperSpan(RemoveTagHelperChunkGenerator chunk, Span span)
-        {
-        }
-
         public virtual void VisitImportSpan(AddImportChunkGenerator chunk, Span span)
-        {
-        }
-
-        public virtual void VisitAddTagHelperSpan(AddTagHelperChunkGenerator chunk, Span span)
         {
         }
 
@@ -110,14 +94,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         }
 
         public virtual void VisitStartTemplateBlock(TemplateBlockChunkGenerator chunk, Block block)
-        {
-        }
-
-        public virtual void VisitStartSectionBlock(SectionChunkGenerator chunk, Block block)
-        {
-        }
-
-        public virtual void VisitEndSectionBlock(SectionChunkGenerator chunk, Block block)
         {
         }
 

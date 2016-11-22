@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public override void Accept(ParserVisitor visitor, Span span)
         {
-            visitor.VisitSetBaseTypeSpan(this, span);
         }
 
         public override void GenerateChunk(Span target, ChunkGeneratorContext context)

@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
-    public abstract class RazorIRNodeVisitor 
+    public abstract class RazorIRNodeVisitor
     {
         public virtual void Visit(RazorIRNode node)
         {
@@ -14,17 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         {
         }
 
-        public virtual void VisitDirectiveToken(DirectiveTokenIRNode node)
-        {
-            VisitDefault(node);
-        }
-
         public virtual void VisitTemplate(TemplateIRNode node)
-        {
-            VisitDefault(node);
-        }
-
-        public virtual void VisitSection(SectionIRNode node)
         {
             VisitDefault(node);
         }
@@ -59,22 +49,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             VisitDefault(node);
         }
 
-        public virtual void VisitSingleLineDirective(SingleLineDirectiveIRNode node)
-        {
-            VisitDefault(node);
-        }
-
-        public virtual void VisitBlockDirective(BlockDirectiveIRNode node)
-        {
-            VisitDefault(node);
-        }
-
         public virtual void VisitClass(ClassDeclarationIRNode node)
         {
             VisitDefault(node);
         }
 
-        public virtual void VisitMethodDeclaration(MethodDeclarationIRNode node)
+        public virtual void VisitRazorMethodDeclaration(RazorMethodDeclarationIRNode node)
         {
             VisitDefault(node);
         }
