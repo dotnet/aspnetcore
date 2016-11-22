@@ -40,7 +40,7 @@
     <MicrosoftAspNetCoreTestHostPackageVersion>2.1.0-preview1-27965</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview1-27965</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.1.0-preview1-27965</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
-    <MicrosoftAspNetWebApiClientPackageVersion>5.2.2</MicrosoftAspNetWebApiClientPackageVersion>
+    <MicrosoftAspNetWebApiClientPackageVersion>5.2.4-preview1</MicrosoftAspNetWebApiClientPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.3.1</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftCodeAnalysisRazorPackageVersion>2.1.0-preview1-27965</MicrosoftCodeAnalysisRazorPackageVersion>
     <MicrosoftExtensionsCachingMemoryPackageVersion>2.1.0-preview1-27965</MicrosoftExtensionsCachingMemoryPackageVersion>

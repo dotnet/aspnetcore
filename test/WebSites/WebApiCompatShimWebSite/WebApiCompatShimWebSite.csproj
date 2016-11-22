@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestWebsiteTfms)</TargetFrameworks>
-    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp2.1' OR '$(TargetFramework)' == 'netcoreapp2.0' ">$(PackageTargetFallback);portable-net451+win8</PackageTargetFallback>
-    <DisableImplicitAssetTargetFallback>true</DisableImplicitAssetTargetFallback>
   </PropertyGroup>
 
   <ItemGroup>

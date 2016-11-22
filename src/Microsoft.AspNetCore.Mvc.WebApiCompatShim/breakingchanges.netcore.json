@@ -1,0 +1,7 @@
+[
+  {
+    "TypeId": "public enum System.Net.Http.Formatting.MediaTypeFormatterMatchRanking",
+    "MemberId": "MatchOnRequestMediaType = 5",
+    "Kind": "Removal"
+  }
+]

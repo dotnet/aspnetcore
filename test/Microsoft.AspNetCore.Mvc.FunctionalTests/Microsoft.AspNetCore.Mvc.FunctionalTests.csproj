@@ -3,9 +3,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
-    <!-- Removing this is blocked by https://github.com/aspnet/Mvc/issues/5822 -->
-    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp2.1' OR '$(TargetFramework)' == 'netcoreapp2.0'  ">$(PackageTargetFallback);portable-net451+win8</PackageTargetFallback>
-    <DisableImplicitAssetTargetFallback>true</DisableImplicitAssetTargetFallback>
     <PlatformTarget Condition=" '$(TargetFramework)' == 'netcoreapp2.1' "></PlatformTarget>
 
     <DefineConstants Condition="'$(GenerateBaselines)'=='true'">$(DefineConstants);GENERATE_BASELINES</DefineConstants>
