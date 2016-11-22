@@ -25,7 +25,7 @@ Run the sample
 The SampleOrigin application will use port 5001, and SampleDestination will use 5000. Please ensure there are no other processes using those ports before running the CORS sample.
 
 As an example, apart from GET, HEAD and POST requests, PUT requests are allowed in the CORS policy on SampleDestination. Any others, like DELETE, OPTIONS etc. are not allowed and throw an error.
-Content-Length has been added as an allowed header to the sample. Any other headers are not allowed and throw an error.
+Cache-Control has been added as an allowed header to the sample. Any other headers are not allowed and throw an error.
 To edit the policy, please see app.UseCors() method in the Startup.cs file of SampleDestination.
 
 If using Visual Studio to launch the request origin:
