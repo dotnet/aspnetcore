@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
                 "Age",
                 "ETag",
                 "Location",
-                "Proxy-Autheticate",
+                "Proxy-Authenticate",
                 "Retry-After",
                 "Server",
                 "Set-Cookie",
