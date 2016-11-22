@@ -1,0 +1,24 @@
+{
+  "name": "signalr-core",
+  "version": "1.0.0",
+  "description": "ASP.NET Core SignalR",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aspnet/SignalR.git"
+  },
+  "author": "Microsoft",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aspnet/SignalR/issues"
+  },
+  "homepage": "https://github.com/aspnet/SignalR#readme",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "jasmine": "^2.5.2"
+  }
+}
