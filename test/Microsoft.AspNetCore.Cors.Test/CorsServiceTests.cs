@@ -3,8 +3,8 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
-using Xunit;
 using Microsoft.Extensions.Logging.Testing;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Cors.Infrastructure
 {

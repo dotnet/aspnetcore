@@ -7,9 +7,9 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Cors.Internal;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
