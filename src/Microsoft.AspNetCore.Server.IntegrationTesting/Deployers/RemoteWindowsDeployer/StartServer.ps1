@@ -28,17 +28,6 @@ param(
 
 Write-Host "Executing the start server script on machine '$serverName'"
 
-$forwarders="C:\Windows\System32\forwarders"
-Write-Host "Copying all content under '$forwarders' as a temporary workaround for issue https://github.com/dotnet/cli/issues/2967"
-if ($executablePath -eq "dotnet.exe")
-{
-    Copy-Item $forwarders\* $dotnetRuntimePath
-}
-else
-{
-    Copy-Item $forwarders\* $deployedFolderPath
-}
-
 if ($serverType -eq "IIS")
 {
     $publishedDirName=Split-Path $deployedFolderPath -Leaf
