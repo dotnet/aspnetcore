@@ -6,7 +6,7 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
-    "Microsoft.DotNet.InternalAbstractions": "1.0.0",
+    "Microsoft.DotNet.InternalAbstractions": "1.0.500-preview2-1-003177",
     "Microsoft.Extensions.SecretManager.Tools": "1.0.0-*",
     "xunit": "2.2.0-beta3-build3402"
   },
