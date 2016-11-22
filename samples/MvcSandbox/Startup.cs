@@ -19,7 +19,7 @@ namespace MvcSandbox
             services.AddMvc();
 
             services.Insert(0, ServiceDescriptor.Singleton(
-                typeof(IConfigureOptions<AntiforgeryOptions>), 
+                typeof(IConfigureOptions<AntiforgeryOptions>),
                 new ConfigureOptions<AntiforgeryOptions>(options => options.CookieName = "<choose a name>")));
         }
 
@@ -28,7 +28,9 @@ namespace MvcSandbox
         {
             app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
-            loggerFactory.AddConsole();
+            loggerFactory
+                .AddConsole()
+                .AddDebug();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
