@@ -24,7 +24,7 @@ namespace SampleDestination
             app.UseCors(policy => policy               
                 .WithOrigins("http://origin.example.com:5001")              
                 .WithMethods("PUT")
-                .WithHeaders("Content-Length"));
+                .WithHeaders("Cache-Control"));
 
             app.Run(async context =>
             {

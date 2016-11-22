@@ -63,7 +63,7 @@
     </script>
     <p>CORS Sample</p>
     Method: <input type="text" id="methodName" /><br /><br />
-    Header Name: <input type="text" id="headerName" value="Content-Length" /> Header Value: <input type="text" id="headerValue" value="10" /><br /><br />
+    Header Name: <input type="text" id="headerName" value="Cache-Control" /> Header Value: <input type="text" id="headerValue" value="no-cache" /><br /><br />
     <script>
         document.getElementById('methodName')
     .addEventListener("keyup", function (event) {
@@ -90,10 +90,10 @@
 
     <button class="button gray" id="CORS" type="submit" onclick="makeCORSRequest(document.getElementById('methodName').value, document.getElementById('headerName').value, document.getElementById('headerValue').value);">Make a CORS Request</button><br /><br /><br /><br />
 
-    Method DELETE is not allowed:<button class="button red" id="InvalidMethodCORS" type="submit" onclick="makeCORSRequest('DELETE', 'Content-Length', '10');">Invalid Method CORS Request</button>
-    Method PUT is allowed:<button class="button green" id="InvalidMethodCORS" type="submit" onclick="makeCORSRequest('PUT', 'Content-Length', '10');">Valid Method CORS Request</button><br /><br />
+    Method DELETE is not allowed:<button class="button red" id="InvalidMethodCORS" type="submit" onclick="makeCORSRequest('DELETE', 'Cache-Control', 'no-cache');">Invalid Method CORS Request</button>
+    Method PUT is allowed:<button class="button green" id="InvalidMethodCORS" type="submit" onclick="makeCORSRequest('PUT', 'Cache-Control', 'no-cache');">Valid Method CORS Request</button><br /><br />
 
     Header 'Max-Forwards' not supported:<button class="button red" id="InvalidHeaderCORS" type="submit" onclick="makeCORSRequest('PUT', 'Max-Forwards', 'x');">Invalid Header CORS Request</button>
-    Header 'Content-Length' is supported:<button class="button green" id="InvalidHeaderCORS" type="submit" onclick="makeCORSRequest('PUT', 'Content-Length', 'x');">Valid Header CORS Request</button><br /><br />
+    Header 'Cache-Control' is supported:<button class="button green" id="InvalidHeaderCORS" type="submit" onclick="makeCORSRequest('PUT', 'Cache-Control', 'no-cache');">Valid Header CORS Request</button><br /><br />
 </body>
 </html>
