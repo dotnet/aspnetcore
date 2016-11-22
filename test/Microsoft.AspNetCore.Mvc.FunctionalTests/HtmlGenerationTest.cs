@@ -71,6 +71,16 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             }
         }
 
+        [Fact]
+        public async Task EnumValues_SerializeCorrectly()
+        {
+            // Arrange & Act
+            var response = await Client.GetStringAsync("http://localhost/HtmlGeneration_Home/Enum");
+
+            // Assert
+            Assert.Equal($"Vrijdag{Environment.NewLine}Month: January", response, ignoreLineEndingDifferences: true);
+        }
+
         [Theory]
         [MemberData(nameof(WebPagesData))]
         public async Task HtmlGenerationWebSite_GeneratesExpectedResults(string action, string antiforgeryPath)

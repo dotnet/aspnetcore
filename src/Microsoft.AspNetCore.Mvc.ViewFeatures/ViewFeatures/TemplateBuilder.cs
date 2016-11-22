@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -81,19 +82,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 _model = null;
             }
 
-            var formattedModelValue = _model;
-            if (_model == null && _readOnly)
-            {
-                formattedModelValue = _metadata.NullDisplayText;
-            }
-
-            var formatString = _readOnly ? _metadata.DisplayFormatString : _metadata.EditFormatString;
-
-            if (_model != null && !string.IsNullOrEmpty(formatString))
-            {
-                formattedModelValue = string.Format(CultureInfo.CurrentCulture, formatString, _model);
-            }
-
             // Normally this shouldn't happen, unless someone writes their own custom Object templates which
             // don't check to make sure that the object hasn't already been displayed
             if (_viewData.TemplateInfo.Visited(_modelExplorer))
@@ -107,6 +95,40 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             // Create a new ModelExplorer in order to preserve the model metadata of the original _viewData even
             // though _model may have been reset to null. Otherwise we might lose track of the model type /property.
             viewData.ModelExplorer = _modelExplorer.GetExplorerForModel(_model);
+
+            var formattedModelValue = _model;
+            if (_model == null && _readOnly)
+            {
+                formattedModelValue = _metadata.NullDisplayText;
+            }
+            else if (viewData.ModelMetadata.IsEnum)
+            {
+                // Cover the case where the model is an enum and we want the string value of it
+                var modelEnum = _model as Enum;
+                if (modelEnum != null)
+                {
+                    var value = modelEnum.ToString("d");
+                    var enumGrouped = viewData.ModelMetadata.EnumGroupedDisplayNamesAndValues;
+                    Debug.Assert(enumGrouped != null);
+                    foreach (var kvp in enumGrouped)
+                    {
+                        if (kvp.Value == value)
+                        {
+                            // Creates a ModelExplorer with the same Metadata except that the Model is a string instead of an Enum
+                            formattedModelValue = kvp.Key.Name;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            var formatString = _readOnly ?
+                viewData.ModelMetadata.DisplayFormatString :
+                viewData.ModelMetadata.EditFormatString;
+            if (_model != null && !string.IsNullOrEmpty(formatString))
+            {
+                formattedModelValue = string.Format(CultureInfo.CurrentCulture, formatString, formattedModelValue);
+            }
 
             viewData.TemplateInfo.FormattedModelValue = formattedModelValue;
             viewData.TemplateInfo.HtmlFieldPrefix = _viewData.TemplateInfo.GetFullHtmlFieldName(_htmlFieldName);

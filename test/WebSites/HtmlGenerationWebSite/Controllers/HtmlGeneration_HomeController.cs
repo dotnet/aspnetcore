@@ -54,6 +54,11 @@ namespace HtmlGenerationWebSite.Controllers
             _productsListWithSelection = new SelectList(_products, "Number", "ProductName", 2);
         }
 
+        public IActionResult Enum()
+        {
+            return View(new AClass { DayOfWeek = Models.DayOfWeek.Friday, Month = Month.FirstOne });
+        }
+
         public IActionResult Order()
         {
             ViewData["Items"] = _productsListWithSelection;
