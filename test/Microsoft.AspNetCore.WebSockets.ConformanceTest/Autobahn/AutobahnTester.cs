@@ -100,7 +100,9 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
                 ApplicationBaseUriHint = baseUrl,
                 ApplicationType = ApplicationType.Portable,
                 TargetFramework = "netcoreapp1.1",
-                EnvironmentName = environment
+                EnvironmentName = environment,
+                SiteName = "HttpTestSite", // This is configured in the Http.config
+                ServerConfigTemplateContent = (server == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
             };
 
             var deployer = ApplicationDeployerFactory.Create(parameters, logger);
