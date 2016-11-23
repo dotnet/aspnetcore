@@ -67,14 +67,15 @@
     <p>CORS Sample</p>
     Method: <input type="text" id="methodName" /><br /><br />
     Header Name: <input type="text" id="headerName" /> Header Value: <input type="text" id="headerValue" /><br /><br />
+
     <script>
         document.getElementById('headerValue')
-    .addEventListener("keyup", function (event) {
-        event.preventDefault();
-        if (event.keyCode == 13) {
-            document.getElementById("CORS").click();
-        }
-    });
+            .addEventListener("keyup", function (event) {
+                event.preventDefault();
+                if (event.keyCode == 13) {
+                    document.getElementById("CORS").click();
+                }
+            });
     </script>
 
     <button class="button gray" id="CORS" type="submit" onclick="makeCORSRequest(document.getElementById('methodName').value, document.getElementById('headerName').value, document.getElementById('headerValue').value);">Make a CORS Request</button><br /><br /><br /><br />

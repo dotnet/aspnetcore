@@ -19,12 +19,12 @@ namespace SampleOrigin
         {
             loggerFactory.AddConsole();
             app.Run(context =>
-           {
-               var fileInfoProvider = env.WebRootFileProvider;
-               var fileInfo = fileInfoProvider.GetFileInfo("/Index.html");
-               context.Response.ContentType = "text/html";
-               return context.Response.SendFileAsync(fileInfo);
-           });
+            {
+                var fileInfoProvider = env.WebRootFileProvider;
+                var fileInfo = fileInfoProvider.GetFileInfo("/Index.html");
+                context.Response.ContentType = "text/html";
+                return context.Response.SendFileAsync(fileInfo);
+            });
         }
     }
 }
