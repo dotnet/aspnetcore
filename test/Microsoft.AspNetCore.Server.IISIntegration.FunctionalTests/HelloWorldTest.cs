@@ -19,9 +19,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        //[InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5061/", ServerType.Kestrel, ApplicationType.Standalone)]
-        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5062/", ServerType.Kestrel, ApplicationType.Standalone)]
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5063/", ServerType.Kestrel, ApplicationType.Standalone)]
+        //[InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5061/", ServerType.Kestrel, ApplicationType.Portable)]
+        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5062/", ServerType.Kestrel, ApplicationType.Portable)]
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5063/", ServerType.Kestrel, ApplicationType.Portable)]
         [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5064/", ServerType.Kestrel, ApplicationType.Standalone)]
         [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5065/", ServerType.Kestrel, ApplicationType.Portable)]
         public Task HelloWorld_IISExpress(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ServerType delegateServer, ApplicationType applicationType)
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [SkipIfCurrentRuntimeIsCoreClr]
-        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5069/", ServerType.Kestrel, ApplicationType.Standalone)]
+        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5069/", ServerType.Kestrel, ApplicationType.Portable)]
         //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5070/", ServerType.Kestrel, ApplicationType.Standalone)]
         public Task HelloWorld_IIS(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ServerType delegateServer, ApplicationType applicationType)
         {

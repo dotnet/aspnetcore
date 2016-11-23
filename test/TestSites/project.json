@@ -21,18 +21,18 @@
   "frameworks": {
     "netcoreapp1.1": {
       "dependencies": {
-        "Microsoft.NETCore.App": "1.1.0-*"
+        "Microsoft.NETCore.App": {
+          "version": "1.1.0-*",
+          "type": "platform"
+        }
       }
     },
     "net451": {}
   },
-  "runtimes": {
-    "win7-x64": {},
-    "win7-x86": {},
-    "osx.10.10-x64": {},
-    "osx.10.11-x64": {},
-    "osx.10.12-x64": {},
-    "ubuntu.14.04-x64": {},
-    "ubuntu.15.04-x64": {}
+  "tools": {
+    "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.1.0-*"
+  },
+  "scripts": {
+    "postpublish": "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%"
   }
 }

@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Hosting;
 
-namespace TestSites.Portable
+namespace TestSites.Standalone
 {
     public static class Program
     {
@@ -11,7 +11,7 @@ namespace TestSites.Portable
         {
             var host = new WebHostBuilder()
                 .UseIISIntegration()
-                .UseStartup("TestSites.Portable")
+                .UseStartup("TestSites.Standalone")
                 .UseKestrel()
                 .Build();
 

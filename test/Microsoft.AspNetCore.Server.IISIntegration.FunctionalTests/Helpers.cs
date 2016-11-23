@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     {
         public static string GetTestSitesPath(ApplicationType applicationType)
         {
-            return Path.GetFullPath(Path.Combine("..", "..", "..", "..", "..", applicationType == ApplicationType.Standalone ? "TestSites" : "TestSites.Portable"));
+            return Path.GetFullPath(Path.Combine("..", "..", "..", "..", "..", applicationType == ApplicationType.Standalone ? "TestSites.Standalone" : "TestSites"));
         }
     }
 }

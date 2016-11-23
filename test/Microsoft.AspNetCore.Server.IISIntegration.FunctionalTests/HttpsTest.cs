@@ -20,8 +20,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "https://localhost:44395/", ApplicationType.Standalone)]
-        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "https://localhost:44396/", ApplicationType.Standalone)]
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "https://localhost:44394/", ApplicationType.Portable)]
+        [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "https://localhost:44395/", ApplicationType.Standalone)]
+        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "https://localhost:44396/", ApplicationType.Portable)]
         public Task Https_HelloWorld(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
             return HttpsHelloWorld(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType);
@@ -93,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "https://localhost:44400/", ApplicationType.Standalone)]
-        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "https://localhost:44401/", ApplicationType.Standalone)]
+        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "https://localhost:44401/", ApplicationType.Portable)]
         public Task Https_HelloWorld_ClientCert(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
             return HttpsHelloWorldCerts(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, applicationType, sendClientCert: true);
