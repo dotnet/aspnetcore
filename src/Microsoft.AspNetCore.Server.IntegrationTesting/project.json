@@ -37,6 +37,7 @@
       "type": "build",
       "version": "1.2.0-*"
     },
+    "Microsoft.NETCore.Windows.ApiSets": "1.0.1",
     "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {

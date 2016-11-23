@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                         ancmPath = Path.Combine(contentRoot, ancmFile);
                     }
 
-                    if (!File.Exists(ancmPath))
+                    if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmPath)))
                     {
                         throw new FileNotFoundException("AspNetCoreModule could not be found.", ancmPath);
                     }
