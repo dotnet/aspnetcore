@@ -7,7 +7,7 @@
     "Microsoft.AspNetCore.Authentication.Cookies": "1.2.0-*",
     "Microsoft.AspNetCore.Authentication.OpenIdConnect": "1.2.0-*",
     "Microsoft.AspNetCore.Identity": "1.2.0-*",
-    "Microsoft.AspNetCore.Server.IntegrationTesting": "0.2.0-*",
+    "Microsoft.AspNetCore.Server.IntegrationTesting": "0.3.0-*",
     "Microsoft.AspNetCore.WebUtilities": "1.2.0-*",
     "Microsoft.Extensions.Configuration.Binder": "1.2.0-*",
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.2.0-*",
@@ -30,5 +30,19 @@
     "Microsoft.Extensions.SecretManager.Tools": "1.0.0-*"
   },
   "testRunner": "xunit",
-  "userSecretsId": "MusicStore.E2ETests"
+  "userSecretsId": "MusicStore.E2ETests",
+  "runtimes": {
+    "win7-x86": {},
+    "win7-x64": {},
+
+    "osx.10.10-x64": {},
+    "osx.10.11-x64": {},
+
+    "ubuntu.14.04-x64": {},
+    "ubuntu.14.10-x64": {},
+    "ubuntu.15.04-x64": {},
+    "ubuntu.16.04-x64": {},
+    "centos.7-x64": {},
+    "debian.8-x64": {}
+  }
 }
