@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             FrameContext.ConnectionContext.ListenerContext.ServiceContext.Log = trace;
 
             _memoryPool = new MemoryPool();
-            FrameContext.SocketInput = new SocketInput(_memoryPool, ltp);
+            FrameContext.Input = new SocketInput(_memoryPool, ltp);
         }
 
         public Frame FrameContext { get; set; }
@@ -49,10 +49,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public void Add(string text, bool fin = false)
         {
             var data = System.Text.Encoding.ASCII.GetBytes(text);
-            FrameContext.SocketInput.IncomingData(data, 0, data.Length);
+            FrameContext.Input.IncomingData(data, 0, data.Length);
             if (fin)
             {
-                FrameContext.SocketInput.IncomingFin();
+                FrameContext.Input.IncomingFin();
             }
         }
 
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         public void Dispose()
         {
-            FrameContext.SocketInput.Dispose();
+            FrameContext.Input.Dispose();
             _memoryPool.Dispose();
         }
     }

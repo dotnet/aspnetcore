@@ -6,8 +6,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
@@ -21,47 +19,66 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
-    public class FrameTests
+    public class FrameTests : IDisposable
     {
-        [Fact]
-        public void CanReadHeaderValueWithoutLeadingWhitespace()
+        private readonly SocketInput _socketInput;
+        private readonly MemoryPool _pool;
+        private readonly Frame<object> _frame;
+        private readonly ServiceContext _serviceContext;
+        private readonly ConnectionContext _connectionContext;
+
+        public FrameTests()
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
+            _pool = new MemoryPool();
+            _socketInput = new SocketInput(_pool, ltp);
+
+            _serviceContext = new ServiceContext
             {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions()
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext)
-                {
-                    ConnectionControl = Mock.Of<IConnectionControl>()
-                };
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerOptions = new KestrelServerOptions(),
+                Log = trace
+            };
+            var listenerContext = new ListenerContext(_serviceContext)
+            {
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+            };
+            _connectionContext = new ConnectionContext(listenerContext)
+            {
+                Input = _socketInput,
+                Output = new MockSocketOuptut(),
+                ConnectionControl = Mock.Of<IConnectionControl>()
+            };
 
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
-                frame.InitializeHeaders();
+            _frame = new Frame<object>(application: null, context: _connectionContext);
+            _frame.Reset();
+            _frame.InitializeHeaders();
+        }
 
-                var headerArray = Encoding.ASCII.GetBytes("Header:value\r\n\r\n");
-                socketInput.IncomingData(headerArray, 0, headerArray.Length);
+        public void Dispose()
+        {
+            _pool.Dispose();
+            _socketInput.Dispose();
+        }
 
-                var success = frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders);
+        [Fact]
+        public void CanReadHeaderValueWithoutLeadingWhitespace()
+        {
+            _frame.InitializeHeaders();
 
-                Assert.True(success);
-                Assert.Equal(1, frame.RequestHeaders.Count);
-                Assert.Equal("value", frame.RequestHeaders["Header"]);
+            var headerArray = Encoding.ASCII.GetBytes("Header:value\r\n\r\n");
+            _socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                // Assert TakeMessageHeaders consumed all the input
-                var scan = socketInput.ConsumingStart();
-                Assert.True(scan.IsEnd);
-            }
+            var success = _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders);
+
+            Assert.True(success);
+            Assert.Equal(1, _frame.RequestHeaders.Count);
+            Assert.Equal("value", _frame.RequestHeaders["Header"]);
+
+            // Assert TakeMessageHeaders consumed all the input
+            var scan = _socketInput.ConsumingStart();
+            Assert.True(scan.IsEnd);
         }
 
         [Theory]
@@ -77,42 +94,18 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("Header: \t \t value\r\n\r\n")]
         public void LeadingWhitespaceIsNotIncludedInHeaderValue(string rawHeaders)
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions()
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext)
-                {
-                    ConnectionControl = Mock.Of<IConnectionControl>()
-                };
+            var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
+            _socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
-                frame.InitializeHeaders();
+            var success = _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders);
 
-                var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
-                socketInput.IncomingData(headerArray, 0, headerArray.Length);
+            Assert.True(success);
+            Assert.Equal(1, _frame.RequestHeaders.Count);
+            Assert.Equal("value", _frame.RequestHeaders["Header"]);
 
-                var success = frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders);
-
-                Assert.True(success);
-                Assert.Equal(1, frame.RequestHeaders.Count);
-                Assert.Equal("value", frame.RequestHeaders["Header"]);
-
-                // Assert TakeMessageHeaders consumed all the input
-                var scan = socketInput.ConsumingStart();
-                Assert.True(scan.IsEnd);
-            }
+            // Assert TakeMessageHeaders consumed all the input
+            var scan = _socketInput.ConsumingStart();
+            Assert.True(scan.IsEnd);
         }
 
         [Theory]
@@ -127,42 +120,18 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("Header: value \t \t \r\n\r\n")]
         public void TrailingWhitespaceIsNotIncludedInHeaderValue(string rawHeaders)
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions()
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext)
-                {
-                    ConnectionControl = Mock.Of<IConnectionControl>()
-                };
+            var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
+            _socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
-                frame.InitializeHeaders();
+            var success = _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders);
 
-                var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
-                socketInput.IncomingData(headerArray, 0, headerArray.Length);
+            Assert.True(success);
+            Assert.Equal(1, _frame.RequestHeaders.Count);
+            Assert.Equal("value", _frame.RequestHeaders["Header"]);
 
-                var success = frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders);
-
-                Assert.True(success);
-                Assert.Equal(1, frame.RequestHeaders.Count);
-                Assert.Equal("value", frame.RequestHeaders["Header"]);
-
-                // Assert TakeMessageHeaders consumed all the input
-                var scan = socketInput.ConsumingStart();
-                Assert.True(scan.IsEnd);
-            }
+            // Assert TakeMessageHeaders consumed all the input
+            var scan = _socketInput.ConsumingStart();
+            Assert.True(scan.IsEnd);
         }
 
         [Theory]
@@ -176,43 +145,18 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("Header: one \ttwo\t three\r\n\r\n", "one \ttwo\t three")]
         public void WhitespaceWithinHeaderValueIsPreserved(string rawHeaders, string expectedValue)
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext)
-                {
-                    ConnectionControl = Mock.Of<IConnectionControl>()
-                };
+            var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
+            _socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
-                frame.InitializeHeaders();
+            var success = _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders);
 
-                var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
-                socketInput.IncomingData(headerArray, 0, headerArray.Length);
+            Assert.True(success);
+            Assert.Equal(1, _frame.RequestHeaders.Count);
+            Assert.Equal(expectedValue, _frame.RequestHeaders["Header"]);
 
-                var success = frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders);
-
-                Assert.True(success);
-                Assert.Equal(1, frame.RequestHeaders.Count);
-                Assert.Equal(expectedValue, frame.RequestHeaders["Header"]);
-
-                // Assert TakeMessageHeaders consumed all the input
-                var scan = socketInput.ConsumingStart();
-                Assert.True(scan.IsEnd);
-            }
+            // Assert TakeMessageHeaders consumed all the input
+            var scan = _socketInput.ConsumingStart();
+            Assert.True(scan.IsEnd);
         }
 
         [Theory]
@@ -226,71 +170,27 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("Header: line1\r\n \t \t line2\r\n\r\n")]
         public void TakeMessageHeadersThrowsOnHeaderValueWithLineFolding(string rawHeaders)
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext);
+            var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
+            _socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
-                frame.InitializeHeaders();
-
-                var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
-                socketInput.IncomingData(headerArray, 0, headerArray.Length);
-
-                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
-                Assert.Equal("Header value line folding not supported.", exception.Message);
-                Assert.Equal(400, exception.StatusCode);
-            }
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
+            Assert.Equal("Header value line folding not supported.", exception.Message);
+            Assert.Equal(400, exception.StatusCode);
         }
 
         [Fact]
         public void TakeMessageHeadersThrowsOnHeaderValueWithLineFolding_CharacterNotAvailableOnFirstAttempt()
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext);
+            var headerArray = Encoding.ASCII.GetBytes("Header-1: value1\r\n");
+            _socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
-                frame.InitializeHeaders();
+            Assert.False(_frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
 
-                var headerArray = Encoding.ASCII.GetBytes("Header-1: value1\r\n");
-                socketInput.IncomingData(headerArray, 0, headerArray.Length);
+            _socketInput.IncomingData(Encoding.ASCII.GetBytes(" "), 0, 1);
 
-                Assert.False(frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
-
-                socketInput.IncomingData(Encoding.ASCII.GetBytes(" "), 0, 1);
-
-                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
-                Assert.Equal("Header value line folding not supported.", exception.Message);
-                Assert.Equal(400, exception.StatusCode);
-            }
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
+            Assert.Equal("Header value line folding not supported.", exception.Message);
+            Assert.Equal(400, exception.StatusCode);
         }
 
         [Theory]
@@ -301,34 +201,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("Header-1: value1\r\nHeader-2: v\ralue2\r\n")]
         public void TakeMessageHeadersThrowsOnHeaderValueContainingCR(string rawHeaders)
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext);
 
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
-                frame.InitializeHeaders();
+            var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
+            _socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
-                socketInput.IncomingData(headerArray, 0, headerArray.Length);
-
-                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
-                Assert.Equal("Header value must not contain CR characters.", exception.Message);
-                Assert.Equal(400, exception.StatusCode);
-            }
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
+            Assert.Equal("Header value must not contain CR characters.", exception.Message);
+            Assert.Equal(400, exception.StatusCode);
         }
 
         [Theory]
@@ -337,34 +216,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("Header-1: value1\r\nHeader-2 value2\r\n\r\n")]
         public void TakeMessageHeadersThrowsOnHeaderLineMissingColon(string rawHeaders)
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext);
+            var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
+            _socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
-                frame.InitializeHeaders();
-
-                var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
-                socketInput.IncomingData(headerArray, 0, headerArray.Length);
-
-                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
-                Assert.Equal("No ':' character found in header line.", exception.Message);
-                Assert.Equal(400, exception.StatusCode);
-            }
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
+            Assert.Equal("No ':' character found in header line.", exception.Message);
+            Assert.Equal(400, exception.StatusCode);
         }
 
         [Theory]
@@ -374,34 +231,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("\tHeader-1: value1\r\nHeader-2: value2\r\n\r\n")]
         public void TakeMessageHeadersThrowsOnHeaderLineStartingWithWhitespace(string rawHeaders)
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext);
+            var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
+            _socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
-                frame.InitializeHeaders();
-
-                var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
-                socketInput.IncomingData(headerArray, 0, headerArray.Length);
-
-                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
-                Assert.Equal("Header line must not start with whitespace.", exception.Message);
-                Assert.Equal(400, exception.StatusCode);
-            }
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
+            Assert.Equal("Header line must not start with whitespace.", exception.Message);
+            Assert.Equal(400, exception.StatusCode);
         }
 
         [Theory]
@@ -415,34 +250,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("Header-1: value1\r\nHeader-2\t: value2\r\n\r\n")]
         public void TakeMessageHeadersThrowsOnWhitespaceInHeaderName(string rawHeaders)
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext);
+            var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
+            _socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
-                frame.InitializeHeaders();
-
-                var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
-                socketInput.IncomingData(headerArray, 0, headerArray.Length);
-
-                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
-                Assert.Equal("Whitespace is not allowed in header name.", exception.Message);
-                Assert.Equal(400, exception.StatusCode);
-            }
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
+            Assert.Equal("Whitespace is not allowed in header name.", exception.Message);
+            Assert.Equal(400, exception.StatusCode);
         }
 
         [Theory]
@@ -451,110 +264,41 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("Header-1: value1\r\nHeader-2: value2\r\n\r \n")]
         public void TakeMessageHeadersThrowsOnHeadersNotEndingInCRLFLine(string rawHeaders)
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext);
+            var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
+            _socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
-                frame.InitializeHeaders();
-
-                var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
-                socketInput.IncomingData(headerArray, 0, headerArray.Length);
-
-                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
-                Assert.Equal("Headers corrupted, invalid header sequence.", exception.Message);
-                Assert.Equal(400, exception.StatusCode);
-            }
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
+            Assert.Equal("Headers corrupted, invalid header sequence.", exception.Message);
+            Assert.Equal(400, exception.StatusCode);
         }
 
         [Fact]
         public void TakeMessageHeadersThrowsWhenHeadersExceedTotalSizeLimit()
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                const string headerLine = "Header: value\r\n";
+            const string headerLine = "Header: value\r\n";
+            _serviceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize = headerLine.Length - 1;
+            _frame.Reset();
 
-                var options = new KestrelServerOptions();
-                options.Limits.MaxRequestHeadersTotalSize = headerLine.Length - 1;
+            var headerArray = Encoding.ASCII.GetBytes($"{headerLine}\r\n");
+            _socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = options,
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext);
-
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
-                frame.InitializeHeaders();
-
-                var headerArray = Encoding.ASCII.GetBytes($"{headerLine}\r\n");
-                socketInput.IncomingData(headerArray, 0, headerArray.Length);
-
-                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
-                Assert.Equal("Request headers too long.", exception.Message);
-                Assert.Equal(431, exception.StatusCode);
-            }
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
+            Assert.Equal("Request headers too long.", exception.Message);
+            Assert.Equal(431, exception.StatusCode);
         }
 
         [Fact]
         public void TakeMessageHeadersThrowsWhenHeadersExceedCountLimit()
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                const string headerLines = "Header-1: value1\r\nHeader-2: value2\r\n";
+            const string headerLines = "Header-1: value1\r\nHeader-2: value2\r\n";
+            _serviceContext.ServerOptions.Limits.MaxRequestHeaderCount = 1;
 
-                var options = new KestrelServerOptions();
-                options.Limits.MaxRequestHeaderCount = 1;
+            var headerArray = Encoding.ASCII.GetBytes($"{headerLines}\r\n");
+            _socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = options,
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext);
-
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
-                frame.InitializeHeaders();
-
-                var headerArray = Encoding.ASCII.GetBytes($"{headerLines}\r\n");
-                socketInput.IncomingData(headerArray, 0, headerArray.Length);
-
-                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
-                Assert.Equal("Request contains too many headers.", exception.Message);
-                Assert.Equal(431, exception.StatusCode);
-            }
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
+            Assert.Equal("Request contains too many headers.", exception.Message);
+            Assert.Equal(431, exception.StatusCode);
         }
 
         [Theory]
@@ -566,341 +310,154 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("Connection: close\r\nCookie:\r\n\r\n", 2)]
         public void EmptyHeaderValuesCanBeParsed(string rawHeaders, int numHeaders)
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions()
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext)
-                {
-                    ConnectionControl = Mock.Of<IConnectionControl>()
-                };
+            var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
+            _socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
-                frame.InitializeHeaders();
+            var success = _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders);
 
-                var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
-                socketInput.IncomingData(headerArray, 0, headerArray.Length);
+            Assert.True(success);
+            Assert.Equal(numHeaders, _frame.RequestHeaders.Count);
 
-                var success = frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders);
-
-                Assert.True(success);
-                Assert.Equal(numHeaders, frame.RequestHeaders.Count);
-
-                // Assert TakeMessageHeaders consumed all the input
-                var scan = socketInput.ConsumingStart();
-                Assert.True(scan.IsEnd);
-            }
+            // Assert TakeMessageHeaders consumed all the input
+            var scan = _socketInput.ConsumingStart();
+            Assert.True(scan.IsEnd);
         }
 
         [Fact]
         public void ResetResetsScheme()
         {
-            // Arrange
-            var serviceContext = new ServiceContext
-            {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions()
-            };
-            var listenerContext = new ListenerContext(serviceContext)
-            {
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-            };
-            var connectionContext = new ConnectionContext(listenerContext);
-
-            var frame = new Frame<object>(application: null, context: connectionContext);
-            frame.Scheme = "https";
+            _frame.Scheme = "https";
 
             // Act
-            frame.Reset();
+            _frame.Reset();
 
             // Assert
-            Assert.Equal("http", ((IFeatureCollection)frame).Get<IHttpRequestFeature>().Scheme);
+            Assert.Equal("http", ((IFeatureCollection)_frame).Get<IHttpRequestFeature>().Scheme);
         }
 
         [Fact]
         public void ResetResetsHeaderLimits()
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                const string headerLine1 = "Header-1: value1\r\n";
-                const string headerLine2 = "Header-2: value2\r\n";
+            const string headerLine1 = "Header-1: value1\r\n";
+            const string headerLine2 = "Header-2: value2\r\n";
 
-                var options = new KestrelServerOptions();
-                options.Limits.MaxRequestHeadersTotalSize = headerLine1.Length;
-                options.Limits.MaxRequestHeaderCount = 1;
+            var options = new KestrelServerOptions();
+            options.Limits.MaxRequestHeadersTotalSize = headerLine1.Length;
+            options.Limits.MaxRequestHeaderCount = 1;
+            _serviceContext.ServerOptions = options;
 
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = options
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext)
-                {
-                    ConnectionControl = Mock.Of<IConnectionControl>()
-                };
+            var headerArray1 = Encoding.ASCII.GetBytes($"{headerLine1}\r\n");
+            _socketInput.IncomingData(headerArray1, 0, headerArray1.Length);
 
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
-                frame.InitializeHeaders();
+            Assert.True(_frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
+            Assert.Equal(1, _frame.RequestHeaders.Count);
+            Assert.Equal("value1", _frame.RequestHeaders["Header-1"]);
 
-                var headerArray1 = Encoding.ASCII.GetBytes($"{headerLine1}\r\n");
-                socketInput.IncomingData(headerArray1, 0, headerArray1.Length);
+            _frame.Reset();
 
-                Assert.True(frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
-                Assert.Equal(1, frame.RequestHeaders.Count);
-                Assert.Equal("value1", frame.RequestHeaders["Header-1"]);
+            var headerArray2 = Encoding.ASCII.GetBytes($"{headerLine2}\r\n");
+            _socketInput.IncomingData(headerArray2, 0, headerArray1.Length);
 
-                frame.Reset();
-
-                var headerArray2 = Encoding.ASCII.GetBytes($"{headerLine2}\r\n");
-                socketInput.IncomingData(headerArray2, 0, headerArray1.Length);
-
-                Assert.True(frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
-                Assert.Equal(1, frame.RequestHeaders.Count);
-                Assert.Equal("value2", frame.RequestHeaders["Header-2"]);
-            }
+            Assert.True(_frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
+            Assert.Equal(1, _frame.RequestHeaders.Count);
+            Assert.Equal("value2", _frame.RequestHeaders["Header-2"]);
         }
 
         [Fact]
         public void ThrowsWhenStatusCodeIsSetAfterResponseStarted()
         {
-            // Arrange
-            var serviceContext = new ServiceContext
-            {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions()
-            };
-            var listenerContext = new ListenerContext(serviceContext)
-            {
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-            };
-            var connectionContext = new ConnectionContext(listenerContext)
-            {
-                SocketOutput = new MockSocketOuptut()
-            };
-
-            var frame = new Frame<object>(application: null, context: connectionContext);
-            frame.InitializeHeaders();
-
             // Act
-            frame.Write(new ArraySegment<byte>(new byte[1]));
+            _frame.Write(new ArraySegment<byte>(new byte[1]));
 
             // Assert
-            Assert.True(frame.HasResponseStarted);
-            Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)frame).StatusCode = 404);
+            Assert.True(_frame.HasResponseStarted);
+            Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)_frame).StatusCode = 404);
         }
 
         [Fact]
         public void ThrowsWhenReasonPhraseIsSetAfterResponseStarted()
         {
-            // Arrange
-            var serviceContext = new ServiceContext
-            {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions()
-            };
-            var listenerContext = new ListenerContext(serviceContext)
-            {
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-            };
-            var connectionContext = new ConnectionContext(listenerContext)
-            {
-                SocketOutput = new MockSocketOuptut()
-            };
-
-            var frame = new Frame<object>(application: null, context: connectionContext);
-            frame.InitializeHeaders();
-
             // Act
-            frame.Write(new ArraySegment<byte>(new byte[1]));
+            _frame.Write(new ArraySegment<byte>(new byte[1]));
 
             // Assert
-            Assert.True(frame.HasResponseStarted);
-            Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)frame).ReasonPhrase = "Reason phrase");
+            Assert.True(_frame.HasResponseStarted);
+            Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)_frame).ReasonPhrase = "Reason phrase");
         }
 
         [Fact]
         public void ThrowsWhenOnStartingIsSetAfterResponseStarted()
         {
-            // Arrange
-            var serviceContext = new ServiceContext
-            {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions()
-            };
-            var listenerContext = new ListenerContext(serviceContext)
-            {
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-            };
-            var connectionContext = new ConnectionContext(listenerContext)
-            {
-                SocketOutput = new MockSocketOuptut()
-            };
-
-            var frame = new Frame<object>(application: null, context: connectionContext);
-            frame.InitializeHeaders();
-            frame.Write(new ArraySegment<byte>(new byte[1]));
+            _frame.Write(new ArraySegment<byte>(new byte[1]));
 
             // Act/Assert
-            Assert.True(frame.HasResponseStarted);
-            Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)frame).OnStarting(_ => TaskCache.CompletedTask, null));
+            Assert.True(_frame.HasResponseStarted);
+            Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)_frame).OnStarting(_ => TaskCache.CompletedTask, null));
         }
 
         [Fact]
         public void InitializeHeadersResetsRequestHeaders()
         {
             // Arrange
-            var serviceContext = new ServiceContext
-            {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions()
-            };
-            var listenerContext = new ListenerContext(serviceContext)
-            {
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-            };
-            var connectionContext = new ConnectionContext(listenerContext)
-            {
-                SocketOutput = new MockSocketOuptut()
-            };
-
-            var frame = new Frame<object>(application: null, context: connectionContext);
-            frame.InitializeHeaders();
-
-            var originalRequestHeaders = frame.RequestHeaders;
-            frame.RequestHeaders = new FrameRequestHeaders();
+            var originalRequestHeaders = _frame.RequestHeaders;
+            _frame.RequestHeaders = new FrameRequestHeaders();
 
             // Act
-            frame.InitializeHeaders();
+            _frame.InitializeHeaders();
 
             // Assert
-            Assert.Same(originalRequestHeaders, frame.RequestHeaders);
+            Assert.Same(originalRequestHeaders, _frame.RequestHeaders);
         }
 
         [Fact]
         public void InitializeHeadersResetsResponseHeaders()
         {
             // Arrange
-            var serviceContext = new ServiceContext
-            {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions()
-            };
-            var listenerContext = new ListenerContext(serviceContext)
-            {
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-            };
-            var connectionContext = new ConnectionContext(listenerContext)
-            {
-                SocketOutput = new MockSocketOuptut()
-            };
-
-            var frame = new Frame<object>(application: null, context: connectionContext);
-            frame.InitializeHeaders();
-
-            var originalResponseHeaders = frame.ResponseHeaders;
-            frame.ResponseHeaders = new FrameResponseHeaders();
+            var originalResponseHeaders = _frame.ResponseHeaders;
+            _frame.ResponseHeaders = new FrameResponseHeaders();
 
             // Act
-            frame.InitializeHeaders();
+            _frame.InitializeHeaders();
 
             // Assert
-            Assert.Same(originalResponseHeaders, frame.ResponseHeaders);
+            Assert.Same(originalResponseHeaders, _frame.ResponseHeaders);
         }
 
         [Fact]
         public void InitializeStreamsResetsStreams()
         {
             // Arrange
-            var serviceContext = new ServiceContext
-            {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions()
-            };
-            var listenerContext = new ListenerContext(serviceContext)
-            {
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-            };
-            var connectionContext = new ConnectionContext(listenerContext)
-            {
-                SocketOutput = new MockSocketOuptut()
-            };
+            var messageBody = MessageBody.For(HttpVersion.Http11, (FrameRequestHeaders)_frame.RequestHeaders, _frame);
+            _frame.InitializeStreams(messageBody);
 
-            var frame = new Frame<object>(application: null, context: connectionContext);
-            frame.InitializeHeaders();
-
-            var messageBody = MessageBody.For(HttpVersion.Http11, (FrameRequestHeaders)frame.RequestHeaders, frame);
-            frame.InitializeStreams(messageBody);
-
-            var originalRequestBody = frame.RequestBody;
-            var originalResponseBody = frame.ResponseBody;
-            var originalDuplexStream = frame.DuplexStream;
-            frame.RequestBody = new MemoryStream();
-            frame.ResponseBody = new MemoryStream();
-            frame.DuplexStream = new MemoryStream();
+            var originalRequestBody = _frame.RequestBody;
+            var originalResponseBody = _frame.ResponseBody;
+            var originalDuplexStream = _frame.DuplexStream;
+            _frame.RequestBody = new MemoryStream();
+            _frame.ResponseBody = new MemoryStream();
+            _frame.DuplexStream = new MemoryStream();
 
             // Act
-            frame.InitializeStreams(messageBody);
+            _frame.InitializeStreams(messageBody);
 
             // Assert
-            Assert.Same(originalRequestBody, frame.RequestBody);
-            Assert.Same(originalResponseBody, frame.ResponseBody);
-            Assert.Same(originalDuplexStream, frame.DuplexStream);
+            Assert.Same(originalRequestBody, _frame.RequestBody);
+            Assert.Same(originalResponseBody, _frame.ResponseBody);
+            Assert.Same(originalDuplexStream, _frame.DuplexStream);
         }
 
         [Fact]
         public void TakeStartLineCallsConsumingCompleteWithFurthestExamined()
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
-                };
-                var connectionContext = new ConnectionContext(listenerContext)
-                {
-                    ConnectionControl = new Mock<IConnectionControl>().Object
-                };
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
+            var requestLineBytes = Encoding.ASCII.GetBytes("GET / ");
+            _socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
+            _frame.TakeStartLine(_socketInput);
+            Assert.False(_socketInput.IsCompleted);
 
-                var requestLineBytes = Encoding.ASCII.GetBytes("GET / ");
-                socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
-                frame.TakeStartLine(socketInput);
-                Assert.False(socketInput.IsCompleted);
-
-                requestLineBytes = Encoding.ASCII.GetBytes("HTTP/1.1\r\n");
-                socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
-                frame.TakeStartLine(socketInput);
-                Assert.False(socketInput.IsCompleted);
-            }
+            requestLineBytes = Encoding.ASCII.GetBytes("HTTP/1.1\r\n");
+            _socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
+            _frame.TakeStartLine(_socketInput);
+            Assert.False(_socketInput.IsCompleted);
         }
 
         [Theory]
@@ -922,140 +479,48 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("GET / HTTP/1.1\r", Frame.RequestLineStatus.Incomplete)]
         public void TakeStartLineReturnsWhenGivenIncompleteRequestLines(string requestLine, Frame.RequestLineStatus expectedReturnValue)
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
-                };
-                var connectionContext = new ConnectionContext(listenerContext)
-                {
-                    ConnectionControl = new Mock<IConnectionControl>().Object
-                };
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
+            var requestLineBytes = Encoding.ASCII.GetBytes(requestLine);
+            _socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
 
-                var requestLineBytes = Encoding.ASCII.GetBytes(requestLine);
-                socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
-
-                var returnValue = frame.TakeStartLine(socketInput);
-                Assert.Equal(expectedReturnValue, returnValue);
-            }
+            var returnValue = _frame.TakeStartLine(_socketInput);
+            Assert.Equal(expectedReturnValue, returnValue);
         }
 
         [Fact]
         public void TakeStartLineStartsRequestHeadersTimeoutOnFirstByteAvailable()
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
-                };
-                var connectionControl = new Mock<IConnectionControl>();
-                var connectionContext = new ConnectionContext(listenerContext)
-                {
-                    ConnectionControl = connectionControl.Object
-                };
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
+            var connectionControl = new Mock<IConnectionControl>();
+            _connectionContext.ConnectionControl = connectionControl.Object;
 
-                var requestLineBytes = Encoding.ASCII.GetBytes("G");
-                socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
+            var requestLineBytes = Encoding.ASCII.GetBytes("G");
+            _socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
 
-                frame.TakeStartLine(socketInput);
-                var expectedRequestHeadersTimeout = (long)serviceContext.ServerOptions.Limits.RequestHeadersTimeout.TotalMilliseconds;
-                connectionControl.Verify(cc => cc.ResetTimeout(expectedRequestHeadersTimeout, TimeoutAction.SendTimeoutResponse));
-            }
+            _frame.TakeStartLine(_socketInput);
+            var expectedRequestHeadersTimeout = (long)_serviceContext.ServerOptions.Limits.RequestHeadersTimeout.TotalMilliseconds;
+            connectionControl.Verify(cc => cc.ResetTimeout(expectedRequestHeadersTimeout, TimeoutAction.SendTimeoutResponse));
         }
 
         [Fact]
         public void TakeStartLineDoesNotStartRequestHeadersTimeoutIfNoDataAvailable()
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionControl = new Mock<IConnectionControl>();
-                var connectionContext = new ConnectionContext(listenerContext)
-                {
-                    ConnectionControl = connectionControl.Object
-                };
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
+            var connectionControl = new Mock<IConnectionControl>();
+            _connectionContext.ConnectionControl = connectionControl.Object;
 
-                frame.TakeStartLine(socketInput);
-                connectionControl.Verify(cc => cc.ResetTimeout(It.IsAny<long>(), It.IsAny<TimeoutAction>()), Times.Never);
-            }
+            _frame.TakeStartLine(_socketInput);
+            connectionControl.Verify(cc => cc.ResetTimeout(It.IsAny<long>(), It.IsAny<TimeoutAction>()), Times.Never);
         }
 
         [Fact]
         public void TakeStartLineThrowsWhenTooLong()
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions()
-                    {
-                        Limits =
-                        {
-                            MaxRequestLineSize = "GET / HTTP/1.1\r\n".Length
-                        }
-                    },
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext)
-                {
-                    ConnectionControl = Mock.Of<IConnectionControl>()
-                };
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
+            _serviceContext.ServerOptions.Limits.MaxRequestLineSize = "GET / HTTP/1.1\r\n".Length;
 
-                var requestLineBytes = Encoding.ASCII.GetBytes("GET /a HTTP/1.1\r\n");
-                socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
+            var requestLineBytes = Encoding.ASCII.GetBytes("GET /a HTTP/1.1\r\n");
+            _socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
 
-                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeStartLine(socketInput));
-                Assert.Equal("Request line too long.", exception.Message);
-                Assert.Equal(414, exception.StatusCode);
-            }
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeStartLine(_socketInput));
+            Assert.Equal("Request line too long.", exception.Message);
+            Assert.Equal(414, exception.StatusCode);
         }
 
         [Theory]
@@ -1072,146 +537,53 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("GET / HTTP/1.1\ra\n", "Invalid request line: GET / HTTP/1.1<0x0D>a<0x0A>")]
         public void TakeStartLineThrowsWhenInvalid(string requestLine, string expectedExceptionMessage)
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext)
-                {
-                    ConnectionControl = Mock.Of<IConnectionControl>()
-                };
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
+            var requestLineBytes = Encoding.ASCII.GetBytes(requestLine);
+            _socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
 
-                var requestLineBytes = Encoding.ASCII.GetBytes(requestLine);
-                socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
-
-                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeStartLine(socketInput));
-                Assert.Equal(expectedExceptionMessage, exception.Message);
-                Assert.Equal(400, exception.StatusCode);
-            }
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeStartLine(_socketInput));
+            Assert.Equal(expectedExceptionMessage, exception.Message);
+            Assert.Equal(400, exception.StatusCode);
         }
 
         [Fact]
         public void TakeStartLineThrowsOnUnsupportedHttpVersion()
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext)
-                {
-                    ConnectionControl = Mock.Of<IConnectionControl>(),
-                };
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
+            var requestLineBytes = Encoding.ASCII.GetBytes("GET / HTTP/1.2\r\n");
+            _socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
 
-                var requestLineBytes = Encoding.ASCII.GetBytes("GET / HTTP/1.2\r\n");
-                socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
-
-                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeStartLine(socketInput));
-                Assert.Equal("Unrecognized HTTP version: HTTP/1.2", exception.Message);
-                Assert.Equal(505, exception.StatusCode);
-            }
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeStartLine(_socketInput));
+            Assert.Equal("Unrecognized HTTP version: HTTP/1.2", exception.Message);
+            Assert.Equal(505, exception.StatusCode);
         }
 
         [Fact]
-        public void TakeStartLineThrowsOnUnsupportedHttpVersionLongerThanEigthCharacters()
+        public void TakeStartLineThrowsOnUnsupportedHttpVersionLongerThanEightCharacters()
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext)
-                {
-                    ConnectionControl = Mock.Of<IConnectionControl>(),
-                };
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
+            var requestLineBytes = Encoding.ASCII.GetBytes("GET / HTTP/1.1ab\r\n");
+            _socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
 
-                var requestLineBytes = Encoding.ASCII.GetBytes("GET / HTTP/1.1ab\r\n");
-                socketInput.IncomingData(requestLineBytes, 0, requestLineBytes.Length);
-
-                var exception = Assert.Throws<BadHttpRequestException>(() => frame.TakeStartLine(socketInput));
-                Assert.Equal("Unrecognized HTTP version: HTTP/1.1a...", exception.Message);
-                Assert.Equal(505, exception.StatusCode);
-            }
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeStartLine(_socketInput));
+            Assert.Equal("Unrecognized HTTP version: HTTP/1.1a...", exception.Message);
+            Assert.Equal(505, exception.StatusCode);
         }
 
         [Fact]
         public void TakeMessageHeadersCallsConsumingCompleteWithFurthestExamined()
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext)
-                {
-                    ConnectionControl = Mock.Of<IConnectionControl>()
-                };
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
-                frame.InitializeHeaders();
+            var headersBytes = Encoding.ASCII.GetBytes("Header: ");
+            _socketInput.IncomingData(headersBytes, 0, headersBytes.Length);
+            _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders);
+            Assert.False(_socketInput.IsCompleted);
 
-                var headersBytes = Encoding.ASCII.GetBytes("Header: ");
-                socketInput.IncomingData(headersBytes, 0, headersBytes.Length);
-                frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders);
-                Assert.False(socketInput.IsCompleted);
+            headersBytes = Encoding.ASCII.GetBytes("value\r\n");
+            _socketInput.IncomingData(headersBytes, 0, headersBytes.Length);
+            _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders);
+            Assert.False(_socketInput.IsCompleted);
 
-                headersBytes = Encoding.ASCII.GetBytes("value\r\n");
-                socketInput.IncomingData(headersBytes, 0, headersBytes.Length);
-                frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders);
-                Assert.False(socketInput.IsCompleted);
-
-                headersBytes = Encoding.ASCII.GetBytes("\r\n");
-                socketInput.IncomingData(headersBytes, 0, headersBytes.Length);
-                frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders);
-                Assert.False(socketInput.IsCompleted);
-            }
+            headersBytes = Encoding.ASCII.GetBytes("\r\n");
+            _socketInput.IncomingData(headersBytes, 0, headersBytes.Length);
+            _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders);
+            Assert.False(_socketInput.IsCompleted);
         }
 
         [Theory]
@@ -1234,275 +606,113 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("Header: value\r\n\r")]
         public void TakeMessageHeadersReturnsWhenGivenIncompleteHeaders(string headers)
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000"),
-                };
-                var connectionContext = new ConnectionContext(listenerContext);
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
-                frame.InitializeHeaders();
+            var headerBytes = Encoding.ASCII.GetBytes(headers);
+            _socketInput.IncomingData(headerBytes, 0, headerBytes.Length);
 
-                var headerBytes = Encoding.ASCII.GetBytes(headers);
-                socketInput.IncomingData(headerBytes, 0, headerBytes.Length);
-
-                Assert.Equal(false, frame.TakeMessageHeaders(socketInput, (FrameRequestHeaders)frame.RequestHeaders));
-            }
+            Assert.Equal(false, _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
         }
 
         [Fact]
         public void RequestProcessingAsyncEnablesKeepAliveTimeout()
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionControl = new Mock<IConnectionControl>();
-                var connectionContext = new ConnectionContext(listenerContext)
-                {
-                    ConnectionControl = connectionControl.Object
-                };
-                var frame = new Frame<object>(application: null, context: connectionContext);
-                frame.Reset();
+            var connectionControl = new Mock<IConnectionControl>();
+            _connectionContext.ConnectionControl = connectionControl.Object;
 
-                var requestProcessingTask = frame.RequestProcessingAsync();
+            var requestProcessingTask = _frame.RequestProcessingAsync();
 
-                var expectedKeepAliveTimeout = (long)serviceContext.ServerOptions.Limits.KeepAliveTimeout.TotalMilliseconds;
-                connectionControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutAction.CloseConnection));
+            var expectedKeepAliveTimeout = (long)_serviceContext.ServerOptions.Limits.KeepAliveTimeout.TotalMilliseconds;
+            connectionControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutAction.CloseConnection));
 
-                frame.StopAsync();
-                socketInput.IncomingFin();
+            _frame.StopAsync();
+            _socketInput.IncomingFin();
 
-                requestProcessingTask.Wait();
-            }
+            requestProcessingTask.Wait();
         }
 
         [Fact]
         public void WriteThrowsForNonBodyResponse()
         {
             // Arrange
-            var serviceContext = new ServiceContext
-            {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions(),
-                Log = new TestKestrelTrace()
-            };
-            var listenerContext = new ListenerContext(serviceContext)
-            {
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-            };
-            var connectionContext = new ConnectionContext(listenerContext)
-            {
-                SocketOutput = new MockSocketOuptut(),
-            };
-            var frame = new Frame<object>(application: null, context: connectionContext);
-            frame.InitializeHeaders();
-            frame.HttpVersion = "HTTP/1.1";
-            ((IHttpResponseFeature)frame).StatusCode = 304;
+            ((IHttpResponseFeature)_frame).StatusCode = 304;
 
             // Act/Assert
-            Assert.Throws<InvalidOperationException>(() => frame.Write(new ArraySegment<byte>(new byte[1])));
+            Assert.Throws<InvalidOperationException>(() => _frame.Write(new ArraySegment<byte>(new byte[1])));
         }
 
         [Fact]
         public async Task WriteAsyncThrowsForNonBodyResponse()
         {
             // Arrange
-            var serviceContext = new ServiceContext
-            {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions(),
-                Log = new TestKestrelTrace()
-            };
-            var listenerContext = new ListenerContext(serviceContext)
-            {
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-            };
-            var connectionContext = new ConnectionContext(listenerContext)
-            {
-                SocketOutput = new MockSocketOuptut(),
-            };
-            var frame = new Frame<object>(application: null, context: connectionContext);
-            frame.InitializeHeaders();
-            frame.HttpVersion = "HTTP/1.1";
-            ((IHttpResponseFeature)frame).StatusCode = 304;
+            _frame.HttpVersion = "HTTP/1.1";
+            ((IHttpResponseFeature)_frame).StatusCode = 304;
 
             // Act/Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => frame.WriteAsync(new ArraySegment<byte>(new byte[1]), default(CancellationToken)));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _frame.WriteAsync(new ArraySegment<byte>(new byte[1]), default(CancellationToken)));
         }
 
         [Fact]
         public void WriteDoesNotThrowForHeadResponse()
         {
             // Arrange
-            var serviceContext = new ServiceContext
-            {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions(),
-                Log = new TestKestrelTrace()
-            };
-            var listenerContext = new ListenerContext(serviceContext)
-            {
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-            };
-            var connectionContext = new ConnectionContext(listenerContext)
-            {
-                SocketOutput = new MockSocketOuptut(),
-            };
-            var frame = new Frame<object>(application: null, context: connectionContext);
-            frame.InitializeHeaders();
-            frame.HttpVersion = "HTTP/1.1";
-            ((IHttpRequestFeature)frame).Method = "HEAD";
+            _frame.HttpVersion = "HTTP/1.1";
+            ((IHttpRequestFeature)_frame).Method = "HEAD";
 
             // Act/Assert
-            frame.Write(new ArraySegment<byte>(new byte[1]));
+            _frame.Write(new ArraySegment<byte>(new byte[1]));
         }
 
         [Fact]
         public async Task WriteAsyncDoesNotThrowForHeadResponse()
         {
             // Arrange
-            var serviceContext = new ServiceContext
-            {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions(),
-                Log = new TestKestrelTrace()
-            };
-            var listenerContext = new ListenerContext(serviceContext)
-            {
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-            };
-            var connectionContext = new ConnectionContext(listenerContext)
-            {
-                SocketOutput = new MockSocketOuptut(),
-            };
-            var frame = new Frame<object>(application: null, context: connectionContext);
-            frame.InitializeHeaders();
-            frame.HttpVersion = "HTTP/1.1";
-            ((IHttpRequestFeature)frame).Method = "HEAD";
+            _frame.HttpVersion = "HTTP/1.1";
+            ((IHttpRequestFeature)_frame).Method = "HEAD";
 
             // Act/Assert
-            await frame.WriteAsync(new ArraySegment<byte>(new byte[1]), default(CancellationToken));
+            await _frame.WriteAsync(new ArraySegment<byte>(new byte[1]), default(CancellationToken));
         }
 
         [Fact]
         public void ManuallySettingTransferEncodingThrowsForHeadResponse()
         {
             // Arrange
-            var serviceContext = new ServiceContext
-            {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions(),
-                Log = new TestKestrelTrace()
-            };
-            var listenerContext = new ListenerContext(serviceContext)
-            {
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-            };
-            var connectionContext = new ConnectionContext(listenerContext)
-            {
-                SocketOutput = new MockSocketOuptut(),
-            };
-            var frame = new Frame<object>(application: null, context: connectionContext);
-            frame.InitializeHeaders();
-            frame.HttpVersion = "HTTP/1.1";
-            ((IHttpRequestFeature)frame).Method = "HEAD";
+            _frame.HttpVersion = "HTTP/1.1";
+            ((IHttpRequestFeature)_frame).Method = "HEAD";
 
             // Act
-            frame.ResponseHeaders.Add("Transfer-Encoding", "chunked");
+            _frame.ResponseHeaders.Add("Transfer-Encoding", "chunked");
 
             // Assert
-            Assert.Throws<InvalidOperationException>(() => frame.Flush());
+            Assert.Throws<InvalidOperationException>(() => _frame.Flush());
         }
 
         [Fact]
         public void ManuallySettingTransferEncodingThrowsForNoBodyResponse()
         {
             // Arrange
-            var serviceContext = new ServiceContext
-            {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions(),
-                Log = new TestKestrelTrace()
-            };
-            var listenerContext = new ListenerContext(serviceContext)
-            {
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-            };
-            var connectionContext = new ConnectionContext(listenerContext)
-            {
-                SocketOutput = new MockSocketOuptut(),
-            };
-            var frame = new Frame<object>(application: null, context: connectionContext);
-            frame.InitializeHeaders();
-            frame.HttpVersion = "HTTP/1.1";
-            ((IHttpResponseFeature)frame).StatusCode = 304;
+            _frame.HttpVersion = "HTTP/1.1";
+            ((IHttpResponseFeature)_frame).StatusCode = 304;
 
             // Act
-            frame.ResponseHeaders.Add("Transfer-Encoding", "chunked");
+            _frame.ResponseHeaders.Add("Transfer-Encoding", "chunked");
 
             // Assert
-            Assert.Throws<InvalidOperationException>(() => frame.Flush());
+            Assert.Throws<InvalidOperationException>(() => _frame.Flush());
         }
 
         [Fact]
         public async Task RequestProcessingTaskIsUnwrapped()
         {
-            var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
-            using (var pool = new MemoryPool())
-            using (var socketInput = new SocketInput(pool, ltp))
-            {
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = trace
-                };
-                var listenerContext = new ListenerContext(serviceContext)
-                {
-                    ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
-                };
-                var connectionContext = new ConnectionContext(listenerContext)
-                {
-                    ConnectionControl = Mock.Of<IConnectionControl>(),
-                    SocketInput = socketInput
-                };
+            _frame.Start();
 
-                var frame = new Frame<HttpContext>(application: null, context: connectionContext);
-                frame.Start();
+            var data = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n\r\n");
+            _socketInput.IncomingData(data, 0, data.Length);
 
-                var data = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n\r\n");
-                socketInput.IncomingData(data, 0, data.Length);
+            var requestProcessingTask = _frame.StopAsync();
+            Assert.IsNotType(typeof(Task<Task>), requestProcessingTask);
 
-                var requestProcessingTask = frame.StopAsync();
-                Assert.IsNotType(typeof(Task<Task>), requestProcessingTask);
-
-                await requestProcessingTask.TimeoutAfter(TimeSpan.FromSeconds(10));
-                socketInput.IncomingFin();
-            }
+            await requestProcessingTask.TimeoutAfter(TimeSpan.FromSeconds(10));
+            _socketInput.IncomingFin();
         }
     }
 }

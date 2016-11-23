@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             SocketInput = new SocketInput(MemoryPool, ThreadPool);
 
             var connectionContext = new MockConnection(new KestrelServerOptions());
-            connectionContext.SocketInput = SocketInput;
+            connectionContext.Input = SocketInput;
 
             Frame = new Frame<object>(application: null, context: connectionContext);
         }

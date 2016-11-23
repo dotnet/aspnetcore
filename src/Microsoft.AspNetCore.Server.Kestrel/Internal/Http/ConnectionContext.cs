@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public ListenerContext ListenerContext { get; set; }
 
-        public SocketInput SocketInput { get; set; }
+        public SocketInput Input { get; set; }
 
-        public ISocketOutput SocketOutput { get; set; }
+        public ISocketOutput Output { get; set; }
 
         public IConnectionControl ConnectionControl { get; set; }
 

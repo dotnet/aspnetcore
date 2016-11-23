@@ -82,8 +82,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public Frame(ConnectionContext context)
         {
             ConnectionContext = context;
-            SocketInput = context.SocketInput;
-            SocketOutput = context.SocketOutput;
+            Input = context.Input;
+            Output = context.Output;
 
             ServerOptions = context.ListenerContext.ServiceContext.ServerOptions;
 
@@ -95,8 +95,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         }
 
         public ConnectionContext ConnectionContext { get; }
-        public SocketInput SocketInput { get; set; }
-        public ISocketOutput SocketOutput { get; set; }
+        public SocketInput Input { get; set; }
+        public ISocketOutput Output { get; set; }
         public Action<IFeatureCollection> PrepareRequest
         {
             get
@@ -531,13 +531,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public void Flush()
         {
             ProduceStartAndFireOnStarting().GetAwaiter().GetResult();
-            SocketOutput.Flush();
+            Output.Flush();
         }
 
         public async Task FlushAsync(CancellationToken cancellationToken)
         {
             await ProduceStartAndFireOnStarting();
-            await SocketOutput.FlushAsync(cancellationToken);
+            await Output.FlushAsync(cancellationToken);
         }
 
         public void Write(ArraySegment<byte> data)
@@ -564,7 +564,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
                 else
                 {
-                    SocketOutput.Write(data);
+                    Output.Write(data);
                 }
             }
             else
@@ -599,7 +599,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
                 else
                 {
-                    return SocketOutput.WriteAsync(data, cancellationToken: cancellationToken);
+                    return Output.WriteAsync(data, cancellationToken: cancellationToken);
                 }
             }
             else
@@ -631,7 +631,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
                 else
                 {
-                    await SocketOutput.WriteAsync(data, cancellationToken: cancellationToken);
+                    await Output.WriteAsync(data, cancellationToken: cancellationToken);
                 }
             }
             else
@@ -675,17 +675,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private void WriteChunked(ArraySegment<byte> data)
         {
-            SocketOutput.Write(data, chunk: true);
+            Output.Write(data, chunk: true);
         }
 
         private Task WriteChunkedAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
-            return SocketOutput.WriteAsync(data, chunk: true, cancellationToken: cancellationToken);
+            return Output.WriteAsync(data, chunk: true, cancellationToken: cancellationToken);
         }
 
         private Task WriteChunkedResponseSuffix()
         {
-            return SocketOutput.WriteAsync(_endChunkedResponseBytes);
+            return Output.WriteAsync(_endChunkedResponseBytes);
         }
 
         private static ArraySegment<byte> CreateAsciiByteArraySegment(string text)
@@ -706,7 +706,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 RequestHeaders.TryGetValue("Expect", out expect) &&
                 (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
             {
-                SocketOutput.Write(_continueBytes);
+                Output.Write(_continueBytes);
             }
         }
 
@@ -809,7 +809,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             ProduceStart(appCompleted: true);
 
             // Force flush
-            await SocketOutput.FlushAsync();
+            await Output.FlushAsync();
 
             await WriteSuffix();
         }
@@ -856,7 +856,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             var hasTransferEncoding = responseHeaders.HasTransferEncoding;
             var transferCoding = FrameHeaders.GetFinalTransferCoding(responseHeaders.HeaderTransferEncoding);
 
-            var end = SocketOutput.ProducingStart();
+            var end = Output.ProducingStart();
 
             if (_keepAlive && hasConnection)
             {
@@ -944,7 +944,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             responseHeaders.CopyTo(ref end);
             end.CopyFrom(_bytesEndHeaders, 0, _bytesEndHeaders.Length);
 
-            SocketOutput.ProducingComplete(end);
+            Output.ProducingComplete(end);
         }
 
         public RequestLineStatus TakeStartLine(SocketInput input)
