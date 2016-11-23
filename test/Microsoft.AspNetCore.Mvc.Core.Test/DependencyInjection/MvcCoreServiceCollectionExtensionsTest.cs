@@ -4,9 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
@@ -32,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc
             // Arrange
             var services = new ServiceCollection();
 
-            // Register a mock implementation of each service, AddMvcServices should add another implemenetation.
+            // Register a mock implementation of each service, AddMvcServices should add another implementation.
             foreach (var serviceType in MutliRegistrationServiceTypes)
             {
                 var mockType = typeof(Mock<>).MakeGenericType(serviceType.Key);
@@ -102,6 +106,112 @@ namespace Microsoft.AspNetCore.Mvc
                     AssertContainsSingle(services, service.ServiceType, service.ImplementationType);
                 }
             }
+        }
+
+        [Fact]
+        public void AddMvcCore_UsesOriginalPartManager()
+        {
+            // Arrange
+            var manager = new ApplicationPartManager();
+            var services = new ServiceCollection();
+            services.AddSingleton(manager);
+
+            // Act
+            var builder = services.AddMvcCore();
+
+            // Assert
+            // SingleRegistrationServiceTypes_AreNotRegistered_MultipleTimes already checks that no other
+            // ApplicationPartManager (but manager) is registered.
+            Assert.Same(manager, builder.PartManager);
+            Assert.Contains(manager.FeatureProviders, provider => provider is ControllerFeatureProvider);
+        }
+
+        // Regression test for aspnet/Mvc#5554.
+        [Fact]
+        public void AddMvcCore_UsesLastPartManager()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var mockManager = new Mock<ApplicationPartManager>(MockBehavior.Strict);
+            services.AddSingleton(mockManager.Object);
+
+            var manager = new ApplicationPartManager();
+            services.AddSingleton(manager);
+
+            // Act
+            var builder = services.AddMvcCore();
+
+            // Assert
+            Assert.Same(manager, builder.PartManager);
+            Assert.Contains(manager.FeatureProviders, provider => provider is ControllerFeatureProvider);
+        }
+
+        [Fact]
+        public void AddMvcCore_UsesOriginalHostingEnvironment()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var environment = new Mock<IHostingEnvironment>(MockBehavior.Strict);
+            environment.SetupGet(e => e.ApplicationName).Returns((string)null).Verifiable();
+            services.AddSingleton<IHostingEnvironment>(environment.Object);
+
+            // Act
+            var builder = services.AddMvcCore();
+
+            // Assert
+            Assert.NotNull(builder.PartManager);
+            Assert.Empty(builder.PartManager.ApplicationParts);
+            Assert.Contains(builder.PartManager.FeatureProviders, provider => provider is ControllerFeatureProvider);
+
+            environment.VerifyAll();
+        }
+
+        // Second regression test for aspnet/Mvc#5554.
+        [Fact]
+        public void AddMvcCore_UsesLastHostingEnvironment()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var environment = new Mock<IHostingEnvironment>(MockBehavior.Strict);
+            services.AddSingleton<IHostingEnvironment>(environment.Object);
+
+            environment = new Mock<IHostingEnvironment>(MockBehavior.Strict);
+            environment.SetupGet(e => e.ApplicationName).Returns((string)null).Verifiable();
+            services.AddSingleton<IHostingEnvironment>(environment.Object);
+
+            // Act
+            var builder = services.AddMvcCore();
+
+            // Assert
+            Assert.NotNull(builder.PartManager);
+            Assert.Empty(builder.PartManager.ApplicationParts);
+            Assert.Contains(builder.PartManager.FeatureProviders, provider => provider is ControllerFeatureProvider);
+
+            environment.VerifyAll();
+        }
+
+        [Fact]
+        public void AddMvcCore_GetsPartsForApplication()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var environment = new Mock<IHostingEnvironment>(MockBehavior.Strict);
+            var assemblyName = typeof(MvcCoreServiceCollectionExtensionsTest).GetTypeInfo().Assembly.GetName();
+            var applicationName = assemblyName.FullName;
+            environment.SetupGet(e => e.ApplicationName).Returns(applicationName).Verifiable();
+            services.AddSingleton<IHostingEnvironment>(environment.Object);
+
+            // Act
+            var builder = services.AddMvcCore();
+
+            // Assert
+            Assert.NotNull(builder.PartManager);
+            Assert.Contains(
+                builder.PartManager.ApplicationParts,
+                part => string.Equals(assemblyName.Name, part.Name, StringComparison.Ordinal));
+            Assert.Contains(builder.PartManager.FeatureProviders, provider => provider is ControllerFeatureProvider);
+
+            environment.VerifyAll();
         }
 
         private IEnumerable<Type> SingleRegistrationServiceTypes
