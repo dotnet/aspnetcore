@@ -1,0 +1,185 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.IO.Pipelines;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.WebSockets.Internal;
+using Microsoft.Extensions.WebSockets.Internal.Tests;
+using Xunit;
+
+namespace Microsoft.AspNetCore.Sockets.Tests
+{
+    public class WebSocketsTests
+    {
+        [Fact]
+        public async Task ReceivedFramesAreWrittenToPipeline()
+        {
+            using (var factory = new PipelineFactory())
+            using (var pair = WebSocketPair.Create(factory))
+            {
+                var connection = new Connection();
+                connection.ConnectionId = Guid.NewGuid().ToString();
+                var httpConnection = new HttpConnection(factory);
+                connection.Channel = httpConnection;
+                var ws = new WebSockets(connection, Format.Text, new LoggerFactory());
+
+                // Give the server socket to the transport and run it
+                var transport = ws.ProcessSocketAsync(pair.ServerSocket);
+
+                // Run the client socket
+                var client = pair.ClientSocket.ExecuteAndCaptureFramesAsync();
+
+                // Send a frame, then close
+                await pair.ClientSocket.SendAsync(new WebSocketFrame(
+                    endOfMessage: true,
+                    opcode: WebSocketOpcode.Text,
+                    payload: ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello"))));
+                await pair.ClientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure);
+
+                // Capture everything out of the input channel and then complete the writer (to do our end of the close)
+                var buffer = (await connection.Channel.Input.ReadToEndAsync()).ToArray();
+                httpConnection.Output.CompleteWriter();
+
+                // The transport should finish now
+                await transport;
+
+                // The connection should close after this, which means the client will get a close frame.
+                var clientSummary = await client;
+
+                // Read from the connection pipeline
+                Assert.Equal("Hello", Encoding.UTF8.GetString(buffer));
+                Assert.Equal(WebSocketCloseStatus.NormalClosure, clientSummary.CloseResult.Status);
+            }
+        }
+
+        [Theory]
+        [InlineData(Format.Text, WebSocketOpcode.Text)]
+        [InlineData(Format.Binary, WebSocketOpcode.Binary)]
+        public async Task DataWrittenToOutputPipelineAreSentAsFrames(Format format, WebSocketOpcode expectedOpcode)
+        {
+            using (var factory = new PipelineFactory())
+            using (var pair = WebSocketPair.Create(factory))
+            {
+                var connection = new Connection();
+                connection.ConnectionId = Guid.NewGuid().ToString();
+                var httpConnection = new HttpConnection(factory);
+                connection.Channel = httpConnection;
+                var ws = new WebSockets(connection, format, new LoggerFactory());
+
+                // Give the server socket to the transport and run it
+                var transport = ws.ProcessSocketAsync(pair.ServerSocket);
+
+                // Run the client socket
+                var client = pair.ClientSocket.ExecuteAndCaptureFramesAsync();
+
+                // Write to the output channel, and then complete it
+                await httpConnection.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello"));
+                httpConnection.Output.CompleteWriter();
+
+                // The client should finish now, as should the server
+                var clientSummary = await client;
+                await pair.ClientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure);
+                await transport;
+
+                Assert.Equal(1, clientSummary.Received.Count);
+                Assert.True(clientSummary.Received[0].EndOfMessage);
+                Assert.Equal(expectedOpcode, clientSummary.Received[0].Opcode);
+                Assert.Equal("Hello", Encoding.UTF8.GetString(clientSummary.Received[0].Payload.ToArray()));
+            }
+        }
+
+        [Fact]
+        public async Task FrameReceivedAfterServerCloseSent()
+        {
+            using (var factory = new PipelineFactory())
+            using (var pair = WebSocketPair.Create(factory))
+            {
+                var connection = new Connection();
+                connection.ConnectionId = Guid.NewGuid().ToString();
+                var httpConnection = new HttpConnection(factory);
+                connection.Channel = httpConnection;
+                var ws = new WebSockets(connection, Format.Binary, new LoggerFactory());
+
+                // Give the server socket to the transport and run it
+                var transport = ws.ProcessSocketAsync(pair.ServerSocket);
+
+                // Run the client socket
+                var client = pair.ClientSocket.ExecuteAndCaptureFramesAsync();
+
+                // Close the output and wait for the close frame
+                httpConnection.Output.CompleteWriter();
+                await client;
+
+                // Send another frame. Then close
+                await pair.ClientSocket.SendAsync(new WebSocketFrame(
+                    endOfMessage: true,
+                    opcode: WebSocketOpcode.Text,
+                    payload: ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello"))));
+                await pair.ClientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure);
+
+                // Read that frame from the input
+                var result = (await httpConnection.Input.ReadToEndAsync()).ToArray();
+                Assert.Equal("Hello", Encoding.UTF8.GetString(result));
+
+                await transport;
+            }
+        }
+
+        [Fact]
+        public async Task TransportFailsWhenClientDisconnectsAbnormally()
+        {
+            using (var factory = new PipelineFactory())
+            using (var pair = WebSocketPair.Create(factory))
+            {
+                var connection = new Connection();
+                connection.ConnectionId = Guid.NewGuid().ToString();
+                var httpConnection = new HttpConnection(factory);
+                connection.Channel = httpConnection;
+                var ws = new WebSockets(connection, Format.Binary, new LoggerFactory());
+
+                // Give the server socket to the transport and run it
+                var transport = ws.ProcessSocketAsync(pair.ServerSocket);
+
+                // Run the client socket
+                var client = pair.ClientSocket.ExecuteAndCaptureFramesAsync();
+
+                // Terminate the client to server channel with an exception
+                pair.TerminateFromClient(new InvalidOperationException());
+
+                // Wait for the transport
+                await Assert.ThrowsAsync<InvalidOperationException>(() => transport);
+            }
+        }
+
+        [Fact]
+        public async Task ClientReceivesInternalServerErrorWhenTheApplicationFails()
+        {
+            using (var factory = new PipelineFactory())
+            using (var pair = WebSocketPair.Create(factory))
+            {
+                var connection = new Connection();
+                connection.ConnectionId = Guid.NewGuid().ToString();
+                var httpConnection = new HttpConnection(factory);
+                connection.Channel = httpConnection;
+                var ws = new WebSockets(connection, Format.Binary, new LoggerFactory());
+
+                // Give the server socket to the transport and run it
+                var transport = ws.ProcessSocketAsync(pair.ServerSocket);
+
+                // Run the client socket
+                var client = pair.ClientSocket.ExecuteAndCaptureFramesAsync();
+
+                // Fail in the app
+                httpConnection.Output.CompleteWriter(new InvalidOperationException());
+                var clientSummary = await client;
+                Assert.Equal(WebSocketCloseStatus.InternalServerError, clientSummary.CloseResult.Status);
+
+                // Close from the client
+                await pair.ClientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure);
+            }
+        }
+    }
+}

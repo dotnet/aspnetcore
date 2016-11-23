@@ -1,6 +1,11 @@
 {
   "buildOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "compile": [
+      "../Microsoft.Extensions.WebSockets.Internal.Tests/WebSocketConnectionExtensions.cs",
+      "../Microsoft.Extensions.WebSockets.Internal.Tests/WebSocketConnectionSummary.cs",
+      "../Microsoft.Extensions.WebSockets.Internal.Tests/WebSocketPair.cs"
+    ]
   },
 
   "dependencies": {

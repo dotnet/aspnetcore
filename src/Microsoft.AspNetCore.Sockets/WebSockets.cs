@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebSockets.Internal;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.WebSockets.Internal;
 
 namespace Microsoft.AspNetCore.Sockets
@@ -24,10 +24,18 @@ namespace Microsoft.AspNetCore.Sockets
 
         public WebSockets(Connection connection, Format format, ILoggerFactory loggerFactory)
         {
+            if (connection == null)
+            {
+                throw new ArgumentNullException(nameof(connection));
+            }
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _channel = (HttpConnection)connection.Channel;
             _opcode = format == Format.Binary ? WebSocketOpcode.Binary : WebSocketOpcode.Text;
-
-            _logger = (ILogger)loggerFactory?.CreateLogger<WebSockets>() ?? NullLogger.Instance;
+            _logger = loggerFactory.CreateLogger<WebSockets>();
         }
 
         public async Task ProcessRequestAsync(HttpContext context)
@@ -43,44 +51,62 @@ namespace Microsoft.AspNetCore.Sockets
             {
                 _logger.LogInformation("Socket opened.");
 
-                // Begin sending and receiving. Receiving must be started first because ExecuteAsync enables SendAsync.
-                var receiving = ws.ExecuteAsync((frame, state) => ((WebSockets)state).HandleFrame(frame), this);
-                var sending = StartSending(ws);
-
-                // Wait for something to shut down.
-                var trigger = await Task.WhenAny(
-                    receiving,
-                    sending);
-
-                // What happened?
-                if (trigger == receiving)
-                {
-                    // Shutting down because we received a close frame from the client.
-                    // Complete the input writer so that the application knows there won't be any more input.
-                    _logger.LogDebug("Client closed connection with status code '{0}' ({1}). Signaling end-of-input to application", receiving.Result.Status, receiving.Result.Description);
-                    _channel.Input.CompleteWriter();
-
-                    // Wait for the application to finish sending.
-                    _logger.LogDebug("Waiting for the application to finish sending data");
-                    await sending;
-
-                    // Send the server's close frame
-                    await ws.CloseAsync(WebSocketCloseStatus.NormalClosure);
-                }
-                else
-                {
-                    // The application finished sending. We're not going to keep the connection open,
-                    // so close it and wait for the client to ack the close
-                    _channel.Input.CompleteWriter();
-                    _logger.LogDebug("Application finished sending. Sending close frame.");
-                    await ws.CloseAsync(WebSocketCloseStatus.NormalClosure);
-
-                    _logger.LogDebug("Waiting for the client to close the socket");
-                    // TODO: Timeout.
-                    await receiving;
-                }
+                await ProcessSocketAsync(ws);
             }
             _logger.LogInformation("Socket closed.");
+        }
+
+        public async Task ProcessSocketAsync(IWebSocketConnection socket)
+        {
+            // Begin sending and receiving. Receiving must be started first because ExecuteAsync enables SendAsync.
+            var receiving = socket.ExecuteAsync((frame, state) => ((WebSockets)state).HandleFrame(frame), this);
+            var sending = StartSending(socket);
+
+            // Wait for something to shut down.
+            var trigger = await Task.WhenAny(
+                receiving,
+                sending);
+
+            // What happened?
+            if (trigger == receiving)
+            {
+                if (receiving.IsCanceled || receiving.IsFaulted)
+                {
+                    // The receiver faulted or cancelled. This means the client is probably broken. Just propagate the exception and exit
+                    receiving.GetAwaiter().GetResult();
+
+                    // Should never get here because GetResult above will throw
+                    Debug.Fail("GetResult didn't throw?");
+                    return;
+                }
+
+                // Shutting down because we received a close frame from the client.
+                // Complete the input writer so that the application knows there won't be any more input.
+                _logger.LogDebug("Client closed connection with status code '{0}' ({1}). Signaling end-of-input to application", receiving.Result.Status, receiving.Result.Description);
+                _channel.Input.CompleteWriter();
+
+                // Wait for the application to finish sending.
+                _logger.LogDebug("Waiting for the application to finish sending data");
+                await sending;
+
+                // Send the server's close frame
+                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure);
+            }
+            else
+            {
+                var failed = sending.IsFaulted || sending.IsCompleted;
+
+                // The application finished sending. Close our end of the connection
+                _logger.LogDebug(!failed ? "Application finished sending. Sending close frame." : "Application failed during sending. Sending InternalServerError close frame");
+                await socket.CloseAsync(!failed ? WebSocketCloseStatus.NormalClosure : WebSocketCloseStatus.InternalServerError);
+
+                _logger.LogDebug("Waiting for the client to close the socket");
+
+                // Wait for the client to close.
+                // TODO: Consider timing out here and cancelling the receive loop.
+                await receiving;
+                _channel.Input.CompleteWriter();
+            }
         }
 
         private Task HandleFrame(WebSocketFrame frame)
