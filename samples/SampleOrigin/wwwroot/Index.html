@@ -1,0 +1,89 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style>
+        p {
+            font-size: 20px;
+        }
+
+        .button {
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 5px 5px;
+            cursor: pointer;
+        }
+
+        .green {
+            background-color: #4CAF50;
+        }
+
+        .red {
+            background-color: indianred;
+        }
+
+        .gray {
+            background-color: gray;
+        }
+    </style>
+    <title>CORS Sample</title>
+</head>
+<body>
+    <script type="text/javascript">
+        // Make the CORS request.
+        function makeCORSRequest(method, headerName, headerValue) {
+            // Destination server with CORS enabled.
+            var url = 'http://destination.example.com:5000/';
+            var request = new XMLHttpRequest();
+            request.open(method, url, true);
+            if (headerName && headerValue) {
+                request.setRequestHeader(headerName, headerValue);
+            }
+
+            if (!request) {
+                alert('CORS not supported');
+                return;
+            }
+
+            // Response handlers.
+            request.onload = function () {
+                var text = request.responseText;
+                alert('Response from CORS ' + method + ' request to ' + url + ': ' + text);
+            };
+
+            request.onerror = function () {
+                alert('There was an error making the request for method ' + method);
+            };
+
+            request.send();
+        }
+    </script>
+
+    <p>CORS Sample</p>
+    Method: <input type="text" id="methodName" /><br /><br />
+    Header Name: <input type="text" id="headerName" /> Header Value: <input type="text" id="headerValue" /><br /><br />
+
+    <script>
+        document.getElementById('headerValue')
+            .addEventListener("keyup", function (event) {
+                event.preventDefault();
+                if (event.keyCode == 13) {
+                    document.getElementById("CORS").click();
+                }
+            });
+    </script>
+
+    <button class="button gray" id="CORS" type="submit" onclick="makeCORSRequest(document.getElementById('methodName').value, document.getElementById('headerName').value, document.getElementById('headerValue').value);">Make a CORS Request</button><br /><br /><br /><br />
+
+    Method DELETE is not allowed:<button class="button red" id="InvalidMethodCORS" type="submit" onclick="makeCORSRequest('DELETE', 'Cache-Control', 'no-cache');">Invalid Method CORS Request</button>
+    Method PUT is allowed:<button class="button green" id="ValidMethodCORS" type="submit" onclick="makeCORSRequest('PUT', 'Cache-Control', 'no-cache');">Valid Method CORS Request</button><br /><br />
+
+    Header 'Max-Forwards' not supported:<button class="button red" id="InvalidHeaderCORS" type="submit" onclick="makeCORSRequest('PUT', 'Max-Forwards', '2');">Invalid Header CORS Request</button>
+    Header 'Cache-Control' is supported:<button class="button green" id="ValidHeaderCORS" type="submit" onclick="makeCORSRequest('PUT', 'Cache-Control', 'no-cache');">Valid Header CORS Request</button><br /><br />
+</body>
+</html>
