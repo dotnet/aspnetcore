@@ -3,7 +3,7 @@
 This sample consists of a request origin (SampleOrigin) and a request destination (SampleDestination). Both have different domain names, to simulate a CORS request. 
 
 ## Modify Hosts File
-To run this CORS sample, modify the hosts file to register the hostnames `destination.example.com` and `origin.example.com.`
+To run this CORS sample, modify the hosts file to register the hostnames `destination.example.com` and `origin.example.com`.
 ### Windows:
 Run a text editor (e.g. Notepad) as an Administrator. Open the hosts file on the path: "C:\Windows\System32\drivers\etc\hosts".
 
@@ -23,9 +23,9 @@ Save the file and close it. Then clear your browser history.
 The SampleOrigin application will use port 5001, and SampleDestination will use 5000. Please ensure there are no other processes using those ports before running the CORS sample.
 
 * In a command prompt window, open the directory where you cloned the repository, and open the SampleDestination directory. Run the command: dotnet run
-* Repeat the above step in the SampleOrigin directory.
+* Repeat the above step in the SampleOrigin directory
 * Open a browser window and go to `http://origin.example.com:5001`
-* Input a method and header to create a CORS request or use one of the example buttons to see CORS in action.
+* Input a method and header to create a CORS request or use one of the example buttons to see CORS in action
 
 As an example, apart from `GET`, `HEAD` and `POST` requests, `PUT` requests are allowed in the CORS policy on SampleDestination. Any others, like `DELETE`, `OPTIONS` etc. are not allowed and throw an error.
 `Cache-Control` has been added as an allowed header to the sample. Any other headers are not allowed and throw an error. You may leave the header name and value blank.
