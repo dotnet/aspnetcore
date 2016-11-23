@@ -1,12 +1,378 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
     public class CSharpDirectivesTest : CsHtmlCodeParserTestBase
     {
+        [Fact]
+        public void DirectiveDescriptor_UnderstandsTypeTokens()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddType().Build();
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom System.Text.Encoding.ASCIIEncoding",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Code, "System.Text.Encoding.ASCIIEncoding", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)));
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_UnderstandsMemberTokens()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddMember().Build();
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom Some_Member",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Code, "Some_Member", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)));
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_UnderstandsStringTokens()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom AString",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Markup, "AString", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)));
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_UnderstandsLiteralTokens()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddLiteral("!").Build();
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom !",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Markup, "!", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)));
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_UnderstandsMultipleTokens()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom")
+                .AddType()
+                .AddMember()
+                .AddString()
+                .AddLiteral("!")
+                .Build();
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom System.Text.Encoding.ASCIIEncoding Some_Member AString !",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+
+                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Code, "System.Text.Encoding.ASCIIEncoding", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace),
+
+                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Code, "Some_Member", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[1]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace),
+
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Markup, "AString", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[2]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace),
+
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Markup, "!", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[3]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)));
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_UnderstandsRazorBlocks()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.CreateRazorBlock("custom").AddString().Build();
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom Header { <p>F{o}o</p> }",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Markup, "Header", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.MetaCode("{")
+                        .AutoCompleteWith(null, atEndOfSpan: true)
+                        .Accepts(AcceptedCharacters.None),
+                    new MarkupBlock(
+                        Factory.Markup(" "),
+                        new MarkupTagBlock(
+                            Factory.Markup("<p>")),
+                        Factory.Markup("F", "{", "o", "}", "o"),
+                        new MarkupTagBlock(
+                            Factory.Markup("</p>")),
+                        Factory.Markup(" ")),
+                    Factory.MetaCode("}").Accepts(AcceptedCharacters.None)));
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_UnderstandsCodeBlocks()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.CreateCodeBlock("custom").AddString().Build();
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom Name { foo(); bar(); }",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Markup, "Name", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.MetaCode("{")
+                        .AutoCompleteWith(null, atEndOfSpan: true)
+                        .Accepts(AcceptedCharacters.None),
+                    Factory.Code(" foo(); bar(); ").AsStatement(),
+                    Factory.MetaCode("}").Accepts(AcceptedCharacters.None)));
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_AllowsWhiteSpaceAroundTokens()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom")
+                .AddType()
+                .AddMember()
+                .Build();
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom    System.Text.Encoding.ASCIIEncoding       Some_Member    ",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+
+                    Factory.Span(SpanKind.Code, "    ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Code, "System.Text.Encoding.ASCIIEncoding", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace),
+
+                    Factory.Span(SpanKind.Code, "       ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Code, "Some_Member", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[1]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace),
+
+                    Factory.Span(SpanKind.Markup, "    ", markup: false)
+                        .Accepts(AcceptedCharacters.AllWhiteSpace)));
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_ErrorsForInvalidMemberTokens()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddMember().Build();
+            var expectedErorr = new RazorError(
+                LegacyResources.FormatDirectiveExpectsIdentifier("custom"),
+                new SourceLocation(8, 0, 8),
+                length: 1);
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom -Some_Member",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)),
+                expectedErorr);
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_ErrorsForUnmatchedLiteralTokens()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddLiteral("!").Build();
+            var expectedErorr = new RazorError(
+                LegacyResources.FormatUnexpectedDirectiveLiteral("custom", "!"),
+                new SourceLocation(8, 0, 8),
+                length: 2);
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom hi",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)),
+                expectedErorr);
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_ErrorsExtraContentAfterDirective()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
+            var expectedErorr = new RazorError(
+                LegacyResources.FormatUnexpectedDirectiveLiteral("custom", Environment.NewLine),
+                new SourceLocation(14, 0, 14),
+                length: 5);
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom hello world",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Markup, "hello", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace),
+
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.AllWhiteSpace)),
+                expectedErorr);
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_ErrorsWhenExtraContentBeforeBlockStart()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.CreateCodeBlock("custom").AddString().Build();
+            var expectedErorr = new RazorError(
+                LegacyResources.FormatUnexpectedDirectiveLiteral("custom", "{"),
+                new SourceLocation(14, 0, 14),
+                length: 5);
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom Hello World { foo(); bar(); }",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Markup, "Hello", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace),
+
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)),
+                expectedErorr);
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_ErrorsWhenEOFBeforeDirectiveBlockStart()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.CreateCodeBlock("custom").AddString().Build();
+            var expectedErorr = new RazorError(
+                LegacyResources.FormatUnexpectedEOFAfterDirective("custom", "{"),
+                new SourceLocation(13, 0, 13),
+                length: 1);
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom Hello",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Markup, "Hello", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)),
+                expectedErorr);
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_ErrorsWhenMissingEndBrace()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.CreateCodeBlock("custom").AddString().Build();
+            var expectedErorr = new RazorError(
+                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("custom", "{", "}"),
+                new SourceLocation(14, 0, 14),
+                length: 1);
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom Hello {",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Markup, "Hello", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.MetaCode("{")
+                        .AutoCompleteWith("}", atEndOfSpan: true)
+                        .Accepts(AcceptedCharacters.None)),
+                expectedErorr);
+        }
+
         [Fact]
         public void TagHelperPrefixDirective_NoValueSucceeds()
         {
@@ -421,6 +787,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         Factory.Markup(" ")),
                     Factory.MetaCode("}")
                            .Accepts(AcceptedCharacters.None)));
+        }
+
+        internal virtual void ParseCodeBlockTest(
+            string document,
+            IEnumerable<DirectiveDescriptor> descriptors,
+            Block expected,
+            params RazorError[] expectedErrors)
+        {
+            var result = ParseCodeBlock(document, descriptors, designTime: false);
+
+            EvaluateResults(result, expected, expectedErrors);
         }
     }
 }

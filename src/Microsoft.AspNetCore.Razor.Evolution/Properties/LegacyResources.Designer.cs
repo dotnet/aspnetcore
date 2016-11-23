@@ -331,6 +331,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         }
 
         /// <summary>
+        /// The '{0}' directive expects an identifier.
+        /// </summary>
+        internal static string DirectiveExpectsIdentifier
+        {
+            get { return GetString("DirectiveExpectsIdentifier"); }
+        }
+
+        /// <summary>
+        /// The '{0}' directive expects an identifier.
+        /// </summary>
+        internal static string FormatDirectiveExpectsIdentifier(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DirectiveExpectsIdentifier"), p0);
+        }
+
+        /// <summary>
         /// "EndBlock" was called without a matching call to "StartBlock".
         /// </summary>
         internal static string EndBlock_Called_Without_Matching_StartBlock
@@ -1316,6 +1332,38 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         internal static string FormatTokenizerView_CannotPutBack(object p0, object p1)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("TokenizerView_CannotPutBack"), p0, p1);
+        }
+
+        /// <summary>
+        /// Unexpected literal following the '{0}' directive. Expected '{1}'.
+        /// </summary>
+        internal static string UnexpectedDirectiveLiteral
+        {
+            get { return GetString("UnexpectedDirectiveLiteral"); }
+        }
+
+        /// <summary>
+        /// Unexpected literal following the '{0}' directive. Expected '{1}'.
+        /// </summary>
+        internal static string FormatUnexpectedDirectiveLiteral(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("UnexpectedDirectiveLiteral"), p0, p1);
+        }
+
+        /// <summary>
+        /// Unexpected end of file following the '{0}' directive. Expected '{1}'.
+        /// </summary>
+        internal static string UnexpectedEOFAfterDirective
+        {
+            get { return GetString("UnexpectedEOFAfterDirective"); }
+        }
+
+        /// <summary>
+        /// Unexpected end of file following the '{0}' directive. Expected '{1}'.
+        /// </summary>
+        internal static string FormatUnexpectedEOFAfterDirective(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("UnexpectedEOFAfterDirective"), p0, p1);
         }
 
         private static string GetString(string name, params string[] formatterNames)

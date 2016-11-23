@@ -179,6 +179,9 @@
   <data name="CSharpSymbol_Whitespace" xml:space="preserve">
     <value>&lt;&lt;white space&gt;&gt;</value>
   </data>
+  <data name="DirectiveExpectsIdentifier" xml:space="preserve">
+    <value>The '{0}' directive expects an identifier.</value>
+  </data>
   <data name="EndBlock_Called_Without_Matching_StartBlock" xml:space="preserve">
     <value>"EndBlock" was called without a matching call to "StartBlock".</value>
   </data>
@@ -380,5 +383,11 @@ Instead, wrap the contents of the block in "{{}}":
   </data>
   <data name="TokenizerView_CannotPutBack" xml:space="preserve">
     <value>In order to put a symbol back, it must have been the symbol which ended at the current position. The specified symbol ends at {0}, but the current position is {1}</value>
+  </data>
+  <data name="UnexpectedDirectiveLiteral" xml:space="preserve">
+    <value>Unexpected literal following the '{0}' directive. Expected '{1}'.</value>
+  </data>
+  <data name="UnexpectedEOFAfterDirective" xml:space="preserve">
+    <value>Unexpected end of file following the '{0}' directive. Expected '{1}'.</value>
   </data>
 </root>

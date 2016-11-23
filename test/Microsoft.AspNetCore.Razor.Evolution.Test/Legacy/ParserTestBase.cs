@@ -60,11 +60,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         internal virtual RazorSyntaxTree ParseCodeBlock(string document, bool designTime = false)
         {
+            return ParseCodeBlock(document, Enumerable.Empty<DirectiveDescriptor>(), designTime);
+        }
+
+        internal virtual RazorSyntaxTree ParseCodeBlock(
+            string document,
+            IEnumerable<DirectiveDescriptor> descriptors,
+            bool designTime)
+        {
             using (var reader = new SeekableTextReader(document))
             {
                 var context = new ParserContext(reader, designTime);
 
-                var parser = new CSharpCodeParser(context);
+                var parser = new CSharpCodeParser(descriptors, context);
                 parser.HtmlParser = new HtmlMarkupParser(context)
                 {
                     CodeParser = parser,

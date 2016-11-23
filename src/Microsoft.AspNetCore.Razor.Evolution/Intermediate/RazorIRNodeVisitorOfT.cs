@@ -15,6 +15,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             return default(TResult);
         }
 
+        public virtual TResult VisitDirectiveToken(DirectiveTokenIRNode node)
+        {
+            return VisitDefault(node);
+        }
+
+        public virtual TResult VisitDirective(DirectiveIRNode node)
+        {
+            return VisitDefault(node);
+        }
+
         public virtual TResult VisitTemplate(TemplateIRNode node)
         {
             return VisitDefault(node);

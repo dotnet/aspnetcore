@@ -206,6 +206,30 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Namespace.Children.Insert(i, @using);
             }
 
+            public override void VisitDirectiveToken(DirectiveTokenChunkGenerator chunkGenerator, Span span)
+            {
+                Builder.Add(new DirectiveTokenIRNode()
+                {
+                    Content = span.Content,
+                    Descriptor = chunkGenerator.Descriptor,
+                    SourceLocation = span.Start,
+                });
+            }
+
+            public override void VisitStartDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
+            {
+                Builder.Push(new DirectiveIRNode()
+                {
+                    Name = chunkGenerator.Descriptor.Name,
+                    Descriptor = chunkGenerator.Descriptor,
+                });
+            }
+
+            public override void VisitEndDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
+            {
+                Builder.Pop();
+            }
+
             private class ContainerRazorIRNode : RazorIRNode
             {
                 private SourceLocation? _location;

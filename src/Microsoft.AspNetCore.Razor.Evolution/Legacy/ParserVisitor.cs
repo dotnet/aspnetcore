@@ -89,7 +89,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
         }
 
+        public virtual void VisitDirectiveToken(DirectiveTokenChunkGenerator chunkGenerator, Span block)
+        {
+        }
+
         public virtual void VisitEndTemplateBlock(TemplateBlockChunkGenerator chunkGenerator, Block block)
+        {
+        }
+
+        public virtual void VisitStartDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
+        {
+        }
+
+        public virtual void VisitEndDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
         {
         }
 
