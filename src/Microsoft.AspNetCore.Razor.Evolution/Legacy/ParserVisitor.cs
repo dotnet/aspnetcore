@@ -41,67 +41,67 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
-        public virtual void VisitStartDynamicAttributeBlock(DynamicAttributeBlockChunkGenerator chunk, Block block)
+        public virtual void VisitStartDynamicAttributeBlock(DynamicAttributeBlockChunkGenerator chunkGenerator, Block block)
         {
         }
 
-        public virtual void VisitEndDynamicAttributeBlock(DynamicAttributeBlockChunkGenerator chunk, Block block)
+        public virtual void VisitEndDynamicAttributeBlock(DynamicAttributeBlockChunkGenerator chunkGenerator, Block block)
         {
         }
 
-        public virtual void VisitStartExpressionBlock(ExpressionChunkGenerator chunk, Block block)
+        public virtual void VisitStartExpressionBlock(ExpressionChunkGenerator chunkGenerator, Block block)
         {
         }
 
-        public virtual void VisitEndExpressionBlock(ExpressionChunkGenerator chunk, Block block)
+        public virtual void VisitEndExpressionBlock(ExpressionChunkGenerator chunkGenerator, Block block)
         {
         }
 
-        public virtual void VisitStartAttributeBlock(AttributeBlockChunkGenerator chunk, Block block)
+        public virtual void VisitStartAttributeBlock(AttributeBlockChunkGenerator chunkGenerator, Block block)
         {
         }
 
-        public virtual void VisitEndAttributeBlock(AttributeBlockChunkGenerator chunk, Block block)
+        public virtual void VisitEndAttributeBlock(AttributeBlockChunkGenerator chunkGenerator, Block block)
         {
         }
 
-        public virtual void VisitExpressionSpan(ExpressionChunkGenerator chunk, Span span)
+        public virtual void VisitExpressionSpan(ExpressionChunkGenerator chunkGenerator, Span span)
         {
         }
 
-        public virtual void VisitTypeMemberSpan(TypeMemberChunkGenerator chunk, Span span)
+        public virtual void VisitTypeMemberSpan(TypeMemberChunkGenerator chunkGenerator, Span span)
         {
         }
 
-        public virtual void VisitMarkupSpan(MarkupChunkGenerator chunk, Span span)
+        public virtual void VisitMarkupSpan(MarkupChunkGenerator chunkGenerator, Span span)
         {
         }
 
-        public virtual void VisitImportSpan(AddImportChunkGenerator chunk, Span span)
+        public virtual void VisitImportSpan(AddImportChunkGenerator chunkGenerator, Span span)
         {
         }
 
-        public virtual void VisitStatementSpan(StatementChunkGenerator chunk, Span span)
+        public virtual void VisitStatementSpan(StatementChunkGenerator chunkGenerator, Span span)
         {
         }
 
-        public virtual void VisitLiteralAttributeSpan(LiteralAttributeChunkGenerator chunk, Span span)
+        public virtual void VisitLiteralAttributeSpan(LiteralAttributeChunkGenerator chunkGenerator, Span span)
         {
         }
 
-        public virtual void VisitEndTemplateBlock(TemplateBlockChunkGenerator chunk, Block block)
+        public virtual void VisitEndTemplateBlock(TemplateBlockChunkGenerator chunkGenerator, Block block)
         {
         }
 
-        public virtual void VisitStartTemplateBlock(TemplateBlockChunkGenerator chunk, Block block)
+        public virtual void VisitStartTemplateBlock(TemplateBlockChunkGenerator chunkGenerator, Block block)
         {
         }
 
-        public virtual void VisitEndCommentBlock(RazorCommentChunkGenerator chunk, Block block)
+        public virtual void VisitEndCommentBlock(RazorCommentChunkGenerator chunkGenerator, Block block)
         {
         }
 
-        public virtual void VisitStartCommentBlock(RazorCommentChunkGenerator chunk, Block block)
+        public virtual void VisitStartCommentBlock(RazorCommentChunkGenerator chunkGenerator, Block block)
         {
         }
     }
