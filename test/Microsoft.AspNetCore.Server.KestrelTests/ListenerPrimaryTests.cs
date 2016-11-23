@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     return new Frame<DefaultHttpContext>(new TestApplication(c =>
                     {
-                        return c.Response.WriteAsync("Secondary"); ;
+                        return c.Response.WriteAsync("Secondary");
                     }), context);
                 }
             };
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await listenerSecondary.StartAsync(pipeName, pipeMessage, address, kestrelThreadSecondary);
 
                 // Once a secondary listener is added, TCP connections start getting dispatched to it
-                Assert.Equal("Secondary", await HttpClientSlim.GetStringAsync(address.ToString()));
+                await AssertResponseEventually(address.ToString(), "Secondary", allowed: new[] { "Primary" });
 
                 // TCP connections will still get round-robined to the primary listener
                 Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await listenerSecondary.StartAsync(pipeName, pipeMessage, address, kestrelThreadSecondary);
 
                 // TCP Connections get round-robined
-                Assert.Equal("Secondary", await HttpClientSlim.GetStringAsync(address.ToString()));
+                await AssertResponseEventually(address.ToString(), "Secondary", allowed: new[] { "Primary" });
                 Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
 
                 // Create a pipe connection and keep it open without sending any data
@@ -188,6 +188,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 Assert.Equal("Secondary", await HttpClientSlim.GetStringAsync(address.ToString()));
 
                 await kestrelThreadPrimary.PostAsync(_ => pipe.Dispose(), null);
+
+                // Wait up to 10 seconds for error to be logged
+                for (var i = 0; i < 10 && primaryTrace.Logger.TotalErrorsLogged == 0; i++)
+                {
+                    await Task.Delay(100);
+                }
 
                 // Same for after the non-listener pipe connection is closed
                 Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
@@ -237,7 +243,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 {
                     return new Frame<DefaultHttpContext>(new TestApplication(c =>
                     {
-                        return c.Response.WriteAsync("Secondary"); ;
+                        return c.Response.WriteAsync("Secondary");
                     }), context);
                 }
             };
@@ -260,7 +266,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var listenerSecondary = new TcpListenerSecondary(serviceContextSecondary);
                 await listenerSecondary.StartAsync(pipeName, Guid.NewGuid().ToByteArray(), address, kestrelThreadSecondary);
 
-                // TCP Connections get round-robined
+                // Wait up to 10 seconds for error to be logged
+                for (var i = 0; i < 10 && primaryTrace.Logger.TotalErrorsLogged == 0; i++)
+                {
+                    await Task.Delay(100);
+                }
+
+                // TCP Connections don't get round-robined
                 Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
                 Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
                 Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
@@ -276,6 +288,32 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var errorMessage = primaryTrace.Logger.Messages.First(m => m.LogLevel == LogLevel.Error);
             Assert.IsType<IOException>(errorMessage.Exception);
             Assert.Contains("Bad data", errorMessage.Exception.ToString());
+        }
+
+        private static async Task AssertResponseEventually(
+            string address,
+            string expected,
+            string[] allowed = null,
+            int maxRetries = 100,
+            int retryDelay = 100)
+        {
+            for (var i = 0; i < maxRetries; i++)
+            {
+                var response = await HttpClientSlim.GetStringAsync(address);
+                if (response == expected)
+                {
+                    return;
+                }
+
+                if (allowed != null)
+                {
+                    Assert.Contains(response, allowed);
+                }
+
+                await Task.Delay(retryDelay);
+            }
+
+            Assert.True(false, $"'{address}' failed to respond with '{expected}' in {maxRetries} retries.");
         }
 
         private class TestApplication : IHttpApplication<DefaultHttpContext>
