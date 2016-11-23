@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26009.0
+VisualStudioVersion = 15.0.26014.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3C0D6505-79B3-49D0-B4C3-176F0F1836ED}"
 EndProject
@@ -25,6 +25,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Evolution.Test", "test\Microsoft.AspNetCore.Razor.Evolution.Test\Microsoft.AspNetCore.Razor.Evolution.Test.csproj", "{969357A4-CCF1-46D9-B002-9AA072AFC75C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Runtime.Test", "test\Microsoft.AspNetCore.Razor.Runtime.Test\Microsoft.AspNetCore.Razor.Runtime.Test.csproj", "{277AB67E-9C8D-4799-A18C-C628E70A8664}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CodeAnalysis.Razor.Workspaces", "src\Microsoft.CodeAnalysis.Razor.Workspaces\Microsoft.CodeAnalysis.Razor.Workspaces.csproj", "{0F265874-C592-448B-BC4F-3430AB03E0DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -120,6 +122,18 @@ Global
 		{277AB67E-9C8D-4799-A18C-C628E70A8664}.Release|x64.Build.0 = Release|x64
 		{277AB67E-9C8D-4799-A18C-C628E70A8664}.Release|x86.ActiveCfg = Release|x86
 		{277AB67E-9C8D-4799-A18C-C628E70A8664}.Release|x86.Build.0 = Release|x86
+		{0F265874-C592-448B-BC4F-3430AB03E0DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F265874-C592-448B-BC4F-3430AB03E0DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F265874-C592-448B-BC4F-3430AB03E0DC}.Debug|x64.ActiveCfg = Debug|x64
+		{0F265874-C592-448B-BC4F-3430AB03E0DC}.Debug|x64.Build.0 = Debug|x64
+		{0F265874-C592-448B-BC4F-3430AB03E0DC}.Debug|x86.ActiveCfg = Debug|x86
+		{0F265874-C592-448B-BC4F-3430AB03E0DC}.Debug|x86.Build.0 = Debug|x86
+		{0F265874-C592-448B-BC4F-3430AB03E0DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F265874-C592-448B-BC4F-3430AB03E0DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F265874-C592-448B-BC4F-3430AB03E0DC}.Release|x64.ActiveCfg = Release|x64
+		{0F265874-C592-448B-BC4F-3430AB03E0DC}.Release|x64.Build.0 = Release|x64
+		{0F265874-C592-448B-BC4F-3430AB03E0DC}.Release|x86.ActiveCfg = Release|x86
+		{0F265874-C592-448B-BC4F-3430AB03E0DC}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -132,5 +146,6 @@ Global
 		{932F3C9C-A6C0-40D3-BA50-9309886242FC} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
 		{969357A4-CCF1-46D9-B002-9AA072AFC75C} = {92463391-81BE-462B-AC3C-78C6C760741F}
 		{277AB67E-9C8D-4799-A18C-C628E70A8664} = {92463391-81BE-462B-AC3C-78C6C760741F}
+		{0F265874-C592-448B-BC4F-3430AB03E0DC} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
 	EndGlobalSection
 EndGlobal
