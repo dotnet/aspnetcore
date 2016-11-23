@@ -4,7 +4,7 @@
 using Microsoft.Extensions.Tools.Internal;
 using Xunit;
 
-namespace Microsoft.DotNet.Watcher.Tools.Tests
+namespace Microsoft.Extensions.Tools.Tests
 {
     public class ArgumentEscaperTests
     {

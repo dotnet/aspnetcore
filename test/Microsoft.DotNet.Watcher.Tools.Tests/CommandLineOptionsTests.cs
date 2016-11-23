@@ -4,6 +4,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
 using Xunit;
 using Xunit.Abstractions;
@@ -14,14 +15,12 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
     {
         private readonly IConsole _console;
         private readonly StringBuilder _stdout = new StringBuilder();
-        private readonly StringBuilder _stderr = new StringBuilder();
 
         public CommandLineOptionsTests(ITestOutputHelper output)
         {
             _console = new TestConsole(output)
             {
                 Out = new StringWriter(_stdout),
-                Error = new StringWriter(_stderr),
             };
         }
 
@@ -57,8 +56,8 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         [Fact]
         public void CannotHaveQuietAndVerbose()
         {
-            Assert.Null(CommandLineOptions.Parse(new[] { "--quiet", "--verbose" }, _console));
-            Assert.Contains(Resources.Error_QuietAndVerboseSpecified, _stderr.ToString());
+            var ex = Assert.Throws<CommandParsingException>(() => CommandLineOptions.Parse(new[] { "--quiet", "--verbose" }, _console));
+            Assert.Equal(Resources.Error_QuietAndVerboseSpecified, ex.Message);
         }
     }
 }

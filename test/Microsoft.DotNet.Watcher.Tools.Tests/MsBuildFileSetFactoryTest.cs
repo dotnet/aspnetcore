@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Tools.Internal;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,11 +17,11 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
 
     public class MsBuildFileSetFactoryTest : IDisposable
     {
-        private ILogger _logger;
+        private readonly IReporter _reporter;
         private readonly TemporaryDirectory _tempDir;
         public MsBuildFileSetFactoryTest(ITestOutputHelper output)
         {
-            _logger = new XunitLogger(output);
+            _reporter = new TestReporter(output);
             _tempDir = new TemporaryDirectory();
         }
 
@@ -255,7 +255,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
             graph.Find("A").WithProjectReference(graph.Find("W"), watch: false);
 
             var output = new OutputSink();
-            var filesetFactory = new MsBuildFileSetFactory(_logger, graph.GetOrCreate("A").Path, output)
+            var filesetFactory = new MsBuildFileSetFactory(_reporter, graph.GetOrCreate("A").Path, output)
             {
                 // enables capturing markers to know which projects have been visited
                 BuildFlags = { "/p:_DotNetWatchTraceOutput=true" }
@@ -263,7 +263,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
 
             var fileset = await GetFileSet(filesetFactory);
 
-            _logger.LogInformation(string.Join(
+            _reporter.Output(string.Join(
                 Environment.NewLine,
                 output.Current.Lines.Select(l => "Sink output: " + l)));
 
@@ -297,7 +297,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         }
 
         private Task<IFileSet> GetFileSet(TemporaryCSharpProject target)
-            => GetFileSet(new MsBuildFileSetFactory(_logger, target.Path));
+            => GetFileSet(new MsBuildFileSetFactory(_reporter, target.Path));
         private async Task<IFileSet> GetFileSet(MsBuildFileSetFactory filesetFactory)
         {
             _tempDir.Create();

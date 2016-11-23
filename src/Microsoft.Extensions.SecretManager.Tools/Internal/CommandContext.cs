@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
@@ -10,16 +9,16 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
     {
         public CommandContext(
             SecretsStore store,
-            ILogger logger,
+            IReporter reporter,
             IConsole console)
         {
             SecretStore = store;
-            Logger = logger;
+            Reporter = reporter;
             Console = console;
         }
 
         public IConsole Console { get; }
-        public ILogger Logger { get; }
+        public IReporter Reporter { get; }
         public SecretsStore SecretStore { get; }
     }
 }

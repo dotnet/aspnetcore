@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -41,13 +40,13 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
 
             if (context.SecretStore.Count == 0)
             {
-                context.Logger.LogInformation(Resources.Error_No_Secrets_Found);
+                context.Reporter.Output(Resources.Error_No_Secrets_Found);
             }
             else
             {
                 foreach (var secret in context.SecretStore.AsEnumerable())
                 {
-                    context.Logger.LogInformation(Resources.FormatMessage_Secret_Value_Format(secret.Key, secret.Value));
+                    context.Reporter.Output(Resources.FormatMessage_Secret_Value_Format(secret.Key, secret.Value));
                 }
             }
         }
@@ -60,10 +59,9 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
                 jObject[item.Key] = item.Value;
             }
 
-            // TODO logger would prefix each line.
-            context.Console.Out.WriteLine("//BEGIN");
-            context.Console.Out.WriteLine(jObject.ToString(Formatting.Indented));
-            context.Console.Out.WriteLine("//END");
+            context.Reporter.Output("//BEGIN");
+            context.Reporter.Output(jObject.ToString(Formatting.Indented));
+            context.Reporter.Output("//END");
         }
     }
 }

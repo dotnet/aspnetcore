@@ -14,9 +14,7 @@
     </packageTypes>
     <dependencies>
       <group targetFramework=".NETCoreApp1.0">
-        <dependency id="Microsoft.Extensions.Logging" version="$dep_1$" />
-        <dependency id="Microsoft.Extensions.Logging.Console" version="$dep_2$" />
-        <dependency id="Microsoft.NETCore.App" version="$dep_3$" />
+        <dependency id="Microsoft.NETCore.App" version="$dep_1$" />
       </group>
     </dependencies>
   </metadata>

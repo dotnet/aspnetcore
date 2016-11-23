@@ -31,8 +31,7 @@ namespace Microsoft.Extensions.SecretManager.Tools
             app.HelpOption();
             app.VersionOptionFromAssemblyAttributes(typeof(Program).GetTypeInfo().Assembly);
 
-            var optionVerbose = app.Option("-v|--verbose", "Verbose output",
-                CommandOptionType.NoValue, inherited: true);
+            var optionVerbose = app.VerboseOption();
 
             var optionProject = app.Option("-p|--project <PROJECT>", "Path to project, default is current directory",
                 CommandOptionType.SingleValue, inherited: true);
@@ -48,7 +47,7 @@ namespace Microsoft.Extensions.SecretManager.Tools
             var options = new CommandLineOptions();
 
             app.Command("set", c => SetCommand.Configure(c, options, console));
-            app.Command("remove", c => RemoveCommand.Configure(c, options, console));
+            app.Command("remove", c => RemoveCommand.Configure(c, options));
             app.Command("list", c => ListCommand.Configure(c, options));
             app.Command("clear", c => ClearCommand.Configure(c, options));
 

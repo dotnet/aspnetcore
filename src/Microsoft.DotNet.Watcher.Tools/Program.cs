@@ -2,20 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher
 {
     public class Program
     {
-        private const string LoggerName = "DotNetWatcher";
         private readonly IConsole _console;
         private readonly string _workingDir;
 
@@ -39,44 +37,18 @@ namespace Microsoft.DotNet.Watcher
 
         public async Task<int> RunAsync(string[] args)
         {
-            using (CancellationTokenSource ctrlCTokenSource = new CancellationTokenSource())
+            CommandLineOptions options;
+            try
             {
-                _console.CancelKeyPress += (sender, ev) =>
-                {
-                    if (!ctrlCTokenSource.IsCancellationRequested)
-                    {
-                        _console.Out.WriteLine($"[{LoggerName}] Shutdown requested. Press Ctrl+C again to force exit.");
-                        ev.Cancel = true;
-                    }
-                    else
-                    {
-                        ev.Cancel = false;
-                    }
-                    ctrlCTokenSource.Cancel();
-                };
-
-                try
-                {
-                    return await MainInternalAsync(args, ctrlCTokenSource.Token);
-                }
-                catch (Exception ex)
-                {
-                    if (ex is TaskCanceledException || ex is OperationCanceledException)
-                    {
-                        // swallow when only exception is the CTRL+C forced an exit
-                        return 0;
-                    }
-
-                    _console.Error.WriteLine(ex.ToString());
-                    _console.Error.WriteLine($"[{LoggerName}] An unexpected error occurred".Bold().Red());
-                    return 1;
-                }
+                options = CommandLineOptions.Parse(args, _console);
             }
-        }
+            catch (CommandParsingException ex)
+            {
+                CreateReporter(verbose: true, quiet: false, console: _console)
+                    .Error(ex.Message);
+                return 1;
+            }
 
-        private async Task<int> MainInternalAsync(string[] args, CancellationToken cancellationToken)
-        {
-            var options = CommandLineOptions.Parse(args, _console);
             if (options == null)
             {
                 // invalid args syntax
@@ -88,58 +60,122 @@ namespace Microsoft.DotNet.Watcher
                 return 2;
             }
 
-            var loggerFactory = new LoggerFactory();
-            var commandProvider = new CommandOutputProvider
-            {
-                LogLevel = ResolveLogLevel(options)
-            };
-            loggerFactory.AddProvider(commandProvider);
-            var logger = loggerFactory.CreateLogger(LoggerName);
+            var reporter = CreateReporter(options.IsVerbose, options.IsQuiet, _console);
 
+            using (CancellationTokenSource ctrlCTokenSource = new CancellationTokenSource())
+            {
+                _console.CancelKeyPress += (sender, ev) =>
+                {
+                    if (!ctrlCTokenSource.IsCancellationRequested)
+                    {
+                        reporter.Output("Shutdown requested. Press Ctrl+C again to force exit.");
+                        ev.Cancel = true;
+                    }
+                    else
+                    {
+                        ev.Cancel = false;
+                    }
+                    ctrlCTokenSource.Cancel();
+                };
+
+                try
+                {
+                    return await MainInternalAsync(reporter, options.Project, options.RemainingArguments, ctrlCTokenSource.Token);
+                }
+                catch (Exception ex)
+                {
+                    if (ex is TaskCanceledException || ex is OperationCanceledException)
+                    {
+                        // swallow when only exception is the CTRL+C forced an exit
+                        return 0;
+                    }
+
+                    reporter.Error(ex.ToString());
+                    reporter.Error("An unexpected error occurred");
+                    return 1;
+                }
+            }
+        }
+
+        private async Task<int> MainInternalAsync(
+            IReporter reporter,
+            string project,
+            ICollection<string> args,
+            CancellationToken cancellationToken)
+        {
             // TODO multiple projects should be easy enough to add here
             string projectFile;
             try
             {
-                projectFile = MsBuildProjectFinder.FindMsBuildProject(_workingDir, options.Project);
+                projectFile = MsBuildProjectFinder.FindMsBuildProject(_workingDir, project);
             }
             catch (FileNotFoundException ex)
             {
-                _console.Error.WriteLine(ex.Message.Bold().Red());
+                reporter.Error(ex.Message);
                 return 1;
             }
 
-            var fileSetFactory = new MsBuildFileSetFactory(logger, projectFile);
+            var fileSetFactory = new MsBuildFileSetFactory(reporter, projectFile);
 
             var processInfo = new ProcessSpec
             {
                 Executable = DotNetMuxer.MuxerPathOrDefault(),
                 WorkingDirectory = Path.GetDirectoryName(projectFile),
-                Arguments = options.RemainingArguments
+                Arguments = args
             };
 
-            await new DotNetWatcher(logger)
-                    .WatchAsync(processInfo, fileSetFactory, cancellationToken);
+            await new DotNetWatcher(reporter)
+                .WatchAsync(processInfo, fileSetFactory, cancellationToken);
 
             return 0;
         }
 
-        private LogLevel ResolveLogLevel(CommandLineOptions options)
+        private static IReporter CreateReporter(bool verbose, bool quiet, IConsole console)
         {
-            if (options.IsQuiet)
-            {
-                return LogLevel.Warning;
-            }
+            const string prefix = "watch : ";
+            var colorPrefix = new ColorFormatter(ConsoleColor.DarkGray).Format(prefix);
 
-            bool globalVerbose;
-            bool.TryParse(Environment.GetEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE"), out globalVerbose);
+            return new ReporterBuilder()
+                .WithConsole(console)
+                .Verbose(f =>
+                {
+                    if (console.IsOutputRedirected)
+                    {
+                        f.WithPrefix(prefix);
+                    }
+                    else
+                    {
+                        f.WithColor(ConsoleColor.DarkGray).WithPrefix(colorPrefix);
+                    }
 
-            if (options.IsVerbose // dotnet watch --verbose
-                || globalVerbose) // dotnet --verbose watch
-            {
-                return LogLevel.Debug;
-            }
-
-            return LogLevel.Information;
+                    f.When(() => verbose || CliContext.IsGlobalVerbose());
+                })
+                .Output(f => f
+                    .WithPrefix(console.IsOutputRedirected ? prefix : colorPrefix)
+                    .When(() => !quiet))
+                .Warn(f =>
+                {
+                    if (console.IsOutputRedirected)
+                    {
+                        f.WithPrefix(prefix);
+                    }
+                    else
+                    {
+                        f.WithColor(ConsoleColor.Yellow).WithPrefix(colorPrefix);
+                    }
+                })
+                .Error(f =>
+                {
+                    if (console.IsOutputRedirected)
+                    {
+                        f.WithPrefix(prefix);
+                    }
+                    else
+                    {
+                        f.WithColor(ConsoleColor.Red).WithPrefix(colorPrefix);
+                    }
+                })
+                .Build();
         }
     }
 }

@@ -1,11 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Collections.Generic;
 using Microsoft.Extensions.SecretManager.Tools.Internal;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Tools.Internal;
 using Xunit;
 using Xunit.Abstractions;
@@ -36,10 +34,10 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
                 IsInputRedirected = true,
                 In = new StringReader(input)
             };
-            var secretStore = new TestSecretsStore();
+            var secretStore = new TestSecretsStore(_output);
             var command = new SetCommand.FromStdInStrategy();
 
-            command.Execute(new CommandContext(secretStore, NullLogger.Instance, testConsole));
+            command.Execute(new CommandContext(secretStore, new TestReporter(_output), testConsole));
 
             Assert.Equal(3, secretStore.Count);
             Assert.Equal("str value", secretStore["Key1"]);
@@ -63,10 +61,10 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
                 IsInputRedirected = true,
                 In = new StringReader(input)
             };
-            var secretStore = new TestSecretsStore();
+            var secretStore = new TestSecretsStore(_output);
             var command = new SetCommand.FromStdInStrategy();
 
-            command.Execute(new CommandContext(secretStore, NullLogger.Instance, testConsole));
+            command.Execute(new CommandContext(secretStore, new TestReporter(_output), testConsole));
 
             Assert.Equal(3, secretStore.Count);
             Assert.True(secretStore.ContainsKey("Key1:nested"));
@@ -89,8 +87,8 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
 
         private class TestSecretsStore : SecretsStore
         {
-            public TestSecretsStore()
-                : base("xyz", NullLogger.Instance)
+            public TestSecretsStore(ITestOutputHelper output)
+                : base("xyz", new TestReporter(output))
             {
             }
 
@@ -103,27 +101,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             {
                 // noop
             }
-        }
-    }
-
-    public class NullLogger : ILogger
-    {
-        public static NullLogger Instance = new NullLogger();
-
-        private class NullScope : IDisposable
-        {
-            public void Dispose()
-            {
-            }
-        }
-        public IDisposable BeginScope<TState>(TState state)
-            => new NullScope();
-
-        public bool IsEnabled(LogLevel logLevel)
-            => true;
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-        {
         }
     }
 }

@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
@@ -12,7 +10,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
     {
         private readonly string _keyName;
 
-        public static void Configure(CommandLineApplication command, CommandLineOptions options, IConsole console)
+        public static void Configure(CommandLineApplication command, CommandLineOptions options)
         {
             command.Description = "Removes the specified user secret";
             command.HelpOption();
@@ -22,12 +20,10 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
             {
                 if (keyArg.Value == null)
                 {
-                    console.Error.WriteLine(Resources.FormatError_MissingArgument("name").Red());
-                    return 1;
+                    throw new CommandParsingException(command, Resources.FormatError_MissingArgument("name"));
                 }
 
                 options.Command = new RemoveCommand(keyArg.Value);
-                return 0;
             });
         }
 
@@ -41,7 +37,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
         {
             if (!context.SecretStore.ContainsKey(_keyName))
             {
-                context.Logger.LogWarning(Resources.Error_Missing_Secret, _keyName);
+                context.Reporter.Warn(Resources.FormatError_Missing_Secret(_keyName));
             }
             else
             {

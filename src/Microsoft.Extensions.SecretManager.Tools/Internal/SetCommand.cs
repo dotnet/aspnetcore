@@ -1,11 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Text;
 using Microsoft.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
@@ -34,23 +32,21 @@ Examples:
                 if (console.IsInputRedirected && nameArg.Value == null)
                 {
                     options.Command = new FromStdInStrategy();
-                    return 0;
                 }
-
-                if (string.IsNullOrEmpty(nameArg.Value))
+                else
                 {
-                    console.Error.WriteLine(Resources.FormatError_MissingArgument("name").Red());
-                    return 1;
-                }
+                    if (string.IsNullOrEmpty(nameArg.Value))
+                    {
+                        throw new CommandParsingException(command, Resources.FormatError_MissingArgument("name"));
+                    }
 
-                if (valueArg.Value == null)
-                {
-                    console.Error.WriteLine(Resources.FormatError_MissingArgument("value").Red());
-                    return 1;
-                }
+                    if (valueArg.Value == null)
+                    {
+                        throw new CommandParsingException(command, Resources.FormatError_MissingArgument("value"));
+                    }
 
-                options.Command = new ForOneValueStrategy(nameArg.Value, valueArg.Value);
-                return 0;
+                    options.Command = new ForOneValueStrategy(nameArg.Value, valueArg.Value);
+                }
             });
         }
 
@@ -76,7 +72,7 @@ Examples:
                     context.SecretStore.Set(k.Key, k.Value);
                 }
 
-                context.Logger.LogInformation(Resources.Message_Saved_Secrets, provider.CurrentData.Count);
+                context.Reporter.Output(Resources.FormatMessage_Saved_Secrets(provider.CurrentData.Count));
 
                 context.SecretStore.Save();
             }
@@ -97,7 +93,7 @@ Examples:
             {
                 context.SecretStore.Set(_keyName, _keyValue);
                 context.SecretStore.Save();
-                context.Logger.LogInformation(Resources.Message_Saved_Secret, _keyName, _keyValue);
+                context.Reporter.Output(Resources.FormatMessage_Saved_Secret(_keyName, _keyValue));
             }
         }
     }

@@ -1,33 +1,35 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher
 {
     public class DotNetWatcher
     {
-        private readonly ILogger _logger;
+        private readonly IReporter _reporter;
         private readonly ProcessRunner _processRunner;
 
-        public DotNetWatcher(ILogger logger)
+        public DotNetWatcher(IReporter reporter)
         {
-            Ensure.NotNull(logger, nameof(logger));
+            Ensure.NotNull(reporter, nameof(reporter));
 
-            _logger = logger;
-            _processRunner = new ProcessRunner(logger);
+            _reporter = reporter;
+            _processRunner = new ProcessRunner(reporter);
         }
 
-        public async Task WatchAsync(ProcessSpec processSpec, IFileSetFactory fileSetFactory, CancellationToken cancellationToken)
+        public async Task WatchAsync(ProcessSpec processSpec, IFileSetFactory fileSetFactory,
+            CancellationToken cancellationToken)
         {
             Ensure.NotNull(processSpec, nameof(processSpec));
 
             var cancelledTaskSource = new TaskCompletionSource<object>();
-            cancellationToken.Register(state => ((TaskCompletionSource<object>)state).TrySetResult(null), cancelledTaskSource);
+            cancellationToken.Register(state => ((TaskCompletionSource<object>) state).TrySetResult(null),
+                cancelledTaskSource);
 
             while (true)
             {
@@ -46,9 +48,10 @@ namespace Microsoft.DotNet.Watcher
                     var fileSetTask = fileSetWatcher.GetChangedFileAsync(combinedCancellationSource.Token);
                     var processTask = _processRunner.RunAsync(processSpec, combinedCancellationSource.Token);
 
-                    _logger.LogInformation("Running {execName} with the following arguments: {args}",
-                        processSpec.ShortDisplayName(),
-                        ArgumentEscaper.EscapeAndConcatenate(processSpec.Arguments));
+                    var args = ArgumentEscaper.EscapeAndConcatenate(processSpec.Arguments);
+                    _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: {args}");
+
+                    _reporter.Output("Started");
 
                     var finishedTask = await Task.WhenAny(processTask, fileSetTask, cancelledTaskSource.Task);
 
@@ -58,6 +61,15 @@ namespace Microsoft.DotNet.Watcher
 
                     await Task.WhenAll(processTask, fileSetTask);
 
+                    if (processTask.Result == 0)
+                    {
+                        _reporter.Output("Exited");
+                    }
+                    else
+                    {
+                        _reporter.Error($"Exited with error code {processTask.Result}");
+                    }
+
                     if (finishedTask == cancelledTaskSource.Task || cancellationToken.IsCancellationRequested)
                     {
                         return;
@@ -65,7 +77,7 @@ namespace Microsoft.DotNet.Watcher
 
                     if (finishedTask == processTask)
                     {
-                        _logger.LogInformation("Waiting for a file to change before restarting dotnet...");
+                        _reporter.Warn("Waiting for a file to change before restarting dotnet...");
 
                         // Now wait for a file to change before restarting process
                         await fileSetWatcher.GetChangedFileAsync(cancellationToken);
@@ -73,7 +85,7 @@ namespace Microsoft.DotNet.Watcher
 
                     if (!string.IsNullOrEmpty(fileSetTask.Result))
                     {
-                        _logger.LogInformation($"File changed: {fileSetTask.Result}");
+                        _reporter.Output($"File changed: {fileSetTask.Result}");
                     }
                 }
             }

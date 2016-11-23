@@ -39,7 +39,6 @@
   },
   "dependencies": {
     "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0",
-    "Microsoft.Extensions.Logging": "1.0.0",
     "Microsoft.NETCore.App": {
       "version": "1.0.1",
       "type": "platform"

@@ -18,6 +18,8 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         public bool Contains(string filePath) => _files.Contains(filePath);
 
+        public int Count => _files.Count;
+
         public IEnumerator<string> GetEnumerator() => _files.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => _files.GetEnumerator();
     }

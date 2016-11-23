@@ -14,11 +14,8 @@
     </packageTypes>
     <dependencies>
       <group targetFramework=".NETCoreApp1.0">
-        <dependency id="Microsoft.Extensions.CommandLineUtils" version="$dep_1$" />
-        <dependency id="Microsoft.Extensions.Logging" version="$dep_2$" />
-        <dependency id="Microsoft.Extensions.Logging.Console" version="$dep_3$" />
-        <dependency id="Microsoft.NETCore.App" version="$dep_4$" />
-        <dependency id="System.Data.SqlClient" version="$dep_5$" />
+        <dependency id="Microsoft.NETCore.App" version="$dep_1$" />
+        <dependency id="System.Data.SqlClient" version="$dep_2$" />
       </group>
     </dependencies>
   </metadata>

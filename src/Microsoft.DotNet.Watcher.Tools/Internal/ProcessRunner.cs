@@ -7,20 +7,19 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
     public class ProcessRunner
     {
-        private readonly ILogger _logger;
+        private readonly IReporter _reporter;
 
-        public ProcessRunner(ILogger logger)
+        public ProcessRunner(IReporter reporter)
         {
-            Ensure.NotNull(logger, nameof(logger));
+            Ensure.NotNull(reporter, nameof(reporter));
 
-            _logger = logger;
+            _reporter = reporter;
         }
 
         // May not be necessary in the future. See https://github.com/dotnet/corefx/issues/12039
@@ -30,12 +29,16 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             int exitCode;
 
+            var stopwatch = new Stopwatch();
+
             using (var process = CreateProcess(processSpec))
             using (var processState = new ProcessState(process))
             {
                 cancellationToken.Register(() => processState.TryKill());
 
+                stopwatch.Start();
                 process.Start();
+                _reporter.Verbose($"Started '{processSpec.Executable}' with process id {process.Id}");
 
                 if (processSpec.IsOutputCaptured)
                 {
@@ -47,16 +50,12 @@ namespace Microsoft.DotNet.Watcher.Internal
                 }
                 else
                 {
-                    _logger.LogInformation("{execName} process id: {pid}", processSpec.ShortDisplayName(), process.Id);
                     await processState.Task;
                 }
 
                 exitCode = process.ExitCode;
-            }
-
-            if (!processSpec.IsOutputCaptured)
-            {
-                LogResult(processSpec, exitCode);
+                stopwatch.Stop();
+                _reporter.Verbose($"Process id {process.Id} ran for {stopwatch.ElapsedMilliseconds}ms");
             }
 
             return exitCode;
@@ -79,19 +78,6 @@ namespace Microsoft.DotNet.Watcher.Internal
                 EnableRaisingEvents = true
             };
             return process;
-        }
-
-        private void LogResult(ProcessSpec processSpec, int exitCode)
-        {
-            var processName = processSpec.ShortDisplayName();
-            if (exitCode == 0)
-            {
-                _logger.LogInformation("{execName} exit code: {code}", processName, exitCode);
-            }
-            else
-            {
-                _logger.LogError("{execName} exit code: {code}", processName, exitCode);
-            }
         }
 
         private static async Task ConsumeStreamAsync(StreamReader reader, Action<string> consume)

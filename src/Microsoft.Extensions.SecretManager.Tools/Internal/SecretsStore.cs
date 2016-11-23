@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Tools.Internal;
 using Newtonsoft.Json.Linq;
 
@@ -19,7 +18,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
         private readonly string _secretsFilePath;
         private IDictionary<string, string> _secrets;
 
-        public SecretsStore(string userSecretsId, ILogger logger)
+        public SecretsStore(string userSecretsId, IReporter reporter)
         {
             Ensure.NotNull(userSecretsId, nameof(userSecretsId));
 
@@ -29,7 +28,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
             var secretDir = Path.GetDirectoryName(_secretsFilePath);
             Directory.CreateDirectory(secretDir);
 
-            logger.LogDebug(Resources.Message_Secret_File_Path, _secretsFilePath);
+            reporter.Verbose(Resources.FormatMessage_Secret_File_Path(_secretsFilePath));
             _secrets = Load(userSecretsId);
         }
 

@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
@@ -15,26 +14,31 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
     public class ProjectIdResolver : IDisposable
     {
         private const string TargetsFileName = "FindUserSecretsProperty.targets";
-        private readonly ILogger _logger;
+        private const string DefaultConfig = "Debug";
+        private readonly IReporter _reporter;
         private readonly string _workingDirectory;
         private readonly List<string> _tempFiles = new List<string>();
 
-        public ProjectIdResolver(ILogger logger, string workingDirectory)
+        public ProjectIdResolver(IReporter reporter, string workingDirectory)
         {
             _workingDirectory = workingDirectory;
-            _logger = logger;
+            _reporter = reporter;
         }
 
-        public string Resolve(string project, string configuration = "Debug")
+        public string Resolve(string project, string configuration)
         {
             var finder = new MsBuildProjectFinder(_workingDirectory);
             var projectFile = finder.FindMsBuildProject(project);
 
-            _logger.LogDebug(Resources.Message_Project_File_Path, projectFile);
+            _reporter.Verbose(Resources.FormatMessage_Project_File_Path(projectFile));
 
             var targetFile = GetTargetFile();
             var outputFile = Path.GetTempFileName();
             _tempFiles.Add(outputFile);
+
+            configuration = !string.IsNullOrEmpty(configuration)
+                ? configuration
+                : DefaultConfig;
 
             var args = new[]
             {
@@ -53,13 +57,18 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
+
+#if DEBUG
+            _reporter.Verbose($"Invoking '{psi.FileName} {psi.Arguments}'");
+#endif
+
             var process = Process.Start(psi);
             process.WaitForExit();
 
             if (process.ExitCode != 0)
             {
-                _logger.LogDebug(process.StandardOutput.ReadToEnd());
-                _logger.LogDebug(process.StandardError.ReadToEnd());
+                _reporter.Verbose(process.StandardOutput.ReadToEnd());
+                _reporter.Verbose(process.StandardError.ReadToEnd());
                 throw new InvalidOperationException(Resources.FormatError_ProjectFailedToLoad(projectFile));
             }
 

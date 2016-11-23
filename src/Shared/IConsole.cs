@@ -13,5 +13,7 @@ namespace Microsoft.Extensions.Tools.Internal
         TextWriter Error { get; }
         TextReader In { get; }
         bool IsInputRedirected { get; }
+        bool IsOutputRedirected { get; }
+        bool IsErrorRedirected { get; }
     }
 }

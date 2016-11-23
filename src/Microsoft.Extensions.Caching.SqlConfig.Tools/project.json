@@ -5,7 +5,8 @@
     "emitEntryPoint": true,
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "compile": "../Shared/CommandLineApplicationExtensions.cs"
+    "compile": "../Shared/**/*.cs"
+
   },
   "description": "Command line tool to create tables and indexes in a Microsoft SQL Server database for distributed caching.",
   "packOptions": {
@@ -20,9 +21,6 @@
     ]
   },
   "dependencies": {
-    "Microsoft.Extensions.CommandLineUtils": "1.0.0",
-    "Microsoft.Extensions.Logging": "1.0.0",
-    "Microsoft.Extensions.Logging.Console": "1.0.0",
     "Microsoft.NETCore.App": {
       "version": "1.0.1",
       "type": "platform"

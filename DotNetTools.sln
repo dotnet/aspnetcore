@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -27,6 +27,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{59E02BDF-98DE-4D64-B576-2D0299D5E052}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGetPackager", "tools\NuGetPackager\NuGetPackager.xproj", "{8B781D87-1FC3-4A34-9089-2BDF6B562B85}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Tools.Tests", "test\Microsoft.Extensions.Tools.Tests\Microsoft.Extensions.Tools.Tests.xproj", "{A24BF1D1-4326-4455-A528-09F1E20EDC83}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -62,6 +64,10 @@ Global
 		{8B781D87-1FC3-4A34-9089-2BDF6B562B85}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8B781D87-1FC3-4A34-9089-2BDF6B562B85}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8B781D87-1FC3-4A34-9089-2BDF6B562B85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A24BF1D1-4326-4455-A528-09F1E20EDC83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A24BF1D1-4326-4455-A528-09F1E20EDC83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A24BF1D1-4326-4455-A528-09F1E20EDC83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A24BF1D1-4326-4455-A528-09F1E20EDC83}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -74,5 +80,6 @@ Global
 		{8A2E6961-6B12-4A8E-8215-3E7301D52EAC} = {F5B382BC-258F-46E1-AC3D-10E5CCD55134}
 		{53F3B53D-303A-4DAA-9C38-4F55195FA5B9} = {66517987-2A5A-4330-B130-207039378FD4}
 		{8B781D87-1FC3-4A34-9089-2BDF6B562B85} = {59E02BDF-98DE-4D64-B576-2D0299D5E052}
+		{A24BF1D1-4326-4455-A528-09F1E20EDC83} = {F5B382BC-258F-46E1-AC3D-10E5CCD55134}
 	EndGlobalSection
 EndGlobal

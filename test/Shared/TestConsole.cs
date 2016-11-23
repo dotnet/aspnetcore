@@ -25,6 +25,8 @@ namespace Microsoft.Extensions.Tools.Internal
         public TextWriter Out { get; set; }
         public TextReader In { get; set; } = new StringReader(string.Empty);
         public bool IsInputRedirected { get; set; } = false;
+        public bool IsOutputRedirected { get; } = false;
+        public bool IsErrorRedirected { get; } = false;
 
         public ConsoleCancelEventArgs ConsoleCancelKey()
         {

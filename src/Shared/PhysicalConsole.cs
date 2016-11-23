@@ -23,5 +23,7 @@ namespace Microsoft.Extensions.Tools.Internal
         public TextReader In => Console.In;
         public TextWriter Out => Console.Out;
         public bool IsInputRedirected => Console.IsInputRedirected;
+        public bool IsOutputRedirected => Console.IsOutputRedirected;
+        public bool IsErrorRedirected => Console.IsErrorRedirected;
     }
 }

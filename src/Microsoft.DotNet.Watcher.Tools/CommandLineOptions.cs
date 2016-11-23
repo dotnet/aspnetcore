@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.DotNet.Watcher.Tools;
@@ -17,9 +16,11 @@ namespace Microsoft.DotNet.Watcher
         public bool IsQuiet { get; private set; }
         public bool IsVerbose { get; private set; }
         public IList<string> RemainingArguments { get; private set; }
+
         public static CommandLineOptions Parse(string[] args, IConsole console)
         {
             Ensure.NotNull(args, nameof(args));
+            Ensure.NotNull(console, nameof(console));
 
             var app = new CommandLineApplication(throwOnUnexpectedArg: false)
             {
@@ -60,19 +61,9 @@ Examples:
                 CommandOptionType.SingleValue); // TODO multiple shouldn't be too hard to support
             var optQuiet = app.Option("-q|--quiet", "Suppresses all output except warnings and errors",
                 CommandOptionType.NoValue);
-            var optVerbose = app.Option("-v|--verbose", "Show verbose output",
-                CommandOptionType.NoValue);
+            var optVerbose = app.VerboseOption();
+
             app.VersionOptionFromAssemblyAttributes(typeof(Program).GetTypeInfo().Assembly);
-
-            app.OnExecute(() =>
-            {
-                if (app.RemainingArguments.Count == 0)
-                {
-                    app.ShowHelp();
-                }
-
-                return 0;
-            });
 
             if (app.Execute(args) != 0)
             {
@@ -81,8 +72,12 @@ Examples:
 
             if (optQuiet.HasValue() && optVerbose.HasValue())
             {
-                console.Error.WriteLine(Resources.Error_QuietAndVerboseSpecified.Bold().Red());
-                return null;
+                throw new CommandParsingException(app, Resources.Error_QuietAndVerboseSpecified);
+            }
+
+            if (app.RemainingArguments.Count == 0)
+            {
+                app.ShowHelp();
             }
 
             return new CommandLineOptions

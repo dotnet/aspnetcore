@@ -6,7 +6,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.Caching.SqlConfig.Tools
 {
@@ -15,54 +15,61 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
         private string _connectionString = null;
         private string _schemaName = null;
         private string _tableName = null;
+        private readonly IConsole _console;
 
-        private readonly ILogger _logger;
-
-        public Program()
+        public Program(IConsole console)
         {
-            var loggerFactory = new LoggerFactory();
-            loggerFactory.AddConsole();
-            _logger = loggerFactory.CreateLogger<Program>();
+            Ensure.NotNull(console, nameof(console));
+
+            _console = console;
         }
 
         public static int Main(string[] args)
         {
-            return new Program().Run(args);
+            return new Program(PhysicalConsole.Singleton).Run(args);
         }
 
         public int Run(string[] args)
         {
+            DebugHelper.HandleDebugSwitch(ref args);
+
             try
             {
-                var description = "Creates table and indexes in Microsoft SQL Server database " +
-                    "to be used for distributed caching";
-
                 var app = new CommandLineApplication
                 {
                     Name = "dotnet sql-cache",
                     FullName = "SQL Server Cache Command Line Tool",
-                    Description = description,
+                    Description =
+                        "Creates table and indexes in Microsoft SQL Server database to be used for distributed caching",
                 };
-                app.HelpOption("-?|-h|--help");
+
+                app.HelpOption();
                 app.VersionOptionFromAssemblyAttributes(typeof(Program).GetTypeInfo().Assembly);
+                var verbose = app.VerboseOption();
 
                 app.Command("create", command =>
                 {
-                    command.Description = description;
+                    command.Description = app.Description;
+
                     var connectionStringArg = command.Argument(
-                        "[connectionString]",
-                        "The connection string to connect to the database.");
-                    var schemaNameArg = command.Argument("[schemaName]", "Name of the table schema.");
-                    var tableNameArg = command.Argument("[tableName]", "Name of the table to be created.");
-                    command.HelpOption("-?|-h|--help");
+                        "[connectionString]", "The connection string to connect to the database.");
+
+                    var schemaNameArg = command.Argument(
+                        "[schemaName]", "Name of the table schema.");
+
+                    var tableNameArg = command.Argument(
+                        "[tableName]", "Name of the table to be created.");
+
+                    command.HelpOption();
 
                     command.OnExecute(() =>
                     {
+                        var reporter = CreateReporter(verbose.HasValue());
                         if (string.IsNullOrEmpty(connectionStringArg.Value)
-                        || string.IsNullOrEmpty(schemaNameArg.Value)
-                        || string.IsNullOrEmpty(tableNameArg.Value))
+                            || string.IsNullOrEmpty(schemaNameArg.Value)
+                            || string.IsNullOrEmpty(tableNameArg.Value))
                         {
-                            _logger.LogWarning("Invalid input");
+                            reporter.Error("Invalid input");
                             app.ShowHelp();
                             return 2;
                         }
@@ -71,7 +78,7 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
                         _schemaName = schemaNameArg.Value;
                         _tableName = tableNameArg.Value;
 
-                        return CreateTableAndIndexes();
+                        return CreateTableAndIndexes(reporter);
                     });
                 });
 
@@ -86,12 +93,41 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
             }
             catch (Exception exception)
             {
-                _logger.LogCritical("An error occurred. {ErrorMessage}", exception.Message);
+                CreateReporter(verbose: false).Error($"An error occurred. {exception.Message}");
                 return 1;
             }
         }
 
-        private int CreateTableAndIndexes()
+        private IReporter CreateReporter(bool verbose)
+        {
+            return new ReporterBuilder()
+                .WithConsole(_console)
+                .Verbose(f =>
+                {
+                    f.When(() => verbose);
+                    if (!_console.IsOutputRedirected)
+                    {
+                        f.WithColor(ConsoleColor.DarkGray);
+                    }
+                })
+                .Warn(f =>
+                {
+                    if (!_console.IsOutputRedirected)
+                    {
+                        f.WithColor(ConsoleColor.Yellow);
+                    }
+                })
+                .Error(f =>
+                {
+                    if (!_console.IsErrorRedirected)
+                    {
+                        f.WithColor(ConsoleColor.Red);
+                    }
+                })
+                .Build();
+        }
+
+        private int CreateTableAndIndexes(IReporter reporter)
         {
             ValidateConnectionString();
 
@@ -106,7 +142,7 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
                 {
                     if (reader.Read())
                     {
-                        _logger.LogWarning(
+                        reporter.Warn(
                             $"Table with schema '{_schemaName}' and name '{_tableName}' already exists. " +
                             "Provide a different table name and try again.");
                         return 1;
@@ -118,23 +154,26 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
                     try
                     {
                         command = new SqlCommand(sqlQueries.CreateTable, connection, transaction);
+
+                        reporter.Verbose($"Executing {command.CommandText}");
                         command.ExecuteNonQuery();
 
                         command = new SqlCommand(
                             sqlQueries.CreateNonClusteredIndexOnExpirationTime,
                             connection,
                             transaction);
+
+                        reporter.Verbose($"Executing {command.CommandText}");
                         command.ExecuteNonQuery();
 
                         transaction.Commit();
 
-                        _logger.LogInformation("Table and index were created successfully.");
+                        reporter.Output("Table and index were created successfully.");
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(
-                            "An error occurred while trying to create the table and index. {ErrorMessage}",
-                            ex.Message);
+                        reporter.Error(
+                            $"An error occurred while trying to create the table and index. {ex.Message}");
                         transaction.Rollback();
 
                         return 1;
@@ -154,7 +193,7 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
             catch (Exception ex)
             {
                 throw new ArgumentException(
-                    $"Invalid Sql server connection string '{_connectionString}'. {ex.Message}", ex);
+                    $"Invalid SQL Server connection string '{_connectionString}'. {ex.Message}", ex);
             }
         }
     }

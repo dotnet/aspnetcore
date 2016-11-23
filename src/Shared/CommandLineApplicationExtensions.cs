@@ -11,6 +11,9 @@ namespace Microsoft.Extensions.CommandLineUtils
         public static CommandOption HelpOption(this CommandLineApplication app)
             => app.HelpOption("-?|-h|--help");
 
+        public static CommandOption VerboseOption(this CommandLineApplication app)
+            => app.Option("-v|--verbose", "Show verbose output", CommandOptionType.NoValue, inherited: true);
+
         public static void OnExecute(this CommandLineApplication app, Action action)
             => app.OnExecute(() =>
                 {

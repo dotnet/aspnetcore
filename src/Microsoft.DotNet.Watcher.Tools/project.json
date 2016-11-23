@@ -32,8 +32,6 @@
     ]
   },
   "dependencies": {
-    "Microsoft.Extensions.Logging": "1.0.0",
-    "Microsoft.Extensions.Logging.Console": "1.0.0",
     "Microsoft.Extensions.Process.Sources": {
       "type": "build",
       "version": "1.0.0"
