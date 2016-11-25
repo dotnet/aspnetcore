@@ -463,8 +463,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Internal
                 }
                 else if (modelMetadata.IsComplexType)
                 {
-                    foreach (var property in modelMetadata.Properties)
+                    for (var i = 0; i < modelMetadata.Properties.Count; i++)
                     {
+                        var property = modelMetadata.Properties[i];
                         modelState.ClearValidationState(property.BinderModelName ?? property.PropertyName);
                     }
                 }

@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Globalization;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {

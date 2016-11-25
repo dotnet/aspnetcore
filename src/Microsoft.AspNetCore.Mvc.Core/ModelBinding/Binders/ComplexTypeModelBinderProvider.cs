@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Reflection;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -25,8 +25,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 HasDefaultConstructor(context.Metadata.ModelType.GetTypeInfo()))
             {
                 var propertyBinders = new Dictionary<ModelMetadata, IModelBinder>();
-                foreach (var property in context.Metadata.Properties)
+                for (var i = 0; i < context.Metadata.Properties.Count; i++)
                 {
+                    var property = context.Metadata.Properties[i];
                     propertyBinders.Add(property, context.CreateBinder(property));
                 }
 

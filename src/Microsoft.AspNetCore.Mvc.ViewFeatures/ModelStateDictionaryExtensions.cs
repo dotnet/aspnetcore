@@ -129,9 +129,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             if (string.IsNullOrEmpty(modelKey))
             {
                 var modelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(typeof(TModel));
-
-                foreach (var property in modelMetadata.Properties)
+                for (var i = 0; i < modelMetadata.Properties.Count; i++)
                 {
+                    var property = modelMetadata.Properties[i];
                     var childKey = property.BinderModelName ?? property.PropertyName;
                     var entries = modelState.FindKeysWithPrefix(childKey).ToArray();
                     foreach (var entry in entries)

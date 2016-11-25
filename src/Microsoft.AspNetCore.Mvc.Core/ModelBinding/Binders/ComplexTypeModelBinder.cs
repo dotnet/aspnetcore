@@ -60,8 +60,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 bindingContext.Model = CreateModel(bindingContext);
             }
 
-            foreach (var property in bindingContext.ModelMetadata.Properties)
+            for (var i = 0; i < bindingContext.ModelMetadata.Properties.Count; i++)
             {
+                var property = bindingContext.ModelMetadata.Properties[i];
                 if (!CanBindProperty(bindingContext, property))
                 {
                     continue;
@@ -228,8 +229,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             //
             var hasBindableProperty = false;
             var isAnyPropertyEnabledForValueProviderBasedBinding = false;
-            foreach (var propertyMetadata in bindingContext.ModelMetadata.Properties)
+            for (var i = 0; i < bindingContext.ModelMetadata.Properties.Count; i++)
             {
+                var propertyMetadata = bindingContext.ModelMetadata.Properties[i];
                 if (!CanBindProperty(bindingContext, propertyMetadata))
                 {
                     continue;

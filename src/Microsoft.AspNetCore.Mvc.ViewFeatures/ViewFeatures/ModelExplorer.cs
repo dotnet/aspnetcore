@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Internal;
 
@@ -20,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private object _model;
         private Func<object, object> _modelAccessor;
-        private List<ModelExplorer> _properties;
+        private ModelExplorer[] _properties;
 
         /// <summary>
         /// Creates a new <see cref="ModelExplorer"/>.
@@ -198,24 +197,38 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// Includes a <see cref="ModelExplorer"/> for each property of the <see cref="ModelMetadata"/>
         /// for <see cref="ModelType"/>.
         /// </remarks>
-        public IEnumerable<ModelExplorer> Properties
+        public IEnumerable<ModelExplorer> Properties => PropertiesInternal;
+
+        private ModelExplorer[] PropertiesInternal
         {
             get
             {
                 if (_properties == null)
                 {
-                    _properties = new List<ModelExplorer>();
-
                     var metadata = GetMetadataForRuntimeType();
+                    var properties = metadata.Properties;
+                    var propertyHelpers = PropertyHelper.GetProperties(ModelType);
 
-                    var properties = Enumerable.Join(
-                        metadata.Properties,
-                        PropertyHelper.GetProperties(ModelType),
-                        m => m.PropertyName,
-                        ph => ph.Property.Name,
-                        (m, ph) => CreateExplorerForProperty(m, ph));
+                    _properties = new ModelExplorer[properties.Count];
+                    for (var i = 0; i < properties.Count; i++)
+                    {
+                        var propertyMetadata = properties[i];
+                        PropertyHelper propertyHelper = null;
+                        for (var j = 0; j < propertyHelpers.Length; j++)
+                        {
+                            if (string.Equals(
+                                propertyMetadata.PropertyName,
+                                propertyHelpers[j].Property.Name,
+                                StringComparison.Ordinal))
+                            {
+                                propertyHelper = propertyHelpers[j];
+                                break;
+                            }
+                        }
 
-                    _properties.AddRange(properties);
+                        Debug.Assert(propertyHelper != null);
+                        _properties[i] = CreateExplorerForProperty(propertyMetadata, propertyHelper);
+                    }
                 }
 
                 return _properties;
@@ -252,10 +265,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(name));
             }
 
-            return Properties.FirstOrDefault(p => string.Equals(
-                p.Metadata.PropertyName,
-                name,
-                StringComparison.Ordinal));
+            for (var i = 0; i < PropertiesInternal.Length; i++)
+            {
+                var property = PropertiesInternal[i];
+                if (string.Equals(name, property.Metadata.PropertyName, StringComparison.Ordinal))
+                {
+                    return property;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
