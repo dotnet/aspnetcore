@@ -14,7 +14,7 @@
     "@types/webpack": "^1.12.35",
     "@types/webpack-env": "^1.12.1",
     "@types/whatwg-fetch": "0.0.28",
-    "aspnet-prerendering": "^1.0.7",
+    "aspnet-prerendering": "^2.0.0",
     "aspnet-webpack": "^1.0.17",
     "aspnet-webpack-react": "^1.0.2",
     "babel-core": "^6.5.2",

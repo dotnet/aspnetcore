@@ -19,7 +19,7 @@
     "angular2-template-loader": "^0.6.0",
     "angular2-universal": "~2.0.11",
     "angular2-universal-polyfills": "~2.0.11",
-    "aspnet-prerendering": "^1.0.7",
+    "aspnet-prerendering": "^2.0.0",
     "aspnet-webpack": "^1.0.17",
     "bootstrap": "^3.3.7",
     "css": "^2.2.1",

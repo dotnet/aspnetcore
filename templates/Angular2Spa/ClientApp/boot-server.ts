@@ -1,5 +1,6 @@
 import 'angular2-universal-polyfills';
 import 'zone.js';
+import { createServerRenderer, RenderResult } from 'aspnet-prerendering';
 import { enableProdMode } from '@angular/core';
 import { platformNodeDynamic } from 'angular2-universal';
 import { AppModule } from './app/app.module';
@@ -7,8 +8,8 @@ import { AppModule } from './app/app.module';
 enableProdMode();
 const platform = platformNodeDynamic();
 
-export default function (params: any) : Promise<{ html: string, globals?: any }> {
-    return new Promise((resolve, reject) => {
+export default createServerRenderer(params => {
+    return new Promise<RenderResult>((resolve, reject) => {
         const requestZone = Zone.current.fork({
             name: 'angular-universal request',
             properties: {
@@ -29,4 +30,4 @@ export default function (params: any) : Promise<{ html: string, globals?: any }>
             resolve({ html: html });
         }, reject);
     });
-}
+});

@@ -3,12 +3,12 @@ import { Provider } from 'react-redux';
 import { renderToString } from 'react-dom/server';
 import { match, RouterContext } from 'react-router';
 import createMemoryHistory from 'history/lib/createMemoryHistory';
+import { createServerRenderer, RenderResult } from 'aspnet-prerendering';
 import routes from './routes';
 import configureStore from './configureStore';
-type BootResult = { html?: string, globals?: { [key: string]: any }, redirectUrl?: string};
 
-export default function (params: any): Promise<{ html: string }> {
-    return new Promise<BootResult>((resolve, reject) => {
+export default createServerRenderer(params => {
+    return new Promise<RenderResult>((resolve, reject) => {
         // Match the incoming request against the list of client-side routes
         match({ routes, location: params.location }, (error, redirectLocation, renderProps: any) => {
             if (error) {
@@ -47,4 +47,4 @@ export default function (params: any): Promise<{ html: string }> {
             }, reject); // Also propagate any errors back into the host application
         });
     });
-}
+});
