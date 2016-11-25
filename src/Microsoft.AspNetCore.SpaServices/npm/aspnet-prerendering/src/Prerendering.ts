@@ -1,4 +1,4 @@
-import 'es6-promise';
+/// <reference path="./PrerenderingInterfaces.d.ts" />
 import * as url from 'url';
 import * as path from 'path';
 import * as domain from 'domain';
@@ -7,41 +7,8 @@ import { baseUrl } from 'domain-task/fetch';
 
 const defaultTimeoutMilliseconds = 30 * 1000;
 
-export interface RenderToStringCallback {
-    (error: any, result: RenderToStringResult): void;
-}
-
-export interface RenderToStringResult {
-    html: string;
-    globals: { [key: string]: any };
-}
-
-export interface BootFunc {
-    (params: BootFuncParams): Promise<RenderToStringResult>;
-}
-
-export interface BootFuncParams {
-    location: url.Url;          // e.g., Location object containing information '/some/path'
-    origin: string;             // e.g., 'https://example.com:1234'
-    url: string;                // e.g., '/some/path'
-    absoluteUrl: string;        // e.g., 'https://example.com:1234/some/path'
-    domainTasks: Promise<any>;
-    data: any;                  // any custom object passed through from .NET
-}
-
-export interface BootModuleInfo {
-    moduleName: string;
-    exportName?: string;
-    webpackConfig?: string;
-}
-
-export function renderToString(callback: RenderToStringCallback, applicationBasePath: string, bootModule: BootModuleInfo, absoluteRequestUrl: string, requestPathAndQuery: string, customDataParameter: any, overrideTimeoutMilliseconds: number) {
-    findBootFunc(applicationBasePath, bootModule, (findBootFuncError, bootFunc) => {
-        if (findBootFuncError) {
-            callback(findBootFuncError, null);
-            return;
-        }
-
+export function createServerRenderer(bootFunc: BootFunc): RenderToStringFunc {
+    const resultFunc = (callback: RenderToStringCallback, applicationBasePath: string, bootModule: BootModuleInfo, absoluteRequestUrl: string, requestPathAndQuery: string, customDataParameter: any, overrideTimeoutMilliseconds: number) => {
         // Prepare a promise that will represent the completion of all domain tasks in this execution context.
         // The boot code will wait for this before performing its final render.
         let domainTaskCompletionPromiseResolve;
@@ -76,7 +43,7 @@ export function renderToString(callback: RenderToStringCallback, applicationBase
             }
             const timeoutMilliseconds = overrideTimeoutMilliseconds || defaultTimeoutMilliseconds; // e.g., pass -1 to override as 'never time out'
             const bootFuncPromiseWithTimeout = timeoutMilliseconds > 0
-                ? wrapWithTimeout(bootFuncPromise, timeoutMilliseconds, 
+                ? wrapWithTimeout(bootFuncPromise, timeoutMilliseconds,
                     `Prerendering timed out after ${timeoutMilliseconds}ms because the boot function in '${bootModule.moduleName}' `
                     + 'returned a promise that did not resolve or reject. Make sure that your boot function always resolves or '
                     + 'rejects its promise. You can change the timeout value using the \'asp-prerender-timeout\' tag helper.')
@@ -97,7 +64,14 @@ export function renderToString(callback: RenderToStringCallback, applicationBase
                 domainTaskCompletionPromiseResolve();
             }
         });
-    });
+    };
+
+    // Indicate to the prerendering code bundled into Microsoft.AspNetCore.SpaServices that this is a serverside rendering
+    // function, so it can be invoked directly. This flag exists only so that, in its absence, we can run some different
+    // backward-compatibility logic.
+    resultFunc['isServerRenderer'] = true;
+
+    return resultFunc;
 }
 
 function wrapWithTimeout<T>(promise: Promise<T>, timeoutMilliseconds: number, timeoutRejectionValue: any): Promise<T> {
@@ -116,59 +90,6 @@ function wrapWithTimeout<T>(promise: Promise<T>, timeoutMilliseconds: number, ti
                 reject(rejectedValue);
             }
         )
-    });
-}
-
-function findBootModule<T>(applicationBasePath: string, bootModule: BootModuleInfo, callback: (error: any, foundModule: T) => void) {
-    const bootModuleNameFullPath = path.resolve(applicationBasePath, bootModule.moduleName);
-    if (bootModule.webpackConfig) {
-        const webpackConfigFullPath = path.resolve(applicationBasePath, bootModule.webpackConfig);
-
-        let aspNetWebpackModule: any;
-        try {
-            aspNetWebpackModule = require('aspnet-webpack');
-        } catch (ex) {
-            callback('To load your boot module via webpack (i.e., if you specify a \'webpackConfig\' option), you must install the \'aspnet-webpack\' NPM package. Error encountered while loading \'aspnet-webpack\': ' + ex.stack, null);
-            return;
-        }
-
-        aspNetWebpackModule.loadViaWebpack(webpackConfigFullPath, bootModuleNameFullPath, callback);
-    } else {
-        callback(null, require(bootModuleNameFullPath));
-    }
-}
-
-function findBootFunc(applicationBasePath: string, bootModule: BootModuleInfo, callback: (error: any, bootFunc: BootFunc) => void) {
-    // First try to load the module (possibly via Webpack)
-    findBootModule<any>(applicationBasePath, bootModule, (findBootModuleError, foundBootModule) => {
-        if (findBootModuleError) {
-            callback(findBootModuleError, null);
-            return;
-        }
-
-        // Now try to pick out the function they want us to invoke
-        let bootFunc: BootFunc;
-        if (bootModule.exportName) {
-            // Explicitly-named export
-            bootFunc = foundBootModule[bootModule.exportName];
-        } else if (typeof foundBootModule !== 'function') {
-            // TypeScript-style default export
-            bootFunc = foundBootModule.default;
-        } else {
-            // Native default export
-            bootFunc = foundBootModule;
-        }
-
-        // Validate the result
-        if (typeof bootFunc !== 'function') {
-            if (bootModule.exportName) {
-                callback(`The module at ${ bootModule.moduleName } has no function export named ${ bootModule.exportName }.`, null);
-            } else {
-                callback(`The module at ${ bootModule.moduleName } does not export a default function, and you have not specified which export to invoke.`, null);
-            }
-        } else {
-            callback(null, bootFunc);
-        }
     });
 }
 

@@ -44,13 +44,14 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(3);
+	module.exports = __webpack_require__(4);
 
 
 /***/ },
 /* 1 */,
 /* 2 */,
-/* 3 */
+/* 3 */,
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -58,7 +59,7 @@
 	function createWebpackDevServer(callback) {
 	    var aspNetWebpack;
 	    try {
-	        aspNetWebpack = __webpack_require__(4);
+	        aspNetWebpack = __webpack_require__(5);
 	    }
 	    catch (ex) {
 	        // Developers sometimes have trouble with badly-configured Node installations, where it's unable
@@ -76,7 +77,7 @@
 
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports) {
 
 	module.exports = require("aspnet-webpack");

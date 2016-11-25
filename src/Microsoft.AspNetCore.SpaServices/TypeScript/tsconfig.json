@@ -3,7 +3,8 @@
         "target": "es3",
         "module": "commonjs",
         "moduleResolution": "node",
-        "types": ["node"]
+        "types": ["node"],
+        "lib": ["es2015"]
     },
     "exclude": [
         "node_modules"
