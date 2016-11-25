@@ -44,5 +44,11 @@
     "embed": [
       "Content/**/*"
     ]
+  },
+  "scripts": {
+    "prepublish": [
+      "npm install",
+      "node node_modules/webpack/bin/webpack.js"
+    ]
   }
 }
