@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -23,7 +22,8 @@ namespace Microsoft.AspNetCore.Mvc
 {
     public class ContentResultTest
     {
-        private const int DefaultCharacterChunkSize = HttpResponseStreamWriter.DefaultBufferSize;
+        private static readonly int DefaultCharacterChunkSize =
+            MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize;
 
         [Fact]
         public async Task ContentResult_Response_NullContent_SetsContentTypeAndEncoding()
