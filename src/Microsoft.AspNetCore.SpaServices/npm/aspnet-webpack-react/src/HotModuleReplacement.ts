@@ -1,7 +1,11 @@
 import * as webpack from 'webpack';
 
 export function addReactHotModuleReplacementBabelTransform(webpackConfig: webpack.Configuration) {
-    webpackConfig.module.loaders.forEach(loaderConfig => {
+    const moduleRules: webpack.Loader[] =
+        (webpackConfig.module as any).rules // Webpack  < 2.1.0 beta 23
+        || webpackConfig.module.loaders;    // Webpack >= 2.1.0 beta 23
+
+    moduleRules.forEach(loaderConfig => {
         if (loaderConfig.loader && loaderConfig.loader.match(/\bbabel-loader\b/)) {
             // Ensure the babel-loader options includes a 'query'
             const query = loaderConfig.query = loaderConfig.query || {};
