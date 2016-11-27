@@ -16,18 +16,17 @@ namespace SocketsSample
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRouting();
-
             services.AddSingleton<ProtobufInvocationAdapter>();
             services.AddSingleton<LineInvocationAdapter>();
 
-            services.AddSignalR()
-                    .AddSignalROptions(options =>
+            services.AddSockets();
+
+            services.AddSignalR(options =>
                     {
                         options.RegisterInvocationAdapter<ProtobufInvocationAdapter>("protobuf");
                         options.RegisterInvocationAdapter<LineInvocationAdapter>("line");
                     });
-                 // .AddRedis();
+            // .AddRedis();
 
             services.AddSingleton<ChatEndPoint>();
             services.AddSingleton<ProtobufSerializer>();

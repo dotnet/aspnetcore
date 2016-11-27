@@ -5,17 +5,22 @@ using System;
 using System.Collections.Concurrent;
 using System.IO.Pipelines;
 using System.Threading;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public class ConnectionManager : IDisposable
+    public class ConnectionManager
     {
         private ConcurrentDictionary<string, ConnectionState> _connections = new ConcurrentDictionary<string, ConnectionState>();
         private Timer _timer;
 
-        public ConnectionManager()
+        public ConnectionManager(IApplicationLifetime lifetime)
         {
             _timer = new Timer(Scan, this, 0, 1000);
+
+            // We hook stopping because we need the requests to end, Dispose doesn't work since
+            // that happens after requests are drained
+            lifetime.ApplicationStopping.Register(CloseConnections);
         }
 
         public bool TryGetConnection(string id, out ConnectionState state)
@@ -96,7 +101,7 @@ namespace Microsoft.AspNetCore.Sockets
             }
         }
 
-        public void Dispose()
+        private void CloseConnections()
         {
             // Stop firing the timer
             _timer.Dispose();

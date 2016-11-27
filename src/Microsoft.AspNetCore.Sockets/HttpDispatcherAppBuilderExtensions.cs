@@ -2,13 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO.Pipelines;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -16,15 +13,7 @@ namespace Microsoft.AspNetCore.Builder
     {
         public static IApplicationBuilder UseSockets(this IApplicationBuilder app, Action<SocketRouteBuilder> callback)
         {
-            var manager = new ConnectionManager();
-            var factory = new PipelineFactory();
-
-            var loggerFactory = app.ApplicationServices.GetService<ILoggerFactory>();
-            var dispatcher = new HttpConnectionDispatcher(manager, factory, loggerFactory);
-
-            // Dispose the connection manager when application shutdown is triggered
-            var lifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
-            lifetime.ApplicationStopping.Register(state => ((IDisposable)state).Dispose(), manager);
+            var dispatcher = app.ApplicationServices.GetRequiredService<HttpConnectionDispatcher>();
 
             var routes = new RouteBuilder(app);
 

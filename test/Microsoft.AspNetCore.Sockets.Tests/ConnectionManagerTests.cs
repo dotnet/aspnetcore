@@ -1,11 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Sockets.Tests
@@ -15,7 +13,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public void ReservedConnectionsHaveConnectionId()
         {
-            var connectionManager = new ConnectionManager();
+            var lifetime = new ApplicationLifetime();
+            var connectionManager = new ConnectionManager(lifetime);
             var state = connectionManager.ReserveConnection();
 
             Assert.NotNull(state.Connection);
@@ -28,7 +27,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public void ReservedConnectionsCanBeRetrieved()
         {
-            var connectionManager = new ConnectionManager();
+            var lifetime = new ApplicationLifetime();
+            var connectionManager = new ConnectionManager(lifetime);
             var state = connectionManager.ReserveConnection();
 
             Assert.NotNull(state.Connection);
@@ -43,10 +43,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public void AddNewConnection()
         {
             using (var factory = new PipelineFactory())
-            using (var channel = new HttpConnection(factory))
+            using (var connection = new HttpConnection(factory))
             {
-                var connectionManager = new ConnectionManager();
-                var state = connectionManager.AddNewConnection(channel);
+                var lifetime = new ApplicationLifetime();
+                var connectionManager = new ConnectionManager(lifetime);
+                var state = connectionManager.AddNewConnection(connection);
 
                 Assert.NotNull(state.Connection);
                 Assert.NotNull(state.Connection.ConnectionId);
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 ConnectionState newState;
                 Assert.True(connectionManager.TryGetConnection(state.Connection.ConnectionId, out newState));
                 Assert.Same(newState, state);
-                Assert.Same(channel, newState.Connection.Channel);
+                Assert.Same(connection, newState.Connection.Channel);
             }
         }
 
@@ -63,10 +64,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public void RemoveConnection()
         {
             using (var factory = new PipelineFactory())
-            using (var channel = new HttpConnection(factory))
+            using (var connection = new HttpConnection(factory))
             {
-                var connectionManager = new ConnectionManager();
-                var state = connectionManager.AddNewConnection(channel);
+                var lifetime = new ApplicationLifetime();
+                var connectionManager = new ConnectionManager(lifetime);
+                var state = connectionManager.AddNewConnection(connection);
 
                 Assert.NotNull(state.Connection);
                 Assert.NotNull(state.Connection.ConnectionId);
@@ -75,10 +77,33 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 ConnectionState newState;
                 Assert.True(connectionManager.TryGetConnection(state.Connection.ConnectionId, out newState));
                 Assert.Same(newState, state);
-                Assert.Same(channel, newState.Connection.Channel);
+                Assert.Same(connection, newState.Connection.Channel);
 
                 connectionManager.RemoveConnection(state.Connection.ConnectionId);
                 Assert.False(connectionManager.TryGetConnection(state.Connection.ConnectionId, out newState));
+            }
+        }
+
+        [Fact]
+        public async Task ApplicationStoppingClosesConnections()
+        {
+            using (var factory = new PipelineFactory())
+            using (var connection = new HttpConnection(factory))
+            {
+                var lifetime = new ApplicationLifetime();
+                var connectionManager = new ConnectionManager(lifetime);
+                var state = connectionManager.AddNewConnection(connection);
+
+                var task = Task.Run(async () =>
+                {
+                    var result = await connection.Input.ReadAsync();
+
+                    Assert.True(result.IsCompleted);
+                });
+
+                lifetime.StopApplication();
+
+                await task;
             }
         }
     }
