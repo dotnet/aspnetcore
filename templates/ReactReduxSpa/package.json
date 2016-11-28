@@ -28,6 +28,8 @@
     "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.8.5",
     "jquery": "^2.2.1",
+    "json-loader": "^0.5.4",
+    "node-noop": "^1.0.0",
     "react": "^15.3.2",
     "react-dom": "^15.3.2",
     "react-redux": "^4.4.5",
@@ -40,7 +42,6 @@
     "typescript": "2.0.3",
     "url-loader": "^0.5.7",
     "webpack": "^1.13.2",
-    "webpack-node-externals": "^1.4.3",
     "webpack-hot-middleware": "^2.12.2",
     "webpack-merge": "^0.14.1"
   }
