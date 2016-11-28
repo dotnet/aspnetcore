@@ -32,6 +32,8 @@
     "html-loader": "^0.4.4",
     "isomorphic-fetch": "^2.2.1",
     "jquery": "^2.2.1",
+    "json-loader": "^0.5.4",
+    "node-noop": "^1.0.0",
     "preboot": "^4.5.2",
     "raw-loader": "^0.5.1",
     "rxjs": "5.0.0-beta.12",
@@ -43,7 +45,6 @@
     "webpack": "^1.13.2",
     "webpack-hot-middleware": "^2.12.2",
     "webpack-merge": "^0.14.1",
-    "webpack-node-externals": "^1.4.3",
     "zone.js": "^0.6.25"
   },
   "devDependencies": {

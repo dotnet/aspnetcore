@@ -1,9 +1,7 @@
 var isDevBuild = process.argv.indexOf('--env.prod') < 0;
 var path = require('path');
 var webpack = require('webpack');
-var nodeExternals = require('webpack-node-externals');
 var merge = require('webpack-merge');
-var allFilenamesExceptJavaScript = /\.(?!js(\?|$))([^.]+(\?|$))/;
 
 // Configuration in common to both client-side and server-side bundles
 var sharedConfig = {
@@ -48,14 +46,22 @@ var clientBundleConfig = merge(sharedConfig, {
 
 // Configuration for server-side (prerendering) bundle suitable for running in Node
 var serverBundleConfig = merge(sharedConfig, {
+    resolve: { packageMains: ['main'] },
     entry: { 'main-server': './ClientApp/boot-server.ts' },
+    plugins: [
+        new webpack.DllReferencePlugin({
+            context: __dirname,
+            manifest: require('./ClientApp/dist/vendor-manifest.json'),
+            sourceType: 'commonjs2',
+            name: './vendor'
+        })
+    ],
     output: {
         libraryTarget: 'commonjs',
         path: path.join(__dirname, './ClientApp/dist')
     },
     target: 'node',
-    devtool: 'inline-source-map',
-    externals: [nodeExternals({ whitelist: [allFilenamesExceptJavaScript] })] // Don't bundle .js files from node_modules
+    devtool: 'inline-source-map'
 });
 
 module.exports = [clientBundleConfig, serverBundleConfig];
