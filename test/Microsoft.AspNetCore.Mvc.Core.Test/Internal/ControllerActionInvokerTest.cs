@@ -2686,15 +2686,22 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     TestModelBinderFactory.CreateDefault(metadataProvider),
                     new DefaultObjectValidator(metadataProvider, new IModelValidatorProvider[0]));
 
+            var controllerContext = new ControllerContext(actionContext)
+            {
+                ValueProviderFactories = new IValueProviderFactory[0]
+            };
+            controllerContext.ModelState.MaxAllowedErrors = 200;
+
             var invoker = new ControllerActionInvoker(
-                CreateFilterCache(),
                 controllerFactory.Object,
                 argumentBinder,
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
                 new DiagnosticListener("Microsoft.AspNetCore"),
-                actionContext,
-                new IValueProviderFactory[0],
-                200);
+                controllerContext,
+                new IFilterMetadata[0],
+                ObjectMethodExecutor.Create(
+                    actionDescriptor.MethodInfo,
+                    actionDescriptor.ControllerTypeInfo));
 
             // Act
             await invoker.InvokeAsync();
@@ -2996,24 +3003,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 routeData: routeData,
                 actionDescriptor: actionDescriptor);
 
-            var filterProvider = new Mock<IFilterProvider>(MockBehavior.Strict);
-            filterProvider
-                .Setup(fp => fp.OnProvidersExecuting(It.IsAny<FilterProviderContext>()))
-                .Callback<FilterProviderContext>(context =>
-                {
-                    foreach (var filterMetadata in filters)
-                    {
-                        context.Results.Add(new FilterItem(new FilterDescriptor(filterMetadata, FilterScope.Action))
-                        {
-                            Filter = filterMetadata,
-                        });
-                    }
-                });
-
-            filterProvider
-                .Setup(fp => fp.OnProvidersExecuted(It.IsAny<FilterProviderContext>()))
-                .Verifiable();
-
             IControllerArgumentBinder argumentBinder = null;
 
             if (controllerArgumentBinder == null)
@@ -3032,10 +3021,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 argumentBinder = controllerArgumentBinder;
             }
 
-            filterProvider
-                .SetupGet(fp => fp.Order)
-                .Returns(-1000);
-
             if (valueProviderFactories == null)
             {
                 valueProviderFactories = new List<IValueProviderFactory>();
@@ -3053,7 +3038,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             var invoker = new TestControllerActionInvoker(
-                new[] { filterProvider.Object },
+                filters,
                 new MockControllerFactory(controller ?? this),
                 argumentBinder,
                 logger,
@@ -3299,18 +3284,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private static ControllerActionInvokerCache CreateFilterCache(IFilterProvider[] filterProviders = null)
-        {
-            var descriptorProvider = new ActionDescriptorCollectionProvider(
-                Enumerable.Empty<IActionDescriptorProvider>(),
-                Enumerable.Empty<IActionDescriptorChangeProvider>());
-            return new ControllerActionInvokerCache(descriptorProvider, filterProviders.AsEnumerable() ?? new List<IFilterProvider>());
-        }
-
         private class TestControllerActionInvoker : ControllerActionInvoker
         {
             public TestControllerActionInvoker(
-                IFilterProvider[] filterProviders,
+                IFilterMetadata[] filters,
                 MockControllerFactory controllerFactory,
                 IControllerArgumentBinder argumentBinder,
                 ILogger logger,
@@ -3319,14 +3296,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 IReadOnlyList<IValueProviderFactory> valueProviderFactories,
                 int maxAllowedErrorsInModelState)
                 : base(
-                      CreateFilterCache(filterProviders),
                       controllerFactory,
                       argumentBinder,
                       logger,
                       diagnosticSource,
-                      actionContext,
-                      valueProviderFactories,
-                      maxAllowedErrorsInModelState)
+                      CreatControllerContext(actionContext, valueProviderFactories, maxAllowedErrorsInModelState),
+                      filters,
+                      CreateExecutor((ControllerActionDescriptor)actionContext.ActionDescriptor))
             {
                 ControllerFactory = controllerFactory;
             }
@@ -3339,6 +3315,25 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                 // Make sure that the controller was disposed in every test that creates ones.
                 ControllerFactory.Verify();
+            }
+
+            private static ObjectMethodExecutor CreateExecutor(ControllerActionDescriptor actionDescriptor)
+            {
+                return ObjectMethodExecutor.Create(actionDescriptor.MethodInfo, actionDescriptor.ControllerTypeInfo);
+            }
+
+            private static ControllerContext CreatControllerContext(
+                ActionContext actionContext,
+                IReadOnlyList<IValueProviderFactory> valueProviderFactories,
+                int maxAllowedErrorsInModelState)
+            {
+                var controllerContext = new ControllerContext(actionContext)
+                {
+                    ValueProviderFactories = valueProviderFactories.ToList()
+                };
+                controllerContext.ModelState.MaxAllowedErrors = maxAllowedErrorsInModelState;
+
+                return controllerContext;
             }
         }
 

@@ -57,15 +57,21 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             if (actionDescriptor != null)
             {
+                var controllerContext = new ControllerContext(context.ActionContext);
+                // PERF: These are rarely going to be changed, so let's go copy-on-write.
+                controllerContext.ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories);
+                controllerContext.ModelState.MaxAllowedErrors = _maxModelValidationErrors;
+
+                var cacheState = _controllerActionInvokerCache.GetState(controllerContext);
+
                 context.Result = new ControllerActionInvoker(
-                    _controllerActionInvokerCache,
                     _controllerFactory,
                     _argumentBinder,
                     _logger,
                     _diagnosticSource,
-                    context.ActionContext,
-                    _valueProviderFactories,
-                    _maxModelValidationErrors);
+                    controllerContext,
+                    cacheState.Filters,
+                    cacheState.ActionMethodExecutor);
             }
         }
 
