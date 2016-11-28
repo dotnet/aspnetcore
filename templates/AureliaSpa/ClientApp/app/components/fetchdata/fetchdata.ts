@@ -13,7 +13,7 @@ export class Fetchdata {
         http.fetch('/api/SampleData/WeatherForecasts')
             .then(result => result.json())
             .then(data => {
-                this.forecasts = data;
+                this.forecasts = data as any;
             });
     }
 }
