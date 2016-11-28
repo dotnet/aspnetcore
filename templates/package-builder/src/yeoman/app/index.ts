@@ -133,11 +133,21 @@ class MyGenerator extends yeoman.Base {
                     inputFullPath = tempPath;
                 }
 
-                this.fs.copyTpl(
-                    inputFullPath,
-                    destinationFullPath,
-                    this._answers
-                );
+                const outputDirBasename = path.basename(path.dirname(destinationFullPath));
+                if (outputDirBasename === 'dist') {
+                    // Don't do token replacement in 'dist' files, as they might just randomly contain
+                    // sequences like '<%=' even though they aren't actually template files
+                    this.fs.copy(
+                        inputFullPath,
+                        destinationFullPath
+                    );
+                } else {
+                    this.fs.copyTpl(
+                        inputFullPath,
+                        destinationFullPath,
+                        this._answers
+                    );
+                }
             }
         });
     }
