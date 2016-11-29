@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     /// <summary>
-    /// Allows customization of the of the <see cref="ControllerModel"/>.
+    /// Allows customization of the <see cref="ControllerModel"/>.
     /// </summary>
     /// <remarks>
     /// To use this interface, create an <see cref="System.Attribute"/> class which implements the interface and
