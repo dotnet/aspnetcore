@@ -13,8 +13,8 @@ class FetchDataViewModel {
 
     constructor() {
         fetch('/api/SampleData/WeatherForecasts')
-            .then(response => response.json())
-            .then((data: WeatherForecast[]) => {
+            .then(response => response.json() as Promise<WeatherForecast[]>)
+            .then(data => {
                 this.forecasts(data);
             });
     }

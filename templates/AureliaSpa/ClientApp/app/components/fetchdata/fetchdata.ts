@@ -11,9 +11,9 @@ export class Fetchdata {
 
     constructor(http: HttpClient) {
         http.fetch('/api/SampleData/WeatherForecasts')
-            .then(result => result.json())
+            .then(result => result.json() as Promise<WeatherForecast[]>)
             .then(data => {
-                this.forecasts = data as any;
+                this.forecasts = data;
             });
     }
 }

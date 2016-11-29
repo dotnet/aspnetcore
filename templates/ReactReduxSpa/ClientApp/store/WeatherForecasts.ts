@@ -46,8 +46,8 @@ export const actionCreators = {
         // Only load data if it's something we don't already have (and are not already loading)
         if (startDateIndex !== getState().weatherForecasts.startDateIndex) {
             let fetchTask = fetch(`/api/SampleData/WeatherForecasts?startDateIndex=${ startDateIndex }`)
-                .then(response => response.json())
-                .then((data: WeatherForecast[]) => {
+                .then(response => response.json() as Promise<WeatherForecast[]>)
+                .then(data => {
                     dispatch({ type: 'RECEIVE_WEATHER_FORECASTS', startDateIndex: startDateIndex, forecasts: data });
                 });
 

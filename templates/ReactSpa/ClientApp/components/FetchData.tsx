@@ -12,8 +12,8 @@ export class FetchData extends React.Component<any, FetchDataExampleState> {
         this.state = { forecasts: [], loading: true };
 
         fetch('/api/SampleData/WeatherForecasts')
-            .then(response => response.json())
-            .then((data: WeatherForecast[]) => {
+            .then(response => response.json() as Promise<WeatherForecast[]>)
+            .then(data => {
                 this.setState({ forecasts: data, loading: false });
             });
     }
