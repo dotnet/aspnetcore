@@ -271,6 +271,135 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
+        public void WebHostNotifiesAllIApplicationLifetimeCallbacksEvenIfTheyThrow()
+        {
+            var host = CreateBuilder()
+                .UseServer(this)
+                .Build();
+            var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
+
+            var started = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStarted);
+            var stopping = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStopping);
+            var stopped = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStopped);
+
+            using (host)
+            {
+                host.Start();
+                Assert.True(applicationLifetime.ApplicationStarted.IsCancellationRequested);
+                Assert.True(started.All(s => s));
+                host.Dispose();
+                Assert.True(stopping.All(s => s));
+                Assert.True(stopped.All(s => s));
+            }
+        }
+
+        [Fact]
+        public void WebHostNotifiesAllIApplicationLifetimeEventsCallbacksEvenIfTheyThrow()
+        {
+            bool[] events1 = null;
+            bool[] events2 = null;
+
+            var host = CreateBuilder()
+                .UseServer(this)
+                .ConfigureServices(services =>
+                {
+                    events1 = RegisterCallbacksThatThrow(services);
+                    events2 = RegisterCallbacksThatThrow(services);
+                })
+                .Build();
+
+            using (host)
+            {
+                host.Start();
+                Assert.True(events1[0]);
+                Assert.True(events2[0]);
+                host.Dispose();
+                Assert.True(events1[1]);
+                Assert.True(events2[1]);
+                Assert.True(events1[2]);
+                Assert.True(events2[2]);
+            }
+        }
+
+        [Fact]
+        public void WebHostStopCallbacksDontMultipleTimes()
+        {
+            var stoppingCalls = 0;
+            var stoppedCalls = 0;
+
+            var host = CreateBuilder()
+                .UseServer(this)
+                .ConfigureServices(services =>
+                {
+                    Action started = () =>
+                    {
+                    };
+
+                    Action stopping = () =>
+                    {
+                        stoppingCalls++;
+                    };
+
+                    Action stopped = () =>
+                    {
+                        stoppedCalls++;
+                    };
+
+                    services.AddSingleton<IApplicationLifetimeEvents>(new DelegateLifetimeEvents(started, stopping, stopped));
+                })
+                .Build();
+            var lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
+            lifetime.StopApplication();
+            lifetime.StopApplication();
+            lifetime.StopApplication();
+
+            using (host)
+            {
+                host.Start();
+                host.Dispose();
+
+                Assert.Equal(1, stoppingCalls);
+                Assert.Equal(1, stoppedCalls);
+            }
+        }
+
+        [Fact]
+        public void WebHostNotifiesAllIApplicationLifetimeEventsCallbacksAndIApplicationLifetimeCallbacksEvenIfTheyThrow()
+        {
+            bool[] events1 = null;
+            bool[] events2 = null;
+
+            var host = CreateBuilder()
+                .UseServer(this)
+                .ConfigureServices(services =>
+                {
+                    events1 = RegisterCallbacksThatThrow(services);
+                    events2 = RegisterCallbacksThatThrow(services);
+                })
+                .Build();
+            var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
+
+            var started = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStarted);
+            var stopping = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStopping);
+            var stopped = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStopped);
+
+            using (host)
+            {
+                host.Start();
+                Assert.True(events1[0]);
+                Assert.True(events2[0]);
+                Assert.True(started.All(s => s));
+                host.Dispose();
+                Assert.True(events1[1]);
+                Assert.True(events2[1]);
+                Assert.True(stopping.All(s => s));
+                Assert.True(events1[2]);
+                Assert.True(events2[2]);
+                Assert.True(stopped.All(s => s));
+            }
+        }
+
+        [Fact]
         public void WebHostInjectsHostingEnvironment()
         {
             var host = CreateBuilder()
@@ -523,6 +652,48 @@ namespace Microsoft.AspNetCore.Hosting
             return new WebHostBuilder().UseConfiguration(config ?? new ConfigurationBuilder().Build()).UseStartup("Microsoft.AspNetCore.Hosting.Tests");
         }
 
+        private static bool[] RegisterCallbacksThatThrow(IServiceCollection services)
+        {
+            bool[] events = new bool[3];
+
+            Action started = () =>
+            {
+                events[0] = true;
+                throw new InvalidOperationException();
+            };
+
+            Action stopping = () =>
+            {
+                events[1] = true;
+                throw new InvalidOperationException();
+            };
+
+            Action stopped = () =>
+            {
+                events[2] = true;
+                throw new InvalidOperationException();
+            };
+
+            services.AddSingleton<IApplicationLifetimeEvents>(new DelegateLifetimeEvents(started, stopping, stopped));
+
+            return events;
+        }
+
+        private static bool[] RegisterCallbacksThatThrow(CancellationToken token)
+        {
+            var signals = new bool[3];
+            for (int i = 0; i < signals.Length; i++)
+            {
+                token.Register(state =>
+                {
+                    signals[(int)state] = true;
+                    throw new InvalidOperationException();
+                }, i);
+            }
+
+            return signals;
+        }
+
         public void Start<TContext>(IHttpApplication<TContext> application)
         {
             var startInstance = new StartInstance();
@@ -549,6 +720,26 @@ namespace Microsoft.AspNetCore.Hosting
                     startInstance.Dispose();
                 }
             }
+        }
+
+        private class DelegateLifetimeEvents : IApplicationLifetimeEvents
+        {
+            private readonly Action _started;
+            private readonly Action _stopping;
+            private readonly Action _stopped;
+
+            public DelegateLifetimeEvents(Action started, Action stopping, Action stopped)
+            {
+                _started = started;
+                _stopping = stopping;
+                _stopped = stopped;
+            }
+
+            public void OnApplicationStarted() => _started();
+
+            public void OnApplicationStopped() => _stopped();
+
+            public void OnApplicationStopping() => _stopping();
         }
 
         private class StartInstance : IDisposable

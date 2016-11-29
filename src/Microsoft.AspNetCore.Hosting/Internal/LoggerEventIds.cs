@@ -11,5 +11,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public const int Started = 4;
         public const int Shutdown = 5;
         public const int ApplicationStartupException = 6;
+        public const int ApplicationStoppingException = 7;
+        public const int ApplicationStoppedException = 8;
     }
 }

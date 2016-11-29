@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -28,9 +27,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         private readonly IServiceCollection _applicationServiceCollection;
         private IStartup _startup;
+        private ApplicationLifetime _applicationLifetime;
 
         private readonly IServiceProvider _hostingServiceProvider;
-        private readonly ApplicationLifetime _applicationLifetime;
         private readonly WebHostOptions _options;
         private readonly IConfiguration _config;
 
@@ -68,8 +67,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             _options = options;
             _applicationServiceCollection = appServices;
             _hostingServiceProvider = hostingServiceProvider;
-            _applicationLifetime = new ApplicationLifetime();
-            _applicationServiceCollection.AddSingleton<IApplicationLifetime>(_applicationLifetime);
+            _applicationServiceCollection.AddSingleton<IApplicationLifetime, ApplicationLifetime>();
         }
 
         public IServiceProvider Services
@@ -101,6 +99,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             Initialize();
 
+            _applicationLifetime = _applicationServices.GetRequiredService<IApplicationLifetime>() as ApplicationLifetime;
             _logger = _applicationServices.GetRequiredService<ILogger<WebHost>>();
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticSource>();
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
@@ -109,7 +108,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             Server.Start(new HostingApplication(_application, _logger, diagnosticSource, httpContextFactory));
 
-            _applicationLifetime.NotifyStarted();
+            _applicationLifetime?.NotifyStarted();
             _logger.Started();
         }
 
@@ -244,10 +243,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public void Dispose()
         {
             _logger?.Shutdown();
-            _applicationLifetime.StopApplication();
+            _applicationLifetime?.StopApplication();
             (_hostingServiceProvider as IDisposable)?.Dispose();
             (_applicationServices as IDisposable)?.Dispose();
-            _applicationLifetime.NotifyStopped();
+            _applicationLifetime?.NotifyStopped();
         }
     }
 }
