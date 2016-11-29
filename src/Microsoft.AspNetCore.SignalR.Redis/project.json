@@ -25,11 +25,16 @@
     "Microsoft.AspNetCore.SignalR": {
       "target": "project"
     },
+    "Microsoft.Extensions.TaskCache.Sources": {
+      "version": "1.2.0-*",
+      "type": "build"
+    },
     "NETStandard.Library": "1.6.1-*",
     "StackExchange.Redis.StrongName": "1.1.605"
   },
 
   "frameworks": {
-    "netstandard1.6": {}
+    "netstandard1.6": {},
+    "net451": {}
   }
 }
