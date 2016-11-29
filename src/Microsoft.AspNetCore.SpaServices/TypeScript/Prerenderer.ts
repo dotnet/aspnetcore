@@ -1,6 +1,7 @@
 /// <reference path="../npm/aspnet-prerendering/src/PrerenderingInterfaces.d.ts" />
 import * as url from 'url';
 import * as path from 'path';
+import * as fs from 'fs';
 declare var __non_webpack_require__;
 
 // Separate declaration and export just to add type checking on function signature
@@ -22,7 +23,8 @@ export const renderToString: RenderToStringFunc = renderToStringImpl;
 // a certain flag is attached to the function instance.
 function renderToStringImpl(callback: RenderToStringCallback, applicationBasePath: string, bootModule: BootModuleInfo, absoluteRequestUrl: string, requestPathAndQuery: string, customDataParameter: any, overrideTimeoutMilliseconds: number) {
     try {
-        let renderToStringFunc = findRenderToStringFunc(applicationBasePath, bootModule);
+        const forceLegacy = isLegacyAspNetPrerendering();
+        const renderToStringFunc = !forceLegacy && findRenderToStringFunc(applicationBasePath, bootModule);
         const isNotLegacyMode = renderToStringFunc && renderToStringFunc['isServerRenderer'];
 
         if (isNotLegacyMode) {
@@ -32,9 +34,9 @@ function renderToStringImpl(callback: RenderToStringCallback, applicationBasePat
             renderToStringFunc.apply(null, arguments);
         } else {
             // Legacy mode - just hand off execution to 'aspnet-prerendering' v1.x, which must exist in node_modules at runtime
-            renderToStringFunc = require('aspnet-prerendering').renderToString;
-            if (renderToStringFunc) {
-                renderToStringFunc(callback, applicationBasePath, bootModule, absoluteRequestUrl, requestPathAndQuery, customDataParameter, overrideTimeoutMilliseconds);
+            const aspNetPrerenderingV1RenderToString = require('aspnet-prerendering').renderToString;
+            if (aspNetPrerenderingV1RenderToString) {
+                aspNetPrerenderingV1RenderToString(callback, applicationBasePath, bootModule, absoluteRequestUrl, requestPathAndQuery, customDataParameter, overrideTimeoutMilliseconds);
             } else {
                 callback('If you use aspnet-prerendering >= 2.0.0, you must update your server-side boot module to call createServerRenderer. '
                     + 'Either update your boot module code, or revert to aspnet-prerendering version 1.x');
@@ -91,4 +93,23 @@ function findRenderToStringFunc(applicationBasePath: string, bootModule: BootMod
     }
 
     return renderToStringFunc;
+}
+
+function isLegacyAspNetPrerendering() {
+    const version = getAspNetPrerenderingPackageVersion();
+    return version && /^1\./.test(version);
+}
+
+function getAspNetPrerenderingPackageVersion() {
+    try {
+        const packageEntryPoint = __non_webpack_require__.resolve('aspnet-prerendering');
+        const packageDir = path.dirname(packageEntryPoint);
+        const packageJsonPath = path.join(packageDir, 'package.json');
+        const packageJson = __non_webpack_require__(packageJsonPath);
+        return packageJson.version.toString();
+    } catch(ex) {
+        // Implies aspnet-prerendering isn't in node_modules at all (or node_modules itself doesn't exist,
+        // which will be the case in production based on latest templates).
+        return null;
+    }
 }
