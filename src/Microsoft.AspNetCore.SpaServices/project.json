@@ -1,31 +1,31 @@
 {
-  "version": "1.0.0-*",
   "description": "Helpers for building single-page applications on ASP.NET MVC Core",
-  "compilationOptions": {
-    "keyFile": "../../tools/Key.snk"
+  "version": "1.0.0-*",
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/javascriptservices"
+    },
+    "tags": [
+      "aspnetcore",
+      "aspnetcoremvc",
+      "nodeservices"
+    ]
   },
-  "authors": [
-    "Microsoft"
-  ],
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk",
+    "embed": [
+      "Content/**/*"
+    ]
+  },
   "dependencies": {
     "Microsoft.AspNetCore.Mvc": "1.0.1",
     "Microsoft.AspNetCore.NodeServices": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {
-    },
-    "netstandard1.6": {
-      "imports": [
-        "dotnet5.6",
-        "dnxcore50",
-        "portable-net45+win8"
-      ]
-    }
-  },
-  "buildOptions": {
-    "embed": [
-      "Content/**/*"
-    ]
+    "net451": {},
+    "netstandard1.6": {}
   },
   "scripts": {
     "prepublish": [

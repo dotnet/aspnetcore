@@ -1,26 +1,27 @@
 {
-  "version": "1.0.0-*",
   "description": "Helpers for building Angular 2 applications on ASP.NET Core.",
-  "compilationOptions": {
-    "keyFile": "../../tools/Key.snk"
+  "version": "1.0.0-*",
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/javascriptservices"
+    },
+    "tags": [
+      "aspnetcore",
+      "aspnetcoremvc",
+      "nodeservices"
+    ]
   },
-  "authors": [ "Microsoft" ],
-  "tooling": {
-    "defaultNamespace": "Microsoft.AspNetCore.AngularServices"
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
     "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.1",
     "Microsoft.AspNetCore.SpaServices": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {
-    },
-    "netstandard1.6": {
-      "imports": [
-        "dotnet5.6",
-        "dnxcore50",
-        "portable-net45+win8"
-      ]
-    }
+    "net451": {},
+    "netstandard1.6": {}
   }
 }

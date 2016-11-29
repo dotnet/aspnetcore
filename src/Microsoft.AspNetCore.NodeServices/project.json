@@ -1,17 +1,30 @@
 {
-  "version": "1.0.0-*",
   "description": "Invoke Node.js modules at runtime in ASP.NET Core applications.",
-  "compilationOptions": {
-    "keyFile": "../../tools/Key.snk"
+  "version": "1.0.0-*",
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/javascriptservices"
+    },
+    "tags": [
+      "aspnetcore",
+      "aspnetcoremvc",
+      "nodeservices"
+    ]
   },
-  "authors": [ "Microsoft" ],
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk",
+    "embed": [
+      "Content/**/*"
+    ]
+  },
   "dependencies": {
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0",
     "Microsoft.Extensions.Configuration.Json": "1.0.0",
-    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0",
     "Microsoft.Extensions.Logging.Console": "1.0.0",
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0",
-    "Newtonsoft.Json": "9.0.1"
+    "Newtonsoft.Json": "9.0.1",
+    "NETStandard.Library": "1.6.0"
   },
   "frameworks": {
     "net451": {
@@ -22,28 +35,13 @@
         "Microsoft.Tpl.Dataflow": "4.5.24"
       }
     },
-    "netstandard1.3": {
-      "imports": [
-        "dotnet5.6",
-        "dnxcore50",
-        "portable-net45+win8"
-      ],
+    "netstandard1.6": {
       "dependencies": {
-        "System.Console": "4.0.0",
         "System.Diagnostics.Process": "4.1.0",
         "System.IO.Pipes": "4.0.0",
-        "System.Net.Http": "4.1.0",
-        "System.Net.Sockets": "4.1.0",
-        "System.Runtime.InteropServices.RuntimeInformation": "4.0.0",
-        "System.Text.RegularExpressions": "4.1.0",
-        "System.Threading.Tasks.Dataflow": "4.5.25"
+        "System.Threading.Tasks.Dataflow": "4.6.0"
       }
     }
-  },
-  "buildOptions": {
-    "embed": [
-      "Content/**/*"
-    ]
   },
   "scripts": {
     "prepublish": [
