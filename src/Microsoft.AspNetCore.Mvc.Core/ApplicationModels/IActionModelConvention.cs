@@ -4,14 +4,14 @@
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     /// <summary>
-    /// Allows customization of the of the <see cref="ActionModel"/>.
+    /// Allows customization of the <see cref="ActionModel"/>.
     /// </summary>
     /// <remarks>
     /// To use this interface, create an <see cref="System.Attribute"/> class which implements the interface and
     /// place it on an action method.
     ///
     /// <see cref="IActionModelConvention"/> customizations run after
-    /// <see cref="IActionModelConvention"/> customications and before
+    /// <see cref="IActionModelConvention"/> customizations and before
     /// <see cref="IParameterModelConvention"/> customizations.
     /// </remarks>
     public interface IActionModelConvention
