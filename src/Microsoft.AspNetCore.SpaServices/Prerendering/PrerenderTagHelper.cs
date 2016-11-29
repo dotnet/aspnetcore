@@ -11,6 +11,9 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SpaServices.Prerendering
 {
+    /// <summary>
+    /// A tag helper for prerendering JavaScript applications on the server.
+    /// </summary>
     [HtmlTargetElement(Attributes = PrerenderModuleAttributeName)]
     public class PrerenderTagHelper : TagHelper
     {
@@ -24,6 +27,10 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
         private readonly string _applicationBasePath;
         private readonly INodeServices _nodeServices;
 
+        /// <summary>
+        /// Creates a new instance of <see cref="PrerenderTagHelper"/>.
+        /// </summary>
+        /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
         public PrerenderTagHelper(IServiceProvider serviceProvider)
         {
             var hostEnv = (IHostingEnvironment) serviceProvider.GetService(typeof(IHostingEnvironment));
@@ -39,25 +46,51 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
             }
         }
 
+        /// <summary>
+        /// Specifies the path to the JavaScript module containing prerendering code.
+        /// </summary>
         [HtmlAttributeName(PrerenderModuleAttributeName)]
         public string ModuleName { get; set; }
 
+        /// <summary>
+        /// If set, specifies the name of the CommonJS export that is the prerendering function to execute.
+        /// If not set, the JavaScript module's default CommonJS export must itself be the prerendering function.
+        /// </summary>
         [HtmlAttributeName(PrerenderExportAttributeName)]
         public string ExportName { get; set; }
 
+        /// <summary>
+        /// Obsolete. Do not use. Instead, configure Webpack to build a Node.js-compatible bundle and reference that directly.
+        /// </summary>
+        [Obsolete("Do not use. This feature will be removed. Instead, configure Webpack to build a Node.js-compatible bundle and reference that directly.")]
         [HtmlAttributeName(PrerenderWebpackConfigAttributeName)]
         public string WebpackConfigPath { get; set; }
 
+        /// <summary>
+        /// An optional JSON-serializable parameter to be supplied to the prerendering code.
+        /// </summary>
         [HtmlAttributeName(PrerenderDataAttributeName)]
         public object CustomDataParameter { get; set; }
 
+        /// <summary>
+        /// The maximum duration to wait for prerendering to complete.
+        /// </summary>
         [HtmlAttributeName(PrerenderTimeoutAttributeName)]
         public int TimeoutMillisecondsParameter { get; set; }
 
+        /// <summary>
+        /// The <see cref="ViewContext"/>.
+        /// </summary>
         [HtmlAttributeNotBound]
         [ViewContext]
         public ViewContext ViewContext { get; set; }
 
+        /// <summary>
+        /// Executes the tag helper to perform server-side prerendering.
+        /// </summary>
+        /// <param name="context">The <see cref="TagHelperContext"/>.</param>
+        /// <param name="output">The <see cref="TagHelperOutput"/>.</param>
+        /// <returns>A <see cref="Task"/> representing the operation.</returns>
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             // We want to pass the original, unencoded incoming URL data through to Node, so that
@@ -79,7 +112,9 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
                 new JavaScriptModuleExport(ModuleName)
                 {
                     ExportName = ExportName,
+#pragma warning disable CS0618 // Type or member is obsolete
                     WebpackConfig = WebpackConfigPath
+#pragma warning restore CS0618 // Type or member is obsolete
                 },
                 unencodedAbsoluteUrl,
                 unencodedPathAndQuery,

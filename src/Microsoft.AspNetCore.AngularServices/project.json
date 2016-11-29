@@ -14,7 +14,8 @@
   },
   "buildOptions": {
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "xmlDoc": true
   },
   "dependencies": {
     "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.1",

@@ -21,7 +21,11 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
     /// <seealso cref="Microsoft.AspNetCore.NodeServices.HostingModels.INodeInstance" />
     public abstract class OutOfProcessNodeInstance : INodeInstance
     {
+        /// <summary>
+        /// The <see cref="ILogger"/> to which the Node.js instance's stdout/stderr is being redirected.
+        /// </summary>
         protected readonly ILogger OutputLogger;
+
         private const string ConnectionEstablishedMessage = "[Microsoft.AspNetCore.NodeServices:Listening]";
         private const string DebuggingStartedMessageFormat = @"-----
 *** Node.js debugging is enabled ***
@@ -43,6 +47,18 @@ If you haven't yet installed node-inspector, you can do so as follows:
         private bool _nodeProcessNeedsRestart;
         private readonly string[] _watchFileExtensions;
 
+        /// <summary>
+        /// Creates a new instance of <see cref="OutOfProcessNodeInstance"/>.
+        /// </summary>
+        /// <param name="entryPointScript">The path to the entry point script that the Node instance should load and execute.</param>
+        /// <param name="projectPath">The root path of the current project. This is used when resolving Node.js module paths relative to the project root.</param>
+        /// <param name="watchFileExtensions">The filename extensions that should be watched within the project root. The Node instance will automatically shut itself down if any matching file changes.</param>
+        /// <param name="commandLineArguments">Additional command-line arguments to be passed to the Node.js instance.</param>
+        /// <param name="nodeOutputLogger">The <see cref="ILogger"/> to which the Node.js instance's stdout/stderr (and other log information) should be written.</param>
+        /// <param name="environmentVars">Environment variables to be set on the Node.js process.</param>
+        /// <param name="invocationTimeoutMilliseconds">The maximum duration, in milliseconds, to wait for RPC calls to complete.</param>
+        /// <param name="launchWithDebugging">If true, passes a flag to the Node.js process telling it to accept V8 debugger connections.</param>
+        /// <param name="debuggingPort">If debugging is enabled, the Node.js process should listen for V8 debugger connections on this port.</param>
         public OutOfProcessNodeInstance(
             string entryPointScript,
             string projectPath,
@@ -71,6 +87,15 @@ If you haven't yet installed node-inspector, you can do so as follows:
             ConnectToInputOutputStreams();
         }
 
+        /// <summary>
+        /// Asynchronously invokes code in the Node.js instance.
+        /// </summary>
+        /// <typeparam name="T">The JSON-serializable data type that the Node.js code will asynchronously return.</typeparam>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can be used to cancel the invocation.</param>
+        /// <param name="moduleName">The path to the Node.js module (i.e., JavaScript file) relative to your project root that contains the code to be invoked.</param>
+        /// <param name="exportNameOrNull">If set, specifies the CommonJS export to be invoked. If not set, the module's default CommonJS export itself must be a function to be invoked.</param>
+        /// <param name="args">Any sequence of JSON-serializable arguments to be passed to the Node.js function.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the completion of the RPC call.</returns>
         public async Task<T> InvokeExportAsync<T>(
             CancellationToken cancellationToken, string moduleName, string exportNameOrNull, params object[] args)
         {
@@ -154,21 +179,41 @@ If you haven't yet installed node-inspector, you can do so as follows:
             }
         }
 
+        /// <summary>
+        /// Disposes this instance.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Asynchronously invokes code in the Node.js instance.
+        /// </summary>
+        /// <typeparam name="T">The JSON-serializable data type that the Node.js code will asynchronously return.</typeparam>
+        /// <param name="invocationInfo">Specifies the Node.js function to be invoked and arguments to be passed to it.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can be used to cancel the invocation.</param>
+        /// <returns>A <see cref="Task{TResult}"/> representing the completion of the RPC call.</returns>
         protected abstract Task<T> InvokeExportAsync<T>(
             NodeInvocationInfo invocationInfo,
             CancellationToken cancellationToken);
 
-        // This method is virtual, as it provides a way to override the NODE_PATH or the path to node.exe
+        /// <summary>
+        /// Configures a <see cref="ProcessStartInfo"/> instance describing how to launch the Node.js process.
+        /// </summary>
+        /// <param name="entryPointFilename">The entrypoint JavaScript file that the Node.js process should execute.</param>
+        /// <param name="projectPath">The root path of the project. This is used when locating Node.js modules relative to the project root.</param>
+        /// <param name="commandLineArguments">Command-line arguments to be passed to the Node.js process.</param>
+        /// <param name="environmentVars">Environment variables to be set on the Node.js process.</param>
+        /// <param name="launchWithDebugging">If true, passes a flag to the Node.js process telling it to accept V8 debugger connections.</param>
+        /// <param name="debuggingPort">If debugging is enabled, the Node.js process should listen for V8 debugger connections on this port.</param>
+        /// <returns></returns>
         protected virtual ProcessStartInfo PrepareNodeProcessStartInfo(
             string entryPointFilename, string projectPath, string commandLineArguments,
             IDictionary<string, string> environmentVars, bool launchWithDebugging, int debuggingPort)
         {
+            // This method is virtual, as it provides a way to override the NODE_PATH or the path to node.exe
             string debuggingArgs;
             if (launchWithDebugging)
             {
@@ -217,16 +262,28 @@ If you haven't yet installed node-inspector, you can do so as follows:
             return startInfo;
         }
 
+        /// <summary>
+        /// Virtual method invoked whenever the Node.js process emits a line to its stdout.
+        /// </summary>
+        /// <param name="outputData">The line emitted to the Node.js process's stdout.</param>
         protected virtual void OnOutputDataReceived(string outputData)
         {
             OutputLogger.LogInformation(outputData);
         }
 
+        /// <summary>
+        /// Virtual method invoked whenever the Node.js process emits a line to its stderr.
+        /// </summary>
+        /// <param name="errorData">The line emitted to the Node.js process's stderr.</param>
         protected virtual void OnErrorDataReceived(string errorData)
         {
             OutputLogger.LogError(errorData);
         }
 
+        /// <summary>
+        /// Disposes the instance.
+        /// </summary>
+        /// <param name="disposing">True if the object is disposing or false if it is finalizing.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -403,6 +460,9 @@ If you haven't yet installed node-inspector, you can do so as follows:
             EnsureFileSystemWatcherIsDisposed();
         }
 
+        /// <summary>
+        /// Implements the finalization part of the IDisposable pattern by calling Dispose(false).
+        /// </summary>
         ~OutOfProcessNodeInstance()
         {
             Dispose(false);

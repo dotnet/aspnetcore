@@ -8,16 +8,29 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.PlatformAbstractions;
 using Newtonsoft.Json;
 
-// Putting in this namespace so it's always available whenever MapRoute is
-
 namespace Microsoft.AspNetCore.Builder
 {
+    /// <summary>
+    /// Extension methods that can be used to enable Webpack dev middleware support.
+    /// </summary>
     public static class WebpackDevMiddleware
     {
         private const string WebpackDevMiddlewareScheme = "http";
         private const string WebpackHotMiddlewareEndpoint = "/__webpack_hmr";
         private const string DefaultConfigFile = "webpack.config.js";
 
+        /// <summary>
+        /// Enables Webpack dev middleware support. This hosts an instance of the Webpack compiler in memory
+        /// in your application so that you can always serve up-to-date Webpack-built resources without having
+        /// to run the compiler manually. Since the Webpack compiler instance is retained in memory, incremental
+        /// compilation is vastly faster that re-running the compiler from scratch.
+        ///
+        /// Incoming requests that match Webpack-built files will be handled by returning the Webpack compiler
+        /// output directly, regardless of files on disk. If compilation is in progress when the request arrives,
+        /// the response will pause until updated compiler output is ready.
+        /// </summary>
+        /// <param name="appBuilder">The <see cref="IApplicationBuilder"/>.</param>
+        /// <param name="options">Options for configuring the Webpack compiler instance.</param>
         public static void UseWebpackDevMiddleware(
             this IApplicationBuilder appBuilder,
             WebpackDevMiddlewareOptions options = null)

@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.NodeServices.HostingModels.VirtualConnections
 {
+    /// <summary>
+    /// A callback that will be invoked if the <see cref="VirtualConnectionClient"/> encounters a read error.
+    /// </summary>
+    /// <param name="ex"></param>
     public delegate void VirtualConnectionReadErrorHandler(Exception ex);
 
     /// <summary>

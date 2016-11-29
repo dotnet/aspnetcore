@@ -7,10 +7,22 @@ using Microsoft.AspNetCore.SpaServices;
 
 namespace Microsoft.AspNetCore.Builder
 {
+    /// <summary>
+    /// Extension methods useful for configuring routing in a single-page application (SPA).
+    /// </summary>
     public static class SpaRouteExtensions
     {
         private const string ClientRouteTokenName = "clientRoute";
 
+        /// <summary>
+        /// Configures a route that is automatically bypassed if the requested URL appears to be for a static file
+        /// (e.g., if it has a filename extension).
+        /// </summary>
+        /// <param name="routeBuilder">The <see cref="IRouteBuilder"/>.</param>
+        /// <param name="name">The route name.</param>
+        /// <param name="defaults">Default route parameters.</param>
+        /// <param name="constraints">Route constraints.</param>
+        /// <param name="dataTokens">Route data tokens.</param>
         public static void MapSpaFallbackRoute(
             this IRouteBuilder routeBuilder,
             string name,
@@ -27,6 +39,16 @@ namespace Microsoft.AspNetCore.Builder
                 dataTokens);
         }
 
+        /// <summary>
+        /// Configures a route that is automatically bypassed if the requested URL appears to be for a static file
+        /// (e.g., if it has a filename extension).
+        /// </summary>
+        /// <param name="routeBuilder">The <see cref="IRouteBuilder"/>.</param>
+        /// <param name="name">The route name.</param>
+        /// <param name="templatePrefix">The template prefix.</param>
+        /// <param name="defaults">Default route parameters.</param>
+        /// <param name="constraints">Route constraints.</param>
+        /// <param name="dataTokens">Route data tokens.</param>
         public static void MapSpaFallbackRoute(
             this IRouteBuilder routeBuilder,
             string name,

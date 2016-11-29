@@ -8,9 +8,18 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class NodeServicesServiceCollectionExtensions
     {
+        /// <summary>
+        /// Adds NodeServices support to the <paramref name="serviceCollection"/>.
+        /// </summary>
+        /// <param name="serviceCollection">The <see cref="IServiceCollection"/>.</param>
         public static void AddNodeServices(this IServiceCollection serviceCollection)
             => AddNodeServices(serviceCollection, _ => {});
 
+        /// <summary>
+        /// Adds NodeServices support to the <paramref name="serviceCollection"/>.
+        /// </summary>
+        /// <param name="serviceCollection">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="options">Options for configuring the <see cref="INodeServices"/> instances.</param>
         [Obsolete("Use the AddNodeServices(Action<NodeServicesOptions> setupAction) overload instead.")]
         public static void AddNodeServices(this IServiceCollection serviceCollection, NodeServicesOptions options)
         {
@@ -20,6 +29,11 @@ namespace Microsoft.Extensions.DependencyInjection
             });
         }
 
+        /// <summary>
+        /// Adds NodeServices support to the <paramref name="serviceCollection"/>.
+        /// </summary>
+        /// <param name="serviceCollection">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="setupAction">A callback that will be invoked to populate the <see cref="NodeServicesOptions"/>.</param>
         public static void AddNodeServices(this IServiceCollection serviceCollection, Action<NodeServicesOptions> setupAction)
         {
             if (setupAction == null)

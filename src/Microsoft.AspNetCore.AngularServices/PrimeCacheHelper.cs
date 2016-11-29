@@ -9,14 +9,31 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.AngularServices
 {
+    /// <summary>
+    /// Helpers for prepopulating Angular 2's 'http' service with data.
+    /// </summary>
     public static class PrimeCacheHelper
     {
+        /// <summary>
+        /// Performs an HTTP GET request to the specified URL and adds the resulting JSON data
+        /// to the Angular 'http' service cache.
+        /// </summary>
+        /// <param name="html">The <see cref="IHtmlHelper"/>.</param>
+        /// <param name="url">The URL to be requested.</param>
+        /// <returns>A task representing the HTML content to be rendered into the document.</returns>
         [Obsolete("Use PrimeCacheAsync instead")]
         public static Task<IHtmlContent> PrimeCache(this IHtmlHelper html, string url)
         {
             return PrimeCacheAsync(html, url);
         }
 
+        /// <summary>
+        /// Performs an HTTP GET request to the specified URL and adds the resulting JSON data
+        /// to the Angular 'http' service cache.
+        /// </summary>
+        /// <param name="html">The <see cref="IHtmlHelper"/>.</param>
+        /// <param name="url">The URL to be requested.</param>
+        /// <returns>A task representing the HTML content to be rendered into the document.</returns>
         public static async Task<IHtmlContent> PrimeCacheAsync(this IHtmlHelper html, string url)
         {
             // TODO: Consider deduplicating the PrimeCacheAsync calls (that is, if there are multiple requests to precache

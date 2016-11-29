@@ -17,7 +17,8 @@
     "keyFile": "../../tools/Key.snk",
     "embed": [
       "Content/**/*"
-    ]
+    ],
+    "xmlDoc": true
   },
   "dependencies": {
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0",
