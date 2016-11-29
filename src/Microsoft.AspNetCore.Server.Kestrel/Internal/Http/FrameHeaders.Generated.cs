@@ -9891,14 +9891,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         output.CopyFrom(_headers._rawConnection, 0, _headers._rawConnection.Length);
                     }
                     else 
-                        foreach (var value in _headers._Connection)
+                    {
+                        var valueCount = _headers._Connection.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._Connection[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 17, 14);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~2L;
                     if(tempBits == 0)
@@ -9914,14 +9918,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         output.CopyFrom(_headers._rawDate, 0, _headers._rawDate.Length);
                     }
                     else 
-                        foreach (var value in _headers._Date)
+                    {
+                        var valueCount = _headers._Date.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._Date[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 31, 8);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~4L;
                     if(tempBits == 0)
@@ -9937,14 +9945,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         output.CopyFrom(_headers._rawContentLength, 0, _headers._rawContentLength.Length);
                     }
                     else 
-                        foreach (var value in _headers._ContentLength)
+                    {
+                        var valueCount = _headers._ContentLength.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._ContentLength[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 133, 18);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~2048L;
                     if(tempBits == 0)
@@ -9955,14 +9967,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 4096L) != 0))
                 { 
-                        foreach (var value in _headers._ContentType)
+                    {
+                        var valueCount = _headers._ContentType.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._ContentType[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 151, 16);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~4096L;
                     if(tempBits == 0)
@@ -9978,14 +9994,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         output.CopyFrom(_headers._rawServer, 0, _headers._rawServer.Length);
                     }
                     else 
-                        foreach (var value in _headers._Server)
+                    {
+                        var valueCount = _headers._Server.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._Server[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 368, 10);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~67108864L;
                     if(tempBits == 0)
@@ -9996,14 +10016,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 1L) != 0))
                 { 
-                        foreach (var value in _headers._CacheControl)
+                    {
+                        var valueCount = _headers._CacheControl.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._CacheControl[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 0, 17);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~1L;
                     if(tempBits == 0)
@@ -10014,14 +10038,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 8L) != 0))
                 { 
-                        foreach (var value in _headers._KeepAlive)
+                    {
+                        var valueCount = _headers._KeepAlive.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._KeepAlive[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 39, 14);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~8L;
                     if(tempBits == 0)
@@ -10032,14 +10060,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 16L) != 0))
                 { 
-                        foreach (var value in _headers._Pragma)
+                    {
+                        var valueCount = _headers._Pragma.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._Pragma[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 53, 10);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~16L;
                     if(tempBits == 0)
@@ -10050,14 +10082,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 32L) != 0))
                 { 
-                        foreach (var value in _headers._Trailer)
+                    {
+                        var valueCount = _headers._Trailer.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._Trailer[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 63, 11);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~32L;
                     if(tempBits == 0)
@@ -10073,14 +10109,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         output.CopyFrom(_headers._rawTransferEncoding, 0, _headers._rawTransferEncoding.Length);
                     }
                     else 
-                        foreach (var value in _headers._TransferEncoding)
+                    {
+                        var valueCount = _headers._TransferEncoding.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._TransferEncoding[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 74, 21);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~64L;
                     if(tempBits == 0)
@@ -10091,14 +10131,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 128L) != 0))
                 { 
-                        foreach (var value in _headers._Upgrade)
+                    {
+                        var valueCount = _headers._Upgrade.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._Upgrade[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 95, 11);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~128L;
                     if(tempBits == 0)
@@ -10109,14 +10153,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 256L) != 0))
                 { 
-                        foreach (var value in _headers._Via)
+                    {
+                        var valueCount = _headers._Via.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._Via[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 106, 7);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~256L;
                     if(tempBits == 0)
@@ -10127,14 +10175,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 512L) != 0))
                 { 
-                        foreach (var value in _headers._Warning)
+                    {
+                        var valueCount = _headers._Warning.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._Warning[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 113, 11);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~512L;
                     if(tempBits == 0)
@@ -10145,14 +10197,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 1024L) != 0))
                 { 
-                        foreach (var value in _headers._Allow)
+                    {
+                        var valueCount = _headers._Allow.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._Allow[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 124, 9);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~1024L;
                     if(tempBits == 0)
@@ -10163,14 +10219,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 8192L) != 0))
                 { 
-                        foreach (var value in _headers._ContentEncoding)
+                    {
+                        var valueCount = _headers._ContentEncoding.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._ContentEncoding[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 167, 20);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~8192L;
                     if(tempBits == 0)
@@ -10181,14 +10241,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 16384L) != 0))
                 { 
-                        foreach (var value in _headers._ContentLanguage)
+                    {
+                        var valueCount = _headers._ContentLanguage.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._ContentLanguage[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 187, 20);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~16384L;
                     if(tempBits == 0)
@@ -10199,14 +10263,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 32768L) != 0))
                 { 
-                        foreach (var value in _headers._ContentLocation)
+                    {
+                        var valueCount = _headers._ContentLocation.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._ContentLocation[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 207, 20);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~32768L;
                     if(tempBits == 0)
@@ -10217,14 +10285,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 65536L) != 0))
                 { 
-                        foreach (var value in _headers._ContentMD5)
+                    {
+                        var valueCount = _headers._ContentMD5.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._ContentMD5[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 227, 15);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~65536L;
                     if(tempBits == 0)
@@ -10235,14 +10307,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 131072L) != 0))
                 { 
-                        foreach (var value in _headers._ContentRange)
+                    {
+                        var valueCount = _headers._ContentRange.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._ContentRange[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 242, 17);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~131072L;
                     if(tempBits == 0)
@@ -10253,14 +10329,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 262144L) != 0))
                 { 
-                        foreach (var value in _headers._Expires)
+                    {
+                        var valueCount = _headers._Expires.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._Expires[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 259, 11);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~262144L;
                     if(tempBits == 0)
@@ -10271,14 +10351,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 524288L) != 0))
                 { 
-                        foreach (var value in _headers._LastModified)
+                    {
+                        var valueCount = _headers._LastModified.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._LastModified[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 270, 17);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~524288L;
                     if(tempBits == 0)
@@ -10289,14 +10373,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 1048576L) != 0))
                 { 
-                        foreach (var value in _headers._AcceptRanges)
+                    {
+                        var valueCount = _headers._AcceptRanges.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._AcceptRanges[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 287, 17);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~1048576L;
                     if(tempBits == 0)
@@ -10307,14 +10395,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 2097152L) != 0))
                 { 
-                        foreach (var value in _headers._Age)
+                    {
+                        var valueCount = _headers._Age.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._Age[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 304, 7);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~2097152L;
                     if(tempBits == 0)
@@ -10325,14 +10417,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 4194304L) != 0))
                 { 
-                        foreach (var value in _headers._ETag)
+                    {
+                        var valueCount = _headers._ETag.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._ETag[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 311, 8);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~4194304L;
                     if(tempBits == 0)
@@ -10343,14 +10439,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 8388608L) != 0))
                 { 
-                        foreach (var value in _headers._Location)
+                    {
+                        var valueCount = _headers._Location.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._Location[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 319, 12);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~8388608L;
                     if(tempBits == 0)
@@ -10361,14 +10461,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 16777216L) != 0))
                 { 
-                        foreach (var value in _headers._ProxyAuthenticate)
+                    {
+                        var valueCount = _headers._ProxyAuthenticate.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._ProxyAuthenticate[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 331, 22);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~16777216L;
                     if(tempBits == 0)
@@ -10379,14 +10483,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 33554432L) != 0))
                 { 
-                        foreach (var value in _headers._RetryAfter)
+                    {
+                        var valueCount = _headers._RetryAfter.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._RetryAfter[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 353, 15);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~33554432L;
                     if(tempBits == 0)
@@ -10397,14 +10505,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 134217728L) != 0))
                 { 
-                        foreach (var value in _headers._SetCookie)
+                    {
+                        var valueCount = _headers._SetCookie.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._SetCookie[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 378, 14);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~134217728L;
                     if(tempBits == 0)
@@ -10415,14 +10527,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 268435456L) != 0))
                 { 
-                        foreach (var value in _headers._Vary)
+                    {
+                        var valueCount = _headers._Vary.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._Vary[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 392, 8);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~268435456L;
                     if(tempBits == 0)
@@ -10433,14 +10549,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 536870912L) != 0))
                 { 
-                        foreach (var value in _headers._WWWAuthenticate)
+                    {
+                        var valueCount = _headers._WWWAuthenticate.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._WWWAuthenticate[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 400, 20);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~536870912L;
                     if(tempBits == 0)
@@ -10451,14 +10571,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 1073741824L) != 0))
                 { 
-                        foreach (var value in _headers._AccessControlAllowCredentials)
+                    {
+                        var valueCount = _headers._AccessControlAllowCredentials.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._AccessControlAllowCredentials[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 420, 36);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~1073741824L;
                     if(tempBits == 0)
@@ -10469,14 +10593,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 2147483648L) != 0))
                 { 
-                        foreach (var value in _headers._AccessControlAllowHeaders)
+                    {
+                        var valueCount = _headers._AccessControlAllowHeaders.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._AccessControlAllowHeaders[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 456, 32);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~2147483648L;
                     if(tempBits == 0)
@@ -10487,14 +10615,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 4294967296L) != 0))
                 { 
-                        foreach (var value in _headers._AccessControlAllowMethods)
+                    {
+                        var valueCount = _headers._AccessControlAllowMethods.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._AccessControlAllowMethods[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 488, 32);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~4294967296L;
                     if(tempBits == 0)
@@ -10505,14 +10637,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 8589934592L) != 0))
                 { 
-                        foreach (var value in _headers._AccessControlAllowOrigin)
+                    {
+                        var valueCount = _headers._AccessControlAllowOrigin.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._AccessControlAllowOrigin[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 520, 31);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~8589934592L;
                     if(tempBits == 0)
@@ -10523,14 +10659,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 17179869184L) != 0))
                 { 
-                        foreach (var value in _headers._AccessControlExposeHeaders)
+                    {
+                        var valueCount = _headers._AccessControlExposeHeaders.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._AccessControlExposeHeaders[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 551, 33);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~17179869184L;
                     if(tempBits == 0)
@@ -10541,14 +10681,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             
                 if (((_bits & 34359738368L) != 0))
                 { 
-                        foreach (var value in _headers._AccessControlMaxAge)
+                    {
+                        var valueCount = _headers._AccessControlMaxAge.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {
+                            var value = _headers._AccessControlMaxAge[i]; 
                             if (value != null)
                             {
                                 output.CopyFrom(_headerBytes, 584, 26);
                                 output.CopyFromAscii(value);
                             }
                         }
+                    }
 
                     tempBits &= ~34359738368L;
                     if(tempBits == 0)

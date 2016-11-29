@@ -212,9 +212,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public static void ValidateHeaderCharacters(StringValues headerValues)
         {
-            foreach (var value in headerValues)
+            var count = headerValues.Count;
+            for (var i = 0; i < count; i++)
+
             {
-                ValidateHeaderCharacters(value);
+                ValidateHeaderCharacters(headerValues[i]);
             }
         }
 
@@ -268,8 +270,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             var connectionOptions = ConnectionOptions.None;
 
-            foreach (var value in connection)
+            var connectionCount = connection.Count;
+            for (var i = 0; i < connectionCount; i++)
             {
+                var value = connection[i];
                 fixed (char* ptr = value)
                 {
                     var ch = ptr;
@@ -368,8 +372,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             var transferEncodingOptions = TransferCoding.None;
 
-            foreach (var value in transferEncoding)
+            var transferEncodingCount = transferEncoding.Count;
+            for (var i = 0; i < transferEncodingCount; i++)
             {
+                var value = transferEncoding[i];
                 fixed (char* ptr = value)
                 {
                     var ch = ptr;
