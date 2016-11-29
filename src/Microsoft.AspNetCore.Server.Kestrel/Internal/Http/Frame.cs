@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private DateHeaderValueManager DateHeaderValueManager => ConnectionContext.ListenerContext.ServiceContext.DateHeaderValueManager;
         private ServerAddress ServerAddress => ConnectionContext.ListenerContext.ServerAddress;
         // Hold direct reference to ServerOptions since this is used very often in the request processing path
-        private KestrelServerOptions ServerOptions { get; }
+        public KestrelServerOptions ServerOptions { get; }
         private IPEndPoint LocalEndPoint => ConnectionContext.LocalEndPoint;
         private IPEndPoint RemoteEndPoint => ConnectionContext.RemoteEndPoint;
         protected string ConnectionId => ConnectionContext.ConnectionId;

@@ -178,7 +178,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     AddServerHeader = false,
                     Limits =
                     {
-                        KeepAliveTimeout = KeepAliveTimeout
+                        KeepAliveTimeout = KeepAliveTimeout,
+                        // Prevent request rejection if ConnectionNotTimedOutWhileRequestBeingSent
+                        // sends more bytes than the default body size limit.
+                        MaxRequestBodySize = long.MaxValue
                     }
                 }
             });

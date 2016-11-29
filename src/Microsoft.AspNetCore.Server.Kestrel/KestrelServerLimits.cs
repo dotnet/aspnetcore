@@ -23,6 +23,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         // Matches the default LimitRequestFields in Apache httpd.
         private int _maxRequestHeaderCount = 100;
 
+        // Matches default HttpRuntimeSection.MaxRequestLength.
+        // https://msdn.microsoft.com/en-us/library/system.web.configuration.httpruntimesection.maxrequestlength%28v=vs.100%29.aspx
+        private long _maxRequestBodySize = 4 * 1024 * 1024;
+
         // Matches the default http.sys connectionTimeout.
         private TimeSpan _keepAliveTimeout = TimeSpan.FromMinutes(2);
 
@@ -141,6 +145,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     throw new ArgumentOutOfRangeException(nameof(value), "Value must a positive integer.");
                 }
                 _maxRequestHeaderCount = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum request body size, in bytes.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to 4MB.
+        /// </remarks>
+        public long MaxRequestBodySize
+        {
+            get
+            {
+                return _maxRequestBodySize;
+            }
+            set
+            {
+                if (value <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), "Value must a positive integer.");
+                }
+                _maxRequestBodySize = value;
             }
         }
 

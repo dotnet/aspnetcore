@@ -78,6 +78,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 case RequestRejectionReason.RequestTimeout:
                     ex = new BadHttpRequestException("Request timed out.", 408);
                     break;
+                case RequestRejectionReason.PayloadTooLarge:
+                    ex = new BadHttpRequestException("Payload too large.", 413);
+                    break;
                 default:
                     ex = new BadHttpRequestException("Bad request.", 400);
                     break;

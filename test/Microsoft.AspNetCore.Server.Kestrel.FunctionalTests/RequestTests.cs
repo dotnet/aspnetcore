@@ -43,7 +43,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.True(bufferLength % 256 == 0, $"{nameof(bufferLength)} must be evenly divisible by 256");
 
             var builder = new WebHostBuilder()
-                .UseKestrel()
+                .UseKestrel(options =>
+                {
+                    options.Limits.MaxRequestBodySize = contentLength;
+                })
                 .UseUrls("http://127.0.0.1:0/")
                 .Configure(app =>
                 {
