@@ -1,16 +1,15 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.NodeServices.HostingModels.PhysicalConnections;
-using Microsoft.AspNetCore.NodeServices.HostingModels.VirtualConnections;
+using Microsoft.AspNetCore.NodeServices.HostingModels;
+using Microsoft.AspNetCore.NodeServices.Sockets.PhysicalConnections;
+using Microsoft.AspNetCore.NodeServices.Sockets.VirtualConnections;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.AspNetCore.NodeServices.HostingModels
+namespace Microsoft.AspNetCore.NodeServices.Sockets
 {
     /// <summary>
     /// A specialisation of the OutOfProcessNodeInstance base class that uses a lightweight binary streaming protocol
@@ -77,7 +76,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                 // wait for the same connection task. There's no reason why the first caller should have the
                 // special ability to cancel the connection process in a way that would affect subsequent
                 // callers. So, each caller just independently stops awaiting connection if that call is cancelled.
-                await EnsureVirtualConnectionClientCreated().OrThrowOnCancellation(cancellationToken);
+                await ThrowOnCancellation(EnsureVirtualConnectionClientCreated(), cancellationToken);
             }
 
             // For each invocation, we open a new virtual connection. This gives an API equivalent to opening a new
@@ -211,6 +210,17 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         private static string MakeNewCommandLineOptions(string listenAddress)
         {
             return $"--listenAddress {listenAddress}";
+        }
+
+        private static Task ThrowOnCancellation(Task task, CancellationToken cancellationToken)
+        {
+            return task.IsCompleted
+                ? task // If the task is already completed, no need to wrap it in a further layer of task
+                : task.ContinueWith(
+                    _ => {}, // If the task completes, allow execution to continue
+                    cancellationToken,
+                    TaskContinuationOptions.ExecuteSynchronously,
+                    TaskScheduler.Default);
         }
 
 #pragma warning disable 649 // These properties are populated via JSON deserialization

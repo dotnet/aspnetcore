@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace Microsoft.AspNetCore.NodeServices.HostingModels.PhysicalConnections
+namespace Microsoft.AspNetCore.NodeServices.Sockets.PhysicalConnections
 {
     // From System.IO.Pipes/src/System/Net/Sockets/UnixDomainSocketEndPoint.cs (an internal class in System.IO.Pipes)
     internal sealed class UnixDomainSocketEndPoint : EndPoint

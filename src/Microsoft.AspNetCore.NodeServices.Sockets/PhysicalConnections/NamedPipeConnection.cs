@@ -2,7 +2,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.NodeServices.HostingModels.PhysicalConnections
+namespace Microsoft.AspNetCore.NodeServices.Sockets.PhysicalConnections
 {
     internal class NamedPipeConnection : StreamConnection
     {

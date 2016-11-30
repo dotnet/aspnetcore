@@ -9,6 +9,7 @@
       "type": "platform"
     },
     "Microsoft.AspNetCore.NodeServices": "1.1.0-*",
+    "Microsoft.AspNetCore.NodeServices.Sockets": "1.1.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.1.0"
   },
   "frameworks": {

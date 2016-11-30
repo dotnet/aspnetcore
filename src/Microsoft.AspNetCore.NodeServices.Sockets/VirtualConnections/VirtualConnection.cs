@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 
-namespace Microsoft.AspNetCore.NodeServices.HostingModels.VirtualConnections
+namespace Microsoft.AspNetCore.NodeServices.Sockets.VirtualConnections
 {
     /// <summary>
     /// A virtual read/write connection, typically to a remote process. Multiple virtual connections can be

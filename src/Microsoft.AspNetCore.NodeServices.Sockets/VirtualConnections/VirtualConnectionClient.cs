@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.NodeServices.HostingModels.VirtualConnections
+namespace Microsoft.AspNetCore.NodeServices.Sockets.VirtualConnections
 {
     /// <summary>
     /// A callback that will be invoked if the <see cref="VirtualConnectionClient"/> encounters a read error.

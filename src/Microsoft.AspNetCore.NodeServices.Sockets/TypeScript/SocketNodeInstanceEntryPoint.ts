@@ -1,12 +1,12 @@
 // Limit dependencies to core Node modules. This means the code in this file has to be very low-level and unattractive,
 // but simplifies things for the consumer of this module.
-import './Util/OverrideStdOutputs';
+import '../../Microsoft.AspNetCore.NodeServices/TypeScript/Util/OverrideStdOutputs';
 import * as net from 'net';
 import * as path from 'path';
 import * as readline from 'readline';
 import { Duplex } from 'stream';
-import { parseArgs } from './Util/ArgsUtil';
-import { exitWhenParentExits } from './Util/ExitWhenParentExits';
+import { parseArgs } from '../../Microsoft.AspNetCore.NodeServices/TypeScript/Util/ArgsUtil';
+import { exitWhenParentExits } from '../../Microsoft.AspNetCore.NodeServices/TypeScript/Util/ExitWhenParentExits';
 import * as virtualConnectionServer from './VirtualConnections/VirtualConnectionServer';
 
 // Webpack doesn't support dynamic requires for files not present at compile time, so grab a direct

@@ -2,6 +2,7 @@ versionSuffix=$1
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 projects=(
     ./src/Microsoft.AspNetCore.NodeServices
+    ./src/Microsoft.AspNetCore.NodeServices.Sockets
     ./src/Microsoft.AspNetCore.SpaServices
     ./src/Microsoft.AspNetCore.AngularServices
     ./src/Microsoft.AspNetCore.ReactServices

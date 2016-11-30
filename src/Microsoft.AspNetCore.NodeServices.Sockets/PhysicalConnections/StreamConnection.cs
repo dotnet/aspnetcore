@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.NodeServices.HostingModels.PhysicalConnections
+namespace Microsoft.AspNetCore.NodeServices.Sockets.PhysicalConnections
 {
     internal abstract class StreamConnection : IDisposable
     {

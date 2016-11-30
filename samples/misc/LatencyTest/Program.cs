@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.NodeServices;
+using Microsoft.AspNetCore.NodeServices.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ConsoleApplication
@@ -16,6 +17,10 @@ namespace ConsoleApplication
             // Set up the DI system
             var services = new ServiceCollection();
             services.AddNodeServices(options => {
+                // To compare with Socket hosting, uncomment the following line
+                // Since .NET Core 1.1, the HTTP hosting model has become basically as fast as the Socket hosting model
+                //options.UseSocketHosting();
+
                 options.ProjectPath = Directory.GetCurrentDirectory();
                 options.WatchFileExtensions = new string[] {}; // Don't watch anything
             });

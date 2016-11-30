@@ -2,7 +2,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.NodeServices.HostingModels.PhysicalConnections
+namespace Microsoft.AspNetCore.NodeServices.Sockets.PhysicalConnections
 {
     internal class UnixDomainSocketConnection : StreamConnection
     {

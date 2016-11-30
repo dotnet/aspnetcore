@@ -44,11 +44,81 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(7);
+	module.exports = __webpack_require__(1);
 
 
 /***/ },
-/* 1 */,
+/* 1 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	// Limit dependencies to core Node modules. This means the code in this file has to be very low-level and unattractive,
+	// but simplifies things for the consumer of this module.
+	__webpack_require__(2);
+	var net = __webpack_require__(3);
+	var path = __webpack_require__(4);
+	var readline = __webpack_require__(5);
+	var ArgsUtil_1 = __webpack_require__(6);
+	var ExitWhenParentExits_1 = __webpack_require__(7);
+	var virtualConnectionServer = __webpack_require__(8);
+	// Webpack doesn't support dynamic requires for files not present at compile time, so grab a direct
+	// reference to Node's runtime 'require' function.
+	var dynamicRequire = eval('require');
+	// Signal to the .NET side when we're ready to accept invocations
+	var server = net.createServer().on('listening', function () {
+	    console.log('[Microsoft.AspNetCore.NodeServices:Listening]');
+	});
+	// Each virtual connection represents a separate invocation
+	virtualConnectionServer.createInterface(server).on('connection', function (connection) {
+	    readline.createInterface(connection, null).on('line', function (line) {
+	        try {
+	            // Get a reference to the function to invoke
+	            var invocation = JSON.parse(line);
+	            var invokedModule = dynamicRequire(path.resolve(process.cwd(), invocation.moduleName));
+	            var invokedFunction = invocation.exportedFunctionName ? invokedModule[invocation.exportedFunctionName] : invokedModule;
+	            // Prepare a callback for accepting non-streamed JSON responses
+	            var hasInvokedCallback_1 = false;
+	            var invocationCallback = function (errorValue, successValue) {
+	                if (hasInvokedCallback_1) {
+	                    throw new Error('Cannot supply more than one result. The callback has already been invoked,'
+	                        + ' or the result stream has already been accessed');
+	                }
+	                hasInvokedCallback_1 = true;
+	                connection.end(JSON.stringify({
+	                    result: successValue,
+	                    errorMessage: errorValue && (errorValue.message || errorValue),
+	                    errorDetails: errorValue && (errorValue.stack || null)
+	                }));
+	            };
+	            // Also support streamed binary responses
+	            Object.defineProperty(invocationCallback, 'stream', {
+	                enumerable: true,
+	                get: function () {
+	                    hasInvokedCallback_1 = true;
+	                    return connection;
+	                }
+	            });
+	            // Actually invoke it, passing through any supplied args
+	            invokedFunction.apply(null, [invocationCallback].concat(invocation.args));
+	        }
+	        catch (ex) {
+	            connection.end(JSON.stringify({
+	                errorMessage: ex.message,
+	                errorDetails: ex.stack
+	            }));
+	        }
+	    });
+	});
+	// Begin listening now. The underlying transport varies according to the runtime platform.
+	// On Windows it's Named Pipes; on Linux/OSX it's Domain Sockets.
+	var useWindowsNamedPipes = /^win/.test(process.platform);
+	var parsedArgs = ArgsUtil_1.parseArgs(process.argv);
+	var listenAddress = (useWindowsNamedPipes ? '\\\\.\\pipe\\' : '/tmp/') + parsedArgs.listenAddress;
+	server.listen(listenAddress);
+	ExitWhenParentExits_1.exitWhenParentExits(parseInt(parsedArgs.parentPid));
+
+
+/***/ },
 /* 2 */
 /***/ function(module, exports) {
 
@@ -90,7 +160,12 @@
 
 
 /***/ },
-/* 3 */,
+/* 3 */
+/***/ function(module, exports) {
+
+	module.exports = require("net");
+
+/***/ },
 /* 4 */
 /***/ function(module, exports) {
 
@@ -98,6 +173,12 @@
 
 /***/ },
 /* 5 */
+/***/ function(module, exports) {
+
+	module.exports = require("readline");
+
+/***/ },
+/* 6 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -123,7 +204,7 @@
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports) {
 
 	/*
@@ -190,95 +271,12 @@
 
 
 /***/ },
-/* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	// Limit dependencies to core Node modules. This means the code in this file has to be very low-level and unattractive,
-	// but simplifies things for the consumer of this module.
-	__webpack_require__(2);
-	var net = __webpack_require__(8);
-	var path = __webpack_require__(4);
-	var readline = __webpack_require__(9);
-	var ArgsUtil_1 = __webpack_require__(5);
-	var ExitWhenParentExits_1 = __webpack_require__(6);
-	var virtualConnectionServer = __webpack_require__(10);
-	// Webpack doesn't support dynamic requires for files not present at compile time, so grab a direct
-	// reference to Node's runtime 'require' function.
-	var dynamicRequire = eval('require');
-	// Signal to the .NET side when we're ready to accept invocations
-	var server = net.createServer().on('listening', function () {
-	    console.log('[Microsoft.AspNetCore.NodeServices:Listening]');
-	});
-	// Each virtual connection represents a separate invocation
-	virtualConnectionServer.createInterface(server).on('connection', function (connection) {
-	    readline.createInterface(connection, null).on('line', function (line) {
-	        try {
-	            // Get a reference to the function to invoke
-	            var invocation = JSON.parse(line);
-	            var invokedModule = dynamicRequire(path.resolve(process.cwd(), invocation.moduleName));
-	            var invokedFunction = invocation.exportedFunctionName ? invokedModule[invocation.exportedFunctionName] : invokedModule;
-	            // Prepare a callback for accepting non-streamed JSON responses
-	            var hasInvokedCallback_1 = false;
-	            var invocationCallback = function (errorValue, successValue) {
-	                if (hasInvokedCallback_1) {
-	                    throw new Error('Cannot supply more than one result. The callback has already been invoked,'
-	                        + ' or the result stream has already been accessed');
-	                }
-	                hasInvokedCallback_1 = true;
-	                connection.end(JSON.stringify({
-	                    result: successValue,
-	                    errorMessage: errorValue && (errorValue.message || errorValue),
-	                    errorDetails: errorValue && (errorValue.stack || null)
-	                }));
-	            };
-	            // Also support streamed binary responses
-	            Object.defineProperty(invocationCallback, 'stream', {
-	                enumerable: true,
-	                get: function () {
-	                    hasInvokedCallback_1 = true;
-	                    return connection;
-	                }
-	            });
-	            // Actually invoke it, passing through any supplied args
-	            invokedFunction.apply(null, [invocationCallback].concat(invocation.args));
-	        }
-	        catch (ex) {
-	            connection.end(JSON.stringify({
-	                errorMessage: ex.message,
-	                errorDetails: ex.stack
-	            }));
-	        }
-	    });
-	});
-	// Begin listening now. The underlying transport varies according to the runtime platform.
-	// On Windows it's Named Pipes; on Linux/OSX it's Domain Sockets.
-	var useWindowsNamedPipes = /^win/.test(process.platform);
-	var parsedArgs = ArgsUtil_1.parseArgs(process.argv);
-	var listenAddress = (useWindowsNamedPipes ? '\\\\.\\pipe\\' : '/tmp/') + parsedArgs.listenAddress;
-	server.listen(listenAddress);
-	ExitWhenParentExits_1.exitWhenParentExits(parseInt(parsedArgs.parentPid));
-
-
-/***/ },
 /* 8 */
-/***/ function(module, exports) {
-
-	module.exports = require("net");
-
-/***/ },
-/* 9 */
-/***/ function(module, exports) {
-
-	module.exports = require("readline");
-
-/***/ },
-/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var events_1 = __webpack_require__(11);
-	var VirtualConnection_1 = __webpack_require__(12);
+	var events_1 = __webpack_require__(9);
+	var VirtualConnection_1 = __webpack_require__(10);
 	// Keep this in sync with the equivalent constant in the .NET code. Both sides split up their transmissions into frames with this max length,
 	// and both will reject longer frames.
 	var MaxFrameBodyLength = 16 * 1024;
@@ -460,13 +458,13 @@
 
 
 /***/ },
-/* 11 */
+/* 9 */
 /***/ function(module, exports) {
 
 	module.exports = require("events");
 
 /***/ },
-/* 12 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -475,17 +473,18 @@
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var stream_1 = __webpack_require__(13);
+	var stream_1 = __webpack_require__(11);
 	/**
 	 * Represents a virtual connection. Multiple virtual connections may be multiplexed over a single physical socket connection.
 	 */
 	var VirtualConnection = (function (_super) {
 	    __extends(VirtualConnection, _super);
 	    function VirtualConnection(_beginWriteCallback) {
-	        _super.call(this);
-	        this._beginWriteCallback = _beginWriteCallback;
-	        this._flowing = false;
-	        this._receivedDataQueue = [];
+	        var _this = _super.call(this) || this;
+	        _this._beginWriteCallback = _beginWriteCallback;
+	        _this._flowing = false;
+	        _this._receivedDataQueue = [];
+	        return _this;
 	    }
 	    VirtualConnection.prototype._read = function () {
 	        this._flowing = true;
@@ -516,7 +515,7 @@
 
 
 /***/ },
-/* 13 */
+/* 11 */
 /***/ function(module, exports) {
 
 	module.exports = require("stream");
