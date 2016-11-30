@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Razor.Evolution;
 using Moq;
 using Xunit;
 
@@ -86,7 +85,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 phases,
                 phase => Assert.IsType<DefaultRazorParsingPhase>(phase),
                 phase => Assert.IsType<DefaultRazorSyntaxTreePhase>(phase),
-                phase => Assert.IsType<DefaultRazorIRLoweringPhase>(phase));
+                phase => Assert.IsType<DefaultRazorIRLoweringPhase>(phase),
+                phase => Assert.IsType<DefaultRazorIRPhase>(phase));
         }
     }
 }

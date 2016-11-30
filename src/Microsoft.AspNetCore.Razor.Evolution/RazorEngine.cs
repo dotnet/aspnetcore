@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             builder.Phases.Add(new DefaultRazorParsingPhase());
             builder.Phases.Add(new DefaultRazorSyntaxTreePhase());
             builder.Phases.Add(new DefaultRazorIRLoweringPhase());
+            builder.Phases.Add(new DefaultRazorIRPhase());
 
             builder.Features.Add(new TagHelperBinderSyntaxTreePass());
             builder.Features.Add(new HtmlNodeOptimizationPass());
