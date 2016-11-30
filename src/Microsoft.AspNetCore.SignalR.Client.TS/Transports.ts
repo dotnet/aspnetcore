@@ -12,7 +12,7 @@ export class WebSocketTransport implements ITransport {
     private webSocket: WebSocket;
 
     connect(url: string, queryString: string = ""): Promise<void> {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             url = url.replace(/^http/, "ws");
             let connectUrl = url + "/ws?" + queryString;
 
@@ -53,7 +53,7 @@ export class WebSocketTransport implements ITransport {
             return Promise.resolve();
         }
 
-        return Promise.reject("WebSocket is not in OPEN state");
+        return Promise.reject("WebSocket is not in the OPEN state");
     }
 
     stop(): void {
@@ -81,7 +81,7 @@ export class ServerSentEventsTransport implements ITransport {
         this.url = url;
         let tmp = `${this.url}/sse?${this.queryString}`;
 
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             let eventSource = new EventSource(`${this.url}/sse?${this.queryString}`);
 
             try {
@@ -131,15 +131,21 @@ export class LongPollingTransport implements ITransport {
     private url: string;
     private queryString: string;
     private pollXhr: XMLHttpRequest;
+    private shouldPoll: boolean;
 
     connect(url: string, queryString: string): Promise<void> {
         this.url = url;
         this.queryString = queryString;
+        this.shouldPoll = true;
         this.poll(url + "/poll?" + this.queryString)
         return Promise.resolve();
     }
 
     private poll(url: string): void {
+        if (!this.shouldPoll) {
+            return;
+        }
+
         let thisLongPollingTransport = this;
         let pollXhr = new XMLHttpRequest();
 
@@ -188,6 +194,7 @@ export class LongPollingTransport implements ITransport {
     }
 
     stop(): void {
+        this.shouldPoll = false;
         if (this.pollXhr) {
             this.pollXhr.abort();
             this.pollXhr = null;

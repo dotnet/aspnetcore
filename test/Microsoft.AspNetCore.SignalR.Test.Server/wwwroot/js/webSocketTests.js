@@ -9,7 +9,7 @@
         };
 
         webSocket.onerror = event => {
-            expect(true).toBe(false);
+            fail();
             done();
         };
 

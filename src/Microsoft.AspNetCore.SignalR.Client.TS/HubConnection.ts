@@ -35,6 +35,10 @@ export class HubConnection {
 
     private dataReceived(data: any) {
         //TODO: separate JSON parsing
+        // Can happen if a poll request was cancelled
+        if (!data) {
+            return;
+        }
         var descriptor = JSON.parse(data);
         if (descriptor.Method === undefined) {
             let invocationResult: InvocationResultDescriptor = descriptor;
@@ -62,7 +66,7 @@ export class HubConnection {
         return this.connection.stop();
     }
 
-    invoke(methodName: string, ...args: any[]): Promise<void> {
+    invoke(methodName: string, ...args: any[]): Promise<any> {
 
         let id = this.id;
         this.id++;
@@ -76,7 +80,7 @@ export class HubConnection {
         let p = new Promise<any>((resolve, reject) => {
             this.callbacks[id] = (invocationResult: InvocationResultDescriptor) => {
                 if (invocationResult.Error != null) {
-                    reject(invocationResult.Error);
+                    reject(new Error(invocationResult.Error));
                 }
                 else {
                     resolve(invocationResult.Result);

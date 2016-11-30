@@ -1,4 +1,3 @@
-
 describe('connection', () => {
     eachTransport(transportName => {
         it(`over ${transportName} can send and receive messages`, done => {
@@ -23,7 +22,7 @@ describe('connection', () => {
                     connection.send(message);
                 })
                 .catch(e => {
-                    expect(true).toBe(false);
+                    fail();
                     done();
                 });
         });
