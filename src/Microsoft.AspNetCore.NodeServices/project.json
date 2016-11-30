@@ -31,7 +31,8 @@
     "netstandard1.6": {
       "dependencies": {
         "System.Diagnostics.Process": "4.3.0",
-        "System.IO.FileSystem.Watcher": "4.3.0"
+        "System.IO.FileSystem.Watcher": "4.3.0",
+        "System.Runtime.Loader": "4.3.0"
       }
     }
   },
