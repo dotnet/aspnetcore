@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Http
     public abstract class HttpRequest
     {
         /// <summary>
-        /// Gets the <see cref="HttpContext"/> this request;
+        /// Gets the <see cref="HttpContext"/> for this request.
         /// </summary>
         public abstract HttpContext HttpContext { get; }
 
