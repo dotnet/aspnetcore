@@ -12,6 +12,8 @@ interface InvocationResultDescriptor {
     readonly Result: any;
 }
 
+export { Connection } from "./Connection"
+
 export class HubConnection {
     private connection: Connection;
     private callbacks: Map<string, (any) => void>;

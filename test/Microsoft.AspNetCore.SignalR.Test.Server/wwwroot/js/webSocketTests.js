@@ -1,10 +1,8 @@
-﻿const ECHOENDPOINT_URL = `ws://${document.location.host}/echo/ws`;
-
-describe('WebSockets', function () {
+﻿describe('WebSockets', function () {
     it('can be used to connect to SignalR', done => {
         const message = "message";
 
-        let webSocket = new WebSocket(ECHOENDPOINT_URL);
+        let webSocket = new WebSocket(ECHOENDPOINT_URL.replace(/^http/, "ws") + '/ws');
 
         webSocket.onopen = () => {
             webSocket.send(message);

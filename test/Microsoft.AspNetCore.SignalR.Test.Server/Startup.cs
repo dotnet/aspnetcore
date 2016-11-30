@@ -9,7 +9,8 @@ namespace Microsoft.AspNetCore.SignalR.Test.Server
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRouting();
+            services.AddSockets();
+            services.AddSignalR();
             services.AddSingleton<EchoEndPoint>();
         }
 

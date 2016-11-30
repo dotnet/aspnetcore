@@ -39,7 +39,9 @@
   },
 
   "scripts": {
-    "precompile": [ "npm install", "npm run gulp -- --gulpfile %project:Directory%/gulpfile.js copy-jasmine"],
+    "precompile": [ "npm install",
+      "npm run gulp -- --gulpfile %project:Directory%/gulpfile.js copy-jasmine",
+      "npm run gulp -- --gulpfile %project:Directory%/../../src/Microsoft.AspNetCore.SignalR.Client.TS/gulpfile.js bundle-client --bundleOutDir %project:Directory%/wwwroot/lib/signalr-client/" ],
     "postpublish": [ "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%" ]
   }
 }
