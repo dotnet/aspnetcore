@@ -19,7 +19,7 @@ gulp.task('compile-ts-client', () => {
 });
 
 gulp.task('browserify-client', ['compile-ts-client'], () => {
-    return browserify(clientOutDir + '/RpcConnection.js', {standalone: 'signalR'})
+    return browserify(clientOutDir + '/HubConnection.js', {standalone: 'signalR'})
         .bundle()
         .pipe(source('signalr-client.js'))
         .pipe(gulp.dest(clientOutDir + '/../signalr-client-bundle'));

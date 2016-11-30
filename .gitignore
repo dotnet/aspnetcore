@@ -31,6 +31,7 @@ runtimes/
 .testPublish/
 launchSettings.json
 node_modules/
+npm-debug.log
 *.tmp
 *.nuget.props
 *.nuget.targets

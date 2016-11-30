@@ -108,7 +108,7 @@ let transport = getParameterByName('transport') || 'webSockets';
 
 document.getElementById('head1').innerHTML = transport;
 
-let connection = new signalR.RpcConnection(`http://${document.location.host}/hubs`, 'formatType=json&format=text');
+let connection = new signalR.HubConnection(`http://${document.location.host}/hubs`, 'formatType=json&format=text');
 connection.on('Send', msg => {
     addLine(msg);
 });

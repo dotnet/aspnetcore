@@ -12,7 +12,7 @@ interface InvocationResultDescriptor {
     readonly Result: any;
 }
 
-export class RpcConnection {
+export class HubConnection {
     private connection: Connection;
     private callbacks: Map<string, (any) => void>;
     private methods: Map<string, (...args:any[]) => void>;
@@ -21,9 +21,9 @@ export class RpcConnection {
     constructor(url: string, queryString?: string) {
         this.connection = new Connection(url, queryString);
 
-        let thisRpcConnection = this;
+        let thisHubConnection = this;
         this.connection.dataReceived = data => {
-            thisRpcConnection.dataReceived(data);
+            thisHubConnection.dataReceived(data);
         };
 
         this.callbacks = new Map<string, (any) => void>();

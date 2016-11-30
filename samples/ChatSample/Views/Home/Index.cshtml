@@ -14,7 +14,7 @@
 </div>
 <script src="lib/signalr-client/signalr-client.js"></script>
 <script>
-let connection = new signalR.RpcConnection(`http://${document.location.host}/chat`, 'formatType=json&format=text');
+let connection = new signalR.HubConnection(`http://${document.location.host}/chat`, 'formatType=json&format=text');
 
 connection.on('Send', function (message) {
     var child = document.createElement('li');
