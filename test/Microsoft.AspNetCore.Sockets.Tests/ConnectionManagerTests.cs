@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO.Pipelines;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Sockets.Tests
@@ -13,7 +16,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public void ReservedConnectionsHaveConnectionId()
         {
-            var lifetime = new ApplicationLifetime();
+            var lifetime = new ApplicationLifetime(new Logger<ApplicationLifetime>(new LoggerFactory()), Enumerable.Empty<IApplicationLifetimeEvents>());
             var connectionManager = new ConnectionManager(lifetime);
             var state = connectionManager.ReserveConnection();
 
@@ -27,7 +30,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public void ReservedConnectionsCanBeRetrieved()
         {
-            var lifetime = new ApplicationLifetime();
+            var lifetime = new ApplicationLifetime(new Logger<ApplicationLifetime>(new LoggerFactory()), Enumerable.Empty<IApplicationLifetimeEvents>());
             var connectionManager = new ConnectionManager(lifetime);
             var state = connectionManager.ReserveConnection();
 
@@ -45,7 +48,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var factory = new PipelineFactory())
             using (var connection = new HttpConnection(factory))
             {
-                var lifetime = new ApplicationLifetime();
+                var lifetime = new ApplicationLifetime(new Logger<ApplicationLifetime>(new LoggerFactory()), Enumerable.Empty<IApplicationLifetimeEvents>());
                 var connectionManager = new ConnectionManager(lifetime);
                 var state = connectionManager.AddNewConnection(connection);
 
@@ -66,7 +69,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var factory = new PipelineFactory())
             using (var connection = new HttpConnection(factory))
             {
-                var lifetime = new ApplicationLifetime();
+                var lifetime = new ApplicationLifetime(new Logger<ApplicationLifetime>(new LoggerFactory()), Enumerable.Empty<IApplicationLifetimeEvents>());
                 var connectionManager = new ConnectionManager(lifetime);
                 var state = connectionManager.AddNewConnection(connection);
 
@@ -90,7 +93,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var factory = new PipelineFactory())
             using (var connection = new HttpConnection(factory))
             {
-                var lifetime = new ApplicationLifetime();
+                var lifetime = new ApplicationLifetime(new Logger<ApplicationLifetime>(new LoggerFactory()), Enumerable.Empty<IApplicationLifetimeEvents>());
                 var connectionManager = new ConnectionManager(lifetime);
                 var state = connectionManager.AddNewConnection(connection);
 

@@ -8,7 +8,9 @@
     "Microsoft.AspNetCore.Server.IISIntegration": "1.2.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.2.0-*",
     "Microsoft.Extensions.Logging.Console": "1.2.0-*",
-    "Microsoft.AspNetCore.SignalR": "1.0.0-*",
+    "Microsoft.AspNetCore.SignalR": {
+      "target": "project"
+    },
     "Microsoft.AspNetCore.StaticFiles": "1.2.0-*"
   },
 

@@ -8,9 +8,11 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -21,7 +23,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task GetIdReservesConnectionIdAndReturnsIt()
         {
-            var lifetime = new ApplicationLifetime();
+            var lifetime = new ApplicationLifetime(new Logger<ApplicationLifetime>(new LoggerFactory()), Enumerable.Empty<IApplicationLifetimeEvents>());
             var manager = new ConnectionManager(lifetime);
             using (var factory = new PipelineFactory())
             {
@@ -43,7 +45,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task SendingToReservedConnectionsThatHaveNotConnectedThrows()
         {
-            var lifetime = new ApplicationLifetime();
+            var lifetime = new ApplicationLifetime(new Logger<ApplicationLifetime>(new LoggerFactory()), Enumerable.Empty<IApplicationLifetimeEvents>());
             var manager = new ConnectionManager(lifetime);
             var state = manager.ReserveConnection();
 
@@ -66,7 +68,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task SendingToUnknownConnectionIdThrows()
         {
-            var lifetime = new ApplicationLifetime();
+            var lifetime = new ApplicationLifetime(new Logger<ApplicationLifetime>(new LoggerFactory()), Enumerable.Empty<IApplicationLifetimeEvents>());
             var manager = new ConnectionManager(lifetime);
             using (var factory = new PipelineFactory())
             {
@@ -87,7 +89,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task SendingWithoutConnectionIdThrows()
         {
-            var lifetime = new ApplicationLifetime();
+            var lifetime = new ApplicationLifetime(new Logger<ApplicationLifetime>(new LoggerFactory()), Enumerable.Empty<IApplicationLifetimeEvents>());
             var manager = new ConnectionManager(lifetime);
             using (var factory = new PipelineFactory())
             {
