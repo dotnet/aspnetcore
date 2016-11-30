@@ -19,6 +19,7 @@ export interface CreateDevServerCallback {
 interface CreateDevServerOptions {
     webpackConfigPath: string;
     suppliedOptions: DevServerOptions;
+    hotModuleReplacementEndpointUrl: string;
 }
 
 // These are the options configured in C# and then JSON-serialized, hence the C#-style naming
@@ -28,7 +29,7 @@ interface DevServerOptions {
     ReactHotModuleReplacement: boolean;
 }
 
-function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configuration, enableHotModuleReplacement: boolean, enableReactHotModuleReplacement: boolean, hmrEndpoint: string) {
+function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configuration, enableHotModuleReplacement: boolean, enableReactHotModuleReplacement: boolean, hmrClientEndpoint: string, hmrServerEndpoint: string) {
     // Build the final Webpack config based on supplied options
     if (enableHotModuleReplacement) {
         // For this, we only support the key/value config format, not string or string[], since
@@ -44,7 +45,7 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
         // Augment all entry points so they support HMR (unless they already do)
         Object.getOwnPropertyNames(entryPoints).forEach(entryPointName => {
             const webpackHotMiddlewareEntryPoint = 'webpack-hot-middleware/client';
-            const webpackHotMiddlewareOptions = `?path=` + encodeURIComponent(hmrEndpoint);
+            const webpackHotMiddlewareOptions = `?path=` + encodeURIComponent(hmrClientEndpoint);
             if (typeof entryPoints[entryPointName] === 'string') {
                 entryPoints[entryPointName] = [webpackHotMiddlewareEntryPoint + webpackHotMiddlewareOptions, entryPoints[entryPointName]];
             } else if (firstIndexOfStringStartingWith(entryPoints[entryPointName], webpackHotMiddlewareEntryPoint) < 0) {
@@ -117,7 +118,9 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
         } catch (ex) {
             throw new Error('HotModuleReplacement failed because of an error while loading \'webpack-hot-middleware\'. Error was: ' + ex.stack);
         }
-        app.use(webpackHotMiddlewareModule(compiler));
+        app.use(webpackHotMiddlewareModule(compiler, {
+            path: hmrServerEndpoint
+        }));
     }
 }
 
@@ -198,8 +201,16 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
                     }
                     normalizedPublicPaths.push(removeTrailingSlash(publicPath));
 
-                    const hmrEndpoint = `http://localhost:${listener.address().port}/__webpack_hmr`;
-                    attachWebpackDevMiddleware(app, webpackConfig, enableHotModuleReplacement, enableReactHotModuleReplacement, hmrEndpoint);
+                    // Newer versions of Microsoft.AspNetCore.SpaServices will explicitly pass an HMR endpoint URL
+                    // (because it's relative to the app's URL space root, which the client doesn't otherwise know).
+                    // For back-compatibility, fall back on connecting directly to the underlying HMR server (though
+                    // that won't work if the app is hosted on HTTPS because of the mixed-content rule, and we can't
+                    // run the HMR server itself on HTTPS because in general it has no valid cert).
+                    const hmrClientEndpoint = options.hotModuleReplacementEndpointUrl   // The URL that we'll proxy (e.g., /__asp_webpack_hmr)
+                        || `http://localhost:${listener.address().port}/__webpack_hmr`; // Fall back on absolute URL to bypass proxying
+                    const hmrServerEndpoint = options.hotModuleReplacementEndpointUrl
+                        || '/__webpack_hmr';                                            // URL is relative to webpack dev server root
+                    attachWebpackDevMiddleware(app, webpackConfig, enableHotModuleReplacement, enableReactHotModuleReplacement, hmrClientEndpoint, hmrServerEndpoint);
                 }
             });
 
