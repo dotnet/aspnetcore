@@ -8,13 +8,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 {
     internal class DefaultRazorSyntaxTree : RazorSyntaxTree
     {
-        public DefaultRazorSyntaxTree(Block root, IReadOnlyList<RazorError> diagnostics)
+        public DefaultRazorSyntaxTree(Block root, IReadOnlyList<RazorError> diagnostics, RazorParserOptions options)
         {
             Root = root;
             Diagnostics = diagnostics;
+            Options = options;
         }
 
         internal override IReadOnlyList<RazorError> Diagnostics { get; }
+
+        public override RazorParserOptions Options { get; }
 
         internal override Block Root { get; }
     }

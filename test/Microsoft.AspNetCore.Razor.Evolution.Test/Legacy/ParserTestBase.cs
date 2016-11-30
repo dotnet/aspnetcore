@@ -29,10 +29,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             using (var reader = new SeekableTextReader(document))
             {
-                var parser = new RazorParser()
-                {
-                    DesignTimeMode = designTime,
-                };
+                var options = RazorParserOptions.CreateDefaultOptions();
+                options.DesignTimeMode = designTime;
+
+                var parser = new RazorParser(options);
 
                 return parser.Parse((ITextDocument)reader);
             }
@@ -52,9 +52,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
                 parser.ParseBlock();
 
-                var razorSyntaxTree = context.BuildRazorSyntaxTree();
+                var root = context.Builder.Build();
+                var diagnostics = context.ErrorSink.Errors;
+                var options = RazorParserOptions.CreateDefaultOptions();
+                options.DesignTimeMode = designTime;
 
-                return razorSyntaxTree;
+                return RazorSyntaxTree.Create(root, diagnostics, options);
             }
         }
 
@@ -80,9 +83,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
                 parser.ParseBlock();
 
-                var razorSyntaxTree = context.BuildRazorSyntaxTree();
+                var root = context.Builder.Build();
+                var diagnostics = context.ErrorSink.Errors;
 
-                return razorSyntaxTree;
+                var options = RazorParserOptions.CreateDefaultOptions();
+                options.DesignTimeMode = designTime;
+
+                options.Directives.Clear();
+                foreach (var directive in descriptors)
+                {
+                    options.Directives.Add(directive);
+                }
+
+                return RazorSyntaxTree.Create(root, diagnostics, options);
             }
         }
 

@@ -38,14 +38,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             get { return Source.Peek() == -1; }
         }
-
-        public RazorSyntaxTree BuildRazorSyntaxTree()
-        {
-            var syntaxTree = Builder.Build();
-            var razorSyntaxTree = RazorSyntaxTree.Create(syntaxTree, ErrorSink.Errors);
-
-            return razorSyntaxTree;
-        }
     }
 
     // Debug Helpers
