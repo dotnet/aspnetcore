@@ -13,11 +13,6 @@ namespace Microsoft.AspNetCore.NodeServices
     /// </summary>
     public class NodeServicesOptions
     {
-        /// <summary>
-        /// Defines the default <see cref="NodeHostingModel"/>.
-        /// </summary>
-        public const NodeHostingModel DefaultNodeHostingModel = NodeHostingModel.Http;
-
         internal const string TimeoutConfigPropertyName = nameof(InvocationTimeoutMilliseconds);
         private const int DefaultInvocationTimeoutMilliseconds = 60 * 1000;
         private const string LogCategoryName = "Microsoft.AspNetCore.NodeServices";
@@ -36,7 +31,6 @@ namespace Microsoft.AspNetCore.NodeServices
 
             EnvironmentVariables = new Dictionary<string, string>();
             InvocationTimeoutMilliseconds = DefaultInvocationTimeoutMilliseconds;
-            HostingModel = DefaultNodeHostingModel;
             WatchFileExtensions = (string[])DefaultWatchFileExtensions.Clone();
 
             // In an ASP.NET environment, we can use the IHostingEnvironment data to auto-populate a few
@@ -53,15 +47,15 @@ namespace Microsoft.AspNetCore.NodeServices
             NodeInstanceOutputLogger = loggerFactory != null
                 ? loggerFactory.CreateLogger(LogCategoryName)
                 : new ConsoleLogger(LogCategoryName, null, false);
+
+            // By default, we use this package's built-in out-of-process-via-HTTP hosting/transport
+            this.UseHttpHosting();
         }
 
         /// <summary>
-        /// Specifies which <see cref="NodeHostingModel"/> should be used.
-        /// </summary>
-        public NodeHostingModel HostingModel { get; set; }
-
-        /// <summary>
-        /// If set, this callback function will be invoked to supply the <see cref="INodeServices"/> instance.
+        /// Specifies how to construct Node.js instances. An <see cref="INodeInstance"/> encapsulates all details about
+        /// how Node.js instances are launched and communicated with. A new <see cref="INodeInstance"/> will be created
+        /// automatically if the previous instance has terminated (e.g., because a source file changed).
         /// </summary>
         public Func<INodeInstance> NodeInstanceFactory { get; set; }
 

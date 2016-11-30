@@ -42,21 +42,19 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
         private string _socketAddress;
         private VirtualConnectionClient _virtualConnectionClient;
 
-        public SocketNodeInstance(string projectPath, string[] watchFileExtensions, string socketAddress,
-            ILogger nodeInstanceOutputLogger, IDictionary<string, string> environmentVars,
-            int invocationTimeoutMilliseconds, bool launchWithDebugging, int debuggingPort)
+        public SocketNodeInstance(NodeServicesOptions options, string socketAddress)
         : base(
                 EmbeddedResourceReader.Read(
                     typeof(SocketNodeInstance),
                     "/Content/Node/entrypoint-socket.js"),
-                projectPath,
-                watchFileExtensions,
+                options.ProjectPath,
+                options.WatchFileExtensions,
                 MakeNewCommandLineOptions(socketAddress),
-                nodeInstanceOutputLogger,
-                environmentVars,
-                invocationTimeoutMilliseconds,
-                launchWithDebugging,
-                debuggingPort)
+                options.NodeInstanceOutputLogger,
+                options.EnvironmentVariables,
+                options.InvocationTimeoutMilliseconds,
+                options.LaunchWithDebugging,
+                options.DebuggingPort)
         {
             _socketAddress = socketAddress;
         }

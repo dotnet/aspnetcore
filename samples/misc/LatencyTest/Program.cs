@@ -16,7 +16,6 @@ namespace ConsoleApplication
             // Set up the DI system
             var services = new ServiceCollection();
             services.AddNodeServices(options => {
-                options.HostingModel = NodeServicesOptions.DefaultNodeHostingModel;
                 options.ProjectPath = Directory.GetCurrentDirectory();
                 options.WatchFileExtensions = new string[] {}; // Don't watch anything
             });

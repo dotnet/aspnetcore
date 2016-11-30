@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.NodeServices
             return InvokeExportWithPossibleRetryAsync<T>(moduleName, exportedFunctionName, args, /* allowRetry */ true, cancellationToken);
         }
 
-        public async Task<T> InvokeExportWithPossibleRetryAsync<T>(string moduleName, string exportedFunctionName, object[] args, bool allowRetry, CancellationToken cancellationToken)
+        private async Task<T> InvokeExportWithPossibleRetryAsync<T>(string moduleName, string exportedFunctionName, object[] args, bool allowRetry, CancellationToken cancellationToken)
         {
             ThrowAnyOutstandingDelayedDisposalException();
             var nodeInstance = GetOrCreateCurrentNodeInstance();
