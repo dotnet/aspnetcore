@@ -119,7 +119,8 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
                 unencodedAbsoluteUrl,
                 unencodedPathAndQuery,
                 CustomDataParameter,
-                TimeoutMillisecondsParameter);
+                TimeoutMillisecondsParameter,
+                request.PathBase.ToString());
 
             if (!string.IsNullOrEmpty(result.RedirectUrl))
             {

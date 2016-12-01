@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
         /// <param name="requestPathAndQuery">The path and query part of the URL of the currently-executing HTTP request. This is supplied to the prerendering code.</param>
         /// <param name="customDataParameter">An optional JSON-serializable parameter to be supplied to the prerendering code.</param>
         /// <param name="timeoutMilliseconds">The maximum duration to wait for prerendering to complete.</param>
+        /// <param name="requestPathBase">The PathBase for the currently-executing HTTP request.</param>
         /// <returns></returns>
         public static Task<RenderToStringResult> RenderToString(
             string applicationBasePath,
@@ -38,7 +39,8 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
             string requestAbsoluteUrl,
             string requestPathAndQuery,
             object customDataParameter,
-            int timeoutMilliseconds)
+            int timeoutMilliseconds,
+            string requestPathBase)
         {
             return nodeServices.InvokeExportAsync<RenderToStringResult>(
                 NodeScript.Value.FileName,
@@ -48,7 +50,8 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
                 requestAbsoluteUrl,
                 requestPathAndQuery,
                 customDataParameter,
-                timeoutMilliseconds);
+                timeoutMilliseconds,
+                requestPathBase);
         }
     }
 }

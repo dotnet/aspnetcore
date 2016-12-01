@@ -7,7 +7,7 @@ import { run as domainTaskRun, baseUrl as domainTaskBaseUrl } from 'domain-task/
 const defaultTimeoutMilliseconds = 30 * 1000;
 
 export function createServerRenderer(bootFunc: BootFunc): RenderToStringFunc {
-    const resultFunc = (callback: RenderToStringCallback, applicationBasePath: string, bootModule: BootModuleInfo, absoluteRequestUrl: string, requestPathAndQuery: string, customDataParameter: any, overrideTimeoutMilliseconds: number) => {
+    const resultFunc = (callback: RenderToStringCallback, applicationBasePath: string, bootModule: BootModuleInfo, absoluteRequestUrl: string, requestPathAndQuery: string, customDataParameter: any, overrideTimeoutMilliseconds: number, requestPathBase: string) => {
         // Prepare a promise that will represent the completion of all domain tasks in this execution context.
         // The boot code will wait for this before performing its final render.
         let domainTaskCompletionPromiseResolve;
@@ -19,6 +19,7 @@ export function createServerRenderer(bootFunc: BootFunc): RenderToStringFunc {
             location: url.parse(requestPathAndQuery),
             origin: parsedAbsoluteRequestUrl.protocol + '//' + parsedAbsoluteRequestUrl.host,
             url: requestPathAndQuery,
+            baseUrl: (requestPathBase || '') + '/',
             absoluteUrl: absoluteRequestUrl,
             domainTasks: domainTaskCompletionPromise,
             data: customDataParameter
