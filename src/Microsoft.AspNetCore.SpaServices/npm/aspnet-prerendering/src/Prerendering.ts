@@ -2,8 +2,7 @@
 import * as url from 'url';
 import * as path from 'path';
 import * as domain from 'domain';
-import { run as domainTaskRun } from 'domain-task/main';
-import { baseUrl } from 'domain-task/fetch';
+import { run as domainTaskRun, baseUrl as domainTaskBaseUrl } from 'domain-task/main';
 
 const defaultTimeoutMilliseconds = 30 * 1000;
 
@@ -33,7 +32,7 @@ export function createServerRenderer(bootFunc: BootFunc): RenderToStringFunc {
             bindPromiseContinuationsToDomain(domainTaskCompletionPromise, domain['active']);
 
             // Make the base URL available to the 'domain-tasks/fetch' helper within this execution context
-            baseUrl(absoluteRequestUrl);
+            domainTaskBaseUrl(absoluteRequestUrl);
 
             // Begin rendering, and apply a timeout
             const bootFuncPromise = bootFunc(params);
