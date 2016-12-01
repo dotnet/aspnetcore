@@ -1,12 +1,9 @@
 import * as url from 'url';
 import * as domain from 'domain';
 import * as domainContext from 'domain-context';
+import { baseUrl } from './main';
 const isomorphicFetch = require('isomorphic-fetch');
 const isNode = typeof process === 'object' && process.versions && !!process.versions.node;
-
-// Not using a symbol, because this may need to run in a version of Node.js that doesn't support them
-const domainTaskStateKey = '__DOMAIN_TASK_INTERNAL_FETCH_BASEURL__DO_NOT_REFERENCE_THIS__';
-let noDomainBaseUrl: string;
 
 function issueRequest(baseUrl: string, req: string | Request, init?: RequestInit): Promise<any> {
     // Resolve relative URLs
@@ -70,16 +67,6 @@ export function fetch(url: string | Request, init?: RequestInit): Promise<any> {
     return issueRequest(baseUrl(), url, init);
 }
 
-export function baseUrl(url?: string): string {
-    if (url) {
-        if (domain.active) {
-            // There's an active domain (e.g., in Node.js), so associate the base URL with it
-            domainContext.set(domainTaskStateKey, url);
-        } else {
-            // There's no active domain (e.g., in browser), so there's just one shared base URL
-            noDomainBaseUrl = url;
-        }
-    }
-
-    return domain.active ? domainContext.get(domainTaskStateKey) : noDomainBaseUrl;
-}
+// Re-exporting baseUrl from this module for back-compatibility only
+// Newer code that wants to access baseUrl should use the version exported from the root of this package
+export { baseUrl } from './main';
