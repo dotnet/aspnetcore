@@ -20,13 +20,13 @@
       "type": "build",
       "version": "1.2.0-*"
     },
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "System.ComponentModel": "4.3.0-*"
+        "System.ComponentModel": "4.4.0-*"
       }
     }
   },

@@ -2,7 +2,7 @@
   "frameworks": {
     "netstandard1.1": {
       "dependencies": {
-        "NETStandard.Library": "1.6.1-*"
+        "NETStandard.Library": "1.6.2-*"
       }
     }
   },

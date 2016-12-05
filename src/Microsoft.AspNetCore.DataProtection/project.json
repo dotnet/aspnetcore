@@ -26,7 +26,7 @@
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.2.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.2.0-*",
     "Microsoft.Extensions.Options": "1.2.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "net451": {
@@ -41,9 +41,9 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "Microsoft.Win32.Registry": "4.3.0-*",
-        "System.Security.Claims": "4.3.0-*",
-        "System.Security.Principal.Windows": "4.3.0-*"
+        "Microsoft.Win32.Registry": "4.4.0-*",
+        "System.Security.Claims": "4.4.0-*",
+        "System.Security.Principal.Windows": "4.4.0-*"
       }
     }
   },

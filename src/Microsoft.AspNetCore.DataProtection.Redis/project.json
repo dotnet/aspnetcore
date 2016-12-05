@@ -16,7 +16,7 @@
     "Microsoft.AspNetCore.DataProtection": {
       "target": "project"
     },
-    "NETStandard.Library": "1.6.1-*",
+    "NETStandard.Library": "1.6.2-*",
     "StackExchange.Redis.StrongName": "1.1.605"
   },
   "frameworks": {

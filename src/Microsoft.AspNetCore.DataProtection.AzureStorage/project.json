@@ -17,7 +17,7 @@
     "Microsoft.AspNetCore.DataProtection": {
       "target": "project"
     },
-    "NETStandard.Library": "1.6.1-*",
+    "NETStandard.Library": "1.6.2-*",
     "WindowsAzure.Storage": "7.2.1"
   },
   "frameworks": {
