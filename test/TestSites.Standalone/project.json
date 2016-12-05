@@ -24,7 +24,7 @@
   "frameworks": {
     "netcoreapp1.1": {
       "dependencies": {
-        "Microsoft.NETCore.App": "1.1.0-*"
+        "Microsoft.NETCore.App": "1.2.0-*"
       }
     }
   },
