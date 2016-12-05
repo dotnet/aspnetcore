@@ -21,9 +21,9 @@
   },
   "dependencies": {
     "Microsoft.Extensions.Primitives": "1.2.0-*",
-    "NETStandard.Library": "1.6.1-*",
-    "System.Buffers": "4.3.0-*",
-    "System.Diagnostics.Contracts": "4.3.0-*"
+    "NETStandard.Library": "1.6.2-*",
+    "System.Buffers": "4.4.0-*",
+    "System.Diagnostics.Contracts": "4.4.0-*"
   },
   "frameworks": {
     "netstandard1.1": {}

@@ -35,8 +35,8 @@
     "Microsoft.Net.Http.Headers": {
       "target": "project"
     },
-    "NETStandard.Library": "1.6.1-*",
-    "System.Buffers": "4.3.0-*"
+    "NETStandard.Library": "1.6.2-*",
+    "System.Buffers": "4.4.0-*"
   },
   "frameworks": {
     "net451": {},

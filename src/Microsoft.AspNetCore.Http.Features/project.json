@@ -20,16 +20,16 @@
   },
   "dependencies": {
     "Microsoft.Extensions.Primitives": "1.2.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "System.ComponentModel": "4.3.0-*",
-        "System.Net.WebSockets": "4.3.0-*",
-        "System.Security.Claims": "4.3.0-*",
-        "System.Security.Principal": "4.3.0-*"
+        "System.ComponentModel": "4.4.0-*",
+        "System.Net.WebSockets": "4.4.0-*",
+        "System.Security.Claims": "4.4.0-*",
+        "System.Security.Principal": "4.4.0-*"
       }
     }
   }
