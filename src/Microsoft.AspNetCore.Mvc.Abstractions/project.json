@@ -38,14 +38,14 @@
       "type": "build"
     },
     "Microsoft.Net.Http.Headers": "1.2.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "Microsoft.CSharp": "4.3.0-*",
-        "System.ComponentModel.TypeConverter": "4.3.0-*"
+        "Microsoft.CSharp": "4.4.0-*",
+        "System.ComponentModel.TypeConverter": "4.4.0-*"
       }
     }
   }

@@ -3,7 +3,7 @@
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "NETStandard.Library": "1.6.1-*"
+        "NETStandard.Library": "1.6.2-*"
       }
     }
   }

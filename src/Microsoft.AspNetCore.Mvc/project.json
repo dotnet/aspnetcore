@@ -46,7 +46,7 @@
     },
     "Microsoft.Extensions.Caching.Memory": "1.2.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.2.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "net451": {},

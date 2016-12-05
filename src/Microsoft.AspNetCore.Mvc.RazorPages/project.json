@@ -1,4 +1,4 @@
-﻿{
+{
   "description": "ASP.NET Core MVC Razor Pages.",
   "version": "1.0.0-*",
   "packOptions": {
@@ -22,9 +22,11 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc.ViewFeatures": { "target": "project" },
+    "Microsoft.AspNetCore.Mvc.ViewFeatures": {
+      "target": "project"
+    },
     "Microsoft.AspNetCore.Razor.Evolution": "1.0.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "netstandard1.6": {},

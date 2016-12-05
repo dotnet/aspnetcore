@@ -33,7 +33,7 @@
       "type": "build",
       "version": "1.2.0-*"
     },
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "net451": {
@@ -48,8 +48,8 @@
         "portable-net451+win8"
       ],
       "dependencies": {
-        "System.Runtime.Serialization.Xml": "4.3.0-*",
-        "System.Xml.XmlSerializer": "4.3.0-*"
+        "System.Runtime.Serialization.Xml": "4.4.0-*",
+        "System.Xml.XmlSerializer": "4.4.0-*"
       }
     }
   }

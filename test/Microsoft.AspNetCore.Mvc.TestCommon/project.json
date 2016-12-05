@@ -7,7 +7,7 @@
     "net451": {},
     "netstandard1.6": {
       "dependencies": {
-        "System.ComponentModel.Annotations": "4.3.0"
+        "System.ComponentModel.Annotations": "4.4.0-*"
       }
     }
   },
@@ -21,7 +21,7 @@
     "Microsoft.Extensions.Options": "1.2.0-*",
     "Microsoft.Extensions.WebEncoders": "1.2.0-*",
     "Moq": "4.6.36-*",
-    "NETStandard.Library": "1.6.1-*",
+    "NETStandard.Library": "1.6.2-*",
     "xunit": "2.2.0-*"
   }
 }

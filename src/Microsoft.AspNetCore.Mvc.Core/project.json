@@ -36,7 +36,7 @@
       "version": "1.2.0-*",
       "type": "build"
     },
-    "Microsoft.Extensions.DependencyModel": "1.1.0",
+    "Microsoft.Extensions.DependencyModel": "1.2.0-*",
     "Microsoft.Extensions.FileProviders.Abstractions": "1.2.0-*",
     "Microsoft.Extensions.HashCodeCombiner.Sources": {
       "type": "build",
@@ -56,9 +56,9 @@
       "version": "1.2.0-*",
       "type": "build"
     },
-    "NETStandard.Library": "1.6.1-*",
-    "System.Buffers": "4.3.0-*",
-    "System.Diagnostics.DiagnosticSource": "4.3.0-*"
+    "NETStandard.Library": "1.6.2-*",
+    "System.Buffers": "4.4.0-*",
+    "System.Diagnostics.DiagnosticSource": "4.4.0-*"
   },
   "frameworks": {
     "net451": {},

@@ -32,7 +32,7 @@
       "version": "1.2.0-*",
       "type": "build"
     },
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "net451": {
@@ -43,8 +43,8 @@
     },
     "netstandard1.6": {
       "dependencies": {
-        "System.Runtime.Serialization.Xml": "4.3.0-*",
-        "System.Xml.XmlSerializer": "4.3.0-*"
+        "System.Runtime.Serialization.Xml": "4.4.0-*",
+        "System.Xml.XmlSerializer": "4.4.0-*"
       }
     }
   }

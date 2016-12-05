@@ -58,15 +58,15 @@
       "type": "build"
     },
     "Microsoft.Extensions.WebEncoders": "1.2.0-*",
-    "NETStandard.Library": "1.6.1-*",
+    "NETStandard.Library": "1.6.2-*",
     "Newtonsoft.Json": "9.0.1",
-    "System.Buffers": "4.3.0-*"
+    "System.Buffers": "4.4.0-*"
   },
   "frameworks": {
     "net451": {},
     "netstandard1.6": {
       "dependencies": {
-        "System.Runtime.Serialization.Primitives": "4.3.0-*"
+        "System.Runtime.Serialization.Primitives": "4.4.0-*"
       }
     }
   }
