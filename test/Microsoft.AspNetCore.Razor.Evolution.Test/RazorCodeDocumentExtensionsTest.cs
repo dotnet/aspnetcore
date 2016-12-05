@@ -69,5 +69,36 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Assert
             Assert.Same(expected, codeDocument.Items[typeof(DocumentIRNode)]);
         }
+
+        [Fact]
+        public void GetCSharpDocument_ReturnsCSharpDocument()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.CreateEmpty();
+
+            var expected = new RazorCSharpDocument();
+            codeDocument.Items[typeof(RazorCSharpDocument)] = expected;
+
+            // Act
+            var actual = codeDocument.GetCSharpDocument();
+
+            // Assert
+            Assert.Same(expected, actual);
+        }
+
+        [Fact]
+        public void SetCSharpDocument_SetsCSharpDocument()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.CreateEmpty();
+
+            var expected = new RazorCSharpDocument();
+
+            // Act
+            codeDocument.SetCSharpDocument(expected);
+
+            // Assert
+            Assert.Same(expected, codeDocument.Items[typeof(RazorCSharpDocument)]);
+        }
     }
 }
