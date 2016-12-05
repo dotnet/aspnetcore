@@ -24,7 +24,7 @@
     "Microsoft.AspNet.Identity.EntityFramework": "2.2.1",
     "Microsoft.Owin.Security.Cookies": "3.0.1",
     "Microsoft.Owin.Security.Interop": "1.2.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "net451": {
