@@ -49,9 +49,9 @@
       "type": "build",
       "version": "1.2.0-*"
     },
-    "NETStandard.Library": "1.6.1-*",
-    "System.Diagnostics.DiagnosticSource": "4.3.0-*",
-    "System.Reflection.Metadata": "1.4.1-*"
+    "NETStandard.Library": "1.6.2-*",
+    "System.Diagnostics.DiagnosticSource": "4.4.0-*",
+    "System.Reflection.Metadata": "1.5.0-*"
   },
   "tools": {
     "RazorPageGenerator": "1.1.0-*"
@@ -60,7 +60,7 @@
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "System.Diagnostics.StackTrace": "4.3.0-*"
+        "System.Diagnostics.StackTrace": "4.4.0-*"
       }
     }
   }

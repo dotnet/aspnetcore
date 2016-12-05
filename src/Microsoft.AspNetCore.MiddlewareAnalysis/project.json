@@ -22,8 +22,8 @@
   "dependencies": {
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.2.0-*",
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.2.0-*",
-    "NETStandard.Library": "1.6.1-*",
-    "System.Diagnostics.DiagnosticSource": "4.3.0-*"
+    "NETStandard.Library": "1.6.2-*",
+    "System.Diagnostics.DiagnosticSource": "4.4.0-*"
   },
   "frameworks": {
     "net451": {},

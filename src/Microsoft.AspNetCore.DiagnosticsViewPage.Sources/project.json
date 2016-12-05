@@ -2,7 +2,7 @@
   "version": "1.2.0-*",
   "shared": "*.cs",
   "dependencies": {
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "netstandard1.0": {}
