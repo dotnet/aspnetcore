@@ -17,7 +17,7 @@
     "Microsoft.Net.Http.Server": {
       "target": "project"
     },
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "buildOptions": {
     "allowUnsafe": true,
@@ -32,7 +32,7 @@
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "System.Security.Claims": "4.3.0-*"
+        "System.Security.Claims": "4.4.0-*"
       }
     }
   }

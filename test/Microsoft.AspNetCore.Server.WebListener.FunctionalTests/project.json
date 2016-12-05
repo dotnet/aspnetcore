@@ -14,11 +14,11 @@
     "netcoreapp1.1": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.1.0-*",
+          "version": "1.2.0-*",
           "type": "platform"
         },
-        "System.Net.Http.WinHttpHandler": "4.3.0-*",
-        "System.Net.WebSockets.Client": "4.3.0-*"
+        "System.Net.Http.WinHttpHandler": "4.4.0-*",
+        "System.Net.WebSockets.Client": "4.4.0-*"
       }
     },
     "net451": {

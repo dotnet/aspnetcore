@@ -10,7 +10,7 @@
   "dependencies": {
     "Microsoft.Extensions.Logging.Abstractions": "1.2.0-*",
     "Microsoft.Extensions.Primitives": "1.2.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "buildOptions": {
     "allowUnsafe": true,
@@ -35,11 +35,11 @@
           "type": "build",
           "version": "1.2.0-*"
         },
-        "System.Diagnostics.Contracts": "4.3.0-*",
-        "System.Net.WebSockets": "4.3.0-*",
-        "System.Security.Claims": "4.3.0-*",
-        "System.Security.Principal.Windows": "4.3.0-*",
-        "System.Threading.Overlapped": "4.3.0-*"
+        "System.Diagnostics.Contracts": "4.4.0-*",
+        "System.Net.WebSockets": "4.4.0-*",
+        "System.Security.Claims": "4.4.0-*",
+        "System.Security.Principal.Windows": "4.4.0-*",
+        "System.Threading.Overlapped": "4.4.0-*"
       }
     }
   }
