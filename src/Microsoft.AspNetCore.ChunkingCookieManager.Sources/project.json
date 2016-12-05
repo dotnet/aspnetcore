@@ -4,7 +4,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.Http.Abstractions": "1.2.0-*",
     "Microsoft.Net.Http.Headers": "1.2.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "net451": {},

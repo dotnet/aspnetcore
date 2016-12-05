@@ -28,14 +28,14 @@
       "version": "1.2.0-*",
       "type": "build"
     },
-    "NETStandard.Library": "1.6.1-*",
+    "NETStandard.Library": "1.6.2-*",
     "Newtonsoft.Json": "9.0.1"
   },
   "frameworks": {
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "System.Runtime.Serialization.Primitives": "4.3.0-*"
+        "System.Runtime.Serialization.Primitives": "4.4.0-*"
       }
     }
   }

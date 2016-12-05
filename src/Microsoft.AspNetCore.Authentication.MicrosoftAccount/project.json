@@ -24,7 +24,7 @@
     "Microsoft.AspNetCore.Authentication.OAuth": {
       "target": "project"
     },
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "net451": {},

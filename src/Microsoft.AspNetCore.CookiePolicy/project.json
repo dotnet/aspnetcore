@@ -21,7 +21,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.Http": "1.2.0-*",
     "Microsoft.Extensions.Options": "1.2.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "net451": {},
