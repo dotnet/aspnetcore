@@ -34,7 +34,7 @@
     "netcoreapp1.1": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.1.0-*",
+          "version": "1.2.0-*",
           "type": "platform"
         }
       }
@@ -44,10 +44,8 @@
   "runtimes": {
     "win7-x86": {},
     "win7-x64": {},
-
     "osx.10.10-x64": {},
     "osx.10.11-x64": {},
-
     "ubuntu.14.04-x64": {},
     "ubuntu.14.10-x64": {},
     "ubuntu.15.04-x64": {},
