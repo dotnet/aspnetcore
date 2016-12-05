@@ -1,9 +1,8 @@
-﻿{
+{
   "userSecretsId": "aspnet-ChatSample-f11cf018-e0a8-49fa-b749-4c0eb5c9150b",
-
   "dependencies": {
     "Microsoft.NETCore.App": {
-      "version": "1.1.0-*",
+      "version": "1.2.0-*",
       "type": "platform"
     },
     "Microsoft.AspNetCore.Authentication.Cookies": "1.2.0-*",
@@ -32,7 +31,7 @@
     "Microsoft.Extensions.Configuration.UserSecrets": "1.2.0-*",
     "Microsoft.EntityFrameworkCore.Tools": {
       "version": "1.2.0-*",
-        "type": "build"
+      "type": "build"
     },
     "Microsoft.Extensions.Logging": "1.2.0-*",
     "Microsoft.Extensions.Logging.Console": "1.2.0-*",
@@ -48,7 +47,6 @@
     },
     "Microsoft.AspNetCore.SignalR": "1.0.0-*"
   },
-
   "tools": {
     "BundlerMinifier.Core": "2.0.238",
     "Microsoft.AspNetCore.Razor.Tools": "1.2.0-*",
@@ -62,24 +60,20 @@
       ]
     }
   },
-
   "frameworks": {
     "netcoreapp1.1": {
       "imports": "portable-net45+win8"
     }
   },
-
   "buildOptions": {
     "emitEntryPoint": true,
     "preserveCompilationContext": true
   },
-
   "runtimeOptions": {
     "configProperties": {
       "System.GC.Server": true
     }
   },
-
   "publishOptions": {
     "include": [
       "wwwroot",
@@ -89,7 +83,6 @@
       "web.config"
     ]
   },
-
   "scripts": {
     "precompile": [ "dotnet bundle",
       "npm install",

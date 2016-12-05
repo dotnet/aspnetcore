@@ -1,4 +1,4 @@
-﻿{
+{
   "dependencies": {
     "Microsoft.AspNetCore.Diagnostics": "1.2.0-*",
     "Microsoft.AspNetCore.Server.IISIntegration": "1.2.0-*",
@@ -9,8 +9,8 @@
     "Microsoft.Extensions.Configuration.CommandLine": "1.2.0-*",
     "Microsoft.Extensions.Logging.Console": "1.2.0-*",
     "Microsoft.NETCore.App": {
-        "version": "1.1.0-*",
-        "type": "platform"
+      "version": "1.2.0-*",
+      "type": "platform"
     }
   },
   "tools": {
@@ -22,7 +22,6 @@
   "buildOptions": {
     "warningsAsErrors": true
   },
-
   "runtimeOptions": {
     "configProperties": {
       "System.GC.Server": true

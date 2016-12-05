@@ -1,7 +1,6 @@
-﻿{
+{
   "version": "0.1.0-*",
   "description": "WebSockets support for ASP.NET Core.",
-
   "packOptions": {
     "repository": {
       "type": "git",
@@ -20,16 +19,14 @@
     ],
     "xmlDoc": true
   },
-
   "dependencies": {
     "Microsoft.AspNetCore.Http.Abstractions": "1.2.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.2.0-*",
     "Microsoft.Extensions.WebSockets.Internal": {
       "target": "project"
     },
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
-
   "frameworks": {
     "net451": {},
     "netstandard1.3": {}

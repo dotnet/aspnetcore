@@ -1,7 +1,6 @@
 {
   "version": "0.1.0-*",
   "description": "Low-allocation Push-oriented WebSockets based on Channels",
-
   "packOptions": {
     "repository": {
       "type": "git",
@@ -21,7 +20,6 @@
     "xmlDoc": true,
     "allowUnsafe": true
   },
-
   "dependencies": {
     "System.IO.Pipelines": "0.1.0-*",
     "System.IO.Pipelines.Text.Primitives": "0.1.0-*",
@@ -29,9 +27,8 @@
       "version": "1.2.0-*",
       "type": "build"
     },
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
-
   "frameworks": {
     "netstandard1.3": {},
     "net451": {}

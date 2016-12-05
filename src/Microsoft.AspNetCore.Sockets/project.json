@@ -1,7 +1,6 @@
-﻿{
+{
   "version": "0.1.0-*",
   "description": "Components for providing real-time bi-directional communication across the Web.",
-
   "packOptions": {
     "repository": {
       "type": "git",
@@ -20,7 +19,6 @@
     ],
     "xmlDoc": true
   },
-
   "dependencies": {
     "System.IO.Pipelines": "0.1.0-*",
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.2.0-*",
@@ -30,7 +28,7 @@
       "version": "1.2.0-*",
       "type": "build"
     },
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "netstandard1.3": {},
