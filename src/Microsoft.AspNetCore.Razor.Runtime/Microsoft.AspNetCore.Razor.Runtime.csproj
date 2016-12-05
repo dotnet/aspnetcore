@@ -26,7 +26,7 @@ Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="1.2.0-*" />
-    <PackageReference Include="NETStandard.Library" Version="1.6.1-*" />
+    <PackageReference Include="NETStandard.Library" Version="1.6.2-*" />
 <!--     <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="1.2.0-*" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" Version="1.2.0-*" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="1.2.0-*" PrivateAssets="All" />
@@ -43,7 +43,7 @@ Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0-*" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.4.0-*" />
   </ItemGroup>
 
 </Project>
