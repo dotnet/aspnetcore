@@ -25,13 +25,13 @@
       "target": "project"
     },
     "Microsoft.Extensions.Options": "1.2.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "System.Resources.Reader": "4.3.0-*"
+        "System.Resources.Reader": "4.4.0-*"
       }
     }
   }
