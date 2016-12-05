@@ -21,7 +21,7 @@
     ]
   },
   "dependencies": {
-    "NETStandard.Library": "1.6.1-*",
+    "NETStandard.Library": "1.6.2-*",
     "Newtonsoft.Json": "9.0.1",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "type": "build",
@@ -32,8 +32,8 @@
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "Microsoft.CSharp": "4.3.0-*",
-        "System.Reflection.TypeExtensions": "4.3.0-*"
+        "Microsoft.CSharp": "4.4.0-*",
+        "System.Reflection.TypeExtensions": "4.4.0-*"
       }
     }
   }
