@@ -38,7 +38,7 @@
       "version": "1.2.0-*"
     },
     "Microsoft.NETCore.Windows.ApiSets": "1.0.1",
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "net451": {
@@ -56,8 +56,8 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "System.Diagnostics.Process": "4.3.0-*",
-        "System.Threading.Thread": "4.3.0-*"
+        "System.Diagnostics.Process": "4.4.0-*",
+        "System.Threading.Thread": "4.4.0-*"
       },
       "imports": [
         "portable-net45+win8"

@@ -28,7 +28,7 @@
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.2.0-*",
     "Microsoft.Extensions.FileProviders.Abstractions": "1.2.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.2.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "net451": {},

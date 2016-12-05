@@ -22,7 +22,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.Http.Features": "1.2.0-*",
     "Microsoft.Extensions.Configuration.Abstractions": "1.2.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "net451": {},
