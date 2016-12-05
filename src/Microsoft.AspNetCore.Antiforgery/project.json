@@ -25,7 +25,7 @@
     "Microsoft.AspNetCore.Http.Extensions": "1.2.0-*",
     "Microsoft.AspNetCore.WebUtilities": "1.2.0-*",
     "Microsoft.Extensions.ObjectPool": "1.2.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "netstandard1.3": {},
