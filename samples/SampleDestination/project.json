@@ -1,14 +1,13 @@
 {
   "dependencies": {
     "Microsoft.NETCore.App": {
-      "version": "1.1.0-*",
+      "version": "1.2.0-*",
       "type": "platform"
     },
     "Microsoft.AspNetCore.Server.Kestrel": "1.2.0-*",
     "Microsoft.Extensions.Logging.Console": "1.2.0-*",
     "Microsoft.AspNetCore.Cors": "1.2.0-*"
   },
-
   "frameworks": {
     "netcoreapp1.0": {
       "imports": [
@@ -17,18 +16,15 @@
       ]
     }
   },
-
   "buildOptions": {
     "emitEntryPoint": true,
     "preserveCompilationContext": true
   },
-
   "runtimeOptions": {
     "configProperties": {
       "System.GC.Server": true
     }
   },
-
   "publishOptions": {
     "include": [
       "wwwroot"
