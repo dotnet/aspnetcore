@@ -19,8 +19,8 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "NETStandard.Library": "1.6.1-*",
-    "System.Text.Encodings.Web": "4.3.0-*"
+    "NETStandard.Library": "1.6.2-*",
+    "System.Text.Encodings.Web": "4.4.0-*"
   },
   "frameworks": {
     "netstandard1.0": {}
