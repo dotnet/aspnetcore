@@ -3,14 +3,10 @@
 
 using System;
 using System.IO.Pipelines;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
@@ -88,8 +84,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 _factory = new PipelineFactory();
                 _httpConnection = new HttpConnection(_factory);
 
-                var lifetime = new ApplicationLifetime(new Logger<ApplicationLifetime>(new LoggerFactory()), Enumerable.Empty<IApplicationLifetimeEvents>());
-                var connectionManager = new ConnectionManager(lifetime);
+                var connectionManager = new ConnectionManager();
 
                 Connection = connectionManager.AddNewConnection(_httpConnection).Connection;
                 Connection.Metadata["formatType"] = format;
