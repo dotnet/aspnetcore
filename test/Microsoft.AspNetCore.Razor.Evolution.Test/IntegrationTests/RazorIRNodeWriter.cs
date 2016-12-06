@@ -31,12 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
         public override void VisitCSharpAttributeValue(CSharpAttributeValueIRNode node)
         {
-            WriteContentNode(node, node.Prefix, node.Content.ToString()); // This is broken.
-        }
-
-        public override void VisitCSharpExpression(CSharpExpressionIRNode node)
-        {
-            WriteContentNode(node, node.Content.ToString()); // This is broken
+            WriteContentNode(node, node.Prefix);
         }
 
         public override void VisitCSharpStatement(CSharpStatementIRNode node)
@@ -66,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
         public override void VisitHtmlAttribute(HtmlAttributeIRNode node)
         {
-            WriteContentNode(node, node.Prefix, node.Value.ToString(), node.Suffix);
+            WriteContentNode(node, node.Prefix, node.Suffix);
         }
 
         public override void VisitHtmlAttributeValue(HtmlAttributeValueIRNode node)

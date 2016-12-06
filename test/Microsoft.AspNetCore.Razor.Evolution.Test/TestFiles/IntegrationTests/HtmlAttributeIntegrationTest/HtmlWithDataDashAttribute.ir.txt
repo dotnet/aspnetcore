@@ -1,0 +1,8 @@
+Document - (0:0,0)
+    NamespaceDeclaration - (0:0,0) - 
+        ClassDeclaration - (0:0,0) -  -  -  - 
+            RazorMethodDeclaration - (0:0,0) -  -  -  - 
+                HtmlContent - (0:0,0) - <html>\r\n<body>\r\n    <span data\-val="
+                CSharpExpression - (36:2,20)
+                    CSharpToken - (37:2,21) - Hello
+                HtmlContent - (42:2,26) - " />\r\n</body>\r\n</html>"

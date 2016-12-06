@@ -9,13 +9,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
     public class CSharpExpressionIRNode : RazorIRNode
     {
-        public override IList<RazorIRNode> Children { get; } = EmptyArray;
+        public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 
         public override RazorIRNode Parent { get; set; }
 
         internal override SourceLocation SourceLocation { get; set; }
-
-        public RazorIRNode Content { get; set; }
 
         public override void Accept(RazorIRNodeVisitor visitor)
         {

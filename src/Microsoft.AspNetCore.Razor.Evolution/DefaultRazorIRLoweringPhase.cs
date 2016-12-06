@@ -50,45 +50,44 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             public RazorMethodDeclarationIRNode Method { get; }
 
+            // Example
+            // <input` checked="foo-bar @false"`/>
+            //  Name=checked
+            //  Prefix= checked="
+            //  Suffix="
             public override void VisitStartAttributeBlock(AttributeBlockChunkGenerator chunkGenerator, Block block)
             {
-                var value = new ContainerRazorIRNode();
-                Builder.Add(new HtmlAttributeIRNode()
+                Builder.Push(new HtmlAttributeIRNode()
                 {
                     Name = chunkGenerator.Name,
                     Prefix = chunkGenerator.Prefix,
-                    Value = value,
                     Suffix = chunkGenerator.Suffix,
 
                     SourceLocation = block.Start,
                 });
-
-                var valueBuilder = RazorIRBuilder.Create(value);
-                _builders.Push(valueBuilder);
             }
 
             public override void VisitEndAttributeBlock(AttributeBlockChunkGenerator chunkGenerator, Block block)
             {
-                _builders.Pop();
+                Builder.Pop();
             }
 
+            // Example
+            // <input checked="foo-bar `@false`"/>
+            //  Prefix= (space)
+            //  Children will contain a token for @false.
             public override void VisitStartDynamicAttributeBlock(DynamicAttributeBlockChunkGenerator chunkGenerator, Block block)
             {
-                var content = new ContainerRazorIRNode();
-                Builder.Add(new CSharpAttributeValueIRNode()
+                Builder.Push(new CSharpAttributeValueIRNode()
                 {
                     Prefix = chunkGenerator.Prefix,
-                    Content = content,
                     SourceLocation = block.Start,
                 });
-
-                var valueBuilder = RazorIRBuilder.Create(content);
-                _builders.Push(valueBuilder);
             }
 
             public override void VisitEndDynamicAttributeBlock(DynamicAttributeBlockChunkGenerator chunkGenerator, Block block)
             {
-                _builders.Pop();
+                Builder.Pop();
             }
 
             public override void VisitLiteralAttributeSpan(LiteralAttributeChunkGenerator chunkGenerator, Span span)
@@ -119,20 +118,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // We need to capture this in the IR so that we can give each piece the correct source mappings
             public override void VisitStartExpressionBlock(ExpressionChunkGenerator chunkGenerator, Block block)
             {
-                var value = new ContainerRazorIRNode();
-                Builder.Add(new CSharpExpressionIRNode()
+                Builder.Push(new CSharpExpressionIRNode()
                 {
-                    Content = value,
                     SourceLocation = block.Start,
                 });
-
-                var valueBuilder = RazorIRBuilder.Create(value);
-                _builders.Push(valueBuilder);
             }
 
             public override void VisitEndExpressionBlock(ExpressionChunkGenerator chunkGenerator, Block block)
             {
-                _builders.Pop();
+                Builder.Pop();
             }
 
             public override void VisitExpressionSpan(ExpressionChunkGenerator chunkGenerator, Span span)
@@ -227,47 +221,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             public override void VisitEndDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
             {
                 Builder.Pop();
-            }
-
-            private class ContainerRazorIRNode : RazorIRNode
-            {
-                private SourceLocation? _location;
-
-                public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
-
-                public override RazorIRNode Parent { get; set; }
-
-                internal override SourceLocation SourceLocation
-                {
-                    get
-                    {
-                        if (_location == null)
-                        {
-                            if (Children.Count > 0)
-                            {
-                                return Children[0].SourceLocation;
-                            }
-
-                            return SourceLocation.Undefined;
-                        }
-
-                        return _location.Value;
-                    }
-                    set
-                    {
-                        _location = value;
-                    }
-                }
-
-                public override void Accept(RazorIRNodeVisitor visitor)
-                {
-                    visitor.VisitDefault(this);
-                }
-
-                public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
-                {
-                    return visitor.VisitDefault(this);
-                }
             }
         }
     }

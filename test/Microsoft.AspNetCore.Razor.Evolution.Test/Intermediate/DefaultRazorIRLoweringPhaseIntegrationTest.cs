@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         }
 
         [Fact]
-        public void Lower_WithUsing()
+        public void Lower_WithFunctions()
         {
             // Arrange
             var codeDocument = TestRazorCodeDocument.Create(@"@functions { public int Foo { get; set; }}");
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         }
 
         [Fact]
-        public void Lower_WithFunctions()
+        public void Lower_WithUsing()
         {
             // Arrange
             var codeDocument = TestRazorCodeDocument.Create(@"@using System");

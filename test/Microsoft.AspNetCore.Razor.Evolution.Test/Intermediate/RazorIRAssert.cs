@@ -101,11 +101,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 Assert.Equal(name, attribute.Name);
                 Assert.Equal(suffix, attribute.Suffix);
 
-                Children(attribute.Value, valueValidators);
+                Children(attribute, valueValidators);
             }
             catch (XunitException e)
             {
-                throw new IRAssertException(attribute, attribute.Value.Children, e.Message, e);
+                throw new IRAssertException(attribute, attribute.Children, e.Message, e);
             }
         }
 
@@ -117,11 +117,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             {
                 Assert.Equal(prefix, attributeValue.Prefix);
 
-                Children(attributeValue.Content, n => CSharpExpression(expected, n));
+                Children(attributeValue, n => CSharpExpression(expected, n));
             }
             catch (XunitException e)
             {
-                throw new IRAssertException(attributeValue, attributeValue.Content.Children, e.Message, e);
+                throw new IRAssertException(attributeValue, attributeValue.Children, e.Message, e);
             }
         }
 
@@ -147,9 +147,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 var cSharp = Assert.IsType<CSharpExpressionIRNode>(node);
 
                 var content = new StringBuilder();
-                for (var i = 0; i < cSharp.Content.Children.Count; i++)
+                for (var i = 0; i < cSharp.Children.Count; i++)
                 {
-                    content.Append(((CSharpTokenIRNode)cSharp.Content.Children[i]).Content);
+                    content.Append(((CSharpTokenIRNode)cSharp.Children[i]).Content);
                 }
 
                 Assert.Equal(expected, content.ToString());

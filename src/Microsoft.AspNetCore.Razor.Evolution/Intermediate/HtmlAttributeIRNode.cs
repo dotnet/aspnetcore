@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
     public class HtmlAttributeIRNode : RazorIRNode
     {
-        public override IList<RazorIRNode> Children { get; } = EmptyArray;
+        public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 
         public override RazorIRNode Parent { get; set; }
 
@@ -18,8 +18,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         public string Name { get; set; }
 
         public string Prefix { get; set; }
-
-        public RazorIRNode Value { get; set; }
 
         public string Suffix { get; set; }
 
