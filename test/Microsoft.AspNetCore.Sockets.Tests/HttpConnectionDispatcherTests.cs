@@ -23,8 +23,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task GetIdReservesConnectionIdAndReturnsIt()
         {
-            var lifetime = new ApplicationLifetime(new Logger<ApplicationLifetime>(new LoggerFactory()), Enumerable.Empty<IApplicationLifetimeEvents>());
-            var manager = new ConnectionManager(lifetime);
+            var manager = new ConnectionManager();
             using (var factory = new PipelineFactory())
             {
                 var dispatcher = new HttpConnectionDispatcher(manager, factory, loggerFactory: null);
@@ -45,8 +44,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task SendingToReservedConnectionsThatHaveNotConnectedThrows()
         {
-            var lifetime = new ApplicationLifetime(new Logger<ApplicationLifetime>(new LoggerFactory()), Enumerable.Empty<IApplicationLifetimeEvents>());
-            var manager = new ConnectionManager(lifetime);
+            var manager = new ConnectionManager();
             var state = manager.ReserveConnection();
 
             using (var factory = new PipelineFactory())
@@ -68,8 +66,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task SendingToUnknownConnectionIdThrows()
         {
-            var lifetime = new ApplicationLifetime(new Logger<ApplicationLifetime>(new LoggerFactory()), Enumerable.Empty<IApplicationLifetimeEvents>());
-            var manager = new ConnectionManager(lifetime);
+            var manager = new ConnectionManager();
             using (var factory = new PipelineFactory())
             {
                 var dispatcher = new HttpConnectionDispatcher(manager, factory, loggerFactory: null);
@@ -89,8 +86,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task SendingWithoutConnectionIdThrows()
         {
-            var lifetime = new ApplicationLifetime(new Logger<ApplicationLifetime>(new LoggerFactory()), Enumerable.Empty<IApplicationLifetimeEvents>());
-            var manager = new ConnectionManager(lifetime);
+            var manager = new ConnectionManager();
             using (var factory = new PipelineFactory())
             {
                 var dispatcher = new HttpConnectionDispatcher(manager, factory, loggerFactory: null);

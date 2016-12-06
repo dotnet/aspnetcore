@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -14,6 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.AddRouting();
             services.TryAddSingleton<ConnectionManager>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IApplicationLifetimeEvents, SocketsApplicationLifetimeEvents>());
             services.TryAddSingleton<PipelineFactory>();
             services.TryAddSingleton<HttpConnectionDispatcher>();
             return services;
