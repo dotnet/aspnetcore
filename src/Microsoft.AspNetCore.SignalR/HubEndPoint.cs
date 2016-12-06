@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.SignalR
 
             foreach (var methodInfo in type.GetTypeInfo().DeclaredMethods.Where(m => IsHubMethod(m)))
             {
-                var methodName = type.FullName + "." + methodInfo.Name;
+                var methodName = methodInfo.Name;
 
                 if (_callbacks.ContainsKey(methodName))
                 {
