@@ -276,6 +276,30 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
         [Theory]
         [MemberData(nameof(RedirectTestData))]
+        public void RedirectToAction_WithParameterActionAndControllerAndRouteValuesAndFragment_SetsResultProperties(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expectedRouteValues)
+        {
+            // Arrange
+            var controller = new TestableController();
+            var expectedAction = "Action";
+            var expectedController = "Home";
+            var expectedFragment = "test";
+
+            // Act
+            var result = controller.RedirectToAction("Action", "Home", routeValues, "test");
+
+            // Assert
+            Assert.IsType<RedirectToActionResult>(result);
+            Assert.False(result.Permanent);
+            Assert.Equal(expectedAction, result.ActionName);
+            Assert.Equal(expectedRouteValues, result.RouteValues);
+            Assert.Equal(expectedController, result.ControllerName);
+            Assert.Equal(expectedFragment, result.Fragment);
+        }
+
+        [Theory]
+        [MemberData(nameof(RedirectTestData))]
         public void RedirectToActionPermanent_WithParameterActionAndRouteValues_SetsResultProperties(
             object routeValues,
             IEnumerable<KeyValuePair<string, object>> expected)
@@ -291,6 +315,30 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.True(resultPermanent.Permanent);
             Assert.Null(resultPermanent.ActionName);
             Assert.Equal(expected, resultPermanent.RouteValues);
+        }
+
+        [Theory]
+        [MemberData(nameof(RedirectTestData))]
+        public void RedirectToActionPermanent_WithParameterActionAndControllerAndRouteValuesAndFragment_SetsResultProperties(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expectedRouteValues)
+        {
+            // Arrange
+            var controller = new TestableController();
+            var expectedAction = "Action";
+            var expectedController = "Home";
+            var expectedFragment = "test";
+
+            // Act
+            var result = controller.RedirectToActionPermanent("Action", "Home", routeValues, "test");
+
+            // Assert
+            Assert.IsType<RedirectToActionResult>(result);
+            Assert.True(result.Permanent);
+            Assert.Equal(expectedAction, result.ActionName);
+            Assert.Equal(expectedRouteValues, result.RouteValues);
+            Assert.Equal(expectedController, result.ControllerName);
+            Assert.Equal(expectedFragment, result.Fragment);
         }
 
         [Theory]
@@ -313,6 +361,28 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
         [Theory]
         [MemberData(nameof(RedirectTestData))]
+        public void RedirectToRoute_WithParameterRouteNameAndRouteValuesAndFragment_SetsResultProperties(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expectedRouteValues)
+        {
+            // Arrange
+            var controller = new TestableController();
+            var expectedRoute = "TestRoute";
+            var expectedFragment = "test";
+
+            // Act
+            var result = controller.RedirectToRoute("TestRoute", routeValues, "test");
+
+            // Assert
+            Assert.IsType<RedirectToRouteResult>(result);
+            Assert.False(result.Permanent);
+            Assert.Equal(expectedRoute, result.RouteName);
+            Assert.Equal(expectedRouteValues, result.RouteValues);
+            Assert.Equal(expectedFragment, result.Fragment);
+        }
+
+        [Theory]
+        [MemberData(nameof(RedirectTestData))]
         public void RedirectToRoutePermanent_WithParameterRouteValues_SetsResultEqualRouteValuesAndPermanent(
             object routeValues,
             IEnumerable<KeyValuePair<string, object>> expected)
@@ -327,6 +397,28 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.IsType<RedirectToRouteResult>(resultPermanent);
             Assert.True(resultPermanent.Permanent);
             Assert.Equal(expected, resultPermanent.RouteValues);
+        }
+
+        [Theory]
+        [MemberData(nameof(RedirectTestData))]
+        public void RedirectToRoutePermanent_WithParameterRouteNameAndRouteValuesAndFragment_SetsResultProperties(
+            object routeValues,
+            IEnumerable<KeyValuePair<string, object>> expectedRouteValues)
+        {
+            // Arrange
+            var controller = new TestableController();
+            var expectedRoute = "TestRoute";
+            var expectedFragment = "test";
+
+            // Act
+            var result = controller.RedirectToRoutePermanent("TestRoute", routeValues, "test");
+
+            // Assert
+            Assert.IsType<RedirectToRouteResult>(result);
+            Assert.True(result.Permanent);
+            Assert.Equal(expectedRoute, result.RouteName);
+            Assert.Equal(expectedRouteValues, result.RouteValues);
+            Assert.Equal(expectedFragment, result.Fragment);
         }
 
         [Fact]

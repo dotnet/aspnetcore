@@ -83,6 +83,34 @@ namespace Microsoft.AspNetCore.Mvc
                 "No route matches the supplied values.");
         }
 
+        [Fact]
+        public async Task RedirectToAction_Execute_WithFragment_PassesCorrectValuesToRedirect()
+        {
+            // Arrange
+            var expectedUrl = "/Home/SampleAction#test";
+            var expectedStatusCode = StatusCodes.Status302Found;
+
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = CreateServices().BuildServiceProvider(),
+            };
+
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            var urlHelper = GetMockUrlHelper(expectedUrl);
+            var result = new RedirectToActionResult("SampleAction", "Home", null, false, "test")
+            {
+                UrlHelper = urlHelper,
+            };
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            Assert.Equal(expectedStatusCode, httpContext.Response.StatusCode);
+            Assert.Equal(expectedUrl, httpContext.Response.Headers["Location"]);
+        }
+
         private static IUrlHelper GetMockUrlHelper(string returnValue)
         {
             var urlHelper = new Mock<IUrlHelper>();

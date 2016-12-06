@@ -33,7 +33,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             var urlHelper = result.UrlHelper ?? _urlHelperFactory.GetUrlHelper(context);
 
-            var destinationUrl = urlHelper.Action(result.ActionName, result.ControllerName, result.RouteValues);
+            var destinationUrl = urlHelper.Action(
+                result.ActionName,
+                result.ControllerName,
+                result.RouteValues,
+                protocol: null,
+                host: null,
+                fragment: result.Fragment);
             if (string.IsNullOrEmpty(destinationUrl))
             {
                 throw new InvalidOperationException(Resources.NoRoutesMatched);

@@ -9,8 +9,20 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc
 {
+    /// <summary>
+    /// An <see cref="ActionResult"/> that returns a Found (302)
+    /// or Moved Permanently (301) response with a Location header.
+    /// Targets a controller action.
+    /// </summary>
     public class RedirectToActionResult : ActionResult, IKeepTempDataResult
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RedirectToActionResult"/> with the values
+        /// provided.
+        /// </summary>
+        /// <param name="actionName">The name of the action to use for generating the URL.</param>
+        /// <param name="controllerName">The name of the controller to use for generating the URL.</param>
+        /// <param name="routeValues">The route data to use for generating the URL.</param>
         public RedirectToActionResult(
             string actionName,
             string controllerName,
@@ -19,16 +31,61 @@ namespace Microsoft.AspNetCore.Mvc
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RedirectToActionResult"/> with the values
+        /// provided.
+        /// </summary>
+        /// <param name="actionName">The name of the action to use for generating the URL.</param>
+        /// <param name="controllerName">The name of the controller to use for generating the URL.</param>
+        /// <param name="routeValues">The route data to use for generating the URL.</param>
+        /// <param name="fragment">The fragment to add to the URL.</param>
+        public RedirectToActionResult(
+            string actionName,
+            string controllerName,
+            object routeValues,
+            string fragment)
+            : this(actionName, controllerName, routeValues, permanent: false, fragment: fragment)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RedirectToActionResult"/> with the values
+        /// provided.
+        /// </summary>
+        /// <param name="actionName">The name of the action to use for generating the URL.</param>
+        /// <param name="controllerName">The name of the controller to use for generating the URL.</param>
+        /// <param name="routeValues">The route data to use for generating the URL.</param>
+        /// <param name="permanent">If set to true, makes the redirect permanent (301). Otherwise a temporary redirect is used (302).</param>
         public RedirectToActionResult(
             string actionName,
             string controllerName,
             object routeValues,
             bool permanent)
+            : this(actionName, controllerName, routeValues, permanent, fragment: null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RedirectToActionResult"/> with the values
+        /// provided.
+        /// </summary>
+        /// <param name="actionName">The name of the action to use for generating the URL.</param>
+        /// <param name="controllerName">The name of the controller to use for generating the URL.</param>
+        /// <param name="routeValues">The route data to use for generating the URL.</param>
+        /// <param name="permanent">If set to true, makes the redirect permanent (301). Otherwise a temporary redirect is used (302).</param>
+        /// <param name="fragment">The fragment to add to the URL.</param>
+        public RedirectToActionResult(
+            string actionName,
+            string controllerName,
+            object routeValues,
+            bool permanent,
+            string fragment)
         {
             ActionName = actionName;
             ControllerName = controllerName;
             RouteValues = routeValues == null ? null : new RouteValueDictionary(routeValues);
             Permanent = permanent;
+            Fragment = fragment;
         }
 
         /// <summary>
@@ -51,7 +108,15 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public RouteValueDictionary RouteValues { get; set; }
 
+        /// <summary>
+        /// Gets or sets an indication that the redirect is permanent.
+        /// </summary>
         public bool Permanent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the fragment to add to the URL.
+        /// </summary>
+        public string Fragment { get; set; }
 
         /// <inheritdoc />
         public override void ExecuteResult(ActionContext context)
