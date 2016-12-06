@@ -1,0 +1,7 @@
+Document - (0:0,0)
+    NamespaceDeclaration - (0:0,0) - 
+        ClassDeclaration - (0:0,0) -  -  -  - 
+            RazorMethodDeclaration - (0:0,0) -  -  -  - 
+                HtmlContent - (0:0,0) - 
+                Directive - (0:0,0) - test_directive
+                HtmlContent - (15:0,15) - 

@@ -5,10 +5,58 @@ using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Evolution
+namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 {
-    public class IntegrationTest
+    public class BasicIntegrationTest : IntegrationTestBase
     {
+        [Fact]
+        public void Empty()
+        {
+            // Arrange
+            var engine = RazorEngine.Create();
+
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+        }
+
+        [Fact]
+        public void HelloWorld()
+        {
+            // Arrange
+            var engine = RazorEngine.Create();
+
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+        }
+
+        [Fact]
+        public void CustomDirective()
+        {
+            // Arrange
+            var engine = RazorEngine.Create(b =>
+            {
+                b.AddDirective(DirectiveDescriptorBuilder.Create("test_directive").Build());
+            });
+
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+        }
+
         [Fact]
         public void BuildEngine_CallProcess()
         {

@@ -6,11 +6,11 @@ using System.IO;
 using System.Reflection;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
+namespace Microsoft.AspNetCore.Razor.Evolution
 {
     public class TestFile
     {
-        public TestFile(string resourceName, Assembly assembly)
+        private TestFile(string resourceName, Assembly assembly)
         {
             Assembly = assembly;
             ResourceName = Assembly.GetName().Name + "." + resourceName.Replace('/', '.');
@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public string ResourceName { get; }
 
-        public static TestFile Create(string localResourceName)
+        public static TestFile Create(string resourceName)
         {
-            return new TestFile(localResourceName, typeof(TestFile).GetTypeInfo().Assembly);
+            return new TestFile(resourceName, typeof(TestFile).GetTypeInfo().Assembly);
         }
 
         public Stream OpenRead()
@@ -49,17 +49,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
 
             return false;
-        }
-
-        public byte[] ReadAllBytes()
-        {
-            using (var stream = OpenRead())
-            {
-                var buffer = new byte[stream.Length];
-                stream.Read(buffer, 0, buffer.Length);
-
-                return buffer;
-            }
         }
 
         public string ReadAllText()
