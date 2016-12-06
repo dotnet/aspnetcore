@@ -67,6 +67,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private static readonly Action<ILogger, string, string, Exception> _redirectToRouteResultExecuting;
 
+        private static readonly Action<ILogger, string[], Exception> _noActionsMatched;
+
         static MvcCoreLoggerExtensions()
         {
             _actionExecuting = LoggerMessage.Define<string>(
@@ -223,6 +225,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 LogLevel.Information,
                 1,
                 "Executing RedirectToRouteResult, redirecting to {Destination} from route {RouteName}.");
+
+            _noActionsMatched = LoggerMessage.Define<string[]>(
+                LogLevel.Debug,
+                3,
+                "No actions matched the current request. Route values: {RouteValues}");
         }
 
         public static IDisposable ActionScope(this ILogger logger, ActionDescriptor action)
@@ -250,9 +257,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        public static void NoActionsMatched(this ILogger logger)
+        public static void NoActionsMatched(this ILogger logger, IDictionary<string, object> routeValueDictionary)
         {
-            logger.LogDebug(3, "No actions matched the current request");
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                string[] routeValues = null;
+                if (routeValueDictionary != null)
+                {
+                    routeValues = routeValueDictionary
+                        .Select(pair => pair.Key + "=" + Convert.ToString(pair.Value))
+                        .ToArray();
+                }
+                _noActionsMatched(logger, routeValues, null);
+            }
         }
 
         public static void ChallengeResultExecuting(this ILogger logger, IList<string> schemes)

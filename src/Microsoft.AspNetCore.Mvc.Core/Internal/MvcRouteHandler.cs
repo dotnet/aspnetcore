@@ -66,14 +66,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var candidates = _actionSelector.SelectCandidates(context);
             if (candidates == null || candidates.Count == 0)
             {
-                _logger.NoActionsMatched();
+                _logger.NoActionsMatched(context.RouteData.Values);
                 return TaskCache.CompletedTask;
             }
 
             var actionDescriptor = _actionSelector.SelectBestCandidate(context, candidates);
             if (actionDescriptor == null)
             {
-                _logger.NoActionsMatched();
+                _logger.NoActionsMatched(context.RouteData.Values);
                 return TaskCache.CompletedTask;
             }
 

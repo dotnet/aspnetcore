@@ -30,12 +30,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 .Returns(new ActionDescriptor[0]);
 
             var context = CreateRouteContext();
+            context.RouteData.Values.Add("controller", "Home");
+            context.RouteData.Values.Add("action", "Index");
 
             var handler = CreateMvcRouteHandler(
                 actionSelector: mockActionSelector.Object,
                 loggerFactory: loggerFactory);
 
-            var expectedMessage = "No actions matched the current request";
+            var expectedMessage = "No actions matched the current request. Route values: controller=Home, action=Index";
 
             // Act
             await handler.RouteAsync(context);

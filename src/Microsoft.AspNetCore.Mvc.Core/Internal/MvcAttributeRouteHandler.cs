@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionDescriptor = _actionSelector.SelectBestCandidate(context, Actions);
             if (actionDescriptor == null)
             {
-                _logger.NoActionsMatched();
+                _logger.NoActionsMatched(context.RouteData.Values);
                 return TaskCache.CompletedTask;
             }
 
