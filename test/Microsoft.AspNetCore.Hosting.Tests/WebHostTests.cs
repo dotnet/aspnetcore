@@ -426,7 +426,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
-        public void WebHostNotifiesAllIApplicationLifetimeEventsCallbacksAndIHostedServicesEvenIfTheyThrow()
+        public void WebHostNotifiesAllIHostedServicesAndIApplicationLifetimeCallbacksEvenIfTheyThrow()
         {
             bool[] events1 = null;
             bool[] events2 = null;
