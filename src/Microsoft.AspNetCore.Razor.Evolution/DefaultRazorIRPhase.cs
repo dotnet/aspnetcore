@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    internal class DefaultRazorIRPhase : RazorEnginePhaseBase
+    internal class DefaultRazorIRPhase : RazorEnginePhaseBase, IRazorIRPhase
     {
         public IRazorIRPass[] Passes { get; private set; }
 
