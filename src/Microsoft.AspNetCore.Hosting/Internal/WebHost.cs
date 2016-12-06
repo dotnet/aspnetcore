@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private readonly IServiceCollection _applicationServiceCollection;
         private IStartup _startup;
         private ApplicationLifetime _applicationLifetime;
+        private HostedServiceExecutor _hostedServiceExecutor;
 
         private readonly IServiceProvider _hostingServiceProvider;
         private readonly WebHostOptions _options;
@@ -68,6 +69,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             _applicationServiceCollection = appServices;
             _hostingServiceProvider = hostingServiceProvider;
             _applicationServiceCollection.AddSingleton<IApplicationLifetime, ApplicationLifetime>();
+            _applicationServiceCollection.AddSingleton<HostedServiceExecutor>();
         }
 
         public IServiceProvider Services
@@ -104,11 +106,17 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             Initialize();
 
             _applicationLifetime = _applicationServices.GetRequiredService<IApplicationLifetime>() as ApplicationLifetime;
+            _hostedServiceExecutor = _applicationServices.GetRequiredService<HostedServiceExecutor>();
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticSource>();
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
             Server.Start(new HostingApplication(_application, _logger, diagnosticSource, httpContextFactory));
 
+            // Fire IApplicationLifetime.Started
             _applicationLifetime?.NotifyStarted();
+
+            // Fire IHostedService.Start
+            _hostedServiceExecutor.Start();
+
             _logger.Started();
         }
 
@@ -243,9 +251,17 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public void Dispose()
         {
             _logger?.Shutdown();
+
+            // Fire IApplicationLifetime.Stopping
             _applicationLifetime?.StopApplication();
+
+            // Fire the IHostedService.Stop
+            _hostedServiceExecutor?.Stop();
+
             (_hostingServiceProvider as IDisposable)?.Dispose();
             (_applicationServices as IDisposable)?.Dispose();
+
+            // Fire IApplicationLifetime.Stopped
             _applicationLifetime?.NotifyStopped();
 
             HostingEventSource.Log.HostStop();

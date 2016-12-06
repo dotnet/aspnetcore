@@ -17,13 +17,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private readonly CancellationTokenSource _startedSource = new CancellationTokenSource();
         private readonly CancellationTokenSource _stoppingSource = new CancellationTokenSource();
         private readonly CancellationTokenSource _stoppedSource = new CancellationTokenSource();
-        private readonly IEnumerable<IApplicationLifetimeEvents> _handlers = Enumerable.Empty<IApplicationLifetimeEvents>();
         private readonly ILogger<ApplicationLifetime> _logger;
 
-        public ApplicationLifetime(ILogger<ApplicationLifetime> logger, IEnumerable<IApplicationLifetimeEvents> handlers)
+        public ApplicationLifetime(ILogger<ApplicationLifetime> logger)
         {
             _logger = logger;
-            _handlers = handlers;
         }
 
         /// <summary>
@@ -57,7 +55,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 try
                 {
-                    ExecuteHandlers(_stoppingSource, handler => handler.OnApplicationStopping());
+                    ExecuteHandlers(_stoppingSource);
                 }
                 catch (Exception ex)
                 {
@@ -75,7 +73,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             try
             {
-                ExecuteHandlers(_startedSource, handler => handler.OnApplicationStarted());
+                ExecuteHandlers(_startedSource);
             }
             catch (Exception ex)
             {
@@ -92,7 +90,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             try
             {
-                ExecuteHandlers(_stoppedSource, handler => handler.OnApplicationStopped());
+                ExecuteHandlers(_stoppedSource);
             }
             catch (Exception ex)
             {
@@ -102,7 +100,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
         }
 
-        private void ExecuteHandlers(CancellationTokenSource cancel, Action<IApplicationLifetimeEvents> callback)
+        private void ExecuteHandlers(CancellationTokenSource cancel)
         {
             // Noop if this is already cancelled
             if (cancel.IsCancellationRequested)
@@ -125,24 +123,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 }
 
                 exceptions.Add(ex);
-            }
-
-            // Run the handlers
-            foreach (var handler in _handlers)
-            {
-                try
-                {
-                    callback(handler);
-                }
-                catch (Exception ex)
-                {
-                    if (exceptions == null)
-                    {
-                        exceptions = new List<Exception>();
-                    }
-
-                    exceptions.Add(ex);
-                }
             }
 
             // Throw an aggregate exception if there were any exceptions
