@@ -1,13 +1,12 @@
-FROM microsoft/dotnet:latest
+FROM microsoft/dotnet:1.1.0-sdk-projectjson
+
+COPY . /app
 
 WORKDIR /app
 
-COPY project.json .
 RUN ["dotnet", "restore"]
-
-COPY . /app
 RUN ["dotnet", "build"]
 
 EXPOSE 5000/tcp
 
-ENTRYPOINT ["dotnet", "run", "--server.urls", "http://0.0.0.0:5000"]
+CMD ["dotnet", "run", "--server.urls", "http://*:5000"]

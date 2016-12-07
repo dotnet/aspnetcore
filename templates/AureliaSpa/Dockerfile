@@ -1,17 +1,16 @@
-FROM microsoft/dotnet:1.0.0-preview2-onbuild
+FROM microsoft/dotnet:1.1.0-sdk-projectjson
 
 RUN apt-get update
 RUN wget -qO- https://deb.nodesource.com/setup_4.x | bash -
 RUN apt-get install -y build-essential nodejs
 
+COPY . /app
+
 WORKDIR /app
 
-COPY project.json .
 RUN ["dotnet", "restore"]
-
-COPY . /app
 RUN ["dotnet", "build"]
 
 EXPOSE 5000/tcp
 
-ENTRYPOINT ["dotnet", "run", "--server.urls", "http://0.0.0.0:5000"]
+CMD ["dotnet", "run", "--server.urls", "http://*:5000"]
