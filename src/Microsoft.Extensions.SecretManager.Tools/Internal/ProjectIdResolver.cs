@@ -81,14 +81,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
             return id;
         }
 
-        public void Dispose()
-        {
-            foreach (var file in _tempFiles)
-            {
-                TryDelete(file);
-            }
-        }
-
         private string GetTargetFile()
         {
             var assemblyDir = Path.GetDirectoryName(GetType().GetTypeInfo().Assembly.Location);
@@ -98,33 +90,23 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
             {
                 AppContext.BaseDirectory,
                 assemblyDir, // next to assembly
-                Path.Combine(assemblyDir, "../../tools"), // inside the nupkg
+                Path.Combine(assemblyDir, "../../toolassets"), // inside the nupkg
+                Path.Combine(assemblyDir, "toolassets"), // for local builds
+                Path.Combine(AppContext.BaseDirectory, "../../toolassets"), // relative to packaged deps.json
             };
 
-            var foundFile = searchPaths
+            return searchPaths
                 .Select(dir => Path.Combine(dir, TargetsFileName))
                 .Where(File.Exists)
-                .FirstOrDefault();
+                .First();
+        }
 
-            if (foundFile != null)
+        public void Dispose()
+        {
+            foreach (var file in _tempFiles)
             {
-                return foundFile;
+                TryDelete(file);
             }
-
-            // This should only really happen during testing. Current build system doesn't give us a good way to ensure the
-            // test project has an always-up to date version of the targets file.
-            // TODO cleanup after we switch to an MSBuild system in which can specify "CopyToOutputDirectory: Always" to resolve this issue
-            var outputPath = Path.GetTempFileName();
-            using (var resource = GetType().GetTypeInfo().Assembly.GetManifestResourceStream(TargetsFileName))
-            using (var stream = new FileStream(outputPath, FileMode.Create))
-            {
-                resource.CopyTo(stream);
-            }
-
-            // cleanup
-            _tempFiles.Add(outputPath);
-
-            return outputPath;
         }
 
         private static void TryDelete(string file)

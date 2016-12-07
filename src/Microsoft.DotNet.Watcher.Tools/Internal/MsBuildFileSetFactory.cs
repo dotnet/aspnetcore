@@ -164,8 +164,9 @@ namespace Microsoft.DotNet.Watcher.Internal
             {
                 AppContext.BaseDirectory,
                 assemblyDir,
-                Path.Combine(assemblyDir, "../../tools"), // from nuget cache
-                Path.Combine(assemblyDir, "tools") // from local build
+                Path.Combine(assemblyDir, "../../toolassets"), // from nuget cache
+                Path.Combine(assemblyDir, "toolassets"), // from local build
+                Path.Combine(AppContext.BaseDirectory, "../../toolassets"), // relative to packaged deps.json
             };
 
             var targetPath = searchPaths.Select(p => Path.Combine(p, WatchTargetsFileName)).First(File.Exists);

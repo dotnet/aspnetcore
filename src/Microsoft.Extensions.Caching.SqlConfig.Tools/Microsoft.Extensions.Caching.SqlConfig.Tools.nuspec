@@ -20,6 +20,7 @@
     </dependencies>
   </metadata>
   <files>
+    <file src="prefercliruntime" target="\prefercliruntime" />
     <file src="dotnet-sql-cache.dll" target="lib\netcoreapp1.0\" />
     <file src="dotnet-sql-cache.deps.json" target="lib\netcoreapp1.0\" />
     <file src="dotnet-sql-cache.runtimeconfig.json" target="lib\netcoreapp1.0\" />

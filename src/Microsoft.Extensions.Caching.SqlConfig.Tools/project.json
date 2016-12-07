@@ -6,23 +6,13 @@
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "compile": "../Shared/**/*.cs"
-
   },
-  "description": "Command line tool to create tables and indexes in a Microsoft SQL Server database for distributed caching.",
-  "packOptions": {
-    "repository": {
-      "type": "git",
-      "url": "https://github.com/aspnet/DotNetTools"
-    },
-    "tags": [
-      "cache",
-      "distributedcache",
-      "sqlserver"
-    ]
+  "publishOptions": {
+    "include": "prefercliruntime"
   },
   "dependencies": {
     "Microsoft.NETCore.App": {
-      "version": "1.0.1",
+      "version": "1.0.0",
       "type": "platform"
     },
     "System.Data.SqlClient": "4.1.0"

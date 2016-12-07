@@ -19,12 +19,13 @@
     </dependencies>
   </metadata>
   <files>
+    <file src="prefercliruntime" target="\prefercliruntime" />
     <file src="dotnet-watch.dll" target="lib\netcoreapp1.0\" />
     <file src="dotnet-watch.deps.json" target="lib\netcoreapp1.0\" />
     <file src="dotnet-watch.runtimeconfig.json" target="lib\netcoreapp1.0\" />
-    <file src="tools\DotNetWatchCommon.targets" target="tools\" />
-    <file src="tools\DotNetWatchInner.targets" target="tools\" />
-    <file src="tools\DotNetWatchOuter.targets" target="tools\" />
-    <file src="tools\*.targets" target="tools\" />
+    <file src="toolassets\DotNetWatchCommon.targets" target="toolassets\" />
+    <file src="toolassets\DotNetWatchInner.targets" target="toolassets\" />
+    <file src="toolassets\DotNetWatchOuter.targets" target="toolassets\" />
+    <file src="toolassets\*.targets" target="toolassets\" />
   </files>
 </package>

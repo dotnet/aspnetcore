@@ -20,5 +20,8 @@
         }
       }
     }
+  },
+  "scripts": {
+    "precompile": "copyfiles %compile:OutputDir%"
   }
 }

@@ -5,42 +5,21 @@
     "emitEntryPoint": true,
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "copyToOutput": "*.targets",
-    "embed": {
-      "mappings": {
-        "FindUserSecretsProperty.targets": "./FindUserSecretsProperty.targets"
-      }
-    },
+    "copyToOutput": "toolassets/*.targets",
     "compile": {
       "include": "../Shared/**/*.cs"
     }
   },
-  "description": "Command line tool to manage user secrets for Microsoft.Extensions.Configuration.",
-  "packOptions": {
-    "repository": {
-      "type": "git",
-      "url": "https://github.com/aspnet/DotNetTools"
-    },
-    "tags": [
-      "configuration",
-      "secrets",
-      "usersecrets"
-    ],
-    "files": {
-      "mappings": {
-        "tools/FindUserSecretsProperty.targets": "FindUserSecretsProperty.targets"
-      }
-    }
-  },
   "publishOptions": {
     "include": [
-      "*.targets"
+      "toolassets/*.targets",
+      "prefercliruntime"
     ]
   },
   "dependencies": {
     "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0",
     "Microsoft.NETCore.App": {
-      "version": "1.0.1",
+      "version": "1.0.0",
       "type": "platform"
     }
   },

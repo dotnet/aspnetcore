@@ -1,22 +1,12 @@
 {
   "version": "1.0.0-*",
-  "description": "Command line tool to watch for source file changes during development and restart the dotnet command.",
-  "packOptions": {
-    "tags": [
-      "dotnet",
-      "watch"
-    ],
-    "files": {
-      "include": "tools/*.targets"
-    }
-  },
   "buildOptions": {
     "outputName": "dotnet-watch",
     "warningsAsErrors": true,
     "emitEntryPoint": true,
     "debugType": "portable",
     "keyFile": "../../tools/Key.snk",
-    "copyToOutput": "tools/*.targets",
+    "copyToOutput": "toolassets/*.targets",
     "embed": {
       "mappings": {
         "dotnetwatch.targets": "dotnetwatch.targets"
@@ -28,7 +18,8 @@
   },
   "publishOptions": {
     "include": [
-      "tools/*.targets"
+      "toolassets/*.targets",
+      "prefercliruntime"
     ]
   },
   "dependencies": {
@@ -38,7 +29,7 @@
     },
     "Microsoft.NETCore.App": {
       "type": "platform",
-      "version": "1.0.1"
+      "version": "1.0.0"
     }
   },
   "frameworks": {

@@ -6,4 +6,4 @@ if not "%1" == "" (
 )
 
 mkdir %1\toolassets
-copy ..\..\src\Microsoft.DotNet.Watcher.Tools\toolassets\*.targets %1\toolassets
+copy ..\..\src\Microsoft.Extensions.SecretManager.Tools\toolassets\*.targets %1\toolassets
