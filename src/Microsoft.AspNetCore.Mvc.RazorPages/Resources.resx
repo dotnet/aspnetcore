@@ -129,4 +129,7 @@
   <data name="ActivatedInstance_MustBeAnInstanceOf" xml:space="preserve">
     <value>Page created by '{0}' must be an instance of '{1}'.</value>
   </data>
+  <data name="PageViewResult_ContextIsInvalid" xml:space="preserve">
+    <value>Argument '{0}' is not the same instance used to create '{1}'.</value>
+  </data>
 </root>

@@ -74,6 +74,22 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             return string.Format(CultureInfo.CurrentCulture, GetString("ActivatedInstance_MustBeAnInstanceOf"), p0, p1);
         }
 
+        /// <summary>
+        /// Argument '{0}' is not the same instance used to create '{1}'.
+        /// </summary>
+        internal static string PageViewResult_ContextIsInvalid
+        {
+            get { return GetString("PageViewResult_ContextIsInvalid"); }
+        }
+
+        /// <summary>
+        /// Argument '{0}' is not the same instance used to create '{1}'.
+        /// </summary>
+        internal static string FormatPageViewResult_ContextIsInvalid(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("PageViewResult_ContextIsInvalid"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

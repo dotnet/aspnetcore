@@ -12,11 +12,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             CompiledPageActionDescriptor actionDescriptor,
             Func<PageContext, object> pageFactory,
             Action<PageContext, object> releasePage,
+            Func<PageContext, object> modelFactory,
+            Action<PageContext, object> releaseModel,
             FilterItem[] cacheableFilters)
         {
             ActionDescriptor = actionDescriptor;
             PageFactory = pageFactory;
             ReleasePage = releasePage;
+            ModelFactory = modelFactory;
+            ReleaseModel = releaseModel;
             CacheableFilters = cacheableFilters;
         }
 
@@ -28,6 +32,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         /// The action invoked to release a page. This may be <c>null</c>.
         /// </summary>
         public Action<PageContext, object> ReleasePage { get; }
+
+        public Func<PageContext, object> ModelFactory { get; }
+
+        /// <summary>
+        /// The action invoked to release a model. This may be <c>null</c>.
+        /// </summary>
+        public Action<PageContext, object> ReleaseModel { get; }
 
         public FilterItem[] CacheableFilters { get; }
     }

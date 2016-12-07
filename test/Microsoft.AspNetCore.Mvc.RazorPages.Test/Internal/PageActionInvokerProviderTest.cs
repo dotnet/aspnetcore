@@ -2,12 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
@@ -36,15 +42,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             factoryProvider.Setup(f => f.CreatePageDisposer(It.IsAny<CompiledPageActionDescriptor>()))
                 .Returns(releaser);
 
-            var invokerProvider = new PageActionInvokerProvider(
+            var invokerProvider = CreateInvokerProvider(
                 loader.Object,
-                factoryProvider.Object,
                 actionDescriptorProvider.Object,
-                new IFilterProvider[0]);
-            var context = new ActionInvokerProviderContext(new ActionContext
-            {
-                ActionDescriptor = descriptor,
-            });
+                factoryProvider.Object);
+            var context = new ActionInvokerProviderContext(
+                new ActionContext(new DefaultHttpContext(), new RouteData(), descriptor));
 
             // Act
             invokerProvider.OnProvidersExecuting(context);
@@ -75,15 +78,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var actionDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
             actionDescriptorProvider.Setup(p => p.ActionDescriptors).Returns(descriptorCollection);
 
-            var invokerProvider = new PageActionInvokerProvider(
+            var invokerProvider = CreateInvokerProvider(
                 loader.Object,
-                Mock.Of<IPageFactoryProvider>(),
                 actionDescriptorProvider.Object,
-                new IFilterProvider[0]);
-            var context = new ActionInvokerProviderContext(new ActionContext
-            {
-                ActionDescriptor = descriptor,
-            });
+                Mock.Of<IPageFactoryProvider>());
+            var context = new ActionInvokerProviderContext(
+                new ActionContext(new DefaultHttpContext(), new RouteData(), descriptor));
 
             // Act - 1
             invokerProvider.OnProvidersExecuting(context);
@@ -122,15 +122,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var loader = new Mock<IPageLoader>();
             loader.Setup(l => l.Load(It.IsAny<PageActionDescriptor>()))
                 .Returns(typeof(object));
-            var invokerProvider = new PageActionInvokerProvider(
-                loader.Object,
-                Mock.Of<IPageFactoryProvider>(),
-                actionDescriptorProvider.Object,
-                new IFilterProvider[0]);
-            var context = new ActionInvokerProviderContext(new ActionContext
-            {
-                ActionDescriptor = descriptor,
-            });
+            var invokerProvider = CreateInvokerProvider(
+                 loader.Object,
+                 actionDescriptorProvider.Object,
+                 Mock.Of<IPageFactoryProvider>());
+            var context = new ActionInvokerProviderContext(
+                new ActionContext(new DefaultHttpContext(), new RouteData(), descriptor));
 
             // Act - 1
             invokerProvider.OnProvidersExecuting(context);
@@ -148,6 +145,29 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             actionInvoker = Assert.IsType<PageActionInvoker>(context.Result);
             var entry2 = actionInvoker.CacheEntry;
             Assert.NotSame(entry1, entry2);
+        }
+
+        private static PageActionInvokerProvider CreateInvokerProvider(
+            IPageLoader loader,
+            IActionDescriptorCollectionProvider actionDescriptorProvider,
+            IPageFactoryProvider factoryProvider)
+        {
+            var tempDataFactory = new Mock<ITempDataDictionaryFactory>();
+            tempDataFactory.Setup(t => t.GetTempData(It.IsAny<HttpContext>()))
+                .Returns((HttpContext context) => new TempDataDictionary(context, Mock.Of<ITempDataProvider>()));
+
+            return new PageActionInvokerProvider(
+                loader,
+                factoryProvider,
+                actionDescriptorProvider,
+                new IFilterProvider[0],
+                new IValueProviderFactory[0],
+                new EmptyModelMetadataProvider(),
+                tempDataFactory.Object,
+                new TestOptionsManager<HtmlHelperOptions>(),
+                Mock.Of<IPageHandlerMethodSelector>(),
+                new DiagnosticListener("Microsoft.AspNetCore"),
+                NullLoggerFactory.Instance);
         }
     }
 }
