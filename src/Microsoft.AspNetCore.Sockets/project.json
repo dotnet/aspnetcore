@@ -21,6 +21,11 @@
   },
   "dependencies": {
     "System.IO.Pipelines": "0.1.0-*",
+    "System.Threading.Tasks.Channels": "0.1.0-*",
+
+    "System.Security.Claims": "4.4.0-*",
+    "System.Reflection.TypeExtensions": "4.4.0-*",
+
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.2.0-*",
     "Microsoft.AspNetCore.Routing": "1.2.0-*",
     "Microsoft.AspNetCore.WebSockets.Internal": "0.1.0-*",
@@ -31,7 +36,6 @@
     "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
-    "netstandard1.3": {},
-    "net451": {}
+    "netstandard1.3": {}
   }
 }

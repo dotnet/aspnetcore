@@ -6,16 +6,20 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Threading;
+using System.Threading.Tasks.Channels;
+using Microsoft.AspNetCore.Sockets.Internal;
 
 namespace Microsoft.AspNetCore.Sockets
 {
     public class ConnectionManager
     {
-        private ConcurrentDictionary<string, ConnectionState> _connections = new ConcurrentDictionary<string, ConnectionState>();
-        private Timer _timer;
+        private readonly ConcurrentDictionary<string, ConnectionState> _connections = new ConcurrentDictionary<string, ConnectionState>();
+        private readonly Timer _timer;
+        private readonly PipelineFactory _pipelineFactory;
 
-        public ConnectionManager()
+        public ConnectionManager(PipelineFactory pipelineFactory)
         {
+            _pipelineFactory = pipelineFactory;
             _timer = new Timer(Scan, this, 0, 1000);
         }
 
@@ -24,39 +28,8 @@ namespace Microsoft.AspNetCore.Sockets
             return _connections.TryGetValue(id, out state);
         }
 
-        public ConnectionState ReserveConnection()
-        {
-            string id = MakeNewConnectionId();
-
-            // REVIEW: Should we create state for this?
-            var state = _connections.GetOrAdd(id, connectionId => new ConnectionState());
-
-            // Mark it as a reservation
-            state.Connection = new Connection
-            {
-                ConnectionId = id
-            };
-            return state;
-        }
-
-        public ConnectionState AddNewConnection(IPipelineConnection connection)
-        {
-            string id = MakeNewConnectionId();
-
-            var state = new ConnectionState
-            {
-                Connection = new Connection
-                {
-                    Channel = connection,
-                    ConnectionId = id
-                },
-                LastSeen = DateTimeOffset.UtcNow,
-                Active = true
-            };
-
-            _connections.TryAdd(id, state);
-            return state;
-        }
+        public ConnectionState CreateConnection(ConnectionMode mode) =>
+            mode == ConnectionMode.Streaming ? CreateStreamingConnection() : CreateMessagingConnection();
 
         public void RemoveConnection(string id)
         {
@@ -82,7 +55,7 @@ namespace Microsoft.AspNetCore.Sockets
             // Scan the registered connections looking for ones that have timed out
             foreach (var c in _connections)
             {
-                if (!c.Value.Active && (DateTimeOffset.UtcNow - c.Value.LastSeen).TotalSeconds > 5)
+                if (!c.Value.Active && (DateTimeOffset.UtcNow - c.Value.LastSeenUtc).TotalSeconds > 5)
                 {
                     ConnectionState s;
                     if (_connections.TryRemove(c.Key, out s))
@@ -114,10 +87,46 @@ namespace Microsoft.AspNetCore.Sockets
                     }
                     else
                     {
-                        s.Connection.Channel.Dispose();
+                        s.Dispose();
                     }
                 }
             }
+        }
+
+        private ConnectionState CreateMessagingConnection()
+        {
+            var id = MakeNewConnectionId();
+
+            var transportToApplication = Channel.Create<Message>();
+            var applicationToTransport = Channel.Create<Message>();
+
+            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
+            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+
+            var state = new MessagingConnectionState(
+                new MessagingConnection(id, applicationSide),
+                transportSide);
+
+            _connections.TryAdd(id, state);
+            return state;
+        }
+
+        private ConnectionState CreateStreamingConnection()
+        {
+            var id = MakeNewConnectionId();
+
+            var transportToApplication = _pipelineFactory.Create();
+            var applicationToTransport = _pipelineFactory.Create();
+
+            var transportSide = new PipelineConnection(applicationToTransport, transportToApplication);
+            var applicationSide = new PipelineConnection(transportToApplication, applicationToTransport);
+
+            var state = new StreamingConnectionState(
+                new StreamingConnection(id, applicationSide),
+                transportSide);
+
+            _connections.TryAdd(id, state);
+            return state;
         }
     }
 }

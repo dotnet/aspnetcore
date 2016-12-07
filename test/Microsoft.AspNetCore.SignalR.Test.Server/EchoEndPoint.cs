@@ -8,11 +8,11 @@ using Microsoft.AspNetCore.Sockets;
 
 namespace Microsoft.AspNetCore.SignalR.Test.Server
 {
-    public class EchoEndPoint : EndPoint
+    public class EchoEndPoint : StreamingEndPoint
     {
-        public async override Task OnConnectedAsync(Connection connection)
+        public async override Task OnConnectedAsync(StreamingConnection connection)
         {
-            await connection.Channel.Input.CopyToAsync(connection.Channel.Output);
+            await connection.Transport.Input.CopyToAsync(connection.Transport.Output);
         }
     }
 }

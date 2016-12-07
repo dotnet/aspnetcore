@@ -16,7 +16,7 @@
         }
       }
     },
-    "net451": {}
+    "net46": {}
   },
   "testRunner": "xunit"
 }

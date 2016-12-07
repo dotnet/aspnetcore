@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 {
     public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposable
     {
-        private readonly ConnectionList _connections = new ConnectionList();
+        private readonly ConnectionList<StreamingConnection> _connections = new ConnectionList<StreamingConnection>();
         // TODO: Investigate "memory leak" entries never get removed
         private readonly ConcurrentDictionary<string, GroupData> _groups = new ConcurrentDictionary<string, GroupData>();
         private readonly InvocationAdapterRegistry _registry;
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
                 foreach (var connection in _connections)
                 {
-                    tasks.Add(connection.Channel.Output.WriteAsync((byte[])data));
+                    tasks.Add(connection.Transport.Output.WriteAsync((byte[])data));
                 }
 
                 previousBroadcastTask = Task.WhenAll(tasks);
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             }
         }
 
-        public override Task OnConnectedAsync(Connection connection)
+        public override Task OnConnectedAsync(StreamingConnection connection)
         {
             var redisSubscriptions = connection.Metadata.GetOrAdd("redis_subscriptions", _ => new HashSet<string>());
             var connectionTask = TaskCache.CompletedTask;
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             {
                 await previousConnectionTask;
 
-                previousConnectionTask = connection.Channel.Output.WriteAsync((byte[])data);
+                previousConnectionTask = connection.Transport.Output.WriteAsync((byte[])data);
             });
 
 
@@ -149,14 +149,14 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 {
                     await previousUserTask;
 
-                    previousUserTask = connection.Channel.Output.WriteAsync((byte[])data);
+                    previousUserTask = connection.Transport.Output.WriteAsync((byte[])data);
                 });
             }
 
             return Task.WhenAll(connectionTask, userTask);
         }
 
-        public override Task OnDisconnectedAsync(Connection connection)
+        public override Task OnDisconnectedAsync(StreamingConnection connection)
         {
             _connections.Remove(connection);
 
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return Task.WhenAll(tasks);
         }
 
-        public override async Task AddGroupAsync(Connection connection, string groupName)
+        public override async Task AddGroupAsync(StreamingConnection connection, string groupName)
         {
             var groupChannel = typeof(THub).FullName + ".group." + groupName;
 
@@ -220,9 +220,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                     await previousTask;
 
                     var tasks = new List<Task>(group.Connections.Count);
-                    foreach (var groupConnection in group.Connections)
+                    foreach (var groupConnection in group.Connections.Cast<StreamingConnection>())
                     {
-                        tasks.Add(groupConnection.Channel.Output.WriteAsync((byte[])data));
+                        tasks.Add(groupConnection.Transport.Output.WriteAsync((byte[])data));
                     }
 
                     previousTask = Task.WhenAll(tasks);
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             }
         }
 
-        public override async Task RemoveGroupAsync(Connection connection, string groupName)
+        public override async Task RemoveGroupAsync(StreamingConnection connection, string groupName)
         {
             var groupChannel = typeof(THub).FullName + ".group." + groupName;
 
@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
         private class GroupData
         {
             public SemaphoreSlim Lock = new SemaphoreSlim(1, 1);
-            public ConnectionList Connections = new ConnectionList();
+            public ConnectionList<StreamingConnection> Connections = new ConnectionList<StreamingConnection>();
         }
     }
 }

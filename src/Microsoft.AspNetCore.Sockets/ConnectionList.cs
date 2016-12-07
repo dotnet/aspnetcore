@@ -8,15 +8,15 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public class ConnectionList : IReadOnlyCollection<Connection>
+    public class ConnectionList<T> : IReadOnlyCollection<T> where T: Connection
     {
-        private readonly ConcurrentDictionary<string, Connection> _connections = new ConcurrentDictionary<string, Connection>();
+        private readonly ConcurrentDictionary<string, T> _connections = new ConcurrentDictionary<string, T>();
 
-        public Connection this[string connectionId]
+        public T this[string connectionId]
         {
             get
             {
-                Connection connection;
+                T connection;
                 if (_connections.TryGetValue(connectionId, out connection))
                 {
                     return connection;
@@ -27,18 +27,18 @@ namespace Microsoft.AspNetCore.Sockets
 
         public int Count => _connections.Count;
 
-        public void Add(Connection connection)
+        public void Add(T connection)
         {
             _connections.TryAdd(connection.ConnectionId, connection);
         }
 
-        public void Remove(Connection connection)
+        public void Remove(T connection)
         {
-            Connection dummy;
+            T dummy;
             _connections.TryRemove(connection.ConnectionId, out dummy);
         }
 
-        public IEnumerator<Connection> GetEnumerator()
+        public IEnumerator<T> GetEnumerator()
         {
             foreach (var item in _connections)
             {

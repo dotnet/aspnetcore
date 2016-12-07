@@ -28,7 +28,6 @@
     "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
-    "net451": {},
     "netstandard1.3": {}
   }
 }

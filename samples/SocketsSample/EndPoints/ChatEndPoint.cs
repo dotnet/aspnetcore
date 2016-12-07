@@ -1,19 +1,21 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets;
 
 namespace SocketsSample
 {
-    public class ChatEndPoint : EndPoint
+    public class ChatEndPoint : StreamingEndPoint
     {
-        public ConnectionList Connections { get; } = new ConnectionList();
+        public ConnectionList<StreamingConnection> Connections { get; } = new ConnectionList<StreamingConnection>();
 
-        public override async Task OnConnectedAsync(Connection connection)
+        public override async Task OnConnectedAsync(StreamingConnection connection)
         {
             Connections.Add(connection);
 
@@ -21,7 +23,7 @@ namespace SocketsSample
 
             while (true)
             {
-                var result = await connection.Channel.Input.ReadAsync();
+                var result = await connection.Transport.Input.ReadAsync();
                 var input = result.Buffer;
                 try
                 {
@@ -35,7 +37,7 @@ namespace SocketsSample
                 }
                 finally
                 {
-                    connection.Channel.Input.Advance(input.End);
+                    connection.Transport.Input.Advance(input.End);
                 }
             }
 
@@ -55,7 +57,7 @@ namespace SocketsSample
 
             foreach (var c in Connections)
             {
-                tasks.Add(c.Channel.Output.WriteAsync(payload));
+                tasks.Add(c.Transport.Output.WriteAsync(payload));
             }
 
             return Task.WhenAll(tasks);

@@ -54,8 +54,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
             });
 
             // Start sending and polling
-            _sender = SendMessages(Utils.AppendPath(url, "send"), _senderCts.Token);
             _poller = Poll(Utils.AppendPath(url, "poll"), _pollCts.Token);
+            _sender = SendMessages(Utils.AppendPath(url, "send"), _senderCts.Token);
             Running = Task.WhenAll(_sender, _poller);
 
             return TaskCache.CompletedTask;

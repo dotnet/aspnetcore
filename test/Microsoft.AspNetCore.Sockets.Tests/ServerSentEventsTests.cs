@@ -8,7 +8,10 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Sockets.Transports;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Sockets.Tests
@@ -18,47 +21,38 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task SSESetsContentType()
         {
-            using (var factory = new PipelineFactory())
-            {
-                var connection = new Connection();
-                connection.ConnectionId = Guid.NewGuid().ToString();
-                var httpConnection = new HttpConnection(factory);
-                connection.Channel = httpConnection;
-                var sse = new ServerSentEvents(connection);
-                var context = new DefaultHttpContext();
+            var channel = Channel.Create<Message>();
+            var context = new DefaultHttpContext();
+            var sse = new ServerSentEventsTransport(channel, new LoggerFactory());
 
-                httpConnection.Output.CompleteWriter();
+            Assert.True(channel.TryComplete());
 
-                await sse.ProcessRequestAsync(context);
+            await sse.ProcessRequestAsync(context);
 
-                Assert.Equal("text/event-stream", context.Response.ContentType);
-                Assert.Equal("no-cache", context.Response.Headers["Cache-Control"]);
-            }
+            Assert.Equal("text/event-stream", context.Response.ContentType);
+            Assert.Equal("no-cache", context.Response.Headers["Cache-Control"]);
         }
 
         [Fact]
         public async Task SSEAddsAppropriateFraming()
         {
-            using (var factory = new PipelineFactory())
-            {
-                var connection = new Connection();
-                connection.ConnectionId = Guid.NewGuid().ToString();
-                var httpConnection = new HttpConnection(factory);
-                connection.Channel = httpConnection;
-                var sse = new ServerSentEvents(connection);
-                var context = new DefaultHttpContext();
-                var ms = new MemoryStream();
-                context.Response.Body = ms;
+            var channel = Channel.Create<Message>();
+            var context = new DefaultHttpContext();
+            var sse = new ServerSentEventsTransport(channel, new LoggerFactory());
+            var ms = new MemoryStream();
+            context.Response.Body = ms;
 
-                await httpConnection.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
+            await channel.WriteAsync(new Message(
+                ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello World")).Preserve(),
+                Format.Text,
+                endOfMessage: true));
 
-                httpConnection.Output.CompleteWriter();
+            Assert.True(channel.TryComplete());
 
-                await sse.ProcessRequestAsync(context);
+            await sse.ProcessRequestAsync(context);
 
-                var expected = "data: Hello World\n\n";
-                Assert.Equal(expected, Encoding.UTF8.GetString(ms.ToArray()));
-            }
+            var expected = "data: Hello World\n\n";
+            Assert.Equal(expected, Encoding.UTF8.GetString(ms.ToArray()));
         }
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SocketsSample.EndPoints;
 using SocketsSample.Hubs;
 using SocketsSample.Protobuf;
 
@@ -29,6 +30,7 @@ namespace SocketsSample
             // .AddRedis();
 
             services.AddSingleton<ChatEndPoint>();
+            services.AddSingleton<MessagesEndPoint>();
             services.AddSingleton<ProtobufSerializer>();
         }
 
@@ -52,6 +54,7 @@ namespace SocketsSample
             app.UseSockets(routes =>
             {
                 routes.MapEndpoint<ChatEndPoint>("/chat");
+                routes.MapEndpoint<MessagesEndPoint>("/msgs");
             });
         }
     }

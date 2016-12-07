@@ -1,18 +1,20 @@
-﻿{
+{
   "buildOptions": {
     "warningsAsErrors": true
   },
 
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.AspNetCore.Http": "1.2.0-*",
-    "Microsoft.AspNetCore.Sockets": "0.1.0-*",
+    "Microsoft.AspNetCore.Diagnostics": "1.2.0-*",
     "Microsoft.AspNetCore.Hosting": "1.2.0-*",
+    "Microsoft.AspNetCore.Http": "1.2.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.2.0-*",
     "Microsoft.AspNetCore.SignalR": "1.0.0-*",
     "Microsoft.AspNetCore.SignalR.Client": "1.0.0-*",
-    "xunit": "2.2.0-*",
-    "Microsoft.AspNetCore.TestHost": "1.2.0-*"
+    "Microsoft.AspNetCore.Sockets": "0.1.0-*",
+    "Microsoft.AspNetCore.TestHost": "1.2.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.2.0-*",
+    "xunit": "2.2.0-*"
   },
   "frameworks": {
     "netcoreapp1.1": {
@@ -23,7 +25,7 @@
         }
       }
     },
-    "net451": {}
+    "net46": {}
   },
   "testRunner": "xunit"
 }

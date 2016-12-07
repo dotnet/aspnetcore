@@ -1,10 +1,6 @@
 {
   "dependencies": {
     "Microsoft.AspNetCore.SignalR.Redis": "1.0.0-*",
-    "Microsoft.NETCore.App": {
-      "version": "1.2.0-*",
-      "type": "platform"
-    },
     "Newtonsoft.Json": "9.0.1",
     "Microsoft.AspNetCore.Diagnostics": "1.2.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.2.0-*",
@@ -18,8 +14,15 @@
   },
   "frameworks": {
     "netcoreapp1.1": {
-      "imports": "portable-net45+win8+wp8+wpa81"
-    }
+      "imports": "portable-net45+win8+wp8+wpa81",
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.2.0-*",
+          "type": "platform"
+        }
+      }
+    },
+    "net46": {}
   },
   "buildOptions": {
     "emitEntryPoint": true,

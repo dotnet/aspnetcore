@@ -3,6 +3,7 @@
 
 using System.IO.Pipelines;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Sockets.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Sockets.Tests
@@ -10,49 +11,56 @@ namespace Microsoft.AspNetCore.Sockets.Tests
     public class ConnectionManagerTests
     {
         [Fact]
-        public void ReservedConnectionsHaveConnectionId()
+        public void NewConnectionsHaveConnectionId()
         {
-            var connectionManager = new ConnectionManager();
-            var state = connectionManager.ReserveConnection();
+            using (var factory = new PipelineFactory())
+            {
+                var connectionManager = new ConnectionManager(factory);
+                var state = connectionManager.CreateConnection(ConnectionMode.Streaming);
 
-            Assert.NotNull(state.Connection);
-            Assert.NotNull(state.Connection.ConnectionId);
-            Assert.True(state.Active);
-            Assert.Null(state.Close);
-            Assert.Null(state.Connection.Channel);
+                Assert.NotNull(state.Connection);
+                Assert.NotNull(state.Connection.ConnectionId);
+                Assert.True(state.Active);
+                Assert.Null(state.Close);
+                Assert.NotNull(((StreamingConnectionState)state).Connection.Transport);
+            }
         }
 
         [Fact]
-        public void ReservedConnectionsCanBeRetrieved()
+        public void NewConnectionsCanBeRetrieved()
         {
-            var connectionManager = new ConnectionManager();
-            var state = connectionManager.ReserveConnection();
+            using (var factory = new PipelineFactory())
+            {
+                var connectionManager = new ConnectionManager(factory);
+                var state = connectionManager.CreateConnection(ConnectionMode.Streaming);
 
-            Assert.NotNull(state.Connection);
-            Assert.NotNull(state.Connection.ConnectionId);
+                Assert.NotNull(state.Connection);
+                Assert.NotNull(state.Connection.ConnectionId);
 
-            ConnectionState newState;
-            Assert.True(connectionManager.TryGetConnection(state.Connection.ConnectionId, out newState));
-            Assert.Same(newState, state);
+                ConnectionState newState;
+                Assert.True(connectionManager.TryGetConnection(state.Connection.ConnectionId, out newState));
+                Assert.Same(newState, state);
+            }
         }
 
         [Fact]
         public void AddNewConnection()
         {
             using (var factory = new PipelineFactory())
-            using (var connection = new HttpConnection(factory))
             {
-                var connectionManager = new ConnectionManager();
-                var state = connectionManager.AddNewConnection(connection);
+                var connectionManager = new ConnectionManager(factory);
+                var state = connectionManager.CreateConnection(ConnectionMode.Streaming);
+
+                var transport = ((StreamingConnectionState)state).Connection.Transport;
 
                 Assert.NotNull(state.Connection);
                 Assert.NotNull(state.Connection.ConnectionId);
-                Assert.NotNull(state.Connection.Channel);
+                Assert.NotNull(transport);
 
                 ConnectionState newState;
                 Assert.True(connectionManager.TryGetConnection(state.Connection.ConnectionId, out newState));
                 Assert.Same(newState, state);
-                Assert.Same(connection, newState.Connection.Channel);
+                Assert.Same(transport, ((StreamingConnectionState)newState).Connection.Transport);
             }
         }
 
@@ -60,19 +68,20 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public void RemoveConnection()
         {
             using (var factory = new PipelineFactory())
-            using (var connection = new HttpConnection(factory))
             {
-                var connectionManager = new ConnectionManager();
-                var state = connectionManager.AddNewConnection(connection);
+                var connectionManager = new ConnectionManager(factory);
+                var state = connectionManager.CreateConnection(ConnectionMode.Streaming);
+
+                var transport = ((StreamingConnectionState)state).Connection.Transport;
 
                 Assert.NotNull(state.Connection);
                 Assert.NotNull(state.Connection.ConnectionId);
-                Assert.NotNull(state.Connection.Channel);
+                Assert.NotNull(transport);
 
                 ConnectionState newState;
                 Assert.True(connectionManager.TryGetConnection(state.Connection.ConnectionId, out newState));
                 Assert.Same(newState, state);
-                Assert.Same(connection, newState.Connection.Channel);
+                Assert.Same(transport, ((StreamingConnectionState)newState).Connection.Transport);
 
                 connectionManager.RemoveConnection(state.Connection.ConnectionId);
                 Assert.False(connectionManager.TryGetConnection(state.Connection.ConnectionId, out newState));
@@ -83,14 +92,13 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public async Task CloseConnectionsEndsAllPendingConnections()
         {
             using (var factory = new PipelineFactory())
-            using (var connection = new HttpConnection(factory))
             {
-                var connectionManager = new ConnectionManager();
-                var state = connectionManager.AddNewConnection(connection);
+                var connectionManager = new ConnectionManager(factory);
+                var state = (StreamingConnectionState)connectionManager.CreateConnection(ConnectionMode.Streaming);
 
                 var task = Task.Run(async () =>
                 {
-                    var result = await connection.Input.ReadAsync();
+                    var result = await state.Connection.Transport.Input.ReadAsync();
 
                     Assert.True(result.IsCompleted);
                 });

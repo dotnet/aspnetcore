@@ -32,7 +32,7 @@
     "Newtonsoft.Json": "9.0.1"
   },
   "frameworks": {
-    "netstandard1.3": {},
-    "net451": {}
+    "netstandard1.3": {
+    }
   }
 }

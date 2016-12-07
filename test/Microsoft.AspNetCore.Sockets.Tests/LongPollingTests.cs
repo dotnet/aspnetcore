@@ -8,7 +8,10 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Sockets.Transports;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Sockets.Tests
@@ -18,45 +21,37 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task Set204StatusCodeWhenChannelComplete()
         {
-            using (var factory = new PipelineFactory())
-            {
-                var connection = new Connection();
-                connection.ConnectionId = Guid.NewGuid().ToString();
-                var channel = new HttpConnection(factory);
-                connection.Channel = channel;
-                var context = new DefaultHttpContext();
-                var poll = new LongPolling(connection);
+            var channel = Channel.Create<Message>();
+            var context = new DefaultHttpContext();
+            var poll = new LongPollingTransport(channel, new LoggerFactory());
 
-                channel.Output.CompleteWriter();
+            Assert.True(channel.TryComplete());
 
-                await poll.ProcessRequestAsync(context);
+            await poll.ProcessRequestAsync(context);
 
-                Assert.Equal(204, context.Response.StatusCode);
-            }
+            Assert.Equal(204, context.Response.StatusCode);
         }
 
         [Fact]
-        public async Task NoFramingAddedWhenDataSent()
+        public async Task FrameSentAsSingleResponse()
         {
-            using (var factory = new PipelineFactory())
-            {
-                var connection = new Connection();
-                connection.ConnectionId = Guid.NewGuid().ToString();
-                var channel = new HttpConnection(factory);
-                connection.Channel = channel;
-                var context = new DefaultHttpContext();
-                var ms = new MemoryStream();
-                context.Response.Body = ms;
-                var poll = new LongPolling(connection);
+            var channel = Channel.Create<Message>();
+            var context = new DefaultHttpContext();
+            var poll = new LongPollingTransport(channel, new LoggerFactory());
+            var ms = new MemoryStream();
+            context.Response.Body = ms;
 
-                await channel.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
+            await channel.WriteAsync(new Message(
+                ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello World")).Preserve(),
+                Format.Text,
+                endOfMessage: true));
 
-                channel.Output.CompleteWriter();
+            Assert.True(channel.TryComplete());
 
-                await poll.ProcessRequestAsync(context);
+            await poll.ProcessRequestAsync(context);
 
-                Assert.Equal("Hello World", Encoding.UTF8.GetString(ms.ToArray()));
-            }
+            Assert.Equal(200, context.Response.StatusCode);
+            Assert.Equal("Hello World", Encoding.UTF8.GetString(ms.ToArray()));
         }
     }
 }

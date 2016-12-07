@@ -18,7 +18,7 @@ namespace ChatSample.Hubs
         {
             if (!Context.User.Identity.IsAuthenticated)
             {
-                Context.Connection.Channel.Dispose();
+                Context.Connection.Transport.Dispose();
             }
 
             return Task.CompletedTask;

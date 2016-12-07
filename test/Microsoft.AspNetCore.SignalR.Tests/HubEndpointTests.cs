@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets;
+using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
@@ -26,10 +27,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var endPointTask = endPoint.OnConnectedAsync(connectionWrapper.Connection);
 
-                await connectionWrapper.HttpConnection.Input.ReadingStarted;
+                await connectionWrapper.ApplicationStartedReading;
 
                 // kill the connection
-                connectionWrapper.Connection.Channel.Dispose();
+                connectionWrapper.ConnectionState.Dispose();
 
                 await endPointTask;
 
@@ -55,13 +56,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var endPointTask = endPoint.OnConnectedAsync(connectionWrapper.Connection);
 
-                await connectionWrapper.HttpConnection.Input.ReadingStarted;
+                await connectionWrapper.ApplicationStartedReading;
 
-                var buffer = connectionWrapper.HttpConnection.Input.Alloc();
+                var buffer = connectionWrapper.ConnectionState.Application.Output.Alloc();
                 buffer.Write(Encoding.UTF8.GetBytes("0xdeadbeef"));
                 await buffer.FlushAsync();
 
-                connectionWrapper.Connection.Channel.Dispose();
+                connectionWrapper.Dispose();
 
                 // InvalidCastException because the payload is not a JObject
                 // which is expected by the formatter
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var mockLifetimeManager = new Mock<HubLifetimeManager<Hub>>();
             mockLifetimeManager
-                .Setup(m => m.OnConnectedAsync(It.IsAny<Connection>()))
+                .Setup(m => m.OnConnectedAsync(It.IsAny<StreamingConnection>()))
                 .Throws(new InvalidOperationException("Lifetime manager OnConnectedAsync failed."));
             var mockHubActivator = new Mock<IHubActivator<Hub, IClientProxy>>();
 
@@ -95,10 +96,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         async () => await endPoint.OnConnectedAsync(connectionWrapper.Connection));
                 Assert.Equal("Lifetime manager OnConnectedAsync failed.", exception.Message);
 
-                connectionWrapper.Connection.Channel.Dispose();
+                connectionWrapper.ConnectionState.Dispose();
 
-                mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<Connection>()), Times.Once);
-                mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<Connection>()), Times.Once);
+                mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<StreamingConnection>()), Times.Once);
+                mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<StreamingConnection>()), Times.Once);
                 // No hubs should be created since the connection is terminated
                 mockHubActivator.Verify(m => m.Create(), Times.Never);
                 mockHubActivator.Verify(m => m.Release(It.IsAny<Hub>()), Times.Never);
@@ -119,13 +120,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var connectionWrapper = new ConnectionWrapper())
             {
                 var endPointTask = endPoint.OnConnectedAsync(connectionWrapper.Connection);
-                connectionWrapper.Connection.Channel.Dispose();
+                connectionWrapper.ConnectionState.Dispose();
 
                 var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await endPointTask);
                 Assert.Equal("Hub OnConnected failed.", exception.Message);
 
-                mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<Connection>()), Times.Once);
-                mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<Connection>()), Times.Once);
+                mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<StreamingConnection>()), Times.Once);
+                mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<StreamingConnection>()), Times.Once);
             }
         }
 
@@ -143,13 +144,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var connectionWrapper = new ConnectionWrapper())
             {
                 var endPointTask = endPoint.OnConnectedAsync(connectionWrapper.Connection);
-                connectionWrapper.Connection.Channel.Dispose();
+                connectionWrapper.ConnectionState.Dispose();
 
                 var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await endPointTask);
                 Assert.Equal("Hub OnDisconnected failed.", exception.Message);
 
-                mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<Connection>()), Times.Once);
-                mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<Connection>()), Times.Once);
+                mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<StreamingConnection>()), Times.Once);
+                mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<StreamingConnection>()), Times.Once);
             }
         }
 
@@ -222,27 +223,28 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private class ConnectionWrapper : IDisposable
         {
             private PipelineFactory _factory;
-            private HttpConnection _httpConnection;
 
-            public Connection Connection;
-            public HttpConnection HttpConnection => (HttpConnection)Connection.Channel;
+            public StreamingConnectionState ConnectionState;
+
+            public StreamingConnection Connection => ConnectionState.Connection;
+
+            // Still kinda gross...
+            public Task ApplicationStartedReading => ((PipelineReaderWriter)Connection.Transport.Input).ReadingStarted;
 
             public ConnectionWrapper(string format = "json")
             {
                 _factory = new PipelineFactory();
-                _httpConnection = new HttpConnection(_factory);
 
-                var connectionManager = new ConnectionManager();
+                var connectionManager = new ConnectionManager(_factory);
 
-                Connection = connectionManager.AddNewConnection(_httpConnection).Connection;
-                Connection.Metadata["formatType"] = format;
-                Connection.User = new ClaimsPrincipal(new ClaimsIdentity());
+                ConnectionState = (StreamingConnectionState)connectionManager.CreateConnection(ConnectionMode.Streaming);
+                ConnectionState.Connection.Metadata["formatType"] = format;
+                ConnectionState.Connection.User = new ClaimsPrincipal(new ClaimsIdentity());
             }
 
             public void Dispose()
             {
-                Connection.Channel.Dispose();
-                _httpConnection.Dispose();
+                ConnectionState.Dispose();
                 _factory.Dispose();
             }
         }

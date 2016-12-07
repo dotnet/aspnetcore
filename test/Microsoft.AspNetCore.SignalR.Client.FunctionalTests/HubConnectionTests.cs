@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
     public class HubConnectionTests : IDisposable
     {
         private readonly TestServer _testServer;
+        private static readonly bool _verbose = string.Equals(Environment.GetEnvironmentVariable("SIGNALR_TEST_VERBOSE"), "1");
 
         public HubConnectionTests()
         {
@@ -24,6 +25,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 ConfigureServices(services =>
                 {
                     services.AddSignalR();
+                })
+                .ConfigureLogging(loggerFactory =>
+                {
+                    if (_verbose)
+                    {
+                        loggerFactory.AddConsole();
+                    }
                 })
                 .Configure(app =>
                 {
@@ -38,7 +46,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Fact]
         public async Task CheckFixedMessage()
         {
-            var loggerFactory = new LoggerFactory();
+            var loggerFactory = CreateLogger();
 
             using (var httpClient = _testServer.CreateClient())
             using (var pipelineFactory = new PipelineFactory())
@@ -48,6 +56,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     //TODO: Get rid of this. This is to prevent "No channel" failures due to sends occuring before the first poll.
                     await Task.Delay(500);
+                    EnsureConnectionEstablished(connection);
+
                     var result = await connection.Invoke<string>("HelloWorld");
 
                     Assert.Equal("Hello World!", result);
@@ -58,7 +68,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Fact]
         public async Task CanSendAndReceiveMessage()
         {
-            var loggerFactory = new LoggerFactory();
+            var loggerFactory = CreateLogger();
             const string originalMessage = "SignalR";
 
             using (var httpClient = _testServer.CreateClient())
@@ -69,6 +79,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     //TODO: Get rid of this. This is to prevent "No channel" failures due to sends occuring before the first poll.
                     await Task.Delay(500);
+                    EnsureConnectionEstablished(connection);
+
                     var result = await connection.Invoke<string>("Echo", originalMessage);
 
                     Assert.Equal(originalMessage, result);
@@ -79,7 +91,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Fact]
         public async Task CanInvokeClientMethodFromServer()
         {
-            var loggerFactory = new LoggerFactory();
+            var loggerFactory = CreateLogger();
             const string originalMessage = "SignalR";
 
             using (var httpClient = _testServer.CreateClient())
@@ -96,6 +108,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     //TODO: Get rid of this. This is to prevent "No channel" failures due to sends occuring before the first poll.
                     await Task.Delay(500);
+                    EnsureConnectionEstablished(connection);
+
                     await connection.Invoke<Task>("CallEcho", originalMessage);
                     var completed = await Task.WhenAny(Task.Delay(2000), tcs.Task);
                     Assert.True(completed == tcs.Task, "Receive timed out!");
@@ -107,7 +121,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Fact]
         public async Task ServerClosesConnectionIfHubMethodCannotBeResolved()
         {
-            var loggerFactory = new LoggerFactory();
+            var loggerFactory = CreateLogger();
 
             using (var httpClient = _testServer.CreateClient())
             using (var pipelineFactory = new PipelineFactory())
@@ -118,6 +132,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     //TODO: Get rid of this. This is to prevent "No channel" failures due to sends occuring before the first poll.
                     await Task.Delay(500);
 
+                    EnsureConnectionEstablished(connection);
+
                     var ex = await Assert.ThrowsAnyAsync<InvalidOperationException>(
                         async () => await connection.Invoke<Task>("!@#$%"));
 
@@ -126,9 +142,25 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
+        private static void EnsureConnectionEstablished(HubConnection connection)
+        {
+            if (connection.Completion.IsCompleted)
+            {
+                connection.Completion.GetAwaiter().GetResult();
+            }
+        }
+
         public void Dispose()
         {
             _testServer.Dispose();
+        }
+
+        private static LoggerFactory CreateLogger()
+        {
+            var loggerFactory = new LoggerFactory();
+            loggerFactory.AddConsole(_verbose ? LogLevel.Trace : LogLevel.Error);
+
+            return loggerFactory;
         }
 
         public class TestHub : Hub

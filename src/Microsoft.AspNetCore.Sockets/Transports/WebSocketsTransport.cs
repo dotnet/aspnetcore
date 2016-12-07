@@ -3,26 +3,28 @@
 
 using System;
 using System.Diagnostics;
-using System.IO.Pipelines;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebSockets.Internal;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.WebSockets.Internal;
 
-namespace Microsoft.AspNetCore.Sockets
+namespace Microsoft.AspNetCore.Sockets.Transports
 {
-    public class WebSockets : IHttpTransport
+    public class WebSocketsTransport : IHttpTransport
     {
         private static readonly TimeSpan _closeTimeout = TimeSpan.FromSeconds(5);
         private static readonly WebSocketAcceptContext EmptyContext = new WebSocketAcceptContext();
 
-        private readonly HttpConnection _channel;
-        private readonly WebSocketOpcode _opcode;
-        private readonly ILogger _logger;
+        private WebSocketOpcode _lastOpcode = WebSocketOpcode.Continuation;
+        private bool _lastFrameIncomplete = false;
 
-        public WebSockets(Connection connection, Format format, ILoggerFactory loggerFactory)
+        private readonly ILogger _logger;
+        private readonly IChannelConnection<Message> _connection;
+
+        public WebSocketsTransport(IChannelConnection<Message> connection, ILoggerFactory loggerFactory)
         {
             if (connection == null)
             {
@@ -33,9 +35,8 @@ namespace Microsoft.AspNetCore.Sockets
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _channel = (HttpConnection)connection.Channel;
-            _opcode = format == Format.Binary ? WebSocketOpcode.Binary : WebSocketOpcode.Text;
-            _logger = loggerFactory.CreateLogger<WebSockets>();
+            _connection = connection;
+            _logger = loggerFactory.CreateLogger<WebSocketsTransport>();
         }
 
         public async Task ProcessRequestAsync(HttpContext context)
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Sockets
         public async Task ProcessSocketAsync(IWebSocketConnection socket)
         {
             // Begin sending and receiving. Receiving must be started first because ExecuteAsync enables SendAsync.
-            var receiving = socket.ExecuteAsync((frame, state) => ((WebSockets)state).HandleFrame(frame), this);
+            var receiving = socket.ExecuteAsync((frame, state) => ((WebSocketsTransport)state).HandleFrame(frame), this);
             var sending = StartSending(socket);
 
             // Wait for something to shut down.
@@ -83,7 +84,7 @@ namespace Microsoft.AspNetCore.Sockets
                 // Shutting down because we received a close frame from the client.
                 // Complete the input writer so that the application knows there won't be any more input.
                 _logger.LogDebug("Client closed connection with status code '{0}' ({1}). Signaling end-of-input to application", receiving.Result.Status, receiving.Result.Description);
-                _channel.Input.CompleteWriter();
+                _connection.Output.TryComplete();
 
                 // Wait for the application to finish sending.
                 _logger.LogDebug("Waiting for the application to finish sending data");
@@ -100,12 +101,15 @@ namespace Microsoft.AspNetCore.Sockets
                 _logger.LogDebug(!failed ? "Application finished sending. Sending close frame." : "Application failed during sending. Sending InternalServerError close frame");
                 await socket.CloseAsync(!failed ? WebSocketCloseStatus.NormalClosure : WebSocketCloseStatus.InternalServerError);
 
+                // Now trigger the exception from the application, if there was one.
+                sending.GetAwaiter().GetResult();
+
                 _logger.LogDebug("Waiting for the client to close the socket");
 
                 // Wait for the client to close.
                 // TODO: Consider timing out here and cancelling the receive loop.
                 await receiving;
-                _channel.Input.CompleteWriter();
+                _connection.Output.TryComplete();
             }
         }
 
@@ -119,14 +123,22 @@ namespace Microsoft.AspNetCore.Sockets
 
             LogFrame("Receiving", frame);
 
-            // Allocate space from the input channel
-            var outputBuffer = _channel.Input.Alloc();
+            // Determine the effective opcode based on the continuation.
+            var effectiveOpcode = frame.Opcode;
+            if (frame.Opcode == WebSocketOpcode.Continuation)
+            {
+                effectiveOpcode = _lastOpcode;
+            }
+            else
+            {
+                _lastOpcode = frame.Opcode;
+            }
 
-            // Append this buffer to the input channel
-            _logger.LogDebug($"Appending {frame.Payload.Length} bytes to Connection channel");
-            outputBuffer.Append(frame.Payload);
+            // Create a Message for the frame
+            var message = new Message(frame.Payload.Preserve(), effectiveOpcode == WebSocketOpcode.Binary ? Format.Binary : Format.Text, frame.EndOfMessage);
 
-            return outputBuffer.FlushAsync();
+            // Write the message to the channel
+            return _connection.Output.WriteAsync(message);
         }
 
         private void LogFrame(string action, WebSocketFrame frame)
@@ -140,43 +152,43 @@ namespace Microsoft.AspNetCore.Sockets
 
         private async Task StartSending(IWebSocketConnection ws)
         {
-            try
+            while (!_connection.Input.Completion.IsCompleted)
             {
-                while (true)
+                // Get a frame from the application
+                try
                 {
-                    var result = await _channel.Output.ReadAsync();
-                    var buffer = result.Buffer;
-
-                    try
+                    using (var message = await _connection.Input.ReadAsync())
                     {
-                        if (buffer.IsEmpty && result.IsCompleted)
+                        if (message.Payload.Buffer.Length > 0)
                         {
-                            break;
-                        }
+                            try
+                            {
+                                var opcode = message.MessageFormat == Format.Binary ?
+                                    WebSocketOpcode.Binary :
+                                    WebSocketOpcode.Text;
 
-                        // Send the buffer in a frame
-                        var frame = new WebSocketFrame(
-                            endOfMessage: true,
-                            opcode: _opcode,
-                            payload: buffer);
-                        LogFrame("Sending", frame);
-                        await ws.SendAsync(frame);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError("Error writing frame to output: {0}", ex);
-                        break;
-                    }
-                    finally
-                    {
-                        _channel.Output.Advance(buffer.End);
+                                var frame = new WebSocketFrame(
+                                    endOfMessage: message.EndOfMessage,
+                                    opcode: _lastFrameIncomplete ? WebSocketOpcode.Continuation : opcode,
+                                    payload: message.Payload.Buffer);
+
+                                _lastFrameIncomplete = !message.EndOfMessage;
+
+                                LogFrame("Sending", frame);
+                                await ws.SendAsync(frame);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError("Error writing frame to output: {0}", ex);
+                                break;
+                            }
+                        }
                     }
                 }
-            }
-            finally
-            {
-                // No longer reading from the channel
-                _channel.Output.CompleteReader();
+                catch (Exception ex) when (ex.GetType().IsNested && ex.GetType().DeclaringType == typeof(Channel))
+                {
+                    // Gross that we have to catch this this way. See https://github.com/dotnet/corefxlab/issues/1068
+                }
             }
         }
     }

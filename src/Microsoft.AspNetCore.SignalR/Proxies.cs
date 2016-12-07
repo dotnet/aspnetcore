@@ -75,10 +75,10 @@ namespace Microsoft.AspNetCore.SignalR
 
     public class GroupManager<THub> : IGroupManager
     {
-        private readonly Connection _connection;
+        private readonly StreamingConnection _connection;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
 
-        public GroupManager(Connection connection, HubLifetimeManager<THub> lifetimeManager)
+        public GroupManager(StreamingConnection connection, HubLifetimeManager<THub> lifetimeManager)
         {
             _connection = connection;
             _lifetimeManager = lifetimeManager;

@@ -5,6 +5,9 @@ using System;
 using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Channels;
+using Microsoft.AspNetCore.Sockets.Internal;
+using Microsoft.AspNetCore.Sockets.Transports;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.WebSockets.Internal;
 using Microsoft.Extensions.WebSockets.Internal.Tests;
@@ -14,17 +17,21 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 {
     public class WebSocketsTests
     {
-        [Fact]
-        public async Task ReceivedFramesAreWrittenToPipeline()
+        [Theory]
+        [InlineData(Format.Text, WebSocketOpcode.Text)]
+        [InlineData(Format.Binary, WebSocketOpcode.Binary)]
+        public async Task ReceivedFramesAreWrittenToChannel(Format format, WebSocketOpcode opcode)
         {
+            var transportToApplication = Channel.Create<Message>();
+            var applicationToTransport = Channel.Create<Message>();
+
+            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
+            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+
             using (var factory = new PipelineFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
-                var connection = new Connection();
-                connection.ConnectionId = Guid.NewGuid().ToString();
-                var httpConnection = new HttpConnection(factory);
-                connection.Channel = httpConnection;
-                var ws = new WebSockets(connection, Format.Text, new LoggerFactory());
+                var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(pair.ServerSocket);
@@ -35,13 +42,18 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 // Send a frame, then close
                 await pair.ClientSocket.SendAsync(new WebSocketFrame(
                     endOfMessage: true,
-                    opcode: WebSocketOpcode.Text,
+                    opcode: opcode,
                     payload: ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello"))));
                 await pair.ClientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure);
 
-                // Capture everything out of the input channel and then complete the writer (to do our end of the close)
-                var buffer = (await connection.Channel.Input.ReadToEndAsync()).ToArray();
-                httpConnection.Output.CompleteWriter();
+                using (var message = await applicationSide.Input.ReadAsync())
+                {
+                    Assert.True(message.EndOfMessage);
+                    Assert.Equal(format, message.MessageFormat);
+                    Assert.Equal("Hello", Encoding.UTF8.GetString(message.Payload.Buffer.ToArray()));
+                }
+
+                Assert.True(applicationSide.Output.TryComplete());
 
                 // The transport should finish now
                 await transport;
@@ -49,8 +61,6 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 // The connection should close after this, which means the client will get a close frame.
                 var clientSummary = await client;
 
-                // Read from the connection pipeline
-                Assert.Equal("Hello", Encoding.UTF8.GetString(buffer));
                 Assert.Equal(WebSocketCloseStatus.NormalClosure, clientSummary.CloseResult.Status);
             }
         }
@@ -58,16 +68,125 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Theory]
         [InlineData(Format.Text, WebSocketOpcode.Text)]
         [InlineData(Format.Binary, WebSocketOpcode.Binary)]
-        public async Task DataWrittenToOutputPipelineAreSentAsFrames(Format format, WebSocketOpcode expectedOpcode)
+        public async Task MultiFrameMessagesArePropagatedToTheChannel(Format format, WebSocketOpcode opcode)
         {
+            var transportToApplication = Channel.Create<Message>();
+            var applicationToTransport = Channel.Create<Message>();
+
+            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
+            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+
             using (var factory = new PipelineFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
-                var connection = new Connection();
-                connection.ConnectionId = Guid.NewGuid().ToString();
-                var httpConnection = new HttpConnection(factory);
-                connection.Channel = httpConnection;
-                var ws = new WebSockets(connection, format, new LoggerFactory());
+                var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
+
+                // Give the server socket to the transport and run it
+                var transport = ws.ProcessSocketAsync(pair.ServerSocket);
+
+                // Run the client socket
+                var client = pair.ClientSocket.ExecuteAndCaptureFramesAsync();
+
+                // Send a frame, then close
+                await pair.ClientSocket.SendAsync(new WebSocketFrame(
+                    endOfMessage: false,
+                    opcode: opcode,
+                    payload: ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello"))));
+                await pair.ClientSocket.SendAsync(new WebSocketFrame(
+                    endOfMessage: true,
+                    opcode: WebSocketOpcode.Continuation,
+                    payload: ReadableBuffer.Create(Encoding.UTF8.GetBytes("World"))));
+                await pair.ClientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure);
+
+                using (var message1 = await applicationSide.Input.ReadAsync())
+                {
+                    Assert.False(message1.EndOfMessage);
+                    Assert.Equal(format, message1.MessageFormat);
+                    Assert.Equal("Hello", Encoding.UTF8.GetString(message1.Payload.Buffer.ToArray()));
+                }
+
+                using (var message2 = await applicationSide.Input.ReadAsync())
+                {
+                    Assert.True(message2.EndOfMessage);
+                    Assert.Equal(format, message2.MessageFormat);
+                    Assert.Equal("World", Encoding.UTF8.GetString(message2.Payload.Buffer.ToArray()));
+                }
+
+                Assert.True(applicationSide.Output.TryComplete());
+
+                // The transport should finish now
+                await transport;
+
+                // The connection should close after this, which means the client will get a close frame.
+                var clientSummary = await client;
+
+                Assert.Equal(WebSocketCloseStatus.NormalClosure, clientSummary.CloseResult.Status);
+            }
+        }
+
+        [Theory]
+        [InlineData(Format.Text, WebSocketOpcode.Text)]
+        [InlineData(Format.Binary, WebSocketOpcode.Binary)]
+        public async Task IncompleteMessagesAreWrittenAsMultiFrameWebSocketMessages(Format format, WebSocketOpcode opcode)
+        {
+            var transportToApplication = Channel.Create<Message>();
+            var applicationToTransport = Channel.Create<Message>();
+
+            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
+            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+
+            using (var factory = new PipelineFactory())
+            using (var pair = WebSocketPair.Create(factory))
+            {
+                var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
+
+                // Give the server socket to the transport and run it
+                var transport = ws.ProcessSocketAsync(pair.ServerSocket);
+
+                // Run the client socket
+                var client = pair.ClientSocket.ExecuteAndCaptureFramesAsync();
+
+                // Write multi-frame message to the output channel, and then complete it
+                await applicationSide.Output.WriteAsync(new Message(
+                    ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello")).Preserve(),
+                    format,
+                    endOfMessage: false));
+                await applicationSide.Output.WriteAsync(new Message(
+                    ReadableBuffer.Create(Encoding.UTF8.GetBytes("World")).Preserve(),
+                    format,
+                    endOfMessage: true));
+                Assert.True(applicationSide.Output.TryComplete());
+
+                // The client should finish now, as should the server
+                var clientSummary = await client;
+                await pair.ClientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure);
+                await transport;
+
+                Assert.Equal(2, clientSummary.Received.Count);
+                Assert.False(clientSummary.Received[0].EndOfMessage);
+                Assert.Equal(opcode, clientSummary.Received[0].Opcode);
+                Assert.Equal("Hello", Encoding.UTF8.GetString(clientSummary.Received[0].Payload.ToArray()));
+                Assert.True(clientSummary.Received[1].EndOfMessage);
+                Assert.Equal(WebSocketOpcode.Continuation, clientSummary.Received[1].Opcode);
+                Assert.Equal("World", Encoding.UTF8.GetString(clientSummary.Received[1].Payload.ToArray()));
+            }
+        }
+
+        [Theory]
+        [InlineData(Format.Text, WebSocketOpcode.Text)]
+        [InlineData(Format.Binary, WebSocketOpcode.Binary)]
+        public async Task DataWrittenToOutputPipelineAreSentAsFrames(Format format, WebSocketOpcode opcode)
+        {
+            var transportToApplication = Channel.Create<Message>();
+            var applicationToTransport = Channel.Create<Message>();
+
+            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
+            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+
+            using (var factory = new PipelineFactory())
+            using (var pair = WebSocketPair.Create(factory))
+            {
+                var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(pair.ServerSocket);
@@ -76,8 +195,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var client = pair.ClientSocket.ExecuteAndCaptureFramesAsync();
 
                 // Write to the output channel, and then complete it
-                await httpConnection.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello"));
-                httpConnection.Output.CompleteWriter();
+                await applicationSide.Output.WriteAsync(new Message(
+                    ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello")).Preserve(),
+                    format,
+                    endOfMessage: true));
+                Assert.True(applicationSide.Output.TryComplete());
 
                 // The client should finish now, as should the server
                 var clientSummary = await client;
@@ -86,22 +208,26 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 Assert.Equal(1, clientSummary.Received.Count);
                 Assert.True(clientSummary.Received[0].EndOfMessage);
-                Assert.Equal(expectedOpcode, clientSummary.Received[0].Opcode);
+                Assert.Equal(opcode, clientSummary.Received[0].Opcode);
                 Assert.Equal("Hello", Encoding.UTF8.GetString(clientSummary.Received[0].Payload.ToArray()));
             }
         }
 
-        [Fact]
-        public async Task FrameReceivedAfterServerCloseSent()
+        [Theory]
+        [InlineData(Format.Text, WebSocketOpcode.Text)]
+        [InlineData(Format.Binary, WebSocketOpcode.Binary)]
+        public async Task FrameReceivedAfterServerCloseSent(Format format, WebSocketOpcode opcode)
         {
+            var transportToApplication = Channel.Create<Message>();
+            var applicationToTransport = Channel.Create<Message>();
+
+            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
+            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+
             using (var factory = new PipelineFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
-                var connection = new Connection();
-                connection.ConnectionId = Guid.NewGuid().ToString();
-                var httpConnection = new HttpConnection(factory);
-                connection.Channel = httpConnection;
-                var ws = new WebSockets(connection, Format.Binary, new LoggerFactory());
+                var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(pair.ServerSocket);
@@ -110,19 +236,23 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var client = pair.ClientSocket.ExecuteAndCaptureFramesAsync();
 
                 // Close the output and wait for the close frame
-                httpConnection.Output.CompleteWriter();
+                Assert.True(applicationSide.Output.TryComplete());
                 await client;
 
                 // Send another frame. Then close
                 await pair.ClientSocket.SendAsync(new WebSocketFrame(
                     endOfMessage: true,
-                    opcode: WebSocketOpcode.Text,
+                    opcode: opcode,
                     payload: ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello"))));
                 await pair.ClientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure);
 
                 // Read that frame from the input
-                var result = (await httpConnection.Input.ReadToEndAsync()).ToArray();
-                Assert.Equal("Hello", Encoding.UTF8.GetString(result));
+                using (var message = await applicationSide.Input.ReadAsync())
+                {
+                    Assert.True(message.EndOfMessage);
+                    Assert.Equal(format, message.MessageFormat);
+                    Assert.Equal("Hello", Encoding.UTF8.GetString(message.Payload.Buffer.ToArray()));
+                }
 
                 await transport;
             }
@@ -131,14 +261,16 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task TransportFailsWhenClientDisconnectsAbnormally()
         {
+            var transportToApplication = Channel.Create<Message>();
+            var applicationToTransport = Channel.Create<Message>();
+
+            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
+            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+
             using (var factory = new PipelineFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
-                var connection = new Connection();
-                connection.ConnectionId = Guid.NewGuid().ToString();
-                var httpConnection = new HttpConnection(factory);
-                connection.Channel = httpConnection;
-                var ws = new WebSockets(connection, Format.Binary, new LoggerFactory());
+                var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(pair.ServerSocket);
@@ -157,14 +289,16 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task ClientReceivesInternalServerErrorWhenTheApplicationFails()
         {
+            var transportToApplication = Channel.Create<Message>();
+            var applicationToTransport = Channel.Create<Message>();
+
+            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
+            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+
             using (var factory = new PipelineFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
-                var connection = new Connection();
-                connection.ConnectionId = Guid.NewGuid().ToString();
-                var httpConnection = new HttpConnection(factory);
-                connection.Channel = httpConnection;
-                var ws = new WebSockets(connection, Format.Binary, new LoggerFactory());
+                var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(pair.ServerSocket);
@@ -173,7 +307,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var client = pair.ClientSocket.ExecuteAndCaptureFramesAsync();
 
                 // Fail in the app
-                httpConnection.Output.CompleteWriter(new InvalidOperationException());
+                Assert.True(applicationSide.Output.TryComplete(new InvalidOperationException()));
                 var clientSummary = await client;
                 Assert.Equal(WebSocketCloseStatus.InternalServerError, clientSummary.CloseResult.Status);
 

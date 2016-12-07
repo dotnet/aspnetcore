@@ -22,7 +22,11 @@
         }
       }
     },
-    "net451": { }
+    "net46": {
+      "dependencies": {
+        "System.Security.Claims": "4.0.1"
+      }
+    }
   },
   "testRunner": "xunit"
 }

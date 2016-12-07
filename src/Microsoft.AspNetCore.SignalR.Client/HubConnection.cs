@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
@@ -25,10 +26,17 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly HubBinder _binder;
 
         private readonly CancellationTokenSource _readerCts = new CancellationTokenSource();
-        private readonly ConcurrentDictionary<string, InvocationRequest> _pendingCalls = new ConcurrentDictionary<string, InvocationRequest>();
+        private readonly CancellationTokenSource _connectionActive = new CancellationTokenSource();
+
+        // We need to ensure pending calls added after a connection failure don't hang. Right now the easiest thing to do is lock.
+        private readonly object _pendingCallsLock = new object();
+        private readonly Dictionary<string, InvocationRequest> _pendingCalls = new Dictionary<string, InvocationRequest>();
+
         private readonly ConcurrentDictionary<string, InvocationHandler> _handlers = new ConcurrentDictionary<string, InvocationHandler>();
 
         private int _nextId = 0;
+
+        public Task Completion { get; }
 
         private HubConnection(Connection connection, IInvocationAdapter adapter, ILogger logger)
         {
@@ -39,8 +47,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _logger = logger;
 
             _reader = ReceiveMessages(_readerCts.Token);
-            _connection.Output.Writing.ContinueWith(
-                t => CompletePendingCalls(t.IsFaulted ? t.Exception.InnerException : null));
+            Completion = _connection.Output.Writing.ContinueWith(
+                t => Shutdown(t)).Unwrap();
         }
 
         // TODO: Client return values/tasks?
@@ -73,10 +81,15 @@ namespace Microsoft.AspNetCore.SignalR.Client
             // I just want an excuse to use 'irq' as a variable name...
             _logger.LogDebug("Registering Invocation ID '{0}' for tracking", descriptor.Id);
             var irq = new InvocationRequest(cancellationToken, returnType);
-            var addedSuccessfully = _pendingCalls.TryAdd(descriptor.Id, irq);
 
-            // This should always be true since we monotonically increase ids.
-            Debug.Assert(addedSuccessfully, "Id already in use?");
+            lock (_pendingCallsLock)
+            {
+                if (_connectionActive.IsCancellationRequested)
+                {
+                    throw new InvalidOperationException("Connection has been terminated");
+                }
+                _pendingCalls.Add(descriptor.Id, irq);
+            }
 
             // Trace the invocation, but only if that logging level is enabled (because building the args list is a bit slow)
             if (_logger.IsEnabled(LogLevel.Trace))
@@ -117,45 +130,69 @@ namespace Microsoft.AspNetCore.SignalR.Client
             await Task.Yield();
 
             _logger.LogTrace("Beginning receive loop");
-            while (!cancellationToken.IsCancellationRequested)
+            try
             {
-                // This is a little odd... we want to remove the InvocationRequest once and only once so we pull it out in the callback,
-                // and stash it here because we know the callback will have finished before the end of the await.
-                var message = await _adapter.ReadMessageAsync(_stream, _binder, cancellationToken);
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    // This is a little odd... we want to remove the InvocationRequest once and only once so we pull it out in the callback,
+                    // and stash it here because we know the callback will have finished before the end of the await.
+                    var message = await _adapter.ReadMessageAsync(_stream, _binder, cancellationToken);
 
-                var invocationDescriptor = message as InvocationDescriptor;
-                if (invocationDescriptor != null)
-                {
-                    DispatchInvocation(invocationDescriptor, cancellationToken);
-                }
-                else
-                {
-                    var invocationResultDescriptor = message as InvocationResultDescriptor;
-                    if (invocationResultDescriptor != null)
+                    var invocationDescriptor = message as InvocationDescriptor;
+                    if (invocationDescriptor != null)
                     {
-                        DispatchInvocationResult(invocationResultDescriptor, cancellationToken);
+                        DispatchInvocation(invocationDescriptor, cancellationToken);
+                    }
+                    else
+                    {
+                        var invocationResultDescriptor = message as InvocationResultDescriptor;
+                        if (invocationResultDescriptor != null)
+                        {
+                            InvocationRequest irq;
+                            lock (_pendingCallsLock)
+                            {
+                                _connectionActive.Token.ThrowIfCancellationRequested();
+                                irq = _pendingCalls[invocationResultDescriptor.Id];
+                                _pendingCalls.Remove(invocationResultDescriptor.Id);
+                            }
+                            DispatchInvocationResult(invocationResultDescriptor, irq, cancellationToken);
+                        }
                     }
                 }
             }
-            _logger.LogTrace("Ending receive loop");
+            finally
+            {
+                _logger.LogTrace("Ending receive loop");
+            }
         }
 
-        private void CompletePendingCalls(Exception e)
+        private Task Shutdown(Task completion)
         {
-            _logger.LogTrace("Completing pending calls");
-
-            foreach (var call in _pendingCalls.Values)
+            _logger.LogTrace("Shutting down connection");
+            if (completion.IsFaulted)
             {
-                if (e == null)
-                {
-                    call.Completion.TrySetCanceled();
-                }
-                else
-                {
-                    call.Completion.TrySetException(e);
-                }
+                _logger.LogError("Connection is shutting down due to an error: {0}", completion.Exception.InnerException);
             }
-            _pendingCalls.Clear();
+
+            lock (_pendingCallsLock)
+            {
+                _connectionActive.Cancel();
+                foreach (var call in _pendingCalls.Values)
+                {
+                    if (!completion.IsFaulted)
+                    {
+                        call.Completion.TrySetCanceled();
+                    }
+                    else
+                    {
+                        call.Completion.TrySetException(completion.Exception.InnerException);
+                    }
+                }
+                _pendingCalls.Clear();
+            }
+
+            // Return the completion anyway
+            return completion;
         }
 
         private void DispatchInvocation(InvocationDescriptor invocationDescriptor, CancellationToken cancellationToken)
@@ -172,12 +209,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
             handler.Handler(invocationDescriptor.Arguments);
         }
 
-        private void DispatchInvocationResult(InvocationResultDescriptor result, CancellationToken cancellationToken)
+        private void DispatchInvocationResult(InvocationResultDescriptor result, InvocationRequest irq, CancellationToken cancellationToken)
         {
-            InvocationRequest irq;
-            var successfullyRemoved = _pendingCalls.TryRemove(result.Id, out irq);
-            Debug.Assert(successfullyRemoved, $"Invocation request {result.Id} was removed from the pending calls dictionary!");
-
             _logger.LogInformation("Received Result for Invocation #{0}", result.Id);
 
             if (cancellationToken.IsCancellationRequested)

@@ -75,7 +75,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            var sock = new socket('/chat');
+            var url = location.hash || '#/chat';
+            var sock = new socket(url.substring(1));
 
             sock.onopen = function () {
                 console.log('Opened!');

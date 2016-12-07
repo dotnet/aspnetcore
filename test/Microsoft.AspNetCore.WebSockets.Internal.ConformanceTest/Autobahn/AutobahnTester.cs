@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest.Autobahn
             var result = deployer.Deploy();
             result.HostShutdownToken.ThrowIfCancellationRequested();
 
-#if NET451
+#if NET46
             System.Net.ServicePointManager.ServerCertificateValidationCallback = (_, __, ___, ____) => true;
             var client = new HttpClient();
 #else

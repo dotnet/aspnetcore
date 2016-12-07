@@ -8,12 +8,12 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class HubCallerContext
     {
-        public HubCallerContext(Connection connection)
+        public HubCallerContext(StreamingConnection connection)
         {
             Connection = connection;
         }
 
-        public Connection Connection { get; }
+        public StreamingConnection Connection { get; }
 
         public ClaimsPrincipal User => Connection.User;
 
