@@ -5,19 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
 {
-    public class ProjectIdResolver : IDisposable
+    public class ProjectIdResolver
     {
-        private const string TargetsFileName = "FindUserSecretsProperty.targets";
         private const string DefaultConfig = "Debug";
         private readonly IReporter _reporter;
         private readonly string _workingDirectory;
-        private readonly List<string> _tempFiles = new List<string>();
 
         public ProjectIdResolver(IReporter reporter, string workingDirectory)
         {
@@ -29,83 +26,82 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
         {
             var finder = new MsBuildProjectFinder(_workingDirectory);
             var projectFile = finder.FindMsBuildProject(project);
+            EnsureProjectExtensionTargetsExist(projectFile);
 
             _reporter.Verbose(Resources.FormatMessage_Project_File_Path(projectFile));
-
-            var targetFile = GetTargetFile();
-            var outputFile = Path.GetTempFileName();
-            _tempFiles.Add(outputFile);
 
             configuration = !string.IsNullOrEmpty(configuration)
                 ? configuration
                 : DefaultConfig;
 
-            var args = new[]
+            var outputFile = Path.GetTempFileName();
+            try
             {
-                "msbuild",
-                targetFile,
-                "/nologo",
-                "/t:_FindUserSecretsProperty",
-                $"/p:Project={projectFile}",
-                $"/p:OutputFile={outputFile}",
-                $"/p:Configuration={configuration}"
-            };
-            var psi = new ProcessStartInfo
-            {
-                FileName = DotNetMuxer.MuxerPathOrDefault(),
-                Arguments = ArgumentEscaper.EscapeAndConcatenate(args),
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
+                var args = new[]
+                {
+                    "msbuild",
+                    projectFile,
+                    "/nologo",
+                    "/t:_ExtractUserSecretsMetadata", // defined in ProjectIdResolverTargets.xml
+                    $"/p:_UserSecretsMetadataFile={outputFile}",
+                    $"/p:Configuration={configuration}"
+                };
+                var psi = new ProcessStartInfo
+                {
+                    FileName = DotNetMuxer.MuxerPathOrDefault(),
+                    Arguments = ArgumentEscaper.EscapeAndConcatenate(args),
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
 
 #if DEBUG
-            _reporter.Verbose($"Invoking '{psi.FileName} {psi.Arguments}'");
+                _reporter.Verbose($"Invoking '{psi.FileName} {psi.Arguments}'");
 #endif
 
-            var process = Process.Start(psi);
-            process.WaitForExit();
+                var process = Process.Start(psi);
+                process.WaitForExit();
 
-            if (process.ExitCode != 0)
-            {
-                _reporter.Verbose(process.StandardOutput.ReadToEnd());
-                _reporter.Verbose(process.StandardError.ReadToEnd());
-                throw new InvalidOperationException(Resources.FormatError_ProjectFailedToLoad(projectFile));
+                if (process.ExitCode != 0)
+                {
+                    _reporter.Verbose(process.StandardOutput.ReadToEnd());
+                    _reporter.Verbose(process.StandardError.ReadToEnd());
+                    throw new InvalidOperationException(Resources.FormatError_ProjectFailedToLoad(projectFile));
+                }
+
+                var id = File.ReadAllText(outputFile)?.Trim();
+                if (string.IsNullOrEmpty(id))
+                {
+                    throw new InvalidOperationException(Resources.FormatError_ProjectMissingId(projectFile));
+                }
+                return id;
+
             }
-
-            var id = File.ReadAllText(outputFile)?.Trim();
-            if (string.IsNullOrEmpty(id))
+            finally
             {
-                throw new InvalidOperationException(Resources.FormatError_ProjectMissingId(projectFile));
+                TryDelete(outputFile);
             }
-
-            return id;
         }
 
-        private string GetTargetFile()
+        private void EnsureProjectExtensionTargetsExist(string projectFile)
         {
-            var assemblyDir = Path.GetDirectoryName(GetType().GetTypeInfo().Assembly.Location);
+            // relies on MSBuildProjectExtensionsPath and Microsoft.Common.targets to import this file
+            // into the target project
+            var projectExtensionsPath = Path.Combine(
+                Path.GetDirectoryName(projectFile),
+                "obj",
+                $"{Path.GetFileName(projectFile)}.usersecrets.targets");
 
-            // targets should be in one of these locations, depending on test setup and tools installation
-            var searchPaths = new[]
+            Directory.CreateDirectory(Path.GetDirectoryName(projectExtensionsPath));
+
+            // should overwrite the file always. Hypothetically, another version of the user-secrets tool
+            // could have already put a file here. We want to ensure the target file matches the currently
+            // running tool
+            using (var resource = GetType().GetTypeInfo().Assembly.GetManifestResourceStream("ProjectIdResolverTargets.xml"))
+            using (var stream = new FileStream(projectExtensionsPath, FileMode.Create))
+            using (var writer = new StreamWriter(stream))
             {
-                AppContext.BaseDirectory,
-                assemblyDir, // next to assembly
-                Path.Combine(assemblyDir, "../../toolassets"), // inside the nupkg
-                Path.Combine(assemblyDir, "toolassets"), // for local builds
-                Path.Combine(AppContext.BaseDirectory, "../../toolassets"), // relative to packaged deps.json
-            };
-
-            return searchPaths
-                .Select(dir => Path.Combine(dir, TargetsFileName))
-                .Where(File.Exists)
-                .First();
-        }
-
-        public void Dispose()
-        {
-            foreach (var file in _tempFiles)
-            {
-                TryDelete(file);
+                writer.WriteLine("<!-- Auto-generated by dotnet-user-secrets. This file can be deleted and should not be commited to source control. -->");
+                resource.CopyTo(stream);
             }
         }
 

@@ -5,16 +5,17 @@
     "emitEntryPoint": true,
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "copyToOutput": "toolassets/*.targets",
+    "embed": {
+      "mappings": {
+        "ProjectIdResolverTargets.xml": "./resources/ProjectIdResolverTargets.xml"
+      }
+    },
     "compile": {
       "include": "../Shared/**/*.cs"
     }
   },
   "publishOptions": {
-    "include": [
-      "toolassets/*.targets",
-      "prefercliruntime"
-    ]
+    "include": "prefercliruntime"
   },
   "dependencies": {
     "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0",

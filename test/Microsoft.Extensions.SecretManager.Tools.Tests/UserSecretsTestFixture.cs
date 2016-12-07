@@ -32,9 +32,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Tests
             return GetTempSecretProject(out userSecretsId);
         }
 
-        private const string ProjectTemplate = @"<Project ToolsVersion=""14.0"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-  <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" />
-
+        private const string ProjectTemplate = @"<Project ToolsVersion=""15.0"" Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>netcoreapp1.0</TargetFrameworks>
@@ -43,12 +41,8 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Tests
 
   <ItemGroup>
     <Compile Include=""**\*.cs"" Exclude=""Excluded.cs"" />
-
-    <PackageReference Include=""Microsoft.NET.Sdk"" Version=""1.0.0-*"" PrivateAssets=""All"" />
     <PackageReference Include=""Microsoft.NETCore.App"" Version=""1.0.1"" />
   </ItemGroup>
-
-  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
 </Project>";
 
         public string GetTempSecretProject(out string userSecretsId)
