@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             WriteIndent();
             WriteName(node);
             WriteSeparator();
-            WriteLocation(node);
+            WriteSourceRange(node);
         }
 
         protected void WriteContentNode(RazorIRNode node, params string[] content)
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             WriteIndent();
             WriteName(node);
             WriteSeparator();
-            WriteLocation(node);
+            WriteSourceRange(node);
 
             for (var i = 0; i < content.Length; i++)
             {
@@ -140,9 +140,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             }
         }
 
-        protected void WriteLocation(RazorIRNode node)
+        protected void WriteSourceRange(RazorIRNode node)
         {
-            _writer.Write(node.SourceLocation.ToString());
+            if (node.SourceRange != null)
+            {
+                _writer.Write(node.SourceRange.ToString());
+            }
         }
 
         protected void WriteContent(string content)

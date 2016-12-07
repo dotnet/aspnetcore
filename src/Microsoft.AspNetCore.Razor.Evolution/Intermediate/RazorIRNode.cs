@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
         public abstract RazorIRNode Parent { get; set; }
 
-        internal abstract SourceLocation SourceLocation { get; set; }
+        internal abstract MappingLocation SourceRange { get; set; }
 
         public abstract void Accept(RazorIRNodeVisitor visitor);
 

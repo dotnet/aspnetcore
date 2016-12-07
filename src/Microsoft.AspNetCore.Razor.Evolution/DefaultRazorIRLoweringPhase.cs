@@ -62,8 +62,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     Name = chunkGenerator.Name,
                     Prefix = chunkGenerator.Prefix,
                     Suffix = chunkGenerator.Suffix,
-
-                    SourceLocation = block.Start,
+                    SourceRange = new MappingLocation(block.Start, block.Length),
                 });
             }
 
@@ -81,7 +80,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Builder.Push(new CSharpAttributeValueIRNode()
                 {
                     Prefix = chunkGenerator.Prefix,
-                    SourceLocation = block.Start,
+                    SourceRange = new MappingLocation(block.Start, block.Length),
                 });
             }
 
@@ -96,7 +95,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 {
                     Prefix = chunkGenerator.Prefix,
                     Content = chunkGenerator.Value,
-                    SourceLocation = span.Start,
+                    SourceRange = new MappingLocation(span.Start, span.Length),
                 });
             }
 
@@ -118,15 +117,31 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // We need to capture this in the IR so that we can give each piece the correct source mappings
             public override void VisitStartExpressionBlock(ExpressionChunkGenerator chunkGenerator, Block block)
             {
-                Builder.Push(new CSharpExpressionIRNode()
-                {
-                    SourceLocation = block.Start,
-                });
+                Builder.Push(new CSharpExpressionIRNode());
             }
 
             public override void VisitEndExpressionBlock(ExpressionChunkGenerator chunkGenerator, Block block)
             {
-                Builder.Pop();
+                var expressionNode = Builder.Pop();
+
+                if (expressionNode.Children.Count > 0)
+                {
+                    var sourceRangeStart = expressionNode.Children[0].SourceRange;
+                    var contentLength = 0;
+
+                    for (var i = 0; i < expressionNode.Children.Count; i++)
+                    {
+                        contentLength += expressionNode.Children[i].SourceRange.ContentLength;
+                    }
+
+                    expressionNode.SourceRange = new MappingLocation(
+                        sourceRangeStart.AbsoluteIndex,
+                        sourceRangeStart.LineIndex,
+                        sourceRangeStart.CharacterIndex,
+                        contentLength,
+                        sourceRangeStart.FilePath);
+                }
+
             }
 
             public override void VisitExpressionSpan(ExpressionChunkGenerator chunkGenerator, Span span)
@@ -134,7 +149,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Builder.Add(new CSharpTokenIRNode()
                 {
                     Content = span.Content,
-                    SourceLocation = span.Start,
+                    SourceRange = new MappingLocation(span.Start, span.Length),
                 });
             }
 
@@ -143,7 +158,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 var functionsNode = new CSharpStatementIRNode()
                 {
                     Content = span.Content,
-                    SourceLocation = span.Start,
+                    SourceRange = new MappingLocation(span.Start, span.Length),
                     Parent = Class,
                 };
 
@@ -155,7 +170,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Builder.Add(new CSharpStatementIRNode()
                 {
                     Content = span.Content,
-                    SourceLocation = span.Start,
+                    SourceRange = new MappingLocation(span.Start, span.Length),
                 });
             }
 
@@ -172,7 +187,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     Builder.Add(new HtmlContentIRNode()
                     {
                         Content = span.Content,
-                        SourceLocation = span.Start,
+                        SourceRange = new MappingLocation(span.Start, span.Length),
                     });
                 }
             }
@@ -193,7 +208,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 {
                     Content = span.Content,
                     Parent = Namespace,
-                    SourceLocation = span.Start,
+                    SourceRange = new MappingLocation(span.Start, span.Length),
                 };
 
                 Namespace.Children.Insert(i, @using);
@@ -205,7 +220,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 {
                     Content = span.Content,
                     Descriptor = chunkGenerator.Descriptor,
-                    SourceLocation = span.Start,
+                    SourceRange = new MappingLocation(span.Start, span.Length),
                 });
             }
 

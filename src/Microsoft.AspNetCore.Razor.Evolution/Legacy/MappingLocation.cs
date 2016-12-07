@@ -14,12 +14,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         }
 
         public MappingLocation(SourceLocation location, int contentLength)
+            : this (location.AbsoluteIndex, location.LineIndex, location.CharacterIndex, contentLength, location.FilePath)
         {
+        }
+
+        public MappingLocation(int absoluteIndex, int lineIndex, int characterIndex, int contentLength, string filePath)
+        {
+            AbsoluteIndex = absoluteIndex;
+            LineIndex = lineIndex;
+            CharacterIndex = characterIndex;
             ContentLength = contentLength;
-            AbsoluteIndex = location.AbsoluteIndex;
-            LineIndex = location.LineIndex;
-            CharacterIndex = location.CharacterIndex;
-            FilePath = location.FilePath;
+            FilePath = filePath;
         }
 
         public int ContentLength { get; }
