@@ -67,7 +67,7 @@ public async Task<IActionResult> MyAction([FromServices] INodeServices nodeServi
 }
 ```
 
-Of course, you also need to supply the Node.js code you want to invoke. Create a file called `addNumber.js` at the root of your ASP.NET Core application, and add the following code:
+Of course, you also need to supply the Node.js code you want to invoke. Create a file called `addNumbers.js` at the root of your ASP.NET Core application, and add the following code:
 
 ```javascript
 module.exports = function (callback, first, second) {
