@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             public RazorMethodDeclarationIRNode Method { get; }
 
             // Example
-            // <input` checked="foo-bar @false"`/>
+            // <input` checked="hello-world @false"`/>
             //  Name=checked
             //  Prefix= checked="
             //  Suffix="
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             }
 
             // Example
-            // <input checked="foo-bar `@false`"/>
+            // <input checked="hello-world `@false`"/>
             //  Prefix= (space)
             //  Children will contain a token for @false.
             public override void VisitStartDynamicAttributeBlock(DynamicAttributeBlockChunkGenerator chunkGenerator, Block block)
