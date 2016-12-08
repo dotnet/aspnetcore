@@ -247,6 +247,44 @@ ViewWithNestedLayout-Content
         }
 
         [Fact]
+        public async Task RazorViewEngine_RendersViewsFromEmbeddedFileProvider()
+        {
+            // Arrange
+            var expected =
+@"<embdedded-layout>Hello from EmbeddedShared/_Partial
+Hello from Shared/_EmbeddedPartial
+</embdedded-layout>";
+
+            // Act
+            var body = await Client.GetStringAsync("/EmbeddedViews");
+
+            // Assert
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public async Task RazorViewEngine_UpdatesViewsReferencedViaRelativePathsOnChange()
+        {
+            // Arrange
+            var expected1 = "Original content";
+            var expected2 = "New content";
+
+            // Act - 1
+            var body = await Client.GetStringAsync("/UpdateableFileProvider");
+
+            // Assert - 1
+            Assert.Equal(expected1, body.Trim(), ignoreLineEndingDifferences: true);
+
+            // Act - 2
+            var response = await Client.PostAsync("/UpdateableFileProvider/Update", new StringContent(string.Empty));
+            response.EnsureSuccessStatusCode();
+            body = await Client.GetStringAsync("/UpdateableFileProvider");
+
+            // Assert - 1
+            Assert.Equal(expected2, body.Trim(), ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
         public async Task LayoutValueIsPassedBetweenNestedViewStarts()
         {
             // Arrange
