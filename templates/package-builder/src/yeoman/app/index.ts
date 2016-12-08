@@ -9,6 +9,7 @@ import npmWhich = require('npm-which');
 const yosay = require('yosay');
 const toPascalCase = require('to-pascal-case');
 const isWindows = /^win/.test(process.platform);
+const generatorPackageJson = require(path.resolve(__dirname, '../package.json'));
 
 // Paths matching these regexes will only be included if the user wants tests
 const testSpecificPaths = [
@@ -48,7 +49,7 @@ class MyGenerator extends yeoman.Base {
     constructor(args: string | string[], options: any) {
         super(args, options);
         this._optionOrPrompt = optionOrPrompt;
-        this.log(yosay('Welcome to the ASP.NET Core Single-Page App generator!'));
+        this.log(yosay('Welcome to the ASP.NET Core Single-Page App generator!\n\nVersion: ' + generatorPackageJson.version));
 
         if (isWindows) {
             assertNpmVersionIsAtLeast('3.0.0');
