@@ -1,14 +1,15 @@
 ﻿{
   "version": "1.0.0-*",
   "dependencies": {
-    "BenchmarkDotNet": "0.10.0",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.2.0-*"
+    "BenchmarkDotNet": "0.10.1",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.2.0-*",
+    "Moq": "4.6.36-*"
   },
   "frameworks": {
-    "netcoreapp1.0": {
+    "netcoreapp1.1": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.1-*",
+          "version": "1.1.0-*",
           "type": "platform"
         }
       }
@@ -18,16 +19,18 @@
     "emitEntryPoint": true,
     "compile": {
       "include": [
-        "../shared/SocketInputExtensions.cs",
-        "../shared/TestKestrelTrace.cs",
         "../shared/TestApplicationErrorLogger.cs",
-        "../shared/MockConnection.cs"
+        "../shared/TestFrame.cs",
+        "../shared/TestKestrelTrace.cs",
+        "../shared/MockConnection.cs",
+        "../shared/MockSocketOutput.cs",
+        "../shared/SocketInputExtensions.cs"
       ]
     },
     "keyFile": "../../tools/Key.snk",
     "copyToOutput": {
       "include": "TestResources/testCert.pfx"
-    }
+    },
   },
   "runtimeOptions": {
     "configProperties": {

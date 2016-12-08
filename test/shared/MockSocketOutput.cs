@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
+namespace Microsoft.AspNetCore.Testing
 {
-    public class MockSocketOuptut : ISocketOutput
+    public class MockSocketOutput : ISocketOutput
     {
         public void ProducingComplete(MemoryPoolIterator end)
         {

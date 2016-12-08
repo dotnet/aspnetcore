@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Moq;
@@ -47,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             _connectionContext = new ConnectionContext(listenerContext)
             {
                 Input = _socketInput,
-                Output = new MockSocketOuptut(),
+                Output = new MockSocketOutput(),
                 ConnectionControl = Mock.Of<IConnectionControl>()
             };
 

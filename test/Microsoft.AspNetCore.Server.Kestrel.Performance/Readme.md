@@ -2,10 +2,10 @@
 
 To run a specific benchmark add it as parameter
 ```
-dotnet run RequestParsing
+dotnet run -c Release RequestParsing
 ```
 To run all use `All` as parameter
 ```
-dotnet run All
+dotnet run -c Release All
 ```
 Using no parameter will list all available benchmarks
