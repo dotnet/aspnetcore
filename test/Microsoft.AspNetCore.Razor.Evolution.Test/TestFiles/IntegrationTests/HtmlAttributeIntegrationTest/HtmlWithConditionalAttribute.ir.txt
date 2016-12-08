@@ -2,9 +2,9 @@ Document -
     NamespaceDeclaration -  - 
         ClassDeclaration -  -  -  -  - 
             RazorMethodDeclaration -  -  -  -  - 
-                HtmlContent - (0:0,0 [6] ) - <html>\r\n<body>\r\n    <span
+                HtmlContent - (0:0,0 [6] ) - <html>\n<body>\n    <span
                 HtmlAttribute - (25:2,9 [13] ) -  val=" - "
                     CSharpAttributeValue - (31:2,15 [6] ) - 
                         CSharpExpression - (32:2,16 [5] )
                             CSharpToken - (32:2,16 [5] ) - Hello
-                HtmlContent - (38:2,22 [3] ) -  />\r\n</body>\r\n</html>"
+                HtmlContent - (38:2,22 [3] ) -  />\n</body>\n</html>"

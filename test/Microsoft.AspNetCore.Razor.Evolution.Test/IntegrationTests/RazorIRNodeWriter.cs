@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
@@ -155,9 +156,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 return;
             }
 
-            // We explicitly escape newlines in node content so that the IR can be compared line-by-line.
+            // We explicitly escape newlines in node content so that the IR can be compared line-by-line. The escaped
+            // newline cannot be platform specific so we need to drop the windows \r.
             // Also, escape our separator so we can search for ` - `to find delimiters.
-            _writer.Write(content.Replace("\r", "\\r").Replace("\n", "\\n").Replace("-", "\\-"));
+            _writer.Write(content.Replace("\r", string.Empty).Replace("\n", "\\n").Replace(" - ", "\\-"));
         }
     }
 }
