@@ -4,6 +4,7 @@ import * as yeoman from 'yeoman-generator';
 import * as uuid from 'node-uuid';
 import * as glob from 'glob';
 import * as semver from 'semver';
+import * as chalk from 'chalk';
 import { execSync } from 'child_process';
 import npmWhich = require('npm-which');
 const yosay = require('yosay');
@@ -42,6 +43,20 @@ const templates = [
     { value: 'react-redux', name: 'React with Redux', tests: false }
 ];
 
+// Once everyone is on .csproj-compatible tooling, we might be able to remove the global.json files and eliminate
+// this SDK choice altogether. That would be good because then it would work with whatever SDK version you have
+// installed. For now, we need to specify an SDK version explicitly, because there's no support for wildcards, and
+// preview3+ tooling doesn't support project.json at all.
+const sdkChoices = [{
+    value: '1.0.0-preview2-1-003177',   // Current released version
+    name: 'project.json' + chalk.gray(' (compatible with .NET Core tooling preview 2 and Visual Studio 2015)'),
+    includeFiles: [/^project.json$/, /\.xproj$/]
+}, {
+    value: '1.0.0-preview3-004056',     // Version that ships with VS2017RC
+    name: '.csproj' + chalk.gray('      (compatible with .NET Core tooling preview 3 and Visual Studio 2017)'),
+    includeFiles: [/\.csproj$/]
+}];
+
 class MyGenerator extends yeoman.Base {
     private _answers: any;
     private _optionOrPrompt: YeomanPrompt;
@@ -65,8 +80,13 @@ class MyGenerator extends yeoman.Base {
             name: 'framework',
             message: 'Framework',
             choices: templates
-        }], frameworkAnswer => {
-            const frameworkChoice = templates.filter(t => t.value === frameworkAnswer.framework)[0];
+        }, {
+            type: 'list',
+            name: 'sdkVersion',
+            message: 'What type of project do you want to create?',
+            choices: sdkChoices
+        }], firstAnswers => {
+            const frameworkChoice = templates.filter(t => t.value === firstAnswers.framework)[0];
             const furtherQuestions = [{
                 type: 'input',
                 name: 'name',
@@ -84,9 +104,10 @@ class MyGenerator extends yeoman.Base {
             }
 
             this._optionOrPrompt(furtherQuestions, answers => {
-                answers.framework = frameworkAnswer.framework;
+                answers.framework = firstAnswers.framework;
                 this._answers = answers;
-                this._answers.framework = frameworkAnswer.framework;
+                this._answers.framework = firstAnswers.framework;
+                this._answers.sdkVersion = firstAnswers.sdkVersion;
                 this._answers.namePascalCase = toPascalCase(answers.name);
                 this._answers.projectGuid = this.options['projectguid'] || uuid.v4();
                 done();
@@ -95,7 +116,8 @@ class MyGenerator extends yeoman.Base {
     }
 
     writing() {
-        var templateRoot = this.templatePath(this._answers.framework);
+        const templateRoot = this.templatePath(this._answers.framework);
+        const chosenSdk = sdkChoices.filter(sdk => sdk.value === this._answers.sdkVersion)[0];
         glob.sync('**/*', { cwd: templateRoot, dot: true, nodir: true }).forEach(fn => {
             // Token replacement in filenames
             let outputFn = fn.replace(/tokenreplace\-([^\.\/]*)/g, (substr, token) => this._answers[token]);
@@ -105,9 +127,14 @@ class MyGenerator extends yeoman.Base {
                 outputFn = path.join(path.dirname(fn), '.gitignore');
             }
 
-            // Exclude test-specific files (unless the user has said they want tests)
+            // Decide whether to emit this file
             const isTestSpecificFile = testSpecificPaths.some(regex => regex.test(outputFn));
-            if (this._answers.tests || !isTestSpecificFile) {
+            const isSdkSpecificFile = sdkChoices.some(sdk => sdk.includeFiles.some(regex => regex.test(outputFn)));
+            const matchesChosenSdk = chosenSdk.includeFiles.some(regex => regex.test(outputFn));
+            const emitFile = (matchesChosenSdk || !isSdkSpecificFile)
+                          && (this._answers.tests || !isTestSpecificFile);
+
+            if (emitFile) {
                 let inputFullPath = path.join(templateRoot, fn);
                 let destinationFullPath = this.destinationPath(outputFn);
                 if (path.basename(fn) === 'package.json') {

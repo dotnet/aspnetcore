@@ -10,6 +10,7 @@
   "author": "Microsoft",
   "license": "Apache-2.0",
   "dependencies": {
+    "@types/chalk": "^0.4.31",
     "@types/semver": "^5.3.30",
     "diff": "^2.2.2",
     "gitignore-parser": "0.0.2",
