@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 #if NET451
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
@@ -18,6 +19,23 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
     [IntializeTestFile]
     public abstract class IntegrationTestBase
     {
+        private static readonly string ThisProjectName = typeof(IntializeTestFileAttribute).GetTypeInfo().Assembly.GetName().Name;
+        private static readonly string TestProjectRoot = FindTestProjectRoot();
+
+        private static string FindTestProjectRoot()
+        {
+            var currentDirectory = new DirectoryInfo(Directory.GetCurrentDirectory());
+
+            while (currentDirectory != null &&
+                !string.Equals(currentDirectory.Name, ThisProjectName, StringComparison.Ordinal))
+            {
+                currentDirectory = currentDirectory.Parent;
+            }
+
+            var normalizedSeparators = currentDirectory.FullName.Replace(Path.DirectorySeparatorChar, '/');
+            return currentDirectory.FullName;
+        }
+
 #if GENERATE_BASELINES
         private static readonly bool GenerateBaselines = true;
 #else
@@ -77,7 +95,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
             if (GenerateBaselines)
             {
-                File.WriteAllText(baselineFilename, RazorIRNodeSerializer.Serialize(document));
+                var baselineFullPath = Path.Combine(TestProjectRoot, baselineFilename);
+                File.WriteAllText(baselineFullPath, RazorIRNodeSerializer.Serialize(document));
                 return;
             }
 
