@@ -30,6 +30,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         FinalTransferCodingNotChunked,
         LengthRequired,
         LengthRequiredHttp10,
-        PayloadTooLarge
     }
 }

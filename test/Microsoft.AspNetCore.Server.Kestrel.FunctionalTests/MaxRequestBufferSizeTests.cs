@@ -169,7 +169,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .UseKestrel(options =>
                 {
                     options.Limits.MaxRequestBufferSize = maxRequestBufferSize;
-                    options.Limits.MaxRequestBodySize = _dataLength;
                     options.UseHttps(@"TestResources/testCert.pfx", "testPassword");
 
                     if (maxRequestBufferSize.HasValue &&

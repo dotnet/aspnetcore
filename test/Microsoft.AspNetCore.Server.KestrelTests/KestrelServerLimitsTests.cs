@@ -150,34 +150,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Fact]
-        public void MaxRequestBodySizeDefault()
-        {
-            Assert.Equal(4 * 1024 * 1024, (new KestrelServerLimits()).MaxRequestBodySize);
-        }
-
-        [Theory]
-        [InlineData(long.MinValue)]
-        [InlineData(-1)]
-        [InlineData(0)]
-        public void MaxRequestBodySizeInvalid(long value)
-        {
-            Assert.Throws<ArgumentOutOfRangeException>(() =>
-            {
-                (new KestrelServerLimits()).MaxRequestBodySize = value;
-            });
-        }
-
-        [Theory]
-        [InlineData(1)]
-        [InlineData(long.MaxValue)]
-        public void MaxRequestBodySizeValid(long value)
-        {
-            var o = new KestrelServerLimits();
-            o.MaxRequestBodySize = value;
-            Assert.Equal(value, o.MaxRequestBodySize);
-        }
-
-        [Fact]
         public void KeepAliveTimeoutDefault()
         {
             Assert.Equal(TimeSpan.FromMinutes(2), new KestrelServerLimits().KeepAliveTimeout);
