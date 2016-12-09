@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         public Task<IResponseCacheEntry> GetAsync(string key)
         {
             var entry = _cache.Get(key);
-            
+
             var memoryCachedResponse = entry as MemoryCachedResponse;
             if (memoryCachedResponse != null)
             {
