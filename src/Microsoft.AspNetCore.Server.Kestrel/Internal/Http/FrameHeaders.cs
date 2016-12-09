@@ -233,10 +233,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
         }
 
-        public static unsafe long ParseContentLength(StringValues value)
+        public static long ParseContentLength(StringValues value)
         {
             long parsed;
-            if (!HeaderUtilities.TryParseInt64(new StringSegment(value.ToString()), out parsed))
+            if (!HeaderUtilities.TryParseInt64(value.ToString(), out parsed))
             {
                 ThrowInvalidContentLengthException(value);
             }
