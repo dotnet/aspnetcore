@@ -68,10 +68,10 @@ namespace Microsoft.AspNetCore.Http.Internal
         // Quote items that contain comas and are not already quoted.
         private static string QuoteIfNeeded(string value)
         {
-            if (!string.IsNullOrWhiteSpace(value) && 
-                value.Contains(',') && 
+            if (!string.IsNullOrWhiteSpace(value) &&
+                value.Contains(',') &&
                 (value[0] != '"' || value[value.Length - 1] != '"'))
-            { 
+            {
                 return $"\"{value}\"";
             }
             return value;
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         private static string DeQuote(string value)
         {
-            if (!string.IsNullOrWhiteSpace(value) && 
+            if (!string.IsNullOrWhiteSpace(value) &&
                 (value.Length > 1 && value[0] == '"' && value[value.Length - 1] == '"'))
             {
                 value = value.Substring(1, value.Length - 2);

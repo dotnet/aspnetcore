@@ -5,11 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
     public static class HeaderUtilities
     {
+        private static readonly int _int64MaxStringLength = 20;
         private const string QualityName = "q";
         internal const string BytesUnit = "bytes";
 
@@ -198,19 +200,322 @@ namespace Microsoft.Net.Http.Headers
             return current;
         }
 
+        /// <summary>
+        /// Try to find a target header value among the set of given header values and parse it as a
+        /// <see cref="TimeSpan"/>.
+        /// </summary>
+        /// <param name="headerValues">
+        /// The <see cref="StringValues"/> containing the set of header values to search.
+        /// </param>
+        /// <param name="targetValue">
+        /// The target header value to look for.
+        /// </param>
+        /// <param name="value">
+        /// When this method returns, contains the parsed <see cref="TimeSpan"/>, if the parsing succeeded, or
+        /// null if the parsing failed. The conversion fails if the <paramref name="targetValue"/> was not
+        /// found or could not be parsed as a <see cref="TimeSpan"/>. This parameter is passed uninitialized;
+        /// any value originally supplied in result will be overwritten.
+        /// </param>
+        /// <returns>
+        /// <code>true</code> if <paramref name="targetValue"/> is found and successfully parsed; otherwise,
+        /// <code>false</code>.
+        /// </returns>
+        // e.g. { "headerValue=10, targetHeaderValue=30" }
+        public static bool TryParseSeconds(StringValues headerValues, string targetValue, out TimeSpan? value)
+        {
+            if (StringValues.IsNullOrEmpty(headerValues) || string.IsNullOrEmpty(targetValue))
+            {
+                value = null;
+                return false;
+            }
+
+            for (var i = 0; i < headerValues.Count; i++)
+            {
+                // Trim leading white space
+                var current = HttpRuleParser.GetWhitespaceLength(headerValues[i], 0);
+
+                while (current < headerValues[i].Length)
+                {
+                    long seconds;
+                    var tokenLength = HttpRuleParser.GetTokenLength(headerValues[i], current);
+                    if (tokenLength == targetValue.Length
+                        && string.Compare(headerValues[i], current, targetValue, 0, tokenLength, StringComparison.OrdinalIgnoreCase) == 0
+                        && TryParseInt64FromHeaderValue(current + tokenLength, headerValues[i], out seconds))
+                    {
+                        // Token matches target value and seconds were parsed
+                        value = TimeSpan.FromSeconds(seconds);
+                        return true;
+                    }
+                    else
+                    {
+                        // Skip until the next potential name
+                        current += tokenLength;
+                        current += HttpRuleParser.GetWhitespaceLength(headerValues[i], current);
+
+                        // Skip the value if present
+                        if (current < headerValues[i].Length && headerValues[i][current] == '=')
+                        {
+                            current++; // skip '='
+                            current += NameValueHeaderValue.GetValueLength(headerValues[i], current);
+                            current += HttpRuleParser.GetWhitespaceLength(headerValues[i], current);
+                        }
+
+                        // Skip the delimiter
+                        if (current < headerValues[i].Length && headerValues[i][current] == ',')
+                        {
+                            current++; // skip ','
+                            current += HttpRuleParser.GetWhitespaceLength(headerValues[i], current);
+                        }
+                    }
+                }
+            }
+            value = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Check if a target directive exists among the set of given cache control directives.
+        /// </summary>
+        /// <param name="cacheControlDirectives">
+        /// The <see cref="StringValues"/> containing the set of cache control directives.
+        /// </param>
+        /// <param name="targetDirectives">
+        /// The target cache control directives to look for.
+        /// </param>
+        /// <returns>
+        /// <code>true</code> if <paramref name="targetDirectives"/> is contained in <paramref name="cacheControlDirectives"/>;
+        /// otherwise, <code>false</code>.
+        /// </returns>
+        public static bool ContainsCacheDirective(StringValues cacheControlDirectives, string targetDirectives)
+        {
+            if (StringValues.IsNullOrEmpty(cacheControlDirectives) || string.IsNullOrEmpty(targetDirectives))
+            {
+                return false;
+            }
+
+
+            for (var i = 0; i < cacheControlDirectives.Count; i++)
+            {
+                // Trim leading white space
+                var current = HttpRuleParser.GetWhitespaceLength(cacheControlDirectives[i], 0);
+
+                while (current < cacheControlDirectives[i].Length)
+                {
+                    var tokenLength = HttpRuleParser.GetTokenLength(cacheControlDirectives[i], current);
+                    if (tokenLength == targetDirectives.Length
+                        && string.Compare(cacheControlDirectives[i], current, targetDirectives, 0, tokenLength, StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        // Token matches target value
+                        return true;
+                    }
+                    else
+                    {
+                        // Skip until the next potential name
+                        current += tokenLength;
+                        current += HttpRuleParser.GetWhitespaceLength(cacheControlDirectives[i], current);
+
+                        // Skip the value if present
+                        if (current < cacheControlDirectives[i].Length && cacheControlDirectives[i][current] == '=')
+                        {
+                            current++; // skip '='
+                            current += NameValueHeaderValue.GetValueLength(cacheControlDirectives[i], current);
+                            current += HttpRuleParser.GetWhitespaceLength(cacheControlDirectives[i], current);
+                        }
+
+                        // Skip the delimiter
+                        if (current < cacheControlDirectives[i].Length && cacheControlDirectives[i][current] == ',')
+                        {
+                            current++; // skip ','
+                            current += HttpRuleParser.GetWhitespaceLength(cacheControlDirectives[i], current);
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static unsafe bool TryParseInt64FromHeaderValue(int startIndex, string headerValue, out long result)
+        {
+            // Trim leading whitespace
+            startIndex += HttpRuleParser.GetWhitespaceLength(headerValue, startIndex);
+
+            // Match and skip '=', it also can't be the last character in the headerValue
+            if (startIndex >= headerValue.Length - 1 || headerValue[startIndex] != '=')
+            {
+                result = 0;
+                return false;
+            }
+            startIndex++;
+
+            // Trim trailing whitespace
+            startIndex += HttpRuleParser.GetWhitespaceLength(headerValue, startIndex);
+
+            // Try parse the number
+            if (TryParseInt64(new StringSegment(headerValue, startIndex, HttpRuleParser.GetNumberLength(headerValue, startIndex, false)), out result))
+            {
+                return true;
+            }
+
+            result = 0;
+            return false;
+        }
+
         internal static bool TryParseInt32(string value, out int result)
         {
-            return int.TryParse(value, NumberStyles.None, NumberFormatInfo.InvariantInfo, out result);
+            return TryParseInt32(new StringSegment(value), out result);
         }
 
+        /// <summary>
+        /// Try to convert a string representation of a positive number to its 64-bit signed integer equivalent.
+        /// A return value indicates whether the conversion succeeded or failed.
+        /// </summary>
+        /// <param name="value">
+        /// A string containing a number to convert.
+        /// </param>
+        /// <param name="result">
+        /// When this method returns, contains the 64-bit signed integer value equivalent of the number contained
+        /// in the string, if the conversion succeeded, or zero if the conversion failed. The conversion fails if
+        /// the string is null or String.Empty, is not of the correct format, is negative, or represents a number
+        /// greater than Int64.MaxValue. This parameter is passed uninitialized; any value originally supplied in
+        /// result will be overwritten.
+        /// </param>
+        /// <returns><code>true</code> if parsing succeeded; otherwise, <code>false</code>.</returns>
         public static bool TryParseInt64(string value, out long result)
         {
-            return long.TryParse(value, NumberStyles.None, NumberFormatInfo.InvariantInfo, out result);
+            return TryParseInt64(new StringSegment(value), out result);
         }
 
-        public static string FormatInt64(long value)
+        internal static unsafe bool TryParseInt32(StringSegment value, out int result)
         {
-            return value.ToString(CultureInfo.InvariantCulture);
+            if (string.IsNullOrEmpty(value.Buffer) || value.Length == 0)
+            {
+                result = 0;
+                return false;
+            }
+
+            result = 0;
+            fixed (char* ptr = value.Buffer)
+            {
+                var ch = (ushort*)ptr + value.Offset;
+                var end = ch + value.Length;
+
+                ushort digit = 0;
+                while (ch < end && (digit = (ushort)(*ch - 0x30)) <= 9)
+                {
+                    // Check for overflow
+                    if ((result = result * 10 + digit) < 0)
+                    {
+                        result = 0;
+                        return false;
+                    }
+
+                    ch++;
+                }
+
+                if (ch != end)
+                {
+                    result = 0;
+                    return false;
+                }
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Try to convert a <see cref="StringSegment"/> representation of a positive number to its 64-bit signed
+        /// integer equivalent. A return value indicates whether the conversion succeeded or failed.
+        /// </summary>
+        /// <param name="value">
+        /// A <see cref="StringSegment"/> containing a number to convert.
+        /// </param>
+        /// <param name="result">
+        /// When this method returns, contains the 64-bit signed integer value equivalent of the number contained
+        /// in the string, if the conversion succeeded, or zero if the conversion failed. The conversion fails if
+        /// the <see cref="StringSegment"/> is null or String.Empty, is not of the correct format, is negative, or
+        /// represents a number greater than Int64.MaxValue. This parameter is passed uninitialized; any value
+        /// originally supplied in result will be overwritten.
+        /// </param>
+        /// <returns><code>true</code> if parsing succeeded; otherwise, <code>false</code>.</returns>
+        public static unsafe bool TryParseInt64(StringSegment value, out long result)
+        {
+            if (string.IsNullOrEmpty(value.Buffer) || value.Length == 0)
+            {
+                result = 0;
+                return false;
+            }
+
+            result = 0;
+            fixed (char* ptr = value.Buffer)
+            {
+                var ch = (ushort*)ptr + value.Offset;
+                var end = ch + value.Length;
+
+                ushort digit = 0;
+                while (ch < end && (digit = (ushort)(*ch - 0x30)) <= 9)
+                {
+                    // Check for overflow
+                    if ((result = result * 10 + digit) < 0)
+                    {
+                        result = 0;
+                        return false;
+                    }
+
+                    ch++;
+                }
+
+                if (ch != end)
+                {
+                    result = 0;
+                    return false;
+                }
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Converts the signed 64-bit numeric value to its equivalent string representation.
+        /// </summary>
+        /// <param name="value">
+        /// The number to convert.
+        /// </param>
+        /// <returns>
+        /// The string representation of the value of this instance, consisting of a minus sign if the value is
+        /// negative, and a sequence of digits ranging from 0 to 9 with no leading zeroes.
+        /// </returns>
+        public unsafe static string FormatInt64(long value)
+        {
+            var position = _int64MaxStringLength;
+            var negative = false;
+
+            if (value < 0)
+            {
+                // Not possible to compute absolute value of MinValue, return the exact string instead.
+                if (value == long.MinValue)
+                {
+                    return "-9223372036854775808";
+                }
+                negative = true;
+                value = -value;
+            }
+
+            char* charBuffer = stackalloc char[_int64MaxStringLength];
+
+            do
+            {
+                // Consider using Math.DivRem() if available
+                var quotient = value / 10;
+                charBuffer[--position] = (char)(0x30 + (value - quotient * 10)); // 0x30 = '0'
+                value = quotient;
+            }
+            while (value != 0);
+
+            if (negative)
+            {
+                charBuffer[--position] = '-';
+            }
+
+            return new string(charBuffer, position, _int64MaxStringLength - position);
         }
 
         public static bool TryParseDate(string input, out DateTimeOffset result)

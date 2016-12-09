@@ -104,13 +104,13 @@ namespace Microsoft.Net.Http.Headers
             get
             {
                 var sizeParameter = NameValueHeaderValue.Find(_parameters, SizeString);
-                ulong value;
+                long value;
                 if (sizeParameter != null)
                 {
-                    string sizeString = sizeParameter.Value;
-                    if (UInt64.TryParse(sizeString, NumberStyles.Integer, CultureInfo.InvariantCulture, out value))
+                    var sizeString = sizeParameter.Value;
+                    if (HeaderUtilities.TryParseInt64(sizeString, out value))
                     {
-                        return (long)value;
+                        return value;
                     }
                 }
                 return null;

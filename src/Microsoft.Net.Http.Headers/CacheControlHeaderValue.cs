@@ -11,18 +11,18 @@ namespace Microsoft.Net.Http.Headers
 {
     public class CacheControlHeaderValue
     {
-        private const string MaxAgeString = "max-age";
-        private const string MaxStaleString = "max-stale";
-        private const string MinFreshString = "min-fresh";
-        private const string MustRevalidateString = "must-revalidate";
-        private const string NoCacheString = "no-cache";
-        private const string NoStoreString = "no-store";
-        private const string NoTransformString = "no-transform";
-        private const string OnlyIfCachedString = "only-if-cached";
-        private const string PrivateString = "private";
-        private const string ProxyRevalidateString = "proxy-revalidate";
-        private const string PublicString = "public";
-        private const string SharedMaxAgeString = "s-maxage";
+        public static readonly string PublicString = "public";
+        public static readonly string PrivateString = "private";
+        public static readonly string MaxAgeString = "max-age";
+        public static readonly string SharedMaxAgeString = "s-maxage";
+        public static readonly string NoCacheString = "no-cache";
+        public static readonly string NoStoreString = "no-store";
+        public static readonly string MaxStaleString = "max-stale";
+        public static readonly string MinFreshString = "min-fresh";
+        public static readonly string NoTransformString = "no-transform";
+        public static readonly string OnlyIfCachedString = "only-if-cached";
+        public static readonly string MustRevalidateString = "must-revalidate";
+        public static readonly string ProxyRevalidateString = "proxy-revalidate";
 
         // The Cache-Control header is special: It is a header supporting a list of values, but we represent the list
         // as _one_ instance of CacheControlHeaderValue. I.e we set 'SupportsMultipleValues' to 'true' since it is
@@ -394,63 +394,120 @@ namespace Microsoft.Net.Http.Headers
             CacheControlHeaderValue cc,
             List<NameValueHeaderValue> nameValueList)
         {
-            foreach (NameValueHeaderValue nameValue in nameValueList)
+            for (var i = 0; i < nameValueList.Count; i++)
             {
+                var nameValue = nameValueList[i];
+                var name = nameValue.Name;
                 var success = true;
-                string name = nameValue.Name.ToLowerInvariant();
 
-                switch (name)
+                switch (name.Length)
                 {
-                    case NoCacheString:
-                        success = TrySetOptionalTokenList(nameValue, ref cc._noCache, ref cc._noCacheHeaders);
-                        break;
-
-                    case NoStoreString:
-                        success = TrySetTokenOnlyValue(nameValue, ref cc._noStore);
-                        break;
-
-                    case MaxAgeString:
-                        success = TrySetTimeSpan(nameValue, ref cc._maxAge);
-                        break;
-
-                    case MaxStaleString:
-                        success = ((nameValue.Value == null) || TrySetTimeSpan(nameValue, ref cc._maxStaleLimit));
-                        if (success)
+                    case 6:
+                        if (string.Equals(PublicString, name, StringComparison.OrdinalIgnoreCase))
                         {
-                            cc._maxStale = true;
+                            success = TrySetTokenOnlyValue(nameValue, ref cc._public);
+                        }
+                        else
+                        {
+                            goto default;
                         }
                         break;
 
-                    case MinFreshString:
-                        success = TrySetTimeSpan(nameValue, ref cc._minFresh);
+                    case 7:
+                        if (string.Equals(MaxAgeString, name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            success = TrySetTimeSpan(nameValue, ref cc._maxAge);
+                        }
+                        else if(string.Equals(PrivateString, name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            success = TrySetOptionalTokenList(nameValue, ref cc._private, ref cc._privateHeaders);
+                        }
+                        else
+                        {
+                            goto default;
+                        }
                         break;
 
-                    case NoTransformString:
-                        success = TrySetTokenOnlyValue(nameValue, ref cc._noTransform);
+                    case 8:
+                        if (string.Equals(NoCacheString, name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            success = TrySetOptionalTokenList(nameValue, ref cc._noCache, ref cc._noCacheHeaders);
+                        }
+                        else if (string.Equals(NoStoreString, name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            success = TrySetTokenOnlyValue(nameValue, ref cc._noStore);
+                        }
+                        else if (string.Equals(SharedMaxAgeString, name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            success = TrySetTimeSpan(nameValue, ref cc._sharedMaxAge);
+                        }
+                        else
+                        {
+                            goto default;
+                        }
                         break;
 
-                    case OnlyIfCachedString:
-                        success = TrySetTokenOnlyValue(nameValue, ref cc._onlyIfCached);
+                    case 9:
+                        if (string.Equals(MaxStaleString, name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            success = ((nameValue.Value == null) || TrySetTimeSpan(nameValue, ref cc._maxStaleLimit));
+                            if (success)
+                            {
+                                cc._maxStale = true;
+                            }
+                        }
+                        else if (string.Equals(MinFreshString, name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            success = TrySetTimeSpan(nameValue, ref cc._minFresh);
+                        }
+                        else
+                        {
+                            goto default;
+                        }
                         break;
 
-                    case PublicString:
-                        success = TrySetTokenOnlyValue(nameValue, ref cc._public);
+                    case 12:
+                        if (string.Equals(NoTransformString, name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            success = TrySetTokenOnlyValue(nameValue, ref cc._noTransform);
+                        }
+                        else
+                        {
+                            goto default;
+                        }
                         break;
 
-                    case PrivateString:
-                        success = TrySetOptionalTokenList(nameValue, ref cc._private, ref cc._privateHeaders);
+                    case 14:
+                        if (string.Equals(OnlyIfCachedString, name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            success = TrySetTokenOnlyValue(nameValue, ref cc._onlyIfCached);
+                        }
+                        else
+                        {
+                            goto default;
+                        }
                         break;
 
-                    case MustRevalidateString:
-                        success = TrySetTokenOnlyValue(nameValue, ref cc._mustRevalidate);
+                    case 15:
+                        if (string.Equals(MustRevalidateString, name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            success = TrySetTokenOnlyValue(nameValue, ref cc._mustRevalidate);
+                        }
+                        else
+                        {
+                            goto default;
+                        }
                         break;
 
-                    case ProxyRevalidateString:
-                        success = TrySetTokenOnlyValue(nameValue, ref cc._proxyRevalidate);
-                        break;
-
-                    case SharedMaxAgeString:
-                        success = TrySetTimeSpan(nameValue, ref cc._sharedMaxAge);
+                    case 16:
+                        if (string.Equals(ProxyRevalidateString, name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            success = TrySetTokenOnlyValue(nameValue, ref cc._proxyRevalidate);
+                        }
+                        else
+                        {
+                            goto default;
+                        }
                         break;
 
                     default:

@@ -233,18 +233,11 @@ namespace Microsoft.Net.Http.Headers
             return HttpParseResult.Parsed;
         }
 
-        internal static bool TryStringToDate(string input, out DateTimeOffset result)
-        {
-            // Try the various date formats in the order listed above.
-            // We should accept a wide verity of common formats, but only output RFC 1123 style dates.
-            if (DateTimeOffset.TryParseExact(input, DateFormats, DateTimeFormatInfo.InvariantInfo,
-                DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal, out result))
-            {
-                return true;
-            }
-
-            return false;
-        }
+        // Try the various date formats in the order listed above.
+        // We should accept a wide verity of common formats, but only output RFC 1123 style dates.
+        internal static bool TryStringToDate(string input, out DateTimeOffset result) =>
+            DateTimeOffset.TryParseExact(input, DateFormats, DateTimeFormatInfo.InvariantInfo,
+                DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal, out result);
 
         // TEXT = <any OCTET except CTLs, but including LWS>
         // LWS = [CRLF] 1*( SP | HT )

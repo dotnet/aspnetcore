@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Http
                 {
                     return null;
                 }
-                
+
                 return p;
             }
         }
