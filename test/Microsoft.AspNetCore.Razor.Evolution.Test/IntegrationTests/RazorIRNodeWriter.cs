@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
@@ -145,7 +146,20 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         {
             if (node.SourceRange != null)
             {
-                _writer.Write(node.SourceRange.ToString());
+                var sourceRange = node.SourceRange;
+                _writer.Write("(");
+                _writer.Write(sourceRange.AbsoluteIndex);
+                _writer.Write(":");
+                _writer.Write(sourceRange.LineIndex);
+                _writer.Write(",");
+                _writer.Write(sourceRange.CharacterIndex);
+                _writer.Write(" [");
+                _writer.Write(sourceRange.ContentLength);
+                _writer.Write("] ");
+
+                var fileName = sourceRange.FilePath.Substring(sourceRange.FilePath.LastIndexOf('/') + 1);
+                _writer.Write(fileName);
+                _writer.Write(")");
             }
         }
 

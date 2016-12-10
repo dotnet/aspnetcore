@@ -1,8 +1,11 @@
 Document - 
+    Checksum - 
     NamespaceDeclaration -  - 
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  -  -  -  - 
             RazorMethodDeclaration -  -  -  -  - 
-                HtmlContent - (0:0,0 [6] ) - <html>\n<body>\n    <span data-val="
-                CSharpExpression - (37:2,21 [5] )
-                    CSharpToken - (37:2,21 [5] ) - Hello
-                HtmlContent - (42:2,26 [1] ) - " />\n</body>\n</html>"
+                HtmlContent - (0:0,0 [6] HtmlWithDataDashAttribute.cshtml) - <html>\n<body>\n    <span data-val="
+                CSharpExpression - (37:2,21 [5] HtmlWithDataDashAttribute.cshtml)
+                    CSharpToken - (37:2,21 [5] HtmlWithDataDashAttribute.cshtml) - Hello
+                HtmlContent - (42:2,26 [1] HtmlWithDataDashAttribute.cshtml) - " />\n</body>\n</html>"

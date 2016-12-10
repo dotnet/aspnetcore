@@ -1,0 +1,15 @@
+﻿@*This is not going to be rendered*@
+<p>This should @* not *@ be shown</p>
+
+@{
+    @* throw new Exception("Oh no!") *@
+    Exception foo = @* new Exception("Oh no!") *@ null;
+    if(foo != null) {
+        throw foo;
+    }
+}
+
+@{ var bar = "@* bar *@"; }
+<p>But this should show the comment syntax: @bar</p>
+
+@(a@**@b)

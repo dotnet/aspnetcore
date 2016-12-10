@@ -1,0 +1,48 @@
+﻿@functions {
+    public HelperResult Repeat(int times, Func<int, object> template) {
+        return new HelperResult((writer) => {
+            for(int i = 0; i < times; i++) {
+                ((HelperResult)template(i)).WriteTo(writer);
+            }
+        });
+    }
+}
+
+@{
+    Func<dynamic, object> foo = @<text>This works @item!</text>;
+    @foo("")
+}
+
+<ul>
+@(Repeat(10, @<li>Item #@item</li>))
+</ul>
+
+<p>
+@Repeat(10,
+    @: This is line#@item of markup<br/>
+)
+</p>
+
+<p>
+@Repeat(10,
+    @:: This is line#@item of markup<br />
+)
+</p>
+
+<p>
+@Repeat(10,
+    @::: This is line#@item of markup<br />
+)
+</p>
+
+
+<ul>
+    @Repeat(10, @<li>
+        Item #@item
+        @{var parent = item;}
+        <ul>
+            <li>Child Items... ?</li>
+            @*Repeat(10, @<li>Item #@(parent).@item</li>)*@
+        </ul>
+    </li>)
+</ul> 

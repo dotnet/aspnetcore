@@ -40,8 +40,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var irDocument = pass.Execute(codeDocument: null, irDocument: originalIRDocument);
 
             // Assert
-            var @namespace = SingleChild<NamespaceDeclarationIRNode>(irDocument);
-            var @class = SingleChild<ClassDeclarationIRNode>(@namespace);
+            Children(irDocument,
+                node => Assert.IsType<ChecksumIRNode>(node),
+                node => Assert.IsType<NamespaceDeclarationIRNode>(node));
+            var @namespace = irDocument.Children[1];
+            Children(@namespace,
+                node => Assert.IsType<UsingStatementIRNode>(node),
+                node => Assert.IsType<UsingStatementIRNode>(node),
+                node => Assert.IsType<ClassDeclarationIRNode>(node));
+            var @class = (ClassDeclarationIRNode)@namespace.Children[2];
             Assert.Equal(@class.BaseType, "Hello<World[]>");
         }
 
@@ -57,8 +64,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var irDocument = pass.Execute(codeDocument: null, irDocument: originalIRDocument);
 
             // Assert
-            var @namespace = SingleChild<NamespaceDeclarationIRNode>(irDocument);
-            var @class = SingleChild<ClassDeclarationIRNode>(@namespace);
+            Children(irDocument,
+                node => Assert.IsType<ChecksumIRNode>(node),
+                node => Assert.IsType<NamespaceDeclarationIRNode>(node));
+            var @namespace = irDocument.Children[1];
+            Children(@namespace,
+                node => Assert.IsType<UsingStatementIRNode>(node),
+                node => Assert.IsType<UsingStatementIRNode>(node),
+                node => Assert.IsType<ClassDeclarationIRNode>(node));
+            var @class = @namespace.Children[2];
             Children(@class,
                 node => Assert.IsType<RazorMethodDeclarationIRNode>(node),
                 node => CSharpStatement(" var value = true; ", node));

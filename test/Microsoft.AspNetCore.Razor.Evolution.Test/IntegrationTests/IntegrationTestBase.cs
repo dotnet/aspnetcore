@@ -109,5 +109,36 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             var baseline = testFile.ReadAllText().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
             RazorIRNodeVerifier.Verify(document, baseline);
         }
+
+        protected void AssertCSharpDocumentMatchesBaseline(RazorCSharpDocument document)
+        {
+            if (Filename == null)
+            {
+                var message = $"{nameof(AssertCSharpDocumentMatchesBaseline)} should only be called from an integration test ({nameof(Filename)} is null).";
+                throw new InvalidOperationException(message);
+            }
+
+            var baselineFilename = Path.ChangeExtension(Filename, ".codegen.cs");
+
+            if (GenerateBaselines)
+            {
+                var baselineFullPath = Path.Combine(TestProjectRoot, baselineFilename);
+                File.WriteAllText(baselineFullPath, document.GeneratedCode);
+                return;
+            }
+
+            var testFile = TestFile.Create(baselineFilename);
+            if (!testFile.Exists())
+            {
+                throw new XunitException($"The resource {baselineFilename} was not found.");
+            }
+
+            var baseline = testFile.ReadAllText();
+
+            // Normalize newlines to match those in the baseline.
+            var actual = document.GeneratedCode.Replace("\r", "").Replace("\n", "\r\n");
+
+            Assert.Equal(baseline, actual);
+        }
     }
 }
