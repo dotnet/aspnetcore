@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             builder.Phases.Add(new DefaultRazorSyntaxTreePhase());
             builder.Phases.Add(new DefaultRazorIRLoweringPhase());
             builder.Phases.Add(new DefaultRazorIRPhase());
+            builder.Phases.Add(new DefaultRazorCSharpLoweringPhase());
 
             // Syntax Tree passes
             builder.Features.Add(new DefaultDirectiveSyntaxTreePass());

@@ -1,7 +1,10 @@
 Document - 
+    Checksum - 
     NamespaceDeclaration -  - 
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  -  -  -  - 
             RazorMethodDeclaration -  -  -  -  - 
-                HtmlContent - (0:0,0 [0] ) - 
+                HtmlContent - (0:0,0 [0] TestFiles/IntegrationTests/BasicIntegrationTest/CustomDirective.cshtml) - 
                 Directive -  - test_directive
-                HtmlContent - (15:0,15 [0] ) - 
+                HtmlContent - (15:0,15 [0] TestFiles/IntegrationTests/BasicIntegrationTest/CustomDirective.cshtml) - 

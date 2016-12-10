@@ -4,6 +4,7 @@
 using static Microsoft.AspNetCore.Razor.Evolution.Intermediate.RazorIRAssert;
 using Xunit;
 using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
@@ -19,8 +20,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             var irDocument = Lower(codeDocument);
 
             // Assert
-            var @namespace = SingleChild<NamespaceDeclarationIRNode>(irDocument);
-            var @class = SingleChild<ClassDeclarationIRNode>(@namespace);
+            Children(irDocument,
+                n => Assert.IsType<ChecksumIRNode>(n),
+                n => Assert.IsType<NamespaceDeclarationIRNode>(n));
+            var @namespace = irDocument.Children[1];
+            Children(@namespace,
+                n => Assert.IsType<UsingStatementIRNode>(n),
+                n => Assert.IsType<UsingStatementIRNode>(n),
+                n => Assert.IsType<ClassDeclarationIRNode>(n));
+            var @class = @namespace.Children[2];
             var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
             var html = SingleChild<HtmlContentIRNode>(method);
 
@@ -37,8 +45,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             var irDocument = Lower(codeDocument);
 
             // Assert
-            var @namespace = SingleChild<NamespaceDeclarationIRNode>(irDocument);
-            var @class = SingleChild<ClassDeclarationIRNode>(@namespace);
+            Children(irDocument,
+                n => Assert.IsType<ChecksumIRNode>(n),
+                n => Assert.IsType<NamespaceDeclarationIRNode>(n));
+            var @namespace = irDocument.Children[1];
+            Children(@namespace,
+                n => Assert.IsType<UsingStatementIRNode>(n),
+                n => Assert.IsType<UsingStatementIRNode>(n),
+                n => Assert.IsType<ClassDeclarationIRNode>(n));
+            var @class = @namespace.Children[2];
             var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
             var html = SingleChild<HtmlContentIRNode>(method);
 
@@ -60,8 +75,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             var irDocument = Lower(codeDocument);
 
             // Assert
-            var @namespace = SingleChild<NamespaceDeclarationIRNode>(irDocument);
-            var @class = SingleChild<ClassDeclarationIRNode>(@namespace);
+            Children(irDocument,
+                n => Assert.IsType<ChecksumIRNode>(n),
+                n => Assert.IsType<NamespaceDeclarationIRNode>(n));
+            var @namespace = irDocument.Children[1];
+            Children(@namespace,
+                n => Assert.IsType<UsingStatementIRNode>(n),
+                n => Assert.IsType<UsingStatementIRNode>(n),
+                n => Assert.IsType<ClassDeclarationIRNode>(n));
+            var @class = @namespace.Children[2];
             var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
             Children(method,
                 n => Html(
@@ -90,8 +112,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             var irDocument = Lower(codeDocument);
 
             // Assert
-            var @namespace = SingleChild<NamespaceDeclarationIRNode>(irDocument);
-            var @class = SingleChild<ClassDeclarationIRNode>(@namespace);
+            Children(irDocument,
+                n => Assert.IsType<ChecksumIRNode>(n),
+                n => Assert.IsType<NamespaceDeclarationIRNode>(n));
+            var @namespace = irDocument.Children[1];
+            Children(@namespace,
+                n => Assert.IsType<UsingStatementIRNode>(n),
+                n => Assert.IsType<UsingStatementIRNode>(n),
+                n => Assert.IsType<ClassDeclarationIRNode>(n));
+            var @class = @namespace.Children[2];
             var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
             Children(method,
                 n => Html(
@@ -125,8 +154,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             var irDocument = Lower(codeDocument);
 
             // Assert
-            var @namespace = SingleChild<NamespaceDeclarationIRNode>(irDocument);
-            var @class = SingleChild<ClassDeclarationIRNode>(@namespace);
+            Children(irDocument,
+                n => Assert.IsType<ChecksumIRNode>(n),
+                n => Assert.IsType<NamespaceDeclarationIRNode>(n));
+            var @namespace = irDocument.Children[1];
+            Children(@namespace,
+                n => Assert.IsType<UsingStatementIRNode>(n),
+                n => Assert.IsType<UsingStatementIRNode>(n),
+                n => Assert.IsType<ClassDeclarationIRNode>(n));
+            var @class = @namespace.Children[2];
             Children(@class,
                 n => Assert.IsType<RazorMethodDeclarationIRNode>(n),
                 n => Assert.IsType<CSharpStatementIRNode>(n));
@@ -142,9 +178,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             var irDocument = Lower(codeDocument);
 
             // Assert
-            var @namespace = SingleChild<NamespaceDeclarationIRNode>(irDocument);
+            Children(irDocument,
+                n => Assert.IsType<ChecksumIRNode>(n),
+                n => Assert.IsType<NamespaceDeclarationIRNode>(n));
+            var @namespace = irDocument.Children[1];
             Children(@namespace,
-                n => Using("using System", n),
+                n => Using("System", n),
+                n => Using(typeof(Task).Namespace, n),
                 n => Assert.IsType<ClassDeclarationIRNode>(n));
         }
 

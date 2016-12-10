@@ -15,9 +15,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var writer = new CSharpCodeWriter();
             var expected = $"#line 5 \"{filePath}\"" + writer.NewLine;
             var sourceLocation = new SourceLocation(10, 4, 3);
+            var mappingLocation = new MappingLocation(sourceLocation, 9);
 
             // Act
-            writer.WriteLineNumberDirective(sourceLocation, filePath);
+            writer.WriteLineNumberDirective(mappingLocation, filePath);
             var code = writer.GenerateCode();
 
             // Assert
@@ -35,9 +36,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var writer = new CSharpCodeWriter();
             var expected = $"#line 5 \"{sourceLocationFilePath}\"" + writer.NewLine;
             var sourceLocation = new SourceLocation(sourceLocationFilePath, 10, 4, 3);
+            var mappingLocation = new MappingLocation(sourceLocation, 9);
 
             // Act
-            writer.WriteLineNumberDirective(sourceLocation, filePath);
+            writer.WriteLineNumberDirective(mappingLocation, filePath);
             var code = writer.GenerateCode();
 
             // Assert

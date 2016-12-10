@@ -97,8 +97,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             Assert.Equal("test_directive", directiveSpan.Content);
 
             var irDocument = document.GetIRDocument();
-            var irNamespace = irDocument.Children[0];
-            var irClass = irNamespace.Children[0];
+            var irNamespace = irDocument.Children[1];
+            var irClass = irNamespace.Children[2];
             var irMethod = irClass.Children[0];
             var irDirective = (DirectiveIRNode)irMethod.Children[1];
             Assert.Equal("test_directive", irDirective.Name);

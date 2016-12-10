@@ -1,7 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
@@ -9,12 +11,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 {
     internal class DefaultRazorIRLoweringPhase : RazorEnginePhaseBase, IRazorIRLoweringPhase
     {
+        private IRazorConfigureParserFeature[] _parserOptionsCallbacks;
+
+        protected override void OnIntialized()
+        {
+            _parserOptionsCallbacks = Engine.Features.OfType<IRazorConfigureParserFeature>().ToArray();
+        }
+
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {
             var syntaxTree = codeDocument.GetSyntaxTree();
             ThrowForMissingDependency(syntaxTree);
 
-            var visitor = new Visitor();
+            var visitor = new Visitor(codeDocument, syntaxTree.Options);
 
             visitor.VisitBlock(syntaxTree.Root);
 
@@ -25,15 +34,33 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         private class Visitor : ParserVisitor
         {
             private readonly Stack<RazorIRBuilder> _builders;
+            private readonly RazorParserOptions _options;
+            private readonly RazorCodeDocument _codeDocument;
 
-            public Visitor()
+            public Visitor(RazorCodeDocument codeDocument, RazorParserOptions options)
             {
+                _codeDocument = codeDocument;
+                _options = options;
                 _builders = new Stack<RazorIRBuilder>();
                 var document = RazorIRBuilder.Document();
                 _builders.Push(document);
 
+                var checksum = ChecksumIRNode.Create(codeDocument.Source);
+                Builder.Add(checksum);
+
                 Namespace = new NamespaceDeclarationIRNode();
                 Builder.Push(Namespace);
+
+                foreach (var namespaceImport in options.NamespaceImports)
+                {
+                    var @using = new UsingStatementIRNode()
+                    {
+                        Content = namespaceImport,
+                        Parent = Namespace,
+                    };
+
+                    Builder.Add(@using);
+                }
 
                 Class = new ClassDeclarationIRNode();
                 Builder.Push(Class);
@@ -62,7 +89,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     Name = chunkGenerator.Name,
                     Prefix = chunkGenerator.Prefix,
                     Suffix = chunkGenerator.Suffix,
-                    SourceRange = new MappingLocation(block.Start, block.Length),
+                    SourceRange = BuildSourceRangeFromNode(block),
                 });
             }
 
@@ -80,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Builder.Push(new CSharpAttributeValueIRNode()
                 {
                     Prefix = chunkGenerator.Prefix,
-                    SourceRange = new MappingLocation(block.Start, block.Length),
+                    SourceRange = BuildSourceRangeFromNode(block),
                 });
             }
 
@@ -95,7 +122,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 {
                     Prefix = chunkGenerator.Prefix,
                     Content = chunkGenerator.Value,
-                    SourceRange = new MappingLocation(span.Start, span.Length),
+                    SourceRange = BuildSourceRangeFromNode(span),
                 });
             }
 
@@ -126,20 +153,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                 if (expressionNode.Children.Count > 0)
                 {
-                    var sourceRangeStart = expressionNode.Children[0].SourceRange;
-                    var contentLength = 0;
-
-                    for (var i = 0; i < expressionNode.Children.Count; i++)
-                    {
-                        contentLength += expressionNode.Children[i].SourceRange.ContentLength;
-                    }
+                    var sourceRangeStart = expressionNode
+                        .Children
+                        .FirstOrDefault(child => child.SourceRange != null)
+                        ?.SourceRange;
+                    var contentLength = expressionNode.Children.Sum(child => child.SourceRange?.ContentLength ?? 0);
 
                     expressionNode.SourceRange = new MappingLocation(
                         sourceRangeStart.AbsoluteIndex,
                         sourceRangeStart.LineIndex,
                         sourceRangeStart.CharacterIndex,
                         contentLength,
-                        sourceRangeStart.FilePath);
+                        sourceRangeStart.FilePath ?? _codeDocument.Source.Filename);
                 }
 
             }
@@ -149,7 +174,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Builder.Add(new CSharpTokenIRNode()
                 {
                     Content = span.Content,
-                    SourceRange = new MappingLocation(span.Start, span.Length),
+                    SourceRange = BuildSourceRangeFromNode(span),
                 });
             }
 
@@ -158,7 +183,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Builder.Add(new CSharpStatementIRNode()
                 {
                     Content = span.Content,
-                    SourceRange = new MappingLocation(span.Start, span.Length),
+                    SourceRange = BuildSourceRangeFromNode(span),
                 });
             }
 
@@ -175,13 +200,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     Builder.Add(new HtmlContentIRNode()
                     {
                         Content = span.Content,
-                        SourceRange = new MappingLocation(span.Start, span.Length),
+                        SourceRange = BuildSourceRangeFromNode(span),
                     });
                 }
             }
 
             public override void VisitImportSpan(AddImportChunkGenerator chunkGenerator, Span span)
             {
+                var namespaceImport = chunkGenerator.Namespace.Trim();
+
+                if (_options.NamespaceImports.Contains(namespaceImport, StringComparer.Ordinal))
+                {
+                    // Already added by default
+
+                    return;
+                }
+
                 // For prettiness, let's insert the usings before the class declaration.
                 var i = 0;
                 for (; i < Namespace.Children.Count; i++)
@@ -194,9 +228,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                 var @using = new UsingStatementIRNode()
                 {
-                    Content = span.Content,
+                    Content = namespaceImport,
                     Parent = Namespace,
-                    SourceRange = new MappingLocation(span.Start, span.Length),
+                    SourceRange = BuildSourceRangeFromNode(span),
                 };
 
                 Namespace.Children.Insert(i, @using);
@@ -208,7 +242,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 {
                     Content = span.Content,
                     Descriptor = chunkGenerator.Descriptor,
-                    SourceRange = new MappingLocation(span.Start, span.Length),
+                    SourceRange = BuildSourceRangeFromNode(span),
                 });
             }
 
@@ -224,6 +258,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             public override void VisitEndDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
             {
                 Builder.Pop();
+            }
+
+            private MappingLocation BuildSourceRangeFromNode(SyntaxTreeNode node)
+            {
+                var location = node.Start;
+                var sourceRange = new MappingLocation(
+                    location.AbsoluteIndex,
+                    location.LineIndex,
+                    location.CharacterIndex,
+                    node.Length,
+                    location.FilePath ?? _codeDocument.Source.Filename);
+
+                return sourceRange;
             }
         }
     }

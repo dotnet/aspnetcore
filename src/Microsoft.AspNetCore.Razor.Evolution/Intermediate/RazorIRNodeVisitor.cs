@@ -14,6 +14,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         {
         }
 
+        public virtual void VisitChecksum(ChecksumIRNode node)
+        {
+            VisitDefault(node);
+        }
+
         public virtual void VisitDirectiveToken(DirectiveTokenIRNode node)
         {
             VisitDefault(node);
