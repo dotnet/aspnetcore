@@ -107,13 +107,18 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                     builder.Append(KeyDelimiter)
                         .Append('H');
 
-                    foreach (var header in varyByRules.Headers)
+                    for (var i = 0; i < varyByRules.Headers.Count; i++)
                     {
+                        var header = varyByRules.Headers[i];
+                        var headerValues = context.HttpContext.Request.Headers[header];
                         builder.Append(KeyDelimiter)
                             .Append(header)
-                            .Append("=")
-                            // TODO: Perf - iterate the string values instead?
-                            .Append(context.HttpContext.Request.Headers[header]);
+                            .Append("=");
+
+                        for (var j = 0; j < headerValues.Count; j++)
+                        {
+                            builder.Append(headerValues[j]);
+                        }
                     }
                 }
 
@@ -131,19 +136,28 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                         {
                             builder.Append(KeyDelimiter)
                                 .AppendUpperInvariant(query.Key)
-                                .Append("=")
-                                .Append(query.Value);
+                                .Append("=");
+
+                            for (var i = 0; i < query.Value.Count; i++)
+                            {
+                                builder.Append(query.Value[i]);
+                            }
                         }
                     }
                     else
                     {
-                        foreach (var queryKey in varyByRules.QueryKeys)
+                        for (var i = 0; i < varyByRules.QueryKeys.Count; i++)
                         {
+                            var queryKey = varyByRules.QueryKeys[i];
+                            var queryKeyValues = context.HttpContext.Request.Query[queryKey];
                             builder.Append(KeyDelimiter)
                                 .Append(queryKey)
-                                .Append("=")
-                                // TODO: Perf - iterate the string values instead?
-                                .Append(context.HttpContext.Request.Query[queryKey]);
+                                .Append("=");
+
+                            for (var j = 0; j < queryKeyValues.Count; j++)
+                            {
+                                builder.Append(queryKeyValues[j]);
+                            }
                         }
                     }
                 }

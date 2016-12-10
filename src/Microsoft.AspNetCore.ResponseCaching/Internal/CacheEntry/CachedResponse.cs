@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         public int StatusCode { get; set; }
 
-        public IHeaderDictionary Headers { get; set; } = new HeaderDictionary();
+        public IHeaderDictionary Headers { get; set; }
 
         public Stream Body { get; set; }
     }

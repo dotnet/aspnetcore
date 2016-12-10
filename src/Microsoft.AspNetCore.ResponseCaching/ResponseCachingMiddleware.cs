@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -142,18 +141,15 @@ namespace Microsoft.AspNetCore.ResponseCaching
                         response.Headers.Add(header);
                     }
 
-                    response.Headers[HeaderNames.Age] = context.CachedEntryAge.Value.TotalSeconds.ToString("F0", CultureInfo.InvariantCulture);
+                    // Note: int64 division truncates result and errors may be up to 1 second. This reduction in
+                    // accuracy of age calculation is considered appropriate since it is small compared to clock
+                    // skews and the "Age" header is an estimate of the real age of cached content.
+                    response.Headers[HeaderNames.Age] = HeaderUtilities.FormatInt64(context.CachedEntryAge.Value.Ticks / TimeSpan.TicksPerSecond);
 
                     // Copy the cached response body
                     var body = context.CachedResponse.Body;
                     if (body.Length > 0)
                     {
-                        // Add a content-length if required
-                        if (!response.ContentLength.HasValue && StringValues.IsNullOrEmpty(response.Headers[HeaderNames.TransferEncoding]))
-                        {
-                            response.ContentLength = body.Length;
-                        }
-
                         try
                         {
                             await body.CopyToAsync(response.Body, StreamUtilities.BodySegmentSize, context.HttpContext.RequestAborted);
@@ -263,7 +259,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 context.CachedResponse = new CachedResponse
                 {
                     Created = context.ResponseDate.Value,
-                    StatusCode = context.HttpContext.Response.StatusCode
+                    StatusCode = context.HttpContext.Response.StatusCode,
+                    Headers = new HeaderDictionary()
                 };
 
                 foreach (var header in context.HttpContext.Response.Headers)
@@ -288,6 +285,13 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 var bufferStream = context.ResponseCachingStream.GetBufferStream();
                 if (!contentLength.HasValue || contentLength == bufferStream.Length)
                 {
+                    var response = context.HttpContext.Response;
+                    // Add a content-length if required
+                    if (!response.ContentLength.HasValue && StringValues.IsNullOrEmpty(response.Headers[HeaderNames.TransferEncoding]))
+                    {
+                        context.CachedResponse.Headers[HeaderNames.ContentLength] = HeaderUtilities.FormatInt64(bufferStream.Length);
+                    }
+
                     context.CachedResponse.Body = bufferStream;
                     _logger.LogResponseCached();
                     await _cache.SetAsync(context.StorageVaryKey ?? context.BaseKey, context.CachedResponse, context.CachedResponseValidFor);
@@ -371,8 +375,9 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     && EntityTagHeaderValue.TryParse(cachedResponseHeaders[HeaderNames.ETag], out eTag)
                     && EntityTagHeaderValue.TryParseList(ifNoneMatchHeader, out ifNoneMatchEtags))
                 {
-                    foreach (var requestETag in ifNoneMatchEtags)
+                    for (var i = 0; i < ifNoneMatchEtags.Count; i++)
                     {
+                        var requestETag = ifNoneMatchEtags[i];
                         if (eTag.Compare(requestETag, useStrongComparison: false))
                         {
                             context.Logger.LogNotModifiedIfNoneMatchMatched(requestETag);

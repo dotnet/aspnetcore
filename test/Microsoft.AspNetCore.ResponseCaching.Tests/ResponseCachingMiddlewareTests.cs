@@ -61,6 +61,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 "BaseKey",
                 new CachedResponse()
                 {
+                    Headers = new HeaderDictionary(),
                     Body = new SegmentReadStream(new List<byte[]>(0), 0)
                 },
                 TimeSpan.Zero);
@@ -108,6 +109,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 "BaseKeyVaryKey2",
                 new CachedResponse()
                 {
+                    Headers = new HeaderDictionary(),
                     Body = new SegmentReadStream(new List<byte[]>(0), 0)
                 },
                 TimeSpan.Zero);
@@ -666,7 +668,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             await context.HttpContext.Response.WriteAsync(new string('0', 10));
 
             context.ShouldCacheResponse = true;
-            context.CachedResponse = new CachedResponse();
+            context.CachedResponse = new CachedResponse()
+            {
+                Headers = new HeaderDictionary()
+            };
             context.BaseKey = "BaseKey";
             context.CachedResponseValidFor = TimeSpan.FromSeconds(10);
 
