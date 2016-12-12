@@ -1,16 +1,4 @@
 {
-    "adx": { // Packages written by the ADX team and that ship on NuGet.org
-        "rules": [
-            "AdxVerificationCompositeRule"
-        ],
-        "packages": {
-            "Microsoft.AspNetCore.Diagnostics": { },
-            "Microsoft.AspNetCore.Diagnostics.Abstractions": { },
-            "Microsoft.AspNetCore.Diagnostics.Elm": { },
-            "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": { },
-            "Microsoft.AspNetCore.MiddlewareAnalysis": { }
-        }
-    },
     "adx-nonshipping": {
         "rules": [],
         "packages": {
