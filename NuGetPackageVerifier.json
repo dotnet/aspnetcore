@@ -1,23 +1,4 @@
 {
-    "adx": { // Packages written by the ADX team and that ship on NuGet.org
-        "rules": [
-            "AdxVerificationCompositeRule"
-        ],
-        "packages": {
-            "Microsoft.AspNetCore.Authentication": { },
-            "Microsoft.AspNetCore.Authentication.Cookies": { },
-            "Microsoft.AspNetCore.Authentication.Facebook": { },
-            "Microsoft.AspNetCore.Authentication.Google": { },
-            "Microsoft.AspNetCore.Authentication.JwtBearer": { },
-            "Microsoft.AspNetCore.Authentication.MicrosoftAccount": { },
-            "Microsoft.AspNetCore.Authentication.OAuth": { },
-            "Microsoft.AspNetCore.Authentication.OpenIdConnect": { },
-            "Microsoft.AspNetCore.Authentication.Twitter": { },
-            "Microsoft.AspNetCore.Authorization": { },
-            "Microsoft.AspNetCore.CookiePolicy": { },
-            "Microsoft.Owin.Security.Interop": { }
-        }
-    },
     "adx-nonshipping": {
         "rules": [],
         "packages": {
