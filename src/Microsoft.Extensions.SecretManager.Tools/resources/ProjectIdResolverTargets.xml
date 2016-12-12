@@ -1,0 +1,5 @@
+<Project>
+    <Target Name="_ExtractUserSecretsMetadata">
+        <WriteLinesToFile File="$(_UserSecretsMetadataFile)" Lines="$(UserSecretsId)" />
+    </Target>
+</Project>

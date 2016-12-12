@@ -125,10 +125,8 @@ namespace Microsoft.Extensions.SecretManager.Tools
                 return options.Id;
             }
 
-            using (var resolver = new ProjectIdResolver(Logger, _workingDirectory))
-            {
-                return resolver.Resolve(options.Project, options.Configuration);
-            }
+            var resolver = new ProjectIdResolver(Logger, _workingDirectory);
+            return resolver.Resolve(options.Project, options.Configuration);
         }
     }
 }

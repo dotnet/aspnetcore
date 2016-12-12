@@ -4,19 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal
 {
-    public class ProjectIdResolver : IDisposable
+    public class ProjectIdResolver
     {
-        private const string TargetsFileName = "FindUserSecretsProperty.targets";
         private readonly ILogger _logger;
         private readonly string _workingDirectory;
-        private readonly List<string> _tempFiles = new List<string>();
 
         public ProjectIdResolver(ILogger logger, string workingDirectory)
         {
@@ -28,88 +25,70 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
         {
             var finder = new MsBuildProjectFinder(_workingDirectory);
             var projectFile = finder.FindMsBuildProject(project);
+            EnsureProjectExtensionTargetsExist(projectFile);
 
             _logger.LogDebug(Resources.Message_Project_File_Path, projectFile);
 
-            var targetFile = GetTargetFile();
-            var outputFile = Path.GetTempFileName();
-            _tempFiles.Add(outputFile);
-
             var commandOutput = new List<string>();
-            var commandResult = Command.CreateDotNet("msbuild",
-                new[] {
-                    targetFile,
-                    "/nologo",
-                    "/t:_FindUserSecretsProperty",
-                    $"/p:Project={projectFile}",
-                    $"/p:OutputFile={outputFile}",
-                    $"/p:Configuration={configuration}"
-                })
-                .CaptureStdErr()
-                .CaptureStdOut()
-                .OnErrorLine(l => commandOutput.Add(l))
-                .OnOutputLine(l => commandOutput.Add(l))
-                .Execute();
-
-            if (commandResult.ExitCode != 0)
+            var outputFile = Path.GetTempFileName();
+            try
             {
-                _logger.LogDebug(string.Join(Environment.NewLine, commandOutput));
-                throw new GracefulException(Resources.FormatError_ProjectFailedToLoad(projectFile));
-            }
+                var commandResult = Command.CreateDotNet("msbuild",
+                    new[] {
+                        projectFile,
+                        "/nologo",
+                        "/t:_ExtractUserSecretsMetadata", // defined in ProjectIdResolverTargets.xml
+                        $"/p:_UserSecretsMetadataFile={outputFile}",
+                        $"/p:Configuration={configuration}"
+                    })
+                    .CaptureStdErr()
+                    .CaptureStdOut()
+                    .OnErrorLine(l => commandOutput.Add(l))
+                    .OnOutputLine(l => commandOutput.Add(l))
+                    .Execute();
 
-            var id = File.ReadAllText(outputFile)?.Trim();
-            if (string.IsNullOrEmpty(id))
+                if (commandResult.ExitCode != 0)
+                {
+                    _logger.LogDebug(string.Join(Environment.NewLine, commandOutput));
+                    throw new GracefulException(Resources.FormatError_ProjectFailedToLoad(projectFile));
+                }
+
+                var id = File.ReadAllText(outputFile)?.Trim();
+                if (string.IsNullOrEmpty(id))
+                {
+                    throw new GracefulException(Resources.FormatError_ProjectMissingId(projectFile));
+                }
+
+                return id;
+
+            }
+            finally
             {
-                throw new GracefulException(Resources.FormatError_ProjectMissingId(projectFile));
+                TryDelete(outputFile);
             }
-
-            return id;
         }
 
-        public void Dispose()
+        private void EnsureProjectExtensionTargetsExist(string projectFile)
         {
-            foreach (var file in _tempFiles)
+            // relies on MSBuildProjectExtensionsPath and Microsoft.Common.targets to import this file
+            // into the target project
+            var projectExtensionsPath = Path.Combine(
+                Path.GetDirectoryName(projectFile),
+                "obj",
+                $"{Path.GetFileName(projectFile)}.usersecrets.targets");
+
+            Directory.CreateDirectory(Path.GetDirectoryName(projectExtensionsPath));
+
+            // should overwrite the file always. Hypothetically, another version of the user-secrets tool
+            // could have already put a file here. We want to ensure the target file matches the currently
+            // running tool
+            using (var resource = GetType().GetTypeInfo().Assembly.GetManifestResourceStream("ProjectIdResolverTargets.xml"))
+            using (var stream = new FileStream(projectExtensionsPath, FileMode.Create))
+            using (var writer = new StreamWriter(stream))
             {
-                TryDelete(file);
-            }
-        }
-
-        private string GetTargetFile()
-        {
-            var assemblyDir = Path.GetDirectoryName(GetType().GetTypeInfo().Assembly.Location);
-
-            // targets should be in one of these locations, depending on test setup and tools installation
-            var searchPaths = new[]
-            {
-                AppContext.BaseDirectory,
-                assemblyDir, // next to assembly
-                Path.Combine(assemblyDir, "../../tools"), // inside the nupkg
-            };
-
-            var foundFile = searchPaths
-                .Select(dir => Path.Combine(dir, TargetsFileName))
-                .Where(File.Exists)
-                .FirstOrDefault();
-
-            if (foundFile != null)
-            {
-                return foundFile;
-            }
-
-            // This should only really happen during testing. Current build system doesn't give us a good way to ensure the
-            // test project has an always-up to date version of the targets file.
-            // TODO cleanup after we switch to an MSBuild system in which can specify "CopyToOutputDirectory: Always" to resolve this issue
-            var outputPath = Path.GetTempFileName();
-            using (var resource = GetType().GetTypeInfo().Assembly.GetManifestResourceStream(TargetsFileName))
-            using (var stream = new FileStream(outputPath, FileMode.Create))
-            {
+                writer.WriteLine("<!-- Auto-generated by dotnet-user-secrets. This file can be deleted and should not be commited to source control. -->");
                 resource.CopyTo(stream);
             }
-
-            // cleanup
-            _tempFiles.Add(outputPath);
-
-            return outputPath;
         }
 
         private static void TryDelete(string file)

@@ -5,10 +5,9 @@
     "emitEntryPoint": true,
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "copyToOutput": "*.targets",
     "embed": {
       "mappings": {
-        "FindUserSecretsProperty.targets": "./FindUserSecretsProperty.targets"
+        "ProjectIdResolverTargets.xml": "./resources/ProjectIdResolverTargets.xml"
       }
     },
     "compile": {
@@ -25,16 +24,6 @@
       "configuration",
       "secrets",
       "usersecrets"
-    ],
-    "files": {
-      "mappings": {
-        "tools/FindUserSecretsProperty.targets": "FindUserSecretsProperty.targets"
-      }
-    }
-  },
-  "publishOptions": {
-    "include": [
-      "*.targets"
     ]
   },
   "dependencies": {
