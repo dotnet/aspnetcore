@@ -1,0 +1,12 @@
+<Project>
+  <Import Project="..\dir.props" />
+  <PropertyGroup>
+    <PackageType>DotnetCliTool</PackageType>
+  </PropertyGroup>
+  <ItemGroup>
+      <PackageReference Include="Microsoft.NETCore.App" Version="1.0.0" />
+      <None Include="$(MSBuildThisFileDirectory)\prefercliruntime" Pack="true" PackagePath="\prefercliruntime" />
+      <!-- required for CLI's that don't yet support the 'prevercliruntime' file -->
+      <None Include="$(ProjectRuntimeConfigFilePath)" Pack="true" PackagePath="lib\$(TargetFramework)" />
+  </ItemGroup>
+</Project>

@@ -1,34 +1,29 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.25807.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{66517987-2A5A-4330-B130-207039378FD4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.DotNet.Watcher.Tools", "src\Microsoft.DotNet.Watcher.Tools\Microsoft.DotNet.Watcher.Tools.xproj", "{8A8CEABC-AC47-43FF-A5DF-69224F7E1F46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Watcher.Tools", "src\Microsoft.DotNet.Watcher.Tools\Microsoft.DotNet.Watcher.Tools.csproj", "{8A8CEABC-AC47-43FF-A5DF-69224F7E1F46}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8321E0D1-9A47-4D2F-AED8-3AE636D44E35}"
 	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
 		NuGet.Config = NuGet.Config
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F5B382BC-258F-46E1-AC3D-10E5CCD55134}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.DotNet.Watcher.Tools.FunctionalTests", "test\Microsoft.DotNet.Watcher.Tools.FunctionalTests\Microsoft.DotNet.Watcher.Tools.FunctionalTests.xproj", "{16BADE2F-1184-4518-8A70-B68A19D0805B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Watcher.Tools.FunctionalTests", "test\Microsoft.DotNet.Watcher.Tools.FunctionalTests\Microsoft.DotNet.Watcher.Tools.FunctionalTests.csproj", "{16BADE2F-1184-4518-8A70-B68A19D0805B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.SecretManager.Tools", "src\Microsoft.Extensions.SecretManager.Tools\Microsoft.Extensions.SecretManager.Tools.xproj", "{8730E848-CA0F-4E0A-9A2F-BC22AD0B2C4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.SecretManager.Tools", "src\Microsoft.Extensions.SecretManager.Tools\Microsoft.Extensions.SecretManager.Tools.csproj", "{8730E848-CA0F-4E0A-9A2F-BC22AD0B2C4E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.SecretManager.Tools.Tests", "test\Microsoft.Extensions.SecretManager.Tools.Tests\Microsoft.Extensions.SecretManager.Tools.Tests.xproj", "{7B331122-83B1-4F08-A119-DC846959844C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.SecretManager.Tools.Tests", "test\Microsoft.Extensions.SecretManager.Tools.Tests\Microsoft.Extensions.SecretManager.Tools.Tests.csproj", "{7B331122-83B1-4F08-A119-DC846959844C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.DotNet.Watcher.Tools.Tests", "test\Microsoft.DotNet.Watcher.Tools.Tests\Microsoft.DotNet.Watcher.Tools.Tests.xproj", "{8A2E6961-6B12-4A8E-8215-3E7301D52EAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Watcher.Tools.Tests", "test\Microsoft.DotNet.Watcher.Tools.Tests\Microsoft.DotNet.Watcher.Tools.Tests.csproj", "{8A2E6961-6B12-4A8E-8215-3E7301D52EAC}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Caching.SqlConfig.Tools", "src\Microsoft.Extensions.Caching.SqlConfig.Tools\Microsoft.Extensions.Caching.SqlConfig.Tools.xproj", "{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Caching.SqlConfig.Tools", "src\Microsoft.Extensions.Caching.SqlConfig.Tools\Microsoft.Extensions.Caching.SqlConfig.Tools.csproj", "{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{59E02BDF-98DE-4D64-B576-2D0299D5E052}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGetPackager", "tools\NuGetPackager\NuGetPackager.xproj", "{8B781D87-1FC3-4A34-9089-2BDF6B562B85}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Tools.Tests", "test\Microsoft.Extensions.Tools.Tests\Microsoft.Extensions.Tools.Tests.xproj", "{A24BF1D1-4326-4455-A528-09F1E20EDC83}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Tools.Tests", "test\Microsoft.Extensions.Tools.Tests\Microsoft.Extensions.Tools.Tests.csproj", "{9295E811-FF0F-E40A-2F9A-0B2C4EBC22AD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,36 +33,32 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8A8CEABC-AC47-43FF-A5DF-69224F7E1F46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8A8CEABC-AC47-43FF-A5DF-69224F7E1F46}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8A8CEABC-AC47-43FF-A5DF-69224F7E1F46}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8A8CEABC-AC47-43FF-A5DF-69224F7E1F46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A8CEABC-AC47-43FF-A5DF-69224F7E1F46}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A8CEABC-AC47-43FF-A5DF-69224F7E1F46}.Release|Any CPU.Build.0 = Debug|Any CPU
 		{16BADE2F-1184-4518-8A70-B68A19D0805B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{16BADE2F-1184-4518-8A70-B68A19D0805B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{16BADE2F-1184-4518-8A70-B68A19D0805B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{16BADE2F-1184-4518-8A70-B68A19D0805B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16BADE2F-1184-4518-8A70-B68A19D0805B}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{16BADE2F-1184-4518-8A70-B68A19D0805B}.Release|Any CPU.Build.0 = Debug|Any CPU
 		{8730E848-CA0F-4E0A-9A2F-BC22AD0B2C4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8730E848-CA0F-4E0A-9A2F-BC22AD0B2C4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8730E848-CA0F-4E0A-9A2F-BC22AD0B2C4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8730E848-CA0F-4E0A-9A2F-BC22AD0B2C4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8730E848-CA0F-4E0A-9A2F-BC22AD0B2C4E}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{8730E848-CA0F-4E0A-9A2F-BC22AD0B2C4E}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{9295E811-FF0F-E40A-2F9A-0B2C4EBC22AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9295E811-FF0F-E40A-2F9A-0B2C4EBC22AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9295E811-FF0F-E40A-2F9A-0B2C4EBC22AD}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{9295E811-FF0F-E40A-2F9A-0B2C4EBC22AD}.Release|Any CPU.Build.0 = Debug|Any CPU
 		{7B331122-83B1-4F08-A119-DC846959844C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7B331122-83B1-4F08-A119-DC846959844C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7B331122-83B1-4F08-A119-DC846959844C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7B331122-83B1-4F08-A119-DC846959844C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B331122-83B1-4F08-A119-DC846959844C}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B331122-83B1-4F08-A119-DC846959844C}.Release|Any CPU.Build.0 = Debug|Any CPU
 		{8A2E6961-6B12-4A8E-8215-3E7301D52EAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8A2E6961-6B12-4A8E-8215-3E7301D52EAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8A2E6961-6B12-4A8E-8215-3E7301D52EAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8A2E6961-6B12-4A8E-8215-3E7301D52EAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A2E6961-6B12-4A8E-8215-3E7301D52EAC}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A2E6961-6B12-4A8E-8215-3E7301D52EAC}.Release|Any CPU.Build.0 = Debug|Any CPU
 		{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8B781D87-1FC3-4A34-9089-2BDF6B562B85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8B781D87-1FC3-4A34-9089-2BDF6B562B85}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8B781D87-1FC3-4A34-9089-2BDF6B562B85}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8B781D87-1FC3-4A34-9089-2BDF6B562B85}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A24BF1D1-4326-4455-A528-09F1E20EDC83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A24BF1D1-4326-4455-A528-09F1E20EDC83}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A24BF1D1-4326-4455-A528-09F1E20EDC83}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A24BF1D1-4326-4455-A528-09F1E20EDC83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}.Release|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -76,10 +67,9 @@ Global
 		{8A8CEABC-AC47-43FF-A5DF-69224F7E1F46} = {66517987-2A5A-4330-B130-207039378FD4}
 		{16BADE2F-1184-4518-8A70-B68A19D0805B} = {F5B382BC-258F-46E1-AC3D-10E5CCD55134}
 		{8730E848-CA0F-4E0A-9A2F-BC22AD0B2C4E} = {66517987-2A5A-4330-B130-207039378FD4}
+		{9295E811-FF0F-E40A-2F9A-0B2C4EBC22AD} = {F5B382BC-258F-46E1-AC3D-10E5CCD55134}
 		{7B331122-83B1-4F08-A119-DC846959844C} = {F5B382BC-258F-46E1-AC3D-10E5CCD55134}
 		{8A2E6961-6B12-4A8E-8215-3E7301D52EAC} = {F5B382BC-258F-46E1-AC3D-10E5CCD55134}
 		{53F3B53D-303A-4DAA-9C38-4F55195FA5B9} = {66517987-2A5A-4330-B130-207039378FD4}
-		{8B781D87-1FC3-4A34-9089-2BDF6B562B85} = {59E02BDF-98DE-4D64-B576-2D0299D5E052}
-		{A24BF1D1-4326-4455-A528-09F1E20EDC83} = {F5B382BC-258F-46E1-AC3D-10E5CCD55134}
 	EndGlobalSection
 EndGlobal

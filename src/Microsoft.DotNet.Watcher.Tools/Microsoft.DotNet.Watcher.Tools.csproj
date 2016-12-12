@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\dir.props" />
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <AssemblyName>dotnet-watch</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <Description>Command line tool to watch for source file changes during development and restart the dotnet command.</Description>
+    <PackageTags>dotnet;watch</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="**\*.cs" />
+    <Compile Include="..\..\shared\**\*.cs" />
+    <EmbeddedResource Include="**\*.resx" />
+    <EmbeddedResource Include="dotnetwatch.targets" LogicalName="dotnetwatch.targets" />
+    <Content Include="toolassets\*.targets" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="%(Identity)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Restore this when https://github.com/NuGet/Home/issues/3683 is resolved -->
+    <!--<PackageReference Include="Microsoft.Extensions.Process.Sources" Version="1.1.0-*" PrivateAssets="All" />-->
+  </ItemGroup>
+</Project>

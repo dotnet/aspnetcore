@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\dir.props" />
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="**\*.cs" />
+    <Compile Include="..\Shared\**\*.cs" />
+    <Content Include="..\..\src\Microsoft.DotNet.Watcher.Tools\toolassets\DotNetWatchInner.targets" Link="toolassets\DotNetWatchInner.targets" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Microsoft.DotNet.Watcher.Tools\toolassets\DotNetWatchOuter.targets" Link="toolassets\DotNetWatchOuter.targets" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Microsoft.DotNet.Watcher.Tools\toolassets\DotNetWatchCommon.targets" Link="toolassets\DotNetWatchCommon.targets" CopyToOutputDirectory="PreserveNewest" />
+    <ProjectReference Include="..\..\src\Microsoft.DotNet.Watcher.Tools\Microsoft.DotNet.Watcher.Tools.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\dir.props" />
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="**\*.cs" Exclude="TestProjects\**\*" />
+    <Compile Include="..\Shared\**\*.cs" />
+    <Content Include="TestProjects\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Microsoft.DotNet.Watcher.Tools\toolassets\DotNetWatchInner.targets" Link="toolassets\DotNetWatchInner.targets" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Microsoft.DotNet.Watcher.Tools\toolassets\DotNetWatchOuter.targets" Link="toolassets\DotNetWatchOuter.targets" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Microsoft.DotNet.Watcher.Tools\toolassets\DotNetWatchCommon.targets" Link="toolassets\DotNetWatchCommon.targets" CopyToOutputDirectory="PreserveNewest" />
+    <ProjectReference Include="..\..\src\Microsoft.DotNet.Watcher.Tools\Microsoft.DotNet.Watcher.Tools.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.Watcher.Tools.Tests\Microsoft.DotNet.Watcher.Tools.Tests.csproj" />
+    <PackageReference Include="Microsoft.DotNet.Cli.Utils" Version="1.0.0-preview4-004215" />
+  </ItemGroup>
+
+  <Target Name="CleanTestProjects" BeforeTargets="CoreCompile;CopyFilesToOutputDirectory">
+    <RemoveDir Directories="$(TargetDir)TestProjects" Condition="Exists('$(TargetDir)TestProjects')" />
+  </Target>
+</Project>

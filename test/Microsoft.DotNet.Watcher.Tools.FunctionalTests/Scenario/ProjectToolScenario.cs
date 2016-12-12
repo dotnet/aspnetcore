@@ -87,7 +87,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         private void CreateTestDirectory()
         {
             Directory.CreateDirectory(WorkFolder);
-            File.WriteAllText(Path.Combine(WorkFolder, "global.json"), "{}");
 
             var nugetConfigFilePath = FindNugetConfig();
 
@@ -116,7 +115,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         private static string FindNugetConfig()
         {
-            var currentDirPath = Directory.GetCurrentDirectory();
+            var currentDirPath = AppContext.BaseDirectory;
 
             string nugetConfigFile;
             while (true)

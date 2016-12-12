@@ -1,0 +1,42 @@
+<Project>
+    <PropertyGroup>
+        <!-- general options -->
+        <NeutralLanguage>en-US</NeutralLanguage>
+        <Company>Microsoft Corporation.</Company>
+        <Product>Microsoft .NET</Product>
+
+        <!-- create second-based build number for local builds -->
+        <_SecondBasedTimeStamp>$([System.DateTime]::UtcNow.Subtract($([System.DateTime]::Parse("2015-01-01"))).TotalSeconds.ToString())</_SecondBasedTimeStamp>
+        <_SecondBasedTimeStamp>t$([System.Int64]::Parse($(_SecondBasedTimeStamp.Substring(0, $(_SecondBasedTimeStamp.IndexOf("."))))).ToString("x9"))</_SecondBasedTimeStamp>
+
+        <!-- pack options -->
+        <PackWithoutBuildNumber Condition="'$(PackWithoutBuildNumber)'==''">false</PackWithoutBuildNumber>
+        <BuildNumber Condition="'$(BuildNumber)'==''">$(_SecondBasedTimeStamp)</BuildNumber>
+        <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+        <VersionSuffix Condition="'$(VersionSuffix)'==''">$(BuildNumber)</VersionSuffix>
+
+        <PackageId>$(MSBuildProjectName)</PackageId>
+        <Authors>Microsoft</Authors>
+        <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+        <RepositoryUrl>https://github.com/aspnet/DotNetTools</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <ProjectUrl>https://asp.net</ProjectUrl>
+        <RequireLicenseAcceptance>true</RequireLicenseAcceptance>
+
+        <!-- build options -->
+        <WarningsAsErrors>true</WarningsAsErrors>
+        <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Key.snk</AssemblyOriginatorKeyFile>
+        <SignAssembly>true</SignAssembly>
+        <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$(PackWithoutBuildNumber) AND '$(VersionPrefix)' != ''">
+        <PackageVersion>$(VersionPrefix)</PackageVersion>
+        <PackageVersion Condition="'$(VersionSuffix)' != ''">$(PackageVersion)-$(VersionSuffix)-final</PackageVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <!-- pack options -->
+        <Serviceable>true</Serviceable>
+    </PropertyGroup>
+</Project>

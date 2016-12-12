@@ -1,0 +1,5 @@
+<Project>
+
+  <Import Project="version.props" />
+  <Import Project="build\common.props" />
+</Project>

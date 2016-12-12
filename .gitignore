@@ -33,3 +33,4 @@ testWorkDir/
 *.nuget.props
 *.nuget.targets
 .idea/
+.dotnet/
