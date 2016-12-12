@@ -11,6 +11,7 @@
     "Microsoft.AspNetCore.Hosting": "1.2.0-*",
     "Microsoft.AspNetCore.Http": "1.2.0-*",
     "Microsoft.AspNetCore.Identity": "1.2.0-*",
+    "Microsoft.AspNetCore.Identity.Specification.Tests": "1.2.0-*",
     "Microsoft.AspNetCore.Testing": "1.2.0-*",
     "Microsoft.Extensions.Configuration": "1.2.0-*",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.2.0-*",

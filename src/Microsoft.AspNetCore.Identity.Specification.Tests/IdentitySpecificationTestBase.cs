@@ -17,13 +17,23 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.Test
 {
-    // Common functionality tests that all verifies user manager functionality regardless of store implementation
-    public abstract class UserManagerTestBase<TUser, TRole> : UserManagerTestBase<TUser, TRole, string>
+    /// <summary>
+    /// Common functionality tests that all verifies user manager functionality regardless of store implementation
+    /// </summary>
+    /// <typeparam name="TUser">The type of the user.</typeparam>
+    /// <typeparam name="TRole">The type of the role.</typeparam>
+    public abstract class IdentitySpecificationTestBase<TUser, TRole> : IdentitySpecificationTestBase<TUser, TRole, string>
         where TUser : class
         where TRole : class
     { }
 
-    public abstract class UserManagerTestBase<TUser, TRole, TKey>
+    /// <summary>
+    /// Base class for tests that exercise basic identity functionality that all stores should support.
+    /// </summary>
+    /// <typeparam name="TUser">The type of the user.</typeparam>
+    /// <typeparam name="TRole">The type of the role.</typeparam>
+    /// <typeparam name="TKey">The primary key type.</typeparam>
+    public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey>
         where TUser : class
         where TRole : class
         where TKey : IEquatable<TKey>
@@ -32,11 +42,20 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         private readonly IdentityErrorDescriber _errorDescriber = new IdentityErrorDescriber();
 
+        /// <summary>
+        /// If true, tests that require a database will be skipped.
+        /// </summary>
+        /// <returns></returns>
         protected virtual bool ShouldSkipDbTests()
         {
             return false;
         }
 
+        /// <summary>
+        /// Configure the service collection used for tests.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="context"></param>
         protected virtual void SetupIdentityServices(IServiceCollection services, object context = null)
         {
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -55,6 +74,13 @@ namespace Microsoft.AspNetCore.Identity.Test
             services.AddSingleton<ILogger<RoleManager<TRole>>>(new TestLogger<RoleManager<TRole>>());
         }
 
+        /// <summary>
+        /// Creates the user manager used for tests.
+        /// </summary>
+        /// <param name="context">The context that will be passed into the store, typically a db context.</param>
+        /// <param name="services">The service collection to use, optional.</param>
+        /// <param name="configureServices">Delegate used to configure the services, optional.</param>
+        /// <returns>The user manager to use for tests.</returns>
         protected virtual UserManager<TUser> CreateManager(object context = null, IServiceCollection services = null, Action<IServiceCollection> configureServices = null)
         {
             if (services == null)
@@ -66,13 +92,16 @@ namespace Microsoft.AspNetCore.Identity.Test
                 context = CreateTestContext();
             }
             SetupIdentityServices(services, context);
-            if (configureServices != null)
-            {
-                configureServices(services);
-            }
+            configureServices?.Invoke(services);
             return services.BuildServiceProvider().GetService<UserManager<TUser>>();
         }
 
+        /// <summary>
+        /// Creates the role manager for tests.
+        /// </summary>
+        /// <param name="context">The context that will be passed into the store, typically a db context.</param>
+        /// <param name="services">The service collection to use, optional.</param>
+        /// <returns></returns>
         protected RoleManager<TRole> CreateRoleManager(object context = null, IServiceCollection services = null)
         {
             if (services == null)
@@ -87,24 +116,86 @@ namespace Microsoft.AspNetCore.Identity.Test
             return services.BuildServiceProvider().GetService<RoleManager<TRole>>();
         }
 
+        /// <summary>
+        /// Creates the context object for a test, typically a DbContext.
+        /// </summary>
+        /// <returns>The context object for a test, typically a DbContext.</returns>
         protected abstract object CreateTestContext();
 
+        /// <summary>
+        /// Adds an IUserStore to services for the test.
+        /// </summary>
+        /// <param name="services">The service collection to add to.</param>
+        /// <param name="context">The context for the store to use, optional.</param>
         protected abstract void AddUserStore(IServiceCollection services, object context = null);
+
+        /// <summary>
+        /// Adds an IRoleStore to services for the test.
+        /// </summary>
+        /// <param name="services">The service collection to add to.</param>
+        /// <param name="context">The context for the store to use, optional.</param>
         protected abstract void AddRoleStore(IServiceCollection services, object context = null);
 
+        /// <summary>
+        /// Set the user's password hash.
+        /// </summary>
+        /// <param name="user">The user to set.</param>
+        /// <param name="hashedPassword">The password hash to set.</param>
         protected abstract void SetUserPasswordHash(TUser user, string hashedPassword);
 
+        /// <summary>
+        /// Create a new test user instance.
+        /// </summary>
+        /// <param name="namePrefix">Optional name prefix, name will be randomized.</param>
+        /// <param name="email">Optional email.</param>
+        /// <param name="phoneNumber">Optional phone number.</param>
+        /// <param name="lockoutEnabled">Optional lockout enabled.</param>
+        /// <param name="lockoutEnd">Optional lockout end.</param>
+        /// <param name="useNamePrefixAsUserName">If true, the prefix should be used as the username without a random pad.</param>
+        /// <returns>The new test user instance.</returns>
         protected abstract TUser CreateTestUser(string namePrefix = "", string email = "", string phoneNumber = "",
             bool lockoutEnabled = false, DateTimeOffset? lockoutEnd = null, bool useNamePrefixAsUserName = false);
 
+        /// <summary>
+        /// Creates a new test role instance.
+        /// </summary>
+        /// <param name="roleNamePrefix">Optional name prefix, name will be randomized.</param>
+        /// <param name="useRoleNamePrefixAsRoleName">If true, the prefix should be used as the rolename without a random pad.</param>
+        /// <returns></returns>
         protected abstract TRole CreateTestRole(string roleNamePrefix = "", bool useRoleNamePrefixAsRoleName = false);
 
+        /// <summary>
+        /// Query used to do name equality checks.
+        /// </summary>
+        /// <param name="userName">The user name to match.</param>
+        /// <returns>The query to use.</returns>
         protected abstract Expression<Func<TUser, bool>> UserNameEqualsPredicate(string userName);
+
+        /// <summary>
+        /// Query used to do user name prefix matching.
+        /// </summary>
+        /// <param name="userName">The user name to match.</param>
+        /// <returns>The query to use.</returns>
         protected abstract Expression<Func<TUser, bool>> UserNameStartsWithPredicate(string userName);
 
+        /// <summary>
+        /// Query used to do name equality checks.
+        /// </summary>
+        /// <param name="roleName">The role name to match.</param>
+        /// <returns>The query to use.</returns>
         protected abstract Expression<Func<TRole, bool>> RoleNameEqualsPredicate(string roleName);
+
+        /// <summary>
+        /// Query used to do user name prefix matching.
+        /// </summary>
+        /// <param name="roleName">The role name to match.</param>
+        /// <returns>The query to use.</returns>
         protected abstract Expression<Func<TRole, bool>> RoleNameStartsWithPredicate(string roleName);
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanDeleteUser()
         {
@@ -120,6 +211,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Null(await manager.FindByIdAsync(userId));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanUpdateUserName()
         {
@@ -139,6 +234,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Null(await manager.FindByNameAsync(name));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CheckSetUserNameValidatesUser()
         {
@@ -167,6 +266,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User {await manager.GetUserIdAsync(newUser)} validation failed: {error.Code}.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task SetUserNameUpdatesSecurityStamp()
         {
@@ -185,6 +288,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CreateUpdatesSecurityStamp()
         {
@@ -200,6 +307,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotNull(await manager.GetSecurityStampAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CheckSetEmailValidatesUser()
         {
@@ -223,6 +334,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsFailure(await manager.SetEmailAsync(newUser, ""), _errorDescriber.InvalidEmail(""));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanUpdatePasswordUsingHasher()
         {
@@ -243,6 +358,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.True(await manager.CheckPasswordAsync(user, "New"));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanFindById()
         {
@@ -256,6 +375,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotNull(await manager.FindByIdAsync(await manager.GetUserIdAsync(user)));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task UserValidatorCanBlockCreate()
         {
@@ -271,6 +394,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User {await manager.GetUserIdAsync(user) ?? NullValue} validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task UserValidatorCanBlockUpdate()
         {
@@ -287,6 +414,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User {await manager.GetUserIdAsync(user) ?? NullValue} validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanChainUserValidators()
         {
@@ -305,7 +436,11 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(2, result.Errors.Count());
         }
 
-        [ConditionalTheory]
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Theory]
         [InlineData("")]
         [InlineData(null)]
         public async Task UserValidatorBlocksShortEmailsWhenRequiresUniqueEmail(string email)
@@ -321,6 +456,10 @@ namespace Microsoft.AspNetCore.Identity.Test
         }
 
 #if NET451
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Theory]
         [InlineData("@@afd")]
         [InlineData("bogus")]
@@ -337,6 +476,10 @@ namespace Microsoft.AspNetCore.Identity.Test
         }
 #endif
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task PasswordValidatorCanBlockAddPassword()
         {
@@ -354,6 +497,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User {await manager.GetUserIdAsync(user)} password validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanChainPasswordValidators()
         {
@@ -372,6 +519,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(2, result.Errors.Count());
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task PasswordValidatorCanBlockChangePassword()
         {
@@ -389,6 +540,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User {await manager.GetUserIdAsync(user) ?? NullValue} password validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task PasswordValidatorCanBlockCreateUser()
         {
@@ -404,6 +559,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User {await manager.GetUserIdAsync(user) ?? NullValue} password validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanCreateUserNoPassword()
         {
@@ -423,6 +582,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(0, logins.Count());
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanCreateUserAddLogin()
         {
@@ -445,6 +608,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(display, logins.First().ProviderDisplayName);
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanCreateUserLoginAndAddPassword()
         {
@@ -468,6 +635,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.True(await manager.CheckPasswordAsync(user, "password"));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task AddPasswordFailsIfAlreadyHave()
         {
@@ -484,6 +655,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User {await manager.GetUserIdAsync(user)} already has a password.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanCreateUserAddRemoveLogin()
         {
@@ -515,6 +690,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanRemovePassword()
         {
@@ -535,6 +714,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanChangePassword()
         {
@@ -555,6 +738,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanAddRemoveUserClaim()
         {
@@ -584,6 +771,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(0, userClaims.Count);
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task RemoveClaimOnlyAffectsUser()
         {
@@ -617,6 +808,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(3, userClaims2.Count);
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanReplaceUserClaim()
         {
@@ -640,6 +835,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(claim.Value, newClaim.Value);
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task ReplaceUserClaimOnlyAffectsUser()
         {
@@ -673,6 +872,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal("a", oldClaim2.Value);
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task ChangePasswordFallsIfPasswordWrong()
         {
@@ -688,6 +891,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"Change password failed for user {await manager.GetUserIdAsync(user)}.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task AddDupeUserNameFails()
         {
@@ -703,6 +910,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsFailure(await manager.CreateAsync(user2), _errorDescriber.DuplicateUserName(username));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task AddDupeEmailAllowedByDefault()
         {
@@ -718,6 +929,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user2, await manager.GetEmailAsync(user)));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task AddDupeEmailFailsWhenUniqueEmailRequired()
         {
@@ -733,6 +948,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsFailure(await manager.CreateAsync(user2), _errorDescriber.DuplicateEmail("FooUser@yup.com"));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task UpdateSecurityStampActuallyChanges()
         {
@@ -750,6 +969,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task AddDupeLoginFails()
         {
@@ -768,6 +991,11 @@ namespace Microsoft.AspNetCore.Identity.Test
         }
 
         // Email tests
+
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanFindByEmail()
         {
@@ -783,6 +1011,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(user, fetch);
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanFindUsersViaUserQuerable()
         {
@@ -803,6 +1035,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task ConfirmEmailFalseByDefaultTest()
         {
@@ -839,6 +1075,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanResetPasswordWithStaticTokenProvider()
         {
@@ -864,6 +1104,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task PasswordValidatorCanBlockResetPasswordWithStaticTokenProvider()
         {
@@ -890,6 +1134,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(stamp, await manager.GetSecurityStampAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task ResetPasswordWithStaticTokenProviderFailsWithWrongToken()
         {
@@ -912,6 +1160,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(stamp, await manager.GetSecurityStampAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanGenerateAndVerifyUserTokenWithStaticTokenProvider()
         {
@@ -940,6 +1192,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"VerifyUserTokenAsync() failed with purpose: test for user { await manager.GetUserIdAsync(user2)}.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanConfirmEmailWithStaticToken()
         {
@@ -962,6 +1218,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.False(await manager.IsEmailConfirmedAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task ConfirmEmailWithStaticTokenFailsWithWrongToken()
         {
@@ -980,6 +1240,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"VerifyUserTokenAsync() failed with purpose: EmailConfirmation for user { await manager.GetUserIdAsync(user)}.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task ConfirmTokenFailsAfterPasswordChange()
         {
@@ -1001,6 +1265,10 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         // Lockout tests
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task SingleFailureLockout()
         {
@@ -1023,6 +1291,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(0, await mgr.GetAccessFailedCountAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task TwoFailureLockout()
         {
@@ -1048,6 +1320,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(0, await mgr.GetAccessFailedCountAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task ResetAccessCountPreventsLockout()
         {
@@ -1076,6 +1352,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(1, await mgr.GetAccessFailedCountAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanEnableLockoutManuallyAndLockout()
         {
@@ -1104,6 +1384,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(0, await mgr.GetAccessFailedCountAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task UserNotLockedOutWithNullDateTimeAndIsSetToNullDate()
         {
@@ -1120,6 +1404,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(new DateTimeOffset(), await mgr.GetLockoutEndDateAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task LockoutFailsIfNotEnabled()
         {
@@ -1138,6 +1426,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.False(await mgr.IsLockedOutAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task LockoutEndToUtcNowMinus1SecInUserShouldNotBeLockedOut()
         {
@@ -1152,6 +1444,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.False(await mgr.IsLockedOutAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task LockoutEndToUtcNowSubOneSecondWithManagerShouldNotBeLockedOut()
         {
@@ -1167,6 +1463,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.False(await mgr.IsLockedOutAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task LockoutEndToUtcNowPlus5ShouldBeLockedOut()
         {
@@ -1182,6 +1482,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.True(await mgr.IsLockedOutAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task UserLockedOutWithDateTimeLocalKindNowPlus30()
         {
@@ -1200,7 +1504,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(lockoutEnd, end);
         }
 
-        // Role Tests
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanCreateRoleTest()
         {
@@ -1237,6 +1544,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task BadValidatorBlocksCreateRole()
         {
@@ -1253,6 +1564,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"Role {await manager.GetRoleIdAsync(role) ?? NullValue} validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanChainRoleValidators()
         {
@@ -1271,6 +1586,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(2, result.Errors.Count());
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task BadValidatorBlocksRoleUpdate()
         {
@@ -1288,6 +1607,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"Role {await manager.GetRoleIdAsync(role) ?? NullValue} validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanDeleteRole()
         {
@@ -1305,6 +1628,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.False(await manager.RoleExistsAsync(roleName));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanAddRemoveRoleClaim()
         {
@@ -1344,6 +1671,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(3, safeRoleClaims.Count);
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanRoleFindById()
         {
@@ -1358,6 +1689,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(role, await manager.FindByIdAsync(await manager.GetRoleIdAsync(role)));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanRoleFindByName()
         {
@@ -1374,6 +1709,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(role, await manager.FindByNameAsync(roleName));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanUpdateRoleName()
         {
@@ -1393,6 +1732,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(role, await manager.FindByNameAsync("Changed"));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanQueryableRoles()
         {
@@ -1408,11 +1751,18 @@ namespace Microsoft.AspNetCore.Identity.Test
                 {
                     IdentityResultAssert.IsSuccess(await manager.CreateAsync(r));
                 }
-                Assert.Equal(roles.Count, manager.Roles.Count(RoleNameStartsWithPredicate("CanQuerableRolesTest")));
-                Assert.Null(manager.Roles.FirstOrDefault(RoleNameEqualsPredicate("bogus")));
+                Expression<Func<TRole, bool>> func = RoleNameStartsWithPredicate("CanQuerableRolesTest");
+                Assert.Equal(roles.Count, manager.Roles.Count(func));
+                func = RoleNameEqualsPredicate("bogus");
+                Assert.Null(manager.Roles.FirstOrDefault(func));
+
             }
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CreateRoleFailsIfExists()
         {
@@ -1430,6 +1780,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsFailure(await manager.CreateAsync(role2));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanAddUsersToRole()
         {
@@ -1455,8 +1809,11 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Fails due to threading bugs in Mono")]
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Fact]
         public async Task CanGetRolesForUser()
         {
             if (ShouldSkipDbTests())
@@ -1495,6 +1852,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task RemoveUserFromRoleWithMultipleRoles()
         {
@@ -1518,6 +1879,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.False(await userManager.IsInRoleAsync(user, await roleManager.GetRoleNameAsync(roles[2])));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanRemoveUsersFromRole()
         {
@@ -1548,6 +1913,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task RemoveUserNotInRoleFails()
         {
@@ -1568,6 +1937,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(userMgr.Logger, $"User {await userMgr.GetUserIdAsync(user)} is not in role {roleName}.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task AddUserToRoleFailsIfAlreadyInRole()
         {
@@ -1589,6 +1962,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(userMgr.Logger, $"User {await userMgr.GetUserIdAsync(user)} is already in role {roleName}.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task AddUserToRolesIgnoresDuplicates()
         {
@@ -1609,6 +1986,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.True(await userMgr.IsInRoleAsync(user, roleName));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanFindRoleByNameWithManager()
         {
@@ -1623,6 +2004,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotNull(await roleMgr.FindByNameAsync(roleName));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanFindRoleWithManager()
         {
@@ -1637,6 +2022,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(roleName, await roleMgr.GetRoleNameAsync(await roleMgr.FindByNameAsync(roleName)));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task SetPhoneNumberTest()
         {
@@ -1654,6 +2043,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanChangePhoneNumber()
         {
@@ -1673,6 +2066,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task ChangePhoneNumberFailsWithWrongToken()
         {
@@ -1693,6 +2090,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(stamp, await manager.GetSecurityStampAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task ChangePhoneNumberFailsWithWrongPhoneNumber()
         {
@@ -1713,6 +2114,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(stamp, await manager.GetSecurityStampAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanVerifyPhoneNumber()
         {
@@ -1737,6 +2142,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"VerifyChangePhoneNumberTokenAsync() failed for user {await manager.GetUserIdAsync(user)}.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanChangeEmail()
         {
@@ -1759,6 +2168,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanChangeEmailWithDifferentTokenProvider()
         {
@@ -1784,6 +2197,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task ChangeEmailFailsWithWrongToken()
         {
@@ -1807,6 +2224,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(stamp, await manager.GetSecurityStampAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task ChangeEmailFailsWithEmail()
         {
@@ -1831,6 +2252,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(stamp, await manager.GetSecurityStampAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task EmailFactorFailsAfterSecurityStampChangeTest()
         {
@@ -1856,6 +2281,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"VerifyTwoFactorTokenAsync() failed for user {await manager.GetUserIdAsync(user)}.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task EnableTwoFactorChangesSecurityStamp()
         {
@@ -1873,6 +2302,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.True(await manager.GetTwoFactorEnabledAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task GenerateTwoFactorWithUnknownFactorProviderWillThrow()
         {
@@ -1891,6 +2324,10 @@ namespace Microsoft.AspNetCore.Identity.Test
                 () => manager.VerifyTwoFactorTokenAsync(user, "bogus", "bogus"), error);
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task GetValidTwoFactorTestEmptyWithNoProviders()
         {
@@ -1906,6 +2343,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.True(!factors.Any());
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanGetSetUpdateAndRemoveUserToken()
         {
@@ -1930,6 +2371,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Null(await manager.GetAuthenticationTokenAsync(user, "provider", "name"));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task CanGetValidTwoFactor()
         {
@@ -1965,6 +2410,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal("Phone", factors[0]);
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task PhoneFactorFailsAfterSecurityStampChangeTest()
         {
@@ -1985,6 +2434,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"VerifyTwoFactorTokenAsync() failed for user {await manager.GetUserIdAsync(user)}.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task VerifyTokenFromWrongTokenProviderFails()
         {
@@ -2001,6 +2454,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"VerifyTwoFactorTokenAsync() failed for user {await manager.GetUserIdAsync(user)}.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task VerifyWithWrongSmsTokenFails()
         {
@@ -2015,6 +2472,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"VerifyTwoFactorTokenAsync() failed for user {await manager.GetUserIdAsync(user)}.");
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [Fact]
         public async Task NullableDateTimeOperationTest()
         {
@@ -2037,6 +2498,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(DateTimeOffset.Parse("01/01/2014"), await userMgr.GetLockoutEndDateAsync(user));
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Fails due to threading bugs in Mono")]
         public async Task CanGetUsersWithClaims()
@@ -2063,6 +2528,10 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(0, (await manager.GetUsersForClaimAsync(new Claim("123", "456"))).Count);
         }
 
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Fails due to threading bugs in Mono")]
         public async Task CanGetUsersInRole()
@@ -2102,7 +2571,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(0, (await manager.GetUsersInRoleAsync("123456")).Count);
         }
 
-        public List<TUser> GenerateUsers(string userNamePrefix, int count)
+        private List<TUser> GenerateUsers(string userNamePrefix, int count)
         {
             var users = new List<TUser>(count);
             for (var i = 0; i < count; i++)
@@ -2112,7 +2581,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             return users;
         }
 
-        public List<TRole> GenerateRoles(string namePrefix, int count)
+        private List<TRole> GenerateRoles(string namePrefix, int count)
         {
             var roles = new List<TRole>(count);
             for (var i = 0; i < count; i++)

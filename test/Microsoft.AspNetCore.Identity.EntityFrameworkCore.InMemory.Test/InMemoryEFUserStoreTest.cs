@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 {
-    public class InMemoryEFUserStoreTest : UserManagerTestBase<IdentityUser, IdentityRole, string>
+    public class InMemoryEFUserStoreTest : IdentitySpecificationTestBase<IdentityUser, IdentityRole, string>
     {
         protected override object CreateTestContext()
         {

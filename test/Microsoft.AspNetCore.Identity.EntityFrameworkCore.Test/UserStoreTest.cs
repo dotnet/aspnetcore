@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 {
-    public class UserStoreTest : UserManagerTestBase<IdentityUser, IdentityRole>, IClassFixture<ScratchDatabaseFixture>
+    public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, IdentityRole>, IClassFixture<ScratchDatabaseFixture>
     {
         private readonly ScratchDatabaseFixture _fixture;
 

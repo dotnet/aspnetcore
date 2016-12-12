@@ -188,5 +188,11 @@ namespace Microsoft.AspNetCore.Identity.Test
                 }
             }
         }
+
+        private class PasswordHasherOptionsAccessor : IOptions<PasswordHasherOptions>
+        {
+            public PasswordHasherOptions Value { get; } = new PasswordHasherOptions();
+        }
+
     }
 }

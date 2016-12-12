@@ -9,19 +9,38 @@ namespace Microsoft.AspNetCore.Identity.Test
     using Xunit.Abstractions;
     using Xunit.Sdk;
 
+    /// <summary>
+    /// Test priority
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class TestPriorityAttribute : Attribute
     {
+        /// <summary>
+        /// ctor
+        /// </summary>
+        /// <param name="priority"></param>
         public TestPriorityAttribute(int priority)
         {
             Priority = priority;
         }
 
+        /// <summary>
+        /// Priority
+        /// </summary>
         public int Priority { get; private set; }
     }
 
+    /// <summary>
+    /// Used to run tests in order.
+    /// </summary>
     public class PriorityOrderer : ITestCaseOrderer
     {
+        /// <summary>
+        /// Orders tests cases
+        /// </summary>
+        /// <typeparam name="XunitTestCase"></typeparam>
+        /// <param name="testCases"></param>
+        /// <returns></returns>
         public IEnumerable<XunitTestCase> OrderTestCases<XunitTestCase>(IEnumerable<XunitTestCase> testCases) where XunitTestCase : ITestCase
         {
             var sortedMethods = new SortedDictionary<int, List<XunitTestCase>>();

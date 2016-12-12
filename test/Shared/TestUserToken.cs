@@ -5,10 +5,13 @@ using System;
 
 namespace Microsoft.AspNetCore.Identity.Test
 {
+    /// <summary>
+    /// Entity type for a user's token
+    /// </summary>
     public class TestUserToken : TestUserToken<string> { }
 
     /// <summary>
-    ///     Entity type for a user's login (i.e. facebook, google)
+    /// Entity type for a user's token
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
     public class TestUserToken<TKey> where TKey : IEquatable<TKey>

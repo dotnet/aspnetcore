@@ -5,6 +5,9 @@ using System;
 
 namespace Microsoft.AspNetCore.Identity.Test
 {
+    /// <summary>
+    ///     EntityType that represents a user belonging to a role
+    /// </summary>
     public class TestUserRole : TestUserRole<string> { }
 
     /// <summary>

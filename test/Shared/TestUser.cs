@@ -6,30 +6,62 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Identity.Test
 {
+    /// <summary>
+    /// Test user class
+    /// </summary>
     public class TestUser : TestUser<string>
     {
+        /// <summary>
+        /// Ctor
+        /// </summary>
         public TestUser()
         {
             Id = Guid.NewGuid().ToString();
         }
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="userName"></param>
         public TestUser(string userName) : this()
         {
             UserName = userName;
         }
     }
 
+    /// <summary>
+    /// Test user
+    /// </summary>
+    /// <typeparam name="TKey"></typeparam>
     public class TestUser<TKey> where TKey : IEquatable<TKey>
     {
+        /// <summary>
+        /// ctor
+        /// </summary>
         public TestUser() { }
 
+        /// <summary>
+        /// ctor
+        /// </summary>
+        /// <param name="userName"></param>
         public TestUser(string userName) : this()
         {
             UserName = userName;
         }
 
+        /// <summary>
+        /// Id
+        /// </summary>
         public virtual TKey Id { get; set; }
+
+        /// <summary>
+        /// Name
+        /// </summary>
         public virtual string UserName { get; set; }
+
+        /// <summary>
+        /// normalized user name
+        /// </summary>
         public virtual string NormalizedUserName { get; set; }
 
         /// <summary>
@@ -37,6 +69,9 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         public virtual string Email { get; set; }
 
+        /// <summary>
+        /// normalized email
+        /// </summary>
         public virtual string NormalizedEmail { get; set; }
 
         /// <summary>
@@ -89,9 +124,21 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         public virtual int AccessFailedCount { get; set; }
 
+        /// <summary>
+        /// Navigation property
+        /// </summary>
         public virtual ICollection<TestUserRole<TKey>> Roles { get; private set; } = new List<TestUserRole<TKey>>();
+        /// <summary>
+        /// Navigation property
+        /// </summary>
         public virtual ICollection<TestUserClaim<TKey>> Claims { get; private set; } = new List<TestUserClaim<TKey>>();
+        /// <summary>
+        /// Navigation property
+        /// </summary>
         public virtual ICollection<TestUserLogin<TKey>> Logins { get; private set; } = new List<TestUserLogin<TKey>>();
+        /// <summary>
+        /// Navigation property
+        /// </summary>
         public virtual ICollection<TestUserToken<TKey>> Tokens { get; private set; } = new List<TestUserToken<TKey>>();
     }
 }

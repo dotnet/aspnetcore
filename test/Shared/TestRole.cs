@@ -35,6 +35,9 @@ namespace Microsoft.AspNetCore.Identity.Test
     /// <typeparam name="TKey"></typeparam>
     public class TestRole<TKey> where TKey : IEquatable<TKey>
     {
+        /// <summary>
+        ///     Constructor
+        /// </summary>
         public TestRole() { }
 
         /// <summary>
@@ -60,6 +63,10 @@ namespace Microsoft.AspNetCore.Identity.Test
         ///     Role name
         /// </summary>
         public virtual string Name { get; set; }
+
+        /// <summary>
+        /// Normalized name used for equality
+        /// </summary>
         public virtual string NormalizedName { get; set; }
 
         /// <summary>

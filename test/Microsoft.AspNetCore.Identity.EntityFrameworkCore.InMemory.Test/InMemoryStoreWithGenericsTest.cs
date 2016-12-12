@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 {
-    public class InMemoryEFUserStoreTestWithGenerics : UserManagerTestBase<IdentityUserWithGenerics, MyIdentityRole, string>, IDisposable
+    public class InMemoryEFUserStoreTestWithGenerics : IdentitySpecificationTestBase<IdentityUserWithGenerics, MyIdentityRole, string>, IDisposable
     {
         private readonly InMemoryContextWithGenerics _context;
         private UserStoreWithGenerics _store;

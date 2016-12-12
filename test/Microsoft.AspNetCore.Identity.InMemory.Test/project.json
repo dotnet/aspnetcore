@@ -13,6 +13,7 @@
     "Microsoft.AspNetCore.Hosting": "1.2.0-*",
     "Microsoft.AspNetCore.Http": "1.2.0-*",
     "Microsoft.AspNetCore.Identity": "1.2.0-*",
+    "Microsoft.AspNetCore.Identity.Specification.Tests": "1.2.0-*",
     "Microsoft.AspNetCore.TestHost": "1.2.0-*",
     "Microsoft.AspNetCore.Testing": "1.2.0-*",
     "Moq": "4.6.36-*",

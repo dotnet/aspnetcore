@@ -1,0 +1,42 @@
+{
+  "description": "Shared test suite for Asp.Net Identity Core store implementations.",
+  "version": "1.2.0-*",
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk",
+    "xmlDoc": true
+  },
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/identity"
+    },
+    "tags": [
+      "aspnetcore",
+      "identity",
+      "membership"
+    ]
+  },
+  "dependencies": {
+    "Microsoft.AspNetCore.Identity": {
+      "target": "project"
+    },
+    "Microsoft.AspNetCore.Testing": "1.2.0-*",
+    "Microsoft.Extensions.DependencyInjection": "1.2.0-*",
+    "Microsoft.Extensions.Logging": "1.2.0-*",
+    "Microsoft.Extensions.TaskCache.Sources": {
+      "version": "1.2.0-*",
+      "type": "build"
+    },
+    "NETStandard.Library": "1.6.1-*",
+    "xunit": "2.2.0-*"
+  },
+  "frameworks": {
+    "net451": {},
+    "netstandard1.3": {
+      "dependencies": {
+        "System.Linq.Queryable": "4.3.0-*"
+      }
+    }
+  }
+}

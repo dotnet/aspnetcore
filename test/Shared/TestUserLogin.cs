@@ -5,6 +5,9 @@ using System;
 
 namespace Microsoft.AspNetCore.Identity.Test
 {
+    /// <summary>
+    ///     Entity type for a user's login (i.e. facebook, google)
+    /// </summary>
     public class TestUserLogin : TestUserLogin<string> { }
 
     /// <summary>
