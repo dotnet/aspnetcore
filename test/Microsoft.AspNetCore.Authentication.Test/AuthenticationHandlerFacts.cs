@@ -75,16 +75,17 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.Equal(1, handler.AuthCount);
         }
 
-        // Prior to https://github.com/aspnet/Security/issues/930 we wouldn't call prior if handled
-        [Fact]
-        public async Task AuthHandlerChallengeAlwaysCallsPriorHandler()
+        [Theory]
+        [InlineData("Alpha", false)]
+        [InlineData("Bravo", true)]
+        public async Task AuthHandlerChallengeCallsPriorHandlerIfNotHandled(string challenge, bool passedThrough)
         {
             var handler = await TestHandler.Create("Alpha");
             var previous = new PreviousHandler();
 
             handler.PriorHandler = previous;
-            await handler.ChallengeAsync(new ChallengeContext("Alpha"));
-            Assert.True(previous.ChallengeCalled);
+            await handler.ChallengeAsync(new ChallengeContext(challenge));
+            Assert.Equal(passedThrough, previous.ChallengeCalled);
         }
 
         private class PreviousHandler : IAuthenticationHandler

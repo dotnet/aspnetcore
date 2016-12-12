@@ -327,7 +327,6 @@ namespace Microsoft.AspNetCore.Authentication
         /// Override this method to deal with a challenge that is forbidden.
         /// </summary>
         /// <param name="context"></param>
-        /// <returns>The returned boolean is ignored.</returns>
         protected virtual Task<bool> HandleForbiddenAsync(ChallengeContext context)
         {
             Response.StatusCode = 403;
@@ -340,7 +339,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// changing the 401 result to 302 of a login page or external sign-in location.)
         /// </summary>
         /// <param name="context"></param>
-        /// <returns>The returned boolean is no longer used.</returns>
+        /// <returns>True if no other handlers should be called</returns>
         protected virtual Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
         {
             Response.StatusCode = 401;
@@ -350,6 +349,7 @@ namespace Microsoft.AspNetCore.Authentication
         public async Task ChallengeAsync(ChallengeContext context)
         {
             ChallengeCalled = true;
+            var handled = false;
             if (ShouldHandleScheme(context.AuthenticationScheme, Options.AutomaticChallenge))
             {
                 switch (context.Behavior)
@@ -363,18 +363,18 @@ namespace Microsoft.AspNetCore.Authentication
                         }
                         goto case ChallengeBehavior.Unauthorized;
                     case ChallengeBehavior.Unauthorized:
-                        await HandleUnauthorizedAsync(context);
+                        handled = await HandleUnauthorizedAsync(context);
                         Logger.AuthenticationSchemeChallenged(Options.AuthenticationScheme);
                         break;
                     case ChallengeBehavior.Forbidden:
-                        await HandleForbiddenAsync(context);
+                        handled = await HandleForbiddenAsync(context);
                         Logger.AuthenticationSchemeForbidden(Options.AuthenticationScheme);
                         break;
                 }
                 context.Accept();
             }
 
-            if (PriorHandler != null)
+            if (!handled && PriorHandler != null)
             {
                 await PriorHandler.ChallengeAsync(context);
             }
