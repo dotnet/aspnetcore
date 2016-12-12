@@ -29,7 +29,6 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Collections": "",
         "System.Data": ""
       }
     }
