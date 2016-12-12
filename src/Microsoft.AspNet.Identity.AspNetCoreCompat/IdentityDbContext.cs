@@ -126,11 +126,11 @@ namespace Microsoft.AspNet.Identity.CoreCompat
         {
             if (entityEntry.Entity is TUser && entityEntry.State == EntityState.Modified)
             {
-                entityEntry.Property("ConcurrencyToken").CurrentValue = Guid.NewGuid();
+                entityEntry.Property("ConcurrencyStamp").CurrentValue = Guid.NewGuid().ToString();
             }
             else if (entityEntry.Entity is TRole && entityEntry.State == EntityState.Modified)
             {
-                entityEntry.Property("ConcurrencyToken").CurrentValue = Guid.NewGuid();
+                entityEntry.Property("ConcurrencyStamp").CurrentValue = Guid.NewGuid().ToString();
             }
             return base.ValidateEntity(entityEntry, items);
         }
@@ -138,4 +138,3 @@ namespace Microsoft.AspNet.Identity.CoreCompat
         public virtual IDbSet<TRoleClaim> RoleClaims { get; set; }
     }
 }
-
