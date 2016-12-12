@@ -1,26 +1,5 @@
 {
-    "adx": { // Packages written by the ADX team and that ship on NuGet.org
-        "rules": [
-            "AdxVerificationCompositeRule"
-        ],
-        "packages": {
-            "Microsoft.AspNetCore.Mvc": { },
-            "Microsoft.AspNetCore.Mvc.Abstractions": { },
-            "Microsoft.AspNetCore.Mvc.ApiExplorer": { },
-            "Microsoft.AspNetCore.Mvc.Core": { },
-            "Microsoft.AspNetCore.Mvc.Cors": { },
-            "Microsoft.AspNetCore.Mvc.DataAnnotations": { },
-            "Microsoft.AspNetCore.Mvc.Formatters.Json": { },
-            "Microsoft.AspNetCore.Mvc.Formatters.Xml": { },
-            "Microsoft.AspNetCore.Mvc.Localization": { },
-            "Microsoft.AspNetCore.Mvc.Razor": { },
-            "Microsoft.AspNetCore.Mvc.Razor.Host": { },
-            "Microsoft.AspNetCore.Mvc.TagHelpers": { },
-            "Microsoft.AspNetCore.Mvc.ViewFeatures": { },
-            "Microsoft.AspNetCore.Mvc.WebApiCompatShim": { }
-        }
-    },
-    "Default": { // Rules to run for packages not listed in any other set.
+    "Default": {
         "rules": [
             "DefaultCompositeRule"
         ]
