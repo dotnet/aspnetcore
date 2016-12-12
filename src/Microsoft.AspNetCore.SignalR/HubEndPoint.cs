@@ -262,10 +262,22 @@ namespace Microsoft.AspNetCore.SignalR
             };
         }
 
-        private static bool IsHubMethod(MethodInfo m)
+        private static bool IsHubMethod(MethodInfo methodInfo)
         {
             // TODO: Add more checks
-            return m.IsPublic && !m.IsSpecialName;
+            if (!methodInfo.IsPublic || methodInfo.IsSpecialName)
+            {
+                return false;
+            }
+
+            var baseDefinition = methodInfo.GetBaseDefinition().DeclaringType;
+            var baseType = baseDefinition.GetTypeInfo().IsGenericType ? baseDefinition.GetGenericTypeDefinition() : baseDefinition;
+            if (typeof(Hub<>) == baseType)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         Type IInvocationBinder.GetReturnType(string invocationId)

@@ -36,6 +36,11 @@ namespace Microsoft.AspNetCore.SignalR
         {
             var groups = connection.Metadata.Get<HashSet<string>>("groups");
 
+            if (groups == null)
+            {
+                return TaskCache.CompletedTask;
+            }
+
             lock (groups)
             {
                 groups.Remove(groupName);
@@ -102,7 +107,7 @@ namespace Microsoft.AspNetCore.SignalR
         {
             return InvokeAllWhere(methodName, args, connection =>
             {
-                return connection.User.Identity.Name == userId;
+                return string.Equals(connection.User.Identity.Name, userId, StringComparison.Ordinal);
             });
         }
 
