@@ -1,19 +1,4 @@
 {
-    "adx": { // Packages written by the ADX team and that ship on NuGet.org
-        "rules": [
-            "AdxVerificationCompositeRule"
-        ],
-        "packages": {
-            "Microsoft.AspNetCore.Cryptography.Internal": { },
-            "Microsoft.AspNetCore.Cryptography.KeyDerivation": { },
-            "Microsoft.AspNetCore.DataProtection": { },
-            "Microsoft.AspNetCore.DataProtection.Abstractions": { },
-            "Microsoft.AspNetCore.DataProtection.AzureStorage": { },
-            "Microsoft.AspNetCore.DataProtection.Extensions": { },
-            "Microsoft.AspNetCore.DataProtection.Redis": { },
-            "Microsoft.AspNetCore.DataProtection.SystemWeb": { }
-        }
-    },
     "adx-nonshipping": {
         "rules": [],
         "packages": {
