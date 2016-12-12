@@ -25,19 +25,19 @@ namespace Microsoft.AspNetCore.Routing
                 return new TheoryData<Action<IRouteBuilder>, Action<HttpContext>>()
                 {
                     { b => { b.MapRoute("api/{id}", NullHandler); }, null },
-                    { b => { b.MapRoute("api/{id}", app => { }); }, null },
+                    { b => { b.MapMiddlewareRoute("api/{id}", app => { }); }, null },
 
                     { b => { b.MapDelete("api/{id}", NullHandler); }, c => { c.Request.Method = "DELETE"; } },
-                    { b => { b.MapDelete("api/{id}", app => { }); }, c => { c.Request.Method = "DELETE"; }  },
+                    { b => { b.MapMiddlewareDelete("api/{id}", app => { }); }, c => { c.Request.Method = "DELETE"; }  },
                     { b => { b.MapGet("api/{id}", NullHandler); }, c => { c.Request.Method = "GET"; }  },
-                    { b => { b.MapGet("api/{id}", app => { }); }, c => { c.Request.Method = "GET"; }  },
+                    { b => { b.MapMiddlewareGet("api/{id}", app => { }); }, c => { c.Request.Method = "GET"; }  },
                     { b => { b.MapPost("api/{id}", NullHandler); }, c => { c.Request.Method = "POST"; }  },
-                    { b => { b.MapPost("api/{id}", app => { }); }, c => { c.Request.Method = "POST"; }  },
+                    { b => { b.MapMiddlewarePost("api/{id}", app => { }); }, c => { c.Request.Method = "POST"; }  },
                     { b => { b.MapPut("api/{id}", NullHandler); }, c => { c.Request.Method = "PUT"; }  },
-                    { b => { b.MapPut("api/{id}", app => { }); }, c => { c.Request.Method = "PUT"; }  },
+                    { b => { b.MapMiddlewarePut("api/{id}", app => { }); }, c => { c.Request.Method = "PUT"; }  },
 
                     { b => { b.MapVerb("PUT", "api/{id}", NullHandler); }, c => { c.Request.Method = "PUT"; }  },
-                    { b => { b.MapVerb("PUT", "api/{id}", app => { }); }, c => { c.Request.Method = "PUT"; }  },
+                    { b => { b.MapMiddlewareVerb("PUT", "api/{id}", app => { }); }, c => { c.Request.Method = "PUT"; }  },
                 };
             }
         }
@@ -73,29 +73,29 @@ namespace Microsoft.AspNetCore.Routing
                 return new TheoryData<Action<IRouteBuilder>, Action<HttpContext>>()
                 {
                     { b => { b.MapRoute("api/{id}/extra", NullHandler); }, null },
-                    { b => { b.MapRoute("api/{id}/extra", app => { }); }, null },
+                    { b => { b.MapMiddlewareRoute("api/{id}/extra", app => { }); }, null },
 
                     { b => { b.MapDelete("api/{id}", NullHandler); }, c => { c.Request.Method = "GET"; } },
-                    { b => { b.MapDelete("api/{id}", app => { }); }, c => { c.Request.Method = "PUT"; }  },
+                    { b => { b.MapMiddlewareDelete("api/{id}", app => { }); }, c => { c.Request.Method = "PUT"; }  },
                     { b => { b.MapDelete("api/{id}/extra", NullHandler); }, c => { c.Request.Method = "DELETE"; } },
-                    { b => { b.MapDelete("api/{id}/extra", app => { }); }, c => { c.Request.Method = "DELETE"; }  },
+                    { b => { b.MapMiddlewareDelete("api/{id}/extra", app => { }); }, c => { c.Request.Method = "DELETE"; }  },
                     { b => { b.MapGet("api/{id}", NullHandler); }, c => { c.Request.Method = "PUT"; }  },
-                    { b => { b.MapGet("api/{id}", app => { }); }, c => { c.Request.Method = "POST"; }  },
+                    { b => { b.MapMiddlewareGet("api/{id}", app => { }); }, c => { c.Request.Method = "POST"; }  },
                     { b => { b.MapGet("api/{id}/extra", NullHandler); }, c => { c.Request.Method = "GET"; }  },
-                    { b => { b.MapGet("api/{id}/extra", app => { }); }, c => { c.Request.Method = "GET"; }  },
+                    { b => { b.MapMiddlewareGet("api/{id}/extra", app => { }); }, c => { c.Request.Method = "GET"; }  },
                     { b => { b.MapPost("api/{id}", NullHandler); }, c => { c.Request.Method = "MEH"; }  },
-                    { b => { b.MapPost("api/{id}", app => { }); }, c => { c.Request.Method = "DELETE"; }  },
+                    { b => { b.MapMiddlewarePost("api/{id}", app => { }); }, c => { c.Request.Method = "DELETE"; }  },
                     { b => { b.MapPost("api/{id}/extra", NullHandler); }, c => { c.Request.Method = "POST"; }  },
-                    { b => { b.MapPost("api/{id}/extra", app => { }); }, c => { c.Request.Method = "POST"; }  },
+                    { b => { b.MapMiddlewarePost("api/{id}/extra", app => { }); }, c => { c.Request.Method = "POST"; }  },
                     { b => { b.MapPut("api/{id}", NullHandler); }, c => { c.Request.Method = "BLEH"; }  },
-                    { b => { b.MapPut("api/{id}", app => { }); }, c => { c.Request.Method = "HEAD"; }  },
+                    { b => { b.MapMiddlewarePut("api/{id}", app => { }); }, c => { c.Request.Method = "HEAD"; }  },
                     { b => { b.MapPut("api/{id}/extra", NullHandler); }, c => { c.Request.Method = "PUT"; }  },
-                    { b => { b.MapPut("api/{id}/extra", app => { }); }, c => { c.Request.Method = "PUT"; }  },
+                    { b => { b.MapMiddlewarePut("api/{id}/extra", app => { }); }, c => { c.Request.Method = "PUT"; }  },
 
                     { b => { b.MapVerb("PUT", "api/{id}", NullHandler); }, c => { c.Request.Method = "POST"; }  },
-                    { b => { b.MapVerb("PUT", "api/{id}", app => { }); }, c => { c.Request.Method = "HEAD"; }  },
+                    { b => { b.MapMiddlewareVerb("PUT", "api/{id}", app => { }); }, c => { c.Request.Method = "HEAD"; }  },
                     { b => { b.MapVerb("PUT", "api/{id}/extra", NullHandler); }, c => { c.Request.Method = "PUT"; }  },
-                    { b => { b.MapVerb("PUT", "api/{id}/extra", app => { }); }, c => { c.Request.Method = "PUT"; }  },
+                    { b => { b.MapMiddlewareVerb("PUT", "api/{id}/extra", app => { }); }, c => { c.Request.Method = "PUT"; }  },
                 };
             }
         }

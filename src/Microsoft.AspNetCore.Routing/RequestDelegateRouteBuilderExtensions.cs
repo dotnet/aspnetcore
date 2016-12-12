@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="template">The route template.</param>
         /// <param name="action">The action to apply to the <see cref="IApplicationBuilder"/>.</param>
         /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
-        public static IRouteBuilder MapRoute(this IRouteBuilder builder, string template, Action<IApplicationBuilder> action)
+        public static IRouteBuilder MapMiddlewareRoute(this IRouteBuilder builder, string template, Action<IApplicationBuilder> action)
         {
             var nested = builder.ApplicationBuilder.New();
             action(nested);
@@ -69,9 +70,25 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="template">The route template.</param>
         /// <param name="action">The action to apply to the <see cref="IApplicationBuilder"/>.</param>
         /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
-        public static IRouteBuilder MapDelete(this IRouteBuilder builder, string template, Action<IApplicationBuilder> action)
+        public static IRouteBuilder MapMiddlewareDelete(this IRouteBuilder builder, string template, Action<IApplicationBuilder> action)
         {
-            return builder.MapVerb("DELETE", template, action);
+            return builder.MapMiddlewareVerb("DELETE", template, action);
+        }
+
+        /// <summary>
+        /// Adds a route to the <see cref="IRouteBuilder"/> that only matches HTTP DELETE requests for the given
+        /// <paramref name="template"/>, and <paramref name="handler"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IRouteBuilder"/>.</param>
+        /// <param name="template">The route template.</param>
+        /// <param name="handler">The route handler.</param>
+        /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
+        public static IRouteBuilder MapDelete(
+            this IRouteBuilder builder,
+            string template,
+            Func<HttpRequest, HttpResponse, RouteData, Task> handler)
+        {
+            return builder.MapVerb("DELETE", template, handler);
         }
 
         /// <summary>
@@ -95,9 +112,25 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="template">The route template.</param>
         /// <param name="action">The action to apply to the <see cref="IApplicationBuilder"/>.</param>
         /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
-        public static IRouteBuilder MapGet(this IRouteBuilder builder, string template, Action<IApplicationBuilder> action)
+        public static IRouteBuilder MapMiddlewareGet(this IRouteBuilder builder, string template, Action<IApplicationBuilder> action)
         {
-            return builder.MapVerb("GET", template, action);
+            return builder.MapMiddlewareVerb("GET", template, action);
+        }
+
+        /// <summary>
+        /// Adds a route to the <see cref="IRouteBuilder"/> that only matches HTTP GET requests for the given
+        /// <paramref name="template"/>, and <paramref name="handler"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IRouteBuilder"/>.</param>
+        /// <param name="template">The route template.</param>
+        /// <param name="handler">The route handler.</param>
+        /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
+        public static IRouteBuilder MapGet(
+            this IRouteBuilder builder,
+            string template,
+            Func<HttpRequest, HttpResponse, RouteData, Task> handler)
+        {
+            return builder.MapVerb("GET", template, handler);
         }
 
         /// <summary>
@@ -121,9 +154,25 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="template">The route template.</param>
         /// <param name="action">The action to apply to the <see cref="IApplicationBuilder"/>.</param>
         /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
-        public static IRouteBuilder MapPost(this IRouteBuilder builder, string template, Action<IApplicationBuilder> action)
+        public static IRouteBuilder MapMiddlewarePost(this IRouteBuilder builder, string template, Action<IApplicationBuilder> action)
         {
-            return builder.MapVerb("POST", template, action);
+            return builder.MapMiddlewareVerb("POST", template, action);
+        }
+
+        /// <summary>
+        /// Adds a route to the <see cref="IRouteBuilder"/> that only matches HTTP POST requests for the given
+        /// <paramref name="template"/>, and <paramref name="handler"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IRouteBuilder"/>.</param>
+        /// <param name="template">The route template.</param>
+        /// <param name="handler">The route handler.</param>
+        /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
+        public static IRouteBuilder MapPost(
+            this IRouteBuilder builder,
+            string template,
+            Func<HttpRequest, HttpResponse, RouteData, Task> handler)
+        {
+            return builder.MapVerb("POST", template, handler);
         }
 
         /// <summary>
@@ -147,9 +196,48 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="template">The route template.</param>
         /// <param name="action">The action to apply to the <see cref="IApplicationBuilder"/>.</param>
         /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
-        public static IRouteBuilder MapPut(this IRouteBuilder builder, string template, Action<IApplicationBuilder> action)
+        public static IRouteBuilder MapMiddlewarePut(this IRouteBuilder builder, string template, Action<IApplicationBuilder> action)
         {
-            return builder.MapVerb("PUT", template, action);
+            return builder.MapMiddlewareVerb("PUT", template, action);
+        }
+
+        /// <summary>
+        /// Adds a route to the <see cref="IRouteBuilder"/> that only matches HTTP PUT requests for the given
+        /// <paramref name="template"/>, and <paramref name="handler"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IRouteBuilder"/>.</param>
+        /// <param name="template">The route template.</param>
+        /// <param name="handler">The route handler.</param>
+        /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
+        public static IRouteBuilder MapPut(
+            this IRouteBuilder builder,
+            string template,
+            Func<HttpRequest, HttpResponse, RouteData, Task> handler)
+        {
+            return builder.MapVerb("PUT", template, handler);
+        }
+
+        /// <summary>
+        /// Adds a route to the <see cref="IRouteBuilder"/> that only matches HTTP requests for the given
+        /// <paramref name="verb"/>, <paramref name="template"/>, and <paramref name="handler"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IRouteBuilder"/>.</param>
+        /// <param name="verb">The HTTP verb allowed by the route.</param>
+        /// <param name="template">The route template.</param>
+        /// <param name="handler">The route handler.</param>
+        /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
+        public static IRouteBuilder MapVerb(
+            this IRouteBuilder builder,
+            string verb,
+            string template,
+            Func<HttpRequest, HttpResponse, RouteData, Task> handler)
+        {
+            RequestDelegate requestDelegate = (httpContext) =>
+            {
+                return handler(httpContext.Request, httpContext.Response, httpContext.GetRouteData());
+            };
+
+            return builder.MapVerb(verb, template, requestDelegate);
         }
 
         /// <summary>
@@ -188,7 +276,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="template">The route template.</param>
         /// <param name="action">The action to apply to the <see cref="IApplicationBuilder"/>.</param>
         /// <returns>A reference to the <paramref name="builder"/> after this operation has completed.</returns>
-        public static IRouteBuilder MapVerb(
+        public static IRouteBuilder MapMiddlewareVerb(
             this IRouteBuilder builder,
             string verb,
             string template,
