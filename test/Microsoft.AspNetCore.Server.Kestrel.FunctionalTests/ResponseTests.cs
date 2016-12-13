@@ -590,14 +590,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task WhenAppWritesLessThanContentLengthErrorLogged()
         {
-            var testLogger = new TestApplicationErrorLogger();
-            var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
+            string errorMessage = null;
+            var logTcs = new TaskCompletionSource<object>();
+            var mockTrace = new Mock<IKestrelTrace>();
+            mockTrace
+                .Setup(trace => trace.ApplicationError(It.IsAny<string>(), It.IsAny<InvalidOperationException>()))
+                .Callback<string, Exception>((connectionId, ex) =>
+                {
+                    errorMessage = ex.Message;
+                    logTcs.SetResult(null);
+                });
 
             using (var server = new TestServer(async httpContext =>
             {
                 httpContext.Response.ContentLength = 13;
                 await httpContext.Response.WriteAsync("hello, world");
-            }, serviceContext))
+            }, new TestServiceContext { Log = mockTrace.Object }))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -611,13 +619,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "Content-Length: 13",
                         "",
                         "hello, world");
+
+                    // Wait for error message to be logged.
+                    await logTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
                 }
             }
 
-            var errorMessage = Assert.Single(testLogger.Messages, message => message.LogLevel == LogLevel.Error);
             Assert.Equal(
                 $"Response Content-Length mismatch: too few bytes written (12 of 13).",
-                errorMessage.Exception.Message);
+                errorMessage);
         }
 
         [Fact]
@@ -909,7 +919,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "POST / HTTP/1.1",
                         "Transfer-Encoding: chunked",
                         "",
-                        "wrong");
+                        "gg");
                     await responseWritten.WaitAsync();
                     await connection.ReceiveEnd(
                         "HTTP/1.1 400 Bad Request",

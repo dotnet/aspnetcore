@@ -1249,12 +1249,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             const string response = "hello, world";
 
             var callOrder = new Stack<int>();
+            var onStartingTcs = new TaskCompletionSource<object>();
 
             using (var server = new TestServer(async context =>
             {
                 context.Response.OnStarting(_ =>
                 {
                     callOrder.Push(1);
+                    onStartingTcs.SetResult(null);
                     return TaskCache.CompletedTask;
                 }, null);
                 context.Response.OnStarting(_ =>
@@ -1280,7 +1282,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "hello, world");
 
-
+                    // Wait for all callbacks to be called.
+                    await onStartingTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
                 }
             }
 
@@ -1295,12 +1298,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             const string response = "hello, world";
 
             var callOrder = new Stack<int>();
+            var onCompletedTcs = new TaskCompletionSource<object>();
 
             using (var server = new TestServer(async context =>
             {
                 context.Response.OnCompleted(_ =>
                 {
                     callOrder.Push(1);
+                    onCompletedTcs.SetResult(null);
                     return TaskCache.CompletedTask;
                 }, null);
                 context.Response.OnCompleted(_ =>
@@ -1325,6 +1330,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         $"Content-Length: {response.Length}",
                         "",
                         "hello, world");
+
+                    // Wait for all callbacks to be called.
+                    await onCompletedTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
                 }
             }
 
