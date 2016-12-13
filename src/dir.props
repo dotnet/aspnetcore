@@ -4,6 +4,8 @@
     <!-- overrides default which is assembly name -->
     <PackageId>$(MSBuildProjectName)</PackageId>
     <PackageType>DotnetCliTool</PackageType>
+    <RepositoryUrl>https://github.com/aspnet/DotNetTools</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
   <ItemGroup>
       <PackageReference Include="Microsoft.NETCore.App" Version="1.0.0" />
