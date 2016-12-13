@@ -1,9 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <Import Project="..\dir.props" />
+
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.0</TargetFramework>
-    <OutputType>Exe</OutputType>
+    <TargetFrameworks>netcoreapp1.0;netcoreapp1.1</TargetFrameworks>
+    <OutputType>exe</OutputType>
   </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="**\*.cs" Exclude="TestProjects\**\*" />
     <Compile Include="..\Shared\**\*.cs" />
@@ -15,7 +18,16 @@
     <ProjectReference Include="..\Microsoft.DotNet.Watcher.Tools.Tests\Microsoft.DotNet.Watcher.Tools.Tests.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp1.1'">
+    <PackageReference Include="Microsoft.NETCore.App" Version="1.1.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp1.0'">
+    <PackageReference Include="Microsoft.NETCore.App" Version="1.0.1" />
+  </ItemGroup>
+
   <Target Name="CleanTestProjects" BeforeTargets="CoreCompile;CopyFilesToOutputDirectory">
     <RemoveDir Directories="$(TargetDir)TestProjects" Condition="Exists('$(TargetDir)TestProjects')" />
   </Target>
+
 </Project>

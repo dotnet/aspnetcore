@@ -127,6 +127,20 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             args.Add("--runtimeconfig");
             args.Add(Path.Combine(AppContext.BaseDirectory, thisAssembly + ".runtimeconfig.json"));
 
+            var currentFxVersion = AppContext.GetData("FX_DEPS_FILE") as string;
+            if (currentFxVersion != null)
+            {
+                // This overrides the version of shared fx in the runtimeconfig.json file.
+                // Tests do this to ensure dotnet-watch is executing on the version of Microsoft.NETCore.App
+                // used by the current test project. The test project can target multiple version of
+                // netcoreapp1.x in order to ensure the tool runs when it is lifted to higher netcore versions
+                // due to inclusion of the 'prefercliruntime' file in our nupkg.
+
+                var version = new FileInfo(currentFxVersion).Directory.Name;
+                args.Add("--fx-version");
+                args.Add(version);
+            }
+
             args.Add(Path.Combine(AppContext.BaseDirectory, "dotnet-watch.dll"));
 
             return args;

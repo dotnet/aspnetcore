@@ -1,11 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>netcoreapp1.0</TargetFramework>
-    <OutputType>Exe</OutputType>
+    <OutputType>exe</OutputType>
   </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="Program.cs;include\*.cs" Exclude="exclude\*" />
     <EmbeddedResource Include="**\*.resx"  />
     <PackageReference Include="Microsoft.NETCore.App" Version="1.0.1" />
   </ItemGroup>
+
 </Project>
