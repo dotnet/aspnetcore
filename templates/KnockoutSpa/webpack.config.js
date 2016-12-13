@@ -17,7 +17,8 @@ module.exports = {
             { test: /\.ts$/, include: /ClientApp/, loader: 'ts-loader', query: { silent: true } },
             { test: /\.html$/, loader: 'raw-loader' },
             { test: /\.css$/, loader: isDevBuild ? 'style-loader!css-loader' : ExtractTextPlugin.extract(['css-loader']) },
-            { test: /\.(png|jpg|jpeg|gif|svg)$/, loader: 'url-loader', query: { limit: 25000 } }
+            { test: /\.(png|jpg|jpeg|gif|svg)$/, loader: 'url-loader', query: { limit: 25000 } },
+            { test: /\.json$/, loader: 'json-loader' }
         ]
     },
     plugins: [

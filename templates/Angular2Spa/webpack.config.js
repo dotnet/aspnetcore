@@ -16,7 +16,8 @@ var sharedConfig = {
             { test: /\.ts$/, include: /ClientApp/, loaders: ['ts-loader?silent=true', 'angular2-template-loader'] },
             { test: /\.html$/, loader: 'html-loader?minimize=false' },
             { test: /\.css$/, loader: 'to-string-loader!css-loader' },
-            { test: /\.(png|jpg|jpeg|gif|svg)$/, loader: 'url-loader', query: { limit: 25000 } }
+            { test: /\.(png|jpg|jpeg|gif|svg)$/, loader: 'url-loader', query: { limit: 25000 } },
+            { test: /\.json$/, loader: 'json-loader' }
         ]
     }
 };

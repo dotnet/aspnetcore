@@ -23,6 +23,7 @@
     "history": "^4.3.0",
     "isomorphic-fetch": "^2.2.1",
     "jquery": "^2.2.1",
+    "json-loader": "^0.5.4",
     "knockout": "^3.4.0",
     "raw-loader": "^0.5.1",
     "style-loader": "^0.13.1",

@@ -14,7 +14,8 @@ var sharedConfig = () => ({
     module: {
         loaders: [
             { test: /\.tsx?$/, include: /ClientApp/, loader: 'babel-loader' },
-            { test: /\.tsx?$/, include: /ClientApp/, loader: 'ts-loader', query: { silent: true } }
+            { test: /\.tsx?$/, include: /ClientApp/, loader: 'ts-loader', query: { silent: true } },
+            { test: /\.json$/, loader: 'json-loader' }
         ]
     }
 });

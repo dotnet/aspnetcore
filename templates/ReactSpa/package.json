@@ -20,6 +20,7 @@
     "file-loader": "^0.9.0",
     "isomorphic-fetch": "^2.2.1",
     "jquery": "^2.2.1",
+    "json-loader": "^0.5.4",
     "react": "^15.3.2",
     "react-dom": "^15.3.2",
     "react-router": "^2.8.1",
