@@ -11,8 +11,17 @@ const isWindows = /^win/.test(process.platform);
 const textFileExtensions = ['.gitignore', 'template_gitignore', '.config', '.cs', '.cshtml', 'Dockerfile', '.html', '.js', '.json', '.jsx', '.md', '.nuspec', '.ts', '.tsx', '.xproj'];
 const yeomanGeneratorSource = './src/yeoman';
 
-const templates: { [key: string]: { dir: string, dotNetNewId: string, displayName: string, forceInclusion?: RegExp } } = {
-    'angular-2': { dir: '../../templates/Angular2Spa/', dotNetNewId: 'Angular', displayName: 'Angular 2', forceInclusion: /^(wwwroot|ClientApp)\/dist\// },
+// For the Angular 2 template, we want to bundle prebuilt dist dev-mode files, because the VS template can't auto-run
+// webpack on project creation. Note that these script entries are *not* the same as the project's usual prepublish
+// scripts, because here we want dev-mode builds (e.g., to support HMR), not prod-mode builds.
+const runWebpackInDevModeScripts = [
+    'npm install',
+    'node node_modules/webpack/bin/webpack.js --config webpack.config.vendor.js',
+    'node node_modules/webpack/bin/webpack.js'
+];
+
+const templates: { [key: string]: { dir: string, dotNetNewId: string, displayName: string, prepublish?: string[], forceInclusion?: RegExp } } = {
+    'angular-2': { dir: '../../templates/Angular2Spa/', dotNetNewId: 'Angular', displayName: 'Angular 2', prepublish: runWebpackInDevModeScripts, forceInclusion: /^(wwwroot|ClientApp)\/dist\// },
     'aurelia': { dir: '../../templates/AureliaSpa/', dotNetNewId: 'Aurelia', displayName: 'Aurelia' },
     'knockout': { dir: '../../templates/KnockoutSpa/', dotNetNewId: 'Knockout', displayName: 'Knockout.js' },
     'react-redux': { dir: '../../templates/ReactReduxSpa/', dotNetNewId: 'ReactRedux', displayName: 'React.js and Redux' },
@@ -161,21 +170,25 @@ function buildDotNetNewNuGetPackage() {
     rimraf.sync('./tmp');
 }
 
-// TODO: Instead of just showing this warning, improve build script so it actually does build them
-// in the correct format. Can do this once we've moved away from using ASPNETCORE_ENVIRONMENT to
-// control the build output mode. The templates we warn about here are the ones where we ship some
-// files that wouldn't normally be under source control (e.g., /wwwroot/dist/*).
-const templatesWithForceIncludes = Object.getOwnPropertyNames(templates)
-    .filter(templateName => !!templates[templateName].forceInclusion);
-if (templatesWithForceIncludes.length > 0) {
-    console.warn(`
----
-WARNING: Ensure that the following templates are already built in the configuration desired for publishing.
-For example, build the dist files in debug mode.
-TEMPLATES: ${templatesWithForceIncludes.join(', ')}
----
-`);
+function runAllPrepublishScripts() {
+    Object.getOwnPropertyNames(templates).forEach(templateKey => {
+        const templateInfo = templates[templateKey];
+        if (templateInfo.prepublish) {
+            runScripts(templateInfo.dir, templateInfo.prepublish);
+        }
+    });
 }
 
+function runScripts(rootDir: string, scripts: string[]) {
+    console.log(`[Prepublish] In directory: ${ rootDir }`);
+    scripts.forEach(script => {
+        console.log(`[Prepublish] Running: ${ script }`);
+        childProcess.execSync(script, { cwd: rootDir, stdio: 'inherit' });
+    });
+    console.log(`[Prepublish] Done`)
+}
+
+rimraf.sync('./dist');
+runAllPrepublishScripts();
 buildYeomanNpmPackage();
 buildDotNetNewNuGetPackage();
