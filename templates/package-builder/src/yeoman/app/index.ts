@@ -137,6 +137,7 @@ class MyGenerator extends yeoman.Base {
             if (emitFile) {
                 let inputFullPath = path.join(templateRoot, fn);
                 let destinationFullPath = this.destinationPath(outputFn);
+                let deleteInputFileAfter = false;
                 if (path.basename(fn) === 'package.json') {
                     // Special handling for package.json, because we rewrite it dynamically
                     const tempPath = destinationFullPath + '.tmp';
@@ -147,6 +148,7 @@ class MyGenerator extends yeoman.Base {
                         /* space */ 2
                     );
                     inputFullPath = tempPath;
+                    deleteInputFileAfter = true;
                 }
 
                 const outputDirBasename = path.basename(path.dirname(destinationFullPath));
@@ -163,6 +165,10 @@ class MyGenerator extends yeoman.Base {
                         destinationFullPath,
                         this._answers
                     );
+                }
+
+                if (deleteInputFileAfter) {
+                    this.fs.delete(inputFullPath);
                 }
             }
         });
