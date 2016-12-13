@@ -108,7 +108,7 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
     // file on disk wouldn't match the file served to the browser, and the source map line numbers wouldn't
     // match up. Breakpoints would either not be hit, or would hit the wrong lines.
     (compiler as any).plugin('done', stats => {
-        copyRecursiveToRealFsSync(compiler.outputFileSystem, '/', [/\.hot-update\.(js|json)$/]);
+        copyRecursiveToRealFsSync(compiler.outputFileSystem, '/', [/\.hot-update\.(js|json|js\.map)$/]);
     });
 
     if (enableHotModuleReplacement) {
