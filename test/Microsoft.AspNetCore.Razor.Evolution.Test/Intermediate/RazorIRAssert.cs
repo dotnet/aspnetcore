@@ -73,6 +73,34 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             }
         }
 
+        public static void CSharpStatement(string expected, RazorIRNode node)
+        {
+            try
+            {
+                var statement = Assert.IsType<CSharpStatementIRNode>(node);
+                Assert.Equal(expected, statement.Content);
+            }
+            catch (XunitException e)
+            {
+                throw new IRAssertException(node, node.Children, e.Message, e);
+            }
+        }
+
+        public static void Directive(string expectedName, RazorIRNode node, params Action<RazorIRNode>[] childValidators)
+        {
+            try
+            {
+                var directive = Assert.IsType<DirectiveIRNode>(node);
+                Assert.Equal(expectedName, directive.Name);
+            }
+            catch (XunitException e)
+            {
+                throw new IRAssertException(node, node.Children, e.Message, e);
+            }
+
+            Children(node, childValidators);
+        }
+
         public static void Using(string expected, RazorIRNode node)
         {
             try

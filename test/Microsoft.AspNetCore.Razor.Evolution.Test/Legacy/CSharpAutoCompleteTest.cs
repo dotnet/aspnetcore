@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
@@ -13,19 +14,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             ParseBlockTest(
                 "@functions{",
-                new FunctionsBlock(
-                    Factory.CodeTransition("@")
-                        .Accepts(AcceptedCharacters.None),
-                    Factory.MetaCode("functions{")
-                        .Accepts(AcceptedCharacters.None),
-                    Factory.EmptyCSharp()
-                        .AsFunctionsBody()
-                        .With(new AutoCompleteEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString)
-                        {
-                            AutoCompleteString = "}"
-                        })),
+                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.FunctionsDirectiveDescriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("functions").Accepts(AcceptedCharacters.None),
+                    Factory.MetaCode("{").AutoCompleteWith("}", atEndOfSpan: true).Accepts(AcceptedCharacters.None)),
                 new RazorError(
-                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", "}", "{"),
+                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(CSharpCodeParser.FunctionsDirectiveDescriptor.Name, "}", "{"),
                     new SourceLocation(10, 0, 10),
                     length: 1));
         }
@@ -34,12 +28,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         public void SectionDirectiveAutoCompleteAtEOF()
         {
             ParseBlockTest("@section Header {",
-                new SectionBlock(new SectionChunkGenerator("Header"),
+                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("section Header {")
-                           .AutoCompleteWith("}", atEndOfSpan: true)
-                           .Accepts(AcceptedCharacters.Any),
-                    new MarkupBlock()),
+                    Factory.MetaCode("section").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Code, "Header", CSharpSymbolType.Identifier)
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                        .With(new DirectiveTokenChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor.Tokens.First())),
+                    Factory.Span(SpanKind.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.AllWhiteSpace),
+                    Factory.MetaCode("{").AutoCompleteWith("}", atEndOfSpan: true).Accepts(AcceptedCharacters.None),
+                    new MarkupBlock(
+                        Factory.EmptyHtml())),
                 new RazorError(
                     LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("section", "}", "{"),
                     new SourceLocation(16, 0, 16),
@@ -67,23 +66,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [Fact]
         public void FunctionsDirectiveAutoCompleteAtStartOfFile()
         {
-            ParseBlockTest("@functions{" + Environment.NewLine
-                         + "foo",
-                           new FunctionsBlock(
-                               Factory.CodeTransition("@")
-                                   .Accepts(AcceptedCharacters.None),
-                               Factory.MetaCode("functions{")
-                                   .Accepts(AcceptedCharacters.None),
-                               Factory.Code(Environment.NewLine + "foo")
-                                   .AsFunctionsBody()
-                                   .With(new AutoCompleteEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString)
-                                   {
-                                       AutoCompleteString = "}"
-                                   })),
-                           new RazorError(
-                               LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", "}", "{"),
-                               new SourceLocation(10, 0, 10),
-                               length: 1));
+            ParseBlockTest("@functions{" + Environment.NewLine + "foo",
+                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.FunctionsDirectiveDescriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("functions").Accepts(AcceptedCharacters.None),
+                    Factory.MetaCode("{").AutoCompleteWith("}", atEndOfSpan: true).Accepts(AcceptedCharacters.None),
+                Factory.Code(Environment.NewLine + "foo").AsStatement()),
+                    new RazorError(
+                        LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", "}", "{"),
+                        new SourceLocation(10, 0, 10),
+                        length: 1));
         }
 
         [Fact]
@@ -91,11 +83,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             ParseBlockTest("@section Header {" + Environment.NewLine
                          + "<p>Foo</p>",
-                new SectionBlock(new SectionChunkGenerator("Header"),
+                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor),
                     Factory.CodeTransition(),
-                    Factory.MetaCode("section Header {")
-                           .AutoCompleteWith("}", atEndOfSpan: true)
-                           .Accepts(AcceptedCharacters.Any),
+                    Factory.MetaCode("section").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Code, "Header", CSharpSymbolType.Identifier)
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                        .With(new DirectiveTokenChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor.Tokens.First())),
+                    Factory.Span(SpanKind.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.AllWhiteSpace),
+                    Factory.MetaCode("{").AutoCompleteWith("}", atEndOfSpan: true).Accepts(AcceptedCharacters.None),
                     new MarkupBlock(
                         Factory.Markup(Environment.NewLine),
                         new MarkupTagBlock(

@@ -14,6 +14,30 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         private static readonly Func<CSharpSymbol, bool> IsValidStatementSpacingSymbol =
             IsSpacingToken(includeNewLines: true, includeComments: true);
 
+        internal static readonly DirectiveDescriptor SectionDirectiveDescriptor =
+            DirectiveDescriptorBuilder
+                .CreateRazorBlock(SyntaxConstants.CSharp.SectionKeyword)
+                .AddMember()
+                .Build();
+
+        internal static readonly DirectiveDescriptor FunctionsDirectiveDescriptor =
+            DirectiveDescriptorBuilder
+                .CreateCodeBlock(SyntaxConstants.CSharp.FunctionsKeyword)
+                .Build();
+
+        internal static readonly DirectiveDescriptor InheritsDirectiveDescriptor =
+            DirectiveDescriptorBuilder
+                .Create(SyntaxConstants.CSharp.InheritsKeyword)
+                .AddType()
+                .Build();
+
+        internal static readonly IEnumerable<DirectiveDescriptor> DefaultDirectiveDescriptors = new[]
+        {
+            SectionDirectiveDescriptor,
+            FunctionsDirectiveDescriptor,
+            InheritsDirectiveDescriptor,
+        };
+
         internal static ISet<string> DefaultKeywords = new HashSet<string>()
         {
             SyntaxConstants.CSharp.TagHelperPrefixKeyword,
@@ -34,6 +58,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             "namespace",
             "class",
         };
+
+        private readonly ISet<string> CurrentKeywords = new HashSet<string>(DefaultKeywords);
 
         private Dictionary<string, Action> _directiveParsers = new Dictionary<string, Action>(StringComparer.Ordinal);
         private Dictionary<CSharpKeyword, Action<bool>> _keywordParsers = new Dictionary<CSharpKeyword, Action<bool>>();
@@ -263,7 +289,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     Span.ChunkGenerator = new ExpressionChunkGenerator();
                     Span.EditHandler = new ImplicitExpressionEditHandler(
                         Language.TokenizeString,
-                        DefaultKeywords,
+                        CurrentKeywords,
                         acceptTrailingDot: IsNested)
                     {
                         AcceptedCharacters = AcceptedCharacters.NonWhiteSpace
@@ -611,7 +637,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         private void SectionBlock(string left, string right, bool caseSensitive)
         {
-            ParseWithOtherParser(p => p.ParseSection(Tuple.Create(left, right), caseSensitive));
+            ParseWithOtherParser(p => p.ParseRazorBlock(Tuple.Create(left, right), caseSensitive));
         }
 
         private void NestedBlock()
@@ -1411,17 +1437,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         private void SetupDirectives(IEnumerable<DirectiveDescriptor> directiveDescriptors)
         {
-            foreach (var directiveDescriptor in directiveDescriptors)
+            var allDirectives = directiveDescriptors.Concat(DefaultDirectiveDescriptors).ToList();
+
+            for (var i = 0; i < allDirectives.Count; i++)
             {
+                var directiveDescriptor = allDirectives[i];
+                CurrentKeywords.Add(directiveDescriptor.Name);
                 MapDirectives(() => HandleDirective(directiveDescriptor), directiveDescriptor.Name);
             }
 
             MapDirectives(TagHelperPrefixDirective, SyntaxConstants.CSharp.TagHelperPrefixKeyword);
             MapDirectives(AddTagHelperDirective, SyntaxConstants.CSharp.AddTagHelperKeyword);
             MapDirectives(RemoveTagHelperDirective, SyntaxConstants.CSharp.RemoveTagHelperKeyword);
-            MapDirectives(InheritsDirective, SyntaxConstants.CSharp.InheritsKeyword);
-            MapDirectives(FunctionsDirective, SyntaxConstants.CSharp.FunctionsKeyword);
-            MapDirectives(SectionDirective, SyntaxConstants.CSharp.SectionKeyword);
         }
 
         private void HandleDirective(DirectiveDescriptor descriptor)
@@ -1449,14 +1476,27 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     Output(SpanKind.Markup, AcceptedCharacters.WhiteSpace);
                 }
 
+                if (EndOfFile)
+                {
+                    Context.ErrorSink.OnError(
+                        CurrentLocation,
+                        LegacyResources.FormatUnexpectedEOFAfterDirective(descriptor.Name, tokenDescriptor.Kind.ToString().ToLowerInvariant()),
+                        length: 1);
+                    return;
+                }
+
                 var outputKind = SpanKind.Markup;
                 switch (tokenDescriptor.Kind)
                 {
                     case DirectiveTokenKind.Type:
                         if (!NamespaceOrTypeName())
                         {
-                            // Error logged for invalid type name, continue onto next piece.
-                            continue;
+                            Context.ErrorSink.OnError(
+                                CurrentLocation,
+                                LegacyResources.FormatDirectiveExpectsTypeName(descriptor.Name),
+                                CurrentSymbol.Content.Length);
+
+                            return;
                         }
 
                         outputKind = SpanKind.Code;
@@ -1520,10 +1560,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                             CurrentSymbol.Content.Length);
                     }
 
-                    Output(SpanKind.Markup, AcceptedCharacters.AllWhiteSpace);
+                    Output(SpanKind.Markup, AcceptedCharacters.WhiteSpace);
                     break;
                 case DirectiveDescriptorKind.RazorBlock:
-                    Output(SpanKind.Markup, AcceptedCharacters.WhiteSpace);
+                    AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+                    Output(SpanKind.Markup, AcceptedCharacters.AllWhiteSpace);
 
                     ParseDirectiveBlock(descriptor, parseChildren: (startingBraceLocation) =>
                     {
@@ -1534,7 +1575,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         IsNested = false;
                         using (PushSpanConfig())
                         {
-                            HtmlParser.ParseSection(Tuple.Create("{", "}"), caseSensitive: true);
+                            HtmlParser.ParseRazorBlock(Tuple.Create("{", "}"), caseSensitive: true);
                         }
                         Initialize(Span);
                         IsNested = wasNested;
@@ -1542,7 +1583,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     });
                     break;
                 case DirectiveDescriptorKind.CodeBlock:
-                    Output(SpanKind.Markup, AcceptedCharacters.WhiteSpace);
+                    AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
+                    Output(SpanKind.Markup, AcceptedCharacters.AllWhiteSpace);
 
                     ParseDirectiveBlock(descriptor, parseChildren: (startingBraceLocation) =>
                     {
@@ -1588,7 +1630,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     editHandler.AutoCompleteString = "}";
                     Context.ErrorSink.OnError(
                         startingBraceLocation,
-                        LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(descriptor.Name, "{", "}"),
+                        LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(descriptor.Name, "}", "{"),
                         length: 1 /* } */);
                 }
                 else
@@ -1622,198 +1664,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 lookupText => new RemoveTagHelperChunkGenerator(lookupText));
         }
 
-        protected virtual void SectionDirective()
-        {
-            var nested = Context.Builder.ActiveBlocks.Any(block => block.Type == BlockType.Section);
-            var errorReported = false;
-
-            // Set the block and span type
-            Context.Builder.CurrentBlock.Type = BlockType.Section;
-
-            // Verify we're on "section" and accept
-            AssertDirective(SyntaxConstants.CSharp.SectionKeyword);
-            var startLocation = CurrentLocation;
-            AcceptAndMoveNext();
-
-            if (nested)
-            {
-                Context.ErrorSink.OnError(
-                    startLocation,
-                    LegacyResources.FormatParseError_Sections_Cannot_Be_Nested(LegacyResources.SectionExample_CS),
-                    Span.GetContent().Value.Length);
-                errorReported = true;
-            }
-
-            var whitespace = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: false));
-
-            // Get the section name
-            var sectionName = string.Empty;
-            if (!Required(CSharpSymbolType.Identifier,
-                          errorIfNotFound: true,
-                          errorBase: LegacyResources.FormatParseError_Unexpected_Character_At_Section_Name_Start))
-            {
-                if (!errorReported)
-                {
-                    errorReported = true;
-                }
-
-                PutCurrentBack();
-                PutBack(whitespace);
-                AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: false));
-            }
-            else
-            {
-                Accept(whitespace);
-                sectionName = CurrentSymbol.Content;
-                AcceptAndMoveNext();
-            }
-            Context.Builder.CurrentBlock.ChunkGenerator = new SectionChunkGenerator(sectionName);
-
-            var errorLocation = CurrentLocation;
-            whitespace = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: false));
-
-            // Get the starting brace
-            var sawStartingBrace = At(CSharpSymbolType.LeftBrace);
-            if (!sawStartingBrace)
-            {
-                if (!errorReported)
-                {
-                    errorReported = true;
-                    Context.ErrorSink.OnError(
-                        errorLocation,
-                        LegacyResources.ParseError_MissingOpenBraceAfterSection,
-                        length: 1  /* { */);
-                }
-
-                PutCurrentBack();
-                PutBack(whitespace);
-                AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: false));
-                Optional(CSharpSymbolType.NewLine);
-                Output(SpanKind.MetaCode);
-                CompleteBlock();
-                return;
-            }
-            else
-            {
-                Accept(whitespace);
-            }
-
-            var startingBraceLocation = CurrentLocation;
-
-            // Set up edit handler
-            var editHandler = new AutoCompleteEditHandler(Language.TokenizeString, autoCompleteAtEndOfSpan: true);
-
-            Span.EditHandler = editHandler;
-            Span.Accept(CurrentSymbol);
-
-            // Output Metacode then switch to section parser
-            Output(SpanKind.MetaCode);
-            SectionBlock("{", "}", caseSensitive: true);
-
-            Span.ChunkGenerator = SpanChunkGenerator.Null;
-            // Check for the terminating "}"
-            if (!Optional(CSharpSymbolType.RightBrace))
-            {
-                editHandler.AutoCompleteString = "}";
-                Context.ErrorSink.OnError(
-                    startingBraceLocation,
-                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(
-                        SyntaxConstants.CSharp.SectionKeyword,
-                        Language.GetSample(CSharpSymbolType.RightBrace),
-                        Language.GetSample(CSharpSymbolType.LeftBrace)),
-                    length: 1 /* } */);
-            }
-            else
-            {
-                Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
-            }
-            CompleteBlock(insertMarkerIfNecessary: false, captureWhitespaceToEndOfLine: true);
-            Output(SpanKind.MetaCode);
-            return;
-        }
-
-        protected virtual void FunctionsDirective()
-        {
-            // Set the block type
-            Context.Builder.CurrentBlock.Type = BlockType.Functions;
-
-            // Verify we're on "functions" and accept
-            AssertDirective(SyntaxConstants.CSharp.FunctionsKeyword);
-            var block = new Block(CurrentSymbol);
-            AcceptAndMoveNext();
-
-            AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: false));
-
-            if (!At(CSharpSymbolType.LeftBrace))
-            {
-                Context.ErrorSink.OnError(
-                    CurrentLocation,
-                    LegacyResources.FormatParseError_Expected_X(Language.GetSample(CSharpSymbolType.LeftBrace)),
-                    length: 1 /* { */);
-                CompleteBlock();
-                Output(SpanKind.MetaCode);
-                return;
-            }
-            else
-            {
-                Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
-            }
-
-            // Capture start point and continue
-            var blockStart = CurrentLocation;
-            AcceptAndMoveNext();
-
-            // Output what we've seen and continue
-            Output(SpanKind.MetaCode);
-
-            var editHandler = new AutoCompleteEditHandler(Language.TokenizeString);
-            Span.EditHandler = editHandler;
-
-            Balance(BalancingModes.NoErrorOnFailure, CSharpSymbolType.LeftBrace, CSharpSymbolType.RightBrace, blockStart);
-            Span.ChunkGenerator = new TypeMemberChunkGenerator();
-            if (!At(CSharpSymbolType.RightBrace))
-            {
-                editHandler.AutoCompleteString = "}";
-                Context.ErrorSink.OnError(
-                    blockStart,
-                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(block.Name, "}", "{"),
-                    length: 1 /* } */);
-                CompleteBlock();
-                Output(SpanKind.Code);
-            }
-            else
-            {
-                Output(SpanKind.Code);
-                Assert(CSharpSymbolType.RightBrace);
-                Span.ChunkGenerator = SpanChunkGenerator.Null;
-                Span.EditHandler.AcceptedCharacters = AcceptedCharacters.None;
-                AcceptAndMoveNext();
-                CompleteBlock();
-                Output(SpanKind.MetaCode);
-            }
-        }
-
-        protected virtual void InheritsDirective()
-        {
-            // Verify we're on the right keyword and accept
-            AssertDirective(SyntaxConstants.CSharp.InheritsKeyword);
-            AcceptAndMoveNext();
-
-            InheritsDirectiveCore();
-        }
-
         [Conditional("DEBUG")]
         protected void AssertDirective(string directive)
         {
             Assert(CSharpSymbolType.Identifier);
             Debug.Assert(string.Equals(CurrentSymbol.Content, directive, StringComparison.Ordinal));
-        }
-
-        protected void InheritsDirectiveCore()
-        {
-            BaseTypeDirective(
-                LegacyResources.ParseError_InheritsKeyword_Must_Be_Followed_By_TypeName,
-                baseType => new SetBaseTypeChunkGenerator(baseType));
         }
 
         protected void BaseTypeDirective(string noTypeNameError, Func<string, SpanChunkGenerator> createChunkGenerator)

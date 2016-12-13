@@ -347,6 +347,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         }
 
         /// <summary>
+        /// The '{0}' directive expects a type name.
+        /// </summary>
+        internal static string DirectiveExpectsTypeName
+        {
+            get { return GetString("DirectiveExpectsTypeName"); }
+        }
+
+        /// <summary>
+        /// The '{0}' directive expects a type name.
+        /// </summary>
+        internal static string FormatDirectiveExpectsTypeName(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DirectiveExpectsTypeName"), p0);
+        }
+
+        /// <summary>
         /// "EndBlock" was called without a matching call to "StartBlock".
         /// </summary>
         internal static string EndBlock_Called_Without_Matching_StartBlock

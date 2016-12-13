@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
@@ -12,36 +13,33 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         public void ParseInheritsStatementMarksInheritsSpanAsCanGrowIfMissingTrailingSpace()
         {
             ParseBlockTest("inherits",
-                           new DirectiveBlock(
-                               Factory.MetaCode("inherits").Accepts(AcceptedCharacters.Any)
-                               ),
-                           new RazorError(
-                               LegacyResources.ParseError_InheritsKeyword_Must_Be_Followed_By_TypeName,
-                               new SourceLocation(0, 0, 0), 8));
+                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor),
+                    Factory.MetaCode("inherits").Accepts(AcceptedCharacters.None)),
+                new RazorError(
+                    LegacyResources.FormatUnexpectedEOFAfterDirective(CSharpCodeParser.InheritsDirectiveDescriptor.Name, "type"),
+                    new SourceLocation(8, 0, 8), 1));
         }
 
         [Fact]
         public void InheritsBlockAcceptsMultipleGenericArguments()
         {
             ParseBlockTest("inherits Foo.Bar<Biz<Qux>, string, int>.Baz",
-                           new DirectiveBlock(
-                               Factory.MetaCode("inherits ").Accepts(AcceptedCharacters.None),
-                               Factory.Code("Foo.Bar<Biz<Qux>, string, int>.Baz")
-                                   .AsBaseType("Foo.Bar<Biz<Qux>, string, int>.Baz")
-                               ));
+                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor),
+                    Factory.MetaCode("inherits").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Code, "Foo.Bar<Biz<Qux>, string, int>.Baz", markup: false)
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                        .With(new DirectiveTokenChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor.Tokens.First()))));
         }
 
         [Fact]
         public void InheritsBlockOutputsErrorIfInheritsNotFollowedByTypeButAcceptsEntireLineAsCode()
         {
-            ParseBlockTest("inherits                " + Environment.NewLine
-                         + "foo",
-                           new DirectiveBlock(
-                               Factory.MetaCode("inherits ").Accepts(AcceptedCharacters.None),
-                               Factory.Code("               " + Environment.NewLine)
-                                   .AsBaseType(string.Empty)
-                               ),
-                           new RazorError(LegacyResources.ParseError_InheritsKeyword_Must_Be_Followed_By_TypeName, 0, 0, 0, 8));
+            ParseBlockTest("inherits                " + Environment.NewLine + "foo",
+                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor),
+                    Factory.MetaCode("inherits").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Code, "                ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.WhiteSpace)),
+                new RazorError(LegacyResources.FormatDirectiveExpectsTypeName(CSharpCodeParser.InheritsDirectiveDescriptor.Name), 24, 0, 24, 2));
         }
 
         [Fact]
@@ -143,29 +141,27 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             const string code = " foo(); \"bar}baz\" ";
             ParseBlockTest("functions {" + code + "} zoop",
-                           new FunctionsBlock(
-                               Factory.MetaCode("functions {").Accepts(AcceptedCharacters.None),
-                               Factory.Code(code)
-                                   .AsFunctionsBody()
-                                   .AutoCompleteWith(autoCompleteString: null),
-                               Factory.MetaCode("}").Accepts(AcceptedCharacters.None)
-                               ));
+                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.FunctionsDirectiveDescriptor),
+                    Factory.MetaCode("functions").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.AllWhiteSpace),
+                    Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharacters.None),
+                    Factory.Code(code).AsStatement(),
+                    Factory.MetaCode("}").Accepts(AcceptedCharacters.None)));
         }
 
         [Fact]
         public void ParseBlockDoesNoErrorRecoveryForFunctionsBlock()
         {
             ParseBlockTest("functions { { { { { } zoop",
-                           new FunctionsBlock(
-                               Factory.MetaCode("functions {").Accepts(AcceptedCharacters.None),
-                               Factory.Code(" { { { { } zoop")
-                                   .AsFunctionsBody()
-                                   .AutoCompleteWith("}")
-                               ),
-                           new RazorError(
-                               LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", "}", "{"),
-                               new SourceLocation(10, 0, 10),
-                               length: 1));
+                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.FunctionsDirectiveDescriptor),
+                    Factory.MetaCode("functions").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.AllWhiteSpace),
+                    Factory.MetaCode("{").AutoCompleteWith("}", atEndOfSpan: true).Accepts(AcceptedCharacters.None),
+                    Factory.Code(" { { { { } zoop").AsStatement()),
+                new RazorError(
+                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", "}", "{"),
+                    new SourceLocation(10, 0, 10),
+                    length: 1));
         }
 
         [Fact]

@@ -1577,7 +1577,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             return false;
         }
 
-        public void ParseSection(Tuple<string, string> nestingSequences, bool caseSensitive)
+        public void ParseRazorBlock(Tuple<string, string> nestingSequences, bool caseSensitive)
         {
             if (Context == null)
             {

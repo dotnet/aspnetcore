@@ -34,7 +34,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
                 var parser = new RazorParser(options);
 
-                return parser.Parse((ITextDocument)reader);
+                var tree = parser.Parse((ITextDocument)reader);
+                var defaultDirectivePass = new DefaultDirectiveSyntaxTreePass();
+                tree = defaultDirectivePass.Execute(codeDocument: null, syntaxTree: tree);
+
+                return tree;
             }
         }
 

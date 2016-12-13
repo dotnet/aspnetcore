@@ -1,0 +1,119 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNetCore.Razor.Evolution.Legacy;
+using Xunit;
+
+namespace Microsoft.AspNetCore.Razor.Evolution
+{
+    public class DefaultDirectiveSyntaxTreePassTest
+    {
+        [Fact]
+        public void Execute_DoesNotRecreateSyntaxTreeWhenNoErrors()
+        {
+            // Arrange
+            var engine = RazorEngine.Create();
+            var pass = new DefaultDirectiveSyntaxTreePass()
+            {
+                Engine = engine,
+            };
+            var content =
+            @"
+@section Foo {
+}";
+            var sourceDocument = TestRazorSourceDocument.Create(content);
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+
+            // Act
+            var outputTree = pass.Execute(codeDocument, originalTree);
+
+            // Assert
+            Assert.Empty(originalTree.Diagnostics);
+            Assert.Same(originalTree, outputTree);
+            Assert.Empty(outputTree.Diagnostics);
+        }
+
+        [Fact]
+        public void Execute_LogsErrorsForNestedSections()
+        {
+            // Arrange
+            var expectedErrors = new[] {
+                new RazorError(
+                    LegacyResources.FormatParseError_Sections_Cannot_Be_Nested(LegacyResources.SectionExample_CS),
+                    new SourceLocation(22, 2, 4),
+                    length: 8),
+                new RazorError(
+                    LegacyResources.FormatParseError_Sections_Cannot_Be_Nested(LegacyResources.SectionExample_CS),
+                    new SourceLocation(49, 4, 4),
+                    length: 8),
+            };
+            var engine = RazorEngine.Create();
+            var pass = new DefaultDirectiveSyntaxTreePass()
+            {
+                Engine = engine,
+            };
+            var content =
+            @"
+@section Foo {
+    @section Bar {
+    }
+    @section Baz {
+    }
+}";
+            var sourceDocument = TestRazorSourceDocument.Create(content);
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+
+            // Act
+            var outputTree = pass.Execute(codeDocument, originalTree);
+
+            // Assert
+            Assert.Empty(originalTree.Diagnostics);
+            Assert.NotSame(originalTree, outputTree);
+            Assert.Equal(expectedErrors, outputTree.Diagnostics);
+        }
+
+        [Fact]
+        public void Execute_CombinesErrorsWhenNestedSections()
+        {
+            // Arrange
+            var expectedErrors = new[] {
+                new RazorError("Test Error", SourceLocation.Zero, 3),
+                new RazorError(
+                    LegacyResources.FormatParseError_Sections_Cannot_Be_Nested(LegacyResources.SectionExample_CS),
+                    new SourceLocation(22, 2, 4),
+                    length: 8),
+                new RazorError(
+                    LegacyResources.FormatParseError_Sections_Cannot_Be_Nested(LegacyResources.SectionExample_CS),
+                    new SourceLocation(49, 4, 4),
+                    length: 8),
+            };
+            var engine = RazorEngine.Create();
+            var pass = new DefaultDirectiveSyntaxTreePass()
+            {
+                Engine = engine,
+            };
+            var content =
+            @"
+@section Foo {
+    @section Bar {
+    }
+    @section Baz {
+    }
+}";
+            var sourceDocument = TestRazorSourceDocument.Create(content);
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+            var erroredOriginalTree = RazorSyntaxTree.Create(originalTree.Root, new[] { expectedErrors[0] }, originalTree.Options);
+
+            // Act
+            var outputTree = pass.Execute(codeDocument, erroredOriginalTree);
+
+            // Assert
+            Assert.Empty(originalTree.Diagnostics);
+            Assert.NotSame(originalTree, outputTree);
+            Assert.Equal(expectedErrors, outputTree.Diagnostics);
+        }
+    }
+}

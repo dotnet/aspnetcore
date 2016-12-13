@@ -313,11 +313,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 .With(new ExpressionChunkGenerator());
         }
 
-        public SpanConstructor AsFunctionsBody()
-        {
-            return _self.With(new TypeMemberChunkGenerator());
-        }
-
         public SpanConstructor AsNamespaceImport(string ns)
         {
             return _self.With(new AddImportChunkGenerator(ns));
@@ -326,13 +321,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         public SpanConstructor Hidden()
         {
             return _self.With(SpanChunkGenerator.Null);
-        }
-
-        public SpanConstructor AsBaseType(string baseType)
-        {
-            return _self
-                .With(new SetBaseTypeChunkGenerator(baseType))
-                .Accepts(AcceptedCharacters.AnyExceptNewline);
         }
 
         public SpanConstructor AsAddTagHelper(string lookupText)

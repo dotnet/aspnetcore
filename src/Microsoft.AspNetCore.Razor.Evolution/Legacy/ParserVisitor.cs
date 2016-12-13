@@ -69,10 +69,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
         }
 
-        public virtual void VisitTypeMemberSpan(TypeMemberChunkGenerator chunkGenerator, Span span)
-        {
-        }
-
         public virtual void VisitMarkupSpan(MarkupChunkGenerator chunkGenerator, Span span)
         {
         }

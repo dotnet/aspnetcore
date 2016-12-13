@@ -299,15 +299,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         public void ParseBlockReportsErrorIfClassBlockUnterminatedAtEOF()
         {
             ParseBlockTest("functions { var foo = bar; if(foo != null) { bar(); } ",
-                           new FunctionsBlock(
-                               Factory.MetaCode("functions {").Accepts(AcceptedCharacters.None),
-                               Factory.Code(" var foo = bar; if(foo != null) { bar(); } ")
-                                   .AsFunctionsBody()
-                                   .AutoCompleteWith("}")),
-                           new RazorError(
-                               LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", '}', '{'),
-                               new SourceLocation(10, 0, 10),
-                               length: 1));
+                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.FunctionsDirectiveDescriptor),
+                    Factory.MetaCode("functions").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.AllWhiteSpace),
+                    Factory.MetaCode("{").AutoCompleteWith("}", atEndOfSpan: true).Accepts(AcceptedCharacters.None),
+                    Factory.Code(" var foo = bar; if(foo != null) { bar(); } ").AsStatement()),
+                new RazorError(
+                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", '}', '{'),
+                    new SourceLocation(10, 0, 10),
+                    length: 1));
         }
 
         [Fact]

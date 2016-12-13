@@ -153,18 +153,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 });
             }
 
-            public override void VisitTypeMemberSpan(TypeMemberChunkGenerator chunkGenerator, Span span)
-            {
-                var functionsNode = new CSharpStatementIRNode()
-                {
-                    Content = span.Content,
-                    SourceRange = new MappingLocation(span.Start, span.Length),
-                    Parent = Class,
-                };
-
-                Class.Children.Add(functionsNode);
-            }
-
             public override void VisitStatementSpan(StatementChunkGenerator chunkGenerator, Span span)
             {
                 Builder.Add(new CSharpStatementIRNode()

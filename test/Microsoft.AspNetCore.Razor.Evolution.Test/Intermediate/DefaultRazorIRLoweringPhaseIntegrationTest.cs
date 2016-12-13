@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 var phase = engine.Phases[i];
                 phase.Execute(codeDocument);
 
-                if (phase is IRazorIRLoweringPhase)
+                if (phase is IRazorIRPhase)
                 {
                     break;
                 }

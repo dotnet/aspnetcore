@@ -47,26 +47,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         }
     }
 
-    internal class FunctionsBlock : Block
-    {
-        private const BlockType ThisBlockType = BlockType.Functions;
-
-        public FunctionsBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
-            : base(ThisBlockType, children, chunkGenerator)
-        {
-        }
-
-        public FunctionsBlock(IParentChunkGenerator chunkGenerator, params SyntaxTreeNode[] children)
-            : this(chunkGenerator, (IReadOnlyList<SyntaxTreeNode>)children)
-        {
-        }
-
-        public FunctionsBlock(params SyntaxTreeNode[] children)
-            : this(ParentChunkGenerator.Null, children)
-        {
-        }
-    }
-
     internal class ExpressionBlock : Block
     {
         private const BlockType ThisBlockType = BlockType.Expression;
@@ -184,31 +164,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             IList<TagHelperAttributeNode> attributes,
             params SyntaxTreeNode[] children)
             : base(new TagHelperBlockBuilder(tagName, tagMode, attributes, children))
-        {
-        }
-    }
-
-    internal class SectionBlock : Block
-    {
-        private const BlockType ThisBlockType = BlockType.Section;
-
-        public SectionBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
-            : base(ThisBlockType, children, chunkGenerator)
-        {
-        }
-
-        public SectionBlock(IParentChunkGenerator chunkGenerator, params SyntaxTreeNode[] children)
-            : this(chunkGenerator, (IReadOnlyList<SyntaxTreeNode>)children)
-        {
-        }
-
-        public SectionBlock(params SyntaxTreeNode[] children)
-            : this(ParentChunkGenerator.Null, children)
-        {
-        }
-
-        public SectionBlock(IReadOnlyList<SyntaxTreeNode> children)
-            : this(ParentChunkGenerator.Null, children)
         {
         }
     }

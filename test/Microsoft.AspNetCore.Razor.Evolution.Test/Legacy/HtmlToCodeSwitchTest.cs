@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
@@ -280,6 +281,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [Fact]
         public void SectionContextGivesWhitespacePreceedingAtToCodeIfThereIsNoMarkupOnThatLine()
         {
+            var sectionDescriptor = CSharpCodeParser.SectionDirectiveDescriptor;
             ParseDocumentTest("@section foo {" + Environment.NewLine
                             + "    <ul>" + Environment.NewLine
                             + "        @foreach(var p in Products) {" + Environment.NewLine
@@ -289,9 +291,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                             + "}",
                 new MarkupBlock(
                     Factory.EmptyHtml(),
-                    new SectionBlock(new SectionChunkGenerator("foo"),
+                    new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor),
                         Factory.CodeTransition(),
-                        Factory.MetaCode("section foo {").AutoCompleteWith(null, atEndOfSpan: true),
+                        Factory.MetaCode("section").Accepts(AcceptedCharacters.None),
+                        Factory.Span(SpanKind.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.WhiteSpace),
+                        Factory.Span(SpanKind.Code, "foo", CSharpSymbolType.Identifier)
+                            .Accepts(AcceptedCharacters.NonWhiteSpace)
+                            .With(new DirectiveTokenChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor.Tokens.First())),
+                        Factory.Span(SpanKind.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.AllWhiteSpace),
+                        Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharacters.None),
                         new MarkupBlock(
                             Factory.Markup(Environment.NewLine + "    "),
                             new MarkupTagBlock(
@@ -386,9 +394,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             ParseDocumentTest("@section Foo { <foo>@@bar</foo> }",
                 new MarkupBlock(
                     Factory.EmptyHtml(),
-                    new SectionBlock(new SectionChunkGenerator("Foo"),
+                    new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor),
                         Factory.CodeTransition(),
-                        Factory.MetaCode("section Foo {").AutoCompleteWith(null, atEndOfSpan: true),
+                        Factory.MetaCode("section").Accepts(AcceptedCharacters.None),
+                        Factory.Span(SpanKind.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.WhiteSpace),
+                        Factory.Span(SpanKind.Code, "Foo", CSharpSymbolType.Identifier)
+                            .Accepts(AcceptedCharacters.NonWhiteSpace)
+                            .With(new DirectiveTokenChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor.Tokens.First())),
+                        Factory.Span(SpanKind.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.AllWhiteSpace),
+                        Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharacters.None),
                         new MarkupBlock(
                             Factory.Markup(" "),
                             new MarkupTagBlock(
@@ -408,9 +422,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             ParseDocumentTest("@section Foo { <foo>@@@@@bar</foo> }",
                 new MarkupBlock(
                     Factory.EmptyHtml(),
-                    new SectionBlock(new SectionChunkGenerator("Foo"),
+                    new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor),
                         Factory.CodeTransition(),
-                        Factory.MetaCode("section Foo {").AutoCompleteWith(null, atEndOfSpan: true),
+                        Factory.MetaCode("section").Accepts(AcceptedCharacters.None),
+                        Factory.Span(SpanKind.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.WhiteSpace),
+                        Factory.Span(SpanKind.Code, "Foo", CSharpSymbolType.Identifier)
+                            .Accepts(AcceptedCharacters.NonWhiteSpace)
+                            .With(new DirectiveTokenChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor.Tokens.First())),
+                        Factory.Span(SpanKind.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.AllWhiteSpace),
+                        Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharacters.None),
                         new MarkupBlock(
                             Factory.Markup(" "),
                             new MarkupTagBlock(
