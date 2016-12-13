@@ -5,25 +5,11 @@ dotnet-user-secrets
 
 ### How To Install
 
-**project.json**
-Add `Microsoft.Extensions.SecretManager.Tools` to the `tools` section of your `project.json` file:
-
-```js
-{
-    ..
-    "tools": {
-        "Microsoft.Extensions.SecretManager.Tools": "1.0.0-*"
-    }
-    ...
-}
-```
-
-**MSBuild**
 Install `Microsoft.Extensions.SecretManager.Tools` as a `DotNetCliToolReference` to your project.
 
 ```xml
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="1.0.0-msbuild1-final" />
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="1.0.0-msbuild2-update1" />
   </ItemGroup>
 ```
 
