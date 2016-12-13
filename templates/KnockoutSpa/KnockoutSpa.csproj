@@ -1,0 +1,78 @@
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
+    <GlobalExclude>$(GlobalExclude);bin\**;obj\**;node_modules\**;**\*.user;**\*.suo;**\*.*proj</GlobalExclude>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="**\*" Exclude="$(GlobalExclude)"/>
+    <Compile Include="**\*.cs" Exclude="$(GlobalExclude)" />
+    <EmbeddedResource Include="**\*.resx" Exclude="$(GlobalExclude)" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETCore.App">
+      <Version>1.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Sdk.Web">
+      <Version>1.0.0-alpha-20161104-2-112</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics">
+      <Version>1.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc">
+      <Version>1.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Tools">
+      <Version>1.0.0-preview2-final</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration">
+      <Version>1.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel">
+      <Version>1.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices">
+      <Version>1.1.0-*</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles">
+      <Version>1.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables">
+      <Version>1.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json">
+      <Version>1.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine">
+      <Version>1.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging">
+      <Version>1.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console">
+      <Version>1.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug">
+      <Version>1.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions">
+      <Version>1.1.0</Version>
+    </PackageReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <!-- Files not to show in IDE -->
+    <None Remove=".bowerrc" />
+    <None Remove="yarn.lock" />
+  </ItemGroup>
+  <Target Name="RunWebpack" AfterTargets="PrepareForPublish">
+    <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
+    <Exec Command="npm install" />
+    <Exec Command="node node_modules/webpack/bin/webpack.js --config webpack.config.vendor.js --env.prod" />
+    <Exec Command="node node_modules/webpack/bin/webpack.js --env.prod" />
+  </Target>
+</Project>
