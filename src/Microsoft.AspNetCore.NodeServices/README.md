@@ -333,25 +333,23 @@ People have asked about using [VroomJS](https://github.com/fogzot/vroomjs) as a 
 
 ### Built-in hosting models
 
-Normally, you can just use the default hosting model, and not worry about it. But if you have some special requirements, select a hosting model by setting the `HostingModel` property on the `options` object in `AddNodeServices`. Example:
+Normally, you can just use the default hosting model, and not worry about it. But if you have some special requirements, you can write your own hosting model, or reference a package that supplies one.
+
+For example, you could use the 'socket' hosting model. It performs RPC between .NET and Node.js using a fast, low-level binary channel rather than the default HTTP transport. To do this, first install the NuGet package `Microsoft.AspNetCore.NodeServices.Sockets`. Then, at the top of your `Startup.cs` file, add:
 
 ```csharp
-services.AddNodeServices(options =>
-{
-    options.HostingModel = NodeHostingModel.Socket;
+using Microsoft.AspNetCore.NodeServices.Sockets;
+```
+
+...then in your `Startup.cs` file's `ConfigureServices` method, you can configure:
+
+```csharp
+services.AddNodeServices(options => {
+    options.UseSocketHosting();
 });
 ```
 
-**Available hosting models**
-
-* `Socket`
-  * Launches Node as a separate process, and communicates with it using named pipes (on Windows) or domain sockets (on Linux / OS X).
-  * This is faster than `Http` because it uses a low-level binary protocol with very low overhead. It retains one continuous connection for the whole lifetime of the Node instance, so it doesn't have to keep waiting for new connections to open.
-* `Http` (default)
-  * Launches Node as a separate process, and communicates with it by making HTTP requests.
-  * This primarily exists because it was implemented before `Socket`, but there's no particular reason to use it now that `Socket` is available. It could theoretically be useful if you wanted to run Node instances on separate servers (though there isn't currently any built-in API for configuring that).
-
-The default transport may change from `Http` to `Socket` in the near future, because it's faster.
+Now when you run your application, it will use the socket-based hosting and transport mechanism. In the past, the socket transport was faster than HTTP, but since .NET Core 1.1 improved the performance of `HttpClient` there isn't really any speed difference any more, so there's no longer any significant advantage to using `Microsoft.AspNetCore.NodeServices.Sockets`.
 
 ### Custom hosting models
 
