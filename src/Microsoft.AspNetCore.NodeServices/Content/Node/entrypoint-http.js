@@ -125,7 +125,7 @@
 	    // Signal to the NodeServices base class that we're ready to accept invocations
 	    console.log('[Microsoft.AspNetCore.NodeServices:Listening]');
 	});
-	ExitWhenParentExits_1.exitWhenParentExits(parseInt(parsedArgs.parentPid));
+	ExitWhenParentExits_1.exitWhenParentExits(parseInt(parsedArgs.parentPid), /* ignoreSigint */ true);
 	function readRequestBodyAsJson(request, callback) {
 	    var requestBodyAsString = '';
 	    request.on('data', function (chunk) { requestBodyAsString += chunk; });
@@ -255,7 +255,7 @@
 	*/
 	"use strict";
 	var pollIntervalMs = 1000;
-	function exitWhenParentExits(parentPid) {
+	function exitWhenParentExits(parentPid, ignoreSigint) {
 	    setInterval(function () {
 	        if (!processExists(parentPid)) {
 	            // Can't log anything at this point, because out stdout was connected to the parent,
@@ -263,6 +263,24 @@
 	            process.exit();
 	        }
 	    }, pollIntervalMs);
+	    if (ignoreSigint) {
+	        // Pressing ctrl+c in the terminal sends a SIGINT to all processes in the foreground process tree.
+	        // By default, the Node process would then exit before the .NET process, because ASP.NET implements
+	        // a delayed shutdown to allow ongoing requests to complete.
+	        //
+	        // This is problematic, because if Node exits first, the CopyToAsync code in ConditionalProxyMiddleware
+	        // will experience a read fault, and logs a huge load of errors. Fortunately, since the Node process is
+	        // already set up to shut itself down if it detects the .NET process is terminated, all we have to do is
+	        // ignore the SIGINT. The Node process will then terminate automatically after the .NET process does.
+	        //
+	        // A better solution would be to have WebpackDevMiddleware listen for SIGINT and gracefully close any
+	        // ongoing EventSource connections before letting the Node process exit, independently of the .NET
+	        // process exiting. However, doing this well in general is very nontrivial (see all the discussion at
+	        // https://github.com/nodejs/node/issues/2642).
+	        process.on('SIGINT', function () {
+	            console.log('Received SIGINT. Waiting for .NET process to exit...');
+	        });
+	    }
 	}
 	exports.exitWhenParentExits = exitWhenParentExits;
 	function processExists(pid) {

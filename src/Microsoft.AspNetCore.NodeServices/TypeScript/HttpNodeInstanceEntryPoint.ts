@@ -76,7 +76,7 @@ server.listen(requestedPortOrZero, 'localhost', function () {
     console.log('[Microsoft.AspNetCore.NodeServices:Listening]');
 });
 
-exitWhenParentExits(parseInt(parsedArgs.parentPid));
+exitWhenParentExits(parseInt(parsedArgs.parentPid), /* ignoreSigint */ true);
 
 function readRequestBodyAsJson(request, callback) {
     let requestBodyAsString = '';
