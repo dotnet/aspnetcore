@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Internal;
 using Xunit.Abstractions;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 UseShellExecute = false,
                 FileName = _spec.Executable,
                 WorkingDirectory = _spec.WorkingDirectory,
-                Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(_spec.Arguments),
+                Arguments = ArgumentEscaper.EscapeAndConcatenate(_spec.Arguments),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };

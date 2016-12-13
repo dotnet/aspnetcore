@@ -1,12 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Extensions.Tools.Internal;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading;
-using Microsoft.DotNet.Cli.Utils;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
@@ -69,18 +70,36 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         private void ExecuteCommand(string project, params string[] arguments)
         {
             project = Path.Combine(WorkFolder, project);
-            var command = Command
-                .Create(new Muxer().MuxerPath, arguments)
-                .WorkingDirectory(project)
-                .CaptureStdErr()
-                .CaptureStdOut()
-                .OnErrorLine(l => _logger?.WriteLine(l))
-                .OnOutputLine(l => _logger?.WriteLine(l))
-                .Execute();
-
-            if (command.ExitCode != 0)
+            var psi = new ProcessStartInfo
             {
-                throw new InvalidOperationException($"Exit code {command.ExitCode}");
+                FileName = DotNetMuxer.MuxerPathOrDefault(),
+                Arguments = ArgumentEscaper.EscapeAndConcatenate(arguments),
+                WorkingDirectory = project,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+
+            var process = new Process()
+            {
+                StartInfo = psi,
+                EnableRaisingEvents = true
+            };
+
+            void WriteLine(object sender, DataReceivedEventArgs args)
+              => _logger.WriteLine(args.Data);
+
+            process.ErrorDataReceived += WriteLine;
+            process.OutputDataReceived += WriteLine;
+
+            process.Start();
+            process.WaitForExit();
+
+            process.ErrorDataReceived -= WriteLine;
+            process.OutputDataReceived -= WriteLine;
+
+            if (process.ExitCode != 0)
+            {
+                throw new InvalidOperationException($"Exit code {process.ExitCode}");
             }
         }
 
@@ -103,10 +122,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             args.Add("exec");
 
             args.Add("--depsfile");
-            args.Add(Path.Combine(AppContext.BaseDirectory, thisAssembly + FileNameSuffixes.DepsJson));
+            args.Add(Path.Combine(AppContext.BaseDirectory, thisAssembly + ".deps.json"));
 
             args.Add("--runtimeconfig");
-            args.Add(Path.Combine(AppContext.BaseDirectory, thisAssembly + FileNameSuffixes.RuntimeConfigJson));
+            args.Add(Path.Combine(AppContext.BaseDirectory, thisAssembly + ".runtimeconfig.json"));
 
             args.Add(Path.Combine(AppContext.BaseDirectory, "dotnet-watch.dll"));
 
