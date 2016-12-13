@@ -54,8 +54,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Equal(3, types);
         }
 
-        // TODO re-enable when MSBuild is updated. See https://github.com/aspnet/DotNetTools/issues/224
-        [Fact(Skip = "Broken. See https://github.com/Microsoft/msbuild/issues/701")]
+        [Fact]
         public async Task DeleteCompiledFile()
         {
             await _app.StartWatcher().OrTimeout();
@@ -71,8 +70,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Equal(1, types);
         }
 
-        // TODO re-enable when MSBuild is updated. See https://github.com/aspnet/DotNetTools/issues/224
-        [Fact(Skip = "Broken. See https://github.com/Microsoft/msbuild/issues/701")]
+        [Fact]
         public async Task DeleteSourceFolder()
         {
             await _app.StartWatcher().OrTimeout();
