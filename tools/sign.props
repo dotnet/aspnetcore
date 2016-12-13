@@ -1,0 +1,7 @@
+<Project>
+    <PropertyGroup>
+        <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Key.snk</AssemblyOriginatorKeyFile>
+        <SignAssembly>true</SignAssembly>
+        <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
+    </PropertyGroup>
+</Project>

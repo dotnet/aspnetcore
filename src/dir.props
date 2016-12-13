@@ -1,6 +1,8 @@
 <Project>
   <Import Project="..\dir.props" />
   <PropertyGroup>
+    <!-- overrides default which is assembly name -->
+    <PackageId>$(MSBuildProjectName)</PackageId>
     <PackageType>DotnetCliTool</PackageType>
   </PropertyGroup>
   <ItemGroup>
