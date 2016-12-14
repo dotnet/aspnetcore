@@ -13,13 +13,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 {
     internal class DefaultRazorCSharpLoweringPhase : RazorEnginePhaseBase, IRazorCSharpLoweringPhase
     {
-        private IRazorConfigureParserFeature[] _parserOptionsCallbacks;
-
-        protected override void OnIntialized()
-        {
-            _parserOptionsCallbacks = Engine.Features.OfType<IRazorConfigureParserFeature>().ToArray();
-        }
-
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {
             var irDocument = codeDocument.GetIRDocument();
