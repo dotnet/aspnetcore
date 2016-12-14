@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         IList<IRazorEnginePhase> Phases { get; }
 
+        bool DesignTime { get; set; }
+
         RazorEngine Build();
     }
 }

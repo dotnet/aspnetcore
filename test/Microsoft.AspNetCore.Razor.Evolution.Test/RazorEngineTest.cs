@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
     public class RazorEngineTest
     {
         [Fact]
-        public void Create_NoArg_CreatesDefaultEngine()
+        public void Create_NoArg_CreatesDefaultRuntimeEngine()
         {
             // Arrange
             // Act
@@ -19,12 +19,25 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             // Assert
             Assert.IsType<DefaultRazorEngine>(engine);
-            AssertDefaultFeatures(engine.Features);
-            AssertDefaultPhases(engine.Phases);
+            AssertDefaultRuntimeFeatures(engine.Features);
+            AssertDefaultRuntimePhases(engine.Phases);
         }
 
         [Fact]
-        public void Create_Null_CreatesDefaultEngine()
+        public void CreateDesignTime_NoArg_CreatesDefaultDesignTimeEngine()
+        {
+            // Arrange
+            // Act
+            var engine = RazorEngine.CreateDesignTime();
+
+            // Assert
+            Assert.IsType<DefaultRazorEngine>(engine);
+            AssertDefaultDesignTimeFeatures(engine.Features);
+            AssertDefaultDesignTimePhases(engine.Phases);
+        }
+
+        [Fact]
+        public void Create_Null_CreatesDefaultRuntimeEngine()
         {
             // Arrange
             // Act
@@ -32,8 +45,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             // Assert
             Assert.IsType<DefaultRazorEngine>(engine);
-            AssertDefaultFeatures(engine.Features);
-            AssertDefaultPhases(engine.Phases);
+            AssertDefaultRuntimeFeatures(engine.Features);
+            AssertDefaultRuntimePhases(engine.Phases);
+        }
+
+        [Fact]
+        public void CreateDesignTime_Null_CreatesDefaultDesignTimeEngine()
+        {
+            // Arrange
+            // Act
+            var engine = RazorEngine.CreateDesignTime(configure: null);
+
+            // Assert
+            Assert.IsType<DefaultRazorEngine>(engine);
+            AssertDefaultDesignTimeFeatures(engine.Features);
+            AssertDefaultDesignTimePhases(engine.Phases);
         }
 
         [Fact]
@@ -71,7 +97,42 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 p => Assert.Same(phases[1], p));
         }
 
-        private static void AssertDefaultFeatures(IEnumerable<IRazorEngineFeature> features)
+        [Fact]
+        public void CreateDesignTime_Lambda_AddsFeaturesAndPhases()
+        {
+            // Arrange
+            IRazorEngineFeature[] features = null;
+            IRazorEnginePhase[] phases = null;
+
+            // Act
+            var engine = RazorEngine.CreateDesignTime(builder =>
+            {
+                builder.Features.Clear();
+                builder.Phases.Clear();
+
+                builder.Features.Add(Mock.Of<IRazorEngineFeature>());
+                builder.Features.Add(Mock.Of<IRazorEngineFeature>());
+
+                builder.Phases.Add(Mock.Of<IRazorEnginePhase>());
+                builder.Phases.Add(Mock.Of<IRazorEnginePhase>());
+
+                features = builder.Features.ToArray();
+                phases = builder.Phases.ToArray();
+            });
+
+            // Assert
+            Assert.Collection(
+                engine.Features,
+                f => Assert.Same(features[0], f),
+                f => Assert.Same(features[1], f));
+
+            Assert.Collection(
+                engine.Phases,
+                p => Assert.Same(phases[0], p),
+                p => Assert.Same(phases[1], p));
+        }
+
+        private static void AssertDefaultRuntimeFeatures(IEnumerable<IRazorEngineFeature> features)
         {
             Assert.Collection(
                 features,
@@ -81,7 +142,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 feature => Assert.IsType<DefaultDirectiveIRPass>(feature));
         }
 
-        private static void AssertDefaultPhases(IReadOnlyList<IRazorEnginePhase> phases)
+        private static void AssertDefaultRuntimePhases(IReadOnlyList<IRazorEnginePhase> phases)
         {
             Assert.Collection(
                 phases,
@@ -89,7 +150,29 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 phase => Assert.IsType<DefaultRazorSyntaxTreePhase>(phase),
                 phase => Assert.IsType<DefaultRazorIRLoweringPhase>(phase),
                 phase => Assert.IsType<DefaultRazorIRPhase>(phase),
-                phase => Assert.IsType<DefaultRazorCSharpLoweringPhase>(phase));
+                phase => Assert.IsType<DefaultRazorRuntimeCSharpLoweringPhase>(phase));
+        }
+
+        private static void AssertDefaultDesignTimeFeatures(IEnumerable<IRazorEngineFeature> features)
+        {
+            Assert.Collection(
+                features,
+                feature => Assert.IsType<DefaultDirectiveSyntaxTreePass>(feature),
+                feature => Assert.IsType<TagHelperBinderSyntaxTreePass>(feature),
+                feature => Assert.IsType<HtmlNodeOptimizationPass>(feature),
+                feature => Assert.IsType<DefaultDirectiveIRPass>(feature),
+                feature => Assert.IsType<RazorEngine.ConfigureDesignTimeOptions>(feature));
+        }
+
+        private static void AssertDefaultDesignTimePhases(IReadOnlyList<IRazorEnginePhase> phases)
+        {
+            Assert.Collection(
+                phases,
+                phase => Assert.IsType<DefaultRazorParsingPhase>(phase),
+                phase => Assert.IsType<DefaultRazorSyntaxTreePhase>(phase),
+                phase => Assert.IsType<DefaultRazorIRLoweringPhase>(phase),
+                phase => Assert.IsType<DefaultRazorIRPhase>(phase),
+                phase => Assert.IsType<DefaultRazorDesignTimeCSharpLoweringPhase>(phase));
         }
     }
 }

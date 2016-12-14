@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    internal class DefaultRazorCSharpLoweringPhase : RazorEnginePhaseBase, IRazorCSharpLoweringPhase
+    internal class DefaultRazorRuntimeCSharpLoweringPhase : RazorEnginePhaseBase, IRazorCSharpLoweringPhase
     {
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {

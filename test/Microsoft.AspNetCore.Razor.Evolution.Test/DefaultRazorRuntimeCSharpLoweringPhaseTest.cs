@@ -8,13 +8,13 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    public class DefaultRazorCSharpLoweringPhaseTest
+    public class DefaultRazorRuntimeCSharpLoweringPhaseTest
     {
         [Fact]
         public void Execute_ThrowsForMissingDependency()
         {
             // Arrange
-            var phase = new DefaultRazorCSharpLoweringPhase();
+            var phase = new DefaultRazorRuntimeCSharpLoweringPhase();
 
             var engine = RazorEngine.CreateEmpty(b => b.Phases.Add(phase));
 
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Act & Assert
             ExceptionAssert.Throws<InvalidOperationException>(
                 () => phase.Execute(codeDocument),
-                $"The '{nameof(DefaultRazorCSharpLoweringPhase)}' phase requires a '{nameof(DocumentIRNode)}' " +
+                $"The '{nameof(DefaultRazorRuntimeCSharpLoweringPhase)}' phase requires a '{nameof(DocumentIRNode)}' " +
                 $"provided by the '{nameof(RazorCodeDocument)}'.");
         }
     }
