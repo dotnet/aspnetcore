@@ -126,11 +126,11 @@ namespace Microsoft.AspNet.Identity.CoreCompat
         {
             if (entityEntry.Entity is TUser && entityEntry.State == EntityState.Modified)
             {
-                entityEntry.Property("ConcurrencyStamp").CurrentValue = Guid.NewGuid().ToString();
+                entityEntry.Cast<TUser>().Property(p => p.ConcurrencyStamp).CurrentValue = Guid.NewGuid().ToString();
             }
             else if (entityEntry.Entity is TRole && entityEntry.State == EntityState.Modified)
             {
-                entityEntry.Property("ConcurrencyStamp").CurrentValue = Guid.NewGuid().ToString();
+                entityEntry.Cast<TRole>().Property(p => p.ConcurrencyStamp).CurrentValue = Guid.NewGuid().ToString();
             }
             return base.ValidateEntity(entityEntry, items);
         }
