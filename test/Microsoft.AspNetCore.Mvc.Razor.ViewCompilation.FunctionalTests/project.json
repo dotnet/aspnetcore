@@ -8,7 +8,7 @@
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Server.IntegrationTesting": "0.3.0-*",
-    "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-preview3-004056",
     "Microsoft.Extensions.Logging": "1.2.0-*",
     "Microsoft.Extensions.Logging.Console": "1.2.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.2.0-*",
