@@ -17,15 +17,12 @@
     "nowarn": [
       "CS1591"
     ],
-    "xmlDoc": true
+    "xmlDoc": true,
+    "compile": "../../shared/Microsoft.AspNetCore.Routing.DecisionTree.Sources/**/*.cs"
   },
   "dependencies": {
     "Microsoft.AspNetCore.Http.Extensions": "1.2.0-*",
     "Microsoft.AspNetCore.Routing.Abstractions": {
-      "target": "project"
-    },
-    "Microsoft.AspNetCore.Routing.DecisionTree.Sources": {
-      "type": "build",
       "target": "project"
     },
     "Microsoft.Extensions.HashCodeCombiner.Sources": {
