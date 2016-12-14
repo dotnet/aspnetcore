@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.AddRouting();
             services.TryAddSingleton<ConnectionManager>();
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, SocketsApplicationLifetimeService>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IApplicationLifetimeEvents, SocketsApplicationLifetimeEvents>());
             services.TryAddSingleton<PipelineFactory>();
             services.TryAddSingleton<HttpConnectionDispatcher>();
             return services;
