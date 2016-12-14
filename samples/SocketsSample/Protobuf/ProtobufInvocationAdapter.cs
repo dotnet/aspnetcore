@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Google.Protobuf;
 using Microsoft.AspNetCore.SignalR;
@@ -19,17 +20,41 @@ namespace SocketsSample.Protobuf
             _serviceProvider = serviceProvider;
         }
 
-        public async Task<InvocationDescriptor> ReadInvocationDescriptorAsync(Stream stream, Func<string, Type[]> getParams)
+        public Task<InvocationMessage> ReadMessageAsync(Stream stream, IInvocationBinder binder, CancellationToken cancellationToken)
         {
-            return await Task.Run(() => CreateInvocationDescriptorInt(stream, getParams));
+            return Task.Run(() => CreateInvocationMessageInt(stream, binder));
         }
 
-        private Task<InvocationDescriptor> CreateInvocationDescriptorInt(Stream stream, Func<string, Type[]> getParams)
+        public Task WriteMessageAsync(InvocationMessage message, Stream stream, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        private Task<InvocationMessage> CreateInvocationMessageInt(Stream stream, IInvocationBinder binder)
         {
             var inputStream = new CodedInputStream(stream, leaveOpen: true);
+            var messageKind = new RpcMessageKind();
+            inputStream.ReadMessage(messageKind);
+            if(messageKind.MessageKind == RpcMessageKind.Types.Kind.Invocation)
+            {
+                return CreateInvocationDescriptorInt(inputStream, binder);
+            }
+            else
+            {
+                return CreateInvocationResultDescriptorInt(inputStream, binder);
+            }
+        }
+
+        private Task<InvocationMessage> CreateInvocationResultDescriptorInt(CodedInputStream inputStream, IInvocationBinder binder)
+        {
+            throw new NotImplementedException("Not yet implemented for Protobuf");
+        }
+
+        private Task<InvocationMessage> CreateInvocationDescriptorInt(CodedInputStream inputStream, IInvocationBinder binder)
+        {
             var invocationHeader = new RpcInvocationHeader();
             inputStream.ReadMessage(invocationHeader);
-            var argumentTypes = getParams(invocationHeader.Name);
+            var argumentTypes = binder.GetParameterTypes(invocationHeader.Name);
 
             var invocationDescriptor = new InvocationDescriptor();
             invocationDescriptor.Method = invocationHeader.Name;
@@ -59,7 +84,7 @@ namespace SocketsSample.Protobuf
                 }
             }
 
-            return Task.FromResult(invocationDescriptor);
+            return Task.FromResult<InvocationMessage>(invocationDescriptor);
         }
 
         public async Task WriteInvocationResultAsync(InvocationResultDescriptor resultDescriptor, Stream stream)

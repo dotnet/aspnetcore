@@ -19,6 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<IConfigureOptions<SignalROptions>, SignalROptionsSetup>();
             services.AddSingleton<JsonNetInvocationAdapter>();
             services.AddSingleton<InvocationAdapterRegistry>();
+            services.AddRouting();
 
             return new SignalRBuilder(services);
         }

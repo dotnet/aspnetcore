@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             // BAD
             using (var ms = new MemoryStream())
             {
-                await invocationAdapter.WriteInvocationDescriptorAsync(message, ms);
+                await invocationAdapter.WriteMessageAsync(message, ms);
 
                 await _bus.PublishAsync(channel, ms.ToArray());
             }

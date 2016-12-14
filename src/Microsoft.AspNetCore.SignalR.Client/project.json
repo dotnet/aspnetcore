@@ -1,6 +1,6 @@
 ﻿{
   "version": "1.0.0-*",
-  "description": "Real-time communication framework for ASP.NET Core.",
+  "description": "Client for ASP.NET Core SignalR",
 
   "packOptions": {
     "repository": {
@@ -22,14 +22,8 @@
   },
 
   "dependencies": {
-    "Microsoft.AspNetCore.Sockets": {
-      "target": "project"
-    },
     "Microsoft.AspNetCore.SignalR.Common": "1.0.0-*",
-    "Microsoft.Extensions.TaskCache.Sources": {
-      "version": "1.2.0-*",
-      "type": "build"
-    },
+    "Microsoft.AspNetCore.Sockets.Client": "1.0.0-*",
     "NETStandard.Library": "1.6.1-*"
   },
 

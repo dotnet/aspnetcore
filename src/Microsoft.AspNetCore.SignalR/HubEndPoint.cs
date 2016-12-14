@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.SignalR
         }
     }
 
-    public class HubEndPoint<THub, TClient> : EndPoint where THub : Hub<TClient>
+    public class HubEndPoint<THub, TClient> : EndPoint, IInvocationBinder where THub : Hub<TClient>
     {
         private readonly Dictionary<string, Func<Connection, InvocationDescriptor, Task<InvocationResultDescriptor>>> _callbacks
             = new Dictionary<string, Func<Connection, InvocationDescriptor, Task<InvocationResultDescriptor>>>(StringComparer.OrdinalIgnoreCase);
@@ -102,14 +102,8 @@ namespace Microsoft.AspNetCore.SignalR
 
             while (true)
             {
-                var invocationDescriptor =
-                    await invocationAdapter.ReadInvocationDescriptorAsync(
-                            stream, methodName =>
-                            {
-                                Type[] types;
-                                // TODO: null or throw?
-                                return _paramTypes.TryGetValue(methodName, out types) ? types : null;
-                            });
+                // TODO: Handle receiving InvocationResultDescriptor
+                var invocationDescriptor = await invocationAdapter.ReadMessageAsync(stream, this) as InvocationDescriptor;
 
                 // Is there a better way of detecting that a connection was closed?
                 if (invocationDescriptor == null)
@@ -140,7 +134,7 @@ namespace Microsoft.AspNetCore.SignalR
                     _logger.LogError("Unknown hub method '{method}'", invocationDescriptor.Method);
                 }
 
-                await invocationAdapter.WriteInvocationResultAsync(result, stream);
+                await invocationAdapter.WriteMessageAsync(result, stream);
             }
         }
 
@@ -239,6 +233,18 @@ namespace Microsoft.AspNetCore.SignalR
         {
             // TODO: Add more checks
             return m.IsPublic;
+        }
+
+        Type IInvocationBinder.GetReturnType(string invocationId)
+        {
+            return typeof(object);
+        }
+
+        Type[] IInvocationBinder.GetParameterTypes(string methodName)
+        {
+            Type[] types;
+            // TODO: null or throw?
+            return _paramTypes.TryGetValue(methodName, out types) ? types : null;
         }
     }
 }

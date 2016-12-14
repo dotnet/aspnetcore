@@ -5,10 +5,8 @@ using System;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public class InvocationDescriptor
+    public class InvocationDescriptor : InvocationMessage
     {
-        public string Id { get; set; }
-
         public string Method { get; set; }
 
         public object[] Arguments { get; set; }

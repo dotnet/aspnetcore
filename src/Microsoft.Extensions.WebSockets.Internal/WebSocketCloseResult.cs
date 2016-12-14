@@ -71,7 +71,7 @@ namespace Microsoft.Extensions.WebSockets.Internal
             buffer.WriteBigEndian((ushort)Status);
             if (!string.IsNullOrEmpty(Description))
             {
-                buffer.Append(Description, TextEncoding.Utf8);
+                buffer.Append(Description, EncodingData.InvariantUtf8.TextEncoding);
             }
         }
     }

@@ -8,9 +8,7 @@
       "version": "1.1.0-*",
       "type": "platform"
     },
-    "Microsoft.Extensions.Logging.Console": "1.2.0-*",
-    "Microsoft.Extensions.Logging": "1.2.0-*",
-    "Microsoft.AspNetCore.SignalR.Client": "1.0.0-*"
+    "System.Net.WebSockets.Client": "4.3.0-*"
   },
 
   "frameworks": {

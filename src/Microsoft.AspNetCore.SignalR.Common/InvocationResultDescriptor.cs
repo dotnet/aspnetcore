@@ -8,10 +8,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public class InvocationResultDescriptor
+    public class InvocationResultDescriptor : InvocationMessage
     {
-        public string Id { get; set; }
-
         public object Result { get; set; }
 
         public string Error { get; set; }
