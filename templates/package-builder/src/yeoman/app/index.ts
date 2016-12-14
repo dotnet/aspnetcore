@@ -186,7 +186,7 @@ function assertNpmVersionIsAtLeast(minVersion: string) {
     const runningVersion = execSync('npm -v').toString();
     if (!semver.gte(runningVersion, minVersion, /* loose */ true)) {
         console.error(`This generator requires NPM version ${minVersion} or later. You are running NPM version ${runningVersion}`);
-        process.exit(0);
+        process.exit(1);
     }
 }
 
