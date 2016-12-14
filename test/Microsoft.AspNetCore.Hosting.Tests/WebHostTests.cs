@@ -364,7 +364,6 @@ namespace Microsoft.AspNetCore.Hosting
             var lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
             lifetime.StopApplication();
 
-
             host.Start();
             var svc = (TestHostedService)host.Services.GetRequiredService<IHostedService>();
             Assert.True(svc.StartCalled);
