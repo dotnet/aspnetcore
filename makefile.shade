@@ -91,6 +91,14 @@ var buildTarget = "compile"
         });
     }
 
+#update
+    @{
+        Parallel.ForEach(repositories, repo =>
+        {
+            Git("pull --ff-only", repo);
+        });
+    }
+
 #sync-commits
    @{
        if (string.IsNullOrEmpty(universeCommitsFile))
@@ -163,6 +171,16 @@ var buildTarget = "compile"
         }
     }
 
+#show-build-graph
+    @{
+        var batchedRepos = GetBuildGraph();
+        Log.Info("Building repositories in batches: ");
+        foreach (var repos in batchedRepos)
+        {
+            Log.Info(string.Format("{0} - {1}", repos.Key, string.Join(", ", repos)));
+        }
+    }
+
 #ci-build
     @{
         var nugetExe = Path.Combine(Directory.GetCurrentDirectory(), ".build", "nuget.exe");
@@ -218,6 +236,8 @@ var buildTarget = "compile"
             Environment.SetEnvironmentVariable("NUGET_PUBLISH_FEED", "https://dotnet.myget.org/F/aspnetcore-volatile-dev/api/v2/package");
         }
 
+        var universeToolsVersion = File.ReadAllText(Path.Combine(Directory.GetCurrentDirectory(), "ToolsVersion.txt")).Trim();
+
         foreach (var batch in batchedRepos)
         {
             Parallel.ForEach(batch.ToArray(), new ParallelOptions { MaxDegreeOfParallelism = threads }, repo =>
@@ -229,13 +249,38 @@ var buildTarget = "compile"
                     blockLogger.StartBlock(blockName);
                 }
 
-                if (!IsLinux)
+                // begin workaround
+                // as we transition to VS 2017, some repos will build with project.json and others with csproj
+                // the 'csproj' version of KoreBuild is the 'feature/msbuild' branch of that repo. project.json
+                // support is on 'dev'. This workaround avoids installing the version of KoreBuild used by
+                // individual repos unless it is already upgraded to the version currently used by Universe.
+                var repoToolsVersion = universeToolsVersion;
+                var buildPs1 = Path.Combine(repo, "build.ps1");
+                if (File.Exists(buildPs1))
                 {
-                    Exec("cmd", "/C xcopy /S/Q/I/Y .build " + Path.Combine(repo, ".build"), "");
+                    foreach (var line in File.ReadAllLines(buildPs1))
+                    {
+                        var match = Regex.Match(line, @".*https://github.com/aspnet/KoreBuild/archive/(.+)\.zip.*");
+                        if (match != null && match.Success)
+                        {
+                            repoToolsVersion = match.Groups[1].Value;
+                            break;
+                        }
+                    }
                 }
-                else
+                Log.Info(repo + " KoreBuild version = " + repoToolsVersion + ", Universe = " + universeToolsVersion);
+                // end workaround
+
+                if (repoToolsVersion == universeToolsVersion)
                 {
-                    CopyFolder(".build", Path.Combine(repo, ".build"), true);
+                    if (!IsLinux)
+                    {
+                        Exec("cmd", "/C xcopy /S/Q/I/Y .build " + Path.Combine(repo, ".build"), "");
+                    }
+                    else
+                    {
+                        CopyFolder(".build", Path.Combine(repo, ".build"), true);
+                    }
                 }
 
                 try
@@ -802,114 +847,6 @@ functions
             return repositoryExclude.Split(new string[] {","}, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        static IList<IGrouping<int, string>> GetBuildGraph()
-        {
-            var repositoryLookup = new List<RepositoryInfo>();
-            foreach (var repo in GetRepositoriesToBuild())
-            {
-                var info = new RepositoryInfo { Name = repo };
-                var srcDir = Path.Combine(repo, "src");
-
-                if (Directory.Exists(srcDir))
-                {
-                    foreach (var directory in Directory.EnumerateDirectories(srcDir))
-                    {
-                        info.RepositoryNames.Add(Path.GetFileName(directory));
-                        var projectJson = Path.Combine(directory, "project.json");
-                        if (File.Exists(projectJson))
-                        {
-                            GetDependencies(projectJson, info.DependencyNames);
-                        }
-                    }
-                }
-
-                var otherDirs = new[] { "test", "samples", "tools" };
-                for (var i = 0; i < otherDirs.Length; i++)
-                {
-                    var otherDir = Path.Combine(repo, otherDirs[i]);
-                    if (Directory.Exists(otherDir))
-                    {
-                        foreach (var directory in Directory.EnumerateDirectories(otherDir))
-                        {
-                            var projectJson = Path.Combine(directory, "project.json");
-                            if (File.Exists(projectJson))
-                            {
-                                GetDependencies(projectJson, info.DependencyNames);
-                            }
-                            else
-                            {
-                                // Look for test\Websites\WebsiteName\project.json
-                                foreach (var subDirectory in Directory.EnumerateDirectories(directory))
-                                {
-                                    projectJson = Path.Combine(subDirectory, "project.json");
-                                    if (File.Exists(projectJson))
-                                    {
-                                        GetDependencies(projectJson, info.DependencyNames);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                info.DependencyNames.ExceptWith(info.RepositoryNames);
-                repositoryLookup.Add(info);
-            }
-
-            foreach (var info in repositoryLookup)
-            {
-                foreach (var item in info.DependencyNames)
-                {
-                    var dependency = repositoryLookup.Find(r => r.RepositoryNames.Contains(item));
-                    if (dependency != null)
-                    {
-                        info.Dependencies.Add(dependency);
-                    }
-                }
-            }
-
-            return repositoryLookup.GroupBy(r => r.Order, r => r.Name).OrderBy(r => r.Key).ToArray();
-        }
-
-        static void GetDependencies(string projectJsonPath, HashSet<string> dependencies)
-        {
-            JsonObject project;
-            try
-            {
-                project = (JsonObject)Json.Deserialize(File.ReadAllText(projectJsonPath));
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine("Failed to parse project at path " + projectJsonPath + Environment.NewLine + ex.Message);
-                throw;
-            }
-            var dependenciesNode = project.ValueAsJsonObject("dependencies");
-            AddKeys(dependencies, dependenciesNode);
-
-            var frameworkNodes = project.ValueAsJsonObject("frameworks");
-            if (frameworkNodes != null)
-            {
-                foreach (var framework in frameworkNodes.Keys)
-                {
-                    dependenciesNode = frameworkNodes.ValueAsJsonObject(framework).ValueAsJsonObject("dependencies");
-                    AddKeys(dependencies, dependenciesNode);
-                }
-            }
-
-            AddKeys(dependencies, project.ValueAsJsonObject("tools"));
-        }
-
-        static void AddKeys(HashSet<string> target, JsonObject source)
-        {
-            if (source != null)
-            {
-                foreach (var key in source.Keys)
-                {
-                    target.Add(key);
-                }
-            }
-        }
-
         static string DefaultDropsShare(string value)
         {
             return value ?? (Environment.OSVersion.Platform == PlatformID.Unix ? "/aspnetci-drops" : @"\\aspnetci\drops");
@@ -931,6 +868,210 @@ functions
             }
 
             return Path.GetFullPath(output);
+        }
+
+        static IList<IGrouping<int, string>> GetBuildGraph()
+        {
+            var repositoryLookup = GetRepositoriesToBuild()
+                    .Select(RepoInfoFactory.Create)
+                    .ToList();
+
+            foreach (var info in repositoryLookup)
+            {
+                foreach (var item in info.DependencyNames)
+                {
+                    var dependency = repositoryLookup.Find(r => r.RepositoryNames.Contains(item));
+                    if (dependency != null)
+                    {
+                        info.Dependencies.Add(dependency);
+                    }
+                }
+            }
+
+            return repositoryLookup.GroupBy(r => r.Order, r => r.Name).OrderBy(r => r.Key).ToArray();
+        }
+
+        private class RepoInfoFactory
+        {
+            public static RepositoryInfo Create(string repo)
+            {
+                var info = new RepositoryInfo { Name = repo };
+                ResolveProjectJsonProjects(info, repo);
+                ResolveMsBuildProjects(info, repo);
+                info.DependencyNames.ExceptWith(info.RepositoryNames);
+                return info;
+            }
+
+            private static void ResolveMsBuildProjects(RepositoryInfo info, string repo)
+            {
+                foreach (var sln in Directory.EnumerateFiles(repo, "*.sln"))
+                {
+                    var lines = File.ReadAllLines(sln);
+                    foreach (var line in lines)
+                    {
+                        var match = Regex.Match(line, @"^# Visual Studio (\d+)\s?");
+                        if (match == null || match.Groups.Count < 2)
+                        {
+                            continue;
+                        }
+                        int version;
+                        if (int.TryParse(match.Groups[1].Value, out version) && version >= 15)
+                        {
+                            ResolveMsBuildProject(info, sln);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            private static void ResolveMsBuildProject(RepositoryInfo info, string projectFile)
+            {
+                var intermediate = Path.Combine(Directory.GetCurrentDirectory(), "obj");
+                Directory.CreateDirectory(intermediate);
+                var dgJson = Path.Combine(intermediate, Path.GetFileName(projectFile) + ".graph.json");
+                var psi = new ProcessStartInfo
+                {
+                    UseShellExecute = false,
+                    FileName = "dotnet",
+                    Arguments = "msbuild \"" + projectFile + "\" /t:GenerateRestoreGraphFile \"/p:RestoreGraphOutputPath=" + dgJson + "\""
+                };
+                var p = Process.Start(psi);
+                p.WaitForExit();
+                if (p.ExitCode != 0)
+                {
+                    Console.WriteLine("warn: Failed to get restore graph from " + projectFile);
+                    return;
+                }
+
+                JsonObject graph;
+                try
+                {
+                    graph = (JsonObject)Json.Deserialize(File.ReadAllText(dgJson));
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Failed to parse dependency graph");
+                    throw;
+                }
+
+                var format = graph.ValueAsInt("format");
+                if (format != 1)
+                {
+                    Console.Error.WriteLine("Dependency graph file in unsupported format version: " + format);
+                    throw new FormatException();
+                }
+
+                var projects = graph.ValueAsJsonObject("projects");
+                foreach (var projectKey in projects.Keys)
+                {
+                    var project =  projects.ValueAsJsonObject(projectKey);
+                    var restore = project.ValueAsJsonObject("restore");
+                    var projectName = restore.ValueAsString("projectName");
+                    info.RepositoryNames.Add(projectName);
+
+                    var frameworks = project.ValueAsJsonObject("frameworks");
+                    foreach (var fxKey in frameworks.Keys)
+                    {
+                        var fxDeps = frameworks.ValueAsJsonObject(fxKey).ValueAsJsonObject("dependencies");
+                        foreach (var depKey in fxDeps.Keys)
+                        {
+                            var dep = fxDeps.ValueAsJsonObject(depKey);
+                            if (dep.ValueAsString("target") != "Package")
+                            {
+                                continue;
+                            }
+                            // todo version?
+                            info.DependencyNames.Add(depKey);
+                        }
+                    }
+                }
+            }
+
+            private static void ResolveProjectJsonProjects(RepositoryInfo info, string repo)
+            {
+                var srcDir = Path.Combine(repo, "src");
+
+                if (Directory.Exists(srcDir))
+                {
+                    foreach (var directory in Directory.EnumerateDirectories(srcDir))
+                    {
+                        info.RepositoryNames.Add(Path.GetFileName(directory));
+                        var projectJson = Path.Combine(directory, "project.json");
+                        if (File.Exists(projectJson))
+                        {
+                            ResolveDependencies(projectJson, info.DependencyNames);
+                        }
+                    }
+                }
+
+                var otherDirs = new[] { "test", "samples", "tools" };
+                for (var i = 0; i < otherDirs.Length; i++)
+                {
+                    var otherDir = Path.Combine(repo, otherDirs[i]);
+                    if (Directory.Exists(otherDir))
+                    {
+                        foreach (var directory in Directory.EnumerateDirectories(otherDir))
+                        {
+                            var projectJson = Path.Combine(directory, "project.json");
+                            if (File.Exists(projectJson))
+                            {
+                                ResolveDependencies(projectJson, info.DependencyNames);
+                            }
+                            else
+                            {
+                                // Look for test\Websites\WebsiteName\project.json
+                                foreach (var subDirectory in Directory.EnumerateDirectories(directory))
+                                {
+                                    projectJson = Path.Combine(subDirectory, "project.json");
+                                    if (File.Exists(projectJson))
+                                    {
+                                        ResolveDependencies(projectJson, info.DependencyNames);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            private static void ResolveDependencies(string projectJsonPath, HashSet<string> dependencies)
+            {
+                JsonObject project;
+                try
+                {
+                    project = (JsonObject)Json.Deserialize(File.ReadAllText(projectJsonPath));
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Failed to parse project at path " + projectJsonPath + Environment.NewLine + ex.Message);
+                    throw;
+                }
+                var dependenciesNode = project.ValueAsJsonObject("dependencies");
+                AddKeys(dependencies, dependenciesNode);
+
+                var frameworkNodes = project.ValueAsJsonObject("frameworks");
+                if (frameworkNodes != null)
+                {
+                    foreach (var framework in frameworkNodes.Keys)
+                    {
+                        dependenciesNode = frameworkNodes.ValueAsJsonObject(framework).ValueAsJsonObject("dependencies");
+                        AddKeys(dependencies, dependenciesNode);
+                    }
+                }
+
+                AddKeys(dependencies, project.ValueAsJsonObject("tools"));
+            }
+
+            private static void AddKeys(HashSet<string> target, JsonObject source)
+            {
+                if (source != null)
+                {
+                    foreach (var key in source.Keys)
+                    {
+                        target.Add(key);
+                    }
+                }
+            }
         }
 
         private class RepositoryInfo
