@@ -6,26 +6,20 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public class SocketsApplicationLifetimeEvents : IApplicationLifetimeEvents
+    public class SocketsApplicationLifetimeService : IHostedService
     {
         private readonly ConnectionManager _connectionManager;
 
-        public SocketsApplicationLifetimeEvents(ConnectionManager connectionManager)
+        public SocketsApplicationLifetimeService(ConnectionManager connectionManager)
         {
             _connectionManager = connectionManager;
         }
 
-        public void OnApplicationStarted()
+        public void Start()
         {
-
         }
 
-        public void OnApplicationStopped()
-        {
-
-        }
-
-        public void OnApplicationStopping()
+        public void Stop()
         {
             _connectionManager.CloseConnections();
         }
