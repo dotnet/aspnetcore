@@ -1,21 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\dir.props" />
+  <Import Project="..\..\build\common.props" />
+
   <PropertyGroup>
     <TargetFramework>netcoreapp1.0</TargetFramework>
     <AssemblyName>dotnet-watch</AssemblyName>
     <OutputType>exe</OutputType>
     <Description>Command line tool to watch for source file changes during development and restart the dotnet command.</Description>
+    <PackageId>Microsoft.DotNet.Watcher.Tools</PackageId>
     <PackageTags>dotnet;watch</PackageTags>
+    <PackageType>DotnetCliTool</PackageType>
   </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="**\*.cs" />
     <Compile Include="..\..\shared\**\*.cs" />
     <EmbeddedResource Include="**\*.resx" />
     <EmbeddedResource Include="dotnetwatch.targets" LogicalName="dotnetwatch.targets" />
     <Content Include="toolassets\*.targets" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="%(Identity)" />
+    <None Include="prefercliruntime" Pack="true" PackagePath="\prefercliruntime" />
+    <None Include="$(ProjectRuntimeConfigFilePath)" Pack="true" PackagePath="lib\$(TargetFramework)" Condition="'$(DesignTimeBuild)'!='true'" />
   </ItemGroup>
+
   <ItemGroup>
-    <!-- Restore this when https://github.com/NuGet/Home/issues/3683 is resolved -->
-    <!--<PackageReference Include="Microsoft.Extensions.Process.Sources" Version="1.1.0-*" PrivateAssets="All" />-->
+    <PackageReference Include="Microsoft.NETCore.App" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Process.Sources" Version="1.1.0-*" PrivateAssets="All" />
   </ItemGroup>
+
 </Project>

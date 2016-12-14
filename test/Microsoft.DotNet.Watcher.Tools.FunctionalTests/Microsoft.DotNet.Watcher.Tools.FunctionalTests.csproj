@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\dir.props" />
+  <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp1.0;netcoreapp1.1</TargetFrameworks>
@@ -14,8 +14,14 @@
     <Content Include="..\..\src\Microsoft.DotNet.Watcher.Tools\toolassets\DotNetWatchInner.targets" Link="toolassets\DotNetWatchInner.targets" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Microsoft.DotNet.Watcher.Tools\toolassets\DotNetWatchOuter.targets" Link="toolassets\DotNetWatchOuter.targets" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\src\Microsoft.DotNet.Watcher.Tools\toolassets\DotNetWatchCommon.targets" Link="toolassets\DotNetWatchCommon.targets" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.DotNet.Watcher.Tools\Microsoft.DotNet.Watcher.Tools.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Watcher.Tools.Tests\Microsoft.DotNet.Watcher.Tools.Tests.csproj" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20161123-03" />
+    <PackageReference Include="xunit" Version="2.2.0-beta4-build3444" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-beta4-build1194" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='netcoreapp1.1'">

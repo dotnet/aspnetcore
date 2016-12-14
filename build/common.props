@@ -1,0 +1,12 @@
+<Project>
+  <Import Project="..\version.props" />
+  <Import Project="..\.build\common.props" Condition="Exists('..\.build\common.props')" />
+  <PropertyGroup>
+    <CustomAfterMicrosoftCommonTargets>$(MSBuildThisFileDirectory)common.targets</CustomAfterMicrosoftCommonTargets>
+    <RepositoryUrl>https://github.com/aspnet/DotNetTools</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Key.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
+  </PropertyGroup>
+</Project>

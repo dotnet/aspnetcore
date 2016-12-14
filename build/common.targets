@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <BuildDependsOn>EnsureInitialized;$(BuildDependsOn)</BuildDependsOn>
+  </PropertyGroup>
+  <Target Name="EnsureInitialized"
+          Condition="!Exists('$(MSBuildThisFileDirectory)..\.build\common.props')">
+    <!--TODO automagically execute build initialize. Will require changes to KoreBuild to avoid race conditions if invoked multiple times-->
+    <Error File="$(MSBuildProjectFile)"
+           Text="Project has not been initialized. Run 'build initialize' in the solution directory '$(MSBuildThisFileDirectory)'" />
+  </Target>
+</Project>
