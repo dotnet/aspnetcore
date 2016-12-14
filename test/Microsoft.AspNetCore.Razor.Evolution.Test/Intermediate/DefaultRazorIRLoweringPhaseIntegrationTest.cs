@@ -5,6 +5,9 @@ using static Microsoft.AspNetCore.Razor.Evolution.Intermediate.RazorIRAssert;
 using Xunit;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Evolution.Legacy;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
@@ -188,9 +191,106 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 n => Assert.IsType<ClassDeclarationIRNode>(n));
         }
 
+        [Fact]
+        public void Lower_TagHelpers()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.Create(@"<span val=""@Hello World""></span>");
+            var descriptors = new[]
+            {
+                new TagHelperDescriptor
+                {
+                    TagName = "span",
+                    TypeName = "SpanTagHelper"
+                }
+            };
+
+            // Act
+            var irDocument = Lower(codeDocument, descriptors);
+
+            // Assert
+            Children(irDocument,
+                n => Assert.IsType<ChecksumIRNode>(n),
+                n => Assert.IsType<NamespaceDeclarationIRNode>(n));
+            var @namespace = irDocument.Children[1];
+            Children(@namespace,
+                n => Using("System", n),
+                n => Using(typeof(Task).Namespace, n),
+                n => Assert.IsType<ClassDeclarationIRNode>(n));
+            var @class = @namespace.Children[2];
+            Children(@class,
+                n => TagHelperFieldDeclaration(n, "SpanTagHelper"),
+                n => Assert.IsType<RazorMethodDeclarationIRNode>(n));
+            var method = @class.Children[1];
+            var tagHelperNode = SingleChild<TagHelperIRNode>(method);
+            Children(tagHelperNode,
+                n => TagHelperStructure("span", TagMode.StartTagAndEndTag, n),
+                n => Assert.IsType<CreateTagHelperIRNode>(n),
+                n => TagHelperHtmlAttribute(
+                    "val",
+                    HtmlAttributeValueStyle.DoubleQuotes,
+                    n,
+                    v => CSharpAttributeValue(string.Empty, "Hello", v),
+                    v => LiteralAttributeValue(" ", "World", v)),
+                n => Assert.IsType<ExecuteTagHelpersIRNode>(n));
+        }
+
+        [Fact]
+        public void Lower_TagHelpersWithBoundAttribute()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.Create("<input bound='foo' />");
+            var descriptor = new TagHelperDescriptor
+            {
+                TagName = "input",
+                TypeName = "InputTagHelper",
+                Attributes = new[] { new TagHelperAttributeDescriptor
+                {
+                    Name = "bound",
+                    PropertyName = "FooProp",
+                    TypeName = "System.String"
+                } }
+            };
+
+            // Act
+            var irDocument = Lower(codeDocument, new[] { descriptor });
+
+            // Assert
+            Children(irDocument,
+                n => Assert.IsType<ChecksumIRNode>(n),
+                n => Assert.IsType<NamespaceDeclarationIRNode>(n));
+            var @namespace = irDocument.Children[1];
+            Children(@namespace,
+                n => Using("System", n),
+                n => Using(typeof(Task).Namespace, n),
+                n => Assert.IsType<ClassDeclarationIRNode>(n));
+            var @class = @namespace.Children[2];
+            Children(@class,
+                n => TagHelperFieldDeclaration(n, "InputTagHelper"),
+                n => Assert.IsType<RazorMethodDeclarationIRNode>(n));
+            var method = @class.Children[1];
+            var tagHelperNode = SingleChild<TagHelperIRNode>(method);
+            Children(tagHelperNode,
+                n => TagHelperStructure("input", TagMode.SelfClosing, n),
+                n => Assert.IsType<CreateTagHelperIRNode>(n),
+                n => SetTagHelperProperty(
+                    "bound",
+                    "FooProp",
+                    HtmlAttributeValueStyle.SingleQuotes,
+                    n,
+                    v => Html("foo", v)),
+                n => Assert.IsType<ExecuteTagHelpersIRNode>(n));
+        }
+
         private DocumentIRNode Lower(RazorCodeDocument codeDocument)
         {
-            var engine = RazorEngine.Create();
+            return Lower(codeDocument, Enumerable.Empty<TagHelperDescriptor>());
+        }
+
+        private DocumentIRNode Lower(RazorCodeDocument codeDocument, IEnumerable<TagHelperDescriptor> descriptors)
+        {
+            var engine = RazorEngine.Create(
+                builder => builder.Features.Add(new TagHelperFeature(new TestTagHelperDescriptorResolver(descriptors))));
 
             for (var i = 0; i < engine.Phases.Count; i++)
             {
@@ -206,6 +306,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             var irDocument = codeDocument.GetIRDocument();
             Assert.NotNull(irDocument);
             return irDocument;
+        }
+
+        private class TestTagHelperDescriptorResolver : ITagHelperDescriptorResolver
+        {
+            private readonly IEnumerable<TagHelperDescriptor> _descriptors;
+
+            public TestTagHelperDescriptorResolver(IEnumerable<TagHelperDescriptor> descriptors)
+            {
+                _descriptors = descriptors;
+            }
+
+            public IEnumerable<TagHelperDescriptor> Resolve(TagHelperDescriptorResolutionContext resolutionContext)
+            {
+                return _descriptors;
+            }
         }
     }
 }

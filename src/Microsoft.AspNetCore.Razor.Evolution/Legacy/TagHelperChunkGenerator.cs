@@ -86,10 +86,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public override void AcceptStart(ParserVisitor visitor, Block block)
         {
+            visitor.VisitStartTagHelperBlock(this, block);
         }
 
         public override void AcceptEnd(ParserVisitor visitor, Block block)
         {
+            visitor.VisitEndTagHelperBlock(this, block);
         }
     }
 }

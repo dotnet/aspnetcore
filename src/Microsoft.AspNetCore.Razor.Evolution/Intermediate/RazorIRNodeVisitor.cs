@@ -93,5 +93,40 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         {
             VisitDefault(node);
         }
+
+        internal virtual void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
+        {
+            VisitDefault(node);
+        }
+
+        internal virtual void VisitTagHelper(TagHelperIRNode node)
+        {
+            VisitDefault(node);
+        }
+
+        internal virtual void VisitInitializeTagHelperStructure(InitializeTagHelperStructureIRNode node)
+        {
+            VisitDefault(node);
+        }
+
+        internal virtual void VisitCreateTagHelper(CreateTagHelperIRNode node)
+        {
+            VisitDefault(node);
+        }
+
+        internal virtual void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
+        {
+            VisitDefault(node);
+        }
+
+        internal virtual void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
+        {
+            VisitDefault(node);
+        }
+
+        internal virtual void VisitExecuteTagHelpers(ExecuteTagHelpersIRNode node)
+        {
+            VisitDefault(node);
+        }
     }
 }

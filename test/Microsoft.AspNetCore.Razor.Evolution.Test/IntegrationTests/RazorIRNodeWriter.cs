@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
+using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 {
@@ -84,6 +85,31 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         public override void VisitUsingStatement(UsingStatementIRNode node)
         {
             WriteContentNode(node, node.Content);
+        }
+
+        internal override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
+        {
+            WriteContentNode(node, node.UsedTagHelperTypeNames.ToArray());
+        }
+
+        internal override void VisitInitializeTagHelperStructure(InitializeTagHelperStructureIRNode node)
+        {
+            WriteContentNode(node, node.TagName, string.Format("{0}.{1}", nameof(TagMode), node.TagMode));
+        }
+
+        internal override void VisitCreateTagHelper(CreateTagHelperIRNode node)
+        {
+            WriteContentNode(node, node.TagHelperTypeName);
+        }
+
+        internal override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
+        {
+            WriteContentNode(node, node.AttributeName, node.PropertyName, string.Format("HtmlAttributeValueStyle.{0}", node.ValueStyle));
+        }
+
+        internal override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
+        {
+            WriteContentNode(node, node.Name, string.Format("{0}.{1}", nameof(HtmlAttributeValueStyle), node.ValueStyle));
         }
 
         protected void WriteBasicNode(RazorIRNode node)

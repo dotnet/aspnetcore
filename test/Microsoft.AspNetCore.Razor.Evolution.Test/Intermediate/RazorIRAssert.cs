@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using Xunit;
 using Xunit.Sdk;
 
@@ -185,6 +186,77 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             catch (XunitException e)
             {
                 throw new IRAssertException(node, node.Children, e.Message, e);
+            }
+        }
+
+        internal static void TagHelperFieldDeclaration(RazorIRNode node, params string[] tagHelperTypes)
+        {
+            var declareTagHelperFields = Assert.IsType<DeclareTagHelperFieldsIRNode>(node);
+
+            try
+            {
+                Assert.Equal(tagHelperTypes, declareTagHelperFields.UsedTagHelperTypeNames);
+            }
+            catch (XunitException e)
+            {
+                throw new IRAssertException(declareTagHelperFields, e.Message);
+            }
+        }
+
+        internal static void TagHelperStructure(string tagName, TagMode tagMode, RazorIRNode node)
+        {
+            var tagHelperStructureNode = Assert.IsType<InitializeTagHelperStructureIRNode>(node);
+
+            try
+            {
+                Assert.Equal(tagName, tagHelperStructureNode.TagName);
+                Assert.Equal(tagMode, tagHelperStructureNode.TagMode);
+            }
+            catch (XunitException e)
+            {
+                throw new IRAssertException(tagHelperStructureNode, e.Message);
+            }
+        }
+
+        internal static void TagHelperHtmlAttribute(
+            string name,
+            HtmlAttributeValueStyle valueStyle,
+            RazorIRNode node,
+            params Action<RazorIRNode>[] valueValidators)
+        {
+            var tagHelperHtmlAttribute = Assert.IsType<AddTagHelperHtmlAttributeIRNode>(node);
+
+            try
+            {
+                Assert.Equal(name, tagHelperHtmlAttribute.Name);
+                Assert.Equal(valueStyle, tagHelperHtmlAttribute.ValueStyle);
+                Children(tagHelperHtmlAttribute, valueValidators);
+            }
+            catch (XunitException e)
+            {
+                throw new IRAssertException(tagHelperHtmlAttribute, tagHelperHtmlAttribute.Children, e.Message, e);
+            }
+        }
+
+        internal static void SetTagHelperProperty(
+            string name,
+            string propertyName,
+            HtmlAttributeValueStyle valueStyle,
+            RazorIRNode node,
+            params Action<RazorIRNode>[] valueValidators)
+        {
+            var tagHelperBoundAttribute = Assert.IsType<SetTagHelperPropertyIRNode>(node);
+
+            try
+            {
+                Assert.Equal(name, tagHelperBoundAttribute.AttributeName);
+                Assert.Equal(propertyName, tagHelperBoundAttribute.PropertyName);
+                Assert.Equal(valueStyle, tagHelperBoundAttribute.ValueStyle);
+                Children(tagHelperBoundAttribute, valueValidators);
+            }
+            catch (XunitException e)
+            {
+                throw new IRAssertException(tagHelperBoundAttribute, tagHelperBoundAttribute.Children, e.Message, e);
             }
         }
 

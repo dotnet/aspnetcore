@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
     {
         public RazorEngine Engine { get; set; }
 
-        public int Order => 150;
+        public int Order => 100;
 
         public RazorSyntaxTree Execute(RazorCodeDocument codeDocument, RazorSyntaxTree syntaxTree)
         {

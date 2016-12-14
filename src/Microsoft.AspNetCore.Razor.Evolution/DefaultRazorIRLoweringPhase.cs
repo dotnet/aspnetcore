@@ -159,7 +159,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         contentLength,
                         sourceRangeStart.FilePath ?? _codeDocument.Source.Filename);
                 }
-
             }
 
             public override void VisitExpressionSpan(ExpressionChunkGenerator chunkGenerator, Span span)
@@ -251,6 +250,145 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             public override void VisitEndDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
             {
                 Builder.Pop();
+            }
+
+            public override void VisitStartTagHelperBlock(TagHelperChunkGenerator chunkGenerator, Block block)
+            {
+                var tagHelperBlock = block as TagHelperBlock;
+                if (tagHelperBlock == null)
+                {
+                    return;
+                }
+
+                DeclareTagHelperFields(tagHelperBlock);
+
+                Builder.Push(new TagHelperIRNode());
+
+                Builder.Push(new InitializeTagHelperStructureIRNode()
+                {
+                    TagName = tagHelperBlock.TagName,
+                    TagMode = tagHelperBlock.TagMode
+                });
+            }
+
+            public override void VisitEndTagHelperBlock(TagHelperChunkGenerator chunkGenerator, Block block)
+            {
+                var tagHelperBlock = block as TagHelperBlock;
+                if (tagHelperBlock == null)
+                {
+                    return;
+                }
+
+                Builder.Pop(); // Pop InitializeTagHelperStructureIRNode
+
+                AddTagHelperCreation(tagHelperBlock.Descriptors);
+                AddTagHelperAttributes(tagHelperBlock.Attributes, tagHelperBlock.Descriptors);
+                AddExecuteTagHelpers();
+
+                Builder.Pop(); // Pop TagHelperIRNode
+            }
+
+            public override void VisitAddTagHelperSpan(AddTagHelperChunkGenerator chunkGenerator, Span span)
+            {
+            }
+
+            public override void VisitRemoveTagHelperSpan(RemoveTagHelperChunkGenerator chunkGenerator, Span span)
+            {
+            }
+
+            public override void VisitTagHelperPrefixDirectiveSpan(TagHelperPrefixDirectiveChunkGenerator chunkGenerator, Span span)
+            {
+            }
+
+            private void DeclareTagHelperFields(TagHelperBlock block)
+            {
+                var declareFieldsNode = Class.Children.OfType<DeclareTagHelperFieldsIRNode>().SingleOrDefault();
+                if (declareFieldsNode == null)
+                {
+                    declareFieldsNode = new DeclareTagHelperFieldsIRNode();
+                    declareFieldsNode.Parent = Class;
+
+                    var methodIndex = Class.Children.IndexOf(Method);
+                    Class.Children.Insert(methodIndex, declareFieldsNode);
+                }
+
+                foreach (var descriptor in block.Descriptors)
+                {
+                    declareFieldsNode.UsedTagHelperTypeNames.Add(descriptor.TypeName);
+                }
+            }
+
+            private void AddTagHelperCreation(IEnumerable<TagHelperDescriptor> descriptors)
+            {
+                foreach (var descriptor in descriptors)
+                {
+                    var createTagHelper = new CreateTagHelperIRNode()
+                    {
+                        TagHelperTypeName = descriptor.TypeName,
+                        Descriptor = descriptor
+                    };
+
+                    Builder.Add(createTagHelper);
+                }
+            }
+
+            private void AddTagHelperAttributes(IList<TagHelperAttributeNode> attributes, IEnumerable<TagHelperDescriptor> descriptors)
+            {
+                var renderedBoundAttributeNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var attribute in attributes)
+                {
+                    var attributeValueNode = attribute.Value;
+                    var associatedDescriptors = descriptors.Where(descriptor =>
+                        descriptor.Attributes.Any(attributeDescriptor => attributeDescriptor.IsNameMatch(attribute.Name)));
+
+                    if (associatedDescriptors.Any() && renderedBoundAttributeNames.Add(attribute.Name))
+                    {
+                        if (attributeValueNode == null)
+                        {
+                            // Minimized attributes are not valid for bound attributes. TagHelperBlockRewriter has already
+                            // logged an error if it was a bound attribute; so we can skip.
+                            continue;
+                        }
+
+                        foreach (var associatedDescriptor in associatedDescriptors)
+                        {
+                            var associatedAttributeDescriptor = associatedDescriptor.Attributes.First(
+                                attributeDescriptor => attributeDescriptor.IsNameMatch(attribute.Name));
+                            var setTagHelperProperty = new SetTagHelperPropertyIRNode()
+                            {
+                                PropertyName = associatedAttributeDescriptor.PropertyName,
+                                AttributeName = attribute.Name,
+                                TagHelperTypeName = associatedDescriptor.TypeName,
+                                Descriptor = associatedAttributeDescriptor,
+                                ValueStyle = attribute.ValueStyle
+                            };
+
+                            Builder.Push(setTagHelperProperty);
+                            attributeValueNode.Accept(this);
+                            Builder.Pop();
+                        }
+                    }
+                    else
+                    {
+                        var addHtmlAttribute = new AddTagHelperHtmlAttributeIRNode()
+                        {
+                            Name = attribute.Name,
+                            ValueStyle = attribute.ValueStyle
+                        };
+
+                        Builder.Push(addHtmlAttribute);
+                        if (attributeValueNode != null)
+                        {
+                            attributeValueNode.Accept(this);
+                        }
+                        Builder.Pop();
+                    }
+                }
+            }
+
+            private void AddExecuteTagHelpers()
+            {
+                Builder.Add(new ExecuteTagHelpersIRNode());
             }
 
             private MappingLocation BuildSourceRangeFromNode(SyntaxTreeNode node)

@@ -112,5 +112,25 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         public virtual void VisitStartCommentBlock(RazorCommentChunkGenerator chunkGenerator, Block block)
         {
         }
+
+        public virtual void VisitStartTagHelperBlock(TagHelperChunkGenerator chunkGenerator, Block block)
+        {
+        }
+
+        public virtual void VisitEndTagHelperBlock(TagHelperChunkGenerator chunkGenerator, Block block)
+        {
+        }
+
+        public virtual void VisitAddTagHelperSpan(AddTagHelperChunkGenerator chunkGenerator, Span span)
+        {
+        }
+
+        public virtual void VisitRemoveTagHelperSpan(RemoveTagHelperChunkGenerator chunkGenerator, Span span)
+        {
+        }
+
+        public virtual void VisitTagHelperPrefixDirectiveSpan(TagHelperPrefixDirectiveChunkGenerator chunkGenerator, Span span)
+        {
+        }
     }
 }

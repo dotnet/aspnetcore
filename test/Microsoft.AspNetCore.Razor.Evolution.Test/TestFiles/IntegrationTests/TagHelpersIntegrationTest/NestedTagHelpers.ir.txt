@@ -1,0 +1,32 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - 
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  -  -  -  - 
+            DeclareTagHelperFields -  - PTagHelper - FormTagHelper - InputTagHelper
+            RazorMethodDeclaration -  -  -  -  - 
+                HtmlContent - (0:0,0 [0] NestedTagHelpers.cshtml) - 
+                TagHelper - 
+                    InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
+                        HtmlContent - (43:1,12 [4] NestedTagHelpers.cshtml) - Hola
+                    CreateTagHelper -  - PTagHelper
+                    AddTagHelperHtmlAttribute -  - someattr - HtmlAttributeValueStyle.Minimized
+                    ExecuteTagHelpers - 
+                HtmlContent - (51:1,20 [2] NestedTagHelpers.cshtml) - \n
+                TagHelper - 
+                    InitializeTagHelperStructure -  - form - TagMode.StartTagAndEndTag
+                        HtmlContent - (73:2,20 [6] NestedTagHelpers.cshtml) - \n    
+                        TagHelper - 
+                            InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                            CreateTagHelper -  - InputTagHelper
+                            SetTagHelperProperty -  - value - FooProp - HtmlAttributeValueStyle.DoubleQuotes
+                                HtmlContent - (92:3,17 [5] NestedTagHelpers.cshtml) - Hello
+                            AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.SingleQuotes
+                                HtmlContent - (104:3,29 [4] NestedTagHelpers.cshtml) - text
+                            ExecuteTagHelpers - 
+                        HtmlContent - (112:3,37 [2] NestedTagHelpers.cshtml) - \n
+                    CreateTagHelper -  - FormTagHelper
+                    AddTagHelperHtmlAttribute -  - unbound - HtmlAttributeValueStyle.DoubleQuotes
+                        HtmlContent - (68:2,15 [3] NestedTagHelpers.cshtml) - foo
+                    ExecuteTagHelpers - 

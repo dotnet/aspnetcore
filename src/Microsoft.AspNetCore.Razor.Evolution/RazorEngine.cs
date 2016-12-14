@@ -55,8 +55,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             // Syntax Tree passes
             builder.Features.Add(new DefaultDirectiveSyntaxTreePass());
-            builder.Features.Add(new TagHelperBinderSyntaxTreePass());
             builder.Features.Add(new HtmlNodeOptimizationPass());
+            builder.Features.Add(new TagHelperBinderSyntaxTreePass());
 
             // IR Passes
             builder.Features.Add(new DefaultDirectiveIRPass());
