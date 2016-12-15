@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private CancellationToken? _disconnectToken;
         private bool _disposed;
 
-        internal RequestContext(WebListener server, NativeRequestContext memoryBlob)
+        internal RequestContext(HttpSysListener server, NativeRequestContext memoryBlob)
         {
             // TODO: Verbose log
             Server = server;
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Response = new Response(this);
         }
 
-        internal WebListener Server { get; }
+        internal HttpSysListener Server { get; }
 
         internal ILogger Logger => Server.Logger;
 

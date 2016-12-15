@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 cts.Cancel();
             }
 
-            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && WebListener.SkipIOCPCallbackOnSuccess)
+            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && HttpSysListener.SkipIOCPCallbackOnSuccess)
             {
                 // IO operation completed synchronously - callback won't be called to signal completion
                 nativeOverlapped.Dispose();

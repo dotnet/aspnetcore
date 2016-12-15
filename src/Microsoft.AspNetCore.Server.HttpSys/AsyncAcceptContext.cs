@@ -14,10 +14,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(IOWaitCallback);
 
         private TaskCompletionSource<RequestContext> _tcs;
-        private WebListener _server;
+        private HttpSysListener _server;
         private NativeRequestContext _nativeRequestContext;
 
-        internal AsyncAcceptContext(WebListener server)
+        internal AsyncAcceptContext(HttpSysListener server)
         {
             _server = server;
             _tcs = new TaskCompletionSource<RequestContext>();
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        internal WebListener Server
+        internal HttpSysListener Server
         {
             get
             {
@@ -58,12 +58,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
                     errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
                 {
-                    asyncResult.Tcs.TrySetException(new WebListenerException((int)errorCode));
+                    asyncResult.Tcs.TrySetException(new HttpSysException((int)errorCode));
                     complete = true;
                 }
                 else
                 {
-                    WebListener server = asyncResult.Server;
+                    HttpSysListener server = asyncResult.Server;
                     if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
                     {
                         // at this point we have received an unmanaged HTTP_REQUEST and memoryBlob
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         {
                             // someother bad error, possible(?) return values are:
                             // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
-                            asyncResult.Tcs.TrySetException(new WebListenerException((int)statusCode));
+                            asyncResult.Tcs.TrySetException(new HttpSysException((int)statusCode));
                             complete = true;
                         }
                     }
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     retry = true;
                 }
                 else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS
-                    && WebListener.SkipIOCPCallbackOnSuccess)
+                    && HttpSysListener.SkipIOCPCallbackOnSuccess)
                 {
                     // IO operation completed synchronously - callback won't be called to signal completion.
                     IOCompleted(this, statusCode, bytesTransferred);

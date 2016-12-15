@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private ILogger Logger => RequestContext.Server.Logger;
 
-        internal bool ThrowWriteExceptions => RequestContext.Server.Settings.ThrowWriteExceptions;
+        internal bool ThrowWriteExceptions => RequestContext.Server.Options.ThrowWriteExceptions;
 
         internal bool IsDisposed => _disposed;
 
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (ThrowWriteExceptions)
                 {
-                    var exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
+                    var exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
                     LogHelper.LogException(Logger, "Flush", exception);
                     Abort();
                     throw exception;
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 else if (ThrowWriteExceptions)
                 {
                     asyncResult.Dispose();
-                    Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
+                    Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
                     LogHelper.LogException(Logger, "FlushAsync", exception);
                     Abort();
                     throw exception;
@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
             }
 
-            if (statusCode == ErrorCodes.ERROR_SUCCESS && WebListener.SkipIOCPCallbackOnSuccess)
+            if (statusCode == ErrorCodes.ERROR_SUCCESS && HttpSysListener.SkipIOCPCallbackOnSuccess)
             {
                 // IO operation completed synchronously - callback won't be called to signal completion.
                 asyncResult.IOCompleted(statusCode, bytesSent);
@@ -624,7 +624,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 else if (ThrowWriteExceptions)
                 {
                     asyncResult.Dispose();
-                    var exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
+                    var exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
                     LogHelper.LogException(Logger, "SendFileAsync", exception);
                     Abort();
                     throw exception;
@@ -637,7 +637,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
             }
 
-            if (statusCode == ErrorCodes.ERROR_SUCCESS && WebListener.SkipIOCPCallbackOnSuccess)
+            if (statusCode == ErrorCodes.ERROR_SUCCESS && HttpSysListener.SkipIOCPCallbackOnSuccess)
             {
                 // IO operation completed synchronously - callback won't be called to signal completion.
                 asyncResult.IOCompleted(statusCode, bytesSent);

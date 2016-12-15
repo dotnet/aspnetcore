@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     /// <summary>
     /// An HTTP server wrapping the Http.Sys APIs that accepts requests.
     /// </summary>
-    public sealed class WebListener : IDisposable
+    public sealed class HttpSysListener : IDisposable
     {
         // Win8# 559317 fixed a bug in Http.sys's HttpReceiveClientCertificate method.
         // Without this fix IOCP callbacks were not being called although ERROR_IO_PENDING was
@@ -40,16 +40,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private object _internalLock;
 
-        public WebListener()
-            : this(new WebListenerSettings())
+        public HttpSysListener(HttpSysOptions options, ILoggerFactory loggerFactory)
         {
-        }
-
-        public WebListener(WebListenerSettings settings)
-        {
-            if (settings == null)
+            if (options == null)
             {
-                throw new ArgumentNullException(nameof(settings));
+                throw new ArgumentNullException(nameof(options));
+            }
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
             if (!HttpApi.Supported)
@@ -59,7 +58,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             Debug.Assert(HttpApi.ApiVersion == HttpApi.HTTP_API_VERSION.Version20, "Invalid Http api version");
 
-            Settings = settings;
+            Options = options;
+
+            Logger = LogHelper.CreateLogger(loggerFactory, typeof(HttpSysListener));
 
             _state = State.Stopped;
             _internalLock = new object();
@@ -99,10 +100,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Disposed,
         }
 
-        internal ILogger Logger
-        {
-            get { return Settings.Logger; }
-        }
+        internal ILogger Logger { get; private set; }
 
         internal UrlGroup UrlGroup
         {
@@ -119,7 +117,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             get { return _disconnectListener; }
         }
 
-        public WebListenerSettings Settings { get; }
+        public HttpSysOptions Options { get; }
 
         public bool IsListening
         {
@@ -148,18 +146,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         return;
                     }
 
-                    Settings.Authentication.SetUrlGroupSecurity(UrlGroup);
-                    Settings.Timeouts.SetUrlGroupTimeouts(UrlGroup);
-                    Settings.SetRequestQueueLimit(RequestQueue);
+                    Options.Authentication.SetUrlGroupSecurity(UrlGroup);
+                    Options.Timeouts.SetUrlGroupTimeouts(UrlGroup);
+                    Options.SetRequestQueueLimit(RequestQueue);
 
                     _requestQueue.AttachToUrlGroup();
 
                     // All resources are set up correctly. Now add all prefixes.
                     try
                     {
-                        Settings.UrlPrefixes.RegisterAllPrefixes(UrlGroup);
+                        Options.UrlPrefixes.RegisterAllPrefixes(UrlGroup);
                     }
-                    catch (WebListenerException)
+                    catch (HttpSysException)
                     {
                         // If an error occurred while adding prefixes, free all resources allocated by previous steps.
                         _requestQueue.DetachFromUrlGroup();
@@ -191,7 +189,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         return;
                     }
 
-                    Settings.UrlPrefixes.UnregisterAllPrefixes();
+                    Options.UrlPrefixes.UnregisterAllPrefixes();
 
                     _state = State.Stopped;
 
@@ -285,7 +283,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     // some other bad error, possible(?) return values are:
                     // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
                     asyncResult.Dispose();
-                    throw new WebListenerException((int)statusCode);
+                    throw new HttpSysException((int)statusCode);
                 }
             }
             catch (Exception exception)
@@ -310,10 +308,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal unsafe bool ValidateAuth(NativeRequestContext requestMemory)
         {
-            if (!Settings.Authentication.AllowAnonymous && !requestMemory.CheckAuthenticated())
+            if (!Options.Authentication.AllowAnonymous && !requestMemory.CheckAuthenticated())
             {
                 SendError(requestMemory.RequestId, StatusCodes.Status401Unauthorized,
-                    AuthenticationManager.GenerateChallenges(Settings.Authentication.Schemes));
+                    AuthenticationManager.GenerateChallenges(Options.Authentication.Schemes));
                 return false;
             }
             return true;

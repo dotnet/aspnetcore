@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                server.Settings.RequestQueueLimit = 1001;
+                server.Options.RequestQueueLimit = 1001;
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 Assert.Equal(string.Empty, response);
 
                 address += "pathbase/";
-                server.Settings.UrlPrefixes.Add(address);
+                server.Options.UrlPrefixes.Add(address);
 
                 responseTask = SendRequestAsync(address);
 
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             using (var server = Utilities.CreateHttpServer(out address))
             {
                 address += "pathbase/";
-                server.Settings.UrlPrefixes.Add(address);
+                server.Options.UrlPrefixes.Add(address);
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var response = await responseTask;
                 Assert.Equal(string.Empty, response);
 
-                Assert.True(server.Settings.UrlPrefixes.Remove(address));
+                Assert.True(server.Options.UrlPrefixes.Remove(address));
 
                 responseTask = SendRequestAsync(address);
 

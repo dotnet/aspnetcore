@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
-                throw new WebListenerException((int)statusCode);
+                throw new HttpSysException((int)statusCode);
             }
 
             Debug.Assert(urlGroupId != 0, "Invalid id returned by HttpCreateUrlGroup");
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
-                var exception = new WebListenerException((int)statusCode);
+                var exception = new HttpSysException((int)statusCode);
                 LogHelper.LogException(_logger, "SetUrlGroupProperty", exception);
                 if (throwOnError)
                 {
@@ -62,11 +62,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS)
                 {
-                    throw new WebListenerException((int)statusCode, string.Format(Resources.Exception_PrefixAlreadyRegistered, uriPrefix));
+                    throw new HttpSysException((int)statusCode, string.Format(Resources.Exception_PrefixAlreadyRegistered, uriPrefix));
                 }
                 else
                 {
-                    throw new WebListenerException((int)statusCode);
+                    throw new HttpSysException((int)statusCode);
                 }
             }
         }

@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.Listener
@@ -147,13 +148,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string root;
             var server = Utilities.CreateHttpServerReturnRoot("/", out root);
             server.Dispose();
-            server = new WebListener();
+            server = new HttpSysListener(new HttpSysOptions(), new LoggerFactory());
             using (server)
             {
                 var uriBuilder = new UriBuilder(root);
                 foreach (string path in new[] { "/", "/11", "/2/3", "/2", "/11/2" })
                 {
-                    server.Settings.UrlPrefixes.Add(UrlPrefix.Create(uriBuilder.Scheme, uriBuilder.Host, uriBuilder.Port, path));
+                    server.Options.UrlPrefixes.Add(UrlPrefix.Create(uriBuilder.Scheme, uriBuilder.Host, uriBuilder.Port, path));
                 }
                 server.Start();
 

@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [InlineData("http://www.example.com:NOTAPORT")]
         [InlineData("https://www.example.com:NOTAPORT")]
         [InlineData("http://www.example.com:NOTAPORT/")]
-        [InlineData("http://foo:/tmp/weblistener-test.sock:5000/doesn't/matter")]
+        [InlineData("http://foo:/tmp/httpsys-test.sock:5000/doesn't/matter")]
         public void CreateThrowsForUrlsWithInvalidPorts(string url)
         {
             Assert.Throws<FormatException>(() => UrlPrefix.Create(url));

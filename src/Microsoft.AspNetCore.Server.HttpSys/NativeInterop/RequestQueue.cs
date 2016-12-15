@@ -28,17 +28,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
-                throw new WebListenerException((int)statusCode);
+                throw new HttpSysException((int)statusCode);
             }
 
             // Disabling callbacks when IO operation completes synchronously (returns ErrorCodes.ERROR_SUCCESS)
-            if (WebListener.SkipIOCPCallbackOnSuccess &&
+            if (HttpSysListener.SkipIOCPCallbackOnSuccess &&
                 !UnsafeNclNativeMethods.SetFileCompletionNotificationModes(
                     requestQueueHandle,
                     UnsafeNclNativeMethods.FileCompletionNotificationModes.SkipCompletionPortOnSuccess |
                     UnsafeNclNativeMethods.FileCompletionNotificationModes.SkipSetEventOnHandle))
             {
-                throw new WebListenerException(Marshal.GetLastWin32Error());
+                throw new HttpSysException(Marshal.GetLastWin32Error());
             }
 
             Handle = requestQueueHandle;
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (result != 0)
             {
-                throw new WebListenerException((int)result);
+                throw new HttpSysException((int)result);
             }
         }
 

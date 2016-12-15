@@ -5,14 +5,14 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 {
     internal static class Utilities
     {
         // When tests projects are run in parallel, overlapping port ranges can cause a race condition when looking for free
-        // ports during dynamic port allocation. To avoid this, make sure the port range here is different from the range in
-        // Microsoft.AspNetCore.Server.WebListener.
+        // ports during dynamic port allocation.
         private const int BasePort = 8001;
         private const int MaxPort = 11000;
         private static int NextPort = BasePort;
@@ -33,27 +33,27 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 #endif
         }
 
-        internal static WebListener CreateHttpAuthServer(AuthenticationSchemes authScheme, bool allowAnonymos, out string baseAddress)
+        internal static HttpSysListener CreateHttpAuthServer(AuthenticationSchemes authScheme, bool allowAnonymos, out string baseAddress)
         {
             var listener = CreateHttpServer(out baseAddress);
-            listener.Settings.Authentication.Schemes = authScheme;
-            listener.Settings.Authentication.AllowAnonymous = allowAnonymos;
+            listener.Options.Authentication.Schemes = authScheme;
+            listener.Options.Authentication.AllowAnonymous = allowAnonymos;
             return listener;
         }
 
-        internal static WebListener CreateHttpServer(out string baseAddress)
+        internal static HttpSysListener CreateHttpServer(out string baseAddress)
         {
             string root;
             return CreateDynamicHttpServer(string.Empty, out root, out baseAddress);
         }
 
-        internal static WebListener CreateHttpServerReturnRoot(string path, out string root)
+        internal static HttpSysListener CreateHttpServerReturnRoot(string path, out string root)
         {
             string baseAddress;
             return CreateDynamicHttpServer(path, out root, out baseAddress);
         }
 
-        internal static WebListener CreateDynamicHttpServer(string basePath, out string root, out string baseAddress)
+        internal static HttpSysListener CreateDynamicHttpServer(string basePath, out string root, out string baseAddress)
         {
             lock (PortLock)
             {
@@ -63,14 +63,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                     var prefix = UrlPrefix.Create("http", "localhost", port, basePath);
                     root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
                     baseAddress = prefix.ToString();
-                    var listener = new WebListener();
-                    listener.Settings.UrlPrefixes.Add(prefix);
+                    var listener = new HttpSysListener(new HttpSysOptions(), new LoggerFactory());
+                    listener.Options.UrlPrefixes.Add(prefix);
                     try
                     {
                         listener.Start();
                         return listener;
                     }
-                    catch (WebListenerException)
+                    catch (HttpSysException)
                     {
                         listener.Dispose();
                     }
@@ -80,15 +80,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             throw new Exception("Failed to locate a free port.");
         }
 
-        internal static WebListener CreateHttpsServer()
+        internal static HttpSysListener CreateHttpsServer()
         {
             return CreateServer("https", "localhost", 9090, string.Empty);
         }
 
-        internal static WebListener CreateServer(string scheme, string host, int port, string path)
+        internal static HttpSysListener CreateServer(string scheme, string host, int port, string path)
         {
-            WebListener listener = new WebListener();
-            listener.Settings.UrlPrefixes.Add(UrlPrefix.Create(scheme, host, port, path));
+            var listener = new HttpSysListener(new HttpSysOptions(), new LoggerFactory());
+            listener.Options.UrlPrefixes.Add(UrlPrefix.Create(scheme, host, port, path));
             listener.Start();
             return listener;
         }
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         /// AcceptAsync extension with timeout. This extension should be used in all tests to prevent
         /// unexpected hangs when a request does not arrive.
         /// </summary>
-        internal static async Task<RequestContext> AcceptAsync(this WebListener server, TimeSpan timeout)
+        internal static async Task<RequestContext> AcceptAsync(this HttpSysListener server, TimeSpan timeout)
         {
             var acceptTask = server.AcceptAsync();
             var completedTask = await Task.WhenAny(acceptTask, Task.Delay(timeout));

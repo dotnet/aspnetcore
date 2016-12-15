@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Complete(0, null);
                 }
                 else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
-                    WebListener.SkipIOCPCallbackOnSuccess)
+                    HttpSysListener.SkipIOCPCallbackOnSuccess)
                 {
                     IOCompleted(statusCode, bytesReceived);
                 }
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     // Some other bad error, possible(?) return values are:
                     // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
                     // Also ERROR_BAD_DATA if we got it twice or it reported smaller size buffer required.
-                    Fail(new WebListenerException((int)statusCode));
+                    Fail(new HttpSysException((int)statusCode));
                 }
             }
             while (retry);
@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                             asyncResult._overlapped);
 
                     if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING ||
-                       (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && !WebListener.SkipIOCPCallbackOnSuccess))
+                       (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && !HttpSysListener.SkipIOCPCallbackOnSuccess))
                     {
                         return;
                     }
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 else if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
                 {
-                    asyncResult.Fail(new WebListenerException((int)errorCode));
+                    asyncResult.Fail(new HttpSysException((int)errorCode));
                 }
                 else
                 {
@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     else
                     {
                         // It's up to the consumer to fail if the missing ChannelBinding matters to them.
-                        LogHelper.LogException(logger, "GetChannelBindingFromTls", new WebListenerException((int)statusCode));
+                        LogHelper.LogException(logger, "GetChannelBindingFromTls", new HttpSysException((int)statusCode));
                         break;
                     }
                 }

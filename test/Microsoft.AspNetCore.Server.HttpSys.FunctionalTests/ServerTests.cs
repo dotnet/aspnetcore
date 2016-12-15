@@ -241,9 +241,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext => Task.FromResult(0))) { }
 
-            var server = new MessagePump(Options.Create(new WebListenerOptions()), new LoggerFactory());
-            server.Listener.Settings.UrlPrefixes.Add(UrlPrefix.Create(address));
-            server.Listener.Settings.RequestQueueLimit = 1001;
+            var server = new MessagePump(Options.Create(new HttpSysOptions()), new LoggerFactory());
+            server.Listener.Options.UrlPrefixes.Add(UrlPrefix.Create(address));
+            server.Listener.Options.RequestQueueLimit = 1001;
 
             using (server)
             {

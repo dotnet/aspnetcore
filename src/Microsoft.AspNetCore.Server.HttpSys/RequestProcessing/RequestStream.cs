@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
                 {
-                    Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
+                    Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
                     LogHelper.LogException(Logger, "Read", exception);
                     Abort();
                     throw exception;
@@ -265,14 +265,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     }
                     else
                     {
-                        Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
+                        Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
                         LogHelper.LogException(Logger, "BeginRead", exception);
                         Abort();
                         throw exception;
                     }
                 }
                 else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
-                         WebListener.SkipIOCPCallbackOnSuccess)
+                         HttpSysListener.SkipIOCPCallbackOnSuccess)
                 {
                     // IO operation completed synchronously - callback won't be called to signal completion.
                     asyncResult.IOCompleted(statusCode, bytesReturned);
@@ -391,14 +391,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     }
                     else
                     {
-                        Exception exception = new IOException(string.Empty, new WebListenerException((int)statusCode));
+                        Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
                         LogHelper.LogException(Logger, "ReadAsync", exception);
                         Abort();
                         throw exception;
                     }
                 }
                 else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
-                         WebListener.SkipIOCPCallbackOnSuccess)
+                         HttpSysListener.SkipIOCPCallbackOnSuccess)
                 {
                     // IO operation completed synchronously - callback won't be called to signal completion.
                     asyncResult.Dispose();

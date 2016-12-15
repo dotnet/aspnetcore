@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
-                throw new WebListenerException((int)statusCode);
+                throw new HttpSysException((int)statusCode);
             }
 
             Debug.Assert(serverSessionId != 0, "Invalid id returned by HttpCreateServerSession");

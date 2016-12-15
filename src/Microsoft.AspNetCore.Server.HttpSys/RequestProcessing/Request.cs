@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var cookedUrl = nativeRequestContext.GetCookedUrl();
             QueryString = cookedUrl.GetQueryString() ?? string.Empty;
 
-            var prefix = requestContext.Server.Settings.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
+            var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
 
             var rawUrlInBytes = _nativeRequestContext.GetRawUrlInBytes();
             var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);

@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _expectedBodyLength = 0;
             _nativeStream = null;
             _cacheTtl = null;
-            _authChallenges = RequestContext.Server.Settings.Authentication.Schemes;
+            _authChallenges = RequestContext.Server.Options.Authentication.Schemes;
         }
 
         private enum ResponseState
@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
                         if (asyncResult != null &&
                             statusCode == ErrorCodes.ERROR_SUCCESS &&
-                            WebListener.SkipIOCPCallbackOnSuccess)
+                            HttpSysListener.SkipIOCPCallbackOnSuccess)
                         {
                             asyncResult.BytesSent = bytesSent;
                             // The caller will invoke IOCompleted
@@ -394,7 +394,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (StatusCode == (ushort)StatusCodes.Status401Unauthorized)
             {
-                RequestContext.Server.Settings.Authentication.SetAuthenticationChallenge(RequestContext);
+                RequestContext.Server.Options.Authentication.SetAuthenticationChallenge(RequestContext);
             }
 
             var flags = HttpApi.HTTP_FLAGS.NONE;
@@ -662,7 +662,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (errorCode != ErrorCodes.ERROR_SUCCESS)
             {
-                throw new WebListenerException((int)errorCode);
+                throw new HttpSysException((int)errorCode);
             }
         }
 

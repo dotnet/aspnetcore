@@ -305,11 +305,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var dynamicServer = Utilities.CreateHttpServerReturnRoot("/", out root, app);
             dynamicServer.Dispose();
             var rootUri = new Uri(root);
-            var server = new MessagePump(Options.Create(new WebListenerOptions()), new LoggerFactory());
+            var server = new MessagePump(Options.Create(new HttpSysOptions()), new LoggerFactory());
 
             foreach (string path in new[] { "/", "/11", "/2/3", "/2", "/11/2" })
             {
-                server.Listener.Settings.UrlPrefixes.Add(UrlPrefix.Create(rootUri.Scheme, rootUri.Host, rootUri.Port, path));
+                server.Listener.Options.UrlPrefixes.Add(UrlPrefix.Create(rootUri.Scheme, rootUri.Host, rootUri.Port, path));
             }
 
             server.Start(new DummyApplication(app));

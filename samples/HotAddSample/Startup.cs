@@ -15,19 +15,19 @@ namespace HotAddSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<WebListenerOptions>(options =>
+            services.Configure<HttpSysOptions>(options =>
             {
-                ListenerSettings = options.ListenerSettings;
+                ServerOptions = options;
             });
         }
 
-        public WebListenerSettings ListenerSettings { get; set; }
+        public HttpSysOptions ServerOptions { get; set; }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
             loggerfactory.AddConsole(LogLevel.Information);
 
-            var addresses = ListenerSettings.UrlPrefixes;
+            var addresses = ServerOptions.UrlPrefixes;
             addresses.Add("http://localhost:12346/pathBase/");
 
             app.Use(async (context, next) =>
@@ -102,7 +102,7 @@ namespace HotAddSample
         {
             var host = new WebHostBuilder()
                 .UseStartup<Startup>()
-                .UseWebListener()
+                .UseHttpSys()
                 .Build();
 
             host.Run();

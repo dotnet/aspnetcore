@@ -16,10 +16,10 @@ namespace SelfHostServer
         public void ConfigureServices(IServiceCollection services)
         {
             // Server options can be configured here instead of in Main.
-            services.Configure<WebListenerOptions>(options =>
+            services.Configure<HttpSysOptions>(options =>
             {
-                options.ListenerSettings.Authentication.Schemes = AuthenticationSchemes.None;
-                options.ListenerSettings.Authentication.AllowAnonymous = true;
+                options.Authentication.Schemes = AuthenticationSchemes.None;
+                options.Authentication.AllowAnonymous = true;
             });
         }
 
@@ -49,10 +49,10 @@ namespace SelfHostServer
         {
             var host = new WebHostBuilder()
                 .UseStartup<Startup>()
-                .UseWebListener(options =>
+                .UseHttpSys(options =>
                 {
-                    options.ListenerSettings.Authentication.Schemes = AuthenticationSchemes.None;
-                    options.ListenerSettings.Authentication.AllowAnonymous = true;
+                    options.Authentication.Schemes = AuthenticationSchemes.None;
+                    options.Authentication.AllowAnonymous = true;
                 })
                 .Build();
 

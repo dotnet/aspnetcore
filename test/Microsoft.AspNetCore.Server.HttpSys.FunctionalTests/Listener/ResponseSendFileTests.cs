@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                server.Settings.ThrowWriteExceptions = true;
+                server.Options.ThrowWriteExceptions = true;
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                server.Settings.ThrowWriteExceptions = true;
+                server.Options.ThrowWriteExceptions = true;
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
@@ -454,7 +454,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                server.Settings.ThrowWriteExceptions = true;
+                server.Options.ThrowWriteExceptions = true;
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
 
@@ -510,7 +510,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
-                server.Settings.ThrowWriteExceptions = true;
+                server.Options.ThrowWriteExceptions = true;
                 RequestContext context;
                 using (var client = new HttpClient())
                 {

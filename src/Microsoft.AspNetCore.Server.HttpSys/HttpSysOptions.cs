@@ -7,35 +7,31 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    public class WebListenerSettings
+    public class HttpSysOptions
     {
         private const long DefaultRequestQueueLength = 1000; // Http.sys default.
+        internal static readonly int DefaultMaxAccepts = 5 * Environment.ProcessorCount;
 
         // The native request queue
         private long _requestQueueLength = DefaultRequestQueueLength;
         private RequestQueue _requestQueue;
         private ILogger _logger = NullLogger.Instance;
 
-        public WebListenerSettings()
+        public HttpSysOptions()
         {
         }
 
         /// <summary>
-        /// The logger that will be used to create the WebListener instance. This should not be changed
-        /// after creating the listener.
+        /// The maximum number of concurrent accepts.
         /// </summary>
-        public ILogger Logger
-        {
-            get { return _logger; }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-                _logger = value;
-            }
-        }
+        public int MaxAccepts { get; set; } = DefaultMaxAccepts;
+
+        /// <summary>
+        /// Attempts kernel mode caching for responses with eligible headers. The response may not include
+        /// Set-Cookie, Vary, or Pragma headers. It must include a Cache-Control header with Public and
+        /// either a Shared-Max-Age or Max-Age value, or an Expires header.
+        /// </summary>
+        public bool EnableResponseCaching { get; set; } = true;
 
         /// <summary>
         /// The url prefixes to register with Http.Sys. These may be modified at any time prior to disposing

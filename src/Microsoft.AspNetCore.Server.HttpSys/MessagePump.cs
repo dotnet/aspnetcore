@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal class MessagePump : IServer
     {
-        private readonly WebListener _listener;
+        private readonly HttpSysListener _listener;
         private readonly ILogger _logger;
 
         private IHttpApplication<object> _application;
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private readonly ServerAddressesFeature _serverAddresses;
 
-        public MessagePump(IOptions<WebListenerOptions> options, ILoggerFactory loggerFactory)
+        public MessagePump(IOptions<HttpSysOptions> options, ILoggerFactory loggerFactory)
         {
             if (options == null)
             {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
 
             var optionsInstance = options.Value;
-            _listener = new WebListener(optionsInstance.ListenerSettings);
+            _listener = new HttpSysListener(optionsInstance, loggerFactory);
             _logger = LogHelper.CreateLogger(loggerFactory, typeof(MessagePump));
             Features = new FeatureCollection();
             _serverAddresses = new ServerAddressesFeature();
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _shutdownSignal = new ManualResetEvent(false);
         }
 
-        internal WebListener Listener
+        internal HttpSysListener Listener
         {
             get { return _listener; }
         }
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             _application = new ApplicationWrapper<TContext>(application);
 
-            if (_listener.Settings.UrlPrefixes.Count == 0)
+            if (_listener.Options.UrlPrefixes.Count == 0)
             {
                 throw new InvalidOperationException("No address prefixes were defined.");
             }
@@ -206,11 +206,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             context.Dispose();
         }
 
-        private void ParseAddresses(ICollection<string> addresses, WebListener listener)
+        private void ParseAddresses(ICollection<string> addresses, HttpSysListener listener)
         {
             foreach (var value in addresses)
             {
-                listener.Settings.UrlPrefixes.Add(UrlPrefix.Create(value));
+                listener.Options.UrlPrefixes.Add(UrlPrefix.Create(value));
             }
         }
 

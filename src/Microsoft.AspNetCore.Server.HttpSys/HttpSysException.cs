@@ -9,19 +9,19 @@ using System.Runtime.InteropServices;
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
     [SuppressMessage("Microsoft.Usage", "CA2237:MarkISerializableTypesWithSerializable")]
-    public class WebListenerException : Win32Exception
+    public class HttpSysException : Win32Exception
     {
-        internal WebListenerException()
+        internal HttpSysException()
             : base(Marshal.GetLastWin32Error())
         {
         }
 
-        internal WebListenerException(int errorCode)
+        internal HttpSysException(int errorCode)
             : base(errorCode)
         {
         }
 
-        internal WebListenerException(int errorCode, string message)
+        internal HttpSysException(int errorCode, string message)
             : base(errorCode, message)
         {
         }

@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
                 {
-                    asyncResult.Fail(new IOException(string.Empty, new WebListenerException((int)errorCode)));
+                    asyncResult.Fail(new IOException(string.Empty, new HttpSysException((int)errorCode)));
                 }
                 else
                 {

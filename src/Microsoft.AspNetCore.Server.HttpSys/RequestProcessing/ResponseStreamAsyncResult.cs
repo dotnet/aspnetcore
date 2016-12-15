@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     }
                     else if (asyncResult._responseStream.ThrowWriteExceptions)
                     {
-                        var exception = new IOException(string.Empty, new WebListenerException((int)errorCode));
+                        var exception = new IOException(string.Empty, new HttpSysException((int)errorCode));
                         LogHelper.LogException(logger, "FlushAsync.IOCompleted", exception);
                         asyncResult.Fail(exception);
                     }
