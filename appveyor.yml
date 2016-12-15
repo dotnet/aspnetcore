@@ -13,7 +13,7 @@ install:
    - ps: (New-Object System.Net.WebClient).DownloadFile($urlPreview, $tempFilePreview)
    - ps: Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory($tempFileCurrent, $env:DOTNET_INSTALL_DIR)
    - ps: Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory($tempFilePreview, $env:DOTNET_INSTALL_DIR + "preview")
-   - ps: Move-Item "${env:DOTNET_INSTALL_DIR}preview\sdk\*" "${env:DOTNET_INSTALL_DIR}\sdk\"
+   - ps: Copy-Item "${env:DOTNET_INSTALL_DIR}preview\*" "${env:DOTNET_INSTALL_DIR}" -Force -Recurse
    - ps: $env:Path = "$env:DOTNET_INSTALL_DIR;$env:Path"
 build_script:
   - npm install -g npm@^3.0.0
