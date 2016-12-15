@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "target": "es5",
+    "rootDir": ".",
+    "outDir": "tmp",
+    "sourceMap": false,
+    "lib": ["es6", "dom"]
+  },
+  "exclude": [
+      "node_modules",
+      "**/node_modules",
+      "tmp"
+  ]
+}

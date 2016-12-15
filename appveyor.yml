@@ -1,7 +1,20 @@
 init:
   - git config --global core.autocrlf true
 build_script:
-  - build.cmd verify
+  - npm install -g npm@^3.0.0
+  - npm --prefix templates/package-builder install
+  - npm --prefix templates/package-builder run build
+#  - build.cmd verify
 clone_depth: 1
-test: off
+test_script:
+  - dotnet restore ./src
+  - npm install -g selenium-standalone
+  - selenium-standalone install
+  # The nosys flag is needed for selenium to work on Appveyor
+  - ps: Start-Process selenium-standalone 'start','--','-Djna.nosys=true'
+  - npm --prefix test install
+  - npm --prefix test test
+on_finish :
+  # After running tests, upload results to Appveyor
+  - ps: (new-object net.webclient).UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test\tmp\junit\*.xml))
 deploy: off
