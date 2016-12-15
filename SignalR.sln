@@ -57,16 +57,6 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Signal
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.SignalR.Client.FunctionalTests", "test\Microsoft.AspNetCore.SignalR.Client.FunctionalTests\Microsoft.AspNetCore.SignalR.Client.FunctionalTests.xproj", "{455B68D2-C5B6-4BF4-A685-964B07AFAAF8}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.IntegrationTesting", "..\Hosting\src\Microsoft.AspNetCore.Server.IntegrationTesting\Microsoft.AspNetCore.Server.IntegrationTesting.xproj", "{3DA89347-6731-4366-80C4-548F24E8607B}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Hosting.Abstractions", "..\Hosting\src\Microsoft.AspNetCore.Hosting.Abstractions\Microsoft.AspNetCore.Hosting.Abstractions.xproj", "{BB780FBB-7842-4759-8DE7-96FA2E5571C1}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Hosting.Server.Abstractions", "..\Hosting\src\Microsoft.AspNetCore.Hosting.Server.Abstractions\Microsoft.AspNetCore.Hosting.Server.Abstractions.xproj", "{FDBBA081-5248-4FC0-9E08-B46BEF3FA438}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Hosting", "..\Hosting\src\Microsoft.AspNetCore.Hosting\Microsoft.AspNetCore.Hosting.xproj", "{3944F036-7E75-47E8-AA52-C4B89A64EC3A}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.TestHost", "..\Hosting\src\Microsoft.AspNetCore.TestHost\Microsoft.AspNetCore.TestHost.xproj", "{1A415A3F-1081-45DB-809B-EE19CEA02DC0}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -157,26 +147,6 @@ Global
 		{455B68D2-C5B6-4BF4-A685-964B07AFAAF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{455B68D2-C5B6-4BF4-A685-964B07AFAAF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{455B68D2-C5B6-4BF4-A685-964B07AFAAF8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3DA89347-6731-4366-80C4-548F24E8607B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3DA89347-6731-4366-80C4-548F24E8607B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3DA89347-6731-4366-80C4-548F24E8607B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3DA89347-6731-4366-80C4-548F24E8607B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BB780FBB-7842-4759-8DE7-96FA2E5571C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BB780FBB-7842-4759-8DE7-96FA2E5571C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BB780FBB-7842-4759-8DE7-96FA2E5571C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BB780FBB-7842-4759-8DE7-96FA2E5571C1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FDBBA081-5248-4FC0-9E08-B46BEF3FA438}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FDBBA081-5248-4FC0-9E08-B46BEF3FA438}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FDBBA081-5248-4FC0-9E08-B46BEF3FA438}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FDBBA081-5248-4FC0-9E08-B46BEF3FA438}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3944F036-7E75-47E8-AA52-C4B89A64EC3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3944F036-7E75-47E8-AA52-C4B89A64EC3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3944F036-7E75-47E8-AA52-C4B89A64EC3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3944F036-7E75-47E8-AA52-C4B89A64EC3A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1A415A3F-1081-45DB-809B-EE19CEA02DC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1A415A3F-1081-45DB-809B-EE19CEA02DC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1A415A3F-1081-45DB-809B-EE19CEA02DC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1A415A3F-1081-45DB-809B-EE19CEA02DC0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
