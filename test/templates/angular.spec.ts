@@ -10,7 +10,12 @@ import { getValue, getCssPropertyValue } from './util/webdriverio';
 const appDir = path.resolve(__dirname, '../generated/angular');
 const publishedAppDir = path.resolve(appDir, './bin/Release/published');
 if (!process.env.SKIP_PROJECT_GENERATION) {
-    generateProjectSync(appDir, { framework: 'angular-2', name: 'Test App', tests: false });
+    generateProjectSync(appDir, {
+        framework: 'angular-2',
+        name: 'Test App',
+        sdkVersion: '1.0.0-preview2-1-003177',
+        tests: false
+    });
     publishProjectSync(appDir, publishedAppDir);
 }
 
