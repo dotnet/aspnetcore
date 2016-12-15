@@ -38,7 +38,8 @@ namespace Webpack.ActionResults
                 request.GetEncodedUrl(),
                 request.Path + request.QueryString.Value,
                 _dataToSupply,
-                /* timeoutMilliseconds */ 30000
+                /* timeoutMilliseconds */ 30000,
+                /* requestPathBase */ "/"
             );
 
             response.ContentType = "text/html";
