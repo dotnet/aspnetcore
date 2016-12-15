@@ -18,6 +18,7 @@
     "chai": "^3.5.0",
     "cross-spawn": "^5.0.1",
     "mkdirp": "^0.5.1",
+    "portastic": "^1.0.1",
     "rimraf": "^2.5.4",
     "selenium-standalone": "^5.9.0",
     "tree-kill": "^1.1.0",

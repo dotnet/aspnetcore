@@ -1,10 +1,12 @@
 import * as childProcess from 'child_process';
 import * as path from 'path';
 import * as readline from 'readline';
+import { waitUntilPortState } from './ports';
 const treeKill = require('tree-kill');
 const crossSpawn: typeof childProcess.spawn = require('cross-spawn');
+const defaultPort = 5000;
 
-export const defaultUrl = 'http://localhost:5000';
+export const defaultUrl = `http://localhost:${ defaultPort }`;
 
 export enum AspNetCoreEnviroment {
     development,
@@ -50,7 +52,7 @@ export class AspNetProcess {
             });
 
             // Ensure the process isn't orphaned even if Node crashes before we're disposed
-            process.on('exit', () => this._killProcessSync());
+            process.on('exit', () => this._killAspNetProcess());
 
             // Also track whether it exited on its own already
             this._process.on('exit', () => {
@@ -74,7 +76,7 @@ export class AspNetProcess {
 
     public dispose(): Promise<any> {
         return new Promise((resolve, reject) => {
-            this._killProcessSync(err => {
+            this._killAspNetProcess(err => {
                 if (err) {
                     reject(err);
                 } else {
@@ -84,11 +86,29 @@ export class AspNetProcess {
         });
     }
 
-    private _killProcessSync(callback?: (err: any) => void) {
+    private _killAspNetProcess(callback?: (err: any) => void) {
+        callback = callback || (() => {});
         if (!this._processHasExited) {
             // It's important to kill the whole tree, because 'dotnet run' launches a separate 'dotnet exec'
             // child process that would otherwise be left running
-            treeKill(this._process.pid, 'SIGINT', callback);
+            treeKill(this._process.pid, 'SIGINT', err => {
+                if (err) {
+                    callback(err);
+                } else {
+                    // It's not enough just to send a SIGINT to ASP.NET. It will stay open for a moment, completing
+                    // any outstanding requests. We have to wait for it really to be gone before continuing, otherwise
+                    // the next test might be unable to start because of the port still being in use.
+                    console.log(`Waiting until port ${ defaultPort } is closed...`);
+                    waitUntilPortState(defaultPort, /* isOpen */ true, /* timeoutMs */ 15000, err => {
+                        if (err) {
+                            callback(err);
+                        } else {
+                            console.log(`Port ${ defaultPort } is now closed`);
+                            callback(null);
+                        }
+                    });
+                }
+            });
         }
     }
 }
