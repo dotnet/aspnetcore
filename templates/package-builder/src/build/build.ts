@@ -120,11 +120,7 @@ function buildDotNetNewNuGetPackage() {
     const projectGuid = '00000000-0000-0000-0000-000000000000';
     const filenameReplacements = [
         { from: /.*\.xproj$/, to: `${sourceProjectName}.xproj` },
-        { from: /\btemplate_gitignore$/, to: '.gitignore' },
-
-        // Workaround for https://github.com/aspnet/JavaScriptServices/issues/235
-        // For details, see the comment in ../yeoman/app/index.ts
-        { from: /\btemplate_nodemodules_placeholder.txt$/, to: 'node_modules/_placeholder.txt' }
+        { from: /\btemplate_gitignore$/, to: '.gitignore' }
     ];
     const contentReplacements = [
         { from: /<ProjectGuid>[0-9a-f\-]{36}<\/ProjectGuid>/g, to: `<ProjectGuid>${projectGuid}</ProjectGuid>` },
