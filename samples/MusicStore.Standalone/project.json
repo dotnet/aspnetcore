@@ -87,5 +87,10 @@
     "ubuntu.15.04-x64": {},
     "centos.7-x64": {},
     "rhel.7.2-x64": {}
+  },
+  "runtimeOptions": {
+    "configProperties": {
+      "System.GC.Server": true
+    }
   }
 }
