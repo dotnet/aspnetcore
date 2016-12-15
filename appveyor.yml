@@ -1,6 +1,7 @@
 init:
   - git config --global core.autocrlf true
 install:
+   - ps: Install-Product node 6.9.2 x64
    # .NET Core SDK binaries
    # Download .NET Core SDK and add to PATH
    - ps: $urlCurrent = "https://go.microsoft.com/fwlink/?LinkID=834991"
@@ -16,9 +17,11 @@ install:
    - ps: Copy-Item "${env:DOTNET_INSTALL_DIR}preview\*" "${env:DOTNET_INSTALL_DIR}" -Force -Recurse
    - ps: $env:Path = "$env:DOTNET_INSTALL_DIR;$env:Path"
 build_script:
-  - npm install -g npm@^3.0.0
-  - npm --prefix templates/package-builder install
-  - npm --prefix templates/package-builder run build
+  - ps: Push-Location
+  - cd templates/package-builder
+  - npm install
+  - npm run build
+  - ps: Pop-Location
 #  - build.cmd verify
 clone_depth: 1
 test_script:
@@ -27,9 +30,12 @@ test_script:
   - selenium-standalone install
   # The nosys flag is needed for selenium to work on Appveyor
   - ps: Start-Process selenium-standalone 'start','--','-Djna.nosys=true'
-  - npm --prefix test install
-  - npm --prefix test test
+  - ps: Push-Location
+  - cd test
+  - npm install
+  - npm test
 on_finish :
+  - ps: Pop-Location
   # After running tests, upload results to Appveyor
   - ps: (new-object net.webclient).UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test\tmp\junit\*.xml))
 deploy: off
