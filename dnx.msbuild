@@ -175,7 +175,7 @@
             <CommandsPath>$(DNXToolsPath)commands</CommandsPath>
         </PropertyGroup>
         <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -pre NuGetPackageVerifier -Source $(DnxToolsFeed) -out $(CommandsPath)"/>
-        <Exec Command="$(CommandsPath)\NuGetPackageVerifier\NuGetPackageVerifier.exe &quot;$(PackagesOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
+        <Exec Command="dotnet $(CommandsPath)\NuGetPackageVerifier\NuGetPackageVerifier.dll &quot;$(PackagesOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
         <RemoveDir Directories="$(CommandsPath)"/>
     </Target>
 
