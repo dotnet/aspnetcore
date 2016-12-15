@@ -1,16 +1,11 @@
 {
+  "testRunner": "xunit",
   "dependencies": {
+    "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Server.HttpSys": "1.2.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.2.0-*"
-  },
-  "buildOptions": {
-    "emitEntryPoint": true
-  },
-  "commands": {
-    "web": "SelfHostServer"
+    "xunit": "2.2.0-*"
   },
   "frameworks": {
-    "net451": {},
     "netcoreapp1.1": {
       "dependencies": {
         "Microsoft.NETCore.App": {
@@ -18,6 +13,7 @@
           "type": "platform"
         }
       }
-    }
+    },
+    "net451": {}
   }
 }
