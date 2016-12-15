@@ -1,10 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
 
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp1.0;netcoreapp1.1</TargetFrameworks>
-    <OutputType>exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,7 +31,7 @@
     <PackageReference Include="Microsoft.NETCore.App" Version="1.0.1" />
   </ItemGroup>
 
-  <Target Name="CleanTestProjects" BeforeTargets="CoreCompile;CopyFilesToOutputDirectory">
+  <Target Name="CleanTestProjects" BeforeTargets="CoreCompile">
     <RemoveDir Directories="$(TargetDir)TestProjects" Condition="Exists('$(TargetDir)TestProjects')" />
   </Target>
 
