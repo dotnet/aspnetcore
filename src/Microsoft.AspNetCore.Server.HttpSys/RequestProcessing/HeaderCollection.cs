@@ -8,7 +8,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    public class HeaderCollection : IDictionary<string, StringValues>
+    internal class HeaderCollection : IDictionary<string, StringValues>
     {
         public HeaderCollection()
             : this(new Dictionary<string, StringValues>(4, StringComparer.OrdinalIgnoreCase))

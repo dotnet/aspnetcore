@@ -15,7 +15,7 @@ using static Microsoft.AspNetCore.Server.HttpSys.UnsafeNclNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    public sealed class Response
+    internal sealed class Response
     {
         private ResponseState _responseState;
         private string _reasonPhrase;

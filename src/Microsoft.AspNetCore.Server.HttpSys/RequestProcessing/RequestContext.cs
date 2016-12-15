@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    public sealed class RequestContext : IDisposable
+    internal sealed class RequestContext : IDisposable
     {
         private static readonly Action<object> AbortDelegate = Abort;
 

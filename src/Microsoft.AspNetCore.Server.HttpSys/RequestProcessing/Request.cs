@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    public sealed class Request
+    internal sealed class Request
     {
         private NativeRequestContext _nativeRequestContext;
 

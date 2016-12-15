@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     /// <summary>
     /// An HTTP server wrapping the Http.Sys APIs that accepts requests.
     /// </summary>
-    public sealed class HttpSysListener : IDisposable
+    internal class HttpSysListener : IDisposable
     {
         // Win8# 559317 fixed a bug in Http.sys's HttpReceiveClientCertificate method.
         // Without this fix IOCP callbacks were not being called although ERROR_IO_PENDING was
