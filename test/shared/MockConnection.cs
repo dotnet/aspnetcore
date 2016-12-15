@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -24,9 +25,10 @@ namespace Microsoft.AspNetCore.Testing
             };
         }
 
-        public override void Abort(Exception error = null)
+        public override Task AbortAsync(Exception error = null)
         {
             RequestAbortedSource?.Cancel();
+            return TaskCache.CompletedTask;
         }
 
         public override void OnSocketClosed()

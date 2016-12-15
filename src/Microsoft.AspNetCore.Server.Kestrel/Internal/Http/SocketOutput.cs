@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     {
                         if (cancellationToken.IsCancellationRequested)
                         {
-                            _connection.Abort();
+                            _connection.AbortAsync();
                             _cancelled = true;
                             return TaskUtilities.GetCancelledTask(cancellationToken);
                         }
@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {
                     // Abort the connection for any failed write
                     // Queued on threadpool so get it in as first op.
-                    _connection.Abort();
+                    _connection.AbortAsync();
                     _cancelled = true;
 
                     CompleteAllWrites();
@@ -374,7 +374,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 // Abort the connection for any failed write
                 // Queued on threadpool so get it in as first op.
-                _connection.Abort();
+                _connection.AbortAsync();
                 _cancelled = true;
                 _lastWriteError = error;
             }
@@ -532,7 +532,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                _connection.Abort();
+                _connection.AbortAsync();
                 _cancelled = true;
                 return TaskUtilities.GetCancelledTask(cancellationToken);
             }

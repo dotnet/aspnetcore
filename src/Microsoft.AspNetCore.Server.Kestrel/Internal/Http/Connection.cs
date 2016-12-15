@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return _socketClosedTcs.Task;
         }
 
-        public virtual void Abort(Exception error = null)
+        public virtual Task AbortAsync(Exception error = null)
         {
             // Frame.Abort calls user code while this method is always
             // called from a libuv thread.
@@ -150,6 +150,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 _frame.Abort(error);
             });
+
+            return _socketClosedTcs.Task;
         }
 
         // Called on Libuv thread
@@ -285,7 +287,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             if (!normalRead)
             {
-                Abort(error);
+                AbortAsync(error);
             }
         }
 

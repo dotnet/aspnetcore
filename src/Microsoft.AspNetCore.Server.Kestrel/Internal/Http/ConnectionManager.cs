@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
@@ -23,16 +22,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public async Task<bool> WalkConnectionsAndCloseAsync(TimeSpan timeout)
         {
+            return await WalkConnectionsAsync((connectionManager, tcs) => connectionManager.WalkConnectionsAndCloseCore(tcs), timeout).ConfigureAwait(false);
+        }
+
+        public async Task<bool> WalkConnectionsAndAbortAsync(TimeSpan timeout)
+        {
+            return await WalkConnectionsAsync((connectionManager, tcs) => connectionManager.WalkConnectionsAndAbortCore(tcs), timeout).ConfigureAwait(false);
+        }
+
+        private async Task<bool> WalkConnectionsAsync(Action<ConnectionManager, TaskCompletionSource<object>> action, TimeSpan timeout)
+        {
             var tcs = new TaskCompletionSource<object>();
 
-            _thread.Post(state => ((ConnectionManager)state).WalkConnectionsAndCloseCore(tcs), this);
+            _thread.Post(state => action((ConnectionManager)state, tcs), this);
 
             return await Task.WhenAny(tcs.Task, Task.Delay(timeout)).ConfigureAwait(false) == tcs.Task;
         }
 
         private void WalkConnectionsAndCloseCore(TaskCompletionSource<object> tcs)
         {
-            var connectionStopTasks = new List<Task>();
+            WalkConnectionsCore(connection => connection.StopAsync(), tcs);
+        }
+
+        private void WalkConnectionsAndAbortCore(TaskCompletionSource<object> tcs)
+        {
+            WalkConnectionsCore(connection => connection.AbortAsync(), tcs);
+        }
+
+        private void WalkConnectionsCore(Func<Connection, Task> action, TaskCompletionSource<object> tcs)
+        {
+            var tasks = new List<Task>();
 
             _thread.Walk(ptr =>
             {
@@ -41,13 +60,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                 if (connection != null)
                 {
-                    connectionStopTasks.Add(connection.StopAsync());
+                    tasks.Add(action(connection));
                 }
             });
 
             _threadPool.Run(() =>
             {
-                Task.WaitAll(connectionStopTasks.ToArray());
+                Task.WaitAll(tasks.ToArray());
                 tcs.SetResult(null);
             });
         }

@@ -43,6 +43,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
         void NotAllConnectionsClosedGracefully();
 
+        void NotAllConnectionsAborted();
+
         void ApplicationError(string connectionId, Exception ex);
     }
 }

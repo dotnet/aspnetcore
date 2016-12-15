@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
         private static readonly Action<ILogger, string, int, Exception> _connectionDisconnectedWrite;
         private static readonly Action<ILogger, string, long, Exception> _connectionHeadResponseBodyWrite;
         private static readonly Action<ILogger, Exception> _notAllConnectionsClosedGracefully;
+        private static readonly Action<ILogger, Exception> _notAllConnectionsAborted;
         private static readonly Action<ILogger, string, string, Exception> _connectionBadRequest;
         private static readonly Action<ILogger, string, Exception> _connectionReset;
         private static readonly Action<ILogger, string, Exception> _requestProcessingError;
@@ -54,6 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             _connectionHeadResponseBodyWrite = LoggerMessage.Define<string, long>(LogLevel.Debug, 18, @"Connection id ""{ConnectionId}"" write of ""{count}"" body bytes to non-body HEAD response.");
             _connectionReset = LoggerMessage.Define<string>(LogLevel.Debug, 19, @"Connection id ""{ConnectionId}"" reset.");
             _requestProcessingError = LoggerMessage.Define<string>(LogLevel.Information, 20, @"Connection id ""{ConnectionId}"" request processing ended abnormally.");
+            _notAllConnectionsAborted = LoggerMessage.Define(LogLevel.Debug, 21, "Some connections failed to abort during server shutdown.");
         }
 
         public KestrelTrace(ILogger logger)
@@ -147,6 +149,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
         public virtual void NotAllConnectionsClosedGracefully()
         {
             _notAllConnectionsClosedGracefully(_logger, null);
+        }
+
+        public virtual void NotAllConnectionsAborted()
+        {
+            _notAllConnectionsAborted(_logger, null);
         }
 
         public void ConnectionBadRequest(string connectionId, BadHttpRequestException ex)
