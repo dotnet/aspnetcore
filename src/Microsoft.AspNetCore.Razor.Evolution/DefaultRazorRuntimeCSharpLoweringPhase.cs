@@ -436,30 +436,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 linePragma?.Dispose();
             }
 
-            public override void VisitDirective(DirectiveIRNode node)
-            {
-                if (string.Equals(node.Name, CSharpCodeParser.SectionDirectiveDescriptor.Name, StringComparison.Ordinal))
-                {
-                    const string SectionWriterName = "__razor_section_writer";
-
-                    Context.Writer
-                        .WriteStartMethodInvocation("DefineSection" /* ORIGINAL: DefineSectionMethodName */)
-                        .WriteStringLiteral(node.Tokens.FirstOrDefault()?.Content)
-                        .WriteParameterSeparator();
-
-                    var initialRenderingConventions = Context.RenderingConventions;
-                    var redirectConventions = new CSharpRedirectRenderingConventions(SectionWriterName, Context.Writer);
-                    Context.RenderingConventions = redirectConventions;
-                    using (Context.Writer.BuildAsyncLambda(endLine: false, parameterNames: SectionWriterName))
-                    {
-                        VisitDefault(node);
-                    }
-                    Context.RenderingConventions = initialRenderingConventions;
-
-                    Context.Writer.WriteEndMethodInvocation();
-                }
-            }
-
             public override void VisitCSharpStatement(CSharpStatementIRNode node)
             {
                 if (string.IsNullOrWhiteSpace(node.Content))

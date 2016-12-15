@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -556,13 +557,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
-        private class ApiSetsIRTestAdapter : IRazorIRPass
+        private class ApiSetsIRTestAdapter : RazorIRPassBase
         {
-            public RazorEngine Engine { get; set; }
-
-            public int Order { get; set; }
-
-            public DocumentIRNode Execute(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+            public override DocumentIRNode ExecuteCore(DocumentIRNode irDocument)
             {
                 var walker = new ApiSetsIRWalker();
                 walker.Visit(irDocument);

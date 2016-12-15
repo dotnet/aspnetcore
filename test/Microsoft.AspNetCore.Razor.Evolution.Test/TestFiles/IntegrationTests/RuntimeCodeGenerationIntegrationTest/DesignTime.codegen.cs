@@ -51,16 +51,15 @@ WriteTo(__razor_template_writer, baz);
 #line default
 #line hidden
             WriteLiteral("\r\n</p>\r\n\r\n");
-            DefineSection("Footer", async(__razor_section_writer) => {
-                WriteLiteralTo(__razor_section_writer, "\r\n    <p>Foo</p>\r\n    ");
+            DefineSection("Footer", async () => {
+            WriteLiteral("\r\n    <p>Foo</p>\r\n    ");
 #line 14 "TestFiles/IntegrationTests/RuntimeCodeGenerationIntegrationTest/DesignTime.cshtml"
-WriteTo(__razor_section_writer, bar);
+Write(bar);
 
 #line default
 #line hidden
-                WriteLiteralTo(__razor_section_writer, "\r\n");
-            }
-            );
+            WriteLiteral("\r\n");
+            });
         }
         #pragma warning restore 1998
     }

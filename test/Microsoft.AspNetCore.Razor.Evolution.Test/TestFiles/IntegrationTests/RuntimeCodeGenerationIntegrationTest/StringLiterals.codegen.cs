@@ -96,8 +96,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 <p>This is line 84</p><br>
 
 ");
-            DefineSection("WriteLiteralsToInHere", async(__razor_section_writer) => {
-                WriteLiteralTo(__razor_section_writer, @"
+            DefineSection("WriteLiteralsToInHere", async () => {
+            WriteLiteral(@"
     <p>This is line 1 nested</p>
     <p>This is line 2 nested</p>
     <p>This is line 3 nested</p>
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     <p>This is line 28 nested</p>
     <p>This is line 29 nested</p>
     <p>This is l");
-                WriteLiteralTo(__razor_section_writer, @"ine 30 nested</p>
+            WriteLiteral(@"ine 30 nested</p>
     <p>This is line 31 nested</p>
     <p>This is line 32 nested</p>
     <p>This is line 33 nested</p>
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     <p>This is line 57 nested</p>
     <p>This is line 58 nested</p>
     <p>This is line 59 ne");
-                WriteLiteralTo(__razor_section_writer, @"sted</p>
+            WriteLiteral(@"sted</p>
     <p>This is line 60 nested</p>
     <p>This is line 61 nested</p>
     <p>This is line 62 nested</p>
@@ -176,8 +176,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     <p>This is line 74 nested</p>
     <p>This is line 75 nested</p>
 ");
-            }
-            );
+            });
             WriteLiteral(@"<p>This is line 1</p>
 <p>This is line 2</p>
 <p>This is line 3</p>
@@ -222,8 +221,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 <p>This is line 42</p>
 <p>This is line 43</p>hi!");
             WriteLiteral("\r\n");
-            DefineSection("WriteLiteralsToInHereAlso", async(__razor_section_writer) => {
-                WriteLiteralTo(__razor_section_writer, @"
+            DefineSection("WriteLiteralsToInHereAlso", async () => {
+            WriteLiteral(@"
     <p>This is line 1 nested</p>
     <p>This is line 2 nested</p>
     <p>This is line 3 nested</p>
@@ -255,8 +254,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     <p>This is line 29 nested</p>
     <p>30</p>
 ");
-            }
-            );
+            });
             WriteLiteral("!");
         }
         #pragma warning restore 1998

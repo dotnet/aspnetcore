@@ -18,11 +18,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 @functions {
     var value = true;
 }";
-            var originalIRDocument = Lower(content);
-            var pass = new DefaultDirectiveIRPass();
+            var sourceDocument = TestRazorSourceDocument.Create(content);
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var originalIRDocument = Lower(codeDocument);
+            var defaultEngine = RazorEngine.Create();
+            var pass = new DefaultDirectiveIRPass()
+            {
+                Engine = defaultEngine,
+            };
 
             // Act
-            var irDocument = pass.Execute(codeDocument: null, irDocument: originalIRDocument);
+            var irDocument = pass.Execute(codeDocument, originalIRDocument);
 
             // Assert
             Assert.Same(originalIRDocument, irDocument);
@@ -33,11 +39,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var content = "@inherits Hello<World[]>";
-            var originalIRDocument = Lower(content);
-            var pass = new DefaultDirectiveIRPass();
+            var sourceDocument = TestRazorSourceDocument.Create(content);
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var originalIRDocument = Lower(codeDocument);
+            var defaultEngine = RazorEngine.Create();
+            var pass = new DefaultDirectiveIRPass()
+            {
+                Engine = defaultEngine,
+            };
 
             // Act
-            var irDocument = pass.Execute(codeDocument: null, irDocument: originalIRDocument);
+            var irDocument = pass.Execute(codeDocument, originalIRDocument);
 
             // Assert
             Children(irDocument,
@@ -53,15 +65,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         }
 
         [Fact]
-        public void Execute_Functions_ExistsAtClassDeclarationAndMethodLevel()
+        public void Execute_Functions_MovesStatementToClassLevel()
         {
             // Arrange
             var content = "@functions { var value = true; }";
-            var originalIRDocument = Lower(content);
-            var pass = new DefaultDirectiveIRPass();
+            var sourceDocument = TestRazorSourceDocument.Create(content);
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var originalIRDocument = Lower(codeDocument);
+            var defaultEngine = RazorEngine.Create();
+            var pass = new DefaultDirectiveIRPass()
+            {
+                Engine = defaultEngine,
+            };
 
             // Act
-            var irDocument = pass.Execute(codeDocument: null, irDocument: originalIRDocument);
+            var irDocument = pass.Execute(codeDocument, originalIRDocument);
 
             // Assert
             Children(irDocument,
@@ -79,17 +97,91 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var method = (RazorMethodDeclarationIRNode)@class.Children[0];
             Children(method,
                 node => Html(string.Empty, node),
-                node => Directive("functions", node,
-                    directiveChild => CSharpStatement(" var value = true; ", directiveChild)),
                 node => Html(string.Empty, node));
         }
 
-        private static DocumentIRNode Lower(string content)
+        [Fact]
+        public void Execute_Section_WrapsStatementInDefineSection()
         {
+            // Arrange
+            var content = "@section Header { <p>Hello World</p> }";
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var originalIRDocument = Lower(codeDocument);
+            var defaultEngine = RazorEngine.Create();
+            var pass = new DefaultDirectiveIRPass()
+            {
+                Engine = defaultEngine,
+            };
+
+            // Act
+            var irDocument = pass.Execute(codeDocument, originalIRDocument);
+
+            // Assert
+            Children(irDocument,
+                node => Assert.IsType<ChecksumIRNode>(node),
+                node => Assert.IsType<NamespaceDeclarationIRNode>(node));
+            var @namespace = irDocument.Children[1];
+            Children(@namespace,
+                node => Assert.IsType<UsingStatementIRNode>(node),
+                node => Assert.IsType<UsingStatementIRNode>(node),
+                node => Assert.IsType<ClassDeclarationIRNode>(node));
+            var @class = @namespace.Children[2];
+            var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
+            Children(method,
+                node => Html(string.Empty, node),
+                node => CSharpStatement("DefineSection(\"Header\", async () => {", node),
+                node => Html(" <p>Hello World</p> ", node),
+                node => CSharpStatement("});", node),
+                node => Html(string.Empty, node));
+        }
+
+        [Fact]
+        public void Execute_Section_DesignTime_WrapsStatementInBackwardsCompatibleDefineSection()
+        {
+            // Arrange
+            var content = "@section Header { <p>Hello World</p> }";
+            var designTimeEngine = RazorEngine.CreateDesignTime();
+            var sourceDocument = TestRazorSourceDocument.Create(content);
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var originalIRDocument = Lower(codeDocument, designTimeEngine);
+            var defaultEngine = RazorEngine.Create();
+            var pass = new DefaultDirectiveIRPass()
+            {
+                Engine = defaultEngine,
+            };
+
+            // Act
+            var irDocument = pass.Execute(codeDocument, originalIRDocument);
+
+            // Assert
+            Children(irDocument,
+                node => Assert.IsType<ChecksumIRNode>(node),
+                node => Assert.IsType<NamespaceDeclarationIRNode>(node));
+            var @namespace = irDocument.Children[1];
+            Children(@namespace,
+                node => Assert.IsType<UsingStatementIRNode>(node),
+                node => Assert.IsType<UsingStatementIRNode>(node),
+                node => Assert.IsType<ClassDeclarationIRNode>(node));
+            var @class = @namespace.Children[2];
+            var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
+            Children(method,
+                node => Html(string.Empty, node),
+                node => CSharpStatement("DefineSection(\"Header\", async (__razor_section_writer) => {", node),
+                node => Html(" <p>Hello World</p> ", node),
+                node => CSharpStatement("});", node),
+                node => Html(string.Empty, node));
+        }
+
+        private static DocumentIRNode Lower(RazorCodeDocument codeDocument)
+        {
             var engine = RazorEngine.Create();
 
+            return Lower(codeDocument, engine);
+        }
+
+        private static DocumentIRNode Lower(RazorCodeDocument codeDocument, RazorEngine engine)
+        {
             for (var i = 0; i < engine.Phases.Count; i++)
             {
                 var phase = engine.Phases[i];

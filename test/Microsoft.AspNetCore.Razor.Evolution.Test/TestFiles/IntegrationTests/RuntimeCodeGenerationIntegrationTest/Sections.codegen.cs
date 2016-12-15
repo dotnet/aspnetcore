@@ -17,49 +17,46 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line default
 #line hidden
             WriteLiteral("\r\n<div>This is in the Body>\r\n\r\n");
-            DefineSection("Section2", async(__razor_section_writer) => {
-                WriteLiteralTo(__razor_section_writer, "\r\n    <div");
-                BeginWriteAttributeTo(__razor_section_writer, "class", " class=\"", 109, "\"", 128, 2);
-                WriteAttributeValueTo(__razor_section_writer, "", 117, "some", 117, 4, true);
+            DefineSection("Section2", async () => {
+            WriteLiteral("\r\n    <div");
+            BeginWriteAttribute("class", " class=\"", 109, "\"", 128, 2);
+            WriteAttributeValue("", 117, "some", 117, 4, true);
 #line 8 "TestFiles/IntegrationTests/RuntimeCodeGenerationIntegrationTest/Sections.cshtml"
-WriteAttributeValueTo(__razor_section_writer, " ", 121, thing, 122, 6, false);
+WriteAttributeValue(" ", 121, thing, 122, 6, false);
 
 #line default
 #line hidden
-                EndWriteAttributeTo(__razor_section_writer);
-                WriteLiteralTo(__razor_section_writer, ">This is in Section 2</div>\r\n");
-            }
-            );
+            EndWriteAttribute();
+            WriteLiteral(">This is in Section 2</div>\r\n");
+            });
             WriteLiteral("\r\n");
-            DefineSection("Section1", async(__razor_section_writer) => {
-                WriteLiteralTo(__razor_section_writer, "\r\n    <div>This is in Section 1</div>\r\n");
-            }
-            );
+            DefineSection("Section1", async () => {
+            WriteLiteral("\r\n    <div>This is in Section 1</div>\r\n");
+            });
             WriteLiteral("\r\n");
-            DefineSection("NestedDelegates", async(__razor_section_writer) => {
-                WriteLiteralTo(__razor_section_writer, "\r\n");
+            DefineSection("NestedDelegates", async () => {
+            WriteLiteral("\r\n");
 #line 16 "TestFiles/IntegrationTests/RuntimeCodeGenerationIntegrationTest/Sections.cshtml"
        Func<dynamic, object> f = 
 
 #line default
 #line hidden
-                item => new HelperResult(async(__razor_template_writer) => {
-                    WriteLiteralTo(__razor_template_writer, "<span>");
+            item => new HelperResult(async(__razor_template_writer) => {
+                WriteLiteralTo(__razor_template_writer, "<span>");
 #line 16 "TestFiles/IntegrationTests/RuntimeCodeGenerationIntegrationTest/Sections.cshtml"
         WriteTo(__razor_template_writer, item);
 
 #line default
 #line hidden
-                    WriteLiteralTo(__razor_template_writer, "</span>");
-                }
-                )
+                WriteLiteralTo(__razor_template_writer, "</span>");
+            }
+            )
 #line 16 "TestFiles/IntegrationTests/RuntimeCodeGenerationIntegrationTest/Sections.cshtml"
                                                     ; 
 
 #line default
 #line hidden
-            }
-            );
+            });
         }
         #pragma warning restore 1998
     }

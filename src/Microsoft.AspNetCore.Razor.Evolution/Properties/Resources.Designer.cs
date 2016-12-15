@@ -11,6 +11,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             = new ResourceManager("Microsoft.AspNetCore.Razor.Evolution.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// The '{0}' feature requires a '{1}' provided by the '{2}'.
+        /// </summary>
+        internal static string FeatureDependencyMissing
+        {
+            get { return GetString("FeatureDependencyMissing"); }
+        }
+
+        /// <summary>
+        /// The '{0}' feature requires a '{1}' provided by the '{2}'.
+        /// </summary>
+        internal static string FormatFeatureDependencyMissing(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("FeatureDependencyMissing"), p0, p1, p2);
+        }
+
+        /// <summary>
         /// The '{0}' operation is not valid when the builder is empty.
         /// </summary>
         internal static string IRBuilder_PopInvalid
