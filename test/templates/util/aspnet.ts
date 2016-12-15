@@ -5,6 +5,7 @@ import { waitUntilPortState } from './ports';
 const treeKill = require('tree-kill');
 const crossSpawn: typeof childProcess.spawn = require('cross-spawn');
 const defaultPort = 5000;
+const defaultInterface = 'localhost';
 
 export const defaultUrl = `http://localhost:${ defaultPort }`;
 
@@ -99,7 +100,7 @@ export class AspNetProcess {
                     // any outstanding requests. We have to wait for it really to be gone before continuing, otherwise
                     // the next test might be unable to start because of the port still being in use.
                     console.log(`Waiting until port ${ defaultPort } is closed...`);
-                    waitUntilPortState(defaultPort, /* isOpen */ true, /* timeoutMs */ 15000, err => {
+                    waitUntilPortState(defaultPort, defaultInterface, /* isListening */ false, /* timeoutMs */ 15000, err => {
                         if (err) {
                             callback(err);
                         } else {
