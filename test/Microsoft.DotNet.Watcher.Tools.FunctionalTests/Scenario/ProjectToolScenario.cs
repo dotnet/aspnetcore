@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         private void CreateTestDirectory()
         {
             Directory.CreateDirectory(WorkFolder);
-            File.WriteAllText(Path.Combine(WorkFolder, "global.json"), "{}");
+            File.WriteAllText(Path.Combine(WorkFolder, "global.json"), "{\"sdk\": {\"version\":\"1.0.0-preview2-1-003177\"} }");
 
             var nugetConfigFilePath = FindNugetConfig();
 
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         public Process ExecuteDotnetWatch(IEnumerable<string> arguments, string workDir, IDictionary<string, string> environmentVariables = null)
         {
-            // this launches a new .NET Core process using the runtime of the current test app 
+            // this launches a new .NET Core process using the runtime of the current test app
             // and the version of dotnet-watch that this test app is compiled against
             var thisAssembly = Path.GetFileNameWithoutExtension(GetType().GetTypeInfo().Assembly.Location);
             var args = new List<string>();
