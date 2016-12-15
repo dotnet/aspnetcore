@@ -896,10 +896,83 @@ functions
             public static RepositoryInfo Create(string repo)
             {
                 var info = new RepositoryInfo { Name = repo };
+                ResolveSourcesPackages(info, repo);
                 ResolveProjectJsonProjects(info, repo);
                 ResolveMsBuildProjects(info, repo);
                 info.DependencyNames.ExceptWith(info.RepositoryNames);
                 return info;
+            }
+
+            private static void ResolveSourcesPackages(RepositoryInfo info, string repo)
+            {
+                var repoDir = Path.Combine(Directory.GetCurrentDirectory(), repo);
+                var ngpvJson = Path.Combine(repoDir, "NuGetPackageVerifier.json");
+                if (File.Exists(ngpvJson))
+                {
+                    ResolveFromNuGetPackageVerifier(info, ngpvJson);
+                }
+                ResolveSourcesFromFolderConventions(info, repoDir);
+            }
+
+            private static void ResolveSourcesFromFolderConventions(RepositoryInfo info, string repoDir)
+            {
+                var directories = Enumerable.Empty<string>();
+                var sharedDir = Path.Combine(repoDir, "shared");
+                if (Directory.Exists(sharedDir))
+                {
+                    directories = directories.Concat(
+                        Directory.GetDirectories(sharedDir, "*.Sources"));
+                }
+
+                var srcDir = Path.Combine(repoDir, "src");
+                if (Directory.Exists(srcDir))
+                {
+                    directories = directories.Concat(
+                        Directory.GetDirectories(Path.Combine(repoDir, "src"), "*.Sources"));
+                }
+
+                directories = directories.Select(Path.GetFileName)
+                    .Where(m => m != null && m.StartsWith("Microsoft."));
+
+                foreach (var dir in directories)
+                {
+                    info.RepositoryNames.Add(dir);
+                }
+            }
+
+            private static void ResolveFromNuGetPackageVerifier(RepositoryInfo info, string ngpvJson)
+            {
+                JsonObject ngpv;
+                try
+                {
+                    ngpv = (JsonObject)Json.Deserialize(File.ReadAllText(ngpvJson));
+                }
+                catch (Exception ex)
+                {
+                    // usually due to comments
+                    Console.Error.WriteLine("Failed to parse " + ngpvJson + " : " + ex.Message);
+                    return;
+                }
+
+                if (ngpv == null || ngpv.Keys == null)
+                {
+                    return;
+                }
+
+                foreach (var groupKey in ngpv.Keys)
+                {
+                    var @group = ngpv.ValueAsJsonObject(groupKey);
+                    var packages = @group.ValueAsJsonObject("packages");
+                    if (packages == null || packages.Keys == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (var pkgKey in packages.Keys)
+                    {
+                        info.RepositoryNames.Add(pkgKey);
+                    }
+                }
             }
 
             private static void ResolveMsBuildProjects(RepositoryInfo info, string repo)
@@ -973,6 +1046,11 @@ functions
                     foreach (var fxKey in frameworks.Keys)
                     {
                         var fxDeps = frameworks.ValueAsJsonObject(fxKey).ValueAsJsonObject("dependencies");
+                        if (fxDeps == null || fxDeps.Keys == null)
+                        {
+                            continue;
+                        }
+
                         foreach (var depKey in fxDeps.Keys)
                         {
                             var dep = fxDeps.ValueAsJsonObject(depKey);
