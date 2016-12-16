@@ -10,7 +10,7 @@ Document -
                 TagHelper - 
                     InitializeTagHelperStructure -  - input - TagMode.SelfClosing
                     CreateTagHelper -  - InputTagHelper
-                    SetTagHelperProperty -  - bound - FooProp - HtmlAttributeValueStyle.DoubleQuotes
+                    SetTagHelperProperty - (56:2,17 [6] TagHelpersWithBoundAttributes.cshtml) - bound - FooProp - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - (57:2,18 [5] TagHelpersWithBoundAttributes.cshtml)
                             CSharpToken - (57:2,18 [5] TagHelpersWithBoundAttributes.cshtml) - Hello
                     AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.SingleQuotes

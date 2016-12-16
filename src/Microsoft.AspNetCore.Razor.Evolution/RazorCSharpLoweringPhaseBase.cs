@@ -25,6 +25,43 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             }
         }
 
+        protected static void RenderTagHelperAttributeInline(
+            RazorIRNode node,
+            MappingLocation documentLocation,
+            CSharpRenderingContext context)
+        {
+            if (node is SetTagHelperPropertyIRNode || node is CSharpExpressionIRNode)
+            {
+                for (var i = 0; i < node.Children.Count; i++)
+                {
+                    RenderTagHelperAttributeInline(node.Children[i], documentLocation, context);
+                }
+            }
+            else if (node is HtmlContentIRNode)
+            {
+                context.Writer.Write(((HtmlContentIRNode)node).Content);
+            }
+            else if (node is CSharpTokenIRNode)
+            {
+                context.Writer.Write(((CSharpTokenIRNode)node).Content);
+            }
+            else if (node is CSharpStatementIRNode)
+            {
+                context.ErrorSink.OnError(
+                    new SourceLocation(documentLocation.AbsoluteIndex, documentLocation.CharacterIndex, documentLocation.ContentLength),
+                    LegacyResources.TagHelpers_CodeBlocks_NotSupported_InAttributes,
+                    documentLocation.ContentLength);
+            }
+            else if (node is TemplateIRNode)
+            {
+                var attributeValueNode = (SetTagHelperPropertyIRNode)node.Parent;
+                context.ErrorSink.OnError(
+                    new SourceLocation(documentLocation.AbsoluteIndex, documentLocation.CharacterIndex, documentLocation.ContentLength),
+                    LegacyResources.FormatTagHelpers_InlineMarkupBlocks_NotSupported_InAttributes(attributeValueNode.Descriptor.TypeName),
+                    documentLocation.ContentLength);
+            }
+        }
+
         protected static int CalculateExpressionPadding(MappingLocation sourceRange, CSharpRenderingContext context)
         {
             var spaceCount = 0;
@@ -120,12 +157,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             public override string StartWriteLiteralMethod => "WriteLiteralTo(" + _redirectWriter + ", " /* ORIGINAL: WriteLiteralToMethodName */;
 
-
             public override string StartBeginWriteAttributeMethod => "BeginWriteAttributeTo(" + _redirectWriter + ", " /* ORIGINAL: BeginWriteAttributeToMethodName */;
 
-
             public override string StartWriteAttributeValueMethod => "WriteAttributeValueTo(" + _redirectWriter + ", " /* ORIGINAL: WriteAttributeValueToMethodName */;
-
 
             public override string StartEndWriteAttributeMethod => "EndWriteAttributeTo(" + _redirectWriter /* ORIGINAL: EndWriteAttributeToMethodName */;
         }
@@ -148,6 +182,24 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             public virtual string StartWriteAttributeValueMethod => "WriteAttributeValue(" /* ORIGINAL: WriteAttributeValueMethodName */;
 
             public virtual string StartEndWriteAttributeMethod => "EndWriteAttribute(" /* ORIGINAL: EndWriteAttributeMethodName */;
+        }
+
+        protected class TagHelperHtmlAttributeRenderingConventions : CSharpRenderingConventions
+        {
+            public TagHelperHtmlAttributeRenderingConventions(CSharpCodeWriter writer) : base(writer)
+            {
+            }
+
+            public override string StartWriteAttributeValueMethod => "AddHtmlAttributeValue(" /* ORIGINAL: AddHtmlAttributeValueMethodName */;
+        }
+
+        protected class CSharpLiteralCodeConventions : CSharpRenderingConventions
+        {
+            public CSharpLiteralCodeConventions(CSharpCodeWriter writer) : base(writer)
+            {
+            }
+
+            public override string StartWriteMethod => StartWriteLiteralMethod;
         }
 
         protected class CSharpRenderingContext
@@ -177,11 +229,45 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 }
             }
 
-            public ICollection<RazorError> Errors { get; } = new List<RazorError>();
+            public ErrorSink ErrorSink { get; } = new ErrorSink();
 
             public RazorSourceDocument SourceDocument { get; set; }
 
             public RazorParserOptions Options { get; set; }
+
+            public TagHelperRenderingContext TagHelperRenderingContext { get; set; }
+        }
+
+        protected class TagHelperRenderingContext
+        {
+            private Dictionary<string, string> _renderedBoundAttributes;
+            private HashSet<string> _verifiedPropertyDictionaries;
+
+            public Dictionary<string, string> RenderedBoundAttributes
+            {
+                get
+                {
+                    if (_renderedBoundAttributes == null)
+                    {
+                        _renderedBoundAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    }
+
+                    return _renderedBoundAttributes;
+                }
+            }
+
+            public HashSet<string> VerifiedPropertyDictionaries
+            {
+                get
+                {
+                    if (_verifiedPropertyDictionaries == null)
+                    {
+                        _verifiedPropertyDictionaries = new HashSet<string>(StringComparer.Ordinal);
+                    }
+
+                    return _verifiedPropertyDictionaries;
+                }
+            }
         }
 
         protected class PageStructureCSharpRenderer : RazorIRNodeWalker

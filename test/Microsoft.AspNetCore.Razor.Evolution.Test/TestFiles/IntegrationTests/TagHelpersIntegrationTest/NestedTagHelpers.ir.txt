@@ -19,7 +19,7 @@ Document -
                         TagHelper - 
                             InitializeTagHelperStructure -  - input - TagMode.SelfClosing
                             CreateTagHelper -  - InputTagHelper
-                            SetTagHelperProperty -  - value - FooProp - HtmlAttributeValueStyle.DoubleQuotes
+                            SetTagHelperProperty - (92:3,17 [5] NestedTagHelpers.cshtml) - value - FooProp - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (92:3,17 [5] NestedTagHelpers.cshtml) - Hello
                             AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.SingleQuotes
                                 HtmlContent - (104:3,29 [4] NestedTagHelpers.cshtml) - text

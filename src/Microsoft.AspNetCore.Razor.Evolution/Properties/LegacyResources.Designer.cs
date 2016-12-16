@@ -1335,6 +1335,42 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         }
 
         /// <summary>
+        /// Code blocks (e.g. @{{var variable = 23;}}) must not appear in non-string tag helper attribute values.
+        ///  Already in an expression (code) context. If necessary an explicit expression (e.g. @(@readonly)) may be used.
+        /// </summary>
+        internal static string TagHelpers_CodeBlocks_NotSupported_InAttributes
+        {
+            get { return GetString("TagHelpers_CodeBlocks_NotSupported_InAttributes"); }
+        }
+
+        /// <summary>
+        /// Code blocks (e.g. @{{var variable = 23;}}) must not appear in non-string tag helper attribute values.
+        ///  Already in an expression (code) context. If necessary an explicit expression (e.g. @(@readonly)) may be used.
+        /// </summary>
+        internal static string FormatTagHelpers_CodeBlocks_NotSupported_InAttributes()
+        {
+            return GetString("TagHelpers_CodeBlocks_NotSupported_InAttributes");
+        }
+
+        /// <summary>
+        /// Inline markup blocks (e.g. @&lt;p&gt;content&lt;/p&gt;) must not appear in non-string tag helper attribute values.
+        ///  Expected a '{0}' attribute value, not a string.
+        /// </summary>
+        internal static string TagHelpers_InlineMarkupBlocks_NotSupported_InAttributes
+        {
+            get { return GetString("TagHelpers_InlineMarkupBlocks_NotSupported_InAttributes"); }
+        }
+
+        /// <summary>
+        /// Inline markup blocks (e.g. @&lt;p&gt;content&lt;/p&gt;) must not appear in non-string tag helper attribute values.
+        ///  Expected a '{0}' attribute value, not a string.
+        /// </summary>
+        internal static string FormatTagHelpers_InlineMarkupBlocks_NotSupported_InAttributes(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_InlineMarkupBlocks_NotSupported_InAttributes"), p0);
+        }
+
+        /// <summary>
         /// In order to put a symbol back, it must have been the symbol which ended at the current position. The specified symbol ends at {0}, but the current position is {1}
         /// </summary>
         internal static string TokenizerView_CannotPutBack

@@ -413,7 +413,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                                 AttributeName = attribute.Name,
                                 TagHelperTypeName = associatedDescriptor.TypeName,
                                 Descriptor = associatedAttributeDescriptor,
-                                ValueStyle = attribute.ValueStyle
+                                ValueStyle = attribute.ValueStyle,
+                                SourceRange = BuildSourceRangeFromNode(attributeValueNode)
                             };
 
                             Builder.Push(setTagHelperProperty);

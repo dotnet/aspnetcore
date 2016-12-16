@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
+using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using Xunit;
 using Xunit.Sdk;
 
@@ -543,6 +545,154 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
             // Assert
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
+        public void SimpleTagHelpers_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void TagHelpersWithBoundAttributes_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void NestedTagHelpers_Runtime()
+        {
+
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void SingleTagHelper_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void SingleTagHelperWithNewlineBeforeAttributes_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void TagHelpersWithWeirdlySpacedAttributes_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void IncompleteTagHelper_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void BasicTagHelpers_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void BasicTagHelpers_Prefixed_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.PrefixedPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void ComplexTagHelpers_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void DuplicateTargetTagHelper_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.DuplicateTargetTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void EmptyAttributeTagHelpers_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void EscapedTagHelpers_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void AttributeTargetingTagHelpers_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.AttributeTargetingTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void PrefixedAttributeTagHelpers_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.PrefixedAttributeTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void DuplicateAttributeTagHelpers_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void DynamicAttributeTagHelpers_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.DynamicAttributeTagHelpers_Descriptors);
+        }
+
+        [Fact]
+        public void TransitionsInTagHelperAttributes_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void NestedScriptTagTagHelpers_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void SymbolBoundAttributes_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.SymbolBoundTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void EnumTagHelpers_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunTagHelpersTest(TestTagHelperDescriptors.EnumTagHelperDescriptors);
         }
         #endregion
 
@@ -1111,6 +1261,40 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             }
 
             return RazorCodeDocument.Create(TestRazorSourceDocument.CreateResource(sourceFilename));
+        }
+
+        private void RunTagHelpersTest(IEnumerable<TagHelperDescriptor> descriptors)
+        {
+            // Arrange
+            var engine = RazorEngine.Create(
+                builder =>
+                {
+                    builder.Features.Add(new ApiSetsIRTestAdapter());
+                    builder.Features.Add(new TagHelperFeature(new TestTagHelperDescriptorResolver(descriptors)));
+                    DefaultRazorRuntimeCSharpLoweringPhase.GenerateUniqueTagHelperId = "test";
+                });
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        private class TestTagHelperDescriptorResolver : ITagHelperDescriptorResolver
+        {
+            private readonly IEnumerable<TagHelperDescriptor> _descriptors;
+
+            public TestTagHelperDescriptorResolver(IEnumerable<TagHelperDescriptor> descriptors)
+            {
+                _descriptors = descriptors;
+            }
+
+            public IEnumerable<TagHelperDescriptor> Resolve(TagHelperDescriptorResolutionContext resolutionContext)
+            {
+                return _descriptors;
+            }
         }
 
         private class ApiSetsIRTestAdapter : RazorIRPassBase
