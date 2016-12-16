@@ -47,7 +47,6 @@ functions
 
         // Doesn't build on Mono since their contracts don't match
         string[] repositories = GetRepositoriesToBuild().ToArray();
-        string[] noSrcRepositoryExclude = GetNoSrcDeleteRepositories().ToArray();
 
         static bool useHttps = UseHttps(baseDir);
         static string gitHubUriPrefix = useHttps ? "https://github.com/aspnet/" : "git@github.com:aspnet/";
@@ -339,15 +338,17 @@ var buildTarget = "compile"
 
 #remove-src-folders
     @{
+        var excluded = GetNoSrcDeleteRepositories();
         foreach (var repo in GetRepositoriesToBuild())
         {
-            if (!noSrcRepositoryExclude.Contains(repo))
+            if (!excluded.Contains(repo))
             {
+                Log.Info("Remove src from " + repo);
                 RemoveSrcFolder(repo);
             }
             else
             {
-                Console.WriteLine("Keeping the sources for " + repo + " because it's explicitly excluded");
+                Log.Info("Keeping the sources for " + repo + " because it's explicitly excluded or it is using VS 2017");
             }
         }
     }
@@ -841,15 +842,32 @@ functions
             return reposToBuild.ToList();
         }
 
-        static IEnumerable<string> GetNoSrcDeleteRepositories()
+        static ISet<string> GetNoSrcDeleteRepositories()
         {
+            var repos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             var repositoryExclude = Environment.GetEnvironmentVariable("KOREBUILD_NOSRC_EXCLUDE");
-            if (string.IsNullOrEmpty(repositoryExclude))
+            if (!string.IsNullOrEmpty(repositoryExclude))
             {
-                return new string[0];
+                foreach (var repo in repositoryExclude.Split(new string[] {","}, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    repos.Add(repo);
+                }
             }
 
-            return repositoryExclude.Split(new string[] {","}, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var repo in GetRepositoriesToBuild())
+            {
+                var solutions = Directory.EnumerateFiles(repo, "*.sln")
+                    .Select(MsBuildSolutionInfo.LoadFromFile)
+                    .Where(sln => sln.IsVs2017);
+
+                if (solutions.Any())
+                {
+                    repos.Add(repo);
+                }
+            }
+
+            return repos;
         }
 
         static string DefaultDropsShare(string value)
@@ -895,6 +913,41 @@ functions
 
             return repositoryLookup.GroupBy(r => r.Order, r => r.Name).OrderBy(r => r.Key).ToArray();
         }
+
+        private class MsBuildSolutionInfo
+        {
+            public static MsBuildSolutionInfo LoadFromFile(string file)
+            {
+                var info = new MsBuildSolutionInfo()
+                {
+                    FilePath = file
+                };
+
+                var lines = File.ReadAllLines(file);
+                foreach (var line in lines)
+                {
+                    var match = Regex.Match(line, @"^VisualStudioVersion = ([\d.]+)\s?$");
+                    if (match == null || match.Groups.Count < 2)
+                    {
+                        continue;
+                    }
+                    Version version;
+                    if (Version.TryParse(match.Groups[1].Value, out version))
+                    {
+                        info.VisualStudioVersion = version;
+                        break;
+                    }
+                }
+                return info;
+            }
+
+            public string FilePath { get; private set; }
+
+            public Version VisualStudioVersion { get; set; }
+
+            public bool IsVs2017 { get { return VisualStudioVersion != null && VisualStudioVersion.Major >= 15; } }
+        }
+
 
         private class RepoInfoFactory
         {
@@ -982,42 +1035,32 @@ functions
 
             private static void ResolveMsBuildProjects(RepositoryInfo info, string repo)
             {
-                foreach (var sln in Directory.EnumerateFiles(repo, "*.sln"))
+                var solutions = Directory.EnumerateFiles(repo, "*.sln")
+                    .Select(MsBuildSolutionInfo.LoadFromFile)
+                    .Where(sln => sln.IsVs2017);
+
+                foreach (var sln in solutions)
                 {
-                    var lines = File.ReadAllLines(sln);
-                    foreach (var line in lines)
-                    {
-                        var match = Regex.Match(line, @"^# Visual Studio (\d+)\s?");
-                        if (match == null || match.Groups.Count < 2)
-                        {
-                            continue;
-                        }
-                        int version;
-                        if (int.TryParse(match.Groups[1].Value, out version) && version >= 15)
-                        {
-                            ResolveMsBuildProject(info, sln);
-                            break;
-                        }
-                    }
+                    ResolveMsBuildProject(info, sln);
                 }
             }
 
-            private static void ResolveMsBuildProject(RepositoryInfo info, string projectFile)
+            private static void ResolveMsBuildProject(RepositoryInfo info, MsBuildSolutionInfo solution)
             {
                 var intermediate = Path.Combine(Directory.GetCurrentDirectory(), "obj");
                 Directory.CreateDirectory(intermediate);
-                var dgJson = Path.Combine(intermediate, Path.GetFileName(projectFile) + ".graph.json");
+                var dgJson = Path.Combine(intermediate, Path.GetFileName(solution.FilePath) + ".graph.json");
                 var psi = new ProcessStartInfo
                 {
                     UseShellExecute = false,
                     FileName = "dotnet",
-                    Arguments = "msbuild \"" + projectFile + "\" /nologo /t:GenerateRestoreGraphFile \"/p:RestoreGraphOutputPath=" + dgJson + "\""
+                    Arguments = "msbuild \"" + solution.FilePath + "\" /nologo /t:GenerateRestoreGraphFile \"/p:RestoreGraphOutputPath=" + dgJson + "\""
                 };
                 var p = Process.Start(psi);
                 p.WaitForExit();
                 if (p.ExitCode != 0)
                 {
-                    Console.WriteLine("warn: Failed to get restore graph from " + projectFile);
+                    Console.WriteLine("warn: Failed to get restore graph from " + solution.FilePath);
                     return;
                 }
 
