@@ -140,23 +140,23 @@ click('disconnect', event => {
 
 click('broadcast', event => {
     let data = getText('msg');
-    invoke(connection, 'SocketsSample.Hubs.Chat.Send', data);
+    invoke(connection, 'Send', data);
 });
 
 click('join-group', event => {
     let groupName = getText('msg');
-    invoke(connection, 'SocketsSample.Hubs.Chat.JoinGroup', groupName);
+    invoke(connection, 'JoinGroup', groupName);
 });
 
 click('leave-group', event => {
     let groupName = getText('msg');
-    invoke(connection, 'SocketsSample.Hubs.Chat.LeaveGroup', groupName);
+    invoke(connection, 'LeaveGroup', groupName);
 });
 
 click('groupmsg', event => {
     let groupName = getText('target');
     let message = getText('message');
-    invoke(connection, 'SocketsSample.Hubs.Chat.SendToGroup', groupName, message);
+    invoke(connection, 'SendToGroup', groupName, message);
 });
 
 </script>
