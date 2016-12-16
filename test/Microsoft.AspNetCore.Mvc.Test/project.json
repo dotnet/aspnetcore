@@ -20,7 +20,8 @@
           "version": "1.2.0-*",
           "type": "platform"
         },
-        "System.Diagnostics.TraceSource": "4.4.0-*"
+        "System.Diagnostics.TraceSource": "4.4.0-*",
+        "System.Xml.XmlDocument": "4.4.0-*"
       }
     },
     "net451": {}
