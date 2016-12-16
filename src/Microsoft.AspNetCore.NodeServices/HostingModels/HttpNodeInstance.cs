@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
                 case "application/octet-stream":
                     // Streamed responses have to be received as System.IO.Stream instances
-                    if (typeof(T) != typeof(Stream))
+                    if (!typeof(T).GetTypeInfo().IsAssignableFrom(typeof(Stream).GetTypeInfo()))
                     {
                         throw new ArgumentException(
                             "Node module responded with binary stream. This cannot be converted to the requested generic type: " +
