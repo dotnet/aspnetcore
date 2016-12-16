@@ -24,5 +24,10 @@
       "hosting.json",
       "testCert.pfx"
     ]
-  }
+  },
+  "runtimeOptions": {
+    "configProperties": {
+      "System.GC.Server": true
+    }
+  }  
 }

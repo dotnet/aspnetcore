@@ -21,5 +21,10 @@
     "include": [
       "hosting.json"
     ]
-  }
+  },
+  "runtimeOptions": {
+    "configProperties": {
+      "System.GC.Server": true
+    }
+  }  
 }
