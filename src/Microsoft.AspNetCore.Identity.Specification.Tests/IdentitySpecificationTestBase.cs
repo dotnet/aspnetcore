@@ -2244,9 +2244,9 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.False(await manager.IsEmailConfirmedAsync(user));
             var stamp = await manager.GetSecurityStampAsync(user);
             var token1 = await manager.GenerateChangeEmailTokenAsync(user, "forgot@alrea.dy");
-            IdentityResultAssert.IsFailure(await manager.ChangeEmailAsync(user, "oops@foo.barf", token1),
+            IdentityResultAssert.IsFailure(await manager.ChangeEmailAsync(user, "oops@foo.boop", token1),
                 "Invalid token.");
-            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"VerifyUserTokenAsync() failed with purpose: ChangeEmail:oops@foo.barf for user { await manager.GetUserIdAsync(user)}.");
+            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"VerifyUserTokenAsync() failed with purpose: ChangeEmail:oops@foo.boop for user { await manager.GetUserIdAsync(user)}.");
             Assert.False(await manager.IsEmailConfirmedAsync(user));
             Assert.Equal(await manager.GetEmailAsync(user), oldEmail);
             Assert.Equal(stamp, await manager.GetSecurityStampAsync(user));
