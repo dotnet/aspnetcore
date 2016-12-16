@@ -23,6 +23,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
         private static readonly Action<object, object> _postCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
         private static readonly Action<object, object> _postAsyncCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
+        private static readonly Libuv.uv_walk_cb _heartbeatWalkCallback = (ptr, arg) =>
+        {
+            var handle = UvMemory.FromIntPtr<UvHandle>(ptr);
+            (handle as UvStreamHandle)?.Connection?.Tick((long)arg);
+        };
 
         // maximum times the work queues swapped and are processed in a single pass
         // as completing a task may immediately have write data to put on the network
@@ -246,13 +251,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
         public void Walk(Action<IntPtr> callback)
         {
+            Walk((ptr, arg) => callback(ptr), IntPtr.Zero);
+        }
+
+        private void Walk(Libuv.uv_walk_cb callback, IntPtr arg)
+        {
             _engine.Libuv.walk(
                 _loop,
-                (ptr, arg) =>
-                {
-                    callback(ptr);
-                },
-                IntPtr.Zero);
+                callback,
+                arg
+                );
         }
 
         private void PostCloseHandle(Action<IntPtr> callback, IntPtr handle)
@@ -336,13 +344,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
         private void OnHeartbeat(UvTimerHandle timer)
         {
-            var now = Loop.Now();
-
-            Walk(ptr =>
-            {
-                var handle = UvMemory.FromIntPtr<UvHandle>(ptr);
-                (handle as UvStreamHandle)?.Connection?.Tick(now);
-            });
+            Walk(_heartbeatWalkCallback, (IntPtr)Loop.Now());
         }
 
         private bool DoPostWork()
