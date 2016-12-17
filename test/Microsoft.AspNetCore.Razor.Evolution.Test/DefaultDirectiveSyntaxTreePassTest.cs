@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Razor.Evolution.Legacy;
+using System;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
@@ -41,11 +42,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var expectedErrors = new[] {
                 new RazorError(
                     LegacyResources.FormatParseError_Sections_Cannot_Be_Nested(LegacyResources.SectionExample_CS),
-                    new SourceLocation(22, 2, 4),
+                    new SourceLocation(18 + Environment.NewLine.Length * 2, 2, 4),
                     length: 8),
                 new RazorError(
                     LegacyResources.FormatParseError_Sections_Cannot_Be_Nested(LegacyResources.SectionExample_CS),
-                    new SourceLocation(49, 4, 4),
+                    new SourceLocation(41 + Environment.NewLine.Length * 4, 4, 4),
                     length: 8),
             };
             var engine = RazorEngine.Create();
@@ -82,11 +83,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 new RazorError("Test Error", SourceLocation.Zero, 3),
                 new RazorError(
                     LegacyResources.FormatParseError_Sections_Cannot_Be_Nested(LegacyResources.SectionExample_CS),
-                    new SourceLocation(22, 2, 4),
+                    new SourceLocation(18 + Environment.NewLine.Length * 2, 2, 4),
                     length: 8),
                 new RazorError(
                     LegacyResources.FormatParseError_Sections_Cannot_Be_Nested(LegacyResources.SectionExample_CS),
-                    new SourceLocation(49, 4, 4),
+                    new SourceLocation(41 + Environment.NewLine.Length * 4, 4, 4),
                     length: 8),
             };
             var engine = RazorEngine.Create();

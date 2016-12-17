@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor),
                     Factory.MetaCode("inherits").Accepts(AcceptedCharacters.None),
                     Factory.Span(SpanKind.Code, "                ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharacters.WhiteSpace)),
-                new RazorError(LegacyResources.FormatDirectiveExpectsTypeName(CSharpCodeParser.InheritsDirectiveDescriptor.Name), 24, 0, 24, 2));
+                new RazorError(LegacyResources.FormatDirectiveExpectsTypeName(CSharpCodeParser.InheritsDirectiveDescriptor.Name), 24, 0, 24, Environment.NewLine.Length));
         }
 
         [Fact]

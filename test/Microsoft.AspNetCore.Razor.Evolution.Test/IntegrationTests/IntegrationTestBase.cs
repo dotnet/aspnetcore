@@ -13,6 +13,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 using Xunit;
 using Xunit.Sdk;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 {
@@ -89,6 +90,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
         protected void AssertIRMatchesBaseline(DocumentIRNode document)
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
+
             if (Filename == null)
             {
                 var message = $"{nameof(AssertIRMatchesBaseline)} should only be called from an integration test ({nameof(Filename)} is null).";
@@ -116,6 +122,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
         protected void AssertCSharpDocumentMatchesBaseline(RazorCSharpDocument document)
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
+
             if (Filename == null)
             {
                 var message = $"{nameof(AssertCSharpDocumentMatchesBaseline)} should only be called from an integration test ({nameof(Filename)} is null).";
