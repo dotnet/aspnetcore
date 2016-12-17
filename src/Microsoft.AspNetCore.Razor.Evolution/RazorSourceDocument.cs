@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         public abstract int Length { get; }
 
+        public abstract RazorSourceLineCollection Lines { get; }
+
         public abstract void CopyTo(int sourceIndex, char[] destination, int destinationIndex, int count);
 
         public static RazorSourceDocument ReadFrom(Stream stream, string filename)
