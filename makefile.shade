@@ -955,7 +955,7 @@ functions
                 catch (Exception ex)
                 {
                     // usually due to comments
-                    Console.Error.WriteLine("Failed to parse " + ngpvJson + " : " + ex.Message);
+                    // Console.Error.WriteLine("Failed to parse " + ngpvJson + " : " + ex.Message);
                     return;
                 }
 
@@ -1011,7 +1011,7 @@ functions
                 {
                     UseShellExecute = false,
                     FileName = "dotnet",
-                    Arguments = "msbuild \"" + projectFile + "\" /t:GenerateRestoreGraphFile \"/p:RestoreGraphOutputPath=" + dgJson + "\""
+                    Arguments = "msbuild \"" + projectFile + "\" /nologo /t:GenerateRestoreGraphFile \"/p:RestoreGraphOutputPath=" + dgJson + "\""
                 };
                 var p = Process.Start(psi);
                 p.WaitForExit();
