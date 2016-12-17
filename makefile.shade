@@ -121,7 +121,12 @@ var buildTarget = "compile"
 
 #verify-all .pull .change-default-build-target-to-verify .build-all
 
-#ci-test .pull .use-local-coherence .sync-commits .remove-src-folders .change-default-build-target-to-verify .build-all
+#ci-test-env
+   @{
+      Environment.SetEnvironmentVariable("CustomUniverseBeforeCommonProps", Path.Combine(Directory.GetCurrentDirectory(), "build", "ci-test.common.props"));
+   }
+
+#ci-test .ci-test-env .pull .use-local-coherence .sync-commits .remove-src-folders .change-default-build-target-to-verify .build-all
 
 #ci-pull
     @{
