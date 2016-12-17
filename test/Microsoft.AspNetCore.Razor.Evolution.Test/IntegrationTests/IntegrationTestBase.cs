@@ -24,7 +24,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
         private static string FindTestProjectRoot()
         {
-            var currentDirectory = new DirectoryInfo(Directory.GetCurrentDirectory());
+#if NET451
+            var currentDirectory = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+#else
+            var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
+#endif
 
             while (currentDirectory != null &&
                 !string.Equals(currentDirectory.Name, ThisProjectName, StringComparison.Ordinal))

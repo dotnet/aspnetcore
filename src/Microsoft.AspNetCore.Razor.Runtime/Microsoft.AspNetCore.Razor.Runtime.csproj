@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>Runtime components for rendering Razor pages and implementing tag helpers.
+Commonly used types:
+Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute
+Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute
+Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
+    <TargetFrameworks>net451;netstandard1.5</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;cshtml;razor;taghelper;taghelpers</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="**\*.cs" />
+    <EmbeddedResource Include="**\*.resx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Razor\Microsoft.AspNetCore.Razor.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="1.2.0-*" />
+    <PackageReference Include="NETStandard.Library" Version="1.6.1-*" />
+<!--     <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" /> -->
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.IO" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0-*" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,24 @@
+<Project ToolsVersion="15.0">
+  <Import Project="..\build\common.props" />
+
+  <PropertyGroup>
+    <OutputPath>$(MSBuildThisFileDirectory)..\artifacts\build</OutputPath>
+    <Version>$(VersionPrefix)</Version>
+    <Version Condition="'$(VersionSuffix)'!=''">$(Version)-$(VersionSuffix)</Version>
+  </PropertyGroup>
+
+  <Target Name="Pack">
+    <MakeDir Directories="$(OutputPath)" />
+    <ItemGroup>
+      <Packages Include="$([System.IO.Directory]::GetDirectories(&quot;$(MSBuildThisFileDirectory)&quot;, '*.Sources'))" />
+    </ItemGroup>
+    <!-- consider using built-in NuGet targets once the PackNuspecTask is implemented -->
+    <Exec Command="dotnet nuget pack
+&quot;$(MSBuildThisFileDirectory)sources.nuspec&quot;
+--base-path &quot;%(Packages.Identity)&quot;
+--version $(Version)
+--output-directory &quot;$(OutputPath)&quot;
+--properties &quot;id=%(Packages.FileName)%(Packages.Extension)&quot;"
+        />
+  </Target>
+</Project>

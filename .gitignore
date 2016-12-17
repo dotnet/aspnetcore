@@ -30,3 +30,4 @@ project.lock.json
 *.ipch
 .build/
 .vs/
+launchSettings.json

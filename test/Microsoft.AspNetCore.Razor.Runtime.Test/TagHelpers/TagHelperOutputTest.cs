@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 
         [Theory]
         [MemberData(nameof(HtmlEncoderData))]
-        public async Task GetChildContentAsync_CallsGetChildContentAsync(HtmlEncoder encoder)
+        public async Task GetChildContentAsync_CallsGetChildContentAsyncWithEncoder(HtmlEncoder encoder)
         {
             // Arrange
             bool? passedUseCacheResult = null;
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public async Task GetChildContentAsync_CallsGetChildContentAsync(bool useCachedResult)
+        public async Task GetChildContentAsync_CallsGetChildContentAsyncWithCachedResult(bool useCachedResult)
         {
             // Arrange
             bool? passedUseCacheResult = null;
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 
         [Theory]
         [MemberData(nameof(UseCachedResultAndHtmlEncoderData))]
-        public async Task GetChildContentAsync_CallsGetChildContentAsync(bool useCachedResult, HtmlEncoder encoder)
+        public async Task GetChildContentAsync_CallsGetChildContentAsyncWithCacheAndEncoder(bool useCachedResult, HtmlEncoder encoder)
         {
             // Arrange
             bool? passedUseCacheResult = null;

@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp1.0;net451</TargetFrameworks>
+    <DefineConstants>$(DefineConstants);__RemoveThisBitTo__GENERATE_BASELINES</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="**\*.cs" Exclude="TestFiles\**\*" />
+    <EmbeddedResource Include="**\*.resx" />
+    <EmbeddedResource Include="TestFiles\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Evolution\Microsoft.AspNetCore.Razor.Evolution.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20161123-03" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-beta4-build1194" />
+    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="1.2.0-*" />
+    <PackageReference Include="Moq" Version="4.6.36-*" />
+    <PackageReference Include="xunit" Version="2.2.0-beta4-build3444" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">
+    <PackageReference Include="Microsoft.NETCore.App" Version="1.0.0-*" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Threading.Tasks" />
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+</Project>

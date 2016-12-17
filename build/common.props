@@ -1,0 +1,21 @@
+<Project>
+  <Import Project="..\version.props" />
+  <Import Project="..\.build\common.props" Condition="Exists('..\.build\common.props')" />
+
+  <PropertyGroup>
+    <Product>Microsoft ASP.NET Core</Product>
+    <RepositoryUrl>https://github.com/aspnet/Razor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Key.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
+  </PropertyGroup>
+
+  <Target Name="EnsureInitialized"
+          BeforeTargets="Build"
+          Condition="!Exists('$(MSBuildThisFileDirectory)..\.build\common.props')">
+    <Error File="$(MSBuildProjectFile)"
+           Text="Project has not been initialized. Run 'build initialize' in the solution directory." />
+  </Target>
+  
+</Project>

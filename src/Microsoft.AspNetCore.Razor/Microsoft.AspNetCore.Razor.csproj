@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains the Razor parser and code generation infrastructure.</Description>
+    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;cshtml;razor</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="**\*.cs" />
+    <EmbeddedResource Include="**\*.resx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="1.2.0-*" PrivateAssets="All" /> -->
+    <PackageReference Include="NETStandard.Library" Version="1.6.1-*" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <PackageReference Include="System.Threading.Thread" Version="4.3.0-*" />
+  </ItemGroup>
+
+</Project>
