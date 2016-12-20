@@ -5,8 +5,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
     internal abstract class ParserBase
     {
-        private ParserContext _context;
-
         public ParserBase(ParserContext context)
         {
             Context = context;
