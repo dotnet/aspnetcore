@@ -130,13 +130,32 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
 
             directiveText = directiveText.Trim();
-            var startOffset = span.Content.IndexOf(directiveText, StringComparison.Ordinal);
-            var offsetContent = span.Content.Substring(0, startOffset);
-            var offsetTextLocation = SourceLocation.Advance(span.Start, offsetContent);
+
+            // If this is the "string literal" form of a directive, we'll need to postprocess the location
+            // and content.
+            //
+            // Ex: @addTagHelper "*, Microsoft.AspNetCore.CoolLibrary"
+            //                    ^                                 ^
+            //                  Start                              End
+            var directiveStart = span.Start;
+            if (span.Symbols.Count == 1 && (span.Symbols[0] as CSharpSymbol)?.Type == CSharpSymbolType.StringLiteral)
+            {
+                var offset = span.Content.IndexOf(directiveText, StringComparison.Ordinal);
+
+                // This is safe because inside one of these directives all of the text needs to be on the
+                // same line.
+                var original = span.Start;
+                directiveStart = new SourceLocation(
+                    original.FilePath,
+                    original.AbsoluteIndex + offset,
+                    original.LineIndex,
+                    original.CharacterIndex + offset);
+            }
+
             var directiveDescriptor = new TagHelperDirectiveDescriptor
             {
                 DirectiveText = directiveText,
-                Location = offsetTextLocation,
+                Location = directiveStart,
                 DirectiveType = directiveType
             };
 
