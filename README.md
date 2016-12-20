@@ -13,6 +13,6 @@ Related community projects:
 * [AspNet.Mvc.TypedRouting](https://github.com/ivaylokenov/AspNet.Mvc.TypedRouting): A collection of extension methods providing strongly typed routing and link generation for ASP.NET Core MVC projects.
 * [ASP.NET MVC Boilerplate](https://visualstudiogallery.msdn.microsoft.com/6cf50a48-fc1e-4eaf-9e82-0b2a6705ca7d): Rich templates for ASP.NET Core MVC.
 * [MyTested.AspNetCore.Mvc](https://github.com/ivaylokenov/MyTested.AspNetCore.Mvc): Powerful fluent testing framework for ASP.NET Core MVC.
-* [MvcDeviceDetector](https://github.com/laskoviymishka/MvcDeviceDetector): Device detection mechanism to create mobile web application
+* [MvcDeviceDetector](https://github.com/laskoviymishka/MvcDeviceDetector): Device detection mechanism to create mobile web applications
 
 This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
