@@ -14,7 +14,7 @@ namespace SocketsSample.Hubs
             await Clients.All.InvokeAsync("Send", $"{Context.Connection.ConnectionId} joined");
         }
 
-        public override async Task OnDisconnectedAsync()
+        public override async Task OnDisconnectedAsync(Exception ex)
         {
             await Clients.All.InvokeAsync("Send", $"{Context.Connection.ConnectionId} left");
         }

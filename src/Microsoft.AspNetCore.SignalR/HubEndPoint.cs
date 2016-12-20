@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.SignalR
         {
             // TODO: Dispatch from the caller
             await Task.Yield();
-
+            Exception exception = null;
             try
             {
                 await _lifetimeManager.OnConnectedAsync(connection);
@@ -76,6 +76,13 @@ namespace Microsoft.AspNetCore.SignalR
 
                 await DispatchMessagesAsync(connection);
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(0, ex, "Error when processing requests.");
+                exception = ex;
+                connection.Channel.Input.Complete(exception);
+                connection.Channel.Output.Complete(exception);
+            }
             finally
             {
                 using (var scope = _serviceScopeFactory.CreateScope())
@@ -83,7 +90,7 @@ namespace Microsoft.AspNetCore.SignalR
                     bool created;
                     var hub = CreateHub(scope.ServiceProvider, connection, out created);
 
-                    await hub.OnDisconnectedAsync();
+                    await hub.OnDisconnectedAsync(exception);
 
                     if (created)
                     {
@@ -232,7 +239,7 @@ namespace Microsoft.AspNetCore.SignalR
         private static bool IsHubMethod(MethodInfo m)
         {
             // TODO: Add more checks
-            return m.IsPublic;
+            return m.IsPublic && !m.IsSpecialName;
         }
 
         Type IInvocationBinder.GetReturnType(string invocationId)
@@ -243,8 +250,11 @@ namespace Microsoft.AspNetCore.SignalR
         Type[] IInvocationBinder.GetParameterTypes(string methodName)
         {
             Type[] types;
-            // TODO: null or throw?
-            return _paramTypes.TryGetValue(methodName, out types) ? types : null;
+            if (!_paramTypes.TryGetValue(methodName, out types))
+            {
+                throw new InvalidOperationException($"The hub method '{methodName}' could not be resolved.");
+            }
+            return types;
         }
     }
 }

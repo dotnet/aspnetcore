@@ -24,7 +24,7 @@ namespace ChatSample.Hubs
             return Task.CompletedTask;
         }
 
-        public override Task OnDisconnectedAsync()
+        public override Task OnDisconnectedAsync(Exception ex)
         {
             return Task.CompletedTask;
         }

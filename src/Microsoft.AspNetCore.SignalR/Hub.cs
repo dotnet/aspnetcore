@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.SignalR
             return TaskCache.CompletedTask;
         }
 
-        public virtual Task OnDisconnectedAsync()
+        public virtual Task OnDisconnectedAsync(Exception exception)
         {
             return TaskCache.CompletedTask;
         }

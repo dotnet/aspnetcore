@@ -104,6 +104,28 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
+        [Fact]
+        public async Task ServerClosesConnectionIfHubMethodCannotBeResolved()
+        {
+            var loggerFactory = new LoggerFactory();
+
+            using (var httpClient = _testServer.CreateClient())
+            using (var pipelineFactory = new PipelineFactory())
+            {
+                var transport = new LongPollingTransport(httpClient, loggerFactory);
+                using (var connection = await HubConnection.ConnectAsync(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), transport, httpClient, pipelineFactory, loggerFactory))
+                {
+                    //TODO: Get rid of this. This is to prevent "No channel" failures due to sends occuring before the first poll.
+                    await Task.Delay(500);
+
+                    var ex = await Assert.ThrowsAnyAsync<InvalidOperationException>(
+                        async () => await connection.Invoke<Task>("!@#$%"));
+
+                    Assert.Equal(ex.Message, "The hub method '!@#$%' could not be resolved.");
+                }
+            }
+        }
+
         public void Dispose()
         {
             _testServer.Dispose();

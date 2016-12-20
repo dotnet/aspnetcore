@@ -96,6 +96,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 // Shut down the output pipeline and log
                 _logger.LogError("Error while polling '{0}': {1}", pollUrl, ex);
                 _pipeline.Output.Complete(ex);
+                _pipeline.Input.Complete(ex);
             }
         }
 

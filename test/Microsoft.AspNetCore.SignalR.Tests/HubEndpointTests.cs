@@ -4,9 +4,12 @@
 using System;
 using System.IO.Pipelines;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using Moq.Protected;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
@@ -18,7 +21,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var trackDispose = new TrackDispose();
             var serviceProvider = CreateServiceProvider(s => s.AddSingleton(trackDispose));
-
             var endPoint = serviceProvider.GetService<HubEndPoint<TestHub>>();
 
             using (var connectionWrapper = new ConnectionWrapper())
@@ -34,6 +36,44 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 Assert.Equal(2, trackDispose.DisposeCount);
             }
+        }
+
+        [Fact]
+        public async Task OnDisconnectedCalledWithExceptionIfHubMethodNotFound()
+        {
+            var hub = Mock.Of<Hub>();
+
+            var endPointType = GetEndPointType(hub.GetType());
+            var serviceProvider = CreateServiceProvider(s =>
+            {
+                s.AddSingleton(endPointType);
+                s.AddTransient(hub.GetType(), sp => hub);
+            });
+
+            dynamic endPoint = serviceProvider.GetService(endPointType);
+
+            using (var connectionWrapper = new ConnectionWrapper())
+            {
+                var endPointTask = endPoint.OnConnectedAsync(connectionWrapper.Connection);
+
+                await connectionWrapper.HttpConnection.Input.ReadingStarted;
+
+                var buffer = connectionWrapper.HttpConnection.Input.Alloc();
+                buffer.Write(Encoding.UTF8.GetBytes("0xdeadbeef"));
+                await buffer.FlushAsync();
+
+                connectionWrapper.Connection.Channel.Dispose();
+
+                await endPointTask;
+
+                Mock.Get(hub).Verify(h => h.OnDisconnectedAsync(It.IsNotNull<Exception>()), Times.Once());
+            }
+        }
+
+        private static Type GetEndPointType(Type hubType)
+        {
+            var endPointType = typeof(HubEndPoint<>);
+            return endPointType.MakeGenericType(hubType);
         }
 
         private class TestHub : Hub

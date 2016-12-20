@@ -38,7 +38,7 @@ export class WebSocketTransport implements ITransport {
 
             webSocket.onclose = (event: CloseEvent) => {
                 // webSocket will be null if the transport did not start successfully
-                if (thisWebSocketTransport.webSocket && event.wasClean === false) {
+                if (thisWebSocketTransport.webSocket && (event.wasClean === false || event.code !== 1000)) {
                     if (thisWebSocketTransport.onError) {
                         thisWebSocketTransport.onError(event);
                     }

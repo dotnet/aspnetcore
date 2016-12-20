@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             _reader = ReceiveMessages(_readerCts.Token);
             _connection.Output.Writing.ContinueWith(
-                t => CompletePendingCalls(t.IsFaulted ? t.Exception : null));
+                t => CompletePendingCalls(t.IsFaulted ? t.Exception.InnerException : null));
         }
 
         // TODO: Client return values/tasks?
