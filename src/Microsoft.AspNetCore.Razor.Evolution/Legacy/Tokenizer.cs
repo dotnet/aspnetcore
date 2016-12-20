@@ -215,10 +215,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     errors[i] = CurrentErrors[i];
                 }
 
-                sym = CreateSymbol(start, Buffer.ToString(), type, errors);
+                sym = CreateSymbol(start, GetSymbolContent(type), type, errors);
             }
             StartSymbol();
             return sym;
+        }
+
+        protected virtual string GetSymbolContent(TSymbolType type)
+        {
+            return Buffer.ToString();
         }
 
         protected bool TakeUntil(Func<char, bool> predicate)

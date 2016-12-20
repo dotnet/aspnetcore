@@ -543,12 +543,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             {
                 CSharpKeyword keyword;
                 var type = CSharpSymbolType.Identifier;
-                if (_keywords.TryGetValue(Buffer.ToString(), out keyword))
+                var symbolContent = Buffer.ToString();
+                if (_keywords.TryGetValue(symbolContent, out keyword))
                 {
                     type = CSharpSymbolType.Keyword;
                 }
 
-                symbol = new CSharpSymbol(CurrentStart, Buffer.ToString(), type)
+                symbol = new CSharpSymbol(CurrentStart, symbolContent, type)
                 {
                     Keyword = type == CSharpSymbolType.Keyword ? (CSharpKeyword?)keyword : null,
                 };

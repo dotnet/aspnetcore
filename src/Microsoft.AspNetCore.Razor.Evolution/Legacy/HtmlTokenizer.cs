@@ -70,6 +70,62 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
+        // Optimize memory allocation by returning constants for the most frequent cases
+        protected override string GetSymbolContent(HtmlSymbolType type)
+        {
+            var symbolLength = Buffer.Length;
+
+            if (symbolLength == 1)
+            {
+                switch (type)
+                {
+                    case HtmlSymbolType.OpenAngle:
+                        return "<";
+                    case HtmlSymbolType.Bang:
+                        return "!";
+                    case HtmlSymbolType.ForwardSlash:
+                        return "/";
+                    case HtmlSymbolType.QuestionMark:
+                        return "?";
+                    case HtmlSymbolType.LeftBracket:
+                        return "[";
+                    case HtmlSymbolType.CloseAngle:
+                        return ">";
+                    case HtmlSymbolType.RightBracket:
+                        return "]";
+                    case HtmlSymbolType.Equals:
+                        return "=";
+                    case HtmlSymbolType.DoubleQuote:
+                        return "\"";
+                    case HtmlSymbolType.SingleQuote:
+                        return "'";
+                    case HtmlSymbolType.WhiteSpace:
+                        if (Buffer[0] == ' ')
+                        {
+                            return " ";
+                        }
+                        if (Buffer[0] == '\t')
+                        {
+                            return "\t";
+                        }
+                        break;
+                    case HtmlSymbolType.NewLine:
+                        if (Buffer[0] == '\n')
+                        {
+                            return "\n";
+                        }
+                        break;
+                }
+            }
+
+            if (symbolLength == 2 && type == HtmlSymbolType.NewLine)
+            {
+                return "\r\n";
+            }
+
+            return base.GetSymbolContent(type);
+        }
+
         // http://dev.w3.org/html5/spec/Overview.html#data-state
         private StateResult Data()
         {
