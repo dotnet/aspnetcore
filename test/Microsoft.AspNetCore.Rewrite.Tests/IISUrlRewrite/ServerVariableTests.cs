@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             // Arrange and Act
             var testParserContext = new ParserContext("test");
             var serverVar = ServerVariables.FindServerVariable(variable, testParserContext);
-            var lookup = serverVar.Evaluate(CreateTestHttpContext(), CreateTestRuleMatch(), CreateTestCondMatch());
+            var lookup = serverVar.Evaluate(CreateTestHttpContext(), CreateTestRuleMatch().BackReferences, CreateTestCondMatch().BackReferences);
             // Assert
             Assert.Equal(expected, lookup);
         }
@@ -53,13 +53,13 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         private MatchResults CreateTestRuleMatch()
         {
             var match = Regex.Match("foo/bar/baz", "(.*)/(.*)/(.*)");
-            return new MatchResults { BackReference = match.Groups, Success = match.Success };
+            return new MatchResults { BackReferences = new BackReferenceCollection(match.Groups), Success = match.Success };
         }
 
         private MatchResults CreateTestCondMatch()
         {
             var match = Regex.Match("foo/bar/baz", "(.*)/(.*)/(.*)");
-            return new MatchResults { BackReference = match.Groups, Success = match.Success };
+            return new MatchResults { BackReferences = new BackReferenceCollection(match.Groups), Success = match.Success };
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var rewriteContext = new RewriteContext { HttpContext = context };
             var testParserContext = new ParserContext("test");
             var serverVar = ServerVariables.FindServerVariable("QUERY_STRING", testParserContext);
-            var lookup = serverVar.Evaluate(rewriteContext, CreateTestRuleMatch(), CreateTestCondMatch());
+            var lookup = serverVar.Evaluate(rewriteContext, CreateTestRuleMatch().BackReferences, CreateTestCondMatch().BackReferences);
 
             Assert.Equal(string.Empty, lookup);
         }

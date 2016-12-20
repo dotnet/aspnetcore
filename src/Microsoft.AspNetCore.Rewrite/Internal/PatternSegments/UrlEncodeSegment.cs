@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
             _pattern = pattern;
         }
 
-        public override string Evaluate(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
+        public override string Evaluate(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReferences)
         {
             var oldBuilder = context.Builder;
             // PERF 
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
             // we provided a new string builder and evaluate the new pattern,
             // and restore it after evaluation.
             context.Builder = new StringBuilder(64);
-            var pattern = _pattern.Evaluate(context, ruleMatch, condMatch);
+            var pattern = _pattern.Evaluate(context, ruleBackReferences, conditionBackReferences);
             context.Builder = oldBuilder;
             return UrlEncoder.Default.Encode(pattern);
         }

@@ -7,10 +7,15 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
 {
     public static class ConditionHelper
     {
-
-        public static MatchResults Evaluate(IEnumerable<Condition> conditions, RewriteContext context, MatchResults ruleMatch)
+        public static MatchResults Evaluate(IEnumerable<Condition> conditions, RewriteContext context, BackReferenceCollection backReferences)
         {
-            MatchResults prevCond = null;
+            return Evaluate(conditions, context, backReferences, trackAllCaptures: false);
+        }
+
+        public static MatchResults Evaluate(IEnumerable<Condition> conditions, RewriteContext context, BackReferenceCollection backReferences, bool trackAllCaptures)
+        {
+            BackReferenceCollection prevBackReferences = null;
+            MatchResults condResult = null;
             var orSucceeded = false;
             foreach (var condition in conditions)
             {
@@ -24,18 +29,27 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
                     continue;
                 }
 
-                prevCond = condition.Evaluate(context, ruleMatch, prevCond);
-
+                condResult = condition.Evaluate(context, backReferences, prevBackReferences);
+                var currentBackReferences = condResult.BackReferences;
                 if (condition.OrNext)
                 {
-                    orSucceeded = prevCond.Success;
+                    orSucceeded = condResult.Success;
                 }
-                else if (!prevCond.Success)
+                else if (!condResult.Success)
                 {
-                    return prevCond;
+                    return condResult;
                 }
+
+                if (condResult.Success && trackAllCaptures && prevBackReferences!= null)
+                {
+                    prevBackReferences.Add(currentBackReferences);
+                    currentBackReferences = prevBackReferences;
+                }
+
+                prevBackReferences = currentBackReferences;
             }
-            return prevCond;
+
+            return new MatchResults { BackReferences = prevBackReferences, Success = condResult.Success }; ;
         }
     }
 }

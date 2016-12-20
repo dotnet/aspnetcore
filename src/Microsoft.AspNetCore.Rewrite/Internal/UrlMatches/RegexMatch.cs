@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlMatches
         public override MatchResults Evaluate(string pattern, RewriteContext context)
         {
             var res = _match.Match(pattern);
-            return new MatchResults { BackReference = res.Groups, Success = (res.Success != Negate) };
+            return new MatchResults { BackReferences = new BackReferenceCollection(res.Groups), Success = (res.Success != Negate) };
         }
     }
 }

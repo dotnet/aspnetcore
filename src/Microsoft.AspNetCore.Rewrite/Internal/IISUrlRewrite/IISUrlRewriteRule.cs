@@ -13,16 +13,19 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
         public UrlMatch InitialMatch { get; }
         public IList<Condition> Conditions { get; }
         public UrlAction Action { get; }
+        public bool TrackAllCaptures { get; }
 
         public IISUrlRewriteRule(string name,
             UrlMatch initialMatch,
             IList<Condition> conditions,
-            UrlAction action)
+            UrlAction action,
+            bool trackAllCaptures)
         {
             Name = name;
             InitialMatch = initialMatch;
             Conditions = conditions;
             Action = action;
+            TrackAllCaptures = trackAllCaptures;
         }
 
         public virtual void ApplyRule(RewriteContext context)
@@ -46,11 +49,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                 return;
             }
 
-            MatchResults condMatchRes = null;
+            MatchResults condResult = null;
             if (Conditions != null)
             {
-                condMatchRes = ConditionHelper.Evaluate(Conditions, context, initMatchResults);
-                if (!condMatchRes.Success)
+                condResult = ConditionHelper.Evaluate(Conditions, context, initMatchResults.BackReferences, TrackAllCaptures);
+                if (!condResult.Success)
                 {
                     context.Logger?.UrlRewriteDidNotMatchRule(Name);
                     return;
@@ -59,7 +62,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 
             context.Logger?.UrlRewriteMatchedRule(Name);
             // at this point we know the rule passed, evaluate the replacement.
-            Action.ApplyAction(context, initMatchResults, condMatchRes);
+            Action.ApplyAction(context, initMatchResults?.BackReferences, condResult?.BackReferences);
         }
     }
 }

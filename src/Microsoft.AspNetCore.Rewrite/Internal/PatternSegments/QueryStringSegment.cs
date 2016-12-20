@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
 {
     public class QueryStringSegment : PatternSegment
     {
-        public override string Evaluate(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
+        public override string Evaluate(RewriteContext context, BackReferenceCollection ruleBackRefernces, BackReferenceCollection conditionBackReferences)
         {
             var queryString = context.HttpContext.Request.QueryString.ToString();
 

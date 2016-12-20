@@ -5,6 +5,7 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
+    "Microsoft.AspNetCore.Hosting": "1.2.0-*",
     "Microsoft.AspNetCore.Rewrite": "1.1.0-*",
     "Microsoft.AspNetCore.TestHost": "1.2.0-*",
     "Microsoft.Extensions.Logging.Testing": "1.2.0-*",

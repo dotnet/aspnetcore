@@ -6,6 +6,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
     public abstract class UrlAction
     {
         protected Pattern Url { get; set; }
-        public abstract void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch);
+        public abstract void ApplyAction(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReferences);
     }
 }

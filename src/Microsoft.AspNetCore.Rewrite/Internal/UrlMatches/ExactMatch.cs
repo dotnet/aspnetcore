@@ -18,7 +18,15 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlMatches
         public override MatchResults Evaluate(string pattern, RewriteContext context)
         {
             var pathMatch = string.Compare(pattern, _stringMatch, _ignoreCase);
-            return new MatchResults { Success = ((pathMatch == 0) != Negate) };
+            var success = ((pathMatch == 0) != Negate);
+            if (success)
+            {
+                return new MatchResults { Success = success, BackReferences = new BackReferenceCollection(pattern) };
+            }
+            else
+            {
+                return MatchResults.EmptyFailure;
+            }
         }
     }
 }

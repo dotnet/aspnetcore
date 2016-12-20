@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
             }
         }
 
-        public override string Evaluate(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
+        public override string Evaluate(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReference)
         {
             switch (_portion)
             {

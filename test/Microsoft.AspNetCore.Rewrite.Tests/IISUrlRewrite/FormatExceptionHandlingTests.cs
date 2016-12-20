@@ -264,26 +264,5 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var ex = Assert.Throws<FormatException>(() => new UrlRewriteFileParser().Parse(new StringReader(input)));
             Assert.Equal(expected, ex.Message);
         }
-
-        [Theory]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Remove trailing slash"">
-            <match url = ""(.*)/$""/>
-            <conditions trackAllCaptures=""true"">
-                <add input=""{REQUEST_FILENAME}""/>
-            </conditions>
-            <action type=""Redirect"" url =""{R:1}"" />
-        </rule>
-    </rules>
-</rewrite>",
-    "Support for trackAllCaptures has not been implemented yet")]
-        public void ThrowNotSupportedExceptionWithCorrectMessage(string input, string expected)
-        {
-            // Arrange, Act, Assert
-            var ex = Assert.Throws<NotSupportedException>(() => new UrlRewriteFileParser().Parse(new StringReader(input)));
-            Assert.Equal(expected, ex.Message);
-        }
     }
 }

@@ -7,10 +7,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
 {
     public class MatchResults
     {
-        public static readonly MatchResults EmptySuccess = new MatchResults { BackReference = null, Success = true };
-        public static readonly MatchResults EmptyFailure = new MatchResults { BackReference = null, Success = false };
+        public static readonly MatchResults EmptySuccess = new MatchResults { Success = true };
+        public static readonly MatchResults EmptyFailure = new MatchResults { Success = false };
 
-        public GroupCollection BackReference { get; set; }
         public bool Success { get; set; }
+        public BackReferenceCollection BackReferences { get; set; }
     }
 }

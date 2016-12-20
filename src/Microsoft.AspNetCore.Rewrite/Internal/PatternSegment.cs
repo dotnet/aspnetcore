@@ -5,6 +5,6 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
 {
     public abstract class PatternSegment
     {
-        public abstract string Evaluate(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch);
+        public abstract string Evaluate(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReferences);
     }
 }

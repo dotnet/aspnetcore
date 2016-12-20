@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
             _header = header;
         }
 
-        public override string Evaluate(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
+        public override string Evaluate(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReferences)
         {
             return context.HttpContext.Request.Headers[_header];
         }

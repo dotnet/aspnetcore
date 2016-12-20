@@ -110,19 +110,15 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 
             var grouping = ParseEnum(conditions, RewriteTags.LogicalGrouping, LogicalGrouping.MatchAll);
             var trackAllCaptures = ParseBool(conditions, RewriteTags.TrackAllCaptures, defaultValue: false);
-            if (trackAllCaptures)
-            {
-                throw new NotSupportedException("Support for trackAllCaptures has not been implemented yet");
-            }
             builder.AddUrlConditions(grouping, trackAllCaptures);
 
             foreach (var cond in conditions.Elements(RewriteTags.Add))
             {
-                ParseCondition(cond, builder, patternSyntax);
+                ParseCondition(cond, builder, patternSyntax, trackAllCaptures);
             }
         }
 
-        private void ParseCondition(XElement condition, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
+        private void ParseCondition(XElement condition, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax, bool trackAllCaptures)
         {
             var ignoreCase = ParseBool(condition, RewriteTags.IgnoreCase, defaultValue: true);
             var negate = ParseBool(condition, RewriteTags.Negate, defaultValue: false);
@@ -138,7 +134,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             try
             {
                 var input = _inputParser.ParseInputString(parsedInputString);
-                builder.AddUrlCondition(input, parsedPatternString, patternSyntax, matchType, ignoreCase, negate);
+                builder.AddUrlCondition(input, parsedPatternString, patternSyntax, matchType, ignoreCase, negate, trackAllCaptures);
             }
             catch (FormatException formatException)
             {

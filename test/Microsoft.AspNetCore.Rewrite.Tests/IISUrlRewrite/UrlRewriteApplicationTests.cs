@@ -49,5 +49,28 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             rules.FirstOrDefault().ApplyRule(context);
             Assert.Equal(RuleResult.ContinueRules, context.Result);
         }
+
+        [Fact]
+        public void ApplyRule_TrackAllCaptures()
+        {
+            var xml = new StringReader(@"<rewrite>
+                <rules>
+                <rule name=""Test"">
+                <match url = ""(.*)"" ignoreCase=""false"" />
+                <conditions trackAllCaptures = ""true"" >
+                <add input = ""{REQUEST_URI}"" pattern = ""^/([a-zA-Z]+)/([0-9]+)/$"" />
+                </conditions >
+                <action type = ""None""/>
+                </rule>
+                </rules>
+                </rewrite>");
+            var rules = new UrlRewriteFileParser().Parse(xml);
+
+            Assert.Equal(rules.Count, 1);
+            Assert.True(rules[0].TrackAllCaptures);
+            var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
+            rules.FirstOrDefault().ApplyRule(context);
+            Assert.Equal(RuleResult.ContinueRules, context.Result);
+        }
     }
 }

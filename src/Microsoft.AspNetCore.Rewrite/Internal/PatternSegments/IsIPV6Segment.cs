@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
 
     public class IsIPV6Segment : PatternSegment
     {
-        public override string Evaluate(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
+        public override string Evaluate(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReferences)
         {
             if (context.HttpContext.Connection.RemoteIpAddress == null)
             {

@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
         public bool Secure { get; set; }
         public bool HttpOnly { get; set; }
 
-        public override void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
+        public override void ApplyAction(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReferences)
         {
             var options = GetOrCreateOptions();
             context.HttpContext.Response.Cookies.Append(Name, Value ?? string.Empty, options);

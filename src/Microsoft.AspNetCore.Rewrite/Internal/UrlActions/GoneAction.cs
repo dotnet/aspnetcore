@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
 {
     public class GoneAction : UrlAction
     {
-        public override void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
+        public override void ApplyAction(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReferences)
         {
             context.HttpContext.Response.StatusCode = StatusCodes.Status410Gone;
             context.Result = RuleResult.EndResponse;

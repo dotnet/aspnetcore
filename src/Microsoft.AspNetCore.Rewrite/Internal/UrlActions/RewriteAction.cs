@@ -43,9 +43,9 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
 
         }
 
-        public override void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
+        public override void ApplyAction(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReferences)
         {
-            var pattern = Url.Evaluate(context, ruleMatch, condMatch);
+            var pattern = Url.Evaluate(context, ruleBackReferences, conditionBackReferences);
             var request = context.HttpContext.Request;
 
             if (string.IsNullOrEmpty(pattern))

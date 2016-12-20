@@ -13,11 +13,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
             PatternSegments = patternSegments;
         }
 
-        public string Evaluate(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
+        public string Evaluate(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReferences)
         {
             foreach (var pattern in PatternSegments)
             {
-                context.Builder.Append(pattern.Evaluate(context, ruleMatch, condMatch));
+                context.Builder.Append(pattern.Evaluate(context, ruleBackReferences, conditionBackReferences));
             }
             var retVal = context.Builder.ToString();
             context.Builder.Clear();

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
             Result = result;
         }
         // Explicitly say that nothing happens
-        public override void ApplyAction(RewriteContext context, MatchResults ruleMatch, MatchResults condMatch)
+        public override void ApplyAction(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReferences)
         {
             context.Result = Result;
         }

@@ -364,7 +364,92 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetAsync("hey/hello");
 
-            Assert.Equal("/hey/hello/", response.Headers.Location.OriginalString); ;
+            Assert.Equal("/hey/hello/", response.Headers.Location.OriginalString);
+        }
+
+        [Fact]
+        public async Task VerifyTrackAllCaptures()
+        {
+            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+                <rules>
+                <rule name=""Test"">
+                <match url=""(.*)"" ignoreCase=""false"" />
+                <conditions trackAllCaptures = ""true"" >
+                <add input=""{REQUEST_URI}"" pattern=""^/([a-zA-Z]+)/([0-9]+)$"" />
+                <add input=""{QUERY_STRING}"" pattern=""p2=([a-z]+)"" />
+                </conditions>
+                <action type=""Redirect"" url =""blogposts/{C:1}/{C:4}"" />
+                <!--rewrite action uses back - references to both conditions -->
+                </rule>
+                </rules>
+                </rewrite>"));
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetAsync("article/23?p1=123&p2=abc");
+
+            Assert.Equal("/blogposts/article/abc", response.Headers.Location.OriginalString);
+        }
+
+        [Fact]
+        public async Task VerifyTrackAllCapturesRuleAndConditionCapture()
+        {
+            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+                <rules>
+                <rule name=""Test"">
+                <match url=""(.*)"" ignoreCase=""false"" />
+                <conditions trackAllCaptures = ""true"" >
+                <add input=""{REQUEST_URI}"" pattern=""^/([a-zA-Z]+)/([0-9]+)$"" />
+                <add input=""{QUERY_STRING}"" pattern=""p2=([a-z]+)"" />
+                </conditions>
+                <action type=""Redirect"" url =""blog/{R:0}/{C:4}"" />
+                <!--rewrite action uses back - references to both conditions -->
+                </rule>
+                </rules>
+                </rewrite>"));
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetAsync("article/23?p1=123&p2=abc");
+
+            Assert.Equal("/blog/article/23/abc", response.Headers.Location.OriginalString);
+        }
+
+        [Fact]
+        public async Task ThrowIndexOutOfRangeExceptionWithCorrectMessage()
+        {
+            // Arrange, Act, Assert
+            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
+                <rules>
+                <rule name=""Test"">
+                <match url=""(.*)"" ignoreCase=""false"" />
+                <conditions trackAllCaptures = ""true"" >
+                <add input=""{REQUEST_URI}"" pattern=""^/([a-zA-Z]+)/([0-9]+)$"" />
+                <add input=""{QUERY_STRING}"" pattern=""p2=([a-z]+)"" />
+                </conditions>
+                <action type=""Redirect"" url =""blog/{R:0}/{C:9}"" />
+                <!--rewrite action uses back - references to both conditions -->
+                </rule>
+                </rules>
+                </rewrite>"));
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                });
+            var server = new TestServer(builder);
+
+            var ex = await Assert.ThrowsAsync<IndexOutOfRangeException>(() => server.CreateClient().GetAsync("article/23?p1=123&p2=abc"));
+
+            Assert.Equal("Cannot access back reference at index 9. Only 5 back references were captured.", ex.Message);
         }
     }
 }

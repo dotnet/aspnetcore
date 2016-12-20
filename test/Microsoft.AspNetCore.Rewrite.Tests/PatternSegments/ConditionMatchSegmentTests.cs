@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments
             var segment = new ConditionMatchSegment(index);
 
             // Act
-            var results = segment.Evaluate(null, null, condMatch);
+            var results = segment.Evaluate(null, null, condMatch.BackReferences);
 
             // Assert
             Assert.Equal(expected, results);
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments
         private static MatchResults CreateTestMatch()
         {
             var match = Regex.Match("foo/bar/baz", "(.*)/(.*)/(.*)");
-            return new MatchResults {BackReference = match.Groups, Success = match.Success};
+            return new MatchResults { BackReferences = new BackReferenceCollection(match.Groups), Success = match.Success };
         }
     }
 }

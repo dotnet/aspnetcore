@@ -136,10 +136,12 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             Assert.Equal("/", response);
         }
 
-        [Fact]
-        public async Task Invoke_BackReferencesShouldBeApplied()
+        [Theory]
+        [InlineData("http://www.foo.org/homepage.aspx", @"RewriteRule (.*)\.aspx $1.php", "/homepage.php")]
+        [InlineData("http://www.foo.org/pages/homepage.aspx", @"RewriteRule (.*)/(.*)\.aspx $2.php", "/homepage.php")]
+        public async Task Invoke_BackReferencesShouldBeApplied(string url, string rule, string expected)
         {
-            var options = new RewriteOptions().AddApacheModRewrite(new StringReader(@"RewriteRule (.*)\.aspx $1.php"));
+            var options = new RewriteOptions().AddApacheModRewrite(new StringReader(rule));
             var builder = new WebHostBuilder()
              .Configure(app =>
                  {
@@ -148,9 +150,9 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
                  });
             var server = new TestServer(builder);
 
-            var response = await server.CreateClient().GetStringAsync("http://www.foo.org/homepage.aspx");
+            var response = await server.CreateClient().GetStringAsync(url);
 
-            Assert.Equal("/homepage.php", response);
+            Assert.Equal(expected, response);
         }
 
         [Theory]
