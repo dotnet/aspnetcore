@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Localization.Routing
                 {
                     app.UseRouter(routes =>
                     {
-                        routes.MapRoute(routeTemplate, (IApplicationBuilder fork) =>
+                        routes.MapMiddlewareRoute(routeTemplate, fork =>
                         {
                             var options = new RequestLocalizationOptions
                             {
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Localization.Routing
                 {
                     app.UseRouter(routes =>
                     {
-                        routes.MapRoute(routeTemplate, (IApplicationBuilder fork) =>
+                        routes.MapMiddlewareRoute(routeTemplate, fork =>
                         {
                             var options = new RequestLocalizationOptions
                             {
