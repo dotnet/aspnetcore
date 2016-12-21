@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             return new UnclassifiedCodeSpanConstructor(
                 self.Span(
                     SpanKind.Code,
-                    new CSharpSymbol(self.LocationTracker.CurrentLocation, string.Empty, CSharpSymbolType.Unknown)));
+                    new CSharpSymbol(string.Empty, CSharpSymbolType.Unknown)));
         }
 
         public static SpanConstructor EmptyHtml(this SpanFactory self)
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             return self
                 .Span(
                     SpanKind.Markup,
-                    new HtmlSymbol(self.LocationTracker.CurrentLocation, string.Empty, HtmlSymbolType.Unknown))
+                    new HtmlSymbol(string.Empty, HtmlSymbolType.Unknown))
                 .With(new MarkupChunkGenerator());
         }
 
@@ -178,34 +178,41 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public SpanConstructor Span(SpanKind kind, string content, CSharpSymbolType type)
         {
-            return CreateSymbolSpan(kind, content, st => new CSharpSymbol(st, content, type));
+            return CreateSymbolSpan(kind, content, () => new CSharpSymbol(content, type));
         }
 
         public SpanConstructor Span(SpanKind kind, string content, HtmlSymbolType type)
         {
-            return CreateSymbolSpan(kind, content, st => new HtmlSymbol(st, content, type));
+            return CreateSymbolSpan(kind, content, () => new HtmlSymbol(content, type));
         }
 
         public SpanConstructor Span(SpanKind kind, string content, bool markup)
         {
-            return new SpanConstructor(kind, Tokenize(new[] { content }, markup));
+            return new SpanConstructor(kind, LocationTracker.CurrentLocation, Tokenize(new[] { content }, markup));
         }
 
         public SpanConstructor Span(SpanKind kind, string[] content, bool markup)
         {
-            return new SpanConstructor(kind, Tokenize(content, markup));
+            return new SpanConstructor(kind, LocationTracker.CurrentLocation, Tokenize(content, markup));
         }
 
         public SpanConstructor Span(SpanKind kind, params ISymbol[] symbols)
         {
-            return new SpanConstructor(kind, symbols);
+            var start = LocationTracker.CurrentLocation;
+            foreach (var symbol in symbols)
+            {
+                LocationTracker.UpdateLocation(symbol.Content);
+            }
+
+            return new SpanConstructor(kind, start, symbols);
         }
 
-        private SpanConstructor CreateSymbolSpan(SpanKind kind, string content, Func<SourceLocation, ISymbol> ctor)
+        private SpanConstructor CreateSymbolSpan(SpanKind kind, string content, Func<ISymbol> ctor)
         {
             var start = LocationTracker.CurrentLocation;
             LocationTracker.UpdateLocation(content);
-            return new SpanConstructor(kind, new[] { ctor(start) });
+
+            return new SpanConstructor(kind, start, new[] { ctor() });
         }
 
         public void Reset()
@@ -220,15 +227,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         private IEnumerable<ISymbol> Tokenize(string content, bool markup)
         {
-            var tok = MakeTokenizer(markup, new SeekableTextReader(content));
-            ISymbol sym;
+            var tokenizer = MakeTokenizer(markup, new SeekableTextReader(content));
+            ISymbol symbol;
             ISymbol last = null;
-            while ((sym = tok.NextSymbol()) != null)
+
+            while ((symbol = tokenizer.NextSymbol()) != null)
             {
-                OffsetStart(sym, LocationTracker.CurrentLocation);
-                last = sym;
-                yield return sym;
+                last = symbol;
+                yield return symbol;
             }
+
             LocationTracker.UpdateLocation(content);
         }
 
@@ -242,11 +250,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             {
                 return CodeTokenizerFactory(seekableTextReader);
             }
-        }
-
-        private void OffsetStart(ISymbol sym, SourceLocation sourceLocation)
-        {
-            sym.OffsetStart(sourceLocation);
         }
     }
 
@@ -359,9 +362,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             yield return new RawTextSymbol(SourceLocation.Zero, str);
         }
 
-        public SpanConstructor(SpanKind kind, IEnumerable<ISymbol> symbols)
+        public SpanConstructor(SpanKind kind, SourceLocation location, IEnumerable<ISymbol> symbols)
         {
-            Builder = new SpanBuilder();
+            Builder = new SpanBuilder(location);
             Builder.Kind = kind;
             Builder.EditHandler = SpanEditHandler.CreateDefault((content) => SpanConstructor.TestTokenizer(content));
             foreach (ISymbol sym in symbols)

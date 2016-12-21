@@ -34,15 +34,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public void PutBack(TSymbol symbol)
         {
-            Debug.Assert(Source.Position == symbol.Start.AbsoluteIndex + symbol.Content.Length);
-            if (Source.Position != symbol.Start.AbsoluteIndex + symbol.Content.Length)
-            {
-                // We've already passed this symbol
-                throw new InvalidOperationException(
-                    LegacyResources.FormatTokenizerView_CannotPutBack(
-                        symbol.Start.AbsoluteIndex + symbol.Content.Length,
-                        Source.Position));
-            }
             Source.Position -= symbol.Content.Length;
             Current = null;
             EndOfFile = Source.Position >= Source.Length;

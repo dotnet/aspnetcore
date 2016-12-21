@@ -36,9 +36,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             get { return HtmlSymbolType.RazorCommentStar; }
         }
 
-        protected override HtmlSymbol CreateSymbol(SourceLocation start, string content, HtmlSymbolType type, IReadOnlyList<RazorError> errors)
+        protected override HtmlSymbol CreateSymbol(string content, HtmlSymbolType type, IReadOnlyList<RazorError> errors)
         {
-            return new HtmlSymbol(start, content, type, errors);
+            return new HtmlSymbol(content, type, errors);
         }
 
         protected override StateResult Dispatch()

@@ -5,10 +5,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
     internal interface ISymbol
     {
-        SourceLocation Start { get; }
+        Span Parent { get; set; }
+
         string Content { get; }
 
-        void OffsetStart(SourceLocation documentStart);
-        void ChangeStart(SourceLocation newStart);
+        SourceLocation Start { get; }
     }
 }

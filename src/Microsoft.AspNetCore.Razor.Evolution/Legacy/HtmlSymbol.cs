@@ -8,17 +8,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
     internal class HtmlSymbol : SymbolBase<HtmlSymbolType>
     {
-        public HtmlSymbol(int absoluteIndex, int lineIndex, int characterIndex, string content, HtmlSymbolType type)
-            : this(new SourceLocation(absoluteIndex, lineIndex, characterIndex), content, type, RazorError.EmptyArray)
-        {
-            if (content == null)
-            {
-                throw new ArgumentNullException(nameof(content));
-            }
-        }
-
-        public HtmlSymbol(SourceLocation start, string content, HtmlSymbolType type)
-            : base(start, content, type, RazorError.EmptyArray)
+        public HtmlSymbol(string content, HtmlSymbolType type)
+            : base(content, type, RazorError.EmptyArray)
         {
             if (content == null)
             {
@@ -27,26 +18,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         }
 
         public HtmlSymbol(
-            int absoluteIndex,
-            int lineIndex,
-            int characterIndex,
             string content,
             HtmlSymbolType type,
             IReadOnlyList<RazorError> errors)
-            : base(new SourceLocation(absoluteIndex, lineIndex, characterIndex), content, type, errors)
-        {
-            if (content == null)
-            {
-                throw new ArgumentNullException(nameof(content));
-            }
-        }
-
-        public HtmlSymbol(
-            SourceLocation start,
-            string content,
-            HtmlSymbolType type,
-            IReadOnlyList<RazorError> errors)
-            : base(start, content, type, errors)
+            : base(content, type, errors)
         {
             if (content == null)
             {

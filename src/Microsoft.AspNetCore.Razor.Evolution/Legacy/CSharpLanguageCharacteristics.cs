@@ -74,9 +74,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             return new CSharpTokenizer(source);
         }
 
-        protected override CSharpSymbol CreateSymbol(SourceLocation location, string content, CSharpSymbolType type, IReadOnlyList<RazorError> errors)
+        protected override CSharpSymbol CreateSymbol(string content, CSharpSymbolType type, IReadOnlyList<RazorError> errors)
         {
-            return new CSharpSymbol(location, content, type, errors);
+            return new CSharpSymbol(content, type, errors);
         }
 
         public override string GetSample(CSharpSymbolType type)
@@ -111,9 +111,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             return sample;
         }
 
-        public override CSharpSymbol CreateMarkerSymbol(SourceLocation location)
+        public override CSharpSymbol CreateMarkerSymbol()
         {
-            return new CSharpSymbol(location, string.Empty, CSharpSymbolType.Unknown);
+            return new CSharpSymbol(string.Empty, CSharpSymbolType.Unknown);
         }
 
         public override CSharpSymbolType GetKnownSymbolType(KnownSymbolType type)

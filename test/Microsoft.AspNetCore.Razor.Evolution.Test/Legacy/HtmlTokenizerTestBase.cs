@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
     public abstract class HtmlTokenizerTestBase : TokenizerTestBase
     {
-        private static HtmlSymbol _ignoreRemaining = new HtmlSymbol(0, 0, 0, string.Empty, HtmlSymbolType.Unknown);
+        private static HtmlSymbol _ignoreRemaining = new HtmlSymbol(string.Empty, HtmlSymbolType.Unknown);
 
         internal override object IgnoreRemaining
         {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         internal void TestSingleToken(string text, HtmlSymbolType expectedSymbolType)
         {
-            TestTokenizer(text, new HtmlSymbol(0, 0, 0, text, expectedSymbolType));
+            TestTokenizer(text, new HtmlSymbol(text, expectedSymbolType));
         }
 
         internal void TestTokenizer(string input, params HtmlSymbol[] expectedSymbols)

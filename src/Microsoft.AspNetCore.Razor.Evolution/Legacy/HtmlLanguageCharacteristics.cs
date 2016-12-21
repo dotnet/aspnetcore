@@ -95,9 +95,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
-        public override HtmlSymbol CreateMarkerSymbol(SourceLocation location)
+        public override HtmlSymbol CreateMarkerSymbol()
         {
-            return new HtmlSymbol(location, string.Empty, HtmlSymbolType.Unknown);
+            return new HtmlSymbol(string.Empty, HtmlSymbolType.Unknown);
         }
 
         public override HtmlSymbolType GetKnownSymbolType(KnownSymbolType type)
@@ -125,9 +125,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
-        protected override HtmlSymbol CreateSymbol(SourceLocation location, string content, HtmlSymbolType type, IReadOnlyList<RazorError> errors)
+        protected override HtmlSymbol CreateSymbol(string content, HtmlSymbolType type, IReadOnlyList<RazorError> errors)
         {
-            return new HtmlSymbol(location, content, type, errors);
+            return new HtmlSymbol(content, type, errors);
         }
     }
 }

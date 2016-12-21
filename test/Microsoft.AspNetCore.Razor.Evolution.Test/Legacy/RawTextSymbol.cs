@@ -1,20 +1,23 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Globalization;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
     internal class RawTextSymbol : ISymbol
     {
-        public SourceLocation Start { get; private set; }
-        public string Content { get; }
-
         public RawTextSymbol(SourceLocation start, string content)
         {
             Start = start;
             Content = content;
         }
+
+        public SourceLocation Start { get; private set; }
+        public string Content { get; }
+        public Span Parent { get; set; }
+        public int Offset { get; set; }
 
         public override bool Equals(object obj)
         {

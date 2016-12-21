@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             // Arrange
             var builder = new BlockBuilder() { Type = BlockType.Comment };
-            var span = new SpanBuilder() { Kind = SpanKind.Code }.Build();
+            var span = new SpanBuilder(SourceLocation.Undefined) { Kind = SpanKind.Code }.Build();
             builder.Children.Add(span);
 
             // Act
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         public void ConstructorTransfersChildrenFromBlockBuilder()
         {
             // Arrange
-            var expected = new SpanBuilder() { Kind = SpanKind.Code }.Build();
+            var expected = new SpanBuilder(SourceLocation.Undefined) { Kind = SpanKind.Code }.Build();
             var builder = new BlockBuilder()
             {
                 Type = BlockType.Functions

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,26 +9,43 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
     internal class SpanBuilder
     {
+        private SourceLocation _start;
         private List<ISymbol> _symbols;
-        private SourceLocationTracker _tracker = new SourceLocationTracker();
+        private SourceLocationTracker _tracker;
 
         public SpanBuilder(Span original)
         {
             Kind = original.Kind;
-            _symbols = new List<ISymbol>(original.Symbols);
             EditHandler = original.EditHandler;
-            Start = original.Start;
+            _start = original.Start;
             ChunkGenerator = original.ChunkGenerator;
+
+            _symbols = new List<ISymbol>(original.Symbols);
+            _tracker = new SourceLocationTracker(original.Start);
         }
 
-        public SpanBuilder()
+        public SpanBuilder(SourceLocation location)
         {
+            _tracker = new SourceLocationTracker();
+
             Reset();
+
+            Start = location;
         }
 
         public ISpanChunkGenerator ChunkGenerator { get; set; }
 
-        public SourceLocation Start { get; set; }
+        public SourceLocation Start
+        {
+            get { return _start; }
+            set
+            {
+                _start = value;
+                _tracker.CurrentLocation = value;
+            }
+        }
+
+        public SourceLocation End => _tracker.CurrentLocation;
 
         public SpanKind Kind { get; set; }
 
@@ -51,15 +69,24 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             // Need to potentially allocate a new list because Span.ReplaceWith takes ownership
             // of the original list.
             _symbols = null;
+            _symbols = new List<ISymbol>();
 
             EditHandler = SpanEditHandler.CreateDefault((content) => Enumerable.Empty<ISymbol>());
             ChunkGenerator = SpanChunkGenerator.Null;
-            Start = SourceLocation.Zero;
+            Start = SourceLocation.Undefined;
         }
 
         public Span Build()
         {
-            return new Span(this);
+            var span = new Span(this);
+            
+            for (var i = 0; i < span.Symbols.Count; i++)
+            {
+                var symbol = span.Symbols[i];
+                symbol.Parent = span;
+            }
+
+            return span;
         }
 
         public void ClearSymbols()
@@ -74,15 +101,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 return;
             }
 
-            if (Symbols.Count == 0)
+            if (Start.Equals(SourceLocation.Undefined))
             {
-                Start = symbol.Start;
-                symbol.ChangeStart(SourceLocation.Zero);
-                _tracker.CurrentLocation = SourceLocation.Zero;
-            }
-            else
-            {
-                symbol.ChangeStart(_tracker.CurrentLocation);
+                throw new InvalidOperationException("SpanBuilder must have a valid location");
             }
 
             _symbols.Add(symbol);

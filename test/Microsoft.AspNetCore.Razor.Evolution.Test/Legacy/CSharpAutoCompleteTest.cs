@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                                         Factory.Markup("<p>").Accepts(AcceptedCharacters.None)),
                                     new MarkupTagBlock(
                                         Factory.Markup("</p>").Accepts(AcceptedCharacters.None))),
-                               Factory.Span(SpanKind.Code, new CSharpSymbol(Factory.LocationTracker.CurrentLocation, string.Empty, CSharpSymbolType.Unknown))
+                               Factory.Span(SpanKind.Code, new CSharpSymbol(string.Empty, CSharpSymbolType.Unknown))
                                    .With(new StatementChunkGenerator())
                                ),
                            new RazorError(

@@ -219,10 +219,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             AddMarkerSymbolIfNecessary();
             Output(SpanKind.Markup);
+
             using (PushSpanConfig())
             {
                 CodeParser.ParseBlock();
             }
+
+            Span.Start = CurrentLocation;
             Initialize(Span);
             NextToken();
         }
@@ -271,6 +274,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             {
                 using (Context.Builder.StartBlock(BlockType.Markup))
                 {
+                    Span.Start = CurrentLocation;
+
                     if (!NextToken())
                     {
                         return;
@@ -305,7 +310,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     else
                     {
                         Context.ErrorSink.OnError(
-                            CurrentSymbol.Start,
+                            CurrentStart,
                             LegacyResources.ParseError_MarkupBlock_Must_Start_With_Tag,
                             CurrentSymbol.Content.Length);
                     }
@@ -393,10 +398,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     else
                     {
                         _bufferedOpenAngle = null;
-                        _lastTagStart = CurrentLocation;
+                        _lastTagStart = CurrentStart;
                         Assert(HtmlSymbolType.OpenAngle);
                         _bufferedOpenAngle = CurrentSymbol;
-                        var tagStart = CurrentLocation;
+                        var tagStart = CurrentStart;
                         if (!NextToken())
                         {
                             Accept(_bufferedOpenAngle);
@@ -467,7 +472,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             if (tags.Count == 0)
             {
                 Context.ErrorSink.OnError(
-                    CurrentLocation,
+                    CurrentStart,
                     LegacyResources.ParseError_OuterTagMissingName,
                     length: 1  /* end of file */);
             }
@@ -620,7 +625,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             Accept(_bufferedOpenAngle);
             Accept(solidus);
 
-            var textLocation = CurrentLocation;
+            var textLocation = CurrentStart;
             Assert(HtmlSymbolType.Text);
             AcceptAndMoveNext();
 
@@ -789,8 +794,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             IEnumerable<HtmlSymbol> whitespaceAfterAttributeName)
         {
             // First, determine if this is a 'data-' attribute (since those can't use conditional attributes)
-            var name = nameSymbols.GetContent(Span.Start);
-            var attributeCanBeConditional = !name.Value.StartsWith("data-", StringComparison.OrdinalIgnoreCase);
+            var name = string.Concat(nameSymbols.Select(s => s.Content));
+            var attributeCanBeConditional = !name.StartsWith("data-", StringComparison.OrdinalIgnoreCase);
 
             // Accept the whitespace and name
             Accept(whitespace);
@@ -818,7 +823,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
 
             // We now have the prefix: (i.e. '      foo="')
-            var prefix = Span.GetContent();
+            var prefix = new LocationTagged<string>(string.Concat(Span.Symbols.Select(s => s.Content)), Span.Start);
 
             if (attributeCanBeConditional)
             {
@@ -837,10 +842,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 }
 
                 // Capture the suffix
-                var suffix = new LocationTagged<string>(string.Empty, CurrentLocation);
+                var suffix = new LocationTagged<string>(string.Empty, CurrentStart);
                 if (quote != HtmlSymbolType.Unknown && At(quote))
                 {
-                    suffix = CurrentSymbol.GetContent();
+                    suffix = new LocationTagged<string>(CurrentSymbol.Content, CurrentStart);
                     AcceptAndMoveNext();
                 }
 
@@ -881,7 +886,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         private void AttributeValue(HtmlSymbolType quote)
         {
-            var prefixStart = CurrentLocation;
+            var prefixStart = CurrentStart;
             var prefix = ReadWhile(sym => sym.Type == HtmlSymbolType.WhiteSpace || sym.Type == HtmlSymbolType.NewLine);
 
             if (At(HtmlSymbolType.Transition))
@@ -895,8 +900,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
                         // Render a single "@" in place of "@@".
                         Span.ChunkGenerator = new LiteralAttributeChunkGenerator(
-                            prefix.GetContent(prefixStart),
-                            new LocationTagged<string>(CurrentSymbol.GetContent(), CurrentLocation));
+                            new LocationTagged<string>(string.Concat(prefix.Select(s => s.Content)), prefixStart),
+                            new LocationTagged<string>(CurrentSymbol.Content, CurrentStart));
                         AcceptAndMoveNext();
                         Output(SpanKind.Markup, AcceptedCharacters.None);
 
@@ -908,7 +913,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 else
                 {
                     Accept(prefix);
-                    var valueStart = CurrentLocation;
+                    var valueStart = CurrentStart;
                     PutCurrentBack();
 
                     // Output the prefix but as a null-span. DynamicAttributeBlockChunkGenerator will render it
@@ -918,7 +923,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     using (Context.Builder.StartBlock(BlockType.Markup))
                     {
                         Context.Builder.CurrentBlock.ChunkGenerator =
-                            new DynamicAttributeBlockChunkGenerator(prefix.GetContent(prefixStart), valueStart);
+                            new DynamicAttributeBlockChunkGenerator(
+                                new LocationTagged<string>(string.Concat(prefix.Select(s => s.Content)), prefixStart),
+                                valueStart);
 
                         OtherParserBlock();
                     }
@@ -931,6 +938,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 // Literal value
                 // 'quote' should be "Unknown" if not quoted and symbols coming from the tokenizer should never have
                 // "Unknown" type.
+                var valueStart = CurrentStart;
                 var value = ReadWhile(sym =>
                     // These three conditions find separators which break the attribute value into portions
                     sym.Type != HtmlSymbolType.WhiteSpace &&
@@ -941,8 +949,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     !IsEndOfAttributeValue(quote, sym));
                 Accept(value);
                 Span.ChunkGenerator = new LiteralAttributeChunkGenerator(
-                    prefix.GetContent(prefixStart),
-                    value.GetContent(prefixStart));
+                    new LocationTagged<string>(string.Concat(prefix.Select(s => s.Content)), prefixStart),
+                    new LocationTagged<string>(string.Concat(value.Select(s => s.Content)), valueStart));
             }
             Output(SpanKind.Markup);
         }
@@ -1037,11 +1045,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             if (potentialTagNameSymbol == null || potentialTagNameSymbol.Type != HtmlSymbolType.Text)
             {
-                tagName = new HtmlSymbol(potentialTagNameSymbol.Start, string.Empty, HtmlSymbolType.Unknown);
+                tagName = new HtmlSymbol(string.Empty, HtmlSymbolType.Unknown);
             }
             else if (bangSymbol != null)
             {
-                tagName = new HtmlSymbol(bangSymbol.Start, "!" + potentialTagNameSymbol.Content, HtmlSymbolType.Text);
+                tagName = new HtmlSymbol("!" + potentialTagNameSymbol.Content, HtmlSymbolType.Text);
             }
             else
             {
@@ -1059,12 +1067,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 Span.ChunkGenerator = SpanChunkGenerator.Null;
 
                 Accept(_bufferedOpenAngle);
-                var textLocation = CurrentLocation;
+                var textLocation = CurrentStart;
                 Assert(HtmlSymbolType.Text);
 
                 AcceptAndMoveNext();
 
-                var bookmark = CurrentLocation.AbsoluteIndex;
+                var bookmark = CurrentStart.AbsoluteIndex;
                 IEnumerable<HtmlSymbol> tokens = ReadWhile(IsSpacingToken(includeNewLines: true));
                 var empty = At(HtmlSymbolType.ForwardSlash);
                 if (empty)
@@ -1072,7 +1080,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     Accept(tokens);
                     Assert(HtmlSymbolType.ForwardSlash);
                     AcceptAndMoveNext();
-                    bookmark = CurrentLocation.AbsoluteIndex;
+                    bookmark = CurrentStart.AbsoluteIndex;
                     tokens = ReadWhile(IsSpacingToken(includeNewLines: true));
                 }
 
@@ -1151,7 +1159,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         // Technically, void elements like "meta" are not allowed to have end tags. Just in case they do,
                         // we need to look ahead at the next set of tokens. If we see "<", "/", tag name, accept it and the ">" following it
                         // Place a bookmark
-                        var bookmark = CurrentLocation.AbsoluteIndex;
+                        var bookmark = CurrentStart.AbsoluteIndex;
 
                         // Skip whitespace
                         IEnumerable<HtmlSymbol> whiteSpace = ReadWhile(IsSpacingToken(includeNewLines: true));
@@ -1230,7 +1238,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             while (!seenEndScript && !EndOfFile)
             {
                 SkipToAndParseCode(HtmlSymbolType.OpenAngle);
-                var tagStart = CurrentLocation;
+                var tagStart = CurrentStart;
 
                 if (NextIs(HtmlSymbolType.ForwardSlash))
                 {
@@ -1438,6 +1446,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             {
                 using (Context.Builder.StartBlock(BlockType.Markup))
                 {
+                    Span.Start = CurrentLocation;
+
                     NextToken();
                     while (!EndOfFile)
                     {
@@ -1586,6 +1596,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             using (PushSpanConfig(DefaultMarkupSpan))
             {
+                Span.Start = CurrentLocation;
+
                 using (Context.Builder.StartBlock(BlockType.Markup))
                 {
                     NextToken();
@@ -1652,7 +1664,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             EnsureCurrent();
             if (string.Equals(CurrentSymbol.Content, nestingSequenceComponents[0], Comparison))
             {
-                var bookmark = CurrentSymbol.Start.AbsoluteIndex;
+                var bookmark = Context.Source.Position - CurrentSymbol.Content.Length;
                 try
                 {
                     foreach (string component in nestingSequenceComponents)
@@ -1706,7 +1718,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 if (string.Equals(possibleStart, sequence, Comparison))
                 {
                     // Capture the current symbol and "put it back" (really we just want to clear CurrentSymbol)
-                    var bookmark = Context.Source.Position;
+                    var bookmark = CurrentStart;
                     var sym = CurrentSymbol;
                     PutCurrentBack();
 
@@ -1717,6 +1729,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     pair = Language.SplitSymbol(pair.Item2, sequence.Length, HtmlSymbolType.Text);
                     var sequenceToken = pair.Item1;
                     var postSequence = pair.Item2;
+                    var postSequenceBookmark = bookmark.AbsoluteIndex + preSequence.Content.Length + pair.Item1.Content.Length;
 
                     // Accept the first chunk (up to the nesting sequence we just saw)
                     if (!string.IsNullOrEmpty(preSequence.Content))
@@ -1729,22 +1742,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         // This is 'popping' the final entry on the stack of nesting sequences
                         // A caller higher in the parsing stack will accept the sequence token, so advance
                         // to it
-                        Context.Source.Position = sequenceToken.Start.AbsoluteIndex;
+                        Context.Source.Position = bookmark.AbsoluteIndex + preSequence.Content.Length;
                     }
                     else
                     {
                         // This isn't the end of the last nesting sequence, accept the token and keep going
                         Accept(sequenceToken);
 
-                        // Position at the start of the postSequence symbol
-                        if (postSequence != null)
-                        {
-                            Context.Source.Position = postSequence.Start.AbsoluteIndex;
-                        }
-                        else
-                        {
-                            Context.Source.Position = bookmark;
-                        }
+                        // Position at the start of the postSequence symbol, which might be null.
+                        Context.Source.Position = postSequenceBookmark;
                     }
 
                     // Return the value we were asked to return if matched, since we found a nesting sequence

@@ -8,17 +8,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
     internal class CSharpSymbol : SymbolBase<CSharpSymbolType>
     {
-        public CSharpSymbol(int absoluteIndex, int lineIndex, int characterIndex, string content, CSharpSymbolType type)
-            : this(new SourceLocation(absoluteIndex, lineIndex, characterIndex), content, type, RazorError.EmptyArray)
-        {
-            if (content == null)
-            {
-                throw new ArgumentNullException(nameof(content));
-            }
-        }
-
-        public CSharpSymbol(SourceLocation start, string content, CSharpSymbolType type)
-            : this(start, content, type, RazorError.EmptyArray)
+        public CSharpSymbol(
+            string content,
+            CSharpSymbolType type)
+            : base(content, type, RazorError.EmptyArray)
         {
             if (content == null)
             {
@@ -27,26 +20,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         }
 
         public CSharpSymbol(
-            int offset,
-            int line,
-            int column,
             string content,
             CSharpSymbolType type,
             IReadOnlyList<RazorError> errors)
-            : base(new SourceLocation(offset, line, column), content, type, errors)
-        {
-            if (content == null)
-            {
-                throw new ArgumentNullException(nameof(content));
-            }
-        }
-
-        public CSharpSymbol(
-            SourceLocation start,
-            string content,
-            CSharpSymbolType type,
-            IReadOnlyList<RazorError> errors)
-            : base(start, content, type, errors)
+            : base(content, type, errors)
         {
             if (content == null)
             {

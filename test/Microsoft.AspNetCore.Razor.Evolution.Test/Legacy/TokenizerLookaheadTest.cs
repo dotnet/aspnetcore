@@ -104,7 +104,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
 
             protected override CSharpSymbol CreateSymbol(
-                SourceLocation start,
                 string content,
                 CSharpSymbolType type,
                 IReadOnlyList<RazorError> errors)

@@ -17,23 +17,23 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         public void Text_Is_Recognized()
         {
             TestTokenizer("foo-9309&smlkmb;::-3029022,.sdkq92384",
-                          new HtmlSymbol(0, 0, 0, "foo-9309&smlkmb;::-3029022,.sdkq92384", HtmlSymbolType.Text));
+                          new HtmlSymbol("foo-9309&smlkmb;::-3029022,.sdkq92384", HtmlSymbolType.Text));
         }
 
         [Fact]
         public void Whitespace_Is_Recognized()
         {
             TestTokenizer(" \t\f ",
-                          new HtmlSymbol(0, 0, 0, " \t\f ", HtmlSymbolType.WhiteSpace));
+                          new HtmlSymbol(" \t\f ", HtmlSymbolType.WhiteSpace));
         }
 
         [Fact]
         public void Newline_Is_Recognized()
         {
             TestTokenizer("\n\r\r\n",
-                          new HtmlSymbol(0, 0, 0, "\n", HtmlSymbolType.NewLine),
-                          new HtmlSymbol(1, 1, 0, "\r", HtmlSymbolType.NewLine),
-                          new HtmlSymbol(2, 2, 0, "\r\n", HtmlSymbolType.NewLine));
+                          new HtmlSymbol("\n", HtmlSymbolType.NewLine),
+                          new HtmlSymbol("\r", HtmlSymbolType.NewLine),
+                          new HtmlSymbol("\r\n", HtmlSymbolType.NewLine));
         }
 
         [Fact]
@@ -129,32 +129,35 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [Fact]
         public void Next_Ignores_Star_At_EOF_In_RazorComment()
         {
-            TestTokenizer("@* Foo * Bar * Baz *",
-                          new HtmlSymbol(0, 0, 0, "@", HtmlSymbolType.RazorCommentTransition),
-                          new HtmlSymbol(1, 0, 1, "*", HtmlSymbolType.RazorCommentStar),
-                          new HtmlSymbol(2, 0, 2, " Foo * Bar * Baz *", HtmlSymbolType.RazorComment));
+            TestTokenizer(
+                "@* Foo * Bar * Baz *",
+                new HtmlSymbol("@", HtmlSymbolType.RazorCommentTransition),
+                new HtmlSymbol("*", HtmlSymbolType.RazorCommentStar),
+                new HtmlSymbol(" Foo * Bar * Baz *", HtmlSymbolType.RazorComment));
         }
 
         [Fact]
         public void Next_Ignores_Star_Without_Trailing_At()
         {
-            TestTokenizer("@* Foo * Bar * Baz *@",
-                          new HtmlSymbol(0, 0, 0, "@", HtmlSymbolType.RazorCommentTransition),
-                          new HtmlSymbol(1, 0, 1, "*", HtmlSymbolType.RazorCommentStar),
-                          new HtmlSymbol(2, 0, 2, " Foo * Bar * Baz ", HtmlSymbolType.RazorComment),
-                          new HtmlSymbol(19, 0, 19, "*", HtmlSymbolType.RazorCommentStar),
-                          new HtmlSymbol(20, 0, 20, "@", HtmlSymbolType.RazorCommentTransition));
+            TestTokenizer(
+                "@* Foo * Bar * Baz *@",
+                new HtmlSymbol("@", HtmlSymbolType.RazorCommentTransition),
+                new HtmlSymbol("*", HtmlSymbolType.RazorCommentStar),
+                new HtmlSymbol(" Foo * Bar * Baz ", HtmlSymbolType.RazorComment),
+                new HtmlSymbol("*", HtmlSymbolType.RazorCommentStar),
+                new HtmlSymbol("@", HtmlSymbolType.RazorCommentTransition));
         }
 
         [Fact]
         public void Next_Returns_RazorComment_Token_For_Entire_Razor_Comment()
         {
-            TestTokenizer("@* Foo Bar Baz *@",
-                          new HtmlSymbol(0, 0, 0, "@", HtmlSymbolType.RazorCommentTransition),
-                          new HtmlSymbol(1, 0, 1, "*", HtmlSymbolType.RazorCommentStar),
-                          new HtmlSymbol(2, 0, 2, " Foo Bar Baz ", HtmlSymbolType.RazorComment),
-                          new HtmlSymbol(15, 0, 15, "*", HtmlSymbolType.RazorCommentStar),
-                          new HtmlSymbol(16, 0, 16, "@", HtmlSymbolType.RazorCommentTransition));
+            TestTokenizer(
+                "@* Foo Bar Baz *@",
+                new HtmlSymbol("@", HtmlSymbolType.RazorCommentTransition),
+                new HtmlSymbol("*", HtmlSymbolType.RazorCommentStar),
+                new HtmlSymbol(" Foo Bar Baz ", HtmlSymbolType.RazorComment),
+                new HtmlSymbol("*", HtmlSymbolType.RazorCommentStar),
+                new HtmlSymbol("@", HtmlSymbolType.RazorCommentTransition));
         }
     }
 }

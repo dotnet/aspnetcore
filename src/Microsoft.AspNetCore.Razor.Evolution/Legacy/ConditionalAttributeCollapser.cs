@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
 
             // Create a new span containing this content
-            var span = new SpanBuilder();
+            var span = new SpanBuilder(block.Children[0].Start);
 
             span.EditHandler = SpanEditHandler.CreateDefault(HtmlLanguageCharacteristics.Instance.TokenizeString);
             Debug.Assert(block.Children.Count > 0);

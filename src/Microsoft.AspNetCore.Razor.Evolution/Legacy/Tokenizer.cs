@@ -60,14 +60,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
-        protected SourceLocation CurrentLocation
-        {
-            get { return Source.Location; }
-        }
+        public SourceLocation CurrentLocation => Source.Location;
 
-        protected SourceLocation CurrentStart { get; private set; }
+        public SourceLocation CurrentStart { get; private set; }
 
-        protected abstract TSymbol CreateSymbol(SourceLocation start, string content, TSymbolType type, IReadOnlyList<RazorError> errors);
+        protected abstract TSymbol CreateSymbol(string content, TSymbolType type, IReadOnlyList<RazorError> errors);
 
         protected abstract StateResult Dispatch();
 
@@ -91,6 +88,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             // Post-Condition: Buffer should be empty at the end of Next()
             Debug.Assert(Buffer.Length == 0);
+
+            // Post-Condition: Token should be non-zero length unless we're at EOF.
+            Debug.Assert(EndOfFile || !CurrentStart.Equals(CurrentLocation));
 
             return symbol;
         }
@@ -193,19 +193,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         protected void StartSymbol()
         {
-            Buffer.Clear();
+            Debug.Assert(Buffer.Length == 0);
+            Debug.Assert(CurrentErrors.Count == 0);
+
             CurrentStart = CurrentLocation;
-            CurrentErrors.Clear();
         }
 
         protected TSymbol EndSymbol(TSymbolType type)
         {
-            return EndSymbol(CurrentStart, type);
-        }
-
-        protected TSymbol EndSymbol(SourceLocation start, TSymbolType type)
-        {
-            TSymbol sym = null;
+            TSymbol symbol = null;
             if (HaveContent)
             {
                 // Perf: Don't allocate a new errors array unless necessary.
@@ -215,10 +211,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     errors[i] = CurrentErrors[i];
                 }
 
-                sym = CreateSymbol(start, GetSymbolContent(type), type, errors);
+                symbol = CreateSymbol(GetSymbolContent(type), type, errors);
+
+                Buffer.Clear();
+                CurrentErrors.Clear();
             }
-            StartSymbol();
-            return sym;
+
+            return symbol;
         }
 
         protected virtual string GetSymbolContent(TSymbolType type)

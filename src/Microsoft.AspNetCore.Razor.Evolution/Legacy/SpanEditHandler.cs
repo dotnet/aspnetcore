@@ -72,7 +72,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             newSpan.ClearSymbols();
             foreach (ISymbol sym in Tokenizer(newContent))
             {
-                sym.OffsetStart(target.Start);
                 newSpan.Accept(sym);
             }
             if (target.Next != null)

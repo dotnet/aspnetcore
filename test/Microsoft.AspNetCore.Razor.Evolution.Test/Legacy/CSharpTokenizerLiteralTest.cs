@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [Fact]
         public void Trailing_Letter_Is_Not_Part_Of_Integer_Literal_If_Not_Type_Sufix()
         {
-            TestTokenizer("42a", new CSharpSymbol(0, 0, 0, "42", CSharpSymbolType.IntegerLiteral), IgnoreRemaining);
+            TestTokenizer("42a", new CSharpSymbol("42", CSharpSymbolType.IntegerLiteral), IgnoreRemaining);
         }
 
         [Fact]
@@ -75,25 +75,25 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [Fact]
         public void Trailing_Letter_Is_Not_Part_Of_Hex_Literal_If_Not_Type_Sufix()
         {
-            TestTokenizer("0xDEADBEEFz", new CSharpSymbol(0, 0, 0, "0xDEADBEEF", CSharpSymbolType.IntegerLiteral), IgnoreRemaining);
+            TestTokenizer("0xDEADBEEFz", new CSharpSymbol("0xDEADBEEF", CSharpSymbolType.IntegerLiteral), IgnoreRemaining);
         }
 
         [Fact]
         public void Dot_Followed_By_Non_Digit_Is_Not_Part_Of_Real_Literal()
         {
-            TestTokenizer("3.a", new CSharpSymbol(0, 0, 0, "3", CSharpSymbolType.IntegerLiteral), IgnoreRemaining);
+            TestTokenizer("3.a", new CSharpSymbol("3", CSharpSymbolType.IntegerLiteral), IgnoreRemaining);
         }
 
         [Fact]
         public void Simple_Real_Literal_Is_Recognized()
         {
-            TestTokenizer("3.14159", new CSharpSymbol(0, 0, 0, "3.14159", CSharpSymbolType.RealLiteral));
+            TestTokenizer("3.14159", new CSharpSymbol("3.14159", CSharpSymbolType.RealLiteral));
         }
 
         [Fact]
         public void Real_Literal_Between_Zero_And_One_Is_Recognized()
         {
-            TestTokenizer(".14159", new CSharpSymbol(0, 0, 0, ".14159", CSharpSymbolType.RealLiteral));
+            TestTokenizer(".14159", new CSharpSymbol(".14159", CSharpSymbolType.RealLiteral));
         }
 
         [Fact]
@@ -173,37 +173,37 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [Fact]
         public void Character_Literal_Is_Terminated_By_EOL_If_Unterminated()
         {
-            TestTokenizer("'foo\n", new CSharpSymbol(0, 0, 0, "'foo", CSharpSymbolType.CharacterLiteral), IgnoreRemaining);
+            TestTokenizer("'foo\n", new CSharpSymbol("'foo", CSharpSymbolType.CharacterLiteral), IgnoreRemaining);
         }
 
         [Fact]
         public void Character_Literal_Terminated_By_EOL_Even_When_Last_Char_Is_Slash()
         {
-            TestTokenizer("'foo\\\n", new CSharpSymbol(0, 0, 0, "'foo\\", CSharpSymbolType.CharacterLiteral), IgnoreRemaining);
+            TestTokenizer("'foo\\\n", new CSharpSymbol("'foo\\", CSharpSymbolType.CharacterLiteral), IgnoreRemaining);
         }
 
         [Fact]
         public void Character_Literal_Terminated_By_EOL_Even_When_Last_Char_Is_Slash_And_Followed_By_Stuff()
         {
-            TestTokenizer("'foo\\\nflarg", new CSharpSymbol(0, 0, 0, "'foo\\", CSharpSymbolType.CharacterLiteral), IgnoreRemaining);
+            TestTokenizer("'foo\\\nflarg", new CSharpSymbol("'foo\\", CSharpSymbolType.CharacterLiteral), IgnoreRemaining);
         }
 
         [Fact]
         public void Character_Literal_Terminated_By_CRLF_Even_When_Last_Char_Is_Slash()
         {
-            TestTokenizer("'foo\\" + Environment.NewLine, new CSharpSymbol(0, 0, 0, "'foo\\", CSharpSymbolType.CharacterLiteral), IgnoreRemaining);
+            TestTokenizer("'foo\\" + Environment.NewLine, new CSharpSymbol("'foo\\", CSharpSymbolType.CharacterLiteral), IgnoreRemaining);
         }
 
         [Fact]
         public void Character_Literal_Terminated_By_CRLF_Even_When_Last_Char_Is_Slash_And_Followed_By_Stuff()
         {
-            TestTokenizer($"'foo\\{Environment.NewLine}flarg", new CSharpSymbol(0, 0, 0, "'foo\\", CSharpSymbolType.CharacterLiteral), IgnoreRemaining);
+            TestTokenizer($"'foo\\{Environment.NewLine}flarg", new CSharpSymbol("'foo\\", CSharpSymbolType.CharacterLiteral), IgnoreRemaining);
         }
 
         [Fact]
         public void Character_Literal_Allows_Escaped_Escape()
         {
-            TestTokenizer("'foo\\\\'blah", new CSharpSymbol(0, 0, 0, "'foo\\\\'", CSharpSymbolType.CharacterLiteral), IgnoreRemaining);
+            TestTokenizer("'foo\\\\'blah", new CSharpSymbol("'foo\\\\'", CSharpSymbolType.CharacterLiteral), IgnoreRemaining);
         }
 
         [Fact]
@@ -227,37 +227,37 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [Fact]
         public void String_Literal_Is_Terminated_By_EOL_If_Unterminated()
         {
-            TestTokenizer("\"foo\n", new CSharpSymbol(0, 0, 0, "\"foo", CSharpSymbolType.StringLiteral), IgnoreRemaining);
+            TestTokenizer("\"foo\n", new CSharpSymbol("\"foo", CSharpSymbolType.StringLiteral), IgnoreRemaining);
         }
 
         [Fact]
         public void String_Literal_Terminated_By_EOL_Even_When_Last_Char_Is_Slash()
         {
-            TestTokenizer("\"foo\\\n", new CSharpSymbol(0, 0, 0, "\"foo\\", CSharpSymbolType.StringLiteral), IgnoreRemaining);
+            TestTokenizer("\"foo\\\n", new CSharpSymbol("\"foo\\", CSharpSymbolType.StringLiteral), IgnoreRemaining);
         }
 
         [Fact]
         public void String_Literal_Terminated_By_EOL_Even_When_Last_Char_Is_Slash_And_Followed_By_Stuff()
         {
-            TestTokenizer("\"foo\\\nflarg", new CSharpSymbol(0, 0, 0, "\"foo\\", CSharpSymbolType.StringLiteral), IgnoreRemaining);
+            TestTokenizer("\"foo\\\nflarg", new CSharpSymbol("\"foo\\", CSharpSymbolType.StringLiteral), IgnoreRemaining);
         }
 
         [Fact]
         public void String_Literal_Terminated_By_CRLF_Even_When_Last_Char_Is_Slash()
         {
-            TestTokenizer("\"foo\\" + Environment.NewLine, new CSharpSymbol(0, 0, 0, "\"foo\\", CSharpSymbolType.StringLiteral), IgnoreRemaining);
+            TestTokenizer("\"foo\\" + Environment.NewLine, new CSharpSymbol("\"foo\\", CSharpSymbolType.StringLiteral), IgnoreRemaining);
         }
 
         [Fact]
         public void String_Literal_Terminated_By_CRLF_Even_When_Last_Char_Is_Slash_And_Followed_By_Stuff()
         {
-            TestTokenizer($"\"foo\\{Environment.NewLine}flarg", new CSharpSymbol(0, 0, 0, "\"foo\\", CSharpSymbolType.StringLiteral), IgnoreRemaining);
+            TestTokenizer($"\"foo\\{Environment.NewLine}flarg", new CSharpSymbol("\"foo\\", CSharpSymbolType.StringLiteral), IgnoreRemaining);
         }
 
         [Fact]
         public void String_Literal_Allows_Escaped_Escape()
         {
-            TestTokenizer("\"foo\\\\\"blah", new CSharpSymbol(0, 0, 0, "\"foo\\\\\"", CSharpSymbolType.StringLiteral), IgnoreRemaining);
+            TestTokenizer("\"foo\\\\\"blah", new CSharpSymbol("\"foo\\\\\"", CSharpSymbolType.StringLiteral), IgnoreRemaining);
         }
 
         [Fact]
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [Fact]
         public void Verbatim_String_Literal_Is_Terminated_By_Slash_Double_Quote()
         {
-            TestTokenizer("@\"foo\\\"bar\"", new CSharpSymbol(0, 0, 0, "@\"foo\\\"", CSharpSymbolType.StringLiteral), IgnoreRemaining);
+            TestTokenizer("@\"foo\\\"bar\"", new CSharpSymbol("@\"foo\\\"", CSharpSymbolType.StringLiteral), IgnoreRemaining);
         }
 
         [Fact]
