@@ -6,7 +6,7 @@ Document -
         ClassDeclaration -  -  -  -  - 
             DeclareTagHelperFields -  - InputTagHelper
             RazorMethodDeclaration -  -  -  -  - 
-                HtmlContent - (0:0,0 [0] TagHelpersWithBoundAttributes.cshtml) - <form>\n    
+                HtmlContent - (31:1,0 [12] TagHelpersWithBoundAttributes.cshtml) - <form>\n    
                 TagHelper - 
                     InitializeTagHelperStructure -  - input - TagMode.SelfClosing
                     CreateTagHelper -  - InputTagHelper
@@ -16,4 +16,4 @@ Document -
                     AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.SingleQuotes
                         HtmlContent - (69:2,30 [4] TagHelpersWithBoundAttributes.cshtml) - text
                     ExecuteTagHelpers - 
-                HtmlContent - (77:2,38 [2] TagHelpersWithBoundAttributes.cshtml) - \n</form>
+                HtmlContent - (77:2,38 [9] TagHelpersWithBoundAttributes.cshtml) - \n</form>

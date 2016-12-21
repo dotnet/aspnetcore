@@ -316,12 +316,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 if (node.SourceRange != null)
                 {
                     linePragmaScope = new LinePragmaWriter(Context.Writer, node.SourceRange);
+                    var padding = BuildOffsetPadding(Context.RenderingConventions.StartWriteMethod.Length, node.SourceRange);
+                    Context.Writer.Write(padding);
                 }
 
-                var padding = BuildOffsetPadding(Context.RenderingConventions.StartWriteMethod.Length, node.SourceRange);
-                Context.Writer
-                    .Write(padding)
-                    .Write(Context.RenderingConventions.StartWriteMethod);
+                Context.Writer.Write(Context.RenderingConventions.StartWriteMethod);
 
                 VisitDefault(node);
 

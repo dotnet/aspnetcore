@@ -126,7 +126,26 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             public override void VisitEndTemplateBlock(TemplateBlockChunkGenerator chunkGenerator, Block block)
             {
-                Builder.Pop();
+                var templateNode = Builder.Pop();
+                if (templateNode.Children.Count > 0)
+                {
+                    var sourceRangeStart = templateNode
+                        .Children
+                        .FirstOrDefault(child => child.SourceRange != null)
+                        ?.SourceRange;
+
+                    if (sourceRangeStart != null)
+                    {
+                        var contentLength = templateNode.Children.Sum(child => child.SourceRange?.ContentLength ?? 0);
+
+                        templateNode.SourceRange = new MappingLocation(
+                            sourceRangeStart.AbsoluteIndex,
+                            sourceRangeStart.LineIndex,
+                            sourceRangeStart.CharacterIndex,
+                            contentLength,
+                            sourceRangeStart.FilePath ?? _codeDocument.Source.Filename);
+                    }
+                }
             }
 
             // CSharp expressions are broken up into blocks and spans because Razor allows Razor comments
@@ -150,19 +169,35 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         .Children
                         .FirstOrDefault(child => child.SourceRange != null)
                         ?.SourceRange;
-                    var contentLength = expressionNode.Children.Sum(child => child.SourceRange?.ContentLength ?? 0);
 
-                    expressionNode.SourceRange = new MappingLocation(
-                        sourceRangeStart.AbsoluteIndex,
-                        sourceRangeStart.LineIndex,
-                        sourceRangeStart.CharacterIndex,
-                        contentLength,
-                        sourceRangeStart.FilePath ?? _codeDocument.Source.Filename);
+                    if (sourceRangeStart != null)
+                    {
+                        var contentLength = expressionNode.Children.Sum(child => child.SourceRange?.ContentLength ?? 0);
+
+                        expressionNode.SourceRange = new MappingLocation(
+                            sourceRangeStart.AbsoluteIndex,
+                            sourceRangeStart.LineIndex,
+                            sourceRangeStart.CharacterIndex,
+                            contentLength,
+                            sourceRangeStart.FilePath ?? _codeDocument.Source.Filename);
+                    }
                 }
             }
 
             public override void VisitExpressionSpan(ExpressionChunkGenerator chunkGenerator, Span span)
             {
+                if (span.Symbols.Count == 1)
+                {
+                    var symbol = span.Symbols[0] as CSharpSymbol;
+                    if (symbol != null &&
+                        symbol.Type == CSharpSymbolType.Unknown &&
+                        symbol.Content.Length == 0)
+                    {
+                        // We don't want to create IR nodes for marker symbols.
+                        return;
+                    }
+                }
+
                 Builder.Add(new CSharpTokenIRNode()
                 {
                     Content = span.Content,
@@ -181,11 +216,29 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             public override void VisitMarkupSpan(MarkupChunkGenerator chunkGenerator, Span span)
             {
+                if (span.Symbols.Count == 1)
+                {
+                    var symbol = span.Symbols[0] as HtmlSymbol;
+                    if (symbol != null &&
+                        symbol.Type == HtmlSymbolType.Unknown &&
+                        symbol.Content.Length == 0)
+                    {
+                        // We don't want to create IR nodes for marker symbols.
+                        return;
+                    }
+                }
+
                 var currentChildren = Builder.Current.Children;
                 if (currentChildren.Count > 0 && currentChildren[currentChildren.Count - 1] is HtmlContentIRNode)
                 {
                     var existingHtmlContent = (HtmlContentIRNode)currentChildren[currentChildren.Count - 1];
                     existingHtmlContent.Content = string.Concat(existingHtmlContent.Content, span.Content);
+                    existingHtmlContent.SourceRange = new MappingLocation(
+                        existingHtmlContent.SourceRange.AbsoluteIndex,
+                        existingHtmlContent.SourceRange.LineIndex,
+                        existingHtmlContent.SourceRange.CharacterIndex,
+                        existingHtmlContent.SourceRange.ContentLength + span.Content.Length,
+                        existingHtmlContent.SourceRange.FilePath);
                 }
                 else
                 {

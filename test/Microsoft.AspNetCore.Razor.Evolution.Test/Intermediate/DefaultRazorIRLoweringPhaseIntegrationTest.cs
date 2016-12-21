@@ -33,9 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 n => Assert.IsType<ClassDeclarationIRNode>(n));
             var @class = @namespace.Children[2];
             var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
-            var html = SingleChild<HtmlContentIRNode>(method);
-
-            Assert.Equal(string.Empty, html.Content);
+            Assert.Empty(method.Children);
         }
 
         [Fact]
