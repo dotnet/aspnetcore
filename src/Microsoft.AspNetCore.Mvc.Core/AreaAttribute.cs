@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             if (string.IsNullOrEmpty(areaName))
             {
-                throw new ArgumentException("Area name must not be empty", nameof(areaName));
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
             }
         }
     }
