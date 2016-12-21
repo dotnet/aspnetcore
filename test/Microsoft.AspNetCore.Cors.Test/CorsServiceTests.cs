@@ -1080,6 +1080,41 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             Assert.Equal("30", httpContext.Response.Headers["Access-Control-Max-Age"]);
         }
 
+        [Fact]
+        public void EvaluatePolicy_MultiOriginsPolicy_ReturnsVaryByOriginHeader()
+        {
+            // Arrange
+            var corsService = new CorsService(new TestCorsOptions());
+            var requestContext = GetHttpContext(origin: "http://example.com");
+            var policy = new CorsPolicy();
+            policy.Origins.Add("http://example.com");
+            policy.Origins.Add("http://example-two.com");
+
+            // Act
+            var result = corsService.EvaluatePolicy(requestContext, policy);
+
+            // Assert
+            Assert.NotNull(result.AllowedOrigin);
+            Assert.True(result.VaryByOrigin);
+        }
+
+        [Fact]
+        public void EvaluatePolicy_MultiOriginsPolicy_NoMatchingOrigin_ReturnsInvalidResult()
+        {
+            // Arrange
+            var corsService = new CorsService(new TestCorsOptions());
+            var requestContext = GetHttpContext(origin: "http://example.com");
+            var policy = new CorsPolicy();
+            policy.Origins.Add("http://example-two.com");
+            policy.Origins.Add("http://example-three.com");
+
+            // Act
+            var result = corsService.EvaluatePolicy(requestContext, policy);
+
+            // Assert
+            Assert.Null(result.AllowedOrigin);
+            Assert.False(result.VaryByOrigin);
+        }
 
 
         private static HttpContext GetHttpContext(

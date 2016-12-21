@@ -271,6 +271,11 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             else if (policy.IsOriginAllowed(origin))
             {
                 result.AllowedOrigin = origin;
+
+                if(policy.Origins.Count > 1)
+                {
+                    result.VaryByOrigin = true;
+                }
             }
         }
 
