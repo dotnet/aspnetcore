@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Fact]
-        public void MaxRequestHeaderTotalSizeDefault()
+        public void MaxRequestHeadersTotalSizeDefault()
         {
             Assert.Equal(32 * 1024, (new KestrelServerLimits()).MaxRequestHeadersTotalSize);
         }
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData(int.MinValue)]
         [InlineData(-1)]
         [InlineData(0)]
-        public void MaxRequestHeaderTotalSizeInvalid(int value)
+        public void MaxRequestHeadersTotalSizeInvalid(int value)
         {
             Assert.Throws<ArgumentOutOfRangeException>(() =>
             {
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Theory]
         [InlineData(1)]
         [InlineData(int.MaxValue)]
-        public void MaxRequestHeaderTotalSizeValid(int value)
+        public void MaxRequestHeadersTotalSizeValid(int value)
         {
             var o = new KestrelServerLimits();
             o.MaxRequestHeadersTotalSize = value;
@@ -184,8 +184,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public void RequestHeadersTimeoutValid(double seconds)
         {
             var o = new KestrelServerLimits();
-            o.KeepAliveTimeout = TimeSpan.FromSeconds(seconds);
-            Assert.Equal(seconds, o.KeepAliveTimeout.TotalSeconds);
+            o.RequestHeadersTimeout = TimeSpan.FromSeconds(seconds);
+            Assert.Equal(seconds, o.RequestHeadersTimeout.TotalSeconds);
         }
     }
 }
