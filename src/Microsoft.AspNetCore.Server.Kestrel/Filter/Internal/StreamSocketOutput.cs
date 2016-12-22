@@ -114,14 +114,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter.Internal
             end.Block.Pool.Return(end.Block);
         }
 
-        // Flush no-ops. We rely on connection filter streams to auto-flush.
         public void Flush()
         {
+            _outputStream.Flush();
         }
 
         public Task FlushAsync(CancellationToken cancellationToken)
         {
-            return TaskCache.CompletedTask;
+            return _outputStream.FlushAsync(cancellationToken);
         }
     }
 }

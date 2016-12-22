@@ -117,13 +117,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter.Internal
 
         public override void Flush()
         {
-            // No-op since writes are immediate.
+            _output.Flush();
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            // No-op since writes are immediate.
-            return TaskCache.CompletedTask;
+            return _output.FlushAsync(cancellationToken);
         }
 
         private ValueTask<int> ReadAsync(ArraySegment<byte> buffer)
