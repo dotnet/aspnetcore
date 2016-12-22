@@ -179,7 +179,6 @@ Options:
         private static string GetToolVersion()
         {
             return typeof(Program)
-                .GetTypeInfo()
                 .Assembly
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
                 .InformationalVersion;
