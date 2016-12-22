@@ -24,7 +24,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.SignalR.Common": "1.0.0-*",
     "Microsoft.AspNetCore.Sockets.Client": "1.0.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
 
   "frameworks": {
