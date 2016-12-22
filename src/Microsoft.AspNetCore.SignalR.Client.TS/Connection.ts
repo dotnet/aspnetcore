@@ -22,7 +22,7 @@ export class Connection {
         this.connectionState = ConnectionState.Disconnected;
     }
 
-    start(transportName: string = 'webSockets'): Promise<void> {
+    async start(transportName: string = 'webSockets'): Promise<void> {
         if (this.connectionState != ConnectionState.Disconnected) {
             throw new Error("Cannot start a connection that is not in the 'Disconnected' state");
         }
@@ -31,21 +31,18 @@ export class Connection {
         this.transport.onDataReceived = this.dataReceivedCallback;
         this.transport.onError = e => this.stopConnection();
 
-        return new HttpClient().get(`${this.url}/getid?${this.queryString}`)
-            .then(connectionId => {
-                this.connectionId = connectionId;
-                this.queryString = `id=${connectionId}&${this.connectionId}`;
-                return this.transport.connect(this.url, this.queryString);
-            })
-            .then(() => {
-                this.connectionState = ConnectionState.Connected;
-            })
-            .catch(e => {
-                console.log("Failed to start the connection.")
-                this.connectionState = ConnectionState.Disconnected;
-                this.transport = null;
-                throw e;
-            });
+        try {
+            this.connectionId = await new HttpClient().get(`${this.url}/getid?${this.queryString}`);
+            this.queryString = `id=${this.connectionId}`;
+            await this.transport.connect(this.url, this.queryString);
+            this.connectionState = ConnectionState.Connected;
+        }
+        catch(e) {
+            console.log("Failed to start the connection.")
+            this.connectionState = ConnectionState.Disconnected;
+            this.transport = null;
+            throw e;
+        };
     }
 
     private createTransport(transportName: string): ITransport {

@@ -8,7 +8,7 @@ export class HttpClient {
     }
 
     private xhr(method: string, url: string, content?: string): Promise<string> {
-        return new Promise((resolve, reject) => {
+        return new Promise<string>((resolve, reject) => {
             let xhr = new XMLHttpRequest();
             xhr.open(method, url, true);
 

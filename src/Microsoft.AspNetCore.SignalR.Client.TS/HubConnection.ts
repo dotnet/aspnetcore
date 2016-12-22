@@ -16,8 +16,8 @@ export { Connection } from "./Connection"
 
 export class HubConnection {
     private connection: Connection;
-    private callbacks: Map<string, (any) => void>;
-    private methods: Map<string, (...args:any[]) => void>;
+    private callbacks: Map<string, (invocationDescriptor: InvocationResultDescriptor) => void>;
+    private methods: Map<string, (...args: any[]) => void>;
     private id: number;
 
     constructor(url: string, queryString?: string) {
@@ -28,13 +28,13 @@ export class HubConnection {
             thisHubConnection.dataReceived(data);
         };
 
-        this.callbacks = new Map<string, (any) => void>();
-        this.methods = new Map<string, (...args:any[]) => void>();
+        this.callbacks = new Map<string, (InvocationResultDescriptor) => void>();
+        this.methods = new Map<string, (...args: any[]) => void>();
         this.id = 0;
     }
 
     private dataReceived(data: any) {
-        //TODO: separate JSON parsing
+        // TODO: separate JSON parsing
         // Can happen if a poll request was cancelled
         if (!data) {
             return;
