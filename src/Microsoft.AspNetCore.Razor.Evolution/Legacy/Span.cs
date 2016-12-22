@@ -42,14 +42,23 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             {
                 if (_content == null)
                 {
-                    var builder = new StringBuilder();
-                    for (var i = 0; i < Symbols.Count; i++)
+                    var symbolCount = Symbols.Count;
+                    if (symbolCount == 1)
                     {
-                        var symbol = Symbols[i];
-                        builder.Append(symbol.Content);
+                        // Perf: no StringBuilder allocation if not necessary
+                        _content = Symbols[0].Content;
                     }
+                    else
+                    {
+                        var builder = new StringBuilder();
+                        for (var i = 0; i < symbolCount; i++)
+                        {
+                            var symbol = Symbols[i];
+                            builder.Append(symbol.Content);
+                        }
 
-                    _content = builder.ToString();
+                        _content = builder.ToString();
+                    }
                 }
 
                 return _content;
