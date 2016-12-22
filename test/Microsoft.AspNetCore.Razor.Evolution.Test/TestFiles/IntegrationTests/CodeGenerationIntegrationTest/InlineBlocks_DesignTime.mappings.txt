@@ -1,0 +1,25 @@
+Source Location: (9:0,9 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InlineBlocks.cshtml)
+|Link|
+Generated Location: (398:10,14 [4] )
+|Link|
+
+Source Location: (44:1,14 [19] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InlineBlocks.cshtml)
+|if(link != null) { |
+Generated Location: (840:22,14 [19] )
+|if(link != null) { |
+
+Source Location: (64:1,34 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InlineBlocks.cshtml)
+|link|
+Generated Location: (1017:27,37 [4] )
+|link|
+
+Source Location: (68:1,38 [10] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InlineBlocks.cshtml)
+| } else { |
+Generated Location: (1181:32,38 [10] )
+| } else { |
+
+Source Location: (92:1,62 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InlineBlocks.cshtml)
+| }|
+Generated Location: (1374:37,62 [2] )
+| }|
+

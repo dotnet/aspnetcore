@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 #if NET451
@@ -10,7 +11,9 @@ using System.Runtime.Remoting.Messaging;
 #else
 using System.Threading;
 #endif
+using System.Text;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
+using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using Xunit;
 using Xunit.Sdk;
 using System.Runtime.InteropServices;
@@ -70,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 #endif
         }
 
-        protected RazorCodeDocument CreateCodeDocument()
+        protected virtual RazorCodeDocument CreateCodeDocument()
         {
             if (Filename == null)
             {
@@ -152,6 +155,48 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
             // Normalize newlines to match those in the baseline.
             var actual = document.GeneratedCode.Replace("\r", "").Replace("\n", "\r\n");
+
+            Assert.Equal(baseline, actual);
+        }
+
+        protected void AssertDesignTimeDocumentMatchBaseline(RazorCodeDocument document)
+        {
+            if (Filename == null)
+            {
+                var message = $"{nameof(AssertDesignTimeDocumentMatchBaseline)} should only be called from an integration test ({nameof(Filename)} is null).";
+                throw new InvalidOperationException(message);
+            }
+
+            var csharpDocument = document.GetCSharpDocument();
+            Assert.NotNull(csharpDocument);
+
+            var syntaxTree = document.GetSyntaxTree();
+            Assert.NotNull(syntaxTree);
+            Assert.True(syntaxTree.Options.DesignTimeMode);
+
+            // Validate generated code.
+            AssertCSharpDocumentMatchesBaseline(csharpDocument);
+
+            var baselineFilename = Path.ChangeExtension(Filename, ".mappings.txt");
+            var serializedMappings = LineMappingsSerializer.Serialize(csharpDocument, document.Source);
+
+            if (GenerateBaselines)
+            {
+                var baselineFullPath = Path.Combine(TestProjectRoot, baselineFilename);
+                File.WriteAllText(baselineFullPath, serializedMappings);
+                return;
+            }
+
+            var testFile = TestFile.Create(baselineFilename);
+            if (!testFile.Exists())
+            {
+                throw new XunitException($"The resource {baselineFilename} was not found.");
+            }
+
+            var baseline = testFile.ReadAllText();
+
+            // Normalize newlines to match those in the baseline.
+            var actual = serializedMappings.Replace("\r", "").Replace("\n", "\r\n");
 
             Assert.Equal(baseline, actual);
         }

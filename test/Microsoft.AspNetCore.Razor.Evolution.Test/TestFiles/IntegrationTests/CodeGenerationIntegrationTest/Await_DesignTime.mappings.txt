@@ -1,0 +1,95 @@
+Source Location: (192:9,39 [11] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml)
+|await Foo()|
+Generated Location: (679:16,42 [11] )
+|await Foo()|
+
+Source Location: (247:10,38 [11] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml)
+|await Foo()|
+Generated Location: (847:21,41 [11] )
+|await Foo()|
+
+Source Location: (304:11,39 [14] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml)
+| await Foo(); |
+Generated Location: (1013:26,39 [14] )
+| await Foo(); |
+
+Source Location: (371:12,46 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml)
+| |
+Generated Location: (1188:31,46 [1] )
+| |
+
+Source Location: (376:12,51 [11] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml)
+|await Foo()|
+Generated Location: (1358:36,54 [11] )
+|await Foo()|
+
+Source Location: (391:12,66 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml)
+| |
+Generated Location: (1551:41,66 [1] )
+| |
+
+Source Location: (448:13,49 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml)
+|await|
+Generated Location: (1719:46,52 [5] )
+|await|
+
+Source Location: (578:18,42 [15] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml)
+|await Foo(1, 2)|
+Generated Location: (1885:51,45 [15] )
+|await Foo(1, 2)|
+
+Source Location: (650:19,51 [19] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml)
+|await Foo.Bar(1, 2)|
+Generated Location: (2070:56,54 [19] )
+|await Foo.Bar(1, 2)|
+
+Source Location: (716:20,41 [22] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml)
+|await Foo("bob", true)|
+Generated Location: (2249:61,44 [22] )
+|await Foo("bob", true)|
+
+Source Location: (787:21,42 [39] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml)
+| await Foo(something, hello: "world"); |
+Generated Location: (2429:66,42 [39] )
+| await Foo(something, hello: "world"); |
+
+Source Location: (884:22,51 [21] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml)
+| await Foo.Bar(1, 2) |
+Generated Location: (2634:71,51 [21] )
+| await Foo.Bar(1, 2) |
+
+Source Location: (961:23,49 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml)
+| |
+Generated Location: (2819:76,49 [1] )
+| |
+
+Source Location: (966:23,54 [27] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml)
+|await Foo(boolValue: false)|
+Generated Location: (2992:81,57 [27] )
+|await Foo(boolValue: false)|
+
+Source Location: (997:23,85 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml)
+| |
+Generated Location: (3220:86,85 [1] )
+| |
+
+Source Location: (1057:24,52 [19] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml)
+|await ("wrrronggg")|
+Generated Location: (3391:91,55 [19] )
+|await ("wrrronggg")|
+
+Source Location: (12:0,12 [76] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml)
+|
+    public async Task<string> Foo()
+    {
+        return "Bar";
+    }
+|
+Generated Location: (3586:98,12 [76] )
+|
+    public async Task<string> Foo()
+    {
+        return "Bar";
+    }
+|
+

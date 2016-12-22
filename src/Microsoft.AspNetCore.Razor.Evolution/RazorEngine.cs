@@ -72,6 +72,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             builder.Phases.Add(new DefaultRazorDesignTimeCSharpLoweringPhase());
 
             builder.Features.Add(new ConfigureDesignTimeOptions());
+            builder.Features.Add(new RazorDesignTimeIRPass());
         }
 
         public abstract IReadOnlyList<IRazorEngineFeature> Features { get; }

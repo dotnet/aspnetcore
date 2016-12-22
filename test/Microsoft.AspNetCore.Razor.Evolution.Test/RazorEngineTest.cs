@@ -161,7 +161,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 feature => Assert.IsType<HtmlNodeOptimizationPass>(feature),
                 feature => Assert.IsType<TagHelperBinderSyntaxTreePass>(feature),
                 feature => Assert.IsType<DefaultDirectiveIRPass>(feature),
-                feature => Assert.IsType<RazorEngine.ConfigureDesignTimeOptions>(feature));
+                feature => Assert.IsType<RazorEngine.ConfigureDesignTimeOptions>(feature),
+                feature => Assert.IsType<RazorDesignTimeIRPass>(feature));
         }
 
         private static void AssertDefaultDesignTimePhases(IReadOnlyList<IRazorEnginePhase> phases)

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -11,7 +10,7 @@ using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    internal class DefaultRazorRuntimeCSharpLoweringPhase : RazorEnginePhaseBase, IRazorCSharpLoweringPhase
+    internal class DefaultRazorRuntimeCSharpLoweringPhase : RazorCSharpLoweringPhaseBase
     {
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {
@@ -28,234 +27,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Options = syntaxTree.Options,
             };
             var visitor = new CSharpRenderer(renderingContext);
-            visitor.VisitDefault(irDocument);
+            visitor.VisitDocument(irDocument);
             var csharpDocument = new RazorCSharpDocument()
             {
                 GeneratedCode = renderingContext.Writer.GenerateCode(),
-                LineMappings = renderingContext.Writer.LineMappingManager.Mappings,
+                LineMappings = renderingContext.LineMappings,
             };
 
             codeDocument.SetCSharpDocument(csharpDocument);
         }
 
-        public class CSharpRedirectRenderingConventions : CSharpRenderingConventions
-        {
-            private readonly string _redirectWriter;
-
-            public CSharpRedirectRenderingConventions(string redirectWriter, CSharpCodeWriter writer) : base(writer)
-            {
-                _redirectWriter = redirectWriter;
-            }
-
-            public override string StartWriteMethod => "WriteTo(" + _redirectWriter + ", " /* ORIGINAL: WriteToMethodName */;
-
-            public override string StartWriteLiteralMethod => "WriteLiteralTo(" + _redirectWriter + ", " /* ORIGINAL: WriteLiteralToMethodName */;
-
-
-            public override string StartBeginWriteAttributeMethod => "BeginWriteAttributeTo(" + _redirectWriter + ", " /* ORIGINAL: BeginWriteAttributeToMethodName */;
-
-
-            public override string StartWriteAttributeValueMethod => "WriteAttributeValueTo(" + _redirectWriter + ", " /* ORIGINAL: WriteAttributeValueToMethodName */;
-
-
-            public override string StartEndWriteAttributeMethod => "EndWriteAttributeTo(" + _redirectWriter /* ORIGINAL: EndWriteAttributeToMethodName */;
-        }
-
-        public class CSharpRenderingConventions
-        {
-            public CSharpRenderingConventions(CSharpCodeWriter writer)
-            {
-                Writer = writer;
-            }
-
-            protected CSharpCodeWriter Writer { get; }
-
-            public virtual string StartWriteMethod => "Write(" /* ORIGINAL: WriteMethodName */;
-
-            public virtual string StartWriteLiteralMethod => "WriteLiteral(" /* ORIGINAL: WriteLiteralMethodName */;
-
-            public virtual string StartBeginWriteAttributeMethod => "BeginWriteAttribute(" /* ORIGINAL: BeginWriteAttributeMethodName */;
-
-            public virtual string StartWriteAttributeValueMethod => "WriteAttributeValue(" /* ORIGINAL: WriteAttributeValueMethodName */;
-
-            public virtual string StartEndWriteAttributeMethod => "EndWriteAttribute(" /* ORIGINAL: EndWriteAttributeMethodName */;
-        }
-
-        public class CSharpRenderingContext
-        {
-            private CSharpRenderingConventions _renderingConventions;
-
-            public ICollection<DirectiveDescriptor> Directives { get; set; }
-
-            public CSharpCodeWriter Writer { get; set; }
-
-            public CSharpRenderingConventions RenderingConventions
-            {
-                get
-                {
-                    if (_renderingConventions == null)
-                    {
-                        _renderingConventions = new CSharpRenderingConventions(Writer);
-                    }
-
-                    return _renderingConventions;
-                }
-                set
-                {
-                    _renderingConventions = value;
-                }
-            }
-
-            public ICollection<RazorError> Errors { get; } = new List<RazorError>();
-
-            public RazorSourceDocument SourceDocument { get; set; }
-
-            public RazorParserOptions Options { get; set; }
-        }
-
-        public class LinePragmaWriter : IDisposable
-        {
-            private readonly CSharpCodeWriter _writer;
-            private readonly int _startIndent;
-
-            public LinePragmaWriter(CSharpCodeWriter writer, MappingLocation documentLocation)
-            {
-                if (writer == null)
-                {
-                    throw new ArgumentNullException(nameof(writer));
-                }
-
-                _writer = writer;
-                _startIndent = _writer.CurrentIndent;
-                _writer.ResetIndent();
-                _writer.WriteLineNumberDirective(documentLocation, documentLocation.FilePath);
-            }
-
-            public void Dispose()
-            {
-                // Need to add an additional line at the end IF there wasn't one already written.
-                // This is needed to work with the C# editor's handling of #line ...
-                var builder = _writer.Builder;
-                var endsWithNewline = builder.Length > 0 && builder[builder.Length - 1] == '\n';
-
-                // Always write at least 1 empty line to potentially separate code from pragmas.
-                _writer.WriteLine();
-
-                // Check if the previous empty line wasn't enough to separate code from pragmas.
-                if (!endsWithNewline)
-                {
-                    _writer.WriteLine();
-                }
-
-                _writer
-                    .WriteLineDefaultDirective()
-                    .WriteLineHiddenDirective()
-                    .SetIndent(_startIndent);
-            }
-        }
-
-        public class PageStructureCSharpRenderer : RazorIRNodeWalker
-        {
-            protected readonly CSharpRenderingContext Context;
-
-            public PageStructureCSharpRenderer(CSharpRenderingContext context)
-            {
-                Context = context;
-            }
-
-            public override void VisitNamespace(NamespaceDeclarationIRNode node)
-            {
-                Context.Writer
-                    .Write("namespace ")
-                    .WriteLine(node.Content);
-
-                using (Context.Writer.BuildScope())
-                {
-                    Context.Writer.WriteLineHiddenDirective();
-                    VisitDefault(node);
-                }
-            }
-
-            public override void VisitRazorMethodDeclaration(RazorMethodDeclarationIRNode node)
-            {
-                Context.Writer
-                    .WriteLine("#pragma warning disable 1998")
-                    .Write(node.AccessModifier)
-                    .Write(" ");
-
-                if (node.Modifiers != null)
-                {
-                    for (var i = 0; i < node.Modifiers.Count; i++)
-                    {
-                        Context.Writer.Write(node.Modifiers[i]);
-
-                        if (i + 1 < node.Modifiers.Count)
-                        {
-                            Context.Writer.Write(" ");
-                        }
-                    }
-                }
-
-                Context.Writer
-                    .Write(" ")
-                    .Write(node.ReturnType)
-                    .Write(" ")
-                    .Write(node.Name)
-                    .WriteLine("()");
-
-                using (Context.Writer.BuildScope())
-                {
-                    VisitDefault(node);
-                }
-
-                Context.Writer.WriteLine("#pragma warning restore 1998");
-            }
-
-            public override void VisitClass(ClassDeclarationIRNode node)
-            {
-                Context.Writer
-                    .Write(node.AccessModifier)
-                    .Write(" class ")
-                    .Write(node.Name);
-
-                if (node.BaseType != null || node.Interfaces != null)
-                {
-                    Context.Writer.Write(" : ");
-                }
-
-                if (node.BaseType != null)
-                {
-                    Context.Writer.Write(node.BaseType);
-
-                    if (node.Interfaces != null)
-                    {
-                        Context.Writer.WriteParameterSeparator();
-                    }
-                }
-
-                if (node.Interfaces != null)
-                {
-                    for (var i = 0; i < node.Interfaces.Count; i++)
-                    {
-                        Context.Writer.Write(node.Interfaces[i]);
-
-                        if (i + 1 < node.Interfaces.Count)
-                        {
-                            Context.Writer.WriteParameterSeparator();
-                        }
-                    }
-                }
-
-                Context.Writer.WriteLine();
-
-                using (Context.Writer.BuildScope())
-                {
-                    VisitDefault(node);
-                }
-            }
-        }
-
-        public class CSharpRenderer : PageStructureCSharpRenderer
+        private class CSharpRenderer : PageStructureCSharpRenderer
         {
             public CSharpRenderer(CSharpRenderingContext context) : base(context)
             {
@@ -316,7 +98,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 if (node.SourceRange != null)
                 {
                     linePragmaScope = new LinePragmaWriter(Context.Writer, node.SourceRange);
-                    var padding = BuildOffsetPadding(Context.RenderingConventions.StartWriteMethod.Length, node.SourceRange);
+                    var padding = BuildOffsetPadding(Context.RenderingConventions.StartWriteMethod.Length, node.SourceRange, Context);
                     Context.Writer.Write(padding);
                 }
 
@@ -446,7 +228,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 {
                     using (new LinePragmaWriter(Context.Writer, node.SourceRange))
                     {
-                        var padding = BuildOffsetPadding(0, node.SourceRange);
+                        var padding = BuildOffsetPadding(0, node.SourceRange, Context);
                         Context.Writer
                             .Write(padding)
                             .WriteLine(node.Content);
@@ -477,62 +259,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Context.RenderingConventions = initialRenderingConventions;
 
                 Context.Writer.WriteEndMethodInvocation(endLine: false);
-            }
-
-            private static int CalculateExpressionPadding(MappingLocation sourceRange, CSharpRenderingContext context)
-            {
-                var spaceCount = 0;
-                for (var i = sourceRange.AbsoluteIndex - 1; i >= 0; i--)
-                {
-                    var @char = context.SourceDocument[i];
-                    if (@char == '\n' || @char == '\r')
-                    {
-                        break;
-                    }
-                    else if (@char == '\t')
-                    {
-                        spaceCount += context.Options.TabSize;
-                    }
-                    else
-                    {
-                        spaceCount++;
-                    }
-                }
-
-                return spaceCount;
-            }
-
-            private string BuildOffsetPadding(int generatedOffset, MappingLocation sourceRange)
-            {
-                var basePadding = CalculateExpressionPadding(sourceRange, Context);
-                var resolvedPadding = Math.Max(basePadding - generatedOffset, 0);
-
-                if (Context.Options.IsIndentingWithTabs)
-                {
-                    var spaces = resolvedPadding % Context.Options.TabSize;
-                    var tabs = resolvedPadding / Context.Options.TabSize;
-
-                    return new string('\t', tabs) + new string(' ', spaces);
-                }
-                else
-                {
-                    return new string(' ', resolvedPadding);
-                }
-            }
-
-            private static void RenderExpressionInline(RazorIRNode node, CSharpRenderingContext context)
-            {
-                if (node is CSharpTokenIRNode)
-                {
-                    context.Writer.Write(((CSharpTokenIRNode)node).Content);
-                }
-                else
-                {
-                    for (var i = 0; i < node.Children.Count; i++)
-                    {
-                        RenderExpressionInline(node.Children[i], context);
-                    }
-                }
             }
         }
     }

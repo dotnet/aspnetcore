@@ -25,13 +25,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             '\u2029',
         };
 
-        public CSharpCodeWriter()
-        {
-            LineMappingManager = new LineMappingManager();
-        }
-
-        public LineMappingManager LineMappingManager { get; private set; }
-
         public new CSharpCodeWriter Write(string data)
         {
             return (CSharpCodeWriter)base.Write(data);

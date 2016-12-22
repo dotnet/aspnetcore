@@ -1,0 +1,14 @@
+Source Location: (2:0,2 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EmptyImplicitExpressionInCode.cshtml)
+|
+    |
+Generated Location: (686:16,2 [6] )
+|
+    |
+
+Source Location: (9:1,5 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EmptyImplicitExpressionInCode.cshtml)
+|
+|
+Generated Location: (835:22,5 [2] )
+|
+|
+
