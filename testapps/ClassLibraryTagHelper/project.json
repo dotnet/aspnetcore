@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "Microsoft.AspNetCore.Razor.Runtime": "1.2.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "netstandard1.6": {},

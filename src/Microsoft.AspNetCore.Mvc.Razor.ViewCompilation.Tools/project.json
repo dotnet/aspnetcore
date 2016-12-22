@@ -42,9 +42,9 @@
         "Microsoft.DotNet.ProjectModel.Loader": "1.0.0-preview2-003121",
         "Microsoft.NETCore.App": {
           "type": "platform",
-          "version": "1.1.0-*"
+          "version": "1.2.0-*"
         },
-        "System.Runtime.Serialization.Primitives": "4.3.0-*"
+        "System.Runtime.Serialization.Primitives": "4.4.0-*"
       }
     }
   }
