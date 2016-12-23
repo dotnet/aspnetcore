@@ -3,7 +3,6 @@
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Http.Abstractions": "1.2.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.2.0-*",
     "Microsoft.AspNetCore.Server.Kestrel.Https": "1.2.0-*",
     "Microsoft.AspNetCore.Testing": "1.2.0-*",
     "Microsoft.Extensions.Logging.Testing": "1.2.0-*",
