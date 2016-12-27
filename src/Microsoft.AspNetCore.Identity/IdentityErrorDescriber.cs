@@ -64,6 +64,19 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating a recovery code was not redeemed.
+        /// </summary>
+        /// <returns>An <see cref="IdentityError"/> indicating a recovery code was not redeemed.</returns>
+        public virtual IdentityError RecoveryCodeRedemptionFailed()
+        {
+            return new IdentityError
+            {
+                Code = nameof(RecoveryCodeRedemptionFailed),
+                Description = Resources.RecoveryCodeRedemptionFailed
+            };
+        }
+
+        /// <summary>
         /// Returns an <see cref="IdentityError"/> indicating an external login is already associated with an account.
         /// </summary>
         /// <returns>An <see cref="IdentityError"/> indicating an external login is already associated with an account.</returns>

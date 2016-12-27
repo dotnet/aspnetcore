@@ -1,21 +1,31 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Diagnostics;
 using System.Net;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace Microsoft.AspNetCore.Identity
 {
+    using System;
+    using System.Text;
+
     internal static class Rfc6238AuthenticationService
     {
         private static readonly DateTime _unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private static readonly TimeSpan _timestep = TimeSpan.FromMinutes(3);
         private static readonly Encoding _encoding = new UTF8Encoding(false, true);
+        private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 
-        private static int ComputeTotp(HashAlgorithm hashAlgorithm, ulong timestepNumber, string modifier)
+        // Generates a new 80-bit security token
+        public static byte[] GenerateRandomKey()
+        {
+            byte[] bytes = new byte[20];
+            _rng.GetBytes(bytes);
+            return bytes;
+        }
+
+        internal static int ComputeTotp(HashAlgorithm hashAlgorithm, ulong timestepNumber, string modifier)
         {
             // # of 0's = length of pin
             const int Mod = 1000000;

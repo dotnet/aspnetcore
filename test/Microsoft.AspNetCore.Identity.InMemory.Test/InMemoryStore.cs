@@ -24,7 +24,9 @@ namespace Microsoft.AspNetCore.Identity.InMemory
         IUserTwoFactorStore<TUser>,
         IQueryableRoleStore<TRole>, 
         IRoleClaimStore<TRole>,
-        IUserAuthenticationTokenStore<TUser> 
+        IUserAuthenticationTokenStore<TUser>,
+        IUserAuthenticatorKeyStore<TUser>,
+        IUserTwoFactorRecoveryCodeStore<TUser>
         where TRole : TestRole
         where TUser : TestUser
     {
@@ -546,6 +548,39 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                         l.TokenName == name && l.LoginProvider == loginProvider &&
                         l.UserId == user.Id);
             return Task.FromResult(tokenEntity?.TokenValue);
+        }
+
+        private const string AuthenticatorStoreLoginProvider = "[AspNetAuthenticatorStore]";
+        private const string AuthenticatorKeyTokenName = "AuthenticatorKey";
+        private const string RecoveryCodeTokenName = "RecoveryCodes";
+
+        public Task SetAuthenticatorKeyAsync(TUser user, string key, CancellationToken cancellationToken)
+        {
+            return SetTokenAsync(user, AuthenticatorStoreLoginProvider, AuthenticatorKeyTokenName, key, cancellationToken);
+        }
+
+        public Task<string> GetAuthenticatorKeyAsync(TUser user, CancellationToken cancellationToken)
+        {
+            return GetTokenAsync(user, AuthenticatorStoreLoginProvider, AuthenticatorKeyTokenName, cancellationToken);
+        }
+
+        public Task ReplaceCodesAsync(TUser user, IEnumerable<string> recoveryCodes, CancellationToken cancellationToken)
+        {
+            var mergedCodes = string.Join(";", recoveryCodes);
+            return SetTokenAsync(user, AuthenticatorStoreLoginProvider, RecoveryCodeTokenName, mergedCodes, cancellationToken);
+        }
+
+        public async Task<bool> RedeemCodeAsync(TUser user, string code, CancellationToken cancellationToken)
+        {
+            var mergedCodes = await GetTokenAsync(user, AuthenticatorStoreLoginProvider, RecoveryCodeTokenName, cancellationToken) ?? "";
+            var splitCodes = mergedCodes.Split(';');
+            if (splitCodes.Contains(code))
+            {
+                var updatedCodes = new List<string>(splitCodes.Where(s => s != code));
+                await ReplaceCodesAsync(user, updatedCodes, cancellationToken);
+                return true;
+            }
+            return false;
         }
 
         public IQueryable<TRole> Roles

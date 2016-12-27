@@ -32,7 +32,7 @@
                 See <a href="http://go.microsoft.com/fwlink/?LinkID=532713">this article</a>
                 for details on setting up this ASP.NET application to support two-factor authentication using SMS.
             </p>
-            @*@(Model.PhoneNumber ?? "None")
+            @(Model.PhoneNumber ?? "None")
                 @if (Model.PhoneNumber != null)
                 {
                     <br />
@@ -44,16 +44,16 @@
                 else
                 {
                     <text>[&nbsp;&nbsp;<a asp-controller="Manage" asp-action="AddPhoneNumber">Add</a>&nbsp;&nbsp;]</text>
-                }*@
+                }
         </dd>
 
         <dt>Two-Factor Authentication:</dt>
         <dd>
-            <p>
+            <!--<p>
                 There are no two-factor authentication providers configured. See <a href="http://go.microsoft.com/fwlink/?LinkID=532713">this article</a>
                 for setting up this application to support two-factor authentication.
-            </p>
-            @*@if (Model.TwoFactor)
+            </p>-->
+            @if (Model.TwoFactor)
                 {
                     <form asp-controller="Manage" asp-action="DisableTwoFactorAuthentication" method="post" class="form-horizontal" role="form">
                         Enabled [<button type="submit" class="btn-link">Disable</button>]
@@ -64,7 +64,23 @@
                     <form asp-controller="Manage" asp-action="EnableTwoFactorAuthentication" method="post" class="form-horizontal" role="form">
                         [<button type="submit" class="btn-link">Enable</button>] Disabled
                     </form>
-                }*@
+                }
+        </dd>
+        <dt>Authentication App:</dt>
+        <dd>
+            @if (Model.AuthenticatorKey == null)
+            {
+                <form asp-controller="Manage" asp-action="ResetAuthenticatorKey" method="post" class="form-horizontal" role="form">
+                    Generate [<button type="submit" class="btn-link">Generate</button>]
+                </form>
+            }
+            else
+            {
+                <text>Your key is: @Model.AuthenticatorKey</text>
+                <form asp-controller="Manage" asp-action="GenerateRecoveryCode" method="post" class="form-horizontal" role="form">
+                    Generate [<button type="submit" class="btn-link">Generate new recovery codes</button>]
+                </form>
+            }
         </dd>
     </dl>
 </div>

@@ -221,6 +221,10 @@
     <value>Store does not implement IRoleClaimStore&lt;TRole&gt;.</value>
     <comment>Error when the store does not implement this interface</comment>
   </data>
+  <data name="StoreNotIUserAuthenticationTokenStore" xml:space="preserve">
+    <value>Store does not implement IUserAuthenticationTokenStore&lt;User&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
   <data name="StoreNotIUserClaimStore" xml:space="preserve">
     <value>Store does not implement IUserClaimStore&lt;TUser&gt;.</value>
     <comment>Error when the store does not implement this interface</comment>
@@ -257,9 +261,17 @@
     <value>Store does not implement IUserSecurityStampStore&lt;TUser&gt;.</value>
     <comment>Error when the store does not implement this interface</comment>
   </data>
+  <data name="StoreNotIUserAuthenticatorKeyStore" xml:space="preserve">
+    <value>Store does not implement IUserAuthenticatorKeyStore&lt;User&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
   <data name="StoreNotIUserTwoFactorStore" xml:space="preserve">
     <value>Store does not implement IUserTwoFactorStore&lt;TUser&gt;.</value>
     <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="RecoveryCodeRedemptionFailed" xml:space="preserve">
+    <value>Recovery code redemption failed.</value>
+    <comment>Error when a recovery code is not redeemed.</comment>
   </data>
   <data name="UserAlreadyHasPassword" xml:space="preserve">
     <value>User already has a password set.</value>
@@ -284,5 +296,9 @@
   <data name="UserNotInRole" xml:space="preserve">
     <value>User is not in role '{0}'.</value>
     <comment>Error when a user is not in the role</comment>
+  </data>
+  <data name="StoreNotIUserTwoFactorRecoveryCodeStore" xml:space="preserve">
+    <value>Store does not implement IUserTwoFactorRecoveryCodeStore&lt;User&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
   </data>
 </root>

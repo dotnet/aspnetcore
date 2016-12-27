@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Identity
         /// Gets a flag indicating whether the backing user store supports authentication tokens.
         /// </summary>
         /// <value>
-        /// true if the backing user store supports  authentication tokens, otherwise false.
+        /// true if the backing user store supports authentication tokens, otherwise false.
         /// </value>
         public virtual bool SupportsUserAuthenticationTokens
         {
@@ -166,6 +166,36 @@ namespace Microsoft.AspNetCore.Identity
             {
                 ThrowIfDisposed();
                 return Store is IUserAuthenticationTokenStore<TUser>;
+            }
+        }
+
+        /// <summary>
+        /// Gets a flag indicating whether the backing user store supports a user authenticator.
+        /// </summary>
+        /// <value>
+        /// true if the backing user store supports a user authenticatior, otherwise false.
+        /// </value>
+        public virtual bool SupportsUserAuthenticatorKey
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return Store is IUserAuthenticatorKeyStore<TUser>;
+            }
+        }
+
+        /// <summary>
+        /// Gets a flag indicating whether the backing user store supports recovery codes.
+        /// </summary>
+        /// <value>
+        /// true if the backing user store supports a user authenticatior, otherwise false.
+        /// </value>
+        public virtual bool SupportsUserTwoFactorRecoveryCodes
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return Store is IUserTwoFactorRecoveryCodeStore<TUser>;
             }
         }
 
@@ -2013,11 +2043,11 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="user"></param>
         /// <param name="loginProvider">The authentication scheme for the provider the token is associated with.</param>
         /// <param name="tokenName">The name of the token.</param>
-        /// <returns></returns>
+        /// <returns>The authentication token for a user</returns>
         public virtual Task<string> GetAuthenticationTokenAsync(TUser user, string loginProvider, string tokenName)
         {
             ThrowIfDisposed();
-            var store = GetTokenStore();
+            var store = GetAuthenticationTokenStore();
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
@@ -2041,11 +2071,11 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="loginProvider">The authentication scheme for the provider the token is associated with.</param>
         /// <param name="tokenName">The name of the token.</param>
         /// <param name="tokenValue">The value of the token.</param>
-        /// <returns></returns>
+        /// <returns>Whether the user was successfully updated.</returns>
         public virtual async Task<IdentityResult> SetAuthenticationTokenAsync(TUser user, string loginProvider, string tokenName, string tokenValue)
         {
             ThrowIfDisposed();
-            var store = GetTokenStore();
+            var store = GetAuthenticationTokenStore();
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
@@ -2074,7 +2104,7 @@ namespace Microsoft.AspNetCore.Identity
         public virtual async Task<IdentityResult> RemoveAuthenticationTokenAsync(TUser user, string loginProvider, string tokenName)
         {
             ThrowIfDisposed();
-            var store = GetTokenStore();
+            var store = GetAuthenticationTokenStore();
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
@@ -2092,6 +2122,110 @@ namespace Microsoft.AspNetCore.Identity
             return await UpdateUserAsync(user);
         }
 
+        /// <summary>
+        /// Returns the authenticator key for the user.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>The authenticator key</returns>
+        public virtual Task<string> GetAuthenticatorKeyAsync(TUser user)
+        {
+            ThrowIfDisposed();
+            var store = GetAuthenticatorKeyStore();
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            return store.GetAuthenticatorKeyAsync(user, CancellationToken);
+        }
+
+        /// <summary>
+        /// Resets the authenticator key for the user.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>Whether the user was successfully updated.</returns>
+        public virtual async Task<IdentityResult> ResetAuthenticatorKeyAsync(TUser user)
+        {
+            ThrowIfDisposed();
+            var store = GetAuthenticatorKeyStore();
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            await store.SetAuthenticatorKeyAsync(user, GenerateNewAuthenticatorKey(), CancellationToken);
+            return await UpdateAsync(user);
+        }
+
+        /// <summary>
+        /// Generates a new base32 encoded 160-bit security secret (size of SHA1 hash).
+        /// </summary>
+        /// <returns>The new security secret.</returns>
+        public virtual string GenerateNewAuthenticatorKey()
+        {
+            return Base32.ToBase32(Rfc6238AuthenticationService.GenerateRandomKey());
+        }
+
+        /// <summary>
+        /// Generates recovery codes for the user, this invalidates any previous recovery codes for the user.
+        /// </summary>
+        /// <param name="user">The user to generate recovery codes for.</param>
+        /// <param name="number">The number of codes to generate.</param>
+        /// <returns>The new recovery codes for the user.</returns>
+        public virtual async Task<IEnumerable<string>> GenerateNewTwoFactorRecoveryCodesAsync(TUser user, int number)
+        {
+            ThrowIfDisposed();
+            var store = GetRecoveryCodeStore();
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            var newCodes = new List<string>(number);
+            for (var i = 0; i < number; i++)
+            {
+                newCodes.Add(CreateTwoFactorRecoveryCode());
+            }
+
+            await store.ReplaceCodesAsync(user, newCodes, CancellationToken);
+            var update = await UpdateAsync(user);
+            if (update.Succeeded)
+            {
+                return newCodes;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Generate a new recovery code.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual string CreateTwoFactorRecoveryCode()
+        {
+            return Guid.NewGuid().ToString();
+        }
+
+        /// <summary>
+        /// Returns whether a recovery code is valid for a user. Note: recovery codes are only valid
+        /// once, and will be invalid after use.
+        /// </summary>
+        /// <param name="user">The user who owns the recovery code.</param>
+        /// <param name="code">The recovery code to use.</param>
+        /// <returns>True if the recovery code was found for the user.</returns>
+        public virtual async Task<IdentityResult> RedeemTwoFactorRecoveryCodeAsync(TUser user, string code)
+        {
+            ThrowIfDisposed();
+            var store = GetRecoveryCodeStore();
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            var success = await store.RedeemCodeAsync(user, code, CancellationToken);
+            if (success)
+            {
+                return await UpdateAsync(user);
+            }
+            return IdentityResult.Failed(ErrorDescriber.RecoveryCodeRedemptionFailed());
+        }
 
         /// <summary>
         /// Releases the unmanaged resources used by the role manager and optionally releases the managed resources.
@@ -2292,12 +2426,32 @@ namespace Microsoft.AspNetCore.Identity
             return await Store.UpdateAsync(user, CancellationToken);
         }
 
-        private IUserAuthenticationTokenStore<TUser> GetTokenStore()
+        private IUserAuthenticatorKeyStore<TUser> GetAuthenticatorKeyStore()
+        {
+            var cast = Store as IUserAuthenticatorKeyStore<TUser>;
+            if (cast == null)
+            {
+                throw new NotSupportedException(Resources.StoreNotIUserAuthenticatorKeyStore);
+            }
+            return cast;
+        }
+
+        private IUserTwoFactorRecoveryCodeStore<TUser> GetRecoveryCodeStore()
+        {
+            var cast = Store as IUserTwoFactorRecoveryCodeStore<TUser>;
+            if (cast == null)
+            {
+                throw new NotSupportedException(Resources.StoreNotIUserTwoFactorRecoveryCodeStore);
+            }
+            return cast;
+        }
+
+        private IUserAuthenticationTokenStore<TUser> GetAuthenticationTokenStore()
         {
             var cast = Store as IUserAuthenticationTokenStore<TUser>;
             if (cast == null)
             {
-                throw new NotSupportedException("Resources.StoreNotIUserAuthenticationTokenStore");
+                throw new NotSupportedException(Resources.StoreNotIUserAuthenticationTokenStore);
             }
             return cast;
         }

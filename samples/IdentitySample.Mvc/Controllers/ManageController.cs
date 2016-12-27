@@ -58,7 +58,8 @@ namespace IdentitySamples.Controllers
                 PhoneNumber = await _userManager.GetPhoneNumberAsync(user),
                 TwoFactor = await _userManager.GetTwoFactorEnabledAsync(user),
                 Logins = await _userManager.GetLoginsAsync(user),
-                BrowserRemembered = await _signInManager.IsTwoFactorClientRememberedAsync(user)
+                BrowserRemembered = await _signInManager.IsTwoFactorClientRememberedAsync(user),
+                AuthenticatorKey = await _userManager.GetAuthenticatorKeyAsync(user)
             };
             return View(model);
         }
@@ -105,6 +106,37 @@ namespace IdentitySamples.Controllers
             var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.PhoneNumber);
             await _smsSender.SendSmsAsync(model.PhoneNumber, "Your security code is: " + code);
             return RedirectToAction(nameof(VerifyPhoneNumber), new { PhoneNumber = model.PhoneNumber });
+        }
+
+        //
+        // POST: /Manage/ResetAuthenticatorKey
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetAuthenticatorKey()
+        {
+            var user = await GetCurrentUserAsync();
+            if (user != null)
+            {
+                await _userManager.ResetAuthenticatorKeyAsync(user);
+                _logger.LogInformation(1, "User reset authenticator key.");
+            }
+            return RedirectToAction(nameof(Index), "Manage");
+        }
+
+        //
+        // POST: /Manage/GenerateRecoveryCode
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GenerateRecoveryCode()
+        {
+            var user = await GetCurrentUserAsync();
+            if (user != null)
+            {
+                var codes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 5);
+                _logger.LogInformation(1, "User generated new recovery code.");
+                return View("DisplayRecoveryCodes", new DisplayRecoveryCodesViewModel { Codes = codes });
+            }
+            return View("Error");
         }
 
         //

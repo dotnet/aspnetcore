@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.Test
@@ -2376,6 +2378,69 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         /// <returns>Task</returns>
         [Fact]
+        public async Task CanRedeemRecoveryCodeOnlyOnce()
+        {
+            if (ShouldSkipDbTests())
+            {
+                return;
+            }
+            var manager = CreateManager();
+            var user = CreateTestUser();
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+
+            var numCodes = 15;
+            var newCodes = await manager.GenerateNewTwoFactorRecoveryCodesAsync(user, numCodes);
+            Assert.Equal(numCodes, newCodes.Count());
+
+            foreach (var code in newCodes)
+            {
+                IdentityResultAssert.IsSuccess(await manager.RedeemTwoFactorRecoveryCodeAsync(user, code));
+                IdentityResultAssert.IsFailure(await manager.RedeemTwoFactorRecoveryCodeAsync(user, code));
+            }
+            // One last time to be sure
+            foreach (var code in newCodes)
+            {
+                IdentityResultAssert.IsFailure(await manager.RedeemTwoFactorRecoveryCodeAsync(user, code));
+            }
+        }
+
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Fact]
+        public async Task RecoveryCodesInvalidAfterReplace()
+        {
+            if (ShouldSkipDbTests())
+            {
+                return;
+            }
+            var manager = CreateManager();
+            var user = CreateTestUser();
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+
+            var numCodes = 15;
+            var newCodes = await manager.GenerateNewTwoFactorRecoveryCodesAsync(user, numCodes);
+            Assert.Equal(numCodes, newCodes.Count());
+            var realCodes = await manager.GenerateNewTwoFactorRecoveryCodesAsync(user, numCodes);
+            Assert.Equal(numCodes, realCodes.Count());
+
+            foreach (var code in newCodes)
+            {
+                IdentityResultAssert.IsFailure(await manager.RedeemTwoFactorRecoveryCodeAsync(user, code));
+            }
+
+            foreach (var code in realCodes)
+            {
+                IdentityResultAssert.IsSuccess(await manager.RedeemTwoFactorRecoveryCodeAsync(user, code));
+            }
+        }
+
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Fact]
         public async Task CanGetValidTwoFactor()
         {
             if (ShouldSkipDbTests())
@@ -2408,6 +2473,11 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotNull(factors);
             Assert.Equal(1, factors.Count());
             Assert.Equal("Phone", factors[0]);
+            IdentityResultAssert.IsSuccess(await manager.ResetAuthenticatorKeyAsync(user));
+            factors = await manager.GetValidTwoFactorProvidersAsync(user);
+            Assert.NotNull(factors);
+            Assert.Equal(2, factors.Count());
+            Assert.Equal("Authenticator", factors[1]);
         }
 
         /// <summary>

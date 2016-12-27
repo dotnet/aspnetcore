@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
             var provider = services.BuildServiceProvider();
             var tokenProviders = provider.GetRequiredService<IOptions<IdentityOptions>>().Value.Tokens.ProviderMap.Values;
-            Assert.Equal(3, tokenProviders.Count());
+            Assert.Equal(4, tokenProviders.Count());
         }
 
         [Fact]

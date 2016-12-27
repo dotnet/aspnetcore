@@ -201,7 +201,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         IUserPhoneNumberStore<TUser>,
         IQueryableUserStore<TUser>,
         IUserTwoFactorStore<TUser>,
-        IUserAuthenticationTokenStore<TUser>
+        IUserAuthenticationTokenStore<TUser>,
+        IUserAuthenticatorKeyStore<TUser>,
+        IUserTwoFactorRecoveryCodeStore<TUser>
         where TUser : IdentityUser<TKey, TUserClaim, TUserRole, TUserLogin>
         where TRole : IdentityRole<TKey, TUserRole, TRoleClaim>
         where TContext : DbContext
@@ -1411,7 +1413,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <param name="name">The name of the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-        public async virtual Task RemoveTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
+        public virtual async Task RemoveTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -1435,7 +1437,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <param name="name">The name of the token.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-        public async virtual Task<string> GetTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
+        public virtual async Task<string> GetTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
@@ -1446,6 +1448,79 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             }
             var entry = await FindToken(user, loginProvider, name, cancellationToken);
             return entry?.Value;
+        }
+
+        private const string InternalLoginProvider = "[AspNetUserStore]";
+        private const string AuthenticatorKeyTokenName = "AuthenticatorKey";
+        private const string RecoveryCodeTokenName = "RecoveryCodes";
+
+        /// <summary>
+        /// Sets the authenticator key for the specified <paramref name="user"/>.
+        /// </summary>
+        /// <param name="user">The user whose authenticator key should be set.</param>
+        /// <param name="key">The authenticator key to set.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
+        public virtual Task SetAuthenticatorKeyAsync(TUser user, string key, CancellationToken cancellationToken)
+        {
+            return SetTokenAsync(user, InternalLoginProvider, AuthenticatorKeyTokenName, key, cancellationToken);
+        }
+
+        /// <summary>
+        /// Get the authenticator key for the specified <paramref name="user" />.
+        /// </summary>
+        /// <param name="user">The user whose security stamp should be set.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the security stamp for the specified <paramref name="user"/>.</returns>
+        public virtual Task<string> GetAuthenticatorKeyAsync(TUser user, CancellationToken cancellationToken)
+        {
+            return GetTokenAsync(user, InternalLoginProvider, AuthenticatorKeyTokenName, cancellationToken);
+        }
+
+        /// <summary>
+        /// Updates the recovery codes for the user while invalidating any previous recovery codes.
+        /// </summary>
+        /// <param name="user">The user to store new recovery codes for.</param>
+        /// <param name="recoveryCodes">The new recovery codes for the user.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The new recovery codes for the user.</returns>
+        public virtual Task ReplaceCodesAsync(TUser user, IEnumerable<string> recoveryCodes, CancellationToken cancellationToken)
+        {
+            var mergedCodes = string.Join(";", recoveryCodes);
+            return SetTokenAsync(user, InternalLoginProvider, RecoveryCodeTokenName, mergedCodes, cancellationToken);
+        }
+
+        /// <summary>
+        /// Returns whether a recovery code is valid for a user. Note: recovery codes are only valid
+        /// once, and will be invalid after use.
+        /// </summary>
+        /// <param name="user">The user who owns the recovery code.</param>
+        /// <param name="code">The recovery code to use.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>True if the recovery code was found for the user.</returns>
+        public virtual async Task<bool> RedeemCodeAsync(TUser user, string code, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+            if (code == null)
+            {
+                throw new ArgumentNullException(nameof(code));
+            }
+
+            var mergedCodes = await GetTokenAsync(user, InternalLoginProvider, RecoveryCodeTokenName, cancellationToken) ?? "";
+            var splitCodes = mergedCodes.Split(';');
+            if (splitCodes.Contains(code))
+            {
+                var updatedCodes = new List<string>(splitCodes.Where(s => s != code));
+                await ReplaceCodesAsync(user, updatedCodes, cancellationToken);
+                return true;
+            }
+            return false;
         }
     }
 }

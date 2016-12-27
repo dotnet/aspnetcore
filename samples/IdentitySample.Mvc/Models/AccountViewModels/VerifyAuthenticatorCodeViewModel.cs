@@ -2,11 +2,8 @@
 
 namespace IdentitySample.Models.AccountViewModels
 {
-    public class VerifyCodeViewModel
+    public class VerifyAuthenticatorCodeViewModel
     {
-        [Required]
-        public string Provider { get; set; }
-
         [Required]
         public string Code { get; set; }
 
