@@ -47,18 +47,82 @@ namespace Microsoft.Extensions.DependencyInjection
             this IList<IApplicationModelConvention> conventions,
             IActionModelConvention actionModelConvention)
         {
+            if (conventions == null)
+            {
+                throw new ArgumentNullException(nameof(conventions));
+            }
+
+            if (actionModelConvention == null)
+            {
+                throw new ArgumentNullException(nameof(actionModelConvention));
+            }
+
             conventions.Add(new ActionApplicationModelConvention(actionModelConvention));
+        }
+
+        /// <summary>
+        /// Adds a <see cref="IParameterModelConvention"/> to all the parameters in the application.
+        /// </summary>
+        /// <param name="conventions">The list of <see cref="IApplicationModelConvention"/>
+        /// in <see cref="AspNetCore.Mvc.MvcOptions"/>.</param>
+        /// <param name="parameterModelConvention">The <see cref="IParameterModelConvention"/> which needs to be
+        /// added.</param>
+        public static void Add(
+            this IList<IApplicationModelConvention> conventions,
+            IParameterModelConvention parameterModelConvention)
+        {
+            if (conventions == null)
+            {
+                throw new ArgumentNullException(nameof(conventions));
+            }
+
+            if (parameterModelConvention == null)
+            {
+                throw new ArgumentNullException(nameof(parameterModelConvention));
+            }
+
+            conventions.Add(new ParameterApplicationModelConvention(parameterModelConvention));
+        }
+
+        private class ParameterApplicationModelConvention : IApplicationModelConvention
+        {
+            private IParameterModelConvention _parameterModelConvention;
+
+            public ParameterApplicationModelConvention(IParameterModelConvention parameterModelConvention)
+            {
+                if (parameterModelConvention == null)
+                {
+                    throw new ArgumentNullException(nameof(parameterModelConvention));
+                }
+
+                _parameterModelConvention = parameterModelConvention;
+            }
+
+            /// <inheritdoc />
+            public void Apply(ApplicationModel application)
+            {
+                if (application == null)
+                {
+                    throw new ArgumentNullException(nameof(application));
+                }
+
+                foreach (var controller in application.Controllers)
+                {
+                    foreach (var action in controller.Actions)
+                    {
+                        foreach (var parameter in action.Parameters)
+                        {
+                            _parameterModelConvention.Apply(parameter);
+                        }
+                    }
+                }
+            }
         }
 
         private class ActionApplicationModelConvention : IApplicationModelConvention
         {
             private IActionModelConvention _actionModelConvention;
 
-            /// <summary>
-            /// Initializes a new instance of <see cref="ActionApplicationModelConvention"/>.
-            /// </summary>
-            /// <param name="actionModelConvention">The action convention to be applied on all actions
-            /// in the application.</param>
             public ActionApplicationModelConvention(IActionModelConvention actionModelConvention)
             {
                 if (actionModelConvention == null)
@@ -91,11 +155,6 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             private IControllerModelConvention _controllerModelConvention;
 
-            /// <summary>
-            /// Initializes a new instance of <see cref="ControllerApplicationModelConvention"/>.
-            /// </summary>
-            /// <param name="controllerConvention">The controller convention to be applied on all controllers
-            /// in the application.</param>
             public ControllerApplicationModelConvention(IControllerModelConvention controllerConvention)
             {
                 if (controllerConvention == null)
