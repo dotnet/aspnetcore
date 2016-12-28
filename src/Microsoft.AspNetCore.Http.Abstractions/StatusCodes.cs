@@ -5,6 +5,8 @@ namespace Microsoft.AspNetCore.Http
 {
     public static class StatusCodes
     {
+        public const int Status101SwitchingProtocols = 101;
+
         public const int Status200OK = 200;
         public const int Status201Created = 201;
         public const int Status202Accepted = 202;

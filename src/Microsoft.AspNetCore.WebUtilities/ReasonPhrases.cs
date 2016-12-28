@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.WebUtilities
     {
         private static IDictionary<int, string> Phrases = new Dictionary<int, string>()
         {
+            { 101, "Switching Protocols" },
+
             { 200, "OK" },
             { 201, "Created" },
             { 202, "Accepted" },
