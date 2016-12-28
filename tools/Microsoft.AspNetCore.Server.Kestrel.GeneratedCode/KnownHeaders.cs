@@ -494,14 +494,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         output.CopyFrom(_headers._raw{header.Identifier}, 0, _headers._raw{header.Identifier}.Length);
                     }}
                     else ")}
-                        foreach (var value in _headers._{header.Identifier})
+                    {{
+                        var valueCount = _headers._{header.Identifier}.Count; 
+                        for (var i = 0; i < valueCount; i++) 
                         {{
+                            var value = _headers._{header.Identifier}[i]; 
                             if (value != null)
                             {{
                                 output.CopyFrom(_headerBytes, {header.BytesOffset}, {header.BytesCount});
                                 output.CopyFromAscii(value);
                             }}
                         }}
+                    }}
 
                     tempBits &= ~{1L << header.Index}L;
                     if(tempBits == 0)
