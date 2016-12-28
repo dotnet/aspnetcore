@@ -35,12 +35,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "input",
                         TypeName = "InputTagHelper",
-                        Attributes = new[] { new TagHelperAttributeDescriptor
+                        Attributes = new[]
                         {
-                            Name = "value",
-                            PropertyName = "FooProp",
-                            TypeName = "System.String"
-                        } }
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "value",
+                                PropertyName = "FooProp",
+                                TypeName = "System.String"
+                            },
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "bound",
+                                PropertyName = "BoundProp",
+                                TypeName = "System.String"
+                            }
+                        }
                     }
                 };
             }

@@ -551,14 +551,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         public void SimpleTagHelpers_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
         }
 
         [Fact]
         public void TagHelpersWithBoundAttributes_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
         }
 
         [Fact]
@@ -566,133 +566,133 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         {
 
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
         }
 
         [Fact]
         public void SingleTagHelper_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
         }
 
         [Fact]
         public void SingleTagHelperWithNewlineBeforeAttributes_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
         }
 
         [Fact]
         public void TagHelpersWithWeirdlySpacedAttributes_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
         }
 
         [Fact]
         public void IncompleteTagHelper_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
         }
 
         [Fact]
         public void BasicTagHelpers_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
         }
 
         [Fact]
         public void BasicTagHelpers_Prefixed_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.PrefixedPAndInputTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.PrefixedPAndInputTagHelperDescriptors);
         }
 
         [Fact]
         public void ComplexTagHelpers_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
         }
 
         [Fact]
         public void DuplicateTargetTagHelper_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.DuplicateTargetTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DuplicateTargetTagHelperDescriptors);
         }
 
         [Fact]
         public void EmptyAttributeTagHelpers_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
         }
 
         [Fact]
         public void EscapedTagHelpers_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
         }
 
         [Fact]
         public void AttributeTargetingTagHelpers_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.AttributeTargetingTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.AttributeTargetingTagHelperDescriptors);
         }
 
         [Fact]
         public void PrefixedAttributeTagHelpers_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.PrefixedAttributeTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.PrefixedAttributeTagHelperDescriptors);
         }
 
         [Fact]
         public void DuplicateAttributeTagHelpers_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
         }
 
         [Fact]
         public void DynamicAttributeTagHelpers_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.DynamicAttributeTagHelpers_Descriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DynamicAttributeTagHelpers_Descriptors);
         }
 
         [Fact]
         public void TransitionsInTagHelperAttributes_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
         }
 
         [Fact]
         public void NestedScriptTagTagHelpers_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
         }
 
         [Fact]
         public void SymbolBoundAttributes_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.SymbolBoundTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.SymbolBoundTagHelperDescriptors);
         }
 
         [Fact]
         public void EnumTagHelpers_Runtime()
         {
             // Arrange, Act & Assert
-            RunTagHelpersTest(TestTagHelperDescriptors.EnumTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.EnumTagHelperDescriptors);
         }
         #endregion
 
@@ -1242,6 +1242,154 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             // Assert
             AssertDesignTimeDocumentMatchBaseline(document);
         }
+
+        [Fact]
+        public void SimpleTagHelpers_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void TagHelpersWithBoundAttributes_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void NestedTagHelpers_DesignTime()
+        {
+
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void SingleTagHelper_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void SingleTagHelperWithNewlineBeforeAttributes_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void TagHelpersWithWeirdlySpacedAttributes_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void IncompleteTagHelper_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void BasicTagHelpers_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void BasicTagHelpers_Prefixed_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.PrefixedPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void ComplexTagHelpers_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void DuplicateTargetTagHelper_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DuplicateTargetTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void EmptyAttributeTagHelpers_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void EscapedTagHelpers_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void AttributeTargetingTagHelpers_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.AttributeTargetingTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void PrefixedAttributeTagHelpers_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.PrefixedAttributeTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void DuplicateAttributeTagHelpers_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void DynamicAttributeTagHelpers_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DynamicAttributeTagHelpers_Descriptors);
+        }
+
+        [Fact]
+        public void TransitionsInTagHelperAttributes_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void NestedScriptTagTagHelpers_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void SymbolBoundAttributes_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.SymbolBoundTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void EnumTagHelpers_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.EnumTagHelperDescriptors);
+        }
         #endregion
 
         protected override RazorCodeDocument CreateCodeDocument()
@@ -1263,7 +1411,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             return RazorCodeDocument.Create(TestRazorSourceDocument.CreateResource(sourceFilename));
         }
 
-        private void RunTagHelpersTest(IEnumerable<TagHelperDescriptor> descriptors)
+        private void RunRuntimeTagHelpersTest(IEnumerable<TagHelperDescriptor> descriptors)
         {
             // Arrange
             var engine = RazorEngine.Create(
@@ -1280,6 +1428,25 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
             // Assert
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        private void RunDesignTimeTagHelpersTest(IEnumerable<TagHelperDescriptor> descriptors)
+        {
+            // Arrange
+            var engine = RazorEngine.CreateDesignTime(
+                builder =>
+                {
+                    builder.Features.Add(new ApiSetsIRTestAdapter());
+                    builder.Features.Add(new TagHelperFeature(new TestTagHelperDescriptorResolver(descriptors)));
+                    DefaultRazorRuntimeCSharpLoweringPhase.GenerateUniqueTagHelperId = "test";
+                });
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertDesignTimeDocumentMatchBaseline(document);
         }
 
         private class TestTagHelperDescriptorResolver : ITagHelperDescriptorResolver

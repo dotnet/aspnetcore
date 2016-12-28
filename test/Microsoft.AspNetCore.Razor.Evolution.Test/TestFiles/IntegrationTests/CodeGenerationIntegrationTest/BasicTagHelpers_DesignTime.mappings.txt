@@ -1,0 +1,10 @@
+Source Location: (220:5,38 [23] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicTagHelpers.cshtml)
+|ViewBag.DefaultInterval|
+Generated Location: (1273:22,41 [23] )
+|ViewBag.DefaultInterval|
+
+Source Location: (303:6,40 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicTagHelpers.cshtml)
+|true|
+Generated Location: (1971:33,42 [4] )
+|true|
+

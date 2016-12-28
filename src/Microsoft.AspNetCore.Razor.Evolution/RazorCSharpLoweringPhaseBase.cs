@@ -25,43 +25,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             }
         }
 
-        protected static void RenderTagHelperAttributeInline(
-            RazorIRNode node,
-            MappingLocation documentLocation,
-            CSharpRenderingContext context)
-        {
-            if (node is SetTagHelperPropertyIRNode || node is CSharpExpressionIRNode)
-            {
-                for (var i = 0; i < node.Children.Count; i++)
-                {
-                    RenderTagHelperAttributeInline(node.Children[i], documentLocation, context);
-                }
-            }
-            else if (node is HtmlContentIRNode)
-            {
-                context.Writer.Write(((HtmlContentIRNode)node).Content);
-            }
-            else if (node is CSharpTokenIRNode)
-            {
-                context.Writer.Write(((CSharpTokenIRNode)node).Content);
-            }
-            else if (node is CSharpStatementIRNode)
-            {
-                context.ErrorSink.OnError(
-                    new SourceLocation(documentLocation.AbsoluteIndex, documentLocation.CharacterIndex, documentLocation.ContentLength),
-                    LegacyResources.TagHelpers_CodeBlocks_NotSupported_InAttributes,
-                    documentLocation.ContentLength);
-            }
-            else if (node is TemplateIRNode)
-            {
-                var attributeValueNode = (SetTagHelperPropertyIRNode)node.Parent;
-                context.ErrorSink.OnError(
-                    new SourceLocation(documentLocation.AbsoluteIndex, documentLocation.CharacterIndex, documentLocation.ContentLength),
-                    LegacyResources.FormatTagHelpers_InlineMarkupBlocks_NotSupported_InAttributes(attributeValueNode.Descriptor.TypeName),
-                    documentLocation.ContentLength);
-            }
-        }
-
         protected static int CalculateExpressionPadding(MappingLocation sourceRange, CSharpRenderingContext context)
         {
             var spaceCount = 0;
@@ -101,6 +64,24 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 return new string(' ', resolvedPadding);
             }
+        }
+
+        protected static string GetTagHelperVariableName(string tagHelperTypeName) => "__" + tagHelperTypeName.Replace('.', '_');
+
+        protected static string GetTagHelperPropertyAccessor(
+            string tagHelperVariableName,
+            string attributeName,
+            TagHelperAttributeDescriptor descriptor)
+        {
+            var propertyAccessor = $"{tagHelperVariableName}.{descriptor.PropertyName}";
+
+            if (descriptor.IsIndexer)
+            {
+                var dictionaryKey = attributeName.Substring(descriptor.Name.Length);
+                propertyAccessor += $"[\"{dictionaryKey}\"]";
+            }
+
+            return propertyAccessor;
         }
 
         protected class LinePragmaWriter : IDisposable

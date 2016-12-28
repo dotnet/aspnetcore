@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
@@ -29,6 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 GeneratedCode = renderingContext.Writer.GenerateCode(),
                 LineMappings = renderingContext.LineMappings,
+                Diagnostics = renderingContext.ErrorSink.Errors
             };
 
             codeDocument.SetCSharpDocument(csharpDocument);
@@ -199,6 +201,131 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Context.Writer.WriteEndMethodInvocation(endLine: false);
             }
 
+            internal override void VisitTagHelper(TagHelperIRNode node)
+            {
+                var initialTagHelperRenderingContext = Context.TagHelperRenderingContext;
+                Context.TagHelperRenderingContext = new TagHelperRenderingContext();
+                VisitDefault(node);
+                Context.TagHelperRenderingContext = initialTagHelperRenderingContext;
+            }
+
+            internal override void VisitInitializeTagHelperStructure(InitializeTagHelperStructureIRNode node)
+            {
+                VisitDefault(node);
+            }
+
+            internal override void VisitCreateTagHelper(CreateTagHelperIRNode node)
+            {
+                var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
+
+                Context.Writer
+                    .WriteStartAssignment(tagHelperVariableName)
+                    .WriteStartMethodInvocation(
+                        "CreateTagHelper" /* ORIGINAL: CreateTagHelperMethodName */,
+                        "global::" + node.TagHelperTypeName)
+                    .WriteEndMethodInvocation();
+            }
+
+            internal override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
+            {
+                var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
+                var tagHelperRenderingContext = Context.TagHelperRenderingContext;
+                var propertyValueAccessor = GetTagHelperPropertyAccessor(tagHelperVariableName, node.AttributeName, node.Descriptor);
+
+                string previousValueAccessor;
+                if (tagHelperRenderingContext.RenderedBoundAttributes.TryGetValue(node.AttributeName, out previousValueAccessor))
+                {
+                    Context.Writer
+                        .WriteStartAssignment(propertyValueAccessor)
+                        .Write(previousValueAccessor)
+                        .WriteLine(";");
+
+                    return;
+                }
+                else
+                {
+                    tagHelperRenderingContext.RenderedBoundAttributes[node.AttributeName] = propertyValueAccessor;
+                }
+
+                if (node.Descriptor.IsStringProperty)
+                {
+                    VisitDefault(node);
+
+                    Context.Writer.WriteStartAssignment(propertyValueAccessor);
+                    if (node.Children.Count == 1 && node.Children.First() is HtmlContentIRNode)
+                    {
+                        var htmlNode = node.Children.First() as HtmlContentIRNode;
+                        if (htmlNode != null)
+                        {
+                            Context.Writer.WriteStringLiteral(htmlNode.Content);
+                        }
+                    }
+                    else
+                    {
+                        Context.Writer.Write("string.Empty");
+                    }
+                    Context.Writer.WriteLine(";");
+                }
+                else
+                {
+                    var firstMappedChild = node.Children.FirstOrDefault(child => child.SourceRange != null) as RazorIRNode;
+                    var valueStart = firstMappedChild?.SourceRange;
+
+                    using (new LinePragmaWriter(Context.Writer, node.SourceRange))
+                    {
+                        var assignmentPrefixLength = propertyValueAccessor.Length + " = ".Length;
+                        if (node.Descriptor.IsEnum &&
+                            node.Children.Count == 1 &&
+                            node.Children.First() is HtmlContentIRNode)
+                        {
+                            assignmentPrefixLength += $"global::{node.Descriptor.TypeName}.".Length;
+
+                            if (valueStart != null)
+                            {
+                                var padding = BuildOffsetPadding(assignmentPrefixLength, node.SourceRange, Context);
+
+                                Context.Writer.Write(padding);
+                            }
+
+                            Context.Writer
+                                .WriteStartAssignment(propertyValueAccessor)
+                                .Write("global::")
+                                .Write(node.Descriptor.TypeName)
+                                .Write(".");
+                        }
+                        else
+                        {
+                            if (valueStart != null)
+                            {
+                                var padding = BuildOffsetPadding(assignmentPrefixLength, node.SourceRange, Context);
+
+                                Context.Writer.Write(padding);
+                            }
+
+                            Context.Writer.WriteStartAssignment(propertyValueAccessor);
+                        }
+
+                        RenderTagHelperAttributeInline(node, node.SourceRange);
+
+                        Context.Writer.WriteLine(";");
+                    }
+                }
+            }
+
+            internal override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
+            {
+                foreach (var tagHelperTypeName in node.UsedTagHelperTypeNames)
+                {
+                    var tagHelperVariableName = GetTagHelperVariableName(tagHelperTypeName);
+                    Context.Writer
+                        .Write("private global::")
+                        .WriteVariableDeclaration(
+                            tagHelperTypeName,
+                            tagHelperVariableName,
+                            value: null);
+                }
+            }
+
             private void AddLineMappingFor(RazorIRNode node)
             {
                 var sourceLocation = node.SourceRange;
@@ -206,6 +333,52 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 var lineMapping = new LineMapping(sourceLocation, generatedLocation);
 
                 Context.LineMappings.Add(lineMapping);
+            }
+
+            private void RenderTagHelperAttributeInline(
+                RazorIRNode node,
+                MappingLocation documentLocation)
+            {
+                if (node is SetTagHelperPropertyIRNode || node is CSharpExpressionIRNode)
+                {
+                    for (var i = 0; i < node.Children.Count; i++)
+                    {
+                        RenderTagHelperAttributeInline(node.Children[i], documentLocation);
+                    }
+                }
+                else if (node is HtmlContentIRNode)
+                {
+                    if (node.SourceRange != null)
+                    {
+                        AddLineMappingFor(node);
+                    }
+
+                    Context.Writer.Write(((HtmlContentIRNode)node).Content);
+                }
+                else if (node is CSharpTokenIRNode)
+                {
+                    if (node.SourceRange != null)
+                    {
+                        AddLineMappingFor(node);
+                    }
+
+                    Context.Writer.Write(((CSharpTokenIRNode)node).Content);
+                }
+                else if (node is CSharpStatementIRNode)
+                {
+                    Context.ErrorSink.OnError(
+                        new SourceLocation(documentLocation.AbsoluteIndex, documentLocation.CharacterIndex, documentLocation.ContentLength),
+                        LegacyResources.TagHelpers_CodeBlocks_NotSupported_InAttributes,
+                        documentLocation.ContentLength);
+                }
+                else if (node is TemplateIRNode)
+                {
+                    var attributeValueNode = (SetTagHelperPropertyIRNode)node.Parent;
+                    Context.ErrorSink.OnError(
+                        new SourceLocation(documentLocation.AbsoluteIndex, documentLocation.CharacterIndex, documentLocation.ContentLength),
+                        LegacyResources.FormatTagHelpers_InlineMarkupBlocks_NotSupported_InAttributes(attributeValueNode.Descriptor.TypeName),
+                        documentLocation.ContentLength);
+                }
             }
         }
     }

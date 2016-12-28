@@ -34,13 +34,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
             );
             __InputTagHelper = CreateTagHelper<global::InputTagHelper>();
             __tagHelperExecutionContext.Add(__InputTagHelper);
-            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "bound", 1, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+            BeginWriteTagHelperAttribute();
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithBoundAttributes.cshtml"
-AddHtmlAttributeValue("", 56, Hello, 56, 6, false);
+     WriteLiteral(Hello);
 
 #line default
 #line hidden
-            EndAddHtmlAttributeValues(__tagHelperExecutionContext);
+            __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
+            __InputTagHelper.BoundProp = __tagHelperStringValueBuffer;
+            __tagHelperExecutionContext.AddTagHelperAttribute("bound", __InputTagHelper.BoundProp, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
             BeginWriteTagHelperAttribute();
             WriteLiteral("text");
             __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();

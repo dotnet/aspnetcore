@@ -486,7 +486,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                                 .Write(".");
                         }
 
-                        RenderTagHelperAttributeInline(node, node.SourceRange, Context);
+                        RenderTagHelperAttributeInline(node, node.SourceRange);
 
                         Context.Writer.WriteLine(";");
                     }
@@ -624,23 +624,41 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 }
             }
 
-            private static string GetTagHelperPropertyAccessor(
-            string tagHelperVariableName,
-            string attributeName,
-            TagHelperAttributeDescriptor descriptor)
+            private void RenderTagHelperAttributeInline(
+                RazorIRNode node,
+                MappingLocation documentLocation)
             {
-                var propertyAccessor = $"{tagHelperVariableName}.{descriptor.PropertyName}";
-
-                if (descriptor.IsIndexer)
+                if (node is SetTagHelperPropertyIRNode || node is CSharpExpressionIRNode)
                 {
-                    var dictionaryKey = attributeName.Substring(descriptor.Name.Length);
-                    propertyAccessor += $"[\"{dictionaryKey}\"]";
+                    for (var i = 0; i < node.Children.Count; i++)
+                    {
+                        RenderTagHelperAttributeInline(node.Children[i], documentLocation);
+                    }
                 }
-
-                return propertyAccessor;
+                else if (node is HtmlContentIRNode)
+                {
+                    Context.Writer.Write(((HtmlContentIRNode)node).Content);
+                }
+                else if (node is CSharpTokenIRNode)
+                {
+                    Context.Writer.Write(((CSharpTokenIRNode)node).Content);
+                }
+                else if (node is CSharpStatementIRNode)
+                {
+                    Context.ErrorSink.OnError(
+                        new SourceLocation(documentLocation.AbsoluteIndex, documentLocation.CharacterIndex, documentLocation.ContentLength),
+                        LegacyResources.TagHelpers_CodeBlocks_NotSupported_InAttributes,
+                        documentLocation.ContentLength);
+                }
+                else if (node is TemplateIRNode)
+                {
+                    var attributeValueNode = (SetTagHelperPropertyIRNode)node.Parent;
+                    Context.ErrorSink.OnError(
+                        new SourceLocation(documentLocation.AbsoluteIndex, documentLocation.CharacterIndex, documentLocation.ContentLength),
+                        LegacyResources.FormatTagHelpers_InlineMarkupBlocks_NotSupported_InAttributes(attributeValueNode.Descriptor.TypeName),
+                        documentLocation.ContentLength);
+                }
             }
-
-            private static string GetTagHelperVariableName(string tagHelperTypeName) => "__" + tagHelperTypeName.Replace('.', '_');
         }
     }
 }
