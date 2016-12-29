@@ -1419,7 +1419,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 {
                     builder.Features.Add(new ApiSetsIRTestAdapter());
                     builder.Features.Add(new TagHelperFeature(new TestTagHelperDescriptorResolver(descriptors)));
-                    DefaultRazorRuntimeCSharpLoweringPhase.GenerateUniqueTagHelperId = "test";
                 });
             var document = CreateCodeDocument();
 
@@ -1438,7 +1437,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 {
                     builder.Features.Add(new ApiSetsIRTestAdapter());
                     builder.Features.Add(new TagHelperFeature(new TestTagHelperDescriptorResolver(descriptors)));
-                    DefaultRazorRuntimeCSharpLoweringPhase.GenerateUniqueTagHelperId = "test";
                 });
             var document = CreateCodeDocument();
 

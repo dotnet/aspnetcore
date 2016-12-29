@@ -88,6 +88,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 throw new XunitException($"The resource {sourceFilename} was not found.");
             }
 
+            // This will ensure that we're not putting any randomly generated data in a baseline.
+            DefaultRazorRuntimeCSharpLoweringPhase.GenerateUniqueTagHelperId = "test";
+
             return RazorCodeDocument.Create(TestRazorSourceDocument.CreateResource(sourceFilename));
         }
 

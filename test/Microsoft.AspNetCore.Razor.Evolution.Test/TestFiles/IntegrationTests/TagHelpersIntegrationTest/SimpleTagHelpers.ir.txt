@@ -9,7 +9,7 @@ Document -
             DeclareTagHelperFields -  - InputTagHelper
             RazorMethodDeclaration -  -  -  -  - 
                 HtmlContent - (31:1,0 [25] SimpleTagHelpers.cshtml) - <p>Hola</p>\n<form>\n    
-                TagHelper - 
+                TagHelper - (56:3,4 [35] SimpleTagHelpers.cshtml)
                     InitializeTagHelperStructure -  - input - TagMode.SelfClosing
                     CreateTagHelper -  - InputTagHelper
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0

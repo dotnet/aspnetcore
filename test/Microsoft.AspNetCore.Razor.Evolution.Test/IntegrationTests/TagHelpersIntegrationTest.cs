@@ -1,8 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
@@ -22,8 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 }
             };
 
-            var engine = RazorEngine.Create(
-                builder => builder.Features.Add(new TagHelperFeature(new TestTagHelperDescriptorResolver(descriptors))));
+            var engine = RazorEngine.Create(builder => builder.AddTagHelpers(descriptors));
             var document = CreateCodeDocument();
 
             // Act
@@ -52,8 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 }
             };
 
-            var engine = RazorEngine.Create(
-                builder => builder.Features.Add(new TagHelperFeature(new TestTagHelperDescriptorResolver(descriptors))));
+            var engine = RazorEngine.Create(builder => builder.AddTagHelpers(descriptors));
             var document = CreateCodeDocument();
 
             // Act
@@ -92,8 +88,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 }
             };
 
-            var engine = RazorEngine.Create(
-                builder => builder.Features.Add(new TagHelperFeature(new TestTagHelperDescriptorResolver(descriptors))));
+            var engine = RazorEngine.Create(builder => builder.AddTagHelpers(descriptors));
             var document = CreateCodeDocument();
 
             // Act
@@ -101,21 +96,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
             // Assert
             AssertIRMatchesBaseline(document.GetIRDocument());
-        }
-
-        private class TestTagHelperDescriptorResolver : ITagHelperDescriptorResolver
-        {
-            private readonly IEnumerable<TagHelperDescriptor> _descriptors;
-
-            public TestTagHelperDescriptorResolver(IEnumerable<TagHelperDescriptor> descriptors)
-            {
-                _descriptors = descriptors;
-            }
-
-            public IEnumerable<TagHelperDescriptor> Resolve(TagHelperDescriptorResolutionContext resolutionContext)
-            {
-                return _descriptors;
-            }
         }
     }
 }

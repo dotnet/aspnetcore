@@ -9,17 +9,17 @@ Document -
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - unbound - foo - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - PTagHelper - FormTagHelper - InputTagHelper
             RazorMethodDeclaration -  -  -  -  - 
-                TagHelper - 
+                TagHelper - (31:1,0 [20] NestedTagHelpers.cshtml)
                     InitializeTagHelperStructure -  - p - TagMode.StartTagAndEndTag
                         HtmlContent - (43:1,12 [4] NestedTagHelpers.cshtml) - Hola
                     CreateTagHelper -  - PTagHelper
                     AddTagHelperHtmlAttribute -  - someattr - HtmlAttributeValueStyle.Minimized
                     ExecuteTagHelpers - 
                 HtmlContent - (51:1,20 [2] NestedTagHelpers.cshtml) - \n
-                TagHelper - 
+                TagHelper - (53:2,0 [68] NestedTagHelpers.cshtml)
                     InitializeTagHelperStructure -  - form - TagMode.StartTagAndEndTag
                         HtmlContent - (73:2,20 [6] NestedTagHelpers.cshtml) - \n    
-                        TagHelper - 
+                        TagHelper - (79:3,4 [33] NestedTagHelpers.cshtml)
                             InitializeTagHelperStructure -  - input - TagMode.SelfClosing
                             CreateTagHelper -  - InputTagHelper
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - value - FooProp

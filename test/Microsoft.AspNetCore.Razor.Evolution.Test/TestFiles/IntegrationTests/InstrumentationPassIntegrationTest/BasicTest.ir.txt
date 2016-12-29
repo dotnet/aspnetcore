@@ -1,0 +1,42 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - 
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  -  -  -  - 
+            DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_0 - value - Hello - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - type - text - HtmlAttributeValueStyle.SingleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - unbound - foo - HtmlAttributeValueStyle.DoubleQuotes
+            DeclareTagHelperFields -  - FormTagHelper - InputTagHelper
+            RazorMethodDeclaration -  -  -  -  - 
+                CSharpStatement -  - Instrumentation.BeginContext(31, 28, true);
+                HtmlContent - (31:1,0 [28] BasicTest.cshtml) - <span someattr>Hola</span>\n
+                CSharpStatement -  - Instrumentation.EndContext();
+                CSharpStatement -  - Instrumentation.BeginContext(61, 7, false);
+                CSharpExpression - (61:2,2 [7] BasicTest.cshtml)
+                    CSharpToken - (61:2,2 [7] BasicTest.cshtml) - "Hello"
+                CSharpStatement -  - Instrumentation.EndContext();
+                CSharpStatement -  - Instrumentation.BeginContext(69, 2, true);
+                HtmlContent - (69:2,10 [2] BasicTest.cshtml) - \n
+                CSharpStatement -  - Instrumentation.EndContext();
+                TagHelper - (71:3,0 [68] BasicTest.cshtml)
+                    InitializeTagHelperStructure -  - form - TagMode.StartTagAndEndTag
+                        CSharpStatement -  - Instrumentation.BeginContext(91, 6, true);
+                        HtmlContent - (91:3,20 [6] BasicTest.cshtml) - \n    
+                        CSharpStatement -  - Instrumentation.EndContext();
+                        TagHelper - (97:4,4 [33] BasicTest.cshtml)
+                            InitializeTagHelperStructure -  - input - TagMode.SelfClosing
+                            CreateTagHelper -  - InputTagHelper
+                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - value - FooProp
+                            AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
+                            CSharpStatement -  - Instrumentation.BeginContext(97, 33, false);
+                            ExecuteTagHelpers - 
+                            CSharpStatement -  - Instrumentation.EndContext();
+                        CSharpStatement -  - Instrumentation.BeginContext(130, 2, true);
+                        HtmlContent - (130:4,37 [2] BasicTest.cshtml) - \n
+                        CSharpStatement -  - Instrumentation.EndContext();
+                    CreateTagHelper -  - FormTagHelper
+                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    CSharpStatement -  - Instrumentation.BeginContext(71, 68, false);
+                    ExecuteTagHelpers - 
+                    CSharpStatement -  - Instrumentation.EndContext();

@@ -145,7 +145,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             try
             {
                 Assert.Equal(prefix, attributeValue.Prefix);
-
                 Children(attributeValue, n => CSharpExpression(expected, n));
             }
             catch (XunitException e)
@@ -182,6 +181,32 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 }
 
                 Assert.Equal(expected, content.ToString());
+            }
+            catch (XunitException e)
+            {
+                throw new IRAssertException(node, node.Children, e.Message, e);
+            }
+        }
+
+        public static void BeginInstrumentation(string expected, RazorIRNode node)
+        {
+            try
+            {
+                var beginNode = Assert.IsType<CSharpStatementIRNode>(node);
+                Assert.Equal($"Instrumentation.BeginContext({expected});", beginNode.Content);
+            }
+            catch (XunitException e)
+            {
+                throw new IRAssertException(node, node.Children, e.Message, e);
+            }
+        }
+
+        public static void EndInstrumentation(RazorIRNode node)
+        {
+            try
+            {
+                var endNode = Assert.IsType<CSharpStatementIRNode>(node);
+                Assert.Equal("Instrumentation.EndContext();", endNode.Content);
             }
             catch (XunitException e)
             {

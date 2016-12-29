@@ -8,7 +8,7 @@ Document -
             DeclareTagHelperFields -  - InputTagHelper
             RazorMethodDeclaration -  -  -  -  - 
                 HtmlContent - (31:1,0 [12] TagHelpersWithBoundAttributes.cshtml) - <form>\n    
-                TagHelper - 
+                TagHelper - (43:2,4 [34] TagHelpersWithBoundAttributes.cshtml)
                     InitializeTagHelperStructure -  - input - TagMode.SelfClosing
                     CreateTagHelper -  - InputTagHelper
                     SetTagHelperProperty - (56:2,17 [6] TagHelpersWithBoundAttributes.cshtml) - bound - FooProp - HtmlAttributeValueStyle.DoubleQuotes

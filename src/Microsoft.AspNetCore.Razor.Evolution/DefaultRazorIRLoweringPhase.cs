@@ -299,7 +299,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                 DeclareTagHelperFields(tagHelperBlock);
 
-                Builder.Push(new TagHelperIRNode());
+                Builder.Push(new TagHelperIRNode()
+                {
+                    Source = BuildSourceRangeFromNode(block)
+                });
 
                 Builder.Push(new InitializeTagHelperStructureIRNode()
                 {
