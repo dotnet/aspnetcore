@@ -14,14 +14,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
     {
         internal static Block IgnoreOutput = new IgnoreOutputBlock();
 
-        internal SpanFactory Factory { get; private set; }
-        internal BlockFactory BlockFactory { get; private set; }
-
         internal ParserTestBase()
         {
             Factory = CreateSpanFactory();
             BlockFactory = CreateBlockFactory();
         }
+
+        /// <summary>
+        /// Set to true to autocorrect the locations of spans to appear in document order with no gaps.
+        /// Use this when spans were not created in document order.
+        /// </summary>
+        protected bool FixupSpans { get; set; }
+
+        internal SpanFactory Factory { get; private set; }
+
+        internal BlockFactory BlockFactory { get; private set; }
 
         internal abstract RazorSyntaxTree ParseBlock(string document, bool designTime);
 
@@ -149,6 +156,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             var result = ParseBlock(document, designTime);
 
+            if (FixupSpans)
+            {
+                SpancestryCorrector.Correct(expected);
+
+                var span = expected.FindFirstDescendentSpan();
+                span.ChangeStart(SourceLocation.Zero);
+            }
+
+            SyntaxTreeVerifier.Verify(result);
+            SyntaxTreeVerifier.Verify(expected);
+
             if (!ReferenceEquals(expected, IgnoreOutput))
             {
                 EvaluateResults(result, expected, expectedErrors);
@@ -188,6 +206,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             builder.Type = blockType;
             var expected = ConfigureAndAddSpanToBlock(builder, Factory.Span(spanType, spanContent, spanType == SpanKind.Markup).Accepts(acceptedCharacters));
 
+            if (FixupSpans)
+            {
+                SpancestryCorrector.Correct(expected);
+
+                var span = expected.FindFirstDescendentSpan();
+                span.ChangeStart(SourceLocation.Zero);
+            }
+
+            SyntaxTreeVerifier.Verify(result);
+            SyntaxTreeVerifier.Verify(expected);
+
             if (!ReferenceEquals(expected, IgnoreOutput))
             {
                 EvaluateResults(result, expected, expectedErrors);
@@ -219,33 +248,25 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             ParseDocumentTest(document, expectedRoot, designTime, null);
         }
 
-        internal virtual void ParseDocumentTest(string document, Block expectedRoot, bool designTime, params RazorError[] expectedErrors)
+        internal virtual void ParseDocumentTest(string document, Block expected, bool designTime, params RazorError[] expectedErrors)
         {
             var result = ParseDocument(document, designTime);
 
-            if (!ReferenceEquals(expectedRoot, IgnoreOutput))
+            if (FixupSpans)
             {
-                EvaluateResults(result, expectedRoot, expectedErrors);
+                SpancestryCorrector.Correct(expected);
+
+                var span = expected.FindFirstDescendentSpan();
+                span.ChangeStart(SourceLocation.Zero);
             }
-        }
 
-        internal virtual RazorSyntaxTree RunParse(
-            string document,
-            Func<ParserBase, Action> parserActionSelector,
-            bool designTimeParser,
-            Func<ParserContext, ParserBase> parserSelector = null,
-            ErrorSink errorSink = null)
-        {
-            throw null;
-        }
+            SyntaxTreeVerifier.Verify(result);
+            SyntaxTreeVerifier.Verify(expected);
 
-        internal virtual void RunParseTest(
-            string document,
-            Func<ParserBase, Action> parserActionSelector,
-            Block expectedRoot, IList<RazorError> expectedErrors,
-            bool designTimeParser, Func<ParserContext, ParserBase> parserSelector = null)
-        {
-            throw null;
+            if (!ReferenceEquals(expected, IgnoreOutput))
+            {
+                EvaluateResults(result, expected, expectedErrors);
+            }
         }
 
         [Conditional("PARSER_TRACE")]
@@ -547,5 +568,41 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             public IgnoreOutputBlock() : base(BlockType.Template, new SyntaxTreeNode[0], null) { }
         }
+
+        // Corrects the parents and previous/next information for spans
+        internal class SpancestryCorrector : ParserVisitor
+        {
+            private SpancestryCorrector()
+            {
+            }
+
+            protected Block CurrentBlock { get; set; }
+
+            protected Span LastSpan { get; set; }
+
+            public static void Correct(Block block)
+            {
+                new SpancestryCorrector().VisitBlock(block);
+            }
+
+            public override void VisitBlock(Block block)
+            {
+                CurrentBlock = block;
+                base.VisitBlock(block);
+            }
+
+            public override void VisitSpan(Span span)
+            {
+                span.Parent = CurrentBlock;
+
+                span.Previous = LastSpan;
+                if (LastSpan != null)
+                {
+                    LastSpan.Next = span;
+                }
+
+                LastSpan = span;
+            }
+        } 
     }
 }

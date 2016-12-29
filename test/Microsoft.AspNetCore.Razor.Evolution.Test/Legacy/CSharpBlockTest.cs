@@ -611,6 +611,7 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
                 prefix: "try {",
                 markup: " <p>Foo</p> ",
                 suffix: "}",
+                expectedStart: new SourceLocation(5, 0, 5),
                 expectedMarkup: new MarkupBlock(
                     Factory.Markup(" "),
                     BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
@@ -632,6 +633,7 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
                 prefix: "try { var foo = new { } } catch(Foo Bar Baz) {",
                 markup: " <p>Foo</p> ",
                 suffix: "}",
+                expectedStart: new SourceLocation(46, 0, 46),
                 expectedMarkup: new MarkupBlock(
                     Factory.Markup(" "),
                     BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
@@ -664,6 +666,7 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
                 "{ var foo = new { } } catch(Foo Bar Baz) {",
                 markup: " <p>Foo</p> ",
                 suffix: "}",
+                expectedStart: new SourceLocation(128, 0, 128),
                 expectedMarkup: new MarkupBlock(
                     Factory.Markup(" "),
                     BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
@@ -685,6 +688,7 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
                 prefix: "try { var foo = new { } } finally {",
                 markup: " <p>Foo</p> ",
                 suffix: "}",
+                expectedStart: new SourceLocation(35, 0, 35),
                 expectedMarkup: new MarkupBlock(
                     Factory.Markup(" "),
                     BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
@@ -1115,6 +1119,8 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
         [MemberData(nameof(BlockWithEscapedTransitionData))]
         public void ParseBlock_WithDoubleTransition_DoesNotThrow(string input, object expected)
         {
+            FixupSpans = true;
+
             // Act & Assert
             ParseBlockTest(input, (Block)expected);
         }
@@ -1217,14 +1223,22 @@ catch(bar) { baz(); }", BlockType.Statement, SpanKind.Code);
                                Factory.Code(postComment).AsStatement().Accepts(acceptedCharacters)));
         }
 
-        private void RunSimpleWrappedMarkupTest(string prefix, string markup, string suffix, MarkupBlock expectedMarkup, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)
+        private void RunSimpleWrappedMarkupTest(string prefix, string markup, string suffix, MarkupBlock expectedMarkup, SourceLocation expectedStart, AcceptedCharacters acceptedCharacters = AcceptedCharacters.Any)
         {
-            ParseBlockTest(prefix + markup + suffix,
-                           new StatementBlock(
-                               Factory.Code(prefix).AsStatement(),
-                               expectedMarkup,
-                               Factory.Code(suffix).AsStatement().Accepts(acceptedCharacters)
-                               ));
+            var expected = new StatementBlock(
+                    Factory.Code(prefix).AsStatement(),
+                    expectedMarkup,
+                    Factory.Code(suffix).AsStatement().Accepts(acceptedCharacters));
+
+            // Since we're building the 'expected' input out of order we need to do some trickery
+            // to get the locations right.
+            SpancestryCorrector.Correct(expected);
+            expected.FindFirstDescendentSpan().ChangeStart(SourceLocation.Zero);
+
+            // We make the caller pass a start location so we can verify that nothing has gone awry.
+            Assert.Equal(expectedStart, expectedMarkup.Start);
+
+            ParseBlockTest(prefix + markup + suffix, expected);
         }
 
         private void NamespaceImportTest(string content, string expectedNS, AcceptedCharacters acceptedCharacters = AcceptedCharacters.None, string errorMessage = null, SourceLocation? location = null)

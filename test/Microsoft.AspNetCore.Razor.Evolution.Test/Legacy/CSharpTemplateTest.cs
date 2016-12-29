@@ -270,6 +270,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [Fact]
         public void ParseBlock_WithDoubleTransition_DoesNotThrow()
         {
+            FixupSpans = true;
+
             // Arrange
             var testTemplateWithDoubleTransitionCode = " @<p foo='@@'>Foo #@item</p>";
             var testTemplateWithDoubleTransition = new TemplateBlock(

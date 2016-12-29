@@ -237,6 +237,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [MemberData(nameof(ExceptionFilterData))]
         public void ExceptionFilters(string document, object expectedStatement)
         {
+            FixupSpans = true;
+
             // Act & Assert
             ParseBlockTest(document, (StatementBlock)expectedStatement);
         }
@@ -292,6 +294,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             object expectedStatement,
             object expectedErrors)
         {
+            FixupSpans = true;
+
             // Act & Assert
             ParseBlockTest(document, (StatementBlock)expectedStatement, (RazorError[])expectedErrors);
         }
@@ -351,6 +355,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [MemberData(nameof(StaticUsingData))]
         public void StaticUsingImport(string document, object expectedResult)
         {
+            FixupSpans = true;
+
             // Act & Assert
             ParseBlockTest(document, (DirectiveBlock)expectedResult);
         }

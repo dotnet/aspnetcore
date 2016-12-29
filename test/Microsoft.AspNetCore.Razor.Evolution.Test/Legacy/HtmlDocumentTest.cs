@@ -757,6 +757,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [MemberData(nameof(BlockWithEscapedTransitionData))]
         public void ParseBlock_WithDoubleTransition_DoesNotThrow(string input, object expected)
         {
+            FixupSpans = true;
+
             // Act & Assert
             ParseDocumentTest(input, (Block)expected);
         }

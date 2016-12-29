@@ -390,6 +390,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [MemberData(nameof(HtmlCommentSupportsMultipleDashesData))]
         public void HtmlCommentSupportsMultipleDashes(string documentContent, object expectedOutput)
         {
+            FixupSpans = true;
+
             ParseBlockTest(documentContent, (MarkupBlock)expectedOutput);
         }
 

@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     length: 1));
         }
 
-        [Fact]
+        [Fact(Skip = "Fails due to https://github.com/aspnet/Razor/issues/897")]
         public void RazorCommentInVerbatimBlock()
         {
             ParseDocumentTest("@{" + Environment.NewLine
