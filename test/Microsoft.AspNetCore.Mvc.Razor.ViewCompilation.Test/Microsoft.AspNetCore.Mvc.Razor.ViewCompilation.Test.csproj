@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <Import Project="..\..\build\common.props" />
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20161123-03" />
+    <PackageReference Include="Microsoft.NETCore.App" Version="1.2.0-*" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-beta4-build1194" />
+    <PackageReference Include="xunit" Version="2.2.0-beta4-build3444" />
+  </ItemGroup>
+</Project>

@@ -59,37 +59,24 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             protected override void Restore()
             {
                 CreateClassLibraryPackage();
-                RestoreProject(ApplicationPath, new[] { _packOutputDirectory });
+                RestoreProject(ApplicationPath, new[] { _packOutputDirectory, "https://api.nuget.org/v3/index.json" });
             }
 
             private void CreateClassLibraryPackage()
             {
                 RestoreProject(ClassLibraryPath);
-                ExecuteForClassLibrary(Command.CreateDotNet("build", new[] { ClassLibraryPath, "-c", "Release" }));
-
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    // Don't run precompile tool for net451 on xplat.
-                    ExecuteForClassLibrary(Command.CreateDotNet(
-                        "razor-precompile",
-                        GetPrecompileArguments("net451")));
-                }
-
                 ExecuteForClassLibrary(Command.CreateDotNet(
-                    "razor-precompile",
-                    GetPrecompileArguments("netcoreapp1.1")));
-
-                var timestamp = "z" + DateTime.UtcNow.Ticks.ToString().PadLeft(18, '0');
+                    "build", 
+                    new[] { "-c", "Release" }));
                 var packCommand = Command
-                    .CreateDotNet("pack", new[] { "--no-build", "-c", "Release", "-o", _packOutputDirectory })
-                    .EnvironmentVariable("DOTNET_BUILD_VERSION", timestamp);
+                    .CreateDotNet("pack", new[] { "-c", "Release", "-o", _packOutputDirectory });
 
                 ExecuteForClassLibrary(packCommand);
             }
 
             private void ExecuteForClassLibrary(ICommand command)
             {
-                Console.WriteLine($"Running {command.CommandName} {command.CommandArgs}");
+                Console.WriteLine($"Running {command.CommandName} {command.CommandArgs} in {ClassLibraryPath}");
                 command
                     .WorkingDirectory(ClassLibraryPath)
                     .EnvironmentVariable(NuGetPackagesEnvironmentKey, TempRestoreDirectory)
@@ -98,20 +85,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
                     .ForwardStdOut(Console.Out)
                     .Execute()
                     .EnsureSuccessful();
-            }
-
-            private string[] GetPrecompileArguments(string targetFramework)
-            {
-                return new[]
-                {
-                    ClassLibraryPath,
-                    "-c",
-                    "Release",
-                    "-f",
-                    $"{targetFramework}",
-                    "-o",
-                    $"obj/precompiled/{targetFramework}",
-                };
             }
 
             public override void Dispose()

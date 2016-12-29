@@ -111,11 +111,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
         }
 
         protected void RestoreProject(string applicationDirectory, string[] additionalFeeds = null)
-        {
-            var packagesDirectory = GetNuGetPackagesDirectory();
+        {            
             var args = new List<string>
             {
-                Path.Combine(applicationDirectory, "project.json"),
                 "--packages",
                 TempRestoreDirectory,
             };
@@ -124,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             {
                 foreach (var feed in additionalFeeds)
                 {
-                    args.Add("-f");
+                    args.Add("-s");
                     args.Add(feed);
                 }
             }
@@ -134,6 +132,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
                 .EnvironmentVariable(DotnetSkipFirstTimeExperience, "true")
                 .ForwardStdErr(Console.Error)
                 .ForwardStdOut(Console.Out)
+                .WorkingDirectory(applicationDirectory)
                 .Execute()
                 .EnsureSuccessful();
         }

@@ -1,0 +1,38 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFileDirectory)..\common.targets" />
+  <Target
+      Name="MvcRazorPrecompile"
+      Inputs="$(MSBuildThisFileFullPath);@(_MvcRazorContentFiles);@(IntermediateAssembly);@(DocFileItem);@(_DebugSymbolsIntermediatePath);@(ReferencePath);$(MSBuildAllProjects);"
+      Outputs="$(_MvcRazorOutputFullPath)">
+
+    <CallTarget Targets="_CreateResponseFileForMvcRazorPrecompile" />
+
+    <ItemGroup>
+      <FilesToCopy Include="$(OutputPath)$(AssemblyName).exe.config">
+        <Destination>$(OutputPath)$(MSBuildThisFileName).exe.config</Destination>
+      </FilesToCopy>
+      <FilesToCopy Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).exe">
+        <Destination>$(OutputPath)$(MSBuildThisFileName).exe</Destination>
+      </FilesToCopy>
+    </ItemGroup>
+
+    <Copy 
+      SourceFiles="@(FilesToCopy)"
+      DestinationFiles="%(Destination)" />
+
+    <Message
+      Text="Executing Razor view precompilation."
+      Importance="Low" />
+
+    <Exec 
+      Command="$(OutputPath)$(MSBuildThisFileName).exe @&quot;$(_MvcRazorResponseFilePath)&quot;" 
+      WorkingDirectory="$(MSBuildProjectDirectory)"/>
+
+    <Message
+      Text="Razor view compilation for $(MSBuildProjectName) -> $(_MvcRazorOutputFullPath)"
+      Importance="High" />
+
+    <Delete Files="%(FilesToCopy.Destination)" />
+    
+  </Target>
+</Project>

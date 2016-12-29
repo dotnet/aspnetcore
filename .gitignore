@@ -10,6 +10,7 @@ packages/
 artifacts/
 PublishProfiles/
 .vs/
+.vscode/
 bower_components/
 node_modules/
 debugSettings.json
@@ -37,3 +38,4 @@ node_modules
 *launchSettings.json
 *.orig
 BuildInfo.generated.cs
+msbuild.log

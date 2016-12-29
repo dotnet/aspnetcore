@@ -1,0 +1,29 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFileDirectory)..\common.targets" />
+  <Target
+      Name="MvcRazorPrecompile"
+      Inputs="$(MSBuildThisFileFullPath);@(_MvcRazorContentFiles);@(IntermediateAssembly);@(DocFileItem);@(_DebugSymbolsIntermediatePath);@(ReferencePath);$(MSBuildAllProjects)"
+      Outputs="$(_MvcRazorOutputFullPath)">
+
+    <CallTarget Targets="_CreateResponseFileForMvcRazorPrecompile" />
+
+    <PropertyGroup>
+      <ExecArgs>--runtimeconfig &quot;$(ProjectRuntimeConfigFilePath)&quot;</ExecArgs>
+      <ExecArgs>$(ExecArgs) --depsfile &quot;$(ProjectDepsFilePath)&quot;</ExecArgs>
+      <ExecArgs>$(ExecArgs) &quot;$(MSBuildThisFileDirectory)$(MSBuildThisFileName).dll&quot;</ExecArgs>
+      <ExecArgs>$(ExecArgs) @&quot;$(_MvcRazorResponseFilePath)&quot;</ExecArgs>
+    </PropertyGroup>
+
+    <Message
+      Text="Executing Razor view precompilation."
+      Importance="Low" />
+
+    <Exec 
+      Command="dotnet exec $(ExecArgs)" 
+      WorkingDirectory="$(MSBuildProjectDirectory)" />
+
+    <Message
+      Text="Razor view compilation for $(MSBuildProjectName) -> $(_MvcRazorOutputFullPath)"
+      Importance="High" />
+  </Target>
+</Project>

@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26014.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Design", "src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Design\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Design.xproj", "{4339FC9B-AEC6-442A-B413-A41555ED76C7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation", "src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.csproj", "{4339FC9B-AEC6-442A-B413-A41555ED76C7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFiles", "SolutionFiles", "{01707B64-7DC7-4B5A-B0BB-7CD2773AA297}"
 	ProjectSection(SolutionItems) = preProject
@@ -13,51 +13,77 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFiles", "SolutionFi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02F7AA35-91AF-491E-9F0E-03CFAF86C720}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tools", "src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tools\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tools.xproj", "{F8BF7D95-0633-407F-BB0B-02563F13C068}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0398AFFF-505E-4283-89DA-BBD9D28B53DB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests", "test\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests.xproj", "{46C9A4B2-8B1C-451B-B670-C194901D66AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests", "test\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests.csproj", "{46C9A4B2-8B1C-451B-B670-C194901D66AC}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tools.Test", "test\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tools.Test\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tools.Test.xproj", "{B58E3380-D451-4E54-B522-CD21404FCD58}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Test", "test\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Test\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Test.csproj", "{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Design.Test", "test\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Design.Test\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Design.Test.xproj", "{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}"
-EndProject
+
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{4339FC9B-AEC6-442A-B413-A41555ED76C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4339FC9B-AEC6-442A-B413-A41555ED76C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4339FC9B-AEC6-442A-B413-A41555ED76C7}.Debug|x64.ActiveCfg = Debug|x64
+		{4339FC9B-AEC6-442A-B413-A41555ED76C7}.Debug|x64.Build.0 = Debug|x64
+		{4339FC9B-AEC6-442A-B413-A41555ED76C7}.Debug|x86.ActiveCfg = Debug|x86
+		{4339FC9B-AEC6-442A-B413-A41555ED76C7}.Debug|x86.Build.0 = Debug|x86
 		{4339FC9B-AEC6-442A-B413-A41555ED76C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4339FC9B-AEC6-442A-B413-A41555ED76C7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F8BF7D95-0633-407F-BB0B-02563F13C068}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F8BF7D95-0633-407F-BB0B-02563F13C068}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F8BF7D95-0633-407F-BB0B-02563F13C068}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F8BF7D95-0633-407F-BB0B-02563F13C068}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4339FC9B-AEC6-442A-B413-A41555ED76C7}.Release|x64.ActiveCfg = Release|x64
+		{4339FC9B-AEC6-442A-B413-A41555ED76C7}.Release|x64.Build.0 = Release|x64
+		{4339FC9B-AEC6-442A-B413-A41555ED76C7}.Release|x86.ActiveCfg = Release|x86
+		{4339FC9B-AEC6-442A-B413-A41555ED76C7}.Release|x86.Build.0 = Release|x86
 		{46C9A4B2-8B1C-451B-B670-C194901D66AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{46C9A4B2-8B1C-451B-B670-C194901D66AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46C9A4B2-8B1C-451B-B670-C194901D66AC}.Debug|x64.ActiveCfg = Debug|x64
+		{46C9A4B2-8B1C-451B-B670-C194901D66AC}.Debug|x64.Build.0 = Debug|x64
+		{46C9A4B2-8B1C-451B-B670-C194901D66AC}.Debug|x86.ActiveCfg = Debug|x86
+		{46C9A4B2-8B1C-451B-B670-C194901D66AC}.Debug|x86.Build.0 = Debug|x86
 		{46C9A4B2-8B1C-451B-B670-C194901D66AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46C9A4B2-8B1C-451B-B670-C194901D66AC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B58E3380-D451-4E54-B522-CD21404FCD58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B58E3380-D451-4E54-B522-CD21404FCD58}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B58E3380-D451-4E54-B522-CD21404FCD58}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B58E3380-D451-4E54-B522-CD21404FCD58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46C9A4B2-8B1C-451B-B670-C194901D66AC}.Release|x64.ActiveCfg = Release|x64
+		{46C9A4B2-8B1C-451B-B670-C194901D66AC}.Release|x64.Build.0 = Release|x64
+		{46C9A4B2-8B1C-451B-B670-C194901D66AC}.Release|x86.ActiveCfg = Release|x86
+		{46C9A4B2-8B1C-451B-B670-C194901D66AC}.Release|x86.Build.0 = Release|x86
 		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Debug|x64.ActiveCfg = Debug|x64
+		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Debug|x64.Build.0 = Debug|x64
+		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Debug|x86.ActiveCfg = Debug|x86
+		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Debug|x86.Build.0 = Debug|x86
 		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Release|x64.ActiveCfg = Release|x64
+		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Release|x64.Build.0 = Release|x64
+		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Release|x86.ActiveCfg = Release|x86
+		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Release|x86.Build.0 = Release|x86
+		{1140C5E1-1C9A-4895-BB7E-C2AB2C320472}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1140C5E1-1C9A-4895-BB7E-C2AB2C320472}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1140C5E1-1C9A-4895-BB7E-C2AB2C320472}.Debug|x64.ActiveCfg = Debug|x64
+		{1140C5E1-1C9A-4895-BB7E-C2AB2C320472}.Debug|x64.Build.0 = Debug|x64
+		{1140C5E1-1C9A-4895-BB7E-C2AB2C320472}.Debug|x86.ActiveCfg = Debug|x86
+		{1140C5E1-1C9A-4895-BB7E-C2AB2C320472}.Debug|x86.Build.0 = Debug|x86
+		{1140C5E1-1C9A-4895-BB7E-C2AB2C320472}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1140C5E1-1C9A-4895-BB7E-C2AB2C320472}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1140C5E1-1C9A-4895-BB7E-C2AB2C320472}.Release|x64.ActiveCfg = Release|x64
+		{1140C5E1-1C9A-4895-BB7E-C2AB2C320472}.Release|x64.Build.0 = Release|x64
+		{1140C5E1-1C9A-4895-BB7E-C2AB2C320472}.Release|x86.ActiveCfg = Release|x86
+		{1140C5E1-1C9A-4895-BB7E-C2AB2C320472}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4339FC9B-AEC6-442A-B413-A41555ED76C7} = {02F7AA35-91AF-491E-9F0E-03CFAF86C720}
-		{F8BF7D95-0633-407F-BB0B-02563F13C068} = {02F7AA35-91AF-491E-9F0E-03CFAF86C720}
 		{46C9A4B2-8B1C-451B-B670-C194901D66AC} = {0398AFFF-505E-4283-89DA-BBD9D28B53DB}
-		{B58E3380-D451-4E54-B522-CD21404FCD58} = {0398AFFF-505E-4283-89DA-BBD9D28B53DB}
 		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F} = {0398AFFF-505E-4283-89DA-BBD9D28B53DB}
 	EndGlobalSection
 EndGlobal

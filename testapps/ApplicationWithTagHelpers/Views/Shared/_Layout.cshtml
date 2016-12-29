@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@addTagHelper *, ApplicationWithTagHelpers
+<!DOCTYPE html>
 <html>
 <head>
     <title>@ViewData["Title"] - ApplicationWithTagHelpers</title>
@@ -11,7 +12,7 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; 2016 - ApplicationWithTagHelpers</p>
+            <p><vc:copyright website="ApplicationWithTagHelpers" year="2016" bold></vc:copyright></p>
         </footer>
     </div>
     @RenderSection("scripts", required: false)

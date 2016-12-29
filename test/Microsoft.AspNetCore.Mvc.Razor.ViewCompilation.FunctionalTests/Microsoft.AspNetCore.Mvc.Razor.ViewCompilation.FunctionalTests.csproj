@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <Import Project="..\..\build\common.props" />
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <DefineConstants>$(DefineConstants);__remove_this_to__GENERATE_BASELINES</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="**\*.cs" />
+    <EmbeddedResource Include="Resources\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20161123-03" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-beta4-build1194" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="0.3.0-*" />
+    <PackageReference Include="Microsoft.DotNet.Cli.Utils" Version="1.0.0-preview2-003121" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.1.0" />
+    <PackageReference Include="xunit" Version="2.2.0-*" />
+    <PackageReference Include="Microsoft.NETCore.App" Version="1.2.0-*" />
+  </ItemGroup>
+</Project>

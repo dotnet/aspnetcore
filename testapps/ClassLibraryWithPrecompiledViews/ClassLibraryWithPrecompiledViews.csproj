@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk.Web" ToolsVersion="15.0">
+
+  <PropertyGroup>
+    <Version>1.0.0-z$([System.DateTime]::UtcNow.Ticks)</Version>
+    <TargetFrameworks>netcoreapp1.1;net451</TargetFrameworks>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <OutputType>Exe</OutputType>
+    <RuntimeIdentifier Condition="!$(TargetFramework.StartsWith('netcoreapp'))">win7-x64</RuntimeIdentifier>
+    <MvcRazorOutputPath Condition="'$(TargetFramework)'!=''">obj\precompiled\$(TargetFramework)</MvcRazorOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content
+      Include="obj\precompiled\**\*"
+      Pack="true"
+      PackagePath="lib\%(RecursiveDir)%(FileName)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation">
+      <Version>1.1.0-*</Version>
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
+    <PackageReference Include="Microsoft.NETCore.App" Version="1.1.0" />
+  </ItemGroup>
+
+  <Target 
+    Name="PrecompileRazorViews" 
+    AfterTargets="Build" 
+    DependsOnTargets="MvcRazorPrecompile"
+    Condition="'$(TargetFramework)'!=''" />
+
+</Project>
