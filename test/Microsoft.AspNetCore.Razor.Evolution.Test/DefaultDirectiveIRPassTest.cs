@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 var phase = engine.Phases[i];
                 phase.Execute(codeDocument);
-
+                
                 if (phase is IRazorIRLoweringPhase)
                 {
                     break;
@@ -189,6 +189,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             var irDocument = codeDocument.GetIRDocument();
             Assert.NotNull(irDocument);
+
+            // These tests depend on the document->namespace->class structure.
+            irDocument = new DefaultDocumentClassifier() { Engine = engine, }.Execute(codeDocument, irDocument);
             return irDocument;
         }
     }

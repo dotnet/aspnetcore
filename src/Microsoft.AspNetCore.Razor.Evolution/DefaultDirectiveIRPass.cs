@@ -10,21 +10,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 {
     internal class DefaultDirectiveIRPass : RazorIRPassBase
     {
-        RazorParserOptions _parserOptions;
+        public override int Order => RazorIRPass.DefaultDirectiveClassifierOrder;
 
-        public override int Order => 150;
-
-        protected override void OnIntialized(RazorCodeDocument codeDocument)
+        public override DocumentIRNode ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             var syntaxTree = codeDocument.GetSyntaxTree();
             ThrowForMissingDocumentDependency(syntaxTree);
 
-            _parserOptions = syntaxTree.Options;
-        }
+            var parserOptions = syntaxTree.Options;
 
-        public override DocumentIRNode ExecuteCore(DocumentIRNode irDocument)
-        {
-            var designTime = _parserOptions.DesignTimeMode;
+            var designTime = parserOptions.DesignTimeMode;
             var walker = new DirectiveWalker(designTime);
             walker.VisitDocument(irDocument);
 

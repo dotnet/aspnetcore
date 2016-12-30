@@ -28,6 +28,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
         public abstract void Add(RazorIRNode node);
 
+        public abstract void Insert(int index, RazorIRNode node);
+
         public abstract RazorIRNode Build();
 
         public abstract void Push(RazorIRNode node);

@@ -59,6 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             builder.Features.Add(new TagHelperBinderSyntaxTreePass());
 
             // IR Passes
+            builder.Features.Add(new DefaultDocumentClassifier());
             builder.Features.Add(new DefaultDirectiveIRPass());
         }
 

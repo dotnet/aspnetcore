@@ -31,8 +31,27 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 throw new ArgumentNullException(nameof(node));
             }
 
-            Push(node);
-            Pop();
+            node.Parent = Current;
+            Current.Children.Add(node);
+        }
+
+        public override void Insert(int index, RazorIRNode node)
+        {
+            if (index < 0 || index - Current.Children.Count > 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+
+            node.Parent = Current;
+            if (index == Current.Children.Count)
+            {
+                // Allow inserting at 'Children.Count' to be friendlier than List<> typically is.
+                Current.Children.Add(node);
+            }
+            else
+            {
+                Current.Children.Insert(index, node);
+            }
         }
 
         public override RazorIRNode Build()

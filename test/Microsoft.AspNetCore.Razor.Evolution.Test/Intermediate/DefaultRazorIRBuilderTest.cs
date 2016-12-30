@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         }
 
         [Fact]
-        public void Add_DoesPushAndPop()
+        public void Add_AddsToChildrenAndSetsParent()
         {
             // Arrange
             var builder = new DefaultRazorIRBuilder();
@@ -124,6 +124,72 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             Assert.Same(parent, builder.Current);
             Assert.Same(parent, node.Parent);
             Assert.Collection(parent.Children, n => Assert.Same(node, n));
+        }
+
+        [Fact]
+        public void Insert_AddsToChildrenAndSetsParent_EmptyCollection()
+        {
+            // Arrange
+            var builder = new DefaultRazorIRBuilder();
+
+            var parent = new BasicIRNode();
+            builder.Push(parent);
+
+            var node = new BasicIRNode();
+
+            // Act
+            builder.Insert(0, node);
+
+            // Assert
+            Assert.Same(parent, builder.Current);
+            Assert.Same(parent, node.Parent);
+            Assert.Collection(parent.Children, n => Assert.Same(node, n));
+        }
+
+        [Fact]
+        public void Insert_AddsToChildrenAndSetsParent_NonEmpyCollection()
+        {
+            // Arrange
+            var builder = new DefaultRazorIRBuilder();
+
+            var parent = new BasicIRNode();
+            builder.Push(parent);
+
+            var child = new BasicIRNode();
+            builder.Add(child);
+
+            var node = new BasicIRNode();
+
+            // Act
+            builder.Insert(0, node);
+
+            // Assert
+            Assert.Same(parent, builder.Current);
+            Assert.Same(parent, node.Parent);
+            Assert.Collection(parent.Children, n => Assert.Same(node, n), n => Assert.Same(child, n));
+        }
+
+        [Fact]
+        public void Insert_AddsToChildrenAndSetsParent_NonEmpyCollection_AtEnd()
+        {
+            // Arrange
+            var builder = new DefaultRazorIRBuilder();
+
+            var parent = new BasicIRNode();
+            builder.Push(parent);
+
+            var child = new BasicIRNode();
+            builder.Add(child);
+
+            var node = new BasicIRNode();
+
+            // Act
+            builder.Insert(1, node);
+
+            // Assert
+            Assert.Same(parent, builder.Current);
+            Assert.Same(parent, node.Parent);
+            Assert.Collection(parent.Children, n => Assert.Same(child, n), n => Assert.Same(node, n));
         }
 
         [Fact]

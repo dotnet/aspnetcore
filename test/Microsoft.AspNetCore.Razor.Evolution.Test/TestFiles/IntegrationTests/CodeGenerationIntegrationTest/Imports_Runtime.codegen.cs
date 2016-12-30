@@ -14,7 +14,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
-            WriteLiteral("\r\n\r\n<p>Path\'s full type name is ");
+            WriteLiteral("\r\n");
+            WriteLiteral("\r\n<p>Path\'s full type name is ");
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Imports.cshtml"
                        Write(typeof(Path).FullName);
 

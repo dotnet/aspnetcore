@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
     {
         internal const string DesignTimeVariable = "__o";
 
-        public override int Order => 25;
+        public override int Order => RazorIRPass.DirectiveClassifierOrder;
 
-        public override DocumentIRNode ExecuteCore(DocumentIRNode irDocument)
+        public override DocumentIRNode ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             var walker = new DesignTimeHelperWalker();
             walker.VisitDocument(irDocument);

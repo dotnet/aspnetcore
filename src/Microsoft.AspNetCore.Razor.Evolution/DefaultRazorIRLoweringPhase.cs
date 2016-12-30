@@ -18,7 +18,26 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             var visitor = new Visitor(codeDocument, syntaxTree.Options);
 
+            var i = 0;
+            var builder = visitor.Builder;
+            foreach (var namespaceImport in syntaxTree.Options.NamespaceImports)
+            {
+                if (visitor.Namespaces.Add(namespaceImport))
+                {
+                    var @using = new UsingStatementIRNode()
+                    {
+                        Content = namespaceImport,
+                    };
+
+                    builder.Insert(i++, @using);
+                }
+            }
+
+            var checksum = ChecksumIRNode.Create(codeDocument.Source);
+            visitor.Builder.Insert(0, checksum);
+
             visitor.VisitBlock(syntaxTree.Root);
+
 
             var irDocument = (DocumentIRNode)visitor.Builder.Build();
             codeDocument.SetIRDocument(irDocument);
@@ -26,49 +45,24 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         private class Visitor : ParserVisitor
         {
-            private readonly Stack<RazorIRBuilder> _builders;
             private readonly RazorParserOptions _options;
             private readonly RazorCodeDocument _codeDocument;
+
+            private DeclareTagHelperFieldsIRNode _tagHelperFields;
 
             public Visitor(RazorCodeDocument codeDocument, RazorParserOptions options)
             {
                 _codeDocument = codeDocument;
                 _options = options;
-                _builders = new Stack<RazorIRBuilder>();
-                var document = RazorIRBuilder.Document();
-                _builders.Push(document);
 
-                var checksum = ChecksumIRNode.Create(codeDocument.Source);
-                Builder.Add(checksum);
+                Namespaces = new HashSet<string>();
 
-                Namespace = new NamespaceDeclarationIRNode();
-                Builder.Push(Namespace);
-
-                foreach (var namespaceImport in options.NamespaceImports)
-                {
-                    var @using = new UsingStatementIRNode()
-                    {
-                        Content = namespaceImport,
-                        Parent = Namespace,
-                    };
-
-                    Builder.Add(@using);
-                }
-
-                Class = new ClassDeclarationIRNode();
-                Builder.Push(Class);
-
-                Method = new RazorMethodDeclarationIRNode();
-                Builder.Push(Method);
+                Builder = RazorIRBuilder.Document();
             }
 
-            public RazorIRBuilder Builder => _builders.Peek();
+            public RazorIRBuilder Builder { get; }
 
-            public NamespaceDeclarationIRNode Namespace { get; }
-
-            public ClassDeclarationIRNode Class { get; }
-
-            public RazorMethodDeclarationIRNode Method { get; }
+            public HashSet<string> Namespaces { get; }
 
             // Example
             // <input` checked="hello-world @false"`/>
@@ -254,31 +248,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 var namespaceImport = chunkGenerator.Namespace.Trim();
 
-                if (_options.NamespaceImports.Contains(namespaceImport, StringComparer.Ordinal))
+                // Track seen namespaces so we don't add duplicates from options.
+                if (Namespaces.Add(namespaceImport)) 
                 {
-                    // Already added by default
-
-                    return;
-                }
-
-                // For prettiness, let's insert the usings before the class declaration.
-                var i = 0;
-                for (; i < Namespace.Children.Count; i++)
-                {
-                    if (Namespace.Children[i] is ClassDeclarationIRNode)
+                    Builder.Add(new UsingStatementIRNode()
                     {
-                        break;
-                    }
+                        Content = namespaceImport,
+                        SourceRange = BuildSourceRangeFromNode(span),
+                    });
                 }
-
-                var @using = new UsingStatementIRNode()
-                {
-                    Content = namespaceImport,
-                    Parent = Namespace,
-                    SourceRange = BuildSourceRangeFromNode(span),
-                };
-
-                Namespace.Children.Insert(i, @using);
             }
 
             public override void VisitDirectiveToken(DirectiveTokenChunkGenerator chunkGenerator, Span span)
@@ -355,19 +333,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             private void DeclareTagHelperFields(TagHelperBlock block)
             {
-                var declareFieldsNode = Class.Children.OfType<DeclareTagHelperFieldsIRNode>().SingleOrDefault();
-                if (declareFieldsNode == null)
+                if (_tagHelperFields == null)
                 {
-                    declareFieldsNode = new DeclareTagHelperFieldsIRNode();
-                    declareFieldsNode.Parent = Class;
-
-                    var methodIndex = Class.Children.IndexOf(Method);
-                    Class.Children.Insert(methodIndex, declareFieldsNode);
+                    _tagHelperFields = new DeclareTagHelperFieldsIRNode();
+                    Builder.Add(_tagHelperFields);
                 }
 
                 foreach (var descriptor in block.Descriptors)
                 {
-                    declareFieldsNode.UsedTagHelperTypeNames.Add(descriptor.TypeName);
+                    _tagHelperFields.UsedTagHelperTypeNames.Add(descriptor.TypeName);
                 }
             }
 

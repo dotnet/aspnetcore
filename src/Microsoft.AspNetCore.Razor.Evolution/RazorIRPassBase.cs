@@ -8,9 +8,24 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 {
     internal abstract class RazorIRPassBase : IRazorIRPass
     {
-        public RazorEngine Engine { get; set; }
+        private RazorEngine _engine;
 
-        public virtual int Order => 0;
+        public RazorEngine Engine
+        {
+            get { return _engine; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _engine = value;
+                OnIntialized();
+            }
+        }
+
+        public abstract int Order { get; }
 
         protected void ThrowForMissingDocumentDependency<TDocumentDependency>(TDocumentDependency value)
         {
@@ -36,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             }
         }
 
-        protected virtual void OnIntialized(RazorCodeDocument codeDocument)
+        protected virtual void OnIntialized()
         {
         }
 
@@ -57,11 +72,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 throw new InvalidOperationException(Resources.FormatPhaseMustBeInitialized(nameof(Engine)));
             }
 
-            OnIntialized(codeDocument);
-
-            return ExecuteCore(irDocument);
+            return ExecuteCore(codeDocument, irDocument);
         }
 
-        public abstract DocumentIRNode ExecuteCore(DocumentIRNode irDocument);
+        public abstract DocumentIRNode ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument);
     }
 }
