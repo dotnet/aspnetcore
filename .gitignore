@@ -25,3 +25,4 @@ nuget.exe
 debugSettings.json
 project.lock.json
 *.nupkg
+.build
