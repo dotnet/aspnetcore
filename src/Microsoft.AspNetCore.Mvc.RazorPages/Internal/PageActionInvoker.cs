@@ -3,22 +3,27 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public class PageActionInvoker : IActionInvoker
     {
-        private readonly PageActionInvokerCacheEntry _cacheEntry;
         private readonly ActionContext _actionContext;
+        private readonly IFilterMetadata[] _filters;
 
         public PageActionInvoker(
             PageActionInvokerCacheEntry cacheEntry,
-            ActionContext actionContext)
+            ActionContext actionContext,
+            IFilterMetadata[] filters)
         {
-            _cacheEntry = cacheEntry;
+            CacheEntry = cacheEntry;
             _actionContext = actionContext;
+            _filters = filters;
         }
+
+        public PageActionInvokerCacheEntry CacheEntry { get; }
 
         public Task InvokeAsync()
         {

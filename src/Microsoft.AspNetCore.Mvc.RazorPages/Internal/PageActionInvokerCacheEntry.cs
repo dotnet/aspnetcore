@@ -12,12 +12,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             CompiledPageActionDescriptor actionDescriptor,
             Func<PageContext, object> pageFactory,
             Action<PageContext, object> releasePage,
-            Func<PageContext, IFilterMetadata[]> filterProvider)
+            FilterItem[] cacheableFilters)
         {
             ActionDescriptor = actionDescriptor;
             PageFactory = pageFactory;
             ReleasePage = releasePage;
-            FilterProvider = filterProvider;
+            CacheableFilters = cacheableFilters;
         }
 
         public CompiledPageActionDescriptor ActionDescriptor { get; }
@@ -29,6 +29,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         /// </summary>
         public Action<PageContext, object> ReleasePage { get; }
 
-        Func<PageContext, IFilterMetadata[]> FilterProvider { get; }
+        public FilterItem[] CacheableFilters { get; }
     }
 }

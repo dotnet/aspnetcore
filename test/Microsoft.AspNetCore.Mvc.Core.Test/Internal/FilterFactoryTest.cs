@@ -2,78 +2,72 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
-    public class PageFilterFactoryProviderTest
+    public class FilterFactoryTest
     {
-        [Fact]
-        public void FilterFactory_ReturnsNoFilters_IfNoFiltersAreSpecified()
+        public void GetAllFilters_ReturnsNoFilters_IfNoFiltersAreSpecified()
         {
             // Arrange
             var filterProviders = new IFilterProvider[0];
-            var actionInvokerProviderContext = GetInvokerContext();
+            var actionContext = CreateActionContext(new FilterDescriptor[0]);
 
             // Act
-            var filterFactory = PageFilterFactoryProvider.GetFilterFactory(
-                filterProviders,
-                actionInvokerProviderContext);
-            var filters1 = filterFactory(actionInvokerProviderContext.ActionContext);
-            var filters2 = filterFactory(actionInvokerProviderContext.ActionContext);
+            var filterResult = FilterFactory.GetAllFilters(filterProviders, actionContext);
 
             // Assert
-            Assert.Empty(filters1);
-            Assert.Empty(filters2);
+            Assert.Empty(filterResult.CacheableFilters);
+            Assert.Empty(filterResult.Filters);
         }
 
         [Fact]
-        public void FilterFactory_ReturnsNoFilters_IfAllFiltersAreRemoved()
+        public void GetAllFilters_ReturnsNoFilters_IfAllFiltersAreRemoved()
         {
             // Arrange
             var filterProvider = new TestFilterProvider(
-                context => context.Results.Clear());
+                context => context.Results.Clear(),
+                content => { });
             var filter = new FilterDescriptor(new TypeFilterAttribute(typeof(object)), FilterScope.Global);
-            var actionInvokerProviderContext = GetInvokerContext(filter);
+            var actionContext = CreateActionContext(new[] { filter });
 
             // Act
-            var filterFactory = PageFilterFactoryProvider.GetFilterFactory(
+            var filterResult = FilterFactory.GetAllFilters(
                 new[] { filterProvider },
-                actionInvokerProviderContext);
-            var filters1 = filterFactory(actionInvokerProviderContext.ActionContext);
-            var filters2 = filterFactory(actionInvokerProviderContext.ActionContext);
+                actionContext);
 
             // Assert
-            Assert.Empty(filters1);
-            Assert.Empty(filters2);
+            Assert.Collection(filterResult.CacheableFilters,
+                f =>
+                {
+                    Assert.Null(f.Filter);
+                    Assert.False(f.IsReusable);
+                });
+            Assert.Empty(filterResult.Filters);
         }
 
         [Fact]
-        public void FilterFactory_CachesAllFilters()
+        public void GetAllFilters_CachesAllFilters()
         {
             // Arrange
             var staticFilter1 = new TestFilter();
             var staticFilter2 = new TestFilter();
-            var actionInvokerProviderContext = GetInvokerContext(new[]
-            {
-                new FilterDescriptor(staticFilter1, FilterScope.Action),
-                new FilterDescriptor(staticFilter2, FilterScope.Action),
-            });
+            var actionContext = CreateActionContext(new[]
+                {
+                    new FilterDescriptor(staticFilter1, FilterScope.Action),
+                    new FilterDescriptor(staticFilter2, FilterScope.Action),
+                });
             var filterProviders = new[] { new DefaultFilterProvider() };
 
-            // Act - 1
-            var filterFactory = PageFilterFactoryProvider.GetFilterFactory(
-                filterProviders,
-                actionInvokerProviderContext);
 
-            var request1Filters = filterFactory(actionInvokerProviderContext.ActionContext);
+            // Act - 1
+            var filterResult = FilterFactory.GetAllFilters(filterProviders, actionContext);
+            var request1Filters = filterResult.Filters;
 
             // Assert - 1
             Assert.Collection(
@@ -82,7 +76,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 f => Assert.Same(staticFilter2, f));
 
             // Act - 2
-            var request2Filters = filterFactory(actionInvokerProviderContext.ActionContext);
+            var request2Filters = FilterFactory.CreateUncachedFilters(
+                filterProviders,
+                actionContext,
+                filterResult.CacheableFilters);
 
             // Assert - 2
             Assert.Collection(
@@ -92,30 +89,29 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void FilterFactory_CachesFilterFromFactory()
+        public void GetAllFilters_CachesFilterFromFactory()
         {
             // Arrange
             var staticFilter = new TestFilter();
-            var actionInvokerProviderContext = GetInvokerContext(new[]
-            {
-                new FilterDescriptor(new TestFilterFactory() { IsReusable = true }, FilterScope.Action),
-                new FilterDescriptor(staticFilter, FilterScope.Action),
-            });
+            var actionContext = CreateActionContext(new[]
+                {
+                    new FilterDescriptor(new TestFilterFactory() { IsReusable = true }, FilterScope.Action),
+                    new FilterDescriptor(staticFilter, FilterScope.Action),
+                });
             var filterProviders = new[] { new DefaultFilterProvider() };
+            var filterDescriptors = actionContext.ActionDescriptor.FilterDescriptors;
 
             // Act & Assert
-            var filterFactory = PageFilterFactoryProvider.GetFilterFactory(
-                filterProviders,
-                actionInvokerProviderContext);
+            var filterResult = FilterFactory.GetAllFilters(filterProviders, actionContext);
 
-            var filters = filterFactory(actionInvokerProviderContext.ActionContext);
+            var filters = filterResult.Filters;
             Assert.Equal(2, filters.Length);
             var cachedFactoryCreatedFilter = Assert.IsType<TestFilter>(filters[0]); // Created by factory
             Assert.Same(staticFilter, filters[1]); // Cached and the same statically created filter instance
 
             for (var i = 0; i < 5; i++)
             {
-                filters = filterFactory(actionInvokerProviderContext.ActionContext);
+                filters = FilterFactory.CreateUncachedFilters(filterProviders, actionContext, filterResult.CacheableFilters);
 
                 var currentFactoryCreatedFilter = filters[0];
                 Assert.Same(currentFactoryCreatedFilter, cachedFactoryCreatedFilter); // Cached
@@ -124,25 +120,25 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void FilterFactory_DoesNotCacheFiltersWithIsReusableFalse()
+        public void GetAllFilters_DoesNotCacheFiltersWithIsReusableFalse()
         {
             // Arrange
             var staticFilter = new TestFilter();
-            var actionInvokerProviderContext = GetInvokerContext(new[]
-            {
-                new FilterDescriptor(new TestFilterFactory() { IsReusable = false }, FilterScope.Action),
-                new FilterDescriptor(staticFilter, FilterScope.Action),
-            });
+            var actionContext = CreateActionContext(new[]
+                {
+                    new FilterDescriptor(new TestFilterFactory() { IsReusable = false }, FilterScope.Action),
+                    new FilterDescriptor(staticFilter, FilterScope.Action),
+                });
             var filterProviders = new[] { new DefaultFilterProvider() };
+            var filterDescriptors = actionContext.ActionDescriptor.FilterDescriptors;
 
             // Act & Assert
-            var filterFactory = PageFilterFactoryProvider.GetFilterFactory(
-                filterProviders,
-                actionInvokerProviderContext);
+            var filterResult = FilterFactory.GetAllFilters(filterProviders, actionContext);
+            var filters = filterResult.Filters;
             IFilterMetadata previousFactoryCreatedFilter = null;
             for (var i = 0; i < 5; i++)
             {
-                var filters = filterFactory(actionInvokerProviderContext.ActionContext);
+                filters = FilterFactory.CreateUncachedFilters(filterProviders, actionContext, filterResult.CacheableFilters);
 
                 var currentFactoryCreatedFilter = filters[0];
                 Assert.NotSame(currentFactoryCreatedFilter, previousFactoryCreatedFilter); // Never Cached
@@ -155,35 +151,33 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void FilterFactory_FiltersAddedByFilterProviders_AreNeverCached(bool reusable)
+        public void GetAllFilters_FiltersAddedByFilterProviders_AreNeverCached(bool reusable)
         {
             // Arrange
             var customFilterProvider = new TestFilterProvider(
-                providerExecuting: (providerContext) =>
-                {
-                    var filter = new TestFilter(providerContext.ActionContext.HttpContext.Items["name"] as string);
-                    providerContext.Results.Add(
-                        new FilterItem(new FilterDescriptor(filter, FilterScope.Global), filter)
-                        {
-                            IsReusable = reusable
-                        });
-                });
+                    providerExecuting: (providerContext) =>
+                    {
+                        var filter = new TestFilter(providerContext.ActionContext.HttpContext.Items["name"] as string);
+                        providerContext.Results.Add(
+                            new FilterItem(new FilterDescriptor(filter, FilterScope.Global), filter)
+                            {
+                                IsReusable = reusable
+                            });
+                    },
+                    providerExecuted: null);
             var staticFilter = new TestFilter();
-            var actionInvokerProviderContext = GetInvokerContext(new[]
-            {
-                new FilterDescriptor(new TestFilterFactory() { IsReusable = false }, FilterScope.Action),
-                new FilterDescriptor(staticFilter, FilterScope.Action),
-            });
-            var actionContext = actionInvokerProviderContext.ActionContext;
+            var actionContext = CreateActionContext(new[]
+                {
+                    new FilterDescriptor(new TestFilterFactory() { IsReusable = false }, FilterScope.Action),
+                    new FilterDescriptor(staticFilter, FilterScope.Action),
+                });
             var filterProviders = new IFilterProvider[] { new DefaultFilterProvider(), customFilterProvider };
-
+            var filterDescriptors = actionContext.ActionDescriptor.FilterDescriptors;
 
             // Act - 1
             actionContext.HttpContext.Items["name"] = "foo";
-            var filterFactory = PageFilterFactoryProvider.GetFilterFactory(
-                filterProviders,
-                actionInvokerProviderContext);
-            var filters = filterFactory(actionContext);
+            var filterResult = FilterFactory.GetAllFilters(filterProviders, actionContext);
+            var filters = filterResult.Filters;
 
             // Assert - 1
             Assert.Equal(3, filters.Length);
@@ -194,7 +188,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // Act - 2
             actionContext.HttpContext.Items["name"] = "bar";
-            filters = filterFactory(actionContext);
+            filters = FilterFactory.CreateUncachedFilters(filterProviders, actionContext, filterResult.CacheableFilters);
 
             // Assert -2
             Assert.Equal(3, filters.Length);
@@ -222,7 +216,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         private class TestFilterFactory : IFilterFactory
         {
-            private TestFilter _testFilter;
+            private TestFilter testFilter;
 
             public bool IsReusable { get; set; }
 
@@ -230,11 +224,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 if (IsReusable)
                 {
-                    if (_testFilter == null)
+                    if (testFilter == null)
                     {
-                        _testFilter = new TestFilter();
+                        testFilter = new TestFilter();
                     }
-                    return _testFilter;
+                    return testFilter;
                 }
                 else
                 {
@@ -250,7 +244,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             public TestFilterProvider(
                 Action<FilterProviderContext> providerExecuting,
-                Action<FilterProviderContext> providerExecuted = null,
+                Action<FilterProviderContext> providerExecuted,
                 int order = 0)
             {
                 _providerExecuting = providerExecuting;
@@ -271,14 +265,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
         }
 
-        private static ActionInvokerProviderContext GetInvokerContext(params FilterDescriptor[] filters)
+        private static ActionContext CreateActionContext(FilterDescriptor[] filterDescriptors)
         {
-            var actionDescriptor = new PageActionDescriptor
+            var actionDescriptor = new ActionDescriptor
             {
-                FilterDescriptors = new List<FilterDescriptor>(filters ?? Enumerable.Empty<FilterDescriptor>())
+                FilterDescriptors = filterDescriptors,
             };
-            var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), actionDescriptor);
-            return new ActionInvokerProviderContext(actionContext);
+
+            return new ActionContext(new DefaultHttpContext(), new RouteData(), actionDescriptor);
         }
     }
 }
