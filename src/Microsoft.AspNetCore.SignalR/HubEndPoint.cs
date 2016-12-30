@@ -56,11 +56,40 @@ namespace Microsoft.AspNetCore.SignalR
         {
             // TODO: Dispatch from the caller
             await Task.Yield();
-            Exception exception = null;
+
             try
             {
                 await _lifetimeManager.OnConnectedAsync(connection);
+                await RunHubAsync(connection);
+            }
+            finally
+            {
+                await _lifetimeManager.OnDisconnectedAsync(connection);
+            }
+        }
 
+        private async Task RunHubAsync(Connection connection)
+        {
+            await HubOnConnectedAsync(connection);
+
+            try
+            {
+                await DispatchMessagesAsync(connection);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(0, ex, "Error when processing requests.");
+                await HubOnDisconnectedAsync(connection, ex);
+                throw;
+            }
+
+            await HubOnDisconnectedAsync(connection, null);
+        }
+
+        private async Task HubOnConnectedAsync(Connection connection)
+        {
+            try
+            {
                 using (var scope = _serviceScopeFactory.CreateScope())
                 {
                     var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub, TClient>>();
@@ -75,17 +104,17 @@ namespace Microsoft.AspNetCore.SignalR
                         hubActivator.Release(hub);
                     }
                 }
-
-                await DispatchMessagesAsync(connection);
             }
             catch (Exception ex)
             {
-                _logger.LogError(0, ex, "Error when processing requests.");
-                exception = ex;
-                connection.Channel.Input.Complete(exception);
-                connection.Channel.Output.Complete(exception);
+                _logger.LogError(0, ex, "Error when invoking OnConnectedAsync on hub.");
+                throw;
             }
-            finally
+        }
+
+        private async Task HubOnDisconnectedAsync(Connection connection, Exception exception)
+        {
+            try
             {
                 using (var scope = _serviceScopeFactory.CreateScope())
                 {
@@ -101,8 +130,11 @@ namespace Microsoft.AspNetCore.SignalR
                         hubActivator.Release(hub);
                     }
                 }
-
-                await _lifetimeManager.OnDisconnectedAsync(connection);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(0, ex, "Error when invoking OnDisconnectedAsync on hub.");
+                throw;
             }
         }
 

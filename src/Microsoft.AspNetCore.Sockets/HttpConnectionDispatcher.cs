@@ -111,9 +111,16 @@ namespace Microsoft.AspNetCore.Sockets
                         // REVIEW: This is super gross, this all needs to be cleaned up...
                         state.Close = async () =>
                         {
-                            state.Connection.Channel.Dispose();
+                            try
+                            {
+                                await endpointTask;
+                            }
+                            catch
+                            {
+                                // possibly invoked on a ThreadPool thread
+                            }
 
-                            await endpointTask;
+                            state.Connection.Channel.Dispose();
                         };
 
                         endpointTask = endpoint.OnConnectedAsync(state.Connection);
@@ -130,6 +137,11 @@ namespace Microsoft.AspNetCore.Sockets
                     if (resultTask == endpointTask)
                     {
                         // Notify the long polling transport to end
+                        if (endpointTask.IsFaulted)
+                        {
+                            state.Connection.Channel.Input.Complete(endpointTask.Exception.InnerException);
+                            state.Connection.Channel.Output.Complete(endpointTask.Exception.InnerException);
+                        }
                         state.Connection.Channel.Dispose();
 
                         await transportTask;
