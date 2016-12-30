@@ -6,6 +6,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     using System.Threading.Tasks;
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_DuplicateAttributeTagHelpers_Runtime
     {
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", "button", global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("TYPE", new global::Microsoft.AspNetCore.Html.HtmlString("checkbox"), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_2 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", new global::Microsoft.AspNetCore.Html.HtmlString("checkbox"), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_3 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("checked", new global::Microsoft.AspNetCore.Html.HtmlString("false"), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_4 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", "button", global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.SingleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_5 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("checked", new global::Microsoft.AspNetCore.Html.HtmlString("true"), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.SingleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_6 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("checked", new global::Microsoft.AspNetCore.Html.HtmlString("true"), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_7 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("AGE", new global::Microsoft.AspNetCore.Html.HtmlString("40"), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_8 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("Age", new global::Microsoft.AspNetCore.Html.HtmlString("500"), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
         #line hidden
         #pragma warning disable 0414
         private string __tagHelperStringValueBuffer = null;
@@ -40,16 +49,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
                 __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
-                BeginWriteTagHelperAttribute();
-                WriteLiteral("button");
-                __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-                __TestNamespace_InputTagHelper.Type = __tagHelperStringValueBuffer;
-                __tagHelperExecutionContext.AddTagHelperAttribute("type", __TestNamespace_InputTagHelper.Type, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-                __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
-                BeginWriteTagHelperAttribute();
-                WriteLiteral("checkbox");
-                __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-                __tagHelperExecutionContext.AddHtmlAttribute("TYPE", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+                __TestNamespace_InputTagHelper.Type = (string)__tagHelperAttribute_0.Value;
+                __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
+                __TestNamespace_InputTagHelper2.Type = (string)__tagHelperAttribute_0.Value;
+                __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_1);
                 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 if (!__tagHelperExecutionContext.Output.IsContentModified)
                 {
@@ -65,26 +69,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
                 __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
-                BeginWriteTagHelperAttribute();
-                WriteLiteral("button");
-                __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-                __TestNamespace_InputTagHelper.Type = __tagHelperStringValueBuffer;
-                __tagHelperExecutionContext.AddTagHelperAttribute("type", __TestNamespace_InputTagHelper.Type, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-                __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
+                __TestNamespace_InputTagHelper.Type = (string)__tagHelperAttribute_0.Value;
+                __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
+                __TestNamespace_InputTagHelper2.Type = (string)__tagHelperAttribute_0.Value;
+                __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DuplicateAttributeTagHelpers.cshtml"
 __TestNamespace_InputTagHelper2.Checked = true;
 
 #line default
 #line hidden
                 __tagHelperExecutionContext.AddTagHelperAttribute("checked", __TestNamespace_InputTagHelper2.Checked, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-                BeginWriteTagHelperAttribute();
-                WriteLiteral("checkbox");
-                __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-                __tagHelperExecutionContext.AddHtmlAttribute("type", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-                BeginWriteTagHelperAttribute();
-                WriteLiteral("false");
-                __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-                __tagHelperExecutionContext.AddHtmlAttribute("checked", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_2);
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_3);
                 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 if (!__tagHelperExecutionContext.Output.IsContentModified)
                 {
@@ -100,34 +96,20 @@ __TestNamespace_InputTagHelper2.Checked = true;
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
                 __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
-                BeginWriteTagHelperAttribute();
-                WriteLiteral("button");
-                __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-                __TestNamespace_InputTagHelper.Type = __tagHelperStringValueBuffer;
-                __tagHelperExecutionContext.AddTagHelperAttribute("type", __TestNamespace_InputTagHelper.Type, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.SingleQuotes);
-                __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
+                __TestNamespace_InputTagHelper.Type = (string)__tagHelperAttribute_4.Value;
+                __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_4);
+                __TestNamespace_InputTagHelper2.Type = (string)__tagHelperAttribute_4.Value;
+                __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_4);
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DuplicateAttributeTagHelpers.cshtml"
 __TestNamespace_InputTagHelper2.Checked = true;
 
 #line default
 #line hidden
                 __tagHelperExecutionContext.AddTagHelperAttribute("checked", __TestNamespace_InputTagHelper2.Checked, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-                BeginWriteTagHelperAttribute();
-                WriteLiteral("checkbox");
-                __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-                __tagHelperExecutionContext.AddHtmlAttribute("type", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-                BeginWriteTagHelperAttribute();
-                WriteLiteral("true");
-                __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-                __tagHelperExecutionContext.AddHtmlAttribute("checked", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.SingleQuotes);
-                BeginWriteTagHelperAttribute();
-                WriteLiteral("checkbox");
-                __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-                __tagHelperExecutionContext.AddHtmlAttribute("type", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-                BeginWriteTagHelperAttribute();
-                WriteLiteral("true");
-                __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-                __tagHelperExecutionContext.AddHtmlAttribute("checked", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_2);
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_5);
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_2);
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_6);
                 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 if (!__tagHelperExecutionContext.Output.IsContentModified)
                 {
@@ -146,14 +128,8 @@ __TestNamespace_PTagHelper.Age = 3;
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-            BeginWriteTagHelperAttribute();
-            WriteLiteral("40");
-            __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-            __tagHelperExecutionContext.AddHtmlAttribute("AGE", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-            BeginWriteTagHelperAttribute();
-            WriteLiteral("500");
-            __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-            __tagHelperExecutionContext.AddHtmlAttribute("Age", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_7);
+            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_8);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {

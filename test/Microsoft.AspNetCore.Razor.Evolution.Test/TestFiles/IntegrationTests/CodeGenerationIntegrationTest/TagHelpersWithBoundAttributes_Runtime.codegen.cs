@@ -6,6 +6,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     using System.Threading.Tasks;
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_TagHelpersWithBoundAttributes_Runtime
     {
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", new global::Microsoft.AspNetCore.Html.HtmlString("text"), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.SingleQuotes);
         #line hidden
         #pragma warning disable 0414
         private string __tagHelperStringValueBuffer = null;
@@ -43,10 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
             __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
             __InputTagHelper.BoundProp = __tagHelperStringValueBuffer;
             __tagHelperExecutionContext.AddTagHelperAttribute("bound", __InputTagHelper.BoundProp, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-            BeginWriteTagHelperAttribute();
-            WriteLiteral("text");
-            __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-            __tagHelperExecutionContext.AddHtmlAttribute("type", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.SingleQuotes);
+            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_0);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {

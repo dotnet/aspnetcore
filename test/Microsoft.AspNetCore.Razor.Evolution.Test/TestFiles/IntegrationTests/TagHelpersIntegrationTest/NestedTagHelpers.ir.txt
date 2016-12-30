@@ -4,6 +4,9 @@ Document -
         UsingStatement -  - System
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  -  -  -  - 
+            DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_0 - value - Hello - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - type - text - HtmlAttributeValueStyle.SingleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - unbound - foo - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - PTagHelper - FormTagHelper - InputTagHelper
             RazorMethodDeclaration -  -  -  -  - 
                 TagHelper - 
@@ -19,13 +22,10 @@ Document -
                         TagHelper - 
                             InitializeTagHelperStructure -  - input - TagMode.SelfClosing
                             CreateTagHelper -  - InputTagHelper
-                            SetTagHelperProperty - (92:3,17 [5] NestedTagHelpers.cshtml) - value - FooProp - HtmlAttributeValueStyle.DoubleQuotes
-                                HtmlContent - (92:3,17 [5] NestedTagHelpers.cshtml) - Hello
-                            AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.SingleQuotes
-                                HtmlContent - (104:3,29 [4] NestedTagHelpers.cshtml) - text
+                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - value - FooProp
+                            AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
                             ExecuteTagHelpers - 
                         HtmlContent - (112:3,37 [2] NestedTagHelpers.cshtml) - \n
                     CreateTagHelper -  - FormTagHelper
-                    AddTagHelperHtmlAttribute -  - unbound - HtmlAttributeValueStyle.DoubleQuotes
-                        HtmlContent - (68:2,15 [3] NestedTagHelpers.cshtml) - foo
+                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
                     ExecuteTagHelpers - 

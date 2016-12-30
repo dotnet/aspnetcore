@@ -107,9 +107,29 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             WriteContentNode(node, node.AttributeName, node.PropertyName, string.Format("HtmlAttributeValueStyle.{0}", node.ValueStyle));
         }
 
+        internal override void VisitDeclarePreallocatedTagHelperAttribute(DeclarePreallocatedTagHelperAttributeIRNode node)
+        {
+            WriteContentNode(node, node.VariableName, node.Name, node.Value, string.Format("HtmlAttributeValueStyle.{0}", node.ValueStyle));
+        }
+
+        internal override void VisitSetPreallocatedTagHelperProperty(SetPreallocatedTagHelperPropertyIRNode node)
+        {
+            WriteContentNode(node, node.VariableName, node.AttributeName, node.PropertyName);
+        }
+
         internal override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
         {
             WriteContentNode(node, node.Name, string.Format("{0}.{1}", nameof(HtmlAttributeValueStyle), node.ValueStyle));
+        }
+
+        internal override void VisitDeclarePreallocatedTagHelperHtmlAttribute(DeclarePreallocatedTagHelperHtmlAttributeIRNode node)
+        {
+            WriteContentNode(node, node.VariableName, node.Name, node.Value, string.Format("{0}.{1}", nameof(HtmlAttributeValueStyle), node.ValueStyle));
+        }
+
+        internal override void VisitAddPreallocatedTagHelperHtmlAttribute(AddPreallocatedTagHelperHtmlAttributeIRNode node)
+        {
+            WriteContentNode(node, node.VariableName);
         }
 
         protected void WriteBasicNode(RazorIRNode node)

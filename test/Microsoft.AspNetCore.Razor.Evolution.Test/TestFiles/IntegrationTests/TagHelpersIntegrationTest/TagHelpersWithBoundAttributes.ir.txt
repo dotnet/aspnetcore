@@ -4,6 +4,7 @@ Document -
         UsingStatement -  - System
         UsingStatement -  - System.Threading.Tasks
         ClassDeclaration -  -  -  -  - 
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - type - text - HtmlAttributeValueStyle.SingleQuotes
             DeclareTagHelperFields -  - InputTagHelper
             RazorMethodDeclaration -  -  -  -  - 
                 HtmlContent - (31:1,0 [12] TagHelpersWithBoundAttributes.cshtml) - <form>\n    
@@ -13,7 +14,6 @@ Document -
                     SetTagHelperProperty - (56:2,17 [6] TagHelpersWithBoundAttributes.cshtml) - bound - FooProp - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - (57:2,18 [5] TagHelpersWithBoundAttributes.cshtml)
                             CSharpToken - (57:2,18 [5] TagHelpersWithBoundAttributes.cshtml) - Hello
-                    AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.SingleQuotes
-                        HtmlContent - (69:2,30 [4] TagHelpersWithBoundAttributes.cshtml) - text
+                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
                     ExecuteTagHelpers - 
                 HtmlContent - (77:2,38 [9] TagHelpersWithBoundAttributes.cshtml) - \n</form>

@@ -6,6 +6,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     using System.Threading.Tasks;
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_EmptyAttributeTagHelpers_Runtime
     {
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", "", global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("class", new global::Microsoft.AspNetCore.Html.HtmlString(""), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
         #line hidden
         #pragma warning disable 0414
         private string __tagHelperStringValueBuffer = null;
@@ -38,20 +40,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
-            BeginWriteTagHelperAttribute();
-            __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-            __TestNamespace_InputTagHelper.Type = __tagHelperStringValueBuffer;
-            __tagHelperExecutionContext.AddTagHelperAttribute("type", __TestNamespace_InputTagHelper.Type, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-            __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
+            __TestNamespace_InputTagHelper.Type = (string)__tagHelperAttribute_0.Value;
+            __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
+            __TestNamespace_InputTagHelper2.Type = (string)__tagHelperAttribute_0.Value;
+            __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EmptyAttributeTagHelpers.cshtml"
 __TestNamespace_InputTagHelper2.Checked = ;
 
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("checked", __TestNamespace_InputTagHelper2.Checked, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-            BeginWriteTagHelperAttribute();
-            __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-            __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_1);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
@@ -69,20 +68,17 @@ __TestNamespace_InputTagHelper2.Checked = ;
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
                 __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
-                BeginWriteTagHelperAttribute();
-                __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-                __TestNamespace_InputTagHelper.Type = __tagHelperStringValueBuffer;
-                __tagHelperExecutionContext.AddTagHelperAttribute("type", __TestNamespace_InputTagHelper.Type, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-                __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
+                __TestNamespace_InputTagHelper.Type = (string)__tagHelperAttribute_0.Value;
+                __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
+                __TestNamespace_InputTagHelper2.Type = (string)__tagHelperAttribute_0.Value;
+                __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EmptyAttributeTagHelpers.cshtml"
 __TestNamespace_InputTagHelper2.Checked = ;
 
 #line default
 #line hidden
                 __tagHelperExecutionContext.AddTagHelperAttribute("checked", __TestNamespace_InputTagHelper2.Checked, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-                BeginWriteTagHelperAttribute();
-                __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-                __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_1);
                 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 if (!__tagHelperExecutionContext.Output.IsContentModified)
                 {

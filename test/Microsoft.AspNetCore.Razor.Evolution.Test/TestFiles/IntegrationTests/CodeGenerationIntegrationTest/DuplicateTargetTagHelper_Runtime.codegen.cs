@@ -6,6 +6,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     using System.Threading.Tasks;
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_DuplicateTargetTagHelper_Runtime
     {
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", "checkbox", global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
         #line hidden
         #pragma warning disable 0414
         private string __tagHelperStringValueBuffer = null;
@@ -41,14 +42,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
-            BeginWriteTagHelperAttribute();
-            WriteLiteral("checkbox");
-            __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-            __TestNamespace_InputTagHelper.Type = __tagHelperStringValueBuffer;
-            __tagHelperExecutionContext.AddTagHelperAttribute("type", __TestNamespace_InputTagHelper.Type, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-            __TestNamespace_InputTagHelper.Type = __TestNamespace_InputTagHelper.Type;
-            __TestNamespace_CatchAllTagHelper.Type = __TestNamespace_InputTagHelper.Type;
-            __TestNamespace_CatchAllTagHelper.Type = __TestNamespace_InputTagHelper.Type;
+            __TestNamespace_InputTagHelper.Type = (string)__tagHelperAttribute_0.Value;
+            __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
+            __TestNamespace_InputTagHelper.Type = (string)__tagHelperAttribute_0.Value;
+            __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
+            __TestNamespace_CatchAllTagHelper.Type = (string)__tagHelperAttribute_0.Value;
+            __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
+            __TestNamespace_CatchAllTagHelper.Type = (string)__tagHelperAttribute_0.Value;
+            __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DuplicateTargetTagHelper.cshtml"
 __TestNamespace_InputTagHelper.Checked = true;
 

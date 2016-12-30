@@ -6,6 +6,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     using System.Threading.Tasks;
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteTagHelper_Runtime
     {
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("class", new global::Microsoft.AspNetCore.Html.HtmlString(""), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
         #line hidden
         #pragma warning disable 0414
         private string __tagHelperStringValueBuffer = null;
@@ -34,9 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
             );
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_PTagHelper);
-            BeginWriteTagHelperAttribute();
-            __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-            __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_0);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {

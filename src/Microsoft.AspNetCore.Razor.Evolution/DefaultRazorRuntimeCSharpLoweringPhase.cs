@@ -332,6 +332,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     tagHelperVariableName);
             }
 
+            internal override void VisitAddPreallocatedTagHelperHtmlAttribute(AddPreallocatedTagHelperHtmlAttributeIRNode node)
+            {
+                Context.Writer
+                    .WriteStartInstanceMethodInvocation(
+                        "__tagHelperExecutionContext" /* ORIGINAL: ExecutionContextVariableName */,
+                        "AddHtmlAttribute" /* ORIGINAL: ExecutionContextAddHtmlAttributeMethodName */)
+                    .Write(node.VariableName)
+                    .WriteEndMethodInvocation();
+            }
+
             internal override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
             {
                 var attributeValueStyleParameter = $"global::{typeof(HtmlAttributeValueStyle).FullName}.{node.ValueStyle}";
@@ -401,6 +411,23 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         .Write(attributeValueStyleParameter)
                         .WriteEndMethodInvocation();
                 }
+            }
+
+            internal override void VisitSetPreallocatedTagHelperProperty(SetPreallocatedTagHelperPropertyIRNode node)
+            {
+                var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
+                var propertyValueAccessor = GetTagHelperPropertyAccessor(tagHelperVariableName, node.AttributeName, node.Descriptor);
+                var attributeValueAccessor = $"{node.VariableName}.Value" /* ORIGINAL: TagHelperAttributeValuePropertyName */;
+                Context.Writer
+                    .WriteStartAssignment(propertyValueAccessor)
+                    .Write("(string)")
+                    .Write(attributeValueAccessor)
+                    .WriteLine(";")
+                    .WriteStartInstanceMethodInvocation(
+                        "__tagHelperExecutionContext" /* ORIGINAL: ExecutionContextVariableName */,
+                        "AddTagHelperAttribute" /* ORIGINAL: ExecutionContextAddTagHelperAttributeMethodName */)
+                    .Write(node.VariableName)
+                    .WriteEndMethodInvocation();
             }
 
             internal override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
@@ -543,6 +570,51 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     .WriteInstanceMethodInvocation(
                         "__tagHelperScopeManager" /* ORIGINAL: ScopeManagerVariableName */,
                         "End" /* ORIGINAL: ScopeManagerEndMethodName */);
+            }
+
+            internal override void VisitDeclarePreallocatedTagHelperHtmlAttribute(DeclarePreallocatedTagHelperHtmlAttributeIRNode node)
+            {
+                Context.Writer
+                    .Write("private static readonly global::")
+                    .Write("Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute" /* ORIGINAL: TagHelperAttributeTypeName */)
+                    .Write(" ")
+                    .Write(node.VariableName)
+                    .Write(" = ")
+                    .WriteStartNewObject("global::" + "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute" /* ORIGINAL: TagHelperAttributeTypeName */)
+                    .WriteStringLiteral(node.Name);
+
+                if (node.ValueStyle == HtmlAttributeValueStyle.Minimized)
+                {
+                    Context.Writer.WriteEndMethodInvocation();
+                }
+                else
+                {
+                    Context.Writer
+                        .WriteParameterSeparator()
+                        .WriteStartNewObject("global::" + "Microsoft.AspNetCore.Html.HtmlString" /* ORIGINAL: EncodedHtmlStringTypeName */)
+                        .WriteStringLiteral(node.Value)
+                        .WriteEndMethodInvocation(endLine: false)
+                        .WriteParameterSeparator()
+                        .Write($"global::{typeof(HtmlAttributeValueStyle).FullName}.{node.ValueStyle}")
+                        .WriteEndMethodInvocation();
+                }
+            }
+
+            internal override void VisitDeclarePreallocatedTagHelperAttribute(DeclarePreallocatedTagHelperAttributeIRNode node)
+            {
+                Context.Writer
+                    .Write("private static readonly global::")
+                    .Write("Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute" /* ORIGINAL: TagHelperAttributeTypeName */)
+                    .Write(" ")
+                    .Write(node.VariableName)
+                    .Write(" = ")
+                    .WriteStartNewObject("global::" + "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute" /* ORIGINAL: TagHelperAttributeTypeName */)
+                    .WriteStringLiteral(node.Name)
+                    .WriteParameterSeparator()
+                    .WriteStringLiteral(node.Value)
+                    .WriteParameterSeparator()
+                    .Write($"global::{typeof(HtmlAttributeValueStyle).FullName}.{node.ValueStyle}")
+                    .WriteEndMethodInvocation();
             }
 
             internal override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)

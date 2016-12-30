@@ -6,6 +6,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     using System.Threading.Tasks;
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ComplexTagHelpers_Runtime
     {
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", "text", global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("value", new global::Microsoft.AspNetCore.Html.HtmlString(""), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_2 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("placeholder", new global::Microsoft.AspNetCore.Html.HtmlString("Enter in a new time..."), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_3 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("unbound", new global::Microsoft.AspNetCore.Html.HtmlString("first value"), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_4 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("unbound", new global::Microsoft.AspNetCore.Html.HtmlString("second value"), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_5 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("unbound", new global::Microsoft.AspNetCore.Html.HtmlString("hello"), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_6 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("unbound", new global::Microsoft.AspNetCore.Html.HtmlString("world"), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_7 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("class", new global::Microsoft.AspNetCore.Html.HtmlString("hello"), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
         #line hidden
         #pragma warning disable 0414
         private string __tagHelperStringValueBuffer = null;
@@ -60,19 +68,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
                     __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
                     __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
                     __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
-                    BeginWriteTagHelperAttribute();
-                    WriteLiteral("text");
-                    __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-                    __TestNamespace_InputTagHelper.Type = __tagHelperStringValueBuffer;
-                    __tagHelperExecutionContext.AddTagHelperAttribute("type", __TestNamespace_InputTagHelper.Type, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-                    __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
-                    BeginWriteTagHelperAttribute();
-                    __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-                    __tagHelperExecutionContext.AddHtmlAttribute("value", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-                    BeginWriteTagHelperAttribute();
-                    WriteLiteral("Enter in a new time...");
-                    __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-                    __tagHelperExecutionContext.AddHtmlAttribute("placeholder", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+                    __TestNamespace_InputTagHelper.Type = (string)__tagHelperAttribute_0.Value;
+                    __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
+                    __TestNamespace_InputTagHelper2.Type = (string)__tagHelperAttribute_0.Value;
+                    __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
+                    __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_1);
+                    __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_2);
                     await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                     if (!__tagHelperExecutionContext.Output.IsContentModified)
                     {
@@ -268,20 +269,14 @@ __TestNamespace_InputTagHelper2.Checked = (@object);
             );
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_PTagHelper);
-            BeginWriteTagHelperAttribute();
-            WriteLiteral("first value");
-            __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-            __tagHelperExecutionContext.AddHtmlAttribute("unbound", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_3);
 #line 21 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
 __TestNamespace_PTagHelper.Age = DateTimeOffset.Now.Year - 1970;
 
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-            BeginWriteTagHelperAttribute();
-            WriteLiteral("second value");
-            __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-            __tagHelperExecutionContext.AddHtmlAttribute("unbound", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_4);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
@@ -299,14 +294,8 @@ __TestNamespace_PTagHelper.Age = DateTimeOffset.Now.Year - 1970;
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
                 __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
-                BeginWriteTagHelperAttribute();
-                WriteLiteral("hello");
-                __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-                __tagHelperExecutionContext.AddHtmlAttribute("unbound", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-                BeginWriteTagHelperAttribute();
-                WriteLiteral("world");
-                __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-                __tagHelperExecutionContext.AddHtmlAttribute("unbound", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_5);
+                __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_6);
 #line 26 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
 __TestNamespace_InputTagHelper2.Checked = (DateTimeOffset.Now.Year > 2014);
 
@@ -454,10 +443,7 @@ __TestNamespace_PTagHelper.Age = 123;
 #line default
 #line hidden
     __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-    BeginWriteTagHelperAttribute();
-    WriteLiteral("hello");
-    __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-    __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+    __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_7);
     await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
     if (!__tagHelperExecutionContext.Output.IsContentModified)
     {

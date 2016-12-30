@@ -66,6 +66,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         internal static void AddRuntimeDefaults(IRazorEngineBuilder builder)
         {
             builder.Phases.Add(new DefaultRazorRuntimeCSharpLoweringPhase());
+
+            builder.Features.Add(new RazorPreallocatedTagHelperAttributeOptimizationPass());
         }
 
         internal static void AddDesignTimeDefaults(IRazorEngineBuilder builder)

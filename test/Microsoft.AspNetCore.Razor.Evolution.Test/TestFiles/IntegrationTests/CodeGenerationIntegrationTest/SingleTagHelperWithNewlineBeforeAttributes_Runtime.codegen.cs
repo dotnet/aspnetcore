@@ -6,6 +6,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     using System.Threading.Tasks;
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_SingleTagHelperWithNewlineBeforeAttributes_Runtime
     {
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("class", new global::Microsoft.AspNetCore.Html.HtmlString("Hello World"), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
         #line hidden
         #pragma warning disable 0414
         private string __tagHelperStringValueBuffer = null;
@@ -35,10 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
             );
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_PTagHelper);
-            BeginWriteTagHelperAttribute();
-            WriteLiteral("Hello World");
-            __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-            __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
+            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_0);
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SingleTagHelperWithNewlineBeforeAttributes.cshtml"
 __TestNamespace_PTagHelper.Age = 1337;
 

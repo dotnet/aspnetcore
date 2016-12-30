@@ -6,6 +6,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     using System.Threading.Tasks;
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_SimpleTagHelpers_Runtime
     {
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("value", "Hello", global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.SingleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", new global::Microsoft.AspNetCore.Html.HtmlString("text"), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.SingleQuotes);
         #line hidden
         #pragma warning disable 0414
         private string __tagHelperStringValueBuffer = null;
@@ -34,15 +36,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
             );
             __InputTagHelper = CreateTagHelper<global::InputTagHelper>();
             __tagHelperExecutionContext.Add(__InputTagHelper);
-            BeginWriteTagHelperAttribute();
-            WriteLiteral("Hello");
-            __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-            __InputTagHelper.FooProp = __tagHelperStringValueBuffer;
-            __tagHelperExecutionContext.AddTagHelperAttribute("value", __InputTagHelper.FooProp, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.SingleQuotes);
-            BeginWriteTagHelperAttribute();
-            WriteLiteral("text");
-            __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
-            __tagHelperExecutionContext.AddHtmlAttribute("type", Html.Raw(__tagHelperStringValueBuffer), global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.SingleQuotes);
+            __InputTagHelper.FooProp = (string)__tagHelperAttribute_0.Value;
+            __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
+            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_1);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {

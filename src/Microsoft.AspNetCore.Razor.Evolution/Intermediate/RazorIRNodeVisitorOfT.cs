@@ -129,5 +129,25 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         {
             return VisitDefault(node);
         }
+
+        internal virtual TResult VisitDeclarePreallocatedTagHelperHtmlAttribute(DeclarePreallocatedTagHelperHtmlAttributeIRNode node)
+        {
+            return VisitDefault(node);
+        }
+
+        internal virtual TResult VisitAddPreallocatedTagHelperHtmlAttribute(AddPreallocatedTagHelperHtmlAttributeIRNode node)
+        {
+            return VisitDefault(node);
+        }
+
+        internal virtual TResult VisitDeclarePreallocatedTagHelperAttribute(DeclarePreallocatedTagHelperAttributeIRNode node)
+        {
+            return VisitDefault(node);
+        }
+
+        internal virtual TResult VisitSetPreallocatedTagHelperProperty(SetPreallocatedTagHelperPropertyIRNode node)
+        {
+            return VisitDefault(node);
+        }
     }
 }

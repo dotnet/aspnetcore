@@ -128,5 +128,25 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         {
             VisitDefault(node);
         }
+
+        internal virtual void VisitDeclarePreallocatedTagHelperHtmlAttribute(DeclarePreallocatedTagHelperHtmlAttributeIRNode node)
+        {
+            VisitDefault(node);
+        }
+
+        internal virtual void VisitAddPreallocatedTagHelperHtmlAttribute(AddPreallocatedTagHelperHtmlAttributeIRNode node)
+        {
+            VisitDefault(node);
+        }
+
+        internal virtual void VisitDeclarePreallocatedTagHelperAttribute(DeclarePreallocatedTagHelperAttributeIRNode node)
+        {
+            VisitDefault(node);
+        }
+
+        internal virtual void VisitSetPreallocatedTagHelperProperty(SetPreallocatedTagHelperPropertyIRNode node)
+        {
+            VisitDefault(node);
+        }
     }
 }

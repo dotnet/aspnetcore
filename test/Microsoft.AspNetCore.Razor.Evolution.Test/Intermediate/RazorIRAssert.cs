@@ -203,6 +203,26 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             }
         }
 
+        internal static void DeclarePreallocatedTagHelperAttribute(
+            RazorIRNode node,
+            string attributeName,
+            string value,
+            HtmlAttributeValueStyle valueStyle)
+        {
+            var declarePreallocatedTagHelperAttribute = Assert.IsType<DeclarePreallocatedTagHelperAttributeIRNode>(node);
+
+            try
+            {
+                Assert.Equal(attributeName, declarePreallocatedTagHelperAttribute.Name);
+                Assert.Equal(value, declarePreallocatedTagHelperAttribute.Value);
+                Assert.Equal(valueStyle, declarePreallocatedTagHelperAttribute.ValueStyle);
+            }
+            catch (XunitException e)
+            {
+                throw new IRAssertException(declarePreallocatedTagHelperAttribute, e.Message);
+            }
+        }
+
         internal static void TagHelperStructure(string tagName, TagMode tagMode, RazorIRNode node)
         {
             var tagHelperStructureNode = Assert.IsType<InitializeTagHelperStructureIRNode>(node);
@@ -235,6 +255,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             catch (XunitException e)
             {
                 throw new IRAssertException(tagHelperHtmlAttribute, tagHelperHtmlAttribute.Children, e.Message, e);
+            }
+        }
+
+        internal static void SetPreallocatedTagHelperProperty(RazorIRNode node, string attributeName, string propertyName)
+        {
+            var setPreallocatedTagHelperProperty = Assert.IsType<SetPreallocatedTagHelperPropertyIRNode>(node);
+
+            try
+            {
+                Assert.Equal(attributeName, setPreallocatedTagHelperProperty.AttributeName);
+                Assert.Equal(propertyName, setPreallocatedTagHelperProperty.PropertyName);
+            }
+            catch (XunitException e)
+            {
+                throw new IRAssertException(setPreallocatedTagHelperProperty, e.Message);
             }
         }
 
