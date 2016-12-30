@@ -19,9 +19,9 @@ namespace Microsoft.AspNetCore.SignalR
                            IHubContext<THub> hubContext,
                            InvocationAdapterRegistry registry,
                            ILogger<HubEndPoint<THub>> logger,
-                           IServiceScopeFactory serviceScopeFactory) : base(lifetimeManager, hubContext, registry, logger, serviceScopeFactory)
+                           IServiceScopeFactory serviceScopeFactory)
+            : base(lifetimeManager, hubContext, registry, logger, serviceScopeFactory)
         {
-
         }
     }
 
@@ -63,14 +63,16 @@ namespace Microsoft.AspNetCore.SignalR
 
                 using (var scope = _serviceScopeFactory.CreateScope())
                 {
-                    bool created;
-                    var hub = CreateHub(scope.ServiceProvider, connection, out created);
-
-                    await hub.OnConnectedAsync();
-
-                    if (created)
+                    var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub, TClient>>();
+                    var hub = hubActivator.Create();
+                    try
                     {
-                        hub.Dispose();
+                        InitializeHub(hub, connection);
+                        await hub.OnConnectedAsync();
+                    }
+                    finally
+                    {
+                        hubActivator.Release(hub);
                     }
                 }
 
@@ -87,14 +89,16 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 using (var scope = _serviceScopeFactory.CreateScope())
                 {
-                    bool created;
-                    var hub = CreateHub(scope.ServiceProvider, connection, out created);
-
-                    await hub.OnDisconnectedAsync(exception);
-
-                    if (created)
+                    var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub, TClient>>();
+                    var hub = hubActivator.Create();
+                    try
                     {
-                        hub.Dispose();
+                        InitializeHub(hub, connection);
+                        await hub.OnDisconnectedAsync(exception);
+                    }
+                    finally
+                    {
+                        hubActivator.Release(hub);
                     }
                 }
 
@@ -145,22 +149,11 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private THub CreateHub(IServiceProvider provider, Connection connection, out bool created)
+        private void InitializeHub(THub hub, Connection connection)
         {
-            var hub = provider.GetService<THub>();
-            created = false;
-
-            if (hub == null)
-            {
-                hub = ActivatorUtilities.CreateInstance<THub>(provider);
-                created = true;
-            }
-
             hub.Clients = _hubContext.Clients;
             hub.Context = new HubCallerContext(connection);
             hub.Groups = new GroupManager<THub>(connection, _lifetimeManager);
-
-            return hub;
         }
 
         private void DiscoverHubMethods()
@@ -193,11 +186,13 @@ namespace Microsoft.AspNetCore.SignalR
 
                     using (var scope = _serviceScopeFactory.CreateScope())
                     {
-                        bool created;
-                        var hub = CreateHub(scope.ServiceProvider, connection, out created);
+                        var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub, TClient>>();
+                        var hub = hubActivator.Create();
 
                         try
                         {
+                            InitializeHub(hub, connection);
+
                             var result = methodInfo.Invoke(hub, invocationDescriptor.Arguments);
                             var resultTask = result as Task;
                             if (resultTask != null)
@@ -224,10 +219,9 @@ namespace Microsoft.AspNetCore.SignalR
                             _logger.LogError(0, ex, "Failed to invoke hub method");
                             invocationResult.Error = ex.Message;
                         }
-
-                        if (created)
+                        finally
                         {
-                            hub.Dispose();
+                            hubActivator.Release(hub);
                         }
                     }
 
