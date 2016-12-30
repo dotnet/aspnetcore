@@ -171,8 +171,7 @@ namespace Microsoft.AspNetCore.Routing.Template
 
             // Add any ambient values that don't match parameters - they need to be visible to constraints
             // but they will ignored by link generation.
-            // Perf: Lazily allocate RouteValueDictionary only when needed as in most cases combined is same as accepted values
-            RouteValueDictionary combinedValues = null;
+            var combinedValues = new RouteValueDictionary(context.AcceptedValues);
             if (ambientValues != null)
             {
                 foreach (var kvp in ambientValues)
@@ -182,10 +181,6 @@ namespace Microsoft.AspNetCore.Routing.Template
                         var parameter = GetParameter(kvp.Key);
                         if (parameter == null && !context.AcceptedValues.ContainsKey(kvp.Key))
                         {
-                            if (combinedValues == null)
-                            {
-                                combinedValues = new RouteValueDictionary(context.AcceptedValues);
-                            }
                             combinedValues.Add(kvp.Key, kvp.Value);
                         }
                     }
@@ -195,7 +190,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             return new TemplateValuesResult()
             {
                 AcceptedValues = context.AcceptedValues,
-                CombinedValues = combinedValues ?? context.AcceptedValues
+                CombinedValues = combinedValues,
             };
         }
 
