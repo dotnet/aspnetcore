@@ -466,6 +466,16 @@ while(true);", BlockType.Statement, SpanKind.Code, acceptedCharacters: AcceptedC
         }
 
         [Fact]
+        public void ParseBlockCapturesNewlineAfterUsing()
+        {
+            ParseBlockTest($"using Foo{Environment.NewLine}",
+                           new DirectiveBlock(
+                               Factory.Code($"using Foo{Environment.NewLine}")
+                                   .AsNamespaceImport(" Foo")
+                                   .Accepts(AcceptedCharacters.NonWhiteSpace | AcceptedCharacters.WhiteSpace)));
+        }
+
+        [Fact]
         public void ParseBlockParsesNamespaceAliasWithSemicolonForUsingKeywordIfIsInValidFormat()
         {
             NamespaceImportTest(
