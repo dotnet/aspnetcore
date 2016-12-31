@@ -68,4 +68,4 @@ if (!(Test-Path $msbuildPath)) {
     throw "MSBuild v14.0 was not found at $msbuildPath."
 }
 
-&$msbuildPath dnx.msbuild
+&$msbuildPath dnx.msbuild $args
