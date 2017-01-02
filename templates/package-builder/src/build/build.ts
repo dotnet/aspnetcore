@@ -6,6 +6,7 @@ import * as _ from 'lodash';
 import * as mkdirp from 'mkdirp';
 import * as rimraf from 'rimraf';
 import * as childProcess from 'child_process';
+import * as targz from 'tar.gz';
 
 const isWindows = /^win/.test(process.platform);
 const textFileExtensions = ['.gitignore', 'template_gitignore', '.config', '.cs', '.cshtml', '.csproj', 'Dockerfile', '.html', '.js', '.json', '.jsx', '.md', '.nuspec', '.ts', '.tsx', '.xproj'];
@@ -81,8 +82,7 @@ function copyRecursive(sourceRoot: string, destRoot: string, matchGlob: string) 
         });
 }
 
-function buildYeomanNpmPackage() {
-    const outputRoot = './dist/generator-aspnetcore-spa';
+function buildYeomanNpmPackage(outputRoot: string) {
     const outputTemplatesRoot = path.join(outputRoot, 'app/templates');
     rimraf.sync(outputTemplatesRoot);
 
@@ -190,7 +190,19 @@ function runScripts(rootDir: string, scripts: string[]) {
     console.log(`[Prepublish] Done`)
 }
 
-rimraf.sync('./dist');
+const distDir = './dist';
+const artifactsDir = path.join(distDir, 'artifacts');
+const yeomanOutputRoot = path.join(distDir, 'generator-aspnetcore-spa');
+
+rimraf.sync(distDir);
+mkdirp.sync(artifactsDir);
 runAllPrepublishScripts();
-buildYeomanNpmPackage();
+buildYeomanNpmPackage(yeomanOutputRoot);
 buildDotNetNewNuGetPackage();
+
+// Finally, create a .tar.gz file containing the built generator-aspnetcore-spa.
+// The CI system can treat this as the final built artifact.
+// Note that the targz APIs only come in async flavor.
+targz().compress(yeomanOutputRoot, path.join(artifactsDir, 'generator-aspnetcore-spa.tar.gz'), err => {
+    if (err) { throw err; }
+});
