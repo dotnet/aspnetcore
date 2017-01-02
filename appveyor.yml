@@ -22,6 +22,9 @@ build_script:
   - npm install
   - npm run build
   - ps: Pop-Location
+artifacts:
+  - path: templates\package-builder\dist\artifacts\generator-aspnetcore-spa.tar.gz
+    name: generator-aspnetcore-spa
 #  - build.cmd verify
 clone_depth: 1
 test_script:
