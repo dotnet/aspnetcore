@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        [Theory, MemberData(nameof(NullHeaderData))]
+        [ConditionalTheory, MemberData(nameof(NullHeaderData))]
         public async Task Headers_IgnoreNullHeaders(string headerName, StringValues headerValue, StringValues expectedValue)
         {
             string address;
