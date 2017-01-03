@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         // Regression test for https://github.com/aspnet/KestrelHttpServer/issues/1103#issuecomment-246971172
-        [Fact(Skip = "SslStream hanging on write after update to CoreFx 4.4 (https://github.com/dotnet/corefx/issues/14698)")]
+        [Fact]
         public async Task DoesNotThrowObjectDisposedExceptionOnConnectionAbort()
         {
             var x509Certificate2 = new X509Certificate2("TestResources/testCert.pfx", "testPassword");
@@ -104,7 +104,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         listenOptions.UseHttps("TestResources/testCert.pfx", "testPassword");
                     });
                 })
-                .UseUrls("https://127.0.0.1:0/")
                 .UseLoggerFactory(loggerFactory)
                 .Configure(app => app.Run(async httpContext =>
                 {
@@ -144,7 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.False(loggerFactory.ErrorLogger.ObjectDisposedExceptionLogged);
         }
 
-        [Fact(Skip = "SslStream hanging on write after update to CoreFx 4.4 (https://github.com/dotnet/corefx/issues/14698)")]
+        [Fact]
         public async Task DoesNotThrowObjectDisposedExceptionFromWriteAsyncAfterConnectionIsAborted()
         {
             var tcs = new TaskCompletionSource<object>();

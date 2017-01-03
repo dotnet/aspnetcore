@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [Theory(Skip = "SslStream hanging on write after update to CoreFx 4.4 (https://github.com/dotnet/corefx/issues/14698)")]
+        [Theory]
         [MemberData("LargeUploadData")]
         public async Task LargeUpload(long? maxRequestBufferSize, bool ssl, bool expectPause)
         {

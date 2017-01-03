@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class LoggingConnectionAdapterTests
     {
-        [Fact(Skip = "SslStream hanging on write after update to CoreFx 4.4 (https://github.com/dotnet/corefx/issues/14698)")]
+        [Fact]
         public async Task LoggingConnectionFilterCanBeAddedBeforeAndAfterHttpsFilter()
         {
             var host = new WebHostBuilder()
