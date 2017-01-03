@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
@@ -18,9 +19,13 @@ Additional Info:
   This command will also handle piped input. Piped input is expected to be a valid JSON format.
 
 Examples:
-  dotnet user-secrets set ConnStr ""User ID=bob;Password=***""
-  cat secrets.json | dotnet user-secrets set
-";
+  dotnet user-secrets set ConnStr ""User ID=bob;Password=***""";
+
+            var catCmd = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? @"type .\secrets.json"
+                : "cat ./secrets.json";
+
+            command.ExtendedHelpText += $@"  {catCmd} | dotnet user-secrets set";
 
             command.HelpOption();
 
