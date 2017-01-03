@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// The @page directive for the Razor page at {0} cannot override the relative path prefix.
+        /// The route for the page at '{0}' cannot start with / or ~/. Pages do not support overriding the file path of the page.
         /// </summary>
         internal static string FormatPageActionDescriptorProvider_RouteTemplateCannotBeOverrideable(object p0)
         {
@@ -72,22 +72,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         internal static string FormatActivatedInstance_MustBeAnInstanceOf(object p0, object p1)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("ActivatedInstance_MustBeAnInstanceOf"), p0, p1);
-        }
-
-        /// <summary>
-        /// The Razor page type '{0}' does not have a parameterless constructor.
-        /// </summary>
-        internal static string PageActivator_TypeDoesNotHaveParameterlessConstructor
-        {
-            get { return GetString("PageActivator_TypeDoesNotHaveParameterlessConstructor"); }
-        }
-
-        /// <summary>
-        /// The Razor page type '{0}' does not have a parameterless constructor.
-        /// </summary>
-        internal static string FormatPageActivator_TypeDoesNotHaveParameterlessConstructor(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("PageActivator_TypeDoesNotHaveParameterlessConstructor"), p0);
         }
 
         private static string GetString(string name, params string[] formatterNames)

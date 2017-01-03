@@ -444,7 +444,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 "Error 1:" + Environment.NewLine +
                 $"For action: '{controllerTypeInfo.FullName}.Unknown ({assemblyName})'" + Environment.NewLine +
                 "Error: While processing template 'stub/[action]/[unknown]', a replacement value for the token 'unknown' " +
-                "could not be found. Available tokens: 'action, controller'." + Environment.NewLine +
+                "could not be found. Available tokens: 'action, controller'. To use a '[' or ']' as a literal string in" +
+                " a route or within a constraint, use '[[' or ']]' instead." + Environment.NewLine +
                 Environment.NewLine +
                 "Error 2:" + Environment.NewLine +
                 $"For action: '{controllerTypeInfo.FullName}.Invalid ({assemblyName})'" + Environment.NewLine +
@@ -701,7 +702,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             VerifyMultiLineError(expectedMessage, exception.Message, unorderedStart: 1, unorderedLineCount: 2);
         }
 
-        // Verify that the expected exception and error message is thrown even when the user builds the model 
+        // Verify that the expected exception and error message is thrown even when the user builds the model
         // incorrectly.
         [Fact]
         public void AttributeRouting_ThrowsIfAttributeRoutedAndNonAttributedActions_OnTheSameMethod_UsingCustomConvention()
@@ -906,7 +907,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 "Error 1:" + Environment.NewLine +
                 $"For action: '{controllerTypeInfo.FullName}.Get ({assemblyName})'" + Environment.NewLine +
                 "Error: While processing template 'Products_[unknown]', a replacement value for the token 'unknown' " +
-                "could not be found. Available tokens: 'action, controller'.";
+                "could not be found. Available tokens: 'action, controller'. To use a '[' or ']' as a literal string" +
+                " in a route or within a constraint, use '[[' or ']]' instead.";
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => { provider.GetDescriptors(); });

@@ -427,7 +427,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// While processing template '{0}', a replacement value for the token '{1}' could not be found. Available tokens: '{2}'.
+        /// While processing template '{0}', a replacement value for the token '{1}' could not be found. Available tokens: '{2}'. To use a '[' or ']' as a literal string in a route or within a constraint, use '[[' or ']]' instead.
         /// </summary>
         internal static string AttributeRoute_TokenReplacement_ReplacementValueNotFound
         {
@@ -435,7 +435,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// While processing template '{0}', a replacement value for the token '{1}' could not be found. Available tokens: '{2}'.
+        /// While processing template '{0}', a replacement value for the token '{1}' could not be found. Available tokens: '{2}'. To use a '[' or ']' as a literal string in a route or within a constraint, use '[[' or ']]' instead.
         /// </summary>
         internal static string FormatAttributeRoute_TokenReplacement_ReplacementValueNotFound(object p0, object p1, object p2)
         {

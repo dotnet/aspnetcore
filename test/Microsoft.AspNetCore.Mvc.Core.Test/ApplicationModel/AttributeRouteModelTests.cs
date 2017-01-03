@@ -174,11 +174,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Assert.Equal(expected, ex.Message);
         }
 
-        [Fact]
-        public void ReplaceTokens_UnknownValue()
+        [Theory]
+        [InlineData("[area]/[controller]/[action]/{deptName:regex(^[a-zA-Z]{1}[a-zA-Z0-9_]*$)}", "a-zA-Z")]
+        [InlineData("[area]/[controller]/[action2]", "action2")]
+        public void ReplaceTokens_UnknownValue(string template, string token)
         {
             // Arrange
-            var template = "[area]/[controller]/[action2]";
             var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 { "area", "Help" },
@@ -187,9 +188,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             };
 
             var expected =
-                "While processing template '[area]/[controller]/[action2]', " +
-                "a replacement value for the token 'action2' could not be found. " +
-                "Available tokens: 'action, area, controller'.";
+                $"While processing template '{template}', " +
+                $"a replacement value for the token '{token}' could not be found. " +
+                "Available tokens: 'action, area, controller'. To use a '[' or ']' as a literal string in a " +
+                "route or within a constraint, use '[[' or ']]' instead.";
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(
