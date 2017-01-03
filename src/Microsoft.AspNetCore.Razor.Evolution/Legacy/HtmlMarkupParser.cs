@@ -1142,7 +1142,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             if (!seenClose)
             {
                 Context.ErrorSink.OnError(
-                    SourceLocation.Advance(tag.Item2, "<"),
+                    SourceLocationTracker.Advance(tag.Item2, "<"),
                     LegacyResources.FormatParseError_UnfinishedTag(tag.Item1.Content),
                     Math.Max(tag.Item1.Content.Length, 1));
             }
@@ -1277,7 +1277,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         if (!Optional(HtmlSymbolType.CloseAngle))
                         {
                             Context.ErrorSink.OnError(
-                                SourceLocation.Advance(tagStart, "</"),
+                                SourceLocationTracker.Advance(tagStart, "</"),
                                 LegacyResources.FormatParseError_UnfinishedTag(ScriptTagName),
                                 ScriptTagName.Length);
                         }
@@ -1335,14 +1335,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             if (currentTag != null)
             {
                 Context.ErrorSink.OnError(
-                    SourceLocation.Advance(currentTag.Item2, "<"),
+                    SourceLocationTracker.Advance(currentTag.Item2, "<"),
                     LegacyResources.FormatParseError_MissingEndTag(currentTag.Item1.Content),
                     currentTag.Item1.Content.Length);
             }
             else
             {
                 Context.ErrorSink.OnError(
-                    SourceLocation.Advance(tagStart, "</"),
+                    SourceLocationTracker.Advance(tagStart, "</"),
                     LegacyResources.FormatParseError_UnexpectedEndTag(tagName),
                     tagName.Length);
             }
@@ -1360,7 +1360,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 }
                 var tag = tags.Pop();
                 Context.ErrorSink.OnError(
-                    SourceLocation.Advance(tag.Item2, "<"),
+                    SourceLocationTracker.Advance(tag.Item2, "<"),
                     LegacyResources.FormatParseError_MissingEndTag(tag.Item1.Content),
                     tag.Item1.Content.Length);
             }

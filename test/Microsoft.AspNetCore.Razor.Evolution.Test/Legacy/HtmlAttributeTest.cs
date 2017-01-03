@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 absoluteIndex: 5 + attributeNameLength + newlineLength,
                 lineIndex: 1,
                 characterIndex: 2 + attributeNameLength);
-            var prefixLocation2 = SourceLocation.Advance(suffixLocation1, "'");
+            var prefixLocation2 = SourceLocationTracker.Advance(suffixLocation1, "'");
             var suffixLocation2 = new SourceLocation(
                 absoluteIndex: 15 + attributeNameLength * 2 + newlineLength * 2,
                 lineIndex: 2,
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 absoluteIndex: 7 + attributeNameLength + newlineLength,
                 lineIndex: 1,
                 characterIndex: 4 + attributeNameLength);
-            var prefixLocation2 = SourceLocation.Advance(suffixLocation1, "'");
+            var prefixLocation2 = SourceLocationTracker.Advance(suffixLocation1, "'");
             var suffixLocation2 = new SourceLocation(
                 absoluteIndex: 17 + attributeNameLength * 2 + newlineLength * 2,
                 lineIndex: 2,

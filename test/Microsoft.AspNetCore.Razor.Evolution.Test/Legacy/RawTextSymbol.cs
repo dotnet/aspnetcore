@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         public SourceLocation Start { get; private set; }
         public string Content { get; }
         public Span Parent { get; set; }
-        public int Offset { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -34,16 +33,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             // Hash code should include only immutable properties.
             return Content == null ? 0 : Content.GetHashCode();
-        }
-
-        public void OffsetStart(SourceLocation documentStart)
-        {
-            Start = documentStart + Start;
-        }
-
-        public void ChangeStart(SourceLocation newStart)
-        {
-            Start = newStart;
         }
 
         public override string ToString()

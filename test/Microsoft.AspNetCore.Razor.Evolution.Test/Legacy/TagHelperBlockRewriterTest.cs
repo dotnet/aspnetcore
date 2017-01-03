@@ -3629,7 +3629,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     for (var i = 0; i < errors.Length; i++)
                     {
                         var error = errors[i];
-                        error.Location = SourceLocation.Advance(error.Location, "@{");
+                        error.Location = SourceLocationTracker.Advance(error.Location, "@{");
                     }
                 }
 

@@ -22,6 +22,24 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             Assert.Equal(loc, new SourceLocationTracker(loc).CurrentLocation);
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData("path-to-file")]
+        public void Advance_PreservesSourceLocationFilePath(string path)
+        {
+            // Arrange
+            var sourceLocation = new SourceLocation(path, 15, 2, 8);
+
+            // Act
+            var result = SourceLocationTracker.Advance(sourceLocation, "Hello world");
+
+            // Assert
+            Assert.Equal(path, result.FilePath);
+            Assert.Equal(26, result.AbsoluteIndex);
+            Assert.Equal(2, result.LineIndex);
+            Assert.Equal(19, result.CharacterIndex);
+        }
+
         [Fact]
         public void UpdateLocationAdvancesCorrectlyForMultiLineString()
         {

@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     {
                         // End tag TagHelper that states it shouldn't have an end tag.
                         errorSink.OnError(
-                            SourceLocation.Advance(tagBlock.Start, "</"),
+                            SourceLocationTracker.Advance(tagBlock.Start, "</"),
                             LegacyResources.FormatTagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag(
                                 tagName,
                                 invalidDescriptor.TypeName,
@@ -295,7 +295,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         // Could not recover, the end tag helper has no corresponding start tag, create
                         // an error based on the current childBlock.
                         errorSink.OnError(
-                            SourceLocation.Advance(tagBlock.Start, "</"),
+                            SourceLocationTracker.Advance(tagBlock.Start, "</"),
                             LegacyResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper(tagName),
                             tagName.Length);
 
@@ -475,7 +475,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 {
                     var trimmedStart = content.TrimStart();
                     var whitespace = content.Substring(0, content.Length - trimmedStart.Length);
-                    var errorStart = SourceLocation.Advance(child.Start, whitespace);
+                    var errorStart = SourceLocationTracker.Advance(child.Start, whitespace);
                     var length = trimmedStart.TrimEnd().Length;
                     var allowedChildren = _currentTagHelperTracker.AllowedChildren;
                     var allowedChildrenString = string.Join(", ", allowedChildren);
@@ -589,7 +589,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             var advanceBy = IsEndTag(tagBlock) ? "</" : "<";
 
-            return SourceLocation.Advance(tagBlock.Start, advanceBy);
+            return SourceLocationTracker.Advance(tagBlock.Start, advanceBy);
         }
 
         private static bool IsPartialTag(Block tagBlock)
@@ -733,7 +733,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 var malformedTagHelper = ((TagHelperBlockTracker)tracker).Builder;
 
                 errorSink.OnError(
-                    SourceLocation.Advance(malformedTagHelper.Start, "<"),
+                    SourceLocationTracker.Advance(malformedTagHelper.Start, "<"),
                     LegacyResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper(
                         malformedTagHelper.TagName),
                     malformedTagHelper.TagName.Length);

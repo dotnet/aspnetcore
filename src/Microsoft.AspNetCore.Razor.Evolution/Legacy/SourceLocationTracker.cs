@@ -40,6 +40,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
+        public static SourceLocation Advance(SourceLocation location, string text)
+        {
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
+            var tracker = new SourceLocationTracker(location);
+            tracker.UpdateLocation(text);
+            return tracker.CurrentLocation;
+        }
+
         public void UpdateLocation(char characterRead, char nextCharacter)
         {
             UpdateCharacterCore(characterRead, nextCharacter);

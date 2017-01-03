@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     i--;
 
                     name = nameBuilder.ToString();
-                    attributeValueStartLocation = SourceLocation.Advance(attributeValueStartLocation, name);
+                    attributeValueStartLocation = SourceLocationTracker.Advance(attributeValueStartLocation, name);
                 }
                 else if (symbol.Type == HtmlSymbolType.Equals)
                 {
@@ -259,9 +259,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         symbolStartLocation = symbol.Start;
                     }
 
-                    attributeValueStartLocation =
-                        symbolStartLocation +
-                        new SourceLocation(absoluteIndex: 1, lineIndex: 0, characterIndex: 1);
+                    attributeValueStartLocation = new SourceLocation(
+                        symbolStartLocation.FilePath,
+                        symbolStartLocation.AbsoluteIndex + 1,
+                        symbolStartLocation.LineIndex,
+                        symbolStartLocation.CharacterIndex + 1);
 
                     afterEquals = true;
                 }
@@ -274,7 +276,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     // parser currently does not know how to handle attributes in that format. This will be addressed
                     // by https://github.com/aspnet/Razor/issues/123.
 
-                    attributeValueStartLocation = SourceLocation.Advance(attributeValueStartLocation, symbol.Content);
+                    attributeValueStartLocation = SourceLocationTracker.Advance(attributeValueStartLocation, symbol.Content);
                 }
             }
 
