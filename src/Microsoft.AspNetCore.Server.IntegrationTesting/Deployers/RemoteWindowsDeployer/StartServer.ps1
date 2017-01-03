@@ -64,7 +64,7 @@ elseif (($serverType -eq "Kestrel") -or ($serverType -eq "WebListener"))
     }
     elseif ($serverType -eq "WebListener")
     {
-	    $command = $command + " --server Microsoft.AspNetCore.Server.WebListener"
+	    $command = $command + " --server Microsoft.AspNetCore.Server.HttpSys"
 	    Write-Host "Executing the command '$command'"
 	    Invoke-Expression $command
     }

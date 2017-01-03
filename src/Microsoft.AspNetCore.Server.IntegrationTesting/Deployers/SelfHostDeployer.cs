@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
 
             executableArgs += $" --server.urls {uri} "
-            + $" --server {(DeploymentParameters.ServerType == ServerType.WebListener ? "Microsoft.AspNetCore.Server.WebListener" : "Microsoft.AspNetCore.Server.Kestrel")}";
+            + $" --server {(DeploymentParameters.ServerType == ServerType.WebListener ? "Microsoft.AspNetCore.Server.HttpSys" : "Microsoft.AspNetCore.Server.Kestrel")}";
 
             Logger.LogInformation($"Executing {executableName} {executableArgs}");
 
