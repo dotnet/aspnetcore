@@ -222,7 +222,7 @@ If you haven't yet installed node-inspector, you can do so as follows:
             }
             else
             {
-                debuggingArgs = string.Empty;    
+                debuggingArgs = string.Empty;
             }
 
             var thisProcessPid = Process.GetCurrentProcess().Id;
@@ -325,17 +325,26 @@ If you haven't yet installed node-inspector, you can do so as follows:
 
         private static Process LaunchNodeProcess(ProcessStartInfo startInfo)
         {
-            var process = Process.Start(startInfo);
+            try {
+                var process = Process.Start(startInfo);
 
-            // On Mac at least, a killed child process is left open as a zombie until the parent
-            // captures its exit code. We don't need the exit code for this process, and don't want
-            // to use process.WaitForExit() explicitly (we'd have to block the thread until it really
-            // has exited), but we don't want to leave zombies lying around either. It's sufficient
-            // to use process.EnableRaisingEvents so that .NET will grab the exit code and let the
-            // zombie be cleaned away without having to block our thread.
-            process.EnableRaisingEvents = true;
+                // On Mac at least, a killed child process is left open as a zombie until the parent
+                // captures its exit code. We don't need the exit code for this process, and don't want
+                // to use process.WaitForExit() explicitly (we'd have to block the thread until it really
+                // has exited), but we don't want to leave zombies lying around either. It's sufficient
+                // to use process.EnableRaisingEvents so that .NET will grab the exit code and let the
+                // zombie be cleaned away without having to block our thread.
+                process.EnableRaisingEvents = true;
 
-            return process;
+                return process;
+            } catch (Exception ex) {
+                var message = "Failed to start Node process. To resolve this:.\n\n"
+                            + "[1] Ensure that Node.js is installed and can be found in one of the PATH directories.\n"
+                            + $"    Current PATH enviroment variable is: { Environment.GetEnvironmentVariable("PATH") }\n"
+                            + "    Make sure the Node executable is in one of those directories, or update your PATH.\n\n"
+                            + "[2] See the InnerException for further details of the cause.";
+                throw new InvalidOperationException(message, ex);
+            }
         }
 
         private static string UnencodeNewlines(string str)
