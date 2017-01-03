@@ -363,6 +363,61 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Empty(pathData.DataTokens);
         }
 
+        public static IEnumerable<object[]> RestoresRouteDataForEachRouterData
+        {
+            get
+            {
+                // Here 'area' segment doesn't have a value but the later segments have values. This is an invalid
+                // route match and the url generation should look into the next available route in the collection.
+                yield return new object[] {
+                    new Route[]
+                    {
+                        CreateTemplateRoute("{area?}/{controller=Home}/{action=Index}/{id?}", "1"),
+                        CreateTemplateRoute("{controller=Home}/{action=Index}/{id?}", "2")
+                    },
+                    new RouteValueDictionary(new { controller = "Test", action = "Index" }),
+                    "/Test",
+                    "2" };
+
+                // Here the segment 'a' is valid but 'b' is not as it would be empty. This would be an invalid route match, but
+                // the route value of 'a' should still be present to be evaluated for the next available route.
+                yield return new object[] {
+                    new[]
+                    {
+                        CreateTemplateRoute("{a}/{b?}/{c}", "1"),
+                        CreateTemplateRoute("{a=Home}/{b=Index}", "2")
+                    },
+                    new RouteValueDictionary(new { a = "Test", c = "Foo" }),
+                    "/Test?c=Foo",
+                    "2" };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(RestoresRouteDataForEachRouterData))]
+        public void GetVirtualPath_RestoresRouteData_ForEachRouter(
+            Route[] routes,
+            RouteValueDictionary routeValues,
+            string expectedUrl,
+            string expectedRouteToMatch)
+        {
+            // Arrange
+            var routeCollection = new RouteCollection();
+            foreach (var route in routes)
+            {
+                routeCollection.Add(route);
+            }
+            var context = CreateVirtualPathContext(routeValues);
+
+            // Act
+            var pathData = routeCollection.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal(expectedUrl, pathData.VirtualPath);
+            Assert.Same(expectedRouteToMatch, ((INamedRouter)pathData.Router).Name);
+            Assert.Empty(pathData.DataTokens);
+        }
+
         [Fact]
         public void GetVirtualPath_NoBestEffort_NoMatch()
         {
@@ -496,14 +551,18 @@ namespace Microsoft.AspNetCore.Routing
         private static Route CreateTemplateRoute(
             string template,
             string routerName = null,
-            RouteValueDictionary dataTokens = null)
+            RouteValueDictionary dataTokens = null,
+            IInlineConstraintResolver constraintResolver = null)
         {
             var target = new Mock<IRouter>(MockBehavior.Strict);
             target
                 .Setup(e => e.GetVirtualPath(It.IsAny<VirtualPathContext>()))
                 .Returns<VirtualPathContext>(rc => null);
 
-            var resolverMock = new Mock<IInlineConstraintResolver>();
+            if (constraintResolver == null)
+            {
+                constraintResolver = new Mock<IInlineConstraintResolver>().Object;
+            }
 
             return new Route(
                 target.Object,
@@ -512,7 +571,7 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: null,
                 constraints: null,
                 dataTokens: dataTokens,
-                inlineConstraintResolver: resolverMock.Object);
+                inlineConstraintResolver: constraintResolver);
         }
 
         private static VirtualPathContext CreateVirtualPathContext(

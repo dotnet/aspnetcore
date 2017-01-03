@@ -691,6 +691,34 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 "/UrlEncode[[v1]]");
         }
 
+        [Fact]
+        public void TemplateBinder_KeepsExplicitlySuppliedRouteValues_OnFailedRouetMatch()
+        {
+            // Arrange
+            var template = "{area?}/{controller=Home}/{action=Index}/{id?}";
+            var encoder = new UrlTestEncoder();
+            var binder = new TemplateBinder(
+                new UrlTestEncoder(),
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy(encoder)),
+                TemplateParser.Parse(template),
+                defaults: null);
+            var ambientValues = new RouteValueDictionary();
+            var routeValues = new RouteValueDictionary(new { controller = "Test", action = "Index" });
+
+            // Act
+            var templateValuesResult = binder.GetValues(ambientValues, routeValues);
+            var boundTemplate = binder.BindValues(templateValuesResult.AcceptedValues);
+
+            // Assert
+            Assert.Null(boundTemplate);
+            Assert.Equal(2, templateValuesResult.CombinedValues.Count);
+            object routeValue;
+            Assert.True(templateValuesResult.CombinedValues.TryGetValue("controller", out routeValue));
+            Assert.Equal("Test", routeValue?.ToString());
+            Assert.True(templateValuesResult.CombinedValues.TryGetValue("action", out routeValue));
+            Assert.Equal("Index", routeValue?.ToString());
+        }
+
 #if ROUTE_COLLECTION
 
                 [Fact]
