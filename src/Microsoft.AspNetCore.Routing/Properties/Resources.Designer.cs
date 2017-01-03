@@ -363,7 +363,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// In a route parameter, '{' and '}' must be escaped with '{{' and '}}'
+        /// In a route parameter, '{' and '}' must be escaped with '{{' and '}}'.
         /// </summary>
         internal static string TemplateRoute_UnescapedBrace
         {
@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// In a route parameter, '{' and '}' must be escaped with '{{' and '}}'
+        /// In a route parameter, '{' and '}' must be escaped with '{{' and '}}'.
         /// </summary>
         internal static string FormatTemplateRoute_UnescapedBrace()
         {

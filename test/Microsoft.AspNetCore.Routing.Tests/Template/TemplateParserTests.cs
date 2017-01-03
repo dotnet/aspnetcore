@@ -521,7 +521,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             // Act and Assert
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse(template),
-                "In a route parameter, '{' and '}' must be escaped with '{{' and '}}'" + Environment.NewLine +
+                "In a route parameter, '{' and '}' must be escaped with '{{' and '}}'." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -532,8 +532,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData("{p1}.{p2?})", "p2", ")")]
         [InlineData("{foorb?}-bar-{z}", "foorb", "-bar-")]
         public void Parse_ComplexSegment_OptionalParameter_NotTheLastPart(
-            string template, 
-            string parameter, 
+            string template,
+            string parameter,
             string invalid)
         {
             // Act and Assert
@@ -554,8 +554,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             // Act and Assert
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse(template),
-                "In the complex segment '"+ template +"',  the optional parameter 'p2' is preceded by an invalid " + 
-                "segment '" + parameter +"'. Only valid literal to precede an optional parameter is a period (.)." + 
+                "In the complex segment '"+ template +"',  the optional parameter 'p2' is preceded by an invalid " +
+                "segment '" + parameter +"'. Only valid literal to precede an optional parameter is a period (.)." +
                 Environment.NewLine + "Parameter name: routeTemplate");
         }
 
@@ -708,7 +708,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{a}/{a{aa}/{z}"),
-                "In a route parameter, '{' and '}' must be escaped with '{{' and '}}'" + Environment.NewLine +
+                "In a route parameter, '{' and '}' must be escaped with '{{' and '}}'." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
