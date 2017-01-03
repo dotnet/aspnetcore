@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Xml;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Moq;
 using Xunit;
 
@@ -50,6 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             Assert.False(metadata.IsRequired); // Defaults to false for reference types
             Assert.True(metadata.ShowForDisplay);
             Assert.True(metadata.ShowForEdit);
+            Assert.False(metadata.ValidateChildren); // Defaults to true for complex and enumerable types.
 
             Assert.Null(metadata.DataTypeName);
             Assert.Null(metadata.Description);
@@ -60,9 +62,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             Assert.Null(metadata.EnumGroupedDisplayNamesAndValues);
             Assert.Null(metadata.EnumNamesAndValues);
             Assert.Null(metadata.NullDisplayText);
-            Assert.Null(metadata.TemplateHint);
+            Assert.Null(metadata.PropertyValidationFilter);
             Assert.Null(metadata.SimpleDisplayProperty);
             Assert.Null(metadata.Placeholder);
+            Assert.Null(metadata.TemplateHint);
 
             Assert.Equal(10000, ModelMetadata.DefaultOrder);
             Assert.Equal(ModelMetadata.DefaultOrder, metadata.Order);
@@ -657,6 +660,42 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
             // Assert
             Assert.True(validateChildren);
+        }
+
+        public static TheoryData<IPropertyValidationFilter> ValidationFilterData
+        {
+            get
+            {
+                return new TheoryData<IPropertyValidationFilter>
+                {
+                    null,
+                    new ValidateNeverAttribute(),
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ValidationFilterData))]
+        public void PropertyValidationFilter_ReflectsFilter_FromValidationMetadata(IPropertyValidationFilter value)
+        {
+            // Arrange
+            var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+            var provider = new DefaultModelMetadataProvider(detailsProvider);
+
+            var key = ModelMetadataIdentity.ForType(typeof(int));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            cache.ValidationMetadata = new ValidationMetadata
+            {
+                PropertyValidationFilter = value,
+            };
+
+            var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+            // Act
+            var validationFilter = metadata.PropertyValidationFilter;
+
+            // Assert
+            Assert.Same(value, validationFilter);
         }
 
         [Fact]

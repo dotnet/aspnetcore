@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -294,6 +295,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets a string used by the templating system to discover display-templates and editor-templates.
         /// </summary>
         public abstract string TemplateHint { get; }
+
+        /// <summary>
+        /// Gets an <see cref="IPropertyValidationFilter"/> implementation that indicates whether this model should be
+        /// validated. If <c>null</c>, properties with this <see cref="ModelMetadata"/> are validated.
+        /// </summary>
+        /// <value>Defaults to <c>null</c>.</value>
+        public virtual IPropertyValidationFilter PropertyValidationFilter => null;
 
         /// <summary>
         /// Gets a value that indicates whether properties or elements of the model should be validated.

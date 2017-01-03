@@ -27,8 +27,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ViewDataInfo"/> class with info about a
-        /// <see cref="ViewDataDictionary"/> lookup which is evaluated when <see cref="Value"/> is read. 
-        /// It uses <see cref="System.Reflection.PropertyInfo.GetValue(object)"/> on <paramref name="propertyInfo"/> 
+        /// <see cref="ViewDataDictionary"/> lookup which is evaluated when <see cref="Value"/> is read.
+        /// It uses <see cref="System.Reflection.PropertyInfo.GetValue(object)"/> on <paramref name="propertyInfo"/>
         /// passing parameter <paramref name="container"/> to lazily evaluate the value.
         /// </summary>
         /// <param name="container">The <see cref="object"/> that <see cref="Value"/> will be evaluated from.</param>
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </summary>
         /// <param name="container">The <see cref="object"/> that has the <see cref="Value"/>.</param>
         /// <param name="propertyInfo">The <see cref="PropertyInfo"/> that represents <see cref="Value"/>'s property.</param>
-        /// <param name="valueAccessor"></param>
+        /// <param name="valueAccessor">A delegate that will return the <see cref="Value"/>.</param>
         public ViewDataInfo(object container, PropertyInfo propertyInfo, Func<object> valueAccessor)
         {
             Container = container;

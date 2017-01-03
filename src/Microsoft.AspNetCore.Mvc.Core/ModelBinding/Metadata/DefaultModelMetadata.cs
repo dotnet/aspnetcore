@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 {
@@ -528,6 +529,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             get
             {
                 return DisplayMetadata.TemplateHint;
+            }
+        }
+
+        /// <inheritdoc />
+        public override IPropertyValidationFilter PropertyValidationFilter
+        {
+            get
+            {
+                return ValidationMetadata.PropertyValidationFilter;
             }
         }
 

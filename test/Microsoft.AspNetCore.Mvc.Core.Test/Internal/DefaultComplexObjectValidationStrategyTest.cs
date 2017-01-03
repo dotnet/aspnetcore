@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     public class DefaultComplexObjectValidationStrategyTest
     {
         [Fact]
-        public void EnumerateElements()
+        public void GetChildren_ReturnsExpectedElements()
         {
             // Arrange
             var model = new Person()
@@ -31,23 +32,92 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             Assert.Collection(
                 BufferEntries(enumerator).OrderBy(e => e.Key),
-                e => 
+                entry =>
                 {
-                    Assert.Equal("prefix.Age", e.Key);
-                    Assert.Equal(23, e.Model);
-                    Assert.Same(metadata.Properties["Age"], e.Metadata);
+                    Assert.Equal("prefix.Age", entry.Key);
+                    Assert.Equal(23, entry.Model);
+                    Assert.Same(metadata.Properties["Age"], entry.Metadata);
                 },
-                e =>
+                entry =>
                 {
-                    Assert.Equal("prefix.Id", e.Key);
-                    Assert.Equal(1, e.Model);
-                    Assert.Same(metadata.Properties["Id"], e.Metadata);
+                    Assert.Equal("prefix.Id", entry.Key);
+                    Assert.Equal(1, entry.Model);
+                    Assert.Same(metadata.Properties["Id"], entry.Metadata);
                 },
-                e =>
+                entry =>
                 {
-                    Assert.Equal("prefix.Name", e.Key);
-                    Assert.Equal("Joey", e.Model);
-                    Assert.Same(metadata.Properties["Name"], e.Metadata);
+                    Assert.Equal("prefix.Name", entry.Key);
+                    Assert.Equal("Joey", entry.Model);
+                    Assert.Same(metadata.Properties["Name"], entry.Metadata);
+                });
+        }
+
+        [Fact]
+        public void GetChildren_SetsModelNull_IfContainerNull()
+        {
+            // Arrange
+            Person model = null;
+            var metadata = TestModelMetadataProvider.CreateDefaultProvider().GetMetadataForType(typeof(Person));
+            var strategy = DefaultComplexObjectValidationStrategy.Instance;
+
+            // Act
+            var enumerator = strategy.GetChildren(metadata, "prefix", model);
+
+            // Assert
+            Assert.Collection(
+                BufferEntries(enumerator).OrderBy(e => e.Key),
+                entry =>
+                {
+                    Assert.Equal("prefix.Age", entry.Key);
+                    Assert.Null(entry.Model);
+                    Assert.Same(metadata.Properties["Age"], entry.Metadata);
+                },
+                entry =>
+                {
+                    Assert.Equal("prefix.Id", entry.Key);
+                    Assert.Null(entry.Model);
+                    Assert.Same(metadata.Properties["Id"], entry.Metadata);
+                },
+                entry =>
+                {
+                    Assert.Equal("prefix.Name", entry.Key);
+                    Assert.Null(entry.Model);
+                    Assert.Same(metadata.Properties["Name"], entry.Metadata);
+                });
+        }
+
+        [Fact]
+        public void GetChildren_LazyLoadsModel()
+        {
+            // Arrange
+            var model = new LazyPerson(input: null);
+            var metadata = TestModelMetadataProvider.CreateDefaultProvider().GetMetadataForType(typeof(LazyPerson));
+            var strategy = DefaultComplexObjectValidationStrategy.Instance;
+
+            // Act
+            var enumerator = strategy.GetChildren(metadata, "prefix", model);
+
+            // Assert
+            // Note: NREs are not thrown until the Model property is accessed.
+            Assert.Collection(
+                BufferEntries(enumerator).OrderBy(e => e.Key),
+                entry =>
+                {
+                    Assert.Equal("prefix.Age", entry.Key);
+                    Assert.Equal(23, entry.Model);
+                    Assert.Same(metadata.Properties["Age"], entry.Metadata);
+                },
+                entry =>
+                {
+                    Assert.Equal("prefix.Id", entry.Key);
+                    Assert.Throws<NullReferenceException>(() => entry.Model);
+                    Assert.Same(metadata.Properties["Id"], entry.Metadata);
+                },
+                entry =>
+                {
+                    Assert.Equal("prefix.Name", entry.Key);
+                    Assert.Throws<NullReferenceException>(() => entry.Model);
+                    Assert.Same(metadata.Properties["Name"], entry.Metadata);
                 });
         }
 
@@ -69,6 +139,22 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             public int Age { get; set; }
 
             public string Name { get; set; }
+        }
+
+        private class LazyPerson
+        {
+            private string _string;
+
+            public LazyPerson(string input)
+            {
+                _string = input;
+            }
+
+            public int Id => _string.Length;
+
+            public int Age => 23;
+
+            public string Name => _string.Substring(3, 5);
         }
     }
 }

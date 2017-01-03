@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 {
@@ -19,8 +20,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public bool? IsRequired { get; set; }
 
         /// <summary>
+        /// Gets or sets an <see cref="IPropertyValidationFilter"/> implementation that indicates whether this model
+        /// should be validated. See <see cref="ModelMetadata.PropertyValidationFilter"/>.
+        /// </summary>
+        public IPropertyValidationFilter PropertyValidationFilter { get; set; }
+
+        /// <summary>
         /// Gets or sets a value that indicates whether children of the model should be validated. If <c>null</c>
-        /// then <see cref="ModelMetadata.ValidateChildren"/> will be <c>true</c> if either of 
+        /// then <see cref="ModelMetadata.ValidateChildren"/> will be <c>true</c> if either of
         /// <see cref="ModelMetadata.IsComplexType"/> or <see cref="ModelMetadata.IsEnumerableType"/> is <c>true</c>;
         /// <c>false</c> otherwise.
         /// </summary>

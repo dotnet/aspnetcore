@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Creates a new <see cref="ExcludeBindingMetadataProvider"/> for the given <paramref name="type"/>.
         /// </summary>
         /// <param name="type">
-        /// The <see cref="Type"/>. All properties of this <see cref="Type"/> will have
+        /// The <see cref="Type"/>. All properties with this <see cref="Type"/> will have
         /// <see cref="ModelMetadata.IsBindingAllowed"/> set to <c>false</c>.
         /// </param>
         public ExcludeBindingMetadataProvider(Type type)

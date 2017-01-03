@@ -84,35 +84,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 var propertyName = property.BinderModelName ?? property.PropertyName;
                 var key = ModelNames.CreatePropertyModelName(_key, propertyName);
 
-                object model;
-
-                // Our property accessors don't work on Mono 4.0.4 - see https://github.com/aspnet/External/issues/44
-                // This is a workaround for what the PropertyGetter does in the background.
-                if (IsMono)
+                if (_model == null)
                 {
-                    if (_model == null)
-                    {
-                        model = null;
-                    }
-                    else
-                    {
-                        var propertyInfo = _model.GetType().GetRuntimeProperty(property.PropertyName);
-                        try
-                        {
-                            model = propertyInfo.GetValue(_model);
-                        }
-                        catch (TargetInvocationException ex)
-                        {
-                            throw ex.InnerException;
-                        }
-                    }
+                    // Performance: Never create a delegate when container is null.
+                    _entry = new ValidationEntry(property, key, model: null);
+                }
+                else if (IsMono)
+                {
+                    _entry = new ValidationEntry(property, key, () => GetModelOnMono(_model, property.PropertyName));
                 }
                 else
                 {
-                    model = property.PropertyGetter(_model);
+                    _entry = new ValidationEntry(property, key, () => GetModel(_model, property));
                 }
-
-                _entry = new ValidationEntry(property, key, model);
 
                 return true;
             }
@@ -124,6 +108,26 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             public void Reset()
             {
                 throw new NotImplementedException();
+            }
+
+            private static object GetModel(object container, ModelMetadata property)
+            {
+                return property.PropertyGetter(container);
+            }
+
+            // Our property accessors don't work on Mono 4.0.4 - see https://github.com/aspnet/External/issues/44
+            // This is a workaround for what the PropertyGetter does in the background.
+            private static object GetModelOnMono(object container, string propertyName)
+            {
+                var propertyInfo = container.GetType().GetRuntimeProperty(propertyName);
+                try
+                {
+                    return propertyInfo.GetValue(container);
+                }
+                catch (TargetInvocationException ex)
+                {
+                    throw ex.InnerException;
+                }
             }
         }
     }

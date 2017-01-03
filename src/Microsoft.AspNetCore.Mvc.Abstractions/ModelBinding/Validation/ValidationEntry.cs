@@ -10,6 +10,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     /// </summary>
     public struct ValidationEntry
     {
+        private object _model;
+        private Func<object> _modelAccessor;
+
         /// <summary>
         /// Creates a new <see cref="ValidationEntry"/>.
         /// </summary>
@@ -30,7 +33,37 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
             Metadata = metadata;
             Key = key;
-            Model = model;
+            _model = model;
+            _modelAccessor = null;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="ValidationEntry"/>.
+        /// </summary>
+        /// <param name="metadata">The <see cref="ModelMetadata"/> associated with the <see cref="Model"/>.</param>
+        /// <param name="key">The model prefix associated with the <see cref="Model"/>.</param>
+        /// <param name="modelAccessor">A delegate that will return the <see cref="Model"/>.</param>
+        public ValidationEntry(ModelMetadata metadata, string key, Func<object> modelAccessor)
+        {
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (modelAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(modelAccessor));
+            }
+
+            Metadata = metadata;
+            Key = key;
+            _model = null;
+            _modelAccessor = modelAccessor;
         }
 
         /// <summary>
@@ -46,6 +79,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <summary>
         /// The model object.
         /// </summary>
-        public object Model { get; }
+        public object Model
+        {
+            get
+            {
+                if (_modelAccessor != null)
+                {
+                    _model = _modelAccessor();
+                    _modelAccessor = null;
+                }
+
+                return _model;
+            }
+        }
     }
 }

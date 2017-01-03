@@ -6,8 +6,8 @@ using System;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// Indicates associated property or all properties of associated type should be edited using an &lt;input&gt;
-    /// element of type "hidden".
+    /// Indicates associated property or all properties with the associated type should be edited using an
+    /// &lt;input&gt; element of type "hidden".
     /// </summary>
     /// <remarks>
     /// When overriding a <see cref="HiddenInputAttribute"/> inherited from a base class, should apply both
