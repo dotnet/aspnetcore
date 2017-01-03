@@ -13,7 +13,7 @@ describe('Counter component', () => {
     });
 
     it('should display a title', async(() => {
-        const titleText = fixture.nativeElement.querySelector('h2').textContent;
+        const titleText = fixture.nativeElement.querySelector('h1').textContent;
         expect(titleText).toEqual('Counter');
     }));
 
