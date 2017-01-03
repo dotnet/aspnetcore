@@ -9,6 +9,7 @@ using System.Security.Authentication.ExtendedProtection;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -99,8 +100,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
 
             // Set the status code and reason phrase
-            Response.StatusCode = Constants.Status101SwitchingProtocols;
-            Response.ReasonPhrase = HttpReasonPhrase.Get(Constants.Status101SwitchingProtocols);
+            Response.StatusCode = StatusCodes.Status101SwitchingProtocols;
+            Response.ReasonPhrase = HttpReasonPhrase.Get(StatusCodes.Status101SwitchingProtocols);
 
             Response.SendOpaqueUpgrade(); // TODO: Async
             Request.SwitchToOpaqueMode();

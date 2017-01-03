@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal const string Close = "close";
         internal const string Zero = "0";
         internal const string SchemeDelimiter = "://";
-        internal const int Status101SwitchingProtocols = 101;
 
         internal static Version V1_0 = new Version(1, 0);
         internal static Version V1_1 = new Version(1, 1);
