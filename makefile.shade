@@ -1,0 +1,23 @@
+use namespace="System"
+use namespace="System.IO"
+
+#default
+    @{
+        var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+        var msbuildPath = Path.Combine(programFilesX86, "msbuild", "14.0", "bin", "msbuild.exe");
+        if (!File.Exists(msbuildPath))
+        {
+            throw new Exception("MSBuild 14.0 was not found at " + msbuildPath);
+        }
+
+        var buildArguments = Environment.GetEnvironmentVariable("COHERENCE_SIGNED_BUILD_ARGS");
+        if (string.IsNullOrEmpty(buildArguments))
+        {
+            buildArguments = "dnx.msbuild /t:Policheck /t:Build /t:PushPackages /p:Sign=Sign /p:VerifySignatures=true";
+        }
+
+        Exec(msbuildPath, buildArguments);
+    }
+
+macro name='Exec' program='string' commandline='string'
+    exec

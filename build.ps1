@@ -40,6 +40,7 @@ if ($env:KOREBUILD_ZIP)
 }
 
 $buildFolder = ".build"
+$buildFile="$buildFolder\KoreBuild.ps1"
 
 if (!(Test-Path $buildFolder)) {
     Write-Host "Downloading KoreBuild from $koreBuildZip"    
@@ -63,9 +64,4 @@ if (!(Test-Path $buildFolder)) {
     }
 }
 
-$msbuildPath = [IO.Path]::Combine(${env:ProgramFiles(x86)}, "msbuild", '14.0', "bin", "msbuild.exe")
-if (!(Test-Path $msbuildPath)) {
-    throw "MSBuild v14.0 was not found at $msbuildPath."
-}
-
-&$msbuildPath dnx.msbuild $args
+&"$buildFile" $args
