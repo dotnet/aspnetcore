@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             }
         }
 
-        protected static int CalculateExpressionPadding(MappingLocation sourceRange, CSharpRenderingContext context)
+        protected static int CalculateExpressionPadding(SourceSpan sourceRange, CSharpRenderingContext context)
         {
             var spaceCount = 0;
             for (var i = sourceRange.AbsoluteIndex - 1; i >= 0; i--)
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             return spaceCount;
         }
 
-        protected static string BuildOffsetPadding(int generatedOffset, MappingLocation sourceRange, CSharpRenderingContext context)
+        protected static string BuildOffsetPadding(int generatedOffset, SourceSpan sourceRange, CSharpRenderingContext context)
         {
             var basePadding = CalculateExpressionPadding(sourceRange, context);
             var resolvedPadding = Math.Max(basePadding - generatedOffset, 0);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             private readonly CSharpCodeWriter _writer;
             private readonly int _startIndent;
 
-            public LinePragmaWriter(CSharpCodeWriter writer, MappingLocation documentLocation)
+            public LinePragmaWriter(CSharpCodeWriter writer, SourceSpan documentLocation)
             {
                 if (writer == null)
                 {

@@ -5,29 +5,25 @@ using System;
 using System.Globalization;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
+namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    internal class MappingLocation
+    public struct SourceSpan : IEquatable<SourceSpan>
     {
-        public MappingLocation()
+        public SourceSpan(SourceLocation location, int contentLength)
+            : this(location.FilePath, location.AbsoluteIndex, location.LineIndex, location.CharacterIndex, contentLength)
         {
         }
 
-        public MappingLocation(SourceLocation location, int contentLength)
-            : this (location.AbsoluteIndex, location.LineIndex, location.CharacterIndex, contentLength, location.FilePath)
-        {
-        }
-
-        public MappingLocation(int absoluteIndex, int lineIndex, int characterIndex, int contentLength, string filePath)
+        public SourceSpan(string filePath, int absoluteIndex, int lineIndex, int characterIndex, int length)
         {
             AbsoluteIndex = absoluteIndex;
             LineIndex = lineIndex;
             CharacterIndex = characterIndex;
-            ContentLength = contentLength;
+            Length = length;
             FilePath = filePath;
         }
 
-        public int ContentLength { get; }
+        public int Length { get; }
 
         public int AbsoluteIndex { get; }
 
@@ -37,31 +33,37 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public string FilePath { get; }
 
+        public bool Equals(SourceSpan other)
+        {
+            return
+                string.Equals(FilePath, other.FilePath, StringComparison.Ordinal) &&
+                AbsoluteIndex == other.AbsoluteIndex &&
+                LineIndex == other.LineIndex &&
+                CharacterIndex == other.CharacterIndex &&
+                Length == other.Length;
+        }
+
         public override bool Equals(object obj)
         {
-            var other = obj as MappingLocation;
+            var other = obj as SourceSpan?;
             if (ReferenceEquals(other, null))
             {
                 return false;
             }
 
-            return string.Equals(FilePath, other.FilePath, StringComparison.Ordinal) &&
-                AbsoluteIndex == other.AbsoluteIndex &&
-                ContentLength == other.ContentLength &&
-                LineIndex == other.LineIndex &&
-                CharacterIndex == other.CharacterIndex;
+            return Equals(other.Value);
         }
 
         public override int GetHashCode()
         {
-            var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(FilePath, StringComparer.Ordinal);
-            hashCodeCombiner.Add(AbsoluteIndex);
-            hashCodeCombiner.Add(ContentLength);
-            hashCodeCombiner.Add(LineIndex);
-            hashCodeCombiner.Add(CharacterIndex);
+            var hash = HashCodeCombiner.Start();
+            hash.Add(FilePath, StringComparer.Ordinal);
+            hash.Add(AbsoluteIndex);
+            hash.Add(LineIndex);
+            hash.Add(CharacterIndex);
+            hash.Add(Length);
 
-            return hashCodeCombiner;
+            return hash;
         }
 
         public override string ToString()
@@ -71,11 +73,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 AbsoluteIndex,
                 LineIndex,
                 CharacterIndex,
-                ContentLength,
+                Length,
                 FilePath);
         }
 
-        public static bool operator ==(MappingLocation left, MappingLocation right)
+        public static bool operator ==(SourceSpan left, SourceSpan right)
         {
             if (ReferenceEquals(left, right))
             {
@@ -91,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             return left.Equals(right);
         }
 
-        public static bool operator !=(MappingLocation left, MappingLocation right)
+        public static bool operator !=(SourceSpan left, SourceSpan right)
         {
             if (ReferenceEquals(left, right))
             {

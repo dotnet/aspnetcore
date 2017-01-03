@@ -190,9 +190,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
         protected void WriteSourceRange(RazorIRNode node)
         {
-            if (node.SourceRange != null)
+            if (node.Source != null)
             {
-                var sourceRange = node.SourceRange;
+                var sourceRange = node.Source.Value;
                 _writer.Write("(");
                 _writer.Write(sourceRange.AbsoluteIndex);
                 _writer.Write(":");
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 _writer.Write(",");
                 _writer.Write(sourceRange.CharacterIndex);
                 _writer.Write(" [");
-                _writer.Write(sourceRange.ContentLength);
+                _writer.Write(sourceRange.Length);
                 _writer.Write("] ");
 
                 var fileName = sourceRange.FilePath.Substring(sourceRange.FilePath.LastIndexOf('/') + 1);

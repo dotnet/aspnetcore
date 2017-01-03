@@ -54,11 +54,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     return;
                 }
 
-                if (node.SourceRange != null)
+                if (node.Source != null)
                 {
-                    using (new LinePragmaWriter(Context.Writer, node.SourceRange))
+                    using (new LinePragmaWriter(Context.Writer, node.Source.Value))
                     {
-                        var padding = BuildOffsetPadding(RazorDesignTimeIRPass.DesignTimeVariable.Length, node.SourceRange, Context);
+                        var padding = BuildOffsetPadding(RazorDesignTimeIRPass.DesignTimeVariable.Length, node.Source.Value, Context);
 
                         Context.Writer
                             .Write(padding)
@@ -94,11 +94,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             public override void VisitCSharpStatement(CSharpStatementIRNode node)
             {
-                if (node.SourceRange != null)
+                if (node.Source != null)
                 {
-                    using (new LinePragmaWriter(Context.Writer, node.SourceRange))
+                    using (new LinePragmaWriter(Context.Writer, node.Source.Value))
                     {
-                        var padding = BuildOffsetPadding(0, node.SourceRange, Context);
+                        var padding = BuildOffsetPadding(0, node.Source.Value, Context);
                         Context.Writer.Write(padding);
 
                         AddLineMappingFor(node);
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 const string TypeHelper = "__typeHelper";
 
                 var tokenKind = node.Descriptor.Kind;
-                if (node.SourceRange == null || node.Descriptor.Kind == DirectiveTokenKind.Literal)
+                if (node.Source == null || node.Descriptor.Kind == DirectiveTokenKind.Literal)
                 {
                     return;
                 }
@@ -268,10 +268,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 }
                 else
                 {
-                    var firstMappedChild = node.Children.FirstOrDefault(child => child.SourceRange != null) as RazorIRNode;
-                    var valueStart = firstMappedChild?.SourceRange;
+                    var firstMappedChild = node.Children.FirstOrDefault(child => child.Source != null) as RazorIRNode;
+                    var valueStart = firstMappedChild?.Source;
 
-                    using (new LinePragmaWriter(Context.Writer, node.SourceRange))
+                    using (new LinePragmaWriter(Context.Writer, node.Source.Value))
                     {
                         var assignmentPrefixLength = propertyValueAccessor.Length + " = ".Length;
                         if (node.Descriptor.IsEnum &&
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                             if (valueStart != null)
                             {
-                                var padding = BuildOffsetPadding(assignmentPrefixLength, node.SourceRange, Context);
+                                var padding = BuildOffsetPadding(assignmentPrefixLength, node.Source.Value, Context);
 
                                 Context.Writer.Write(padding);
                             }
@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         {
                             if (valueStart != null)
                             {
-                                var padding = BuildOffsetPadding(assignmentPrefixLength, node.SourceRange, Context);
+                                var padding = BuildOffsetPadding(assignmentPrefixLength, node.Source.Value, Context);
 
                                 Context.Writer.Write(padding);
                             }
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                             Context.Writer.WriteStartAssignment(propertyValueAccessor);
                         }
 
-                        RenderTagHelperAttributeInline(node, node.SourceRange);
+                        RenderTagHelperAttributeInline(node, node.Source.Value);
 
                         Context.Writer.WriteLine(";");
                     }
@@ -328,8 +328,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             private void AddLineMappingFor(RazorIRNode node)
             {
-                var sourceLocation = node.SourceRange;
-                var generatedLocation = new MappingLocation(Context.Writer.GetCurrentSourceLocation(), node.SourceRange.ContentLength);
+                var sourceLocation = node.Source.Value;
+                var generatedLocation = new SourceSpan(Context.Writer.GetCurrentSourceLocation(), sourceLocation.Length);
                 var lineMapping = new LineMapping(sourceLocation, generatedLocation);
 
                 Context.LineMappings.Add(lineMapping);
@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             private void RenderTagHelperAttributeInline(
                 RazorIRNode node,
-                MappingLocation documentLocation)
+                SourceSpan documentLocation)
             {
                 if (node is SetTagHelperPropertyIRNode || node is CSharpExpressionIRNode)
                 {
@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 }
                 else if (node is HtmlContentIRNode)
                 {
-                    if (node.SourceRange != null)
+                    if (node.Source != null)
                     {
                         AddLineMappingFor(node);
                     }
@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 }
                 else if (node is CSharpTokenIRNode)
                 {
-                    if (node.SourceRange != null)
+                    if (node.Source != null)
                     {
                         AddLineMappingFor(node);
                     }
@@ -367,17 +367,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 else if (node is CSharpStatementIRNode)
                 {
                     Context.ErrorSink.OnError(
-                        new SourceLocation(documentLocation.AbsoluteIndex, documentLocation.CharacterIndex, documentLocation.ContentLength),
+                        new SourceLocation(documentLocation.AbsoluteIndex, documentLocation.CharacterIndex, documentLocation.Length),
                         LegacyResources.TagHelpers_CodeBlocks_NotSupported_InAttributes,
-                        documentLocation.ContentLength);
+                        documentLocation.Length);
                 }
                 else if (node is TemplateIRNode)
                 {
                     var attributeValueNode = (SetTagHelperPropertyIRNode)node.Parent;
                     Context.ErrorSink.OnError(
-                        new SourceLocation(documentLocation.AbsoluteIndex, documentLocation.CharacterIndex, documentLocation.ContentLength),
+                        new SourceLocation(documentLocation.AbsoluteIndex, documentLocation.CharacterIndex, documentLocation.Length),
                         LegacyResources.FormatTagHelpers_InlineMarkupBlocks_NotSupported_InAttributes(attributeValueNode.Descriptor.TypeName),
-                        documentLocation.ContentLength);
+                        documentLocation.Length);
                 }
             }
         }

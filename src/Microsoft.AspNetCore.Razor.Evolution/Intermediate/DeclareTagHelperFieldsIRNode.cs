@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
         public override RazorIRNode Parent { get; set; }
 
-        internal override MappingLocation SourceRange { get; set; }
+        public override SourceSpan? Source { get; set; }
 
         public ISet<string> UsedTagHelperTypeNames { get; set; } = new HashSet<string>(StringComparer.Ordinal);
 

@@ -2,23 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Xunit;
+using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
-namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
+namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    public class LineMappingTest
+    public class SourceSpanTest
     {
         [Fact]
         public void GeneratedCodeMappingsAreEqualIfDataIsEqual()
         {
             // Arrange
             var left = new LineMapping(
-                new MappingLocation(new SourceLocation(1, 2, 3), 4),
-                new MappingLocation(new SourceLocation(5, 6, 7), 8)
-            );
+                new SourceSpan(new SourceLocation(1, 2, 3), 4),
+                new SourceSpan(new SourceLocation(5, 6, 7), 8));
+
             var right = new LineMapping(
-                new MappingLocation(new SourceLocation(1, 2, 3), 4),
-                new MappingLocation(new SourceLocation(5, 6, 7), 8)
-            );
+                new SourceSpan(new SourceLocation(1, 2, 3), 4),
+                new SourceSpan(new SourceLocation(5, 6, 7), 8));
 
             // Assert
             Assert.True(left == right);
@@ -32,13 +32,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             // Arrange
             var left = new LineMapping(
-                new MappingLocation(new SourceLocation(1, 2, 3), 4),
-                new MappingLocation(new SourceLocation(5, 6, 7), 8)
-            );
+                new SourceSpan(new SourceLocation(1, 2, 3), 4),
+                new SourceSpan(new SourceLocation(5, 6, 7), 8));
+
             var right = new LineMapping(
-                new MappingLocation(new SourceLocation(1, 2, 3), 5),
-                new MappingLocation(new SourceLocation(5, 6, 7), 9)
-            );
+                new SourceSpan(new SourceLocation(1, 2, 3), 5),
+                new SourceSpan(new SourceLocation(5, 6, 7), 9));
 
             // Assert
             AssertNotEqual(left, right);
@@ -49,13 +48,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             // Arrange
             var left = new LineMapping(
-                new MappingLocation(new SourceLocation(1, 2, 3), 4),
-                new MappingLocation(new SourceLocation(5, 6, 7), 8)
-            );
+                new SourceSpan(new SourceLocation(1, 2, 3), 4),
+                new SourceSpan(new SourceLocation(5, 6, 7), 8));
+
             var right = new LineMapping(
-                new MappingLocation(new SourceLocation(1, 2, 3), 4),
-                new MappingLocation(new SourceLocation(5, 6, 8), 8)
-            );
+                new SourceSpan(new SourceLocation(1, 2, 3), 4),
+                new SourceSpan(new SourceLocation(5, 6, 8), 8));
 
             // Assert
             AssertNotEqual(left, right);
@@ -66,13 +64,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             // Arrange
             var left = new LineMapping(
-                new MappingLocation(new SourceLocation(1, 2, 3), 4),
-                new MappingLocation(new SourceLocation(5, 6, 8), 8)
-            );
+                new SourceSpan(new SourceLocation(1, 2, 3), 4),
+                new SourceSpan(new SourceLocation(5, 6, 8), 8));
+
             var right = new LineMapping(
-                new MappingLocation(new SourceLocation(1, 2, 3), 4),
-                new MappingLocation(new SourceLocation(5, 6, 7), 8)
-            );
+                new SourceSpan(new SourceLocation(1, 2, 3), 4),
+                new SourceSpan(new SourceLocation(5, 6, 7), 8));
 
             // Assert
             AssertNotEqual(left, right);
@@ -83,13 +80,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             // Arrange
             var left = new LineMapping(
-                new MappingLocation(new SourceLocation(1, 2, 3), 4),
-                new MappingLocation(new SourceLocation(5, 5, 7), 8)
-            );
+                new SourceSpan(new SourceLocation(1, 2, 3), 4),
+                new SourceSpan(new SourceLocation(5, 5, 7), 8));
+
             var right = new LineMapping(
-                new MappingLocation(new SourceLocation(1, 1, 3), 4),
-                new MappingLocation(new SourceLocation(5, 6, 7), 8)
-            );
+                new SourceSpan(new SourceLocation(1, 1, 3), 4),
+                new SourceSpan(new SourceLocation(5, 6, 7), 8));
 
             // Assert
             AssertNotEqual(left, right);
@@ -100,13 +96,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             // Arrange
             var left = new LineMapping(
-                new MappingLocation(new SourceLocation(1, 2, 3), 4),
-                new MappingLocation(new SourceLocation(4, 6, 7), 8)
-            );
+                new SourceSpan(new SourceLocation(1, 2, 3), 4),
+                new SourceSpan(new SourceLocation(4, 6, 7), 8));
+
             var right = new LineMapping(
-                new MappingLocation(new SourceLocation(1, 2, 3), 4),
-                new MappingLocation(new SourceLocation(5, 6, 7), 9)
-            );
+                new SourceSpan(new SourceLocation(1, 2, 3), 4),
+                new SourceSpan(new SourceLocation(5, 6, 7), 9));
 
             // Assert
             AssertNotEqual(left, right);

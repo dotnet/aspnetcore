@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         /// <param name="location">The location to generate the line pragma for.</param>
         /// <param name="file">The file to generate the line pragma for.</param>
         /// <returns>The current instance of <see cref="CSharpCodeWriter"/>.</returns>
-        public CSharpCodeWriter WriteLineNumberDirective(MappingLocation location, string file)
+        public CSharpCodeWriter WriteLineNumberDirective(SourceSpan location, string file)
         {
             if (location.FilePath != null)
             {

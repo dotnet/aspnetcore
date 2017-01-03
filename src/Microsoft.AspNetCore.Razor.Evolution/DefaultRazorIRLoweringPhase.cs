@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     Name = chunkGenerator.Name,
                     Prefix = chunkGenerator.Prefix,
                     Suffix = chunkGenerator.Suffix,
-                    SourceRange = BuildSourceRangeFromNode(block),
+                    Source = BuildSourceRangeFromNode(block),
                 });
             }
 
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Builder.Push(new CSharpAttributeValueIRNode()
                 {
                     Prefix = chunkGenerator.Prefix,
-                    SourceRange = BuildSourceRangeFromNode(block),
+                    Source = BuildSourceRangeFromNode(block),
                 });
             }
 
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 {
                     Prefix = chunkGenerator.Prefix,
                     Content = chunkGenerator.Value,
-                    SourceRange = BuildSourceRangeFromNode(span),
+                    Source = BuildSourceRangeFromNode(span),
                 });
             }
 
@@ -125,19 +125,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 {
                     var sourceRangeStart = templateNode
                         .Children
-                        .FirstOrDefault(child => child.SourceRange != null)
-                        ?.SourceRange;
+                        .FirstOrDefault(child => child.Source != null)
+                        ?.Source;
 
                     if (sourceRangeStart != null)
                     {
-                        var contentLength = templateNode.Children.Sum(child => child.SourceRange?.ContentLength ?? 0);
+                        var contentLength = templateNode.Children.Sum(child => child.Source?.Length ?? 0);
 
-                        templateNode.SourceRange = new MappingLocation(
-                            sourceRangeStart.AbsoluteIndex,
-                            sourceRangeStart.LineIndex,
-                            sourceRangeStart.CharacterIndex,
-                            contentLength,
-                            sourceRangeStart.FilePath ?? _codeDocument.Source.Filename);
+                        templateNode.Source = new SourceSpan(
+                            sourceRangeStart.Value.FilePath ?? _codeDocument.Source.Filename,
+                            sourceRangeStart.Value.AbsoluteIndex,
+                            sourceRangeStart.Value.LineIndex,
+                            sourceRangeStart.Value.CharacterIndex,
+                            contentLength);
                     }
                 }
             }
@@ -161,19 +161,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 {
                     var sourceRangeStart = expressionNode
                         .Children
-                        .FirstOrDefault(child => child.SourceRange != null)
-                        ?.SourceRange;
+                        .FirstOrDefault(child => child.Source != null)
+                        ?.Source;
 
                     if (sourceRangeStart != null)
                     {
-                        var contentLength = expressionNode.Children.Sum(child => child.SourceRange?.ContentLength ?? 0);
+                        var contentLength = expressionNode.Children.Sum(child => child.Source?.Length ?? 0);
 
-                        expressionNode.SourceRange = new MappingLocation(
-                            sourceRangeStart.AbsoluteIndex,
-                            sourceRangeStart.LineIndex,
-                            sourceRangeStart.CharacterIndex,
-                            contentLength,
-                            sourceRangeStart.FilePath ?? _codeDocument.Source.Filename);
+                        expressionNode.Source = new SourceSpan(
+                            sourceRangeStart.Value.FilePath ?? _codeDocument.Source.Filename,
+                            sourceRangeStart.Value.AbsoluteIndex,
+                            sourceRangeStart.Value.LineIndex,
+                            sourceRangeStart.Value.CharacterIndex,
+                            contentLength);
                     }
                 }
             }
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Builder.Add(new CSharpTokenIRNode()
                 {
                     Content = span.Content,
-                    SourceRange = BuildSourceRangeFromNode(span),
+                    Source = BuildSourceRangeFromNode(span),
                 });
             }
 
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Builder.Add(new CSharpStatementIRNode()
                 {
                     Content = span.Content,
-                    SourceRange = BuildSourceRangeFromNode(span),
+                    Source = BuildSourceRangeFromNode(span),
                 });
             }
 
@@ -227,19 +227,25 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 {
                     var existingHtmlContent = (HtmlContentIRNode)currentChildren[currentChildren.Count - 1];
                     existingHtmlContent.Content = string.Concat(existingHtmlContent.Content, span.Content);
-                    existingHtmlContent.SourceRange = new MappingLocation(
-                        existingHtmlContent.SourceRange.AbsoluteIndex,
-                        existingHtmlContent.SourceRange.LineIndex,
-                        existingHtmlContent.SourceRange.CharacterIndex,
-                        existingHtmlContent.SourceRange.ContentLength + span.Content.Length,
-                        existingHtmlContent.SourceRange.FilePath);
+
+                    if (existingHtmlContent.Source != null)
+                    {
+                        var contentLength = existingHtmlContent.Source.Value.Length + span.Content.Length;
+
+                        existingHtmlContent.Source = new SourceSpan(
+                            existingHtmlContent.Source.Value.FilePath ?? _codeDocument.Source.Filename,
+                            existingHtmlContent.Source.Value.AbsoluteIndex,
+                            existingHtmlContent.Source.Value.LineIndex,
+                            existingHtmlContent.Source.Value.CharacterIndex,
+                            contentLength);
+                    }
                 }
                 else
                 {
                     Builder.Add(new HtmlContentIRNode()
                     {
                         Content = span.Content,
-                        SourceRange = BuildSourceRangeFromNode(span),
+                        Source = BuildSourceRangeFromNode(span),
                     });
                 }
             }
@@ -254,7 +260,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     Builder.Add(new UsingStatementIRNode()
                     {
                         Content = namespaceImport,
-                        SourceRange = BuildSourceRangeFromNode(span),
+                        Source = BuildSourceRangeFromNode(span),
                     });
                 }
             }
@@ -265,7 +271,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 {
                     Content = span.Content,
                     Descriptor = chunkGenerator.Descriptor,
-                    SourceRange = BuildSourceRangeFromNode(span),
+                    Source = BuildSourceRangeFromNode(span),
                 });
             }
 
@@ -388,7 +394,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                                 TagHelperTypeName = associatedDescriptor.TypeName,
                                 Descriptor = associatedAttributeDescriptor,
                                 ValueStyle = attribute.ValueStyle,
-                                SourceRange = BuildSourceRangeFromNode(attributeValueNode)
+                                Source = BuildSourceRangeFromNode(attributeValueNode)
                             };
 
                             Builder.Push(setTagHelperProperty);
@@ -419,16 +425,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Builder.Add(new ExecuteTagHelpersIRNode());
             }
 
-            private MappingLocation BuildSourceRangeFromNode(SyntaxTreeNode node)
+            private SourceSpan BuildSourceRangeFromNode(SyntaxTreeNode node)
             {
                 var location = node.Start;
-                var sourceRange = new MappingLocation(
-                    location.AbsoluteIndex,
-                    location.LineIndex,
-                    location.CharacterIndex,
-                    node.Length,
-                    location.FilePath ?? _codeDocument.Source.Filename);
-
+                var sourceRange = new SourceSpan(
+                    node.Start.FilePath ?? _codeDocument.Source.Filename, 
+                    node.Start.AbsoluteIndex,
+                    node.Start.LineIndex,
+                    node.Start.CharacterIndex,
+                    node.Length);
                 return sourceRange;
             }
         }

@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
@@ -84,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                 public override RazorIRNode Parent { get; set; }
 
-                internal override MappingLocation SourceRange { get; set; }
+                public override SourceSpan? Source { get; set; }
 
                 public void AddToMethodBody(RazorIRNode node)
                 {

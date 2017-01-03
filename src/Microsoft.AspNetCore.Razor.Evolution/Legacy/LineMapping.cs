@@ -8,15 +8,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
     internal class LineMapping
     {
-        public LineMapping(MappingLocation documentLocation, MappingLocation generatedLocation)
+        public LineMapping(SourceSpan documentLocation, SourceSpan generatedLocation)
         {
             DocumentLocation = documentLocation;
             GeneratedLocation = generatedLocation;
         }
 
-        public MappingLocation DocumentLocation { get; }
+        public SourceSpan DocumentLocation { get; }
 
-        public MappingLocation GeneratedLocation { get; }
+        public SourceSpan GeneratedLocation { get; }
 
         public override bool Equals(object obj)
         {

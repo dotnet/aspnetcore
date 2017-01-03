@@ -31,13 +31,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             return builder.ToString();
         }
 
-        private static void AppendMappingLocation(StringBuilder builder, MappingLocation location, string content)
+        private static void AppendMappingLocation(StringBuilder builder, SourceSpan location, string content)
         {
             builder
                 .AppendLine(location.ToString())
                 .Append("|");
 
-            for (var i = 0; i < location.ContentLength; i++)
+            for (var i = 0; i < location.Length; i++)
             {
                 builder.Append(content[location.AbsoluteIndex + i]);
             }

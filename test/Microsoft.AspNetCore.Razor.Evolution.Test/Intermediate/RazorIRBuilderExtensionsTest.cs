@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
             public override RazorIRNode Parent { get; set; }
 
-            internal override MappingLocation SourceRange { get; set; }
+            public override SourceSpan? Source { get; set; }
 
             public override void Accept(RazorIRNodeVisitor visitor)
             {
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
             public override RazorIRNode Parent { get; set; }
 
-            internal override MappingLocation SourceRange { get; set; }
+            public override SourceSpan? Source { get; set; }
 
             public override void Accept(RazorIRNodeVisitor visitor)
             {
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
             public override RazorIRNode Parent { get; set; }
 
-            internal override MappingLocation SourceRange { get; set; }
+            public override SourceSpan? Source { get; set; }
 
             public override void Accept(RazorIRNodeVisitor visitor)
             {

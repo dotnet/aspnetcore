@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
@@ -15,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
         public override RazorIRNode Parent { get; set; }
 
-        internal override MappingLocation SourceRange { get; set; }
+        public override SourceSpan? Source { get; set; }
 
         public override void Accept(RazorIRNodeVisitor visitor)
         {
