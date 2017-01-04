@@ -66,43 +66,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _executor = objectMethodExecutor;
         }
 
-        public virtual async Task InvokeAsync()
+        protected override void ReleaseResources()
         {
-            try
+            if (_controller != null)
             {
-                _diagnosticSource.BeforeAction(
-                    _controllerContext.ActionDescriptor,
-                    _controllerContext.HttpContext,
-                    _controllerContext.RouteData);
-
-                using (_logger.ActionScope(_controllerContext.ActionDescriptor))
-                {
-                    _logger.ExecutingAction(_controllerContext.ActionDescriptor);
-
-                    var startTimestamp = _logger.IsEnabled(LogLevel.Information) ? Stopwatch.GetTimestamp() : 0;
-
-                    try
-                    {
-                        await InvokeFilterPipelineAsync();
-
-                    }
-                    finally
-                    {
-                        if (_controller != null)
-                        {
-                            _controllerFactory.ReleaseController(_controllerContext, _controller);
-                        }
-
-                        _logger.ExecutedAction(_controllerContext.ActionDescriptor, startTimestamp);
-                    }
-                }
-            }
-            finally
-            {
-                _diagnosticSource.AfterAction(
-                    _controllerContext.ActionDescriptor,
-                    _controllerContext.HttpContext,
-                    _controllerContext.RouteData);
+                _controllerFactory.ReleaseController(_controllerContext, _controller);
             }
         }
 
@@ -113,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             switch (next)
             {
-                case State.InvokeBegin:
+                case State.ResourceInsideBegin:
                     {
                         goto case State.ExceptionBegin;
                     }
@@ -145,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         else
                         {
                             // There are no exception filters - so jump right to 'inside'.
-                            Debug.Assert(scope == Scope.Invoker);
+                            Debug.Assert(scope == Scope.Resource);
                             goto case State.ActionBegin;
                         }
                     }
@@ -254,7 +222,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         Debug.Assert(state != null);
                         Debug.Assert(_exceptionContext != null);
 
-                        if (scope == Scope.Invoker)
+                        if (scope == Scope.Resource)
                         {
                             Debug.Assert(_exceptionContext.Result != null);
                             _result = _exceptionContext.Result;
@@ -263,11 +231,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         var task = InvokeResultAsync(_exceptionContext.Result);
                         if (task.Status != TaskStatus.RanToCompletion)
                         {
-                            next = State.InvokeEnd;
+                            next = State.ResourceInsideEnd;
                             return task;
                         }
 
-                        goto case State.InvokeEnd;
+                        goto case State.ResourceInsideEnd;
                     }
 
                 case State.ExceptionEnd:
@@ -491,7 +459,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             return TaskCache.CompletedTask;
                         }
 
-                        Debug.Assert(scope == Scope.Invoker);
+                        Debug.Assert(scope == Scope.Resource);
                         goto case State.ResultBegin;
                     }
 
@@ -678,10 +646,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                         Rethrow(_resultExecutedContext);
 
-                        goto case State.InvokeEnd;
+                        goto case State.ResourceInsideEnd;
                     }
 
-                case State.InvokeEnd:
+                case State.ResourceInsideEnd:
                     {
                         isCompleted = true;
                         return TaskCache.CompletedTask;
@@ -899,37 +867,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return _resultExecutedContext;
         }
 
+        /// <remarks><see cref="ResourceInvoker.InvokeFilterPipelineAsync"/> for details on what the
+        /// variables in this method represent.</remarks>
         protected override async Task InvokeInnerFilterAsync()
         {
-            // The invoker is implemented using a 'Taskerator' or perhaps an 'Asyncerator' (both terms are correct
-            // and in common usage). This method is the main 'driver' loop and will call into the `Next` method
-            // (`await`ing the result) until a terminal state is reached.
-            //
-            // The `Next` method walks through the state transitions of the invoker and returns a `Task` when there's
-            // actual async work that we need to await. As an optimization that Next method won't return a `Task`
-            // that completes synchronously.
-            //
-            // Additionally the `Next` funtion will be called recursively when we're 'inside' a filter invocation.
-            // Executing 'inside' a filter requires an async method call within a `try`/`catch` for error handling, so
-            // we have to recurse. Each 'frame' calls into `Next` with a value of `Scope` that communicates what kind
-            // of 'frame' is executing. This has an effect on the state machine transitions as well as what kinds of
-            // contexts need to be constructed to communicate the result of execution of the 'frame'.
-
-            // When returning, the `Next` method will set `next` to the state to goto on the subsequent invocation.
-            // This is similar to `Task.ContinueWith`, but since we have a fixed number of states we can avoid
-            // the overhead of actually using `Task.ContinueWith`.
-            var next = State.InvokeBegin;
-
-            // The `scope` tells the `Next` method who the caller is, and what kind of state to initialize to
-            // communicate a result. The outermost scope is `Scope.Invoker` and doesn't require any type
-            // of context or result other than throwing.
-            var scope = Scope.Invoker;
-
-            // The `state` is used for internal state handling during transitions between states. In practice this
-            // means storing a filter instance in `state` and then retrieving it in the next state.
+            var next = State.ResourceInsideBegin;
+            var scope = Scope.Resource;
             var state = (object)null;
-
-            // `isCompleted` will be set to true when we've reached a terminal state.
             var isCompleted = false;
 
             while (!isCompleted)
@@ -1009,7 +953,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private enum Scope
         {
-            Invoker,
+            Resource,
             Exception,
             Action,
             Result,
@@ -1017,9 +961,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private enum State
         {
-            InvokeBegin,
-            InvokeBeginOutside,
-            InvokeBeginInside,
+            ResourceInsideBegin,
             ExceptionBegin,
             ExceptionNext,
             ExceptionAsyncBegin,
@@ -1046,7 +988,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ResultSyncEnd,
             ResultInside,
             ResultEnd,
-            InvokeEnd,
+            ResourceInsideEnd,
         }
     }
 }

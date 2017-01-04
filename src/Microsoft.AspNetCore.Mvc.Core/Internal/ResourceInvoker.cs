@@ -72,7 +72,48 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
             _cursor = new FilterCursor(filters);
         }
 
-        protected async Task InvokeFilterPipelineAsync()
+        public virtual async Task InvokeAsync()
+        {
+            try
+            {
+                _diagnosticSource.BeforeAction(
+                    _actionContext.ActionDescriptor,
+                    _actionContext.HttpContext,
+                    _actionContext.RouteData);
+
+                using (_logger.ActionScope(_actionContext.ActionDescriptor))
+                {
+                    _logger.ExecutingAction(_actionContext.ActionDescriptor);
+
+                    var startTimestamp = _logger.IsEnabled(LogLevel.Information) ? Stopwatch.GetTimestamp() : 0;
+
+                    try
+                    {
+                        await InvokeFilterPipelineAsync();
+                    }
+                    finally
+                    {
+                        ReleaseResources();
+                        _logger.ExecutedAction(_actionContext.ActionDescriptor, startTimestamp);
+                    }
+                }
+            }
+            finally
+            {
+                _diagnosticSource.AfterAction(
+                    _actionContext.ActionDescriptor,
+                    _actionContext.HttpContext,
+                    _actionContext.RouteData);
+            }
+        }
+
+        /// <summary>
+        /// In derived types, releases resources such as controller, model, or page instances created as
+        /// part of invoking the inner pipeline.
+        /// </summary>
+        protected abstract void ReleaseResources();
+
+        private async Task InvokeFilterPipelineAsync()
         {
             var next = State.InvokeBegin;
 
