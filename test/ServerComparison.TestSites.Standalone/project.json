@@ -3,9 +3,9 @@
   "dependencies": {
     "Microsoft.AspNetCore.AspNetCoreModule": "1.0.0-*",
     "Microsoft.AspNetCore.ResponseCompression": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.HttpSys": "1.2.0-*",
     "Microsoft.AspNetCore.Server.IISIntegration": "1.2.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.2.0-*",
-    "Microsoft.AspNetCore.Server.WebListener": "1.2.0-*",
     "Microsoft.AspNetCore.WebUtilities": "1.2.0-*",
     "Microsoft.Extensions.Configuration.CommandLine": "1.2.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.2.0-*",
