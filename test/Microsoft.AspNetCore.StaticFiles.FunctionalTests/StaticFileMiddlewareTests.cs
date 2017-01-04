@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             if (serverType == ServerType.WebListener)
             {
-                builder.UseWebListener();
+                builder.UseHttpSys();
             }
             else if (serverType == ServerType.Kestrel)
             {
