@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         }
 
         [Fact]
-        public async Task Reexecute_RequestWithQueryString()
+        public async Task Reexecute_CanRetrieveInformationAboutOriginalRequest()
         {
             var expectedStatusCode = 432;
             var destination = "/location";
@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Diagnostics
 
                         Assert.Equal(beforeNext, afterNext);
                     });
-                    app.UseStatusCodePagesWithReExecute("/errorPage", "?id={0}");
+                    app.UseStatusCodePagesWithReExecute(pathFormat: "/errorPage", queryFormat: "?id={0}");
 
                     app.Map(destination, (innerAppBuilder) =>
                     {
@@ -256,7 +256,13 @@ namespace Microsoft.AspNetCore.Diagnostics
                     {
                         innerAppBuilder.Run(async (httpContext) =>
                         {
-                            await httpContext.Response.WriteAsync(httpContext.Request.QueryString.Value);
+                            var statusCodeReExecuteFeature = httpContext.Features.Get<IStatusCodeReExecuteFeature>();
+                            await httpContext.Response.WriteAsync(
+                                httpContext.Request.QueryString.Value
+                                + ", "
+                                + statusCodeReExecuteFeature.OriginalPath
+                                + ", "
+                                + statusCodeReExecuteFeature.OriginalQueryString);
                         });
                     });
 
@@ -269,9 +275,9 @@ namespace Microsoft.AspNetCore.Diagnostics
             using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
-                var response = await client.GetAsync(destination);
+                var response = await client.GetAsync(destination + "?name=James");
                 var content = await response.Content.ReadAsStringAsync();
-                Assert.Equal($"?id={expectedStatusCode}", content);
+                Assert.Equal($"?id={expectedStatusCode}, /location, ?name=James", content);
             }
         }
 
