@@ -18,10 +18,6 @@
     "Microsoft.AspNetCore.DataProtection.Abstractions": {
       "target": "project"
     },
-    "Microsoft.AspNetCore.DataProtection.Sources": {
-      "type": "build",
-      "target": "project"
-    },
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.2.0-*",
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.2.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.2.0-*",
@@ -54,6 +50,7 @@
     "nowarn": [
       "CS1591"
     ],
-    "xmlDoc": true
+    "xmlDoc": true,
+    "compile": "../../shared/*.cs"
   }
 }

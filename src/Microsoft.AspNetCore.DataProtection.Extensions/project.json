@@ -15,10 +15,6 @@
     "Microsoft.AspNetCore.DataProtection": {
       "target": "project"
     },
-    "Microsoft.AspNetCore.DataProtection.Sources": {
-      "type": "build",
-      "target": "project"
-    },
     "Microsoft.Extensions.DependencyInjection": "1.2.0-*",
     "NETStandard.Library": "1.6.2-*"
   },
@@ -32,6 +28,7 @@
     "nowarn": [
       "CS1591"
     ],
-    "xmlDoc": true
+    "xmlDoc": true,
+    "compile": "../../shared/*.cs"
   }
 }

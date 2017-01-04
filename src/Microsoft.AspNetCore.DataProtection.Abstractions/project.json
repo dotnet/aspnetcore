@@ -12,10 +12,6 @@
     ]
   },
   "dependencies": {
-    "Microsoft.AspNetCore.DataProtection.Sources": {
-      "type": "build",
-      "target": "project"
-    },
     "Microsoft.Extensions.WebEncoders.Sources": {
       "type": "build",
       "version": "1.2.0-*"
@@ -36,6 +32,7 @@
     "nowarn": [
       "CS1591"
     ],
-    "xmlDoc": true
+    "xmlDoc": true,
+    "compile": "../../shared/*.cs"
   }
 }

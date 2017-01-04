@@ -1,11 +1,5 @@
 {
-    "adx-nonshipping": {
-        "rules": [],
-        "packages": {
-            "Microsoft.AspNetCore.DataProtection.Sources": { }
-        }
-    },
-    "Default": { // Rules to run for packages not listed in any other set.
+    "Default": {
         "rules": [
             "DefaultCompositeRule"
         ]
