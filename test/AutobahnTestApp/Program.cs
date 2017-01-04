@@ -19,9 +19,9 @@ namespace AutobahnTestApp
                 .UseIISIntegration()
                 .UseStartup<Startup>();
 
-            if (string.Equals(builder.GetSetting("server"), "Microsoft.AspNetCore.Server.WebListener", System.StringComparison.Ordinal))
+            if (string.Equals(builder.GetSetting("server"), "Microsoft.AspNetCore.Server.HttpSys", System.StringComparison.Ordinal))
             {
-                builder.UseWebListener();
+                builder.UseHttpSys();
             }
             else
             {

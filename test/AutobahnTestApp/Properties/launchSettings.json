@@ -33,7 +33,7 @@
     },
     "WebListener": {
       "commandName": "Project",
-      "commandLineArgs": "--server Microsoft.AspNetCore.Server.WebListener",
+      "commandLineArgs": "--server Microsoft.AspNetCore.Server.HttpSys",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "ManagedSockets"
       }
