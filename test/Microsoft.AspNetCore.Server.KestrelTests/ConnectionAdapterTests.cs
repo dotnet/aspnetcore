@@ -3,26 +3,34 @@
 
 using System;
 using System.IO;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Filter;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel;
+using Microsoft.AspNetCore.Server.Kestrel.Adapter;
+using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
-    public class ConnectionFilterTests
+    public class ConnectionAdapterTests
     {
         [Fact]
-        public async Task CanReadAndWriteWithRewritingConnectionFilter()
+        public async Task CanReadAndWriteWithRewritingConnectionAdapter()
         {
-            var filter = new RewritingConnectionFilter();
-            var serviceContext = new TestServiceContext(filter);
+            var adapter = new RewritingConnectionAdapter();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters = { adapter }
+            };
+
+            var serviceContext = new TestServiceContext();
 
             var sendString = "POST / HTTP/1.0\r\nContent-Length: 12\r\n\r\nHello World?";
 
-            using (var server = new TestServer(TestApp.EchoApp, serviceContext))
+            using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -37,15 +45,20 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             }
 
-            Assert.Equal(sendString.Length, filter.BytesRead);
+            Assert.Equal(sendString.Length, adapter.BytesRead);
         }
 
         [Fact]
-        public async Task CanReadAndWriteWithAsyncConnectionFilter()
+        public async Task CanReadAndWriteWithAsyncConnectionAdapter()
         {
-            var serviceContext = new TestServiceContext(new AsyncConnectionFilter());
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters = { new AsyncConnectionAdapter() }
+            };
 
-            using (var server = new TestServer(TestApp.EchoApp, serviceContext))
+            var serviceContext = new TestServiceContext();
+
+            using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -65,15 +78,20 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Fact]
-        public async Task ThrowingSynchronousConnectionFilterDoesNotCrashServer()
+        public async Task ThrowingSynchronousConnectionAdapterDoesNotCrashServer()
         {
-            var serviceContext = new TestServiceContext(new ThrowingConnectionFilter());
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters = { new ThrowingConnectionAdapter() }
+            };
 
-            using (var server = new TestServer(TestApp.EchoApp, serviceContext))
+            var serviceContext = new TestServiceContext();
+
+            using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
-                    // Will throw because the exception in the connection filter will close the connection.
+                    // Will throw because the exception in the connection adapter will close the connection.
                     await Assert.ThrowsAsync<IOException>(async () =>
                     {
                         await connection.Send(
@@ -91,39 +109,47 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        private class RewritingConnectionFilter : IConnectionFilter
+        private class RewritingConnectionAdapter : IConnectionAdapter
         {
             private RewritingStream _rewritingStream;
 
-            public Task OnConnectionAsync(ConnectionFilterContext context)
+            public Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context)
             {
-                _rewritingStream = new RewritingStream(context.Connection);
-                context.Connection = _rewritingStream;
-                return TaskCache.CompletedTask;
+                _rewritingStream = new RewritingStream(context.ConnectionStream);
+                return Task.FromResult<IAdaptedConnection>(new AdaptedConnection(_rewritingStream));
             }
 
             public int BytesRead => _rewritingStream.BytesRead;
-        }
+       }
 
-        private class AsyncConnectionFilter : IConnectionFilter
+        private class AsyncConnectionAdapter : IConnectionAdapter
         {
-            public async Task OnConnectionAsync(ConnectionFilterContext context)
+            public async Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context)
             {
-                var oldConnection = context.Connection;
-
-                // Set Connection to null to ensure it isn't used until the returned task completes.
-                context.Connection = null;
                 await Task.Delay(100);
-
-                context.Connection = new RewritingStream(oldConnection);
+                return new AdaptedConnection(new RewritingStream(context.ConnectionStream));
             }
         }
 
-        private class ThrowingConnectionFilter : IConnectionFilter
+        private class ThrowingConnectionAdapter : IConnectionAdapter
         {
-            public Task OnConnectionAsync(ConnectionFilterContext context)
+            public Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context)
             {
                 throw new Exception();
+            }
+        }
+
+        private class AdaptedConnection : IAdaptedConnection
+        {
+            public AdaptedConnection(Stream adaptedStream)
+            {
+                ConnectionStream = adaptedStream;
+            }
+
+            public Stream ConnectionStream { get; }
+
+            public void PrepareRequest(IFeatureCollection requestFeatures)
+            {
             }
         }
 

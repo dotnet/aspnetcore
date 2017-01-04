@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.KestrelTests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
@@ -14,32 +16,27 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class ChunkedResponseTests
     {
-        public static TheoryData<TestServiceContext> ConnectionFilterData
+        public static TheoryData<ListenOptions> ConnectionAdapterData => new TheoryData<ListenOptions>
         {
-            get
+            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)),
+            new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
             {
-                return new TheoryData<TestServiceContext>
-                {
-                    {
-                        new TestServiceContext()
-                    },
-                    {
-                        new TestServiceContext(new PassThroughConnectionFilter())
-                    }
-                };
+                ConnectionAdapters = { new PassThroughConnectionAdapter() }
             }
-        }
+        };
 
         [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
-        public async Task ResponsesAreChunkedAutomatically(TestServiceContext testContext)
+        [MemberData(nameof(ConnectionAdapterData))]
+        public async Task ResponsesAreChunkedAutomatically(ListenOptions listenOptions)
         {
+            var testContext = new TestServiceContext();
+
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
-            }, testContext))
+            }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -64,14 +61,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
-        public async Task ResponsesAreNotChunkedAutomaticallyForHttp10Requests(TestServiceContext testContext)
+        [MemberData(nameof(ConnectionAdapterData))]
+        public async Task ResponsesAreNotChunkedAutomaticallyForHttp10Requests(ListenOptions listenOptions)
         {
+            var testContext = new TestServiceContext();
+
             using (var server = new TestServer(async httpContext =>
             {
                 await httpContext.Response.WriteAsync("Hello ");
                 await httpContext.Response.WriteAsync("World!");
-            }, testContext))
+            }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -91,14 +90,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
-        public async Task ResponsesAreChunkedAutomaticallyForHttp11NonKeepAliveRequests(TestServiceContext testContext)
+        [MemberData(nameof(ConnectionAdapterData))]
+        public async Task ResponsesAreChunkedAutomaticallyForHttp11NonKeepAliveRequests(ListenOptions listenOptions)
         {
+            var testContext = new TestServiceContext();
+
             using (var server = new TestServer(async httpContext =>
             {
                 await httpContext.Response.WriteAsync("Hello ");
                 await httpContext.Response.WriteAsync("World!");
-            }, testContext))
+            }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -125,15 +126,17 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
-        public async Task SettingConnectionCloseHeaderInAppDoesNotDisableChunking(TestServiceContext testContext)
+        [MemberData(nameof(ConnectionAdapterData))]
+        public async Task SettingConnectionCloseHeaderInAppDoesNotDisableChunking(ListenOptions listenOptions)
         {
+            var testContext = new TestServiceContext();
+
             using (var server = new TestServer(async httpContext =>
             {
                 httpContext.Response.Headers["Connection"] = "close";
                 await httpContext.Response.WriteAsync("Hello ");
                 await httpContext.Response.WriteAsync("World!");
-            }, testContext))
+            }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -159,16 +162,18 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
-        public async Task ZeroLengthWritesAreIgnored(TestServiceContext testContext)
+        [MemberData(nameof(ConnectionAdapterData))]
+        public async Task ZeroLengthWritesAreIgnored(ListenOptions listenOptions)
         {
+            var testContext = new TestServiceContext();
+
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
                 await response.Body.WriteAsync(new byte[0], 0, 0);
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
-            }, testContext))
+            }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -193,9 +198,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
-        public async Task ZeroLengthWritesFlushHeaders(TestServiceContext testContext)
+        [MemberData(nameof(ConnectionAdapterData))]
+        public async Task ZeroLengthWritesFlushHeaders(ListenOptions listenOptions)
         {
+            var testContext = new TestServiceContext();
+
             var flushed = new SemaphoreSlim(0, 1);
 
             using (var server = new TestServer(async httpContext =>
@@ -206,7 +213,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await flushed.WaitAsync();
 
                 await response.WriteAsync("Hello World!");
-            }, testContext))
+            }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -235,14 +242,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
-        public async Task EmptyResponseBodyHandledCorrectlyWithZeroLengthWrite(TestServiceContext testContext)
+        [MemberData(nameof(ConnectionAdapterData))]
+        public async Task EmptyResponseBodyHandledCorrectlyWithZeroLengthWrite(ListenOptions listenOptions)
         {
+            var testContext = new TestServiceContext();
+
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
                 await response.Body.WriteAsync(new byte[0], 0, 0);
-            }, testContext))
+            }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -263,15 +272,17 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
-        public async Task ConnectionClosedIfExceptionThrownAfterWrite(TestServiceContext testContext)
+        [MemberData(nameof(ConnectionAdapterData))]
+        public async Task ConnectionClosedIfExceptionThrownAfterWrite(ListenOptions listenOptions)
         {
+            var testContext = new TestServiceContext();
+
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World!"), 0, 12);
                 throw new Exception();
-            }, testContext))
+            }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -294,15 +305,17 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
-        public async Task ConnectionClosedIfExceptionThrownAfterZeroLengthWrite(TestServiceContext testContext)
+        [MemberData(nameof(ConnectionAdapterData))]
+        public async Task ConnectionClosedIfExceptionThrownAfterZeroLengthWrite(ListenOptions listenOptions)
         {
+            var testContext = new TestServiceContext();
+
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
                 await response.Body.WriteAsync(new byte[0], 0, 0);
                 throw new Exception();
-            }, testContext))
+            }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -324,9 +337,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
-        public async Task WritesAreFlushedPriorToResponseCompletion(TestServiceContext testContext)
+        [MemberData(nameof(ConnectionAdapterData))]
+        public async Task WritesAreFlushedPriorToResponseCompletion(ListenOptions listenOptions)
         {
+            var testContext = new TestServiceContext();
+
             var flushWh = new ManualResetEventSlim();
 
             using (var server = new TestServer(async httpContext =>
@@ -338,7 +353,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 flushWh.Wait();
 
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
-            }, testContext))
+            }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -368,9 +383,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
-        public async Task ChunksCanBeWrittenManually(TestServiceContext testContext)
+        [MemberData(nameof(ConnectionAdapterData))]
+        public async Task ChunksCanBeWrittenManually(ListenOptions listenOptions)
         {
+            var testContext = new TestServiceContext();
+
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
@@ -379,7 +396,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("6\r\nHello \r\n"), 0, 11);
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("6\r\nWorld!\r\n"), 0, 11);
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("0\r\n\r\n"), 0, 5);
-            }, testContext))
+            }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {

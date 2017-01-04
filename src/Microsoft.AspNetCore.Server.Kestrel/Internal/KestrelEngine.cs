@@ -61,49 +61,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 #endif
         }
 
-        public IDisposable CreateServer(ServerAddress address)
+        public IDisposable CreateServer(ListenOptions listenOptions)
         {
             var listeners = new List<IAsyncDisposable>();
 
-            var usingPipes = address.IsUnixPipe;
-
             try
             {
-                var pipeName = (Libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
-                var pipeMessage = Guid.NewGuid().ToByteArray();
-
-                var single = Threads.Count == 1;
-                var first = true;
-
-                foreach (var thread in Threads)
+                if (Threads.Count == 1)
                 {
-                    if (single)
-                    {
-                        var listener = usingPipes ?
-                            (Listener) new PipeListener(ServiceContext) :
-                            new TcpListener(ServiceContext);
-                        listeners.Add(listener);
-                        listener.StartAsync(address, thread).Wait();
-                    }
-                    else if (first)
-                    {
-                        var listener = usingPipes
-                            ? (ListenerPrimary) new PipeListenerPrimary(ServiceContext)
-                            : new TcpListenerPrimary(ServiceContext);
+                    var listener = new Listener(ServiceContext);
+                    listeners.Add(listener);
+                    listener.StartAsync(listenOptions, Threads[0]).Wait();
+                }
+                else
+                {
+                    var pipeName = (Libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
+                    var pipeMessage = Guid.NewGuid().ToByteArray();
 
-                        listeners.Add(listener);
-                        listener.StartAsync(pipeName, pipeMessage, address, thread).Wait();
-                    }
-                    else
-                    {
-                        var listener = usingPipes
-                            ? (ListenerSecondary) new PipeListenerSecondary(ServiceContext)
-                            : new TcpListenerSecondary(ServiceContext);
-                        listeners.Add(listener);
-                        listener.StartAsync(pipeName, pipeMessage, address, thread).Wait();
-                    }
+                    var listenerPrimary = new ListenerPrimary(ServiceContext);
+                    listeners.Add(listenerPrimary);
+                    listenerPrimary.StartAsync(pipeName, pipeMessage, listenOptions, Threads[0]).Wait();
 
-                    first = false;
+                    foreach (var thread in Threads.Skip(1))
+                    {
+                        var listenerSecondary = new ListenerSecondary(ServiceContext);
+                        listeners.Add(listenerSecondary);
+                        listenerSecondary.StartAsync(pipeName, pipeMessage, listenOptions, thread).Wait();
+                    }
                 }
 
                 return new Disposable(() =>
@@ -114,7 +98,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             catch
             {
                 DisposeListeners(listeners);
-
                 throw;
             }
         }

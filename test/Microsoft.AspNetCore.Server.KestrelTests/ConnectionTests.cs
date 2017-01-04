@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 };
                 var context = new ListenerContext(serviceContext)
                 {
-                    ServerAddress = ServerAddress.FromUrl("http://127.0.0.1:0"),
+                    ListenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)),
                     Thread = engine.Threads[0]
                 };
 

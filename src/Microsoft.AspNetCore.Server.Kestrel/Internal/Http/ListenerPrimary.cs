@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
     /// A primary listener waits for incoming connections on a specified socket. Incoming
     /// connections may be passed to a secondary listener to handle.
     /// </summary>
-    public abstract class ListenerPrimary : Listener
+    public class ListenerPrimary : Listener
     {
         private readonly List<UvPipeHandle> _dispatchPipes = new List<UvPipeHandle>();
         private int _dispatchIndex;
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         // but it has no other functional significance
         private readonly ArraySegment<ArraySegment<byte>> _dummyMessage = new ArraySegment<ArraySegment<byte>>(new[] { new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }) });
 
-        protected ListenerPrimary(ServiceContext serviceContext) : base(serviceContext)
+        public ListenerPrimary(ServiceContext serviceContext) : base(serviceContext)
         {
         }
 
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public async Task StartAsync(
             string pipeName,
             byte[] pipeMessage,
-            ServerAddress address,
+            ListenOptions listenOptions,
             KestrelThread thread)
         {
             _pipeName = pipeName;
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 Marshal.StructureToPtr(fileCompletionInfo, _fileCompletionInfoPtr, false);
             }
 
-            await StartAsync(address, thread).ConfigureAwait(false);
+            await StartAsync(listenOptions, thread).ConfigureAwait(false);
 
             await Thread.PostAsync(state => ((ListenerPrimary)state).PostCallback(),
                                    this).ConfigureAwait(false);

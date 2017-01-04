@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Adapter;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -87,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             ServerOptions = context.ListenerContext.ServiceContext.ServerOptions;
 
-            _pathBase = ServerAddress.PathBase;
+            _pathBase = context.ListenerContext.ListenOptions.PathBase;
 
             FrameControl = this;
             _keepAliveMilliseconds = (long)ServerOptions.Limits.KeepAliveTimeout.TotalMilliseconds;
@@ -97,23 +98,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public ConnectionContext ConnectionContext { get; }
         public SocketInput Input { get; set; }
         public ISocketOutput Output { get; set; }
-        public Action<IFeatureCollection> PrepareRequest
-        {
-            get
-            {
-                return ConnectionContext.PrepareRequest;
-            }
-            set
-            {
-                ConnectionContext.PrepareRequest = value;
-            }
-        }
+        public IEnumerable<IAdaptedConnection> AdaptedConnections { get; set; }
 
         protected IConnectionControl ConnectionControl => ConnectionContext.ConnectionControl;
         protected IKestrelTrace Log => ConnectionContext.ListenerContext.ServiceContext.Log;
 
         private DateHeaderValueManager DateHeaderValueManager => ConnectionContext.ListenerContext.ServiceContext.DateHeaderValueManager;
-        private ServerAddress ServerAddress => ConnectionContext.ListenerContext.ServerAddress;
         // Hold direct reference to ServerOptions since this is used very often in the request processing path
         private KestrelServerOptions ServerOptions { get; }
         private IPEndPoint LocalEndPoint => ConnectionContext.LocalEndPoint;
@@ -367,7 +357,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             LocalPort = LocalEndPoint?.Port ?? 0;
             ConnectionIdFeature = ConnectionId;
 
-            PrepareRequest?.Invoke(this);
+            if (AdaptedConnections != null)
+            {
+                try
+                {
+                    foreach (var adaptedConnection in AdaptedConnections)
+                    {
+                        adaptedConnection.PrepareRequest(this);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.LogError(0, ex, $"Uncaught exception from the {nameof(IAdaptedConnection.PrepareRequest)} method of an {nameof(IAdaptedConnection)}.");
+                }
+            }
 
             _manuallySetRequestAbortToken = null;
             _abortedCts = null;

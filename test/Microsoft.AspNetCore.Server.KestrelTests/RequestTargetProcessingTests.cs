@@ -1,9 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -16,6 +18,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             var testContext = new TestServiceContext();
 
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                PathBase = "/\u0041\u030A"
+            };
+
             using (var server = new TestServer(async context =>
             {
                 Assert.Equal("/\u0041\u030A", context.Request.PathBase.Value);
@@ -23,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 context.Response.Headers["Content-Length"] = new[] { "11" };
                 await context.Response.WriteAsync("Hello World");
-            }, testContext, "http://127.0.0.1:0/\u0041\u030A"))
+            }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {

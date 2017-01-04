@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             };
             var listenerContext = new ListenerContext(serviceContext)
             {
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+                ListenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 5000))
             };
             var connectionContext = new ConnectionContext(listenerContext);
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,18 +12,20 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    public class LoggingConnectionFilterTests
+    public class LoggingConnectionAdapterTests
     {
         [Fact(Skip = "SslStream hanging on write after update to CoreFx 4.4 (https://github.com/dotnet/corefx/issues/14698)")]
         public async Task LoggingConnectionFilterCanBeAddedBeforeAndAfterHttpsFilter()
         {
             var host = new WebHostBuilder()
-            .UseUrls($"https://127.0.0.1:0")
-            .UseKestrel(options =>
-            {
-                options.UseConnectionLogging();
-                options.UseHttps(@"TestResources/testCert.pfx", "testPassword");
-            })
+                .UseKestrel(options =>
+                {
+                    options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
+                    {
+                        listenOptions.UseConnectionLogging();
+                        listenOptions.UseHttps("TestResources/testCert.pfx", "testPassword");
+                    });
+                })
             .Configure(app =>
             {
                 app.Run(context =>

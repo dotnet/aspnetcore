@@ -31,7 +31,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public IPEndPoint LocalEndPoint { get; set; }
 
         public string ConnectionId { get; set; }
-
-        public Action<IFeatureCollection> PrepareRequest { get; set; }
     }
 }

@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Filter;
-using Microsoft.AspNetCore.Server.Kestrel.Filter.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Adapter;
+using Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.Extensions.Internal;
@@ -22,6 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private static readonly Action<UvStreamHandle, int, object> _readCallback =
             (handle, status, state) => ReadCallback(handle, status, state);
+
         private static readonly Func<UvStreamHandle, int, object, Libuv.uv_buf_t> _allocCallback =
             (handle, suggestedsize, state) => AllocCallback(handle, suggestedsize, state);
 
@@ -32,9 +34,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private readonly UvStreamHandle _socket;
         private readonly Frame _frame;
-        private ConnectionFilterContext _filterContext;
-        private LibuvStream _libuvStream;
-        private FilteredStreamAdapter _filteredStreamAdapter;
+        private readonly List<IConnectionAdapter> _connectionAdapters;
+        private AdaptedPipeline _adaptedPipeline;
+        private Stream _filteredStream;
         private Task _readInputTask;
 
         private TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>();
@@ -47,6 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public Connection(ListenerContext context, UvStreamHandle socket) : base(context)
         {
             _socket = socket;
+            _connectionAdapters = context.ListenOptions.ConnectionAdapters;
             socket.Connection = this;
             ConnectionControl = this;
 
@@ -80,57 +83,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private Func<ConnectionContext, Frame> FrameFactory => ListenerContext.ServiceContext.FrameFactory;
         private IKestrelTrace Log => ListenerContext.ServiceContext.Log;
         private IThreadPool ThreadPool => ListenerContext.ServiceContext.ThreadPool;
-        private ServerAddress ServerAddress => ListenerContext.ServerAddress;
         private KestrelThread Thread => ListenerContext.Thread;
 
         public void Start()
         {
             Log.ConnectionStart(ConnectionId);
 
-            // Start socket prior to applying the ConnectionFilter
+            // Start socket prior to applying the ConnectionAdapter
             _socket.ReadStart(_allocCallback, _readCallback, this);
 
-            if (ServerOptions.ConnectionFilter == null)
+            if (_connectionAdapters.Count == 0)
             {
                 _frame.Start();
             }
             else
             {
-                _libuvStream = new LibuvStream(Input, Output);
-
-                _filterContext = new ConnectionFilterContext
-                {
-                    Connection = _libuvStream,
-                    Address = ServerAddress
-                };
-
-                try
-                {
-                    ServerOptions.ConnectionFilter.OnConnectionAsync(_filterContext).ContinueWith((task, state) =>
-                    {
-                        var connection = (Connection)state;
-
-                        if (task.IsFaulted)
-                        {
-                            connection.Log.LogError(0, task.Exception, "ConnectionFilter.OnConnection");
-                            connection.ConnectionControl.End(ProduceEndType.SocketDisconnect);
-                        }
-                        else if (task.IsCanceled)
-                        {
-                            connection.Log.LogError("ConnectionFilter.OnConnection Canceled");
-                            connection.ConnectionControl.End(ProduceEndType.SocketDisconnect);
-                        }
-                        else
-                        {
-                            connection.ApplyConnectionFilter();
-                        }
-                    }, this);
-                }
-                catch (Exception ex)
-                {
-                    Log.LogError(0, ex, "ConnectionFilter.OnConnection");
-                    ConnectionControl.End(ProduceEndType.SocketDisconnect);
-                }
+                // ApplyConnectionAdaptersAsync should never throw. If it succeeds, it will call _frame.Start().
+                // Otherwise, it will close the connection.
+                var ignore = ApplyConnectionAdaptersAsync();
             }
         }
 
@@ -161,13 +131,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 var connection = (Connection)state;
 
-                if (_filteredStreamAdapter != null)
+                if (connection._adaptedPipeline != null)
                 {
-                    Task.WhenAll(_readInputTask, _frame.StopAsync()).ContinueWith((task2, state2) =>
+                    Task.WhenAll(connection._readInputTask, connection._frame.StopAsync()).ContinueWith((task2, state2) =>
                     {
                         var connection2 = (Connection)state2;
-                        connection2._filterContext.Connection.Dispose();
-                        connection2._filteredStreamAdapter.Dispose();
+                        connection2._filteredStream.Dispose();
+                        connection2._adaptedPipeline.Dispose();
                     }, connection);
                 }
             }, this);
@@ -187,31 +157,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {
                     _frame.SetBadRequestState(RequestRejectionReason.RequestTimeout);
                 }
-                
+
                 StopAsync();
             }
 
             Interlocked.Exchange(ref _lastTimestamp, timestamp);
         }
 
-        private void ApplyConnectionFilter()
+        private async Task ApplyConnectionAdaptersAsync()
         {
-            if (_filterContext.Connection != _libuvStream)
+            try
             {
-                _filteredStreamAdapter = new FilteredStreamAdapter(ConnectionId, _filterContext.Connection, Thread.Memory, Log, ThreadPool, _bufferSizeControl);
+                var rawStream = new RawStream(Input, Output);
+                var adapterContext = new ConnectionAdapterContext(rawStream);
+                var adaptedConnections = new IAdaptedConnection[_connectionAdapters.Count];
 
-                _frame.Input = _filteredStreamAdapter.SocketInput;
-                _frame.Output = _filteredStreamAdapter.SocketOutput;
+                for (var i = 0; i < _connectionAdapters.Count; i++)
+                {
+                    var adaptedConnection = await _connectionAdapters[i].OnConnectionAsync(adapterContext);
+                    adaptedConnections[i] = adaptedConnection;
+                    adapterContext = new ConnectionAdapterContext(adaptedConnection.ConnectionStream);
+                }
 
-                // Don't attempt to read input if connection has already closed.
-                // This can happen if a client opens a connection and immediately closes it.
-                _readInputTask = _socketClosedTcs.Task.Status == TaskStatus.WaitingForActivation ?
-                    _filteredStreamAdapter.ReadInputAsync() :
-                    TaskCache.CompletedTask;
+                if (adapterContext.ConnectionStream != rawStream)
+                {
+                    _filteredStream = adapterContext.ConnectionStream;
+                    _adaptedPipeline = new AdaptedPipeline(ConnectionId, adapterContext.ConnectionStream,
+                        Thread.Memory, Log, ThreadPool, _bufferSizeControl);
+
+                    _frame.Input = _adaptedPipeline.SocketInput;
+                    _frame.Output = _adaptedPipeline.SocketOutput;
+
+                    // Don't attempt to read input if connection has already closed.
+                    // This can happen if a client opens a connection and immediately closes it.
+                    _readInputTask = _socketClosedTcs.Task.Status == TaskStatus.WaitingForActivation
+                        ? _adaptedPipeline.ReadInputAsync()
+                        : TaskCache.CompletedTask;
+                }
+
+                _frame.AdaptedConnections = adaptedConnections;
+                _frame.Start();
             }
-
-            _frame.PrepareRequest = _filterContext.PrepareRequest;
-            _frame.Start();
+            catch (Exception ex)
+            {
+                Log.LogError(0, ex, $"Uncaught exception from the {nameof(IConnectionAdapter.OnConnectionAsync)} method of an {nameof(IConnectionAdapter)}.");
+                ConnectionControl.End(ProduceEndType.SocketDisconnect);
+            }
         }
 
         private static Libuv.uv_buf_t AllocCallback(UvStreamHandle handle, int suggestedSize, object state)

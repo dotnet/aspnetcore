@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Filter.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
 {
-    public class FilteredStreamAdapter : IDisposable
+    public class AdaptedPipeline : IDisposable
     {
         private readonly Stream _filteredStream;
 
-        public FilteredStreamAdapter(
+        public AdaptedPipeline(
             string connectionId,
             Stream filteredStream,
             MemoryPool memory,

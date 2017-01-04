@@ -8,9 +8,9 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https
 {
-    public class HttpsConnectionFilterOptions
+    public class HttpsConnectionAdapterOptions
     {
-        public HttpsConnectionFilterOptions()
+        public HttpsConnectionAdapterOptions()
         {
             ClientCertificateMode = ClientCertificateMode.NoCertificate;
             SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11;

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Testing
     {
         private KestrelEngine _engine;
         private IDisposable _server;
-        private ServerAddress _address;
+        private ListenOptions _listenOptions;
 
         public TestServer(RequestDelegate app)
             : this(app, new TestServiceContext())
@@ -24,18 +25,24 @@ namespace Microsoft.AspNetCore.Testing
         }
 
         public TestServer(RequestDelegate app, TestServiceContext context)
-            : this(app, context, "http://127.0.0.1:0/")
+            : this(app, context, httpContextFactory: null)
         {
         }
 
-        public TestServer(RequestDelegate app, TestServiceContext context, string serverAddress)
-            : this(app, context, serverAddress, null)
+        public TestServer(RequestDelegate app, TestServiceContext context, IHttpContextFactory httpContextFactory)
+            : this(app, context, new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)), httpContextFactory)
         {
         }
 
-        public TestServer(RequestDelegate app, TestServiceContext context, string serverAddress, IHttpContextFactory httpContextFactory)
+        public TestServer(RequestDelegate app, TestServiceContext context, ListenOptions listenOptions)
+            : this(app, context, listenOptions, null)
+        {
+        }
+
+        public TestServer(RequestDelegate app, TestServiceContext context, ListenOptions listenOptions, IHttpContextFactory httpContextFactory)
         {
             Context = context;
+            _listenOptions = listenOptions;
 
             context.FrameFactory = connectionContext =>
             {
@@ -46,8 +53,7 @@ namespace Microsoft.AspNetCore.Testing
             {
                 _engine = new KestrelEngine(context);
                 _engine.Start(1);
-                _address = ServerAddress.FromUrl(serverAddress);
-                _server = _engine.CreateServer(_address);
+                _server = _engine.CreateServer(_listenOptions);
             }
             catch
             {
@@ -57,7 +63,7 @@ namespace Microsoft.AspNetCore.Testing
             }
         }
 
-        public int Port => _address.Port;
+        public int Port => _listenOptions.IPEndPoint.Port;
 
         public TestServiceContext Context { get; }
 

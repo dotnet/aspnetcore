@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -13,33 +14,33 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Filter;
+using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.Logging;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
-    public class HttpsConnectionFilterTests
+    public class HttpsConnectionAdapterTests
     {
-        private static string _serverAddress = "https://127.0.0.1:0/";
-        private static X509Certificate2 _x509Certificate2 = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword");
+        private static X509Certificate2 _x509Certificate2 = new X509Certificate2("TestResources/testCert.pfx", "testPassword");
 
         // https://github.com/aspnet/KestrelHttpServer/issues/240
         // This test currently fails on mono because of an issue with SslStream.
         [Fact(Skip = "SslStream hanging on write after update to CoreFx 4.4 (https://github.com/dotnet/corefx/issues/14698)")]
-        public async Task CanReadAndWriteWithHttpsConnectionFilter()
+        public async Task CanReadAndWriteWithHttpsConnectionAdapter()
         {
-            var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
-                    new HttpsConnectionFilterOptions { ServerCertificate = _x509Certificate2 },
-                    new NoOpConnectionFilter())
-            );
+            var serviceContext = new TestServiceContext();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters =
+                {
+                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 })
+                }
+            };
 
-            using (var server = new TestServer(App, serviceContext, _serverAddress))
+            using (var server = new TestServer(App, serviceContext, listenOptions))
             {
                 var result = await HttpClientSlim.PostAsync($"https://localhost:{server.Port}/",
                     new FormUrlEncodedContent(new[] {
@@ -54,16 +55,21 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact(Skip = "SslStream hanging on write after update to CoreFx 4.4 (https://github.com/dotnet/corefx/issues/14698)")]
         public async Task RequireCertificateFailsWhenNoCertificate()
         {
-            var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
-                    new HttpsConnectionFilterOptions
+            var serviceContext = new TestServiceContext();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters =
+                {
+                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
                     {
                         ServerCertificate = _x509Certificate2,
                         ClientCertificateMode = ClientCertificateMode.RequireCertificate
-                    },
-                    new NoOpConnectionFilter())
-            );
+                    })
+                }
+            };
 
-            using (var server = new TestServer(App, serviceContext, _serverAddress))
+
+            using (var server = new TestServer(App, serviceContext, listenOptions))
             {
                 await Assert.ThrowsAnyAsync<Exception>(
                     () => HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/"));
@@ -73,21 +79,25 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact(Skip = "SslStream hanging on write after update to CoreFx 4.4 (https://github.com/dotnet/corefx/issues/14698)")]
         public async Task AllowCertificateContinuesWhenNoCertificate()
         {
-            var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
-                new HttpsConnectionFilterOptions
+            var serviceContext = new TestServiceContext();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters =
                 {
-                    ServerCertificate = _x509Certificate2,
-                    ClientCertificateMode = ClientCertificateMode.AllowCertificate
-                },
-                new NoOpConnectionFilter())
-            );
+                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+                    {
+                        ServerCertificate = _x509Certificate2,
+                        ClientCertificateMode = ClientCertificateMode.AllowCertificate
+                    })
+                }
+            };
 
             using (var server = new TestServer(context =>
                 {
                     Assert.Equal(context.Features.Get<ITlsConnectionFeature>(), null);
                     return context.Response.WriteAsync("hello world");
                 },
-                serviceContext, _serverAddress))
+                serviceContext, listenOptions))
             {
                 var result = await HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
                 Assert.Equal("hello world", result);
@@ -97,24 +107,24 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void ThrowsWhenNoServerCertificateIsProvided()
         {
-            Assert.Throws<ArgumentException>(() => new HttpsConnectionFilter(
-                new HttpsConnectionFilterOptions(),
-                new NoOpConnectionFilter())
+            Assert.Throws<ArgumentException>(() => new HttpsConnectionAdapter(
+                new HttpsConnectionAdapterOptions())
                 );
         }
 
         [Fact]
         public async Task UsesProvidedServerCertificate()
         {
-            var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
-                new HttpsConnectionFilterOptions
+            var serviceContext = new TestServiceContext();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters =
                 {
-                    ServerCertificate = _x509Certificate2
-                },
-                new NoOpConnectionFilter())
-            );
+                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 })
+                }
+            };
 
-            using (var server = new TestServer(context => TaskCache.CompletedTask, serviceContext, _serverAddress))
+            using (var server = new TestServer(context => TaskCache.CompletedTask, serviceContext, listenOptions))
             {
                 using (var client = new TcpClient())
                 {
@@ -132,15 +142,19 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact(Skip = "SslStream hanging on write after update to CoreFx 4.4 (https://github.com/dotnet/corefx/issues/14698)")]
         public async Task CertificatePassedToHttpContext()
         {
-            var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
-                new HttpsConnectionFilterOptions
+            var serviceContext = new TestServiceContext();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters =
                 {
-                    ServerCertificate = _x509Certificate2,
-                    ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
-                },
-                new NoOpConnectionFilter())
-            );
+                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+                    {
+                        ServerCertificate = _x509Certificate2,
+                        ClientCertificateMode = ClientCertificateMode.RequireCertificate,
+                        ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
+                    })
+                }
+            };
 
             using (var server = new TestServer(context =>
                 {
@@ -150,7 +164,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     Assert.NotNull(context.Connection.ClientCertificate);
                     return context.Response.WriteAsync("hello world");
                 },
-                serviceContext, _serverAddress))
+                serviceContext, listenOptions))
             {
                 using (var client = new TcpClient())
                 {
@@ -167,16 +181,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact(Skip = "SslStream hanging on write after update to CoreFx 4.4 (https://github.com/dotnet/corefx/issues/14698)")]
         public async Task HttpsSchemePassedToRequestFeature()
         {
-            var serviceContext = new TestServiceContext(
-                new HttpsConnectionFilter(
-                    new HttpsConnectionFilterOptions
-                    {
-                        ServerCertificate = _x509Certificate2
-                    },
-                    new NoOpConnectionFilter())
-            );
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters =
+                {
+                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 })
+                }
+            };
+            var serviceContext = new TestServiceContext();
 
-            using (var server = new TestServer(context => context.Response.WriteAsync(context.Request.Scheme), serviceContext, _serverAddress))
+            using (var server = new TestServer(context => context.Response.WriteAsync(context.Request.Scheme), serviceContext, listenOptions))
             {
                 var result = await HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
                 Assert.Equal("https", result);
@@ -186,17 +200,21 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact(Skip = "SslStream hanging on write after update to CoreFx 4.4 (https://github.com/dotnet/corefx/issues/14698)")]
         public async Task DoesNotSupportTls10()
         {
-            var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
-                new HttpsConnectionFilterOptions
+            var serviceContext = new TestServiceContext();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters =
                 {
-                    ServerCertificate = _x509Certificate2,
-                    ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
-                },
-                new NoOpConnectionFilter())
-            );
+                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+                    {
+                        ServerCertificate = _x509Certificate2,
+                        ClientCertificateMode = ClientCertificateMode.RequireCertificate,
+                        ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
+                    })
+                }
+            };
 
-            using (var server = new TestServer(context => context.Response.WriteAsync("hello world"), serviceContext, _serverAddress))
+            using (var server = new TestServer(context => context.Response.WriteAsync("hello world"), serviceContext, listenOptions))
             {
                 // SslStream is used to ensure the certificate is actually passed to the server
                 // HttpClient might not send the certificate because it is invalid or it doesn't match any
@@ -216,23 +234,27 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public async Task ClientCertificateValidationGetsCalledWithNotNullParameters(ClientCertificateMode mode)
         {
             var clientCertificateValidationCalled = false;
-            var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
-                new HttpsConnectionFilterOptions
+            var serviceContext = new TestServiceContext();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters =
                 {
-                    ServerCertificate = _x509Certificate2,
-                    ClientCertificateMode = mode,
-                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) =>
+                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
                     {
-                        clientCertificateValidationCalled = true;
-                        Assert.NotNull(certificate);
-                        Assert.NotNull(chain);
-                        return true;
-                    }
-                },
-                new NoOpConnectionFilter())
-            );
+                        ServerCertificate = _x509Certificate2,
+                        ClientCertificateMode = mode,
+                        ClientCertificateValidation = (certificate, chain, sslPolicyErrors) =>
+                        {
+                            clientCertificateValidationCalled = true;
+                            Assert.NotNull(certificate);
+                            Assert.NotNull(chain);
+                            return true;
+                        }
+                    })
+                }
+            };
 
-            using (var server = new TestServer(context => TaskCache.CompletedTask, serviceContext, _serverAddress))
+            using (var server = new TestServer(context => TaskCache.CompletedTask, serviceContext, listenOptions))
             {
                 using (var client = new TcpClient())
                 {
@@ -249,17 +271,21 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData(ClientCertificateMode.RequireCertificate)]
         public async Task ValidationFailureRejectsConnection(ClientCertificateMode mode)
         {
-            var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
-                new HttpsConnectionFilterOptions
+            var serviceContext = new TestServiceContext();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters =
                 {
-                    ServerCertificate = _x509Certificate2,
-                    ClientCertificateMode = mode,
-                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => false
-                },
-                new NoOpConnectionFilter())
-            );
+                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+                    {
+                        ServerCertificate = _x509Certificate2,
+                        ClientCertificateMode = mode,
+                        ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => false
+                    })
+                }
+            };
 
-            using (var server = new TestServer(context => TaskCache.CompletedTask, serviceContext, _serverAddress))
+            using (var server = new TestServer(context => TaskCache.CompletedTask, serviceContext, listenOptions))
             {
                 using (var client = new TcpClient())
                 {
@@ -275,16 +301,20 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData(ClientCertificateMode.RequireCertificate)]
         public async Task RejectsConnectionOnSslPolicyErrorsWhenNoValidation(ClientCertificateMode mode)
         {
-            var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
-                new HttpsConnectionFilterOptions
+            var serviceContext = new TestServiceContext();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters =
                 {
-                    ServerCertificate = _x509Certificate2,
-                    ClientCertificateMode = mode,
-                },
-                new NoOpConnectionFilter())
-            );
+                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+                    {
+                        ServerCertificate = _x509Certificate2,
+                        ClientCertificateMode = mode
+                    })
+                }
+            };
 
-            using (var server = new TestServer(context => TaskCache.CompletedTask, serviceContext, _serverAddress))
+            using (var server = new TestServer(context => TaskCache.CompletedTask, serviceContext, listenOptions))
             {
                 using (var client = new TcpClient())
                 {
@@ -298,15 +328,19 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact(Skip = "SslStream hanging on write after update to CoreFx 4.4 (https://github.com/dotnet/corefx/issues/14698)")]
         public async Task CertificatePassedToHttpContextIsNotDisposed()
         {
-            var serviceContext = new TestServiceContext(new HttpsConnectionFilter(
-                new HttpsConnectionFilterOptions
+            var serviceContext = new TestServiceContext();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters =
                 {
-                    ServerCertificate = _x509Certificate2,
-                    ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                    ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
-                },
-                new NoOpConnectionFilter())
-                );
+                    new HttpsConnectionAdapter(new HttpsConnectionAdapterOptions
+                    {
+                        ServerCertificate = _x509Certificate2,
+                        ClientCertificateMode = ClientCertificateMode.RequireCertificate,
+                        ClientCertificateValidation = (certificate, chain, sslPolicyErrors) => true
+                    })
+                }
+            };
 
             RequestDelegate app = context =>
             {
@@ -318,7 +352,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 return context.Response.WriteAsync("hello world");
             };
 
-            using (var server = new TestServer(app, serviceContext, _serverAddress))
+            using (var server = new TestServer(app, serviceContext, listenOptions))
             {
                 // SslStream is used to ensure the certificate is actually passed to the server
                 // HttpClient might not send the certificate because it is invalid or it doesn't match any

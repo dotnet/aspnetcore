@@ -30,9 +30,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
-                    options.UseHttps(@"TestResources/testCert.pfx", "testPassword");
+                    options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
+                    {
+                        listenOptions.UseHttps("TestResources/testCert.pfx", "testPassword");
+                    });
                 })
-                .UseUrls("https://127.0.0.1:0/")
                 .UseLoggerFactory(loggerFactory)
                 .Configure(app => { });
 
@@ -61,9 +63,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
-                    options.UseHttps(@"TestResources/testCert.pfx", "testPassword");
+                    options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
+                    {
+                        listenOptions.UseHttps("TestResources/testCert.pfx", "testPassword");
+                    });
                 })
-                .UseUrls("https://127.0.0.1:0/")
                 .UseLoggerFactory(loggerFactory)
                 .Configure(app => { });
 
@@ -90,12 +94,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact(Skip = "SslStream hanging on write after update to CoreFx 4.4 (https://github.com/dotnet/corefx/issues/14698)")]
         public async Task DoesNotThrowObjectDisposedExceptionOnConnectionAbort()
         {
-            var x509Certificate2 = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword");
+            var x509Certificate2 = new X509Certificate2("TestResources/testCert.pfx", "testPassword");
             var loggerFactory = new HandshakeErrorLoggerFactory();
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
-                    options.UseHttps(@"TestResources/testCert.pfx", "testPassword");
+                    options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
+                    {
+                        listenOptions.UseHttps("TestResources/testCert.pfx", "testPassword");
+                    });
                 })
                 .UseUrls("https://127.0.0.1:0/")
                 .UseLoggerFactory(loggerFactory)
@@ -141,14 +148,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task DoesNotThrowObjectDisposedExceptionFromWriteAsyncAfterConnectionIsAborted()
         {
             var tcs = new TaskCompletionSource<object>();
-            var x509Certificate2 = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword");
+            var x509Certificate2 = new X509Certificate2("TestResources/testCert.pfx", "testPassword");
             var loggerFactory = new HandshakeErrorLoggerFactory();
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
-                    options.UseHttps(@"TestResources/testCert.pfx", "testPassword");
+                    options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
+                    {
+                        listenOptions.UseHttps("TestResources/testCert.pfx", "testPassword");
+                    });
                 })
-                .UseUrls("https://127.0.0.1:0/")
                 .UseLoggerFactory(loggerFactory)
                 .Configure(app => app.Run(async httpContext =>
                 {
@@ -194,9 +203,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
-                    options.UseHttps(@"TestResources/testCert.pfx", "testPassword");
+                    options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
+                    {
+                        listenOptions.UseHttps("TestResources/testCert.pfx", "testPassword");
+                    });
                 })
-                .UseUrls("https://127.0.0.1:0/")
                 .UseLoggerFactory(loggerFactory)
                 .Configure(app => { });
 
@@ -221,7 +232,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             public ILogger CreateLogger(string categoryName)
             {
-                if (categoryName == nameof(HttpsConnectionFilter))
+                if (categoryName == nameof(HttpsConnectionAdapter))
                 {
                     return FilterLogger;
                 }

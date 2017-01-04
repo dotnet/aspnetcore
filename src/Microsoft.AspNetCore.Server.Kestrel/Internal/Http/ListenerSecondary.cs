@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
     /// A secondary listener is delegated requests from a primary listener via a named pipe or
     /// UNIX domain socket.
     /// </summary>
-    public abstract class ListenerSecondary : ListenerContext, IAsyncDisposable
+    public class ListenerSecondary : ListenerContext, IAsyncDisposable
     {
         private string _pipeName;
         private byte[] _pipeMessage;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private Libuv.uv_buf_t _buf;
         private bool _closed;
 
-        protected ListenerSecondary(ServiceContext serviceContext) : base(serviceContext)
+        public ListenerSecondary(ServiceContext serviceContext) : base(serviceContext)
         {
             _ptr = Marshal.AllocHGlobal(4);
         }
@@ -35,14 +35,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public Task StartAsync(
             string pipeName,
             byte[] pipeMessage,
-            ServerAddress address,
+            ListenOptions listenOptions,
             KestrelThread thread)
         {
             _pipeName = pipeName;
             _pipeMessage = pipeMessage;
             _buf = thread.Loop.Libuv.buf_init(_ptr, 4);
 
-            ServerAddress = address;
+            ListenOptions = listenOptions;
             Thread = thread;
             DispatchPipe = new UvPipeHandle(Log);
 
@@ -172,11 +172,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 acceptSocket.Dispose();
             }
         }
-
-        /// <summary>
-        /// Creates a socket which can be used to accept an incoming connection
-        /// </summary>
-        protected abstract UvStreamHandle CreateAcceptSocket();
 
         private void FreeBuffer()
         {

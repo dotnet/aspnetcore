@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
@@ -55,33 +56,35 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var kestrelEngine = new KestrelEngine(libuv, serviceContextPrimary))
             {
-                var address = ServerAddress.FromUrl("http://127.0.0.1:0/");
+                var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+
                 var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
                 var pipeMessage = Guid.NewGuid().ToByteArray();
 
                 // Start primary listener
                 var kestrelThreadPrimary = new KestrelThread(kestrelEngine);
                 await kestrelThreadPrimary.StartAsync();
-                var listenerPrimary = new TcpListenerPrimary(serviceContextPrimary);
-                await listenerPrimary.StartAsync(pipeName, pipeMessage, address, kestrelThreadPrimary);
+                var listenerPrimary = new ListenerPrimary(serviceContextPrimary);
+                await listenerPrimary.StartAsync(pipeName, pipeMessage, listenOptions, kestrelThreadPrimary);
+                var address = listenOptions.ToString();
 
                 // Until a secondary listener is added, TCP connections get dispatched directly
-                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
-                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
+                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
+                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
 
                 // Add secondary listener
                 var kestrelThreadSecondary = new KestrelThread(kestrelEngine);
                 await kestrelThreadSecondary.StartAsync();
-                var listenerSecondary = new TcpListenerSecondary(serviceContextSecondary);
-                await listenerSecondary.StartAsync(pipeName, pipeMessage, address, kestrelThreadSecondary);
+                var listenerSecondary = new ListenerSecondary(serviceContextSecondary);
+                await listenerSecondary.StartAsync(pipeName, pipeMessage, listenOptions, kestrelThreadSecondary);
 
                 // Once a secondary listener is added, TCP connections start getting dispatched to it
-                await AssertResponseEventually(address.ToString(), "Secondary", allowed: new[] { "Primary" });
+                await AssertResponseEventually(address, "Secondary", allowed: new[] { "Primary" });
 
                 // TCP connections will still get round-robined to the primary listener
-                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
-                Assert.Equal("Secondary", await HttpClientSlim.GetStringAsync(address.ToString()));
-                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
+                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
+                Assert.Equal("Secondary", await HttpClientSlim.GetStringAsync(address));
+                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
 
                 await listenerSecondary.DisposeAsync();
                 await kestrelThreadSecondary.StopAsync(TimeSpan.FromSeconds(1));
@@ -129,25 +132,26 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var kestrelEngine = new KestrelEngine(libuv, serviceContextPrimary))
             {
-                var address = ServerAddress.FromUrl("http://127.0.0.1:0/");
+                var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
                 var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
                 var pipeMessage = Guid.NewGuid().ToByteArray();
 
                 // Start primary listener
                 var kestrelThreadPrimary = new KestrelThread(kestrelEngine);
                 await kestrelThreadPrimary.StartAsync();
-                var listenerPrimary = new TcpListenerPrimary(serviceContextPrimary);
-                await listenerPrimary.StartAsync(pipeName, pipeMessage, address, kestrelThreadPrimary);
+                var listenerPrimary = new ListenerPrimary(serviceContextPrimary);
+                await listenerPrimary.StartAsync(pipeName, pipeMessage, listenOptions, kestrelThreadPrimary);
+                var address = listenOptions.ToString();
 
                 // Add secondary listener
                 var kestrelThreadSecondary = new KestrelThread(kestrelEngine);
                 await kestrelThreadSecondary.StartAsync();
-                var listenerSecondary = new TcpListenerSecondary(serviceContextSecondary);
-                await listenerSecondary.StartAsync(pipeName, pipeMessage, address, kestrelThreadSecondary);
+                var listenerSecondary = new ListenerSecondary(serviceContextSecondary);
+                await listenerSecondary.StartAsync(pipeName, pipeMessage, listenOptions, kestrelThreadSecondary);
 
                 // TCP Connections get round-robined
-                await AssertResponseEventually(address.ToString(), "Secondary", allowed: new[] { "Primary" });
-                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
+                await AssertResponseEventually(address, "Secondary", allowed: new[] { "Primary" });
+                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
 
                 // Create a pipe connection and keep it open without sending any data
                 var connectTcs = new TaskCompletionSource<object>();
@@ -183,9 +187,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await connectTcs.Task;
 
                 // TCP connections will still get round-robined between only the two listeners
-                Assert.Equal("Secondary", await HttpClientSlim.GetStringAsync(address.ToString()));
-                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
-                Assert.Equal("Secondary", await HttpClientSlim.GetStringAsync(address.ToString()));
+                Assert.Equal("Secondary", await HttpClientSlim.GetStringAsync(address));
+                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
+                Assert.Equal("Secondary", await HttpClientSlim.GetStringAsync(address));
 
                 await kestrelThreadPrimary.PostAsync(_ => pipe.Dispose(), null);
 
@@ -196,9 +200,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
 
                 // Same for after the non-listener pipe connection is closed
-                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
-                Assert.Equal("Secondary", await HttpClientSlim.GetStringAsync(address.ToString()));
-                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
+                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
+                Assert.Equal("Secondary", await HttpClientSlim.GetStringAsync(address));
+                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
 
                 await listenerSecondary.DisposeAsync();
                 await kestrelThreadSecondary.StopAsync(TimeSpan.FromSeconds(1));
@@ -250,21 +254,22 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var kestrelEngine = new KestrelEngine(libuv, serviceContextPrimary))
             {
-                var address = ServerAddress.FromUrl("http://127.0.0.1:0/");
+                var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
                 var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
                 var pipeMessage = Guid.NewGuid().ToByteArray();
 
                 // Start primary listener
                 var kestrelThreadPrimary = new KestrelThread(kestrelEngine);
                 await kestrelThreadPrimary.StartAsync();
-                var listenerPrimary = new TcpListenerPrimary(serviceContextPrimary);
-                await listenerPrimary.StartAsync(pipeName, pipeMessage, address, kestrelThreadPrimary);
+                var listenerPrimary = new ListenerPrimary(serviceContextPrimary);
+                await listenerPrimary.StartAsync(pipeName, pipeMessage, listenOptions, kestrelThreadPrimary);
+                var address = listenOptions.ToString();
 
                 // Add secondary listener with wrong pipe message
                 var kestrelThreadSecondary = new KestrelThread(kestrelEngine);
                 await kestrelThreadSecondary.StartAsync();
-                var listenerSecondary = new TcpListenerSecondary(serviceContextSecondary);
-                await listenerSecondary.StartAsync(pipeName, Guid.NewGuid().ToByteArray(), address, kestrelThreadSecondary);
+                var listenerSecondary = new ListenerSecondary(serviceContextSecondary);
+                await listenerSecondary.StartAsync(pipeName, Guid.NewGuid().ToByteArray(), listenOptions, kestrelThreadSecondary);
 
                 // Wait up to 10 seconds for error to be logged
                 for (var i = 0; i < 10 && primaryTrace.Logger.TotalErrorsLogged == 0; i++)
@@ -273,9 +278,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
 
                 // TCP Connections don't get round-robined
-                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
-                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
-                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address.ToString()));
+                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
+                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
+                Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
 
                 await listenerSecondary.DisposeAsync();
                 await kestrelThreadSecondary.StopAsync(TimeSpan.FromSeconds(1));

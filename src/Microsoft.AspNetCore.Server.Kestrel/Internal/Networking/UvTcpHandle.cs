@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
@@ -24,20 +25,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             _uv.tcp_init(loop, this);
         }
 
-        public void Bind(ServerAddress address)
+        public void Open(IntPtr fileDescriptor)
         {
-            var endpoint = CreateIPEndpoint(address);
+            _uv.tcp_open(this, fileDescriptor);
+        }
 
+        public void Bind(IPEndPoint endPoint)
+        {
             SockAddr addr;
-            var addressText = endpoint.Address.ToString();
+            var addressText = endPoint.Address.ToString();
 
             Exception error1;
-            _uv.ip4_addr(addressText, endpoint.Port, out addr, out error1);
+            _uv.ip4_addr(addressText, endPoint.Port, out addr, out error1);
 
             if (error1 != null)
             {
                 Exception error2;
-                _uv.ip6_addr(addressText, endpoint.Port, out addr, out error2);
+                _uv.ip6_addr(addressText, endPoint.Port, out addr, out error2);
                 if (error2 != null)
                 {
                     throw error1;
@@ -65,38 +69,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             return socketAddress.GetIPEndPoint();
         }
 
-        public void Open(IntPtr hSocket)
-        {
-            _uv.tcp_open(this, hSocket);
-        }
-
         public void NoDelay(bool enable)
         {
             _uv.tcp_nodelay(this, enable);
-        }
-
-        /// <summary>
-        /// Returns an <see cref="IPEndPoint"/> for the given host an port.
-        /// If the host parameter isn't "localhost" or an IP address, use IPAddress.Any.
-        /// </summary>
-        public static IPEndPoint CreateIPEndpoint(ServerAddress address)
-        {
-            // TODO: IPv6 support
-            IPAddress ip;
-
-            if (!IPAddress.TryParse(address.Host, out ip))
-            {
-                if (string.Equals(address.Host, "localhost", StringComparison.OrdinalIgnoreCase))
-                {
-                    ip = IPAddress.Loopback;
-                }
-                else
-                {
-                    ip = IPAddress.IPv6Any;
-                }
-            }
-
-            return new IPEndPoint(ip, address.Port);
         }
     }
 }

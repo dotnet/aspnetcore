@@ -12,11 +12,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
     /// <summary>
     /// Base class for listeners in Kestrel. Listens for incoming connections
     /// </summary>
-    public abstract class Listener : ListenerContext, IAsyncDisposable
+    public class Listener : ListenerContext, IAsyncDisposable
     {
         private bool _closed;
 
-        protected Listener(ServiceContext serviceContext)
+        public Listener(ServiceContext serviceContext)
             : base(serviceContext)
         {
         }
@@ -26,20 +26,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public IKestrelTrace Log => ServiceContext.Log;
 
         public Task StartAsync(
-            ServerAddress address,
+            ListenOptions listenOptions,
             KestrelThread thread)
         {
-            ServerAddress = address;
+            ListenOptions = listenOptions;
             Thread = thread;
 
             var tcs = new TaskCompletionSource<int>(this);
 
             Thread.Post(state =>
             {
-                var tcs2 = (TaskCompletionSource<int>)state;
+                var tcs2 = (TaskCompletionSource<int>) state;
                 try
                 {
-                    var listener = ((Listener)tcs2.Task.AsyncState);
+                    var listener = ((Listener) tcs2.Task.AsyncState);
                     listener.ListenSocket = listener.CreateListenSocket();
                     ListenSocket.Listen(Constants.ListenBacklog, ConnectionCallback, this);
                     tcs2.SetResult(0);
@@ -56,11 +56,61 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         /// <summary>
         /// Creates the socket used to listen for incoming connections
         /// </summary>
-        protected abstract UvStreamHandle CreateListenSocket();
+        private UvStreamHandle CreateListenSocket()
+        {
+            switch (ListenOptions.Type)
+            {
+                case ListenType.IPEndPoint:
+                case ListenType.FileHandle:
+                    var socket = new UvTcpHandle(Log);
+
+                    try
+                    {
+                        socket.Init(Thread.Loop, Thread.QueueCloseHandle);
+                        socket.NoDelay(ListenOptions.NoDelay);
+
+                        if (ListenOptions.Type == ListenType.IPEndPoint)
+                        {
+                            socket.Bind(ListenOptions.IPEndPoint);
+
+                            // If requested port was "0", replace with assigned dynamic port.
+                            ListenOptions.IPEndPoint = socket.GetSockIPEndPoint();
+                        }
+                        else
+                        {
+                            socket.Open((IntPtr)ListenOptions.FileHandle);
+                        }
+                    }
+                    catch
+                    {
+                        socket.Dispose();
+                        throw;
+                    }
+
+                    return socket;
+                case ListenType.SocketPath:
+                    var pipe = new UvPipeHandle(Log);
+
+                    try
+                    {
+                        pipe.Init(Thread.Loop, Thread.QueueCloseHandle, false);
+                        pipe.Bind(ListenOptions.SocketPath);
+                    }
+                    catch
+                    {
+                        pipe.Dispose();
+                        throw;
+                    }
+
+                    return pipe;
+                default:
+                    throw new NotSupportedException();
+            }
+        }
 
         private static void ConnectionCallback(UvStreamHandle stream, int status, Exception error, object state)
         {
-            var listener = (Listener)state;
+            var listener = (Listener) state;
 
             if (error != null)
             {
@@ -77,7 +127,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         /// </summary>
         /// <param name="listenSocket">Socket being used to listen on</param>
         /// <param name="status">Connection status</param>
-        protected abstract void OnConnection(UvStreamHandle listenSocket, int status);
+        private void OnConnection(UvStreamHandle listenSocket, int status)
+        {
+            UvStreamHandle acceptSocket = null;
+
+            try
+            {
+                acceptSocket = CreateAcceptSocket();
+                listenSocket.Accept(acceptSocket);
+                DispatchConnection(acceptSocket);
+            }
+            catch (UvException ex)
+            {
+                Log.LogError(0, ex, "Listener.OnConnection");
+                acceptSocket?.Dispose();
+            }
+        }
 
         protected virtual void DispatchConnection(UvStreamHandle socket)
         {

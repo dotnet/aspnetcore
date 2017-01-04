@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             // 0000 0000 0b99 0017  => The third and fourth bytes 990B is the actual port
             // 9103 e000 9848 0120  => IPv6 address is represented in the 128bit field1 and field2.
             // 54a3 3e9d 2411 efb9     Read these two 64-bit long from right to left byte by byte.
-            // 0000 0000 0000 0000
+            // 0000 0000 0000 0010  => Scope ID 0x10 (eg [::1%16]) the first 4 bytes of field3 in host byte order.
             //
             // Example 2: 10.135.34.141:39178 when adopt dual-stack sockets, IPv4 is mapped to IPv6
             //
@@ -58,6 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
             // Reference:
             //  - Windows: https://msdn.microsoft.com/en-us/library/windows/desktop/ms740506(v=vs.85).aspx
             //  - Linux: https://github.com/torvalds/linux/blob/6a13feb9c82803e2b815eca72fa7a9f5561d7861/include/linux/socket.h
+            //  - Linux (sin6_scope_id): https://github.com/torvalds/linux/blob/5924bbecd0267d87c24110cbe2041b5075173a25/net/sunrpc/addr.c#L82
             //  - Apple: http://www.opensource.apple.com/source/xnu/xnu-1456.1.26/bsd/sys/socket.h
 
             // Quick calculate the port by mask the field and locate the byte 3 and byte 4
@@ -92,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Networking
                     *((long*)(b + 8)) = _field2;
                 }
 
-                return new IPEndPoint(new IPAddress(bytes), port);
+                return new IPEndPoint(new IPAddress(bytes, scopeid: _field3 & 0xFFFFFFFF), port);
             }
         }
 

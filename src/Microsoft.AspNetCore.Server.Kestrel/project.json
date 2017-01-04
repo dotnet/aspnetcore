@@ -37,6 +37,7 @@
     },
     "netstandard1.3": {
       "dependencies": {
+        "System.Diagnostics.Process": "4.4.0-*",
         "System.Threading.Thread": "4.4.0-*",
         "System.Threading.ThreadPool": "4.4.0-*"
       }

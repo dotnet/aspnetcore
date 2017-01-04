@@ -1,0 +1,14 @@
+﻿[
+  {
+    "OldTypeId": "public static class Microsoft.AspNetCore.Hosting.KestrelServerOptionsHttpsExtensions",
+    "Kind": "Removal"
+  },
+  {
+    "OldTypeId": "public class Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionFilter : Microsoft.AspNetCore.Server.Kestrel.Filter.IConnectionFilter",
+    "Kind": "Removal"
+  },
+  {
+    "OldTypeId": "public class Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionFilterOptions",
+    "Kind": "Removal"
+  }
+]

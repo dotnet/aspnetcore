@@ -8,16 +8,16 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Filter.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
 {
-    public class LibuvStream : Stream
+    public class RawStream : Stream
     {
         private readonly SocketInput _input;
         private readonly ISocketOutput _output;
 
         private Task<int> _cachedTask = TaskCache<int>.DefaultCompletedTask;
 
-        public LibuvStream(SocketInput input, ISocketOutput output)
+        public RawStream(SocketInput input, ISocketOutput output)
         {
             _input = input;
             _output = output;

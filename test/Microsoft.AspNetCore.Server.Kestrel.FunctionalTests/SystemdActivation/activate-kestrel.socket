@@ -1,0 +1,7 @@
+[Unit]
+Description=Kestrel Activation
+
+[Socket]
+ListenStream=8080
+NoDelay=true
+

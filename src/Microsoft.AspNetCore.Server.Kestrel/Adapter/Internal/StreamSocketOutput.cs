@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Filter.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
 {
     public class StreamSocketOutput : ISocketOutput
     {

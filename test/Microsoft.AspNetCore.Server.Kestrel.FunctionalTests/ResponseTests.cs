@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     disposedTcs.TrySetResult(c.Response.StatusCode);
                 });
 
-            using (var server = new TestServer(handler, new TestServiceContext(), "http://127.0.0.1:0", mockHttpContextFactory.Object))
+            using (var server = new TestServer(handler, new TestServiceContext(), mockHttpContextFactory.Object))
             {
                 if (!sendMalformedRequest)
                 {

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -40,8 +41,10 @@ namespace LargeResponseApp
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseUrls("http://localhost:5001/")
+                .UseKestrel(options =>
+                {
+                    options.Listen(IPAddress.Loopback, 5001);
+                })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .Build();

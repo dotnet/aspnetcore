@@ -82,11 +82,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var clientFinishedSendingRequestBody = new ManualResetEvent(false);
             var lastBytesWritten = DateTime.MaxValue;
 
-            using (var host = StartWebHost(maxRequestBufferSize, data, startReadingRequestBody, clientFinishedSendingRequestBody))
+            using (var host = StartWebHost(maxRequestBufferSize, data, ssl, startReadingRequestBody, clientFinishedSendingRequestBody))
             {
-                var port = host.GetPort(ssl ? "https" : "http");
+                var port = host.GetPort();
                 using (var socket = CreateSocket(port))
-                using (var stream = await CreateStreamAsync(socket, ssl, host.GetHost()))
+                using (var stream = await CreateStreamAsync(socket, ssl, host.GetHost(ssl)))
                 {
                     await WritePostRequestHeaders(stream, data.Length);
 
@@ -161,14 +161,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private static IWebHost StartWebHost(long? maxRequestBufferSize, byte[] expectedBody, ManualResetEvent startReadingRequestBody,
+        private static IWebHost StartWebHost(long? maxRequestBufferSize, byte[] expectedBody, bool useSsl, ManualResetEvent startReadingRequestBody,
             ManualResetEvent clientFinishedSendingRequestBody)
         {
             var host = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
+                    options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
+                    {
+                        if (useSsl)
+                        {
+                            listenOptions.UseHttps("TestResources/testCert.pfx", "testPassword");
+                        }
+                    });
+
                     options.Limits.MaxRequestBufferSize = maxRequestBufferSize;
-                    options.UseHttps(@"TestResources/testCert.pfx", "testPassword");
 
                     if (maxRequestBufferSize.HasValue &&
                         maxRequestBufferSize.Value < options.Limits.MaxRequestLineSize)
@@ -176,7 +183,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         options.Limits.MaxRequestLineSize = (int)maxRequestBufferSize;
                     }
                 })
-                .UseUrls("http://127.0.0.1:0/", "https://127.0.0.1:0/")
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .Configure(app => app.Run(async context =>
                 {

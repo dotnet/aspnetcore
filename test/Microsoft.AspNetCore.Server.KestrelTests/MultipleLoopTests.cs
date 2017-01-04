@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -163,8 +164,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var serverListenTcp = new UvTcpHandle(_logger);
             serverListenTcp.Init(loop, (a, b) => { });
-            var address = ServerAddress.FromUrl($"http://127.0.0.1:0/");
-            serverListenTcp.Bind(address);
+            var endPoint = new IPEndPoint(IPAddress.Loopback, 0);
+            serverListenTcp.Bind(endPoint);
             var port = serverListenTcp.GetSockIPEndPoint().Port;
             serverListenTcp.Listen(128, (handle, status, error, state) =>
             {

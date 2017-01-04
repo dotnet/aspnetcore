@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel;
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Testing
             RequestAbortedSource = new CancellationTokenSource();
             ListenerContext = new ListenerContext(new ServiceContext {ServerOptions = options})
             {
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+                ListenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 5000))
             };
         }
 

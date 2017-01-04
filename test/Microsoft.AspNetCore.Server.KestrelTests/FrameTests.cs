@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             };
             var listenerContext = new ListenerContext(_serviceContext)
             {
-                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+                ListenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 5000))
             };
             _connectionContext = new ConnectionContext(listenerContext)
             {
@@ -440,7 +441,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public void InitializeStreamsResetsStreams()
         {
             // Arrange
-            var messageBody = MessageBody.For(HttpVersion.Http11, (FrameRequestHeaders)_frame.RequestHeaders, _frame);
+            var messageBody = MessageBody.For(Kestrel.Internal.Http.HttpVersion.Http11, (FrameRequestHeaders)_frame.RequestHeaders, _frame);
             _frame.InitializeStreams(messageBody);
 
             var originalRequestBody = _frame.RequestBody;

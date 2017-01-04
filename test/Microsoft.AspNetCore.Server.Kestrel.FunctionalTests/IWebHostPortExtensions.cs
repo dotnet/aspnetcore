@@ -10,9 +10,9 @@ namespace Microsoft.AspNetCore.Hosting
 {
     public static class IWebHostPortExtensions
     {
-        public static string GetHost(this IWebHost host)
+        public static string GetHost(this IWebHost host, bool isHttps = false)
         {
-            return host.GetUri().Host;
+            return host.GetUri(isHttps).Host;
         }
 
         public static int GetPort(this IWebHost host)
@@ -37,13 +37,29 @@ namespace Microsoft.AspNetCore.Hosting
         public static IEnumerable<Uri> GetUris(this IWebHost host)
         {
             return host.ServerFeatures.Get<IServerAddressesFeature>().Addresses
-                .Select(a => a.Replace("://+", "://localhost"))
                 .Select(a => new Uri(a));
         }
 
-        public static Uri GetUri(this IWebHost host)
+        public static Uri GetUri(this IWebHost host, bool isHttps = false)
         {
-            return host.GetUris().First();
+            var uri = host.GetUris().First();
+
+            if (isHttps && uri.Scheme == "http")
+            {
+                var uriBuilder = new UriBuilder(uri)
+                {
+                    Scheme = "https",
+                };
+
+                if (uri.Port == 80)
+                {
+                    uriBuilder.Port = 443;
+                }
+
+                return uriBuilder.Uri;
+            }
+
+            return uri;
         }
     }
 }

@@ -3,13 +3,14 @@
 
 using System;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
-    public class KestrelServerInformationTests
+    public class KestrelServerOptionsTests
     {
 #pragma warning disable CS0618
         [Fact]
@@ -38,6 +39,20 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.Equal(42, o.Limits.MaxRequestBufferSize);
         }
 #pragma warning restore CS0612
+
+        [Fact]
+        public void NoDelayDefaultsToTrue()
+        {
+            var o1 = new KestrelServerOptions();
+            o1.Listen(IPAddress.Loopback, 0);
+            o1.Listen(IPAddress.Loopback, 0, d =>
+            {
+                d.NoDelay = false;
+            });
+
+            Assert.True(o1.ListenOptions[0].NoDelay);
+            Assert.False(o1.ListenOptions[1].NoDelay);
+        }
 
         [Fact]
         public void SetThreadCountUsingProcessorCount()

@@ -63,8 +63,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
             tcp.Init(loop, (a, b) => { });
-            var address = ServerAddress.FromUrl("http://127.0.0.1:0/");
-            tcp.Bind(address);
+            var endPoint = new IPEndPoint(IPAddress.Loopback, 0);
+            tcp.Bind(endPoint);
             tcp.Dispose();
             loop.Run();
             loop.Dispose();
@@ -78,8 +78,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
             tcp.Init(loop, (a, b) => { });
-            var address = ServerAddress.FromUrl($"http://127.0.0.1:0/");
-            tcp.Bind(address);
+            var endPoint = new IPEndPoint(IPAddress.Loopback, 0);
+            tcp.Bind(endPoint);
             var port = tcp.GetSockIPEndPoint().Port;
             tcp.Listen(10, (stream, status, error, state) =>
             {
@@ -107,8 +107,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
             tcp.Init(loop, (a, b) => { });
-            var address = ServerAddress.FromUrl($"http://127.0.0.1:0/");
-            tcp.Bind(address);
+            var endPoint = new IPEndPoint(IPAddress.Loopback, 0);
+            tcp.Bind(endPoint);
             var port = tcp.GetSockIPEndPoint().Port;
             tcp.Listen(10, (_, status, error, state) =>
             {
@@ -157,8 +157,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
             tcp.Init(loop, (a, b) => { });
-            var address = ServerAddress.FromUrl($"http://127.0.0.1:0/");
-            tcp.Bind(address);
+            var endPoint = new IPEndPoint(IPAddress.Loopback, 0);
+            tcp.Bind(endPoint);
             var port = tcp.GetSockIPEndPoint().Port;
             tcp.Listen(10, (_, status, error, state) =>
             {
