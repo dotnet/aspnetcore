@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Packaging.Core;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
 
 namespace PushCoherence
 {
@@ -44,10 +42,11 @@ namespace PushCoherence
                             {
                                 await packageUpdateResource.Push(
                                     packagePath,
-                                    symbolsSource: null,
+                                    symbolSource: null,
                                     timeoutInSecond: 60,
                                     disableBuffering: false,
                                     getApiKey: _ => apiKey,
+                                    getSymbolApiKey: _ => null,
                                     log: NullLogger.Instance);
                                 Console.WriteLine($"Done publishing package {packageIdentity}");
                                 return;
@@ -71,16 +70,8 @@ namespace PushCoherence
 
         private static SourceRepository CreateSourceRepository(string feed)
         {
-            var settings = Settings.LoadDefaultSettings(
-                Directory.GetCurrentDirectory(),
-                configFileName: null,
-                machineWideSettings: null);
-            var sourceRepositoryProvider = new SourceRepositoryProvider(
-                new PackageSourceProvider(settings),
-                FactoryExtensionsV2.GetCoreV3(Repository.Provider));
-
             feed = feed.TrimEnd('/') + "/api/v3/index.json";
-            return sourceRepositoryProvider.CreateRepository(new PackageSource(feed));
+            return Repository.CreateSource(FactoryExtensionsV2.GetCoreV3(Repository.Provider), feed, FeedType.HttpV3);
         }
 
         private static async Task<bool> IsAlreadyUploadedAsync(MetadataResource resource, PackageIdentity packageId)

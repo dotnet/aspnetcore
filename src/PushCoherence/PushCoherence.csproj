@@ -37,40 +37,40 @@
       <HintPath>packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NuGet.Common, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\NuGet.Common.3.5.0-beta2-1484\lib\net45\NuGet.Common.dll</HintPath>
+    <Reference Include="NuGet.Common, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\NuGet.Common.4.0.0-rc2\lib\net45\NuGet.Common.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NuGet.Configuration, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\NuGet.Configuration.3.5.0-beta2-1484\lib\net45\NuGet.Configuration.dll</HintPath>
+    <Reference Include="NuGet.Configuration, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\NuGet.Configuration.4.0.0-rc2\lib\net45\NuGet.Configuration.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NuGet.Frameworks, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\NuGet.Frameworks.3.5.0-beta2-1484\lib\net45\NuGet.Frameworks.dll</HintPath>
+    <Reference Include="NuGet.Frameworks, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\NuGet.Frameworks.4.0.0-rc2\lib\net45\NuGet.Frameworks.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NuGet.Packaging, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\NuGet.Packaging.3.5.0-beta2-1484\lib\net45\NuGet.Packaging.dll</HintPath>
+    <Reference Include="NuGet.Packaging, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\NuGet.Packaging.4.0.0-rc2\lib\net45\NuGet.Packaging.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NuGet.Packaging.Core, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\NuGet.Packaging.Core.3.5.0-beta2-1484\lib\net45\NuGet.Packaging.Core.dll</HintPath>
+    <Reference Include="NuGet.Packaging.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\NuGet.Packaging.Core.4.0.0-rc2\lib\net45\NuGet.Packaging.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NuGet.Packaging.Core.Types, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\NuGet.Packaging.Core.Types.3.5.0-beta2-1484\lib\net45\NuGet.Packaging.Core.Types.dll</HintPath>
+    <Reference Include="NuGet.Packaging.Core.Types, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\NuGet.Packaging.Core.Types.4.0.0-rc2\lib\net45\NuGet.Packaging.Core.Types.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NuGet.Protocol.Core.Types, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\NuGet.Protocol.Core.Types.3.5.0-beta2-1484\lib\net45\NuGet.Protocol.Core.Types.dll</HintPath>
+    <Reference Include="NuGet.Protocol.Core.Types, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\NuGet.Protocol.Core.Types.4.0.0-rc2\lib\net45\NuGet.Protocol.Core.Types.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NuGet.Protocol.Core.v3, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\NuGet.Protocol.Core.v3.3.5.0-beta2-1484\lib\net45\NuGet.Protocol.Core.v3.dll</HintPath>
+    <Reference Include="NuGet.Protocol.Core.v3, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\NuGet.Protocol.Core.v3.4.0.0-rc2\lib\net45\NuGet.Protocol.Core.v3.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NuGet.Versioning, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\NuGet.Versioning.3.5.0-beta2-1484\lib\net45\NuGet.Versioning.dll</HintPath>
+    <Reference Include="NuGet.Versioning, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\NuGet.Versioning.4.0.0-rc2\lib\net45\NuGet.Versioning.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
