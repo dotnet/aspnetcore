@@ -2,8 +2,8 @@ using System;
 using System.IO;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Net.Http.Server;
 
 namespace MusicStore.Standalone
 {
