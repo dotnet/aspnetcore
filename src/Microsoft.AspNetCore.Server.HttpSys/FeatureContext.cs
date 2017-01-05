@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
-using System.Net.WebSockets;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -28,7 +27,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // ITlsTokenBindingFeature, TODO: https://github.com/aspnet/WebListener/issues/231
         IHttpBufferingFeature,
         IHttpRequestLifetimeFeature,
-        IHttpWebSocketFeature,
         IHttpAuthenticationFeature,
         IHttpUpgradeFeature,
         IHttpRequestIdentifierFeature
@@ -440,21 +438,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             await OnStart();
             return await _requestContext.UpgradeAsync();
-        }
-
-        bool IHttpWebSocketFeature.IsWebSocketRequest => _requestContext.IsWebSocketRequest;
-
-        async Task<WebSocket> IHttpWebSocketFeature.AcceptAsync(WebSocketAcceptContext context)
-        {
-            // TODO: Advanced params
-            string subProtocol = null;
-            if (context != null)
-            {
-                subProtocol = context.SubProtocol;
-            }
-
-            await OnStart();
-            return await _requestContext.AcceptWebSocketAsync(subProtocol);
         }
 
         ClaimsPrincipal IHttpAuthenticationFeature.User
