@@ -7,8 +7,10 @@ namespace Microsoft.AspNetCore.WebUtilities
 {
     public static class ReasonPhrases
     {
+        // Status Codes listed at http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
         private static IDictionary<int, string> Phrases = new Dictionary<int, string>()
         {
+            { 100, "Continue" },
             { 101, "Switching Protocols" },
 
             { 200, "OK" },
@@ -18,6 +20,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             { 204, "No Content" },
             { 205, "Reset Content" },
             { 206, "Partial Content" },
+            { 207, "Multi-Status" },
 
             { 300, "Multiple Choices" },
             { 301, "Moved Permanently" },
@@ -27,6 +30,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             { 305, "Use Proxy" },
             { 306, "Switch Proxy" },
             { 307, "Temporary Redirect" },
+            { 308, "Permanent Redirect" },
 
             { 400, "Bad Request" },
             { 401, "Unauthorized" },
@@ -48,6 +52,15 @@ namespace Microsoft.AspNetCore.WebUtilities
             { 417, "Expectation Failed" },
             { 418, "I'm a teapot" },
             { 419, "Authentication Timeout" },
+            { 421, "Misdirected Request" },
+            { 422, "Unprocessable Entity" },
+            { 423, "Locked" },
+            { 424, "Failed Dependency" },
+            { 426, "Upgrade Required" },
+            { 428, "Precondition Required" },
+            { 429, "Too Many Requests" },
+            { 431, "Request Header Fields Too Large" },
+            { 451, "Unavailable For Legal Reasons" },
 
             { 500, "Internal Server Error" },
             { 501, "Not Implemented" },
@@ -56,6 +69,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             { 504, "Gateway Timeout" },
             { 505, "HTTP Version Not Supported" },
             { 506, "Variant Also Negotiates" },
+            { 507, "Insufficient Storage" },
+            { 510, "Not Extended" },
+            { 511, "Network Authentication Required" },
         };
 
         public static string GetReasonPhrase(int statusCode)

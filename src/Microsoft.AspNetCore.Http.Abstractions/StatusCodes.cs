@@ -3,8 +3,10 @@
 
 namespace Microsoft.AspNetCore.Http
 {
+    // Status Codes listed at http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
     public static class StatusCodes
     {
+        public const int Status100Continue = 100;
         public const int Status101SwitchingProtocols = 101;
 
         public const int Status200OK = 200;
@@ -46,9 +48,14 @@ namespace Microsoft.AspNetCore.Http
         public const int Status417ExpectationFailed = 417;
         public const int Status418ImATeapot = 418;
         public const int Status419AuthenticationTimeout = 419;
+        public const int Status421MisdirectedRequest = 421;
         public const int Status422UnprocessableEntity = 422;
         public const int Status423Locked = 423;
         public const int Status424FailedDependency = 424;
+        public const int Status426UpgradeRequired = 426;
+        public const int Status428PreconditionRequired = 428;
+        public const int Status429TooManyRequests = 429;
+        public const int Status431RequestHeaderFieldsTooLarge = 431;
         public const int Status451UnavailableForLegalReasons = 451;
 
         public const int Status500InternalServerError = 500;
@@ -59,5 +66,7 @@ namespace Microsoft.AspNetCore.Http
         public const int Status505HttpVersionNotsupported = 505;
         public const int Status506VariantAlsoNegotiates = 506;
         public const int Status507InsufficientStorage = 507;
+        public const int Status510NotExtended = 510;
+        public const int Status511NetworkAuthenticationRequired = 511;
     }
 }
