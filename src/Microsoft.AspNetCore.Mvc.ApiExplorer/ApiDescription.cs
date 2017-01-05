@@ -1,10 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 {
@@ -44,11 +42,10 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         public string RelativePath { get; set; }
 
         /// <summary>
-        /// Gets the list of possible formats for a response.
+        /// Gets the list of possible formats for a request.
         /// </summary>
         /// <remarks>
-        /// Will be empty if the action returns no response, or if the response type is unclear. Use
-        /// <c>ProducesAttribute</c> on an action method to specify a response type.
+        /// Will be empty if the action does not accept a parameter decorated with the <c>[FromBody]</c> attribute.
         /// </remarks>
         public IList<ApiRequestFormat> SupportedRequestFormats { get; } = new List<ApiRequestFormat>();
 
