@@ -18,10 +18,9 @@
     "JwtBearer": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "http://localhost:42023",
+      "applicationUrl": "http://localhost:42023",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "http://localhost:42023"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }
