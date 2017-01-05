@@ -15,15 +15,6 @@ namespace AutobahnTestApp
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            if (!env.IsEnvironment("NativeSockets"))
-            {
-                // Register a middleware that disables the server-provided WebSockets feature
-                app.Use((context, next) =>
-                {
-                    context.Features.Set<IHttpWebSocketFeature>(null);
-                    return next();
-                });
-            }
             app.UseWebSockets();
 
             app.Use(async (context, next) =>

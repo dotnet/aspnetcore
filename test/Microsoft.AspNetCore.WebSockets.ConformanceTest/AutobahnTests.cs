@@ -75,9 +75,6 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
                     }
                 }
 
-                // REQUIRES a build of WebListener that supports native WebSockets, which we don't have right now
-                //await tester.DeployTestAndAddToSpec(ServerType.WebListener, ssl: false, environment: "NativeSockets");
-
                 result = await tester.Run(cts.Token);
                 tester.Verify(result);
             }
