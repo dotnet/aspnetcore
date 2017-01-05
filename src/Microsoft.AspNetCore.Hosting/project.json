@@ -56,19 +56,7 @@
     "System.Reflection.Metadata": "1.5.0-*"
   },
   "frameworks": {
-    "net451": {
-      "frameworkAssemblies": {
-        "System.Runtime": {
-          "type": "build"
-        },
-        "System.ComponentModel": {
-          "type": "build"
-        },
-        "System.IO": {
-          "type": "build"
-        }
-      }
-    },
+    "net451": { },
     "netstandard1.3": {
       "dependencies": {
         "System.Diagnostics.StackTrace": "4.4.0-*"

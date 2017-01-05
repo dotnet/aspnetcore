@@ -28,7 +28,7 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.ServiceProcess": ""
+        "System.ServiceProcess": "4.0.0.0"
       }
     }
   }
