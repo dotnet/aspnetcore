@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         async Task<Stream> IHttpUpgradeFeature.UpgradeAsync()
         {
-            StatusCode = 101;
+            StatusCode = StatusCodes.Status101SwitchingProtocols;
             ReasonPhrase = "Switching Protocols";
             ResponseHeaders["Connection"] = "Upgrade";
             if (!ResponseHeaders.ContainsKey("Upgrade"))

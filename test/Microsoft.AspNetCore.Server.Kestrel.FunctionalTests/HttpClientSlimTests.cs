@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task GetStringAsyncThrowsForErrorResponse()
         {
-            using (var host = StartHost(statusCode: 500))
+            using (var host = StartHost(statusCode: StatusCodes.Status500InternalServerError))
             {
                 await Assert.ThrowsAnyAsync<HttpRequestException>(() => HttpClientSlim.GetStringAsync(host.GetUri()));
             }
@@ -68,14 +68,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task PostAsyncThrowsForErrorResponse()
         {
-            using (var host = StartHost(statusCode: 500))
+            using (var host = StartHost(statusCode: StatusCodes.Status500InternalServerError))
             {
                 await Assert.ThrowsAnyAsync<HttpRequestException>(
                     () => HttpClientSlim.PostAsync(host.GetUri(), new StringContent("")));
             }
         }
 
-        private IWebHost StartHost(string protocol = "http", int statusCode = 200, Func<HttpContext, Task> handler = null)
+        private IWebHost StartHost(string protocol = "http", int statusCode = StatusCodes.Status200OK, Func<HttpContext, Task> handler = null)
         {
             var host = new WebHostBuilder()
                 .UseKestrel(options =>

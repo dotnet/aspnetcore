@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.Extensions.Primitives;
@@ -248,7 +249,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var encoding = Encoding.GetEncoding("iso-8859-1");
             var exception = Assert.Throws<BadHttpRequestException>(
                 () => headers.Append(encoding.GetBytes(key), 0, encoding.GetByteCount(key), key));
-            Assert.Equal(400, exception.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
     }
 }

@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             set
             {
                 // GetKnownVersion returns versions which ReferenceEquals interned string
-                // As most common path, check for this only in fast-path and inline 
+                // As most common path, check for this only in fast-path and inline
                 if (ReferenceEquals(value, "HTTP/1.1"))
                 {
                     _httpVersion = Http.HttpVersion.Http11;
@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             Path = null;
             QueryString = null;
             _httpVersion = Http.HttpVersion.Unset;
-            StatusCode = 200;
+            StatusCode = StatusCodes.Status200OK;
             ReasonPhrase = null;
 
             RemoteIpAddress = RemoteEndPoint?.Address;
@@ -816,7 +816,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 else
                 {
                     // 500 Internal Server Error
-                    SetErrorResponseHeaders(statusCode: 500);
+                    SetErrorResponseHeaders(statusCode: StatusCodes.Status500InternalServerError);
                 }
             }
 
@@ -909,7 +909,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 if (!hasTransferEncoding && !responseHeaders.HasContentLength)
                 {
-                    if (appCompleted && StatusCode != 101)
+                    if (appCompleted && StatusCode != StatusCodes.Status101SwitchingProtocols)
                     {
                         // Since the app has completed and we are only now generating
                         // the headers we can safely set the Content-Length to 0.
@@ -924,7 +924,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         //
                         // A server MUST NOT send a response containing Transfer-Encoding unless the corresponding
                         // request indicates HTTP/1.1 (or later).
-                        if (_httpVersion == Http.HttpVersion.Http11 && StatusCode != 101)
+                        if (_httpVersion == Http.HttpVersion.Http11 && StatusCode != StatusCodes.Status101SwitchingProtocols)
                         {
                             _autoChunk = true;
                             responseHeaders.SetRawTransferEncoding("chunked", _bytesTransferEncodingChunked);
@@ -1410,9 +1410,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public bool StatusCanHaveBody(int statusCode)
         {
             // List of status codes taken from Microsoft.Net.Http.Server.Response
-            return statusCode != 204 &&
-                   statusCode != 205 &&
-                   statusCode != 304;
+            return statusCode != StatusCodes.Status204NoContent &&
+                   statusCode != StatusCodes.Status205ResetContent &&
+                   statusCode != StatusCodes.Status304NotModified;
         }
 
         private void ThrowResponseAlreadyStartedException(string value)
@@ -1434,7 +1434,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 ReportApplicationError(ex);
 
                 // 500 Internal Server Error
-                SetErrorResponseHeaders(statusCode: 500);
+                SetErrorResponseHeaders(statusCode: StatusCodes.Status500InternalServerError);
             }
         }
 

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
@@ -189,7 +190,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
             Assert.Equal("Header value line folding not supported.", exception.Message);
-            Assert.Equal(400, exception.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
         [Fact]
@@ -204,7 +205,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
             Assert.Equal("Header value line folding not supported.", exception.Message);
-            Assert.Equal(400, exception.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
         [Theory]
@@ -221,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
             Assert.Equal("Header value must not contain CR characters.", exception.Message);
-            Assert.Equal(400, exception.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
         [Theory]
@@ -235,7 +236,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
             Assert.Equal("No ':' character found in header line.", exception.Message);
-            Assert.Equal(400, exception.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
         [Theory]
@@ -250,7 +251,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
             Assert.Equal("Header line must not start with whitespace.", exception.Message);
-            Assert.Equal(400, exception.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
         [Theory]
@@ -269,7 +270,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
             Assert.Equal("Whitespace is not allowed in header name.", exception.Message);
-            Assert.Equal(400, exception.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
         [Theory]
@@ -283,7 +284,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
             Assert.Equal("Headers corrupted, invalid header sequence.", exception.Message);
-            Assert.Equal(400, exception.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
         [Fact]
@@ -298,7 +299,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
             Assert.Equal("Request headers too long.", exception.Message);
-            Assert.Equal(431, exception.StatusCode);
+            Assert.Equal(StatusCodes.Status431RequestHeaderFieldsTooLarge, exception.StatusCode);
         }
 
         [Fact]
@@ -312,7 +313,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(_socketInput, (FrameRequestHeaders)_frame.RequestHeaders));
             Assert.Equal("Request contains too many headers.", exception.Message);
-            Assert.Equal(431, exception.StatusCode);
+            Assert.Equal(StatusCodes.Status431RequestHeaderFieldsTooLarge, exception.StatusCode);
         }
 
         [Theory]
@@ -385,7 +386,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             // Assert
             Assert.True(_frame.HasResponseStarted);
-            Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)_frame).StatusCode = 404);
+            Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)_frame).StatusCode = StatusCodes.Status404NotFound);
         }
 
         [Fact]
@@ -534,7 +535,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeStartLine(_socketInput));
             Assert.Equal("Request line too long.", exception.Message);
-            Assert.Equal(414, exception.StatusCode);
+            Assert.Equal(StatusCodes.Status414UriTooLong, exception.StatusCode);
         }
 
         [Theory]
@@ -556,7 +557,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeStartLine(_socketInput));
             Assert.Equal(expectedExceptionMessage, exception.Message);
-            Assert.Equal(400, exception.StatusCode);
+            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
         [Fact]
@@ -567,7 +568,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeStartLine(_socketInput));
             Assert.Equal("Unrecognized HTTP version: HTTP/1.2", exception.Message);
-            Assert.Equal(505, exception.StatusCode);
+            Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, exception.StatusCode);
         }
 
         [Fact]
@@ -578,7 +579,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeStartLine(_socketInput));
             Assert.Equal("Unrecognized HTTP version: HTTP/1.1a...", exception.Message);
-            Assert.Equal(505, exception.StatusCode);
+            Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, exception.StatusCode);
         }
 
         [Fact]
@@ -647,7 +648,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public void WriteThrowsForNonBodyResponse()
         {
             // Arrange
-            ((IHttpResponseFeature)_frame).StatusCode = 304;
+            ((IHttpResponseFeature)_frame).StatusCode = StatusCodes.Status304NotModified;
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() => _frame.Write(new ArraySegment<byte>(new byte[1])));
@@ -658,7 +659,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             // Arrange
             _frame.HttpVersion = "HTTP/1.1";
-            ((IHttpResponseFeature)_frame).StatusCode = 304;
+            ((IHttpResponseFeature)_frame).StatusCode = StatusCodes.Status304NotModified;
 
             // Act/Assert
             await Assert.ThrowsAsync<InvalidOperationException>(() => _frame.WriteAsync(new ArraySegment<byte>(new byte[1]), default(CancellationToken)));
@@ -705,7 +706,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             // Arrange
             _frame.HttpVersion = "HTTP/1.1";
-            ((IHttpResponseFeature)_frame).StatusCode = 304;
+            ((IHttpResponseFeature)_frame).StatusCode = StatusCodes.Status304NotModified;
 
             // Act
             _frame.ResponseHeaders.Add("Transfer-Encoding", "chunked");

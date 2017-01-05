@@ -118,13 +118,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         // The maximum is harder to determine, since there can be OS-level buffers in both the client
                         // and server, which allow the client to send more than maxRequestBufferSize before getting
                         // paused.  We assume the combined buffers are smaller than the difference between
-                        // data.Length and maxRequestBufferSize.                          
+                        // data.Length and maxRequestBufferSize.
                         var maximumExpectedBytesWritten = data.Length - 1;
 
                         // Block until the send task has gone a while without writing bytes AND
                         // the bytes written exceeds the minimum expected.  This indicates the server buffer
                         // is full.
-                        // 
+                        //
                         // If the send task is paused before the expected number of bytes have been
                         // written, keep waiting since the pause may have been caused by something else
                         // like a slow machine.
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Verify client didn't send extra bytes
                     if (context.Request.Body.ReadByte() != -1)
                     {
-                        context.Response.StatusCode = 500;
+                        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                         await context.Response.WriteAsync("Client sent more bytes than expectedBody.Length");
                         return;
                     }
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         if (buffer[i] != expectedBody[i])
                         {
-                            context.Response.StatusCode = 500;
+                            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                             await context.Response.WriteAsync($"Bytes received do not match expectedBody at position {i}");
                             return;
                         }

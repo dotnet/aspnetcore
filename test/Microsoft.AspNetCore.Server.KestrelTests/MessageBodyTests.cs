@@ -8,13 +8,14 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Moq;
 using Xunit;
 using Xunit.Sdk;
-using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
@@ -198,7 +199,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var ex = Assert.Throws<BadHttpRequestException>(() =>
                     MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderTransferEncoding = "chunked, not-chunked" }, input.FrameContext));
 
-                Assert.Equal(400, ex.StatusCode);
+                Assert.Equal(StatusCodes.Status400BadRequest, ex.StatusCode);
                 Assert.Equal("Final transfer coding is not \"chunked\": \"chunked, not-chunked\"", ex.Message);
             }
         }
@@ -214,7 +215,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var ex = Assert.Throws<BadHttpRequestException>(() =>
                     MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders(), input.FrameContext));
 
-                Assert.Equal(411, ex.StatusCode);
+                Assert.Equal(StatusCodes.Status411LengthRequired, ex.StatusCode);
                 Assert.Equal($"{method} request contains no Content-Length or Transfer-Encoding header", ex.Message);
             }
         }
@@ -230,7 +231,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var ex = Assert.Throws<BadHttpRequestException>(() =>
                     MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders(), input.FrameContext));
 
-                Assert.Equal(400, ex.StatusCode);
+                Assert.Equal(StatusCodes.Status400BadRequest, ex.StatusCode);
                 Assert.Equal($"{method} request contains no Content-Length header", ex.Message);
             }
         }
@@ -249,7 +250,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             new object[] { new FrameRequestHeaders { HeaderTransferEncoding = "chunked" }, new[] { "6\r\nHello \r\n", "6\r\nWorld!\r\n0\r\n\r\n" } },
         };
 
-        public static IEnumerable<object[]> CombinedData => 
+        public static IEnumerable<object[]> CombinedData =>
             from stream in StreamData
             from request in RequestData
             select new[] { stream[0], request[0], request[1] };

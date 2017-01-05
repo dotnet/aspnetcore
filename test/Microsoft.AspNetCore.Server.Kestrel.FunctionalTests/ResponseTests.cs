@@ -395,9 +395,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [InlineData(204)]
-        [InlineData(205)]
-        [InlineData(304)]
+        [InlineData(StatusCodes.Status204NoContent)]
+        [InlineData(StatusCodes.Status205ResetContent)]
+        [InlineData(StatusCodes.Status304NotModified)]
         public async Task TransferEncodingChunkedNotSetOnNonBodyResponse(int statusCode)
         {
             using (var server = new TestServer(httpContext =>
@@ -906,7 +906,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 catch (BadHttpRequestException ex)
                 {
                     expectedResponse = ex.Message;
-                    httpContext.Response.StatusCode = 400;
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                     httpContext.Response.ContentLength = ex.Message.Length;
                     await httpContext.Response.WriteAsync(ex.Message);
                     responseWritten.Release();
