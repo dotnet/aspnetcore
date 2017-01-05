@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             _tasksPending.Enqueue(new WaitingTask()
                             {
                                 CancellationToken = cancellationToken,
-                                CancellationRegistration = cancellationToken.Register(_connectionCancellation, this),
+                                CancellationRegistration = cancellationToken.SafeRegister(_connectionCancellation, this),
                                 BytesToWrite = buffer.Count,
                                 CompletionSource = tcs
                             });

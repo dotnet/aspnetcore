@@ -753,7 +753,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 Action<int> triggerNextCompleted;
                 Assert.True(completeQueue.TryDequeue(out triggerNextCompleted));
                 triggerNextCompleted(0);
-                await  mockLibuv.OnPostTask;
+                await mockLibuv.OnPostTask;
                 Assert.True(writeCalled);
 
                 // Cleanup
