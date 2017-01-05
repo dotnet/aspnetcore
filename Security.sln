@@ -1,65 +1,58 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26020.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4D2B6A51-2F9F-44F5-8131-EA5CAC053652}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{F8C0AA27-F3FB-4286-8E4C-47EF86B539FF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CookieSample", "samples\CookieSample\CookieSample.xproj", "{558C2C2A-AED8-49DE-BB60-D5F8AE06C714}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CookieSample", "samples\CookieSample\CookieSample.csproj", "{558C2C2A-AED8-49DE-BB60-D5F8AE06C714}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7BF11F3A-60B6-4796-B504-579C67FFBA34}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C40A5A3B-ABA3-4819-9C44-D821E6DA1BA1}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SocialSample", "samples\SocialSample\SocialSample.csproj", "{8C73D216-332D-41D8-BFD0-45BC4BC36552}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SocialSample", "samples\SocialSample\SocialSample.xproj", "{8C73D216-332D-41D8-BFD0-45BC4BC36552}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CookieSessionSample", "samples\CookieSessionSample\CookieSessionSample.csproj", "{19711880-46DA-4A26-9E0F-9B2E41D27651}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CookieSessionSample", "samples\CookieSessionSample\CookieSessionSample.xproj", "{19711880-46DA-4A26-9E0F-9B2E41D27651}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIdConnectSample", "samples\OpenIdConnectSample\OpenIdConnectSample.csproj", "{BEF0F5C3-EF4E-4649-9C49-D5E279A3CA2B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIdConnectSample", "samples\OpenIdConnectSample\OpenIdConnectSample.xproj", "{BEF0F5C3-EF4E-4649-9C49-D5E279A3CA2B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Cookies", "src\Microsoft.AspNetCore.Authentication.Cookies\Microsoft.AspNetCore.Authentication.Cookies.csproj", "{FC152CC4-054B-457E-8D91-389C5DE3C561}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication.Cookies", "src\Microsoft.AspNetCore.Authentication.Cookies\Microsoft.AspNetCore.Authentication.Cookies.xproj", "{FC152CC4-054B-457E-8D91-389C5DE3C561}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication", "src\Microsoft.AspNetCore.Authentication\Microsoft.AspNetCore.Authentication.csproj", "{2286250A-52C8-4126-9F93-B1E45F0AD078}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication", "src\Microsoft.AspNetCore.Authentication\Microsoft.AspNetCore.Authentication.xproj", "{2286250A-52C8-4126-9F93-B1E45F0AD078}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Facebook", "src\Microsoft.AspNetCore.Authentication.Facebook\Microsoft.AspNetCore.Authentication.Facebook.csproj", "{EEAAEE68-607B-4E33-AF3E-45C66B4DBA5A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication.Facebook", "src\Microsoft.AspNetCore.Authentication.Facebook\Microsoft.AspNetCore.Authentication.Facebook.xproj", "{EEAAEE68-607B-4E33-AF3E-45C66B4DBA5A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Google", "src\Microsoft.AspNetCore.Authentication.Google\Microsoft.AspNetCore.Authentication.Google.csproj", "{76579C39-B829-490D-B8BE-1BD35FE8412E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication.Google", "src\Microsoft.AspNetCore.Authentication.Google\Microsoft.AspNetCore.Authentication.Google.xproj", "{76579C39-B829-490D-B8BE-1BD35FE8412E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.OpenIdConnect", "src\Microsoft.AspNetCore.Authentication.OpenIdConnect\Microsoft.AspNetCore.Authentication.OpenIdConnect.csproj", "{35115D55-B69E-46D4-BB33-C9E9E6EC5E7A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication.OpenIdConnect", "src\Microsoft.AspNetCore.Authentication.OpenIdConnect\Microsoft.AspNetCore.Authentication.OpenIdConnect.xproj", "{35115D55-B69E-46D4-BB33-C9E9E6EC5E7A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.MicrosoftAccount", "src\Microsoft.AspNetCore.Authentication.MicrosoftAccount\Microsoft.AspNetCore.Authentication.MicrosoftAccount.csproj", "{ACB45E19-F520-4D0C-8916-B0CEB9C017FE}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication.MicrosoftAccount", "src\Microsoft.AspNetCore.Authentication.MicrosoftAccount\Microsoft.AspNetCore.Authentication.MicrosoftAccount.xproj", "{ACB45E19-F520-4D0C-8916-B0CEB9C017FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Twitter", "src\Microsoft.AspNetCore.Authentication.Twitter\Microsoft.AspNetCore.Authentication.Twitter.csproj", "{0330FFF6-B4B5-42DD-8C99-26A789569000}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication.Twitter", "src\Microsoft.AspNetCore.Authentication.Twitter\Microsoft.AspNetCore.Authentication.Twitter.xproj", "{0330FFF6-B4B5-42DD-8C99-26A789569000}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.OAuth", "src\Microsoft.AspNetCore.Authentication.OAuth\Microsoft.AspNetCore.Authentication.OAuth.csproj", "{1657C79E-7755-4AEE-9D61-571295B69A30}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication.OAuth", "src\Microsoft.AspNetCore.Authentication.OAuth\Microsoft.AspNetCore.Authentication.OAuth.xproj", "{1657C79E-7755-4AEE-9D61-571295B69A30}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Test", "test\Microsoft.AspNetCore.Authentication.Test\Microsoft.AspNetCore.Authentication.Test.csproj", "{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication.Test", "test\Microsoft.AspNetCore.Authentication.Test\Microsoft.AspNetCore.Authentication.Test.xproj", "{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authorization.Test", "test\Microsoft.AspNetCore.Authorization.Test\Microsoft.AspNetCore.Authorization.Test.csproj", "{7AF5AD96-EB6E-4D0E-8ABE-C0B543C0F4C2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authorization.Test", "test\Microsoft.AspNetCore.Authorization.Test\Microsoft.AspNetCore.Authorization.Test.xproj", "{7AF5AD96-EB6E-4D0E-8ABE-C0B543C0F4C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authorization", "src\Microsoft.AspNetCore.Authorization\Microsoft.AspNetCore.Authorization.csproj", "{6AB3E514-5894-4131-9399-DC7D5284ADDB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authorization", "src\Microsoft.AspNetCore.Authorization\Microsoft.AspNetCore.Authorization.xproj", "{6AB3E514-5894-4131-9399-DC7D5284ADDB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.CookiePolicy", "src\Microsoft.AspNetCore.CookiePolicy\Microsoft.AspNetCore.CookiePolicy.csproj", "{86183DC3-02A8-4A68-8B60-71ECEC066E79}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.CookiePolicy", "src\Microsoft.AspNetCore.CookiePolicy\Microsoft.AspNetCore.CookiePolicy.xproj", "{86183DC3-02A8-4A68-8B60-71ECEC066E79}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.CookiePolicy.Test", "test\Microsoft.AspNetCore.CookiePolicy.Test\Microsoft.AspNetCore.CookiePolicy.Test.csproj", "{1790E052-646F-4529-B90E-6FEA95520D69}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.CookiePolicy.Test", "test\Microsoft.AspNetCore.CookiePolicy.Test\Microsoft.AspNetCore.CookiePolicy.Test.xproj", "{1790E052-646F-4529-B90E-6FEA95520D69}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.JwtBearer", "src\Microsoft.AspNetCore.Authentication.JwtBearer\Microsoft.AspNetCore.Authentication.JwtBearer.csproj", "{2755BFE5-7421-4A31-A644-F817DF5CAA98}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication.JwtBearer", "src\Microsoft.AspNetCore.Authentication.JwtBearer\Microsoft.AspNetCore.Authentication.JwtBearer.xproj", "{2755BFE5-7421-4A31-A644-F817DF5CAA98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwtBearerSample", "samples\JwtBearerSample\JwtBearerSample.csproj", "{D399B84F-591B-4E98-92BA-B0F63E7B6957}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "JwtBearerSample", "samples\JwtBearerSample\JwtBearerSample.xproj", "{D399B84F-591B-4E98-92BA-B0F63E7B6957}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Owin.Security.Interop", "src\Microsoft.Owin.Security.Interop\Microsoft.Owin.Security.Interop.csproj", "{A7922DD8-09F1-43E4-938B-CC523EA08898}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Owin.Security.Interop", "src\Microsoft.Owin.Security.Interop\Microsoft.Owin.Security.Interop.xproj", "{A7922DD8-09F1-43E4-938B-CC523EA08898}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Owin.Security.Interop.Test", "test\Microsoft.Owin.Security.Interop.Test\Microsoft.Owin.Security.Interop.Test.csproj", "{A2B5DC39-68D5-4145-A8CC-6AEAB7D33A24}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Owin.Security.Interop.Test", "test\Microsoft.Owin.Security.Interop.Test\Microsoft.Owin.Security.Interop.Test.xproj", "{A2B5DC39-68D5-4145-A8CC-6AEAB7D33A24}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIdConnect.AzureAdSample", "samples\OpenIdConnect.AzureAdSample\OpenIdConnect.AzureAdSample.csproj", "{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIdConnect.AzureAdSample", "samples\OpenIdConnect.AzureAdSample\OpenIdConnect.AzureAdSample.xproj", "{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.ChunkingCookieManager.Sources", "src\Microsoft.AspNetCore.ChunkingCookieManager.Sources\Microsoft.AspNetCore.ChunkingCookieManager.Sources.xproj", "{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.ChunkingCookieManager.Sources.Test", "test\Microsoft.AspNetCore.ChunkingCookieManager.Sources.Test\Microsoft.AspNetCore.ChunkingCookieManager.Sources.Test.xproj", "{51563775-C659-4907-9BAF-9995BAB87D01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ChunkingCookieManager.Sources.Test", "test\Microsoft.AspNetCore.ChunkingCookieManager.Sources.Test\Microsoft.AspNetCore.ChunkingCookieManager.Sources.Test.csproj", "{51563775-C659-4907-9BAF-9995BAB87D01}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -329,16 +322,6 @@ Global
 		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}.Release|x86.ActiveCfg = Release|Any CPU
 		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E}.Release|x86.Build.0 = Release|Any CPU
-		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Debug|x86.Build.0 = Debug|Any CPU
-		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Release|x86.ActiveCfg = Release|Any CPU
-		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3}.Release|x86.Build.0 = Release|Any CPU
 		{51563775-C659-4907-9BAF-9995BAB87D01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{51563775-C659-4907-9BAF-9995BAB87D01}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51563775-C659-4907-9BAF-9995BAB87D01}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -378,7 +361,6 @@ Global
 		{A7922DD8-09F1-43E4-938B-CC523EA08898} = {4D2B6A51-2F9F-44F5-8131-EA5CAC053652}
 		{A2B5DC39-68D5-4145-A8CC-6AEAB7D33A24} = {7BF11F3A-60B6-4796-B504-579C67FFBA34}
 		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E} = {F8C0AA27-F3FB-4286-8E4C-47EF86B539FF}
-		{2690FBE6-9D27-4C84-B82C-11188B0BCDA3} = {4D2B6A51-2F9F-44F5-8131-EA5CAC053652}
 		{51563775-C659-4907-9BAF-9995BAB87D01} = {7BF11F3A-60B6-4796-B504-579C67FFBA34}
 	EndGlobalSection
 EndGlobal

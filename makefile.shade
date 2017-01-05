@@ -1,0 +1,8 @@
+
+var VERSION='0.1'
+var FULL_VERSION='0.1'
+use-standard-lifecycle
+k-standard-goals
+
+#pack-sources target='build-pack'
+    dotnet command='msbuild shared/build.proj /t:Pack /v:n'
