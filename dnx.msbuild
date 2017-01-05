@@ -215,8 +215,8 @@
                                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.Authentication.Cookies\ICookieManager.cs;
                                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.Proxy\ProxyMiddleware.cs;
                                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.WebUtilities\HttpResponseStreamWriter.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\RequestProcessing\BoundaryType.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\RequestProcessing\Response.cs">
+                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.Server.HttpSys\RequestProcessing\BoundaryType.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.Server.HttpSys\RequestProcessing\Response.cs">
                 <term>chunking</term>
                 <Justification>Used to describe network chunks</Justification>
             </SrcExclusions>
