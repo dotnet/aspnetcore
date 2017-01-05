@@ -3,7 +3,6 @@
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Cryptography.Internal": "1.2.0-*",
     "Microsoft.AspNetCore.Cryptography.KeyDerivation": "1.2.0-*",
-    "Microsoft.AspNetCore.DataProtection.Test.Shared": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.2.0-*",
     "xunit": "2.2.0-*"
   },
@@ -22,6 +21,7 @@
   "buildOptions": {
     "allowUnsafe": true,
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "compile": "../shared/*.cs"
   }
 }
