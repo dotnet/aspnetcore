@@ -61,11 +61,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 switch (part.NodeType)
                 {
                     case ExpressionType.Call:
+                        // Will exit loop if at Method().Property or [i,j].Property. In that case (like [i].Property),
+                        // don't cache and don't remove ".Model" (if that's .Property).
+                        containsIndexers = true;
+                        lastIsModel = false;
+
                         var methodExpression = (MethodCallExpression)part;
                         if (IsSingleArgumentIndexer(methodExpression))
                         {
-                            containsIndexers = true;
-                            lastIsModel = false;
                             length += "[99]".Length;
                             part = methodExpression.Object;
                             segmentCount++;
