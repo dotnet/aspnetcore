@@ -1,4 +1,4 @@
-import { HttpClient } from "./HttpClient"
+import { IHttpClient } from "./HttpClient"
 
 export interface ITransport {
     connect(url: string, queryString: string): Promise<void>;
@@ -71,6 +71,11 @@ export class ServerSentEventsTransport implements ITransport {
     private eventSource: EventSource;
     private url: string;
     private queryString: string;
+    private httpClient: IHttpClient;
+
+    constructor(httpClient :IHttpClient) {
+        this.httpClient = httpClient;
+    }
 
     connect(url: string, queryString: string): Promise<void> {
         if (typeof (EventSource) === "undefined") {
@@ -113,7 +118,7 @@ export class ServerSentEventsTransport implements ITransport {
     }
 
     async send(data: any): Promise<void> {
-        await new HttpClient().post(this.url + "/send?" + this.queryString, data);
+        await this.httpClient.post(this.url + "/send?" + this.queryString, data);
     }
 
     stop(): void {
@@ -130,8 +135,13 @@ export class ServerSentEventsTransport implements ITransport {
 export class LongPollingTransport implements ITransport {
     private url: string;
     private queryString: string;
+    private httpClient: IHttpClient;
     private pollXhr: XMLHttpRequest;
     private shouldPoll: boolean;
+
+    constructor(httpClient :IHttpClient) {
+        this.httpClient = httpClient;
+    }
 
     connect(url: string, queryString: string): Promise<void> {
         this.url = url;
@@ -190,7 +200,7 @@ export class LongPollingTransport implements ITransport {
     }
 
     async send(data: any): Promise<void> {
-        await new HttpClient().post(this.url + "/send?" + this.queryString, data);
+        await this.httpClient.post(this.url + "/send?" + this.queryString, data);
     }
 
     stop(): void {

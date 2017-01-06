@@ -1,5 +1,6 @@
 import { ITransport, WebSocketTransport, ServerSentEventsTransport, LongPollingTransport } from "./Transports"
-import { HttpClient } from "./HttpClient"
+import { IHttpClient, HttpClient } from "./HttpClient"
+import { ISignalROptions } from "./ISignalROptions"
 
 enum ConnectionState {
     Disconnected,
@@ -12,13 +13,15 @@ export class Connection {
     private url: string;
     private queryString: string;
     private connectionId: string;
+    private httpClient: IHttpClient;
     private transport: ITransport;
     private dataReceivedCallback: DataReceived = (data: any) => { };
     private connectionClosedCallback: ConnectionClosed = (error?: any) => { };
 
-    constructor(url: string, queryString: string = "") {
+    constructor(url: string, queryString: string = "", options: ISignalROptions = {}) {
         this.url = url;
         this.queryString = queryString;
+        this.httpClient = options.httpClient || new HttpClient();
         this.connectionState = ConnectionState.Disconnected;
     }
 
@@ -29,10 +32,10 @@ export class Connection {
 
         this.transport = this.createTransport(transportName);
         this.transport.onDataReceived = this.dataReceivedCallback;
-        this.transport.onError = e => this.stopConnection();
+        this.transport.onError = e => this.stopConnection(e);
 
         try {
-            this.connectionId = await new HttpClient().get(`${this.url}/getid?${this.queryString}`);
+            this.connectionId = await this.httpClient.get(`${this.url}/getid?${this.queryString}`);
             this.queryString = `id=${this.connectionId}`;
             await this.transport.connect(this.url, this.queryString);
             this.connectionState = ConnectionState.Connected;
@@ -50,10 +53,10 @@ export class Connection {
             return new WebSocketTransport();
         }
         if (transportName === 'serverSentEvents') {
-            return new ServerSentEventsTransport();
+            return new ServerSentEventsTransport(this.httpClient);
         }
         if (transportName === 'longPolling') {
-            return new LongPollingTransport();
+            return new LongPollingTransport(this.httpClient);
         }
 
         throw new Error("No valid transports requested.");

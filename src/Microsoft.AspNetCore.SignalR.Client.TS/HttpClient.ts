@@ -1,4 +1,9 @@
-export class HttpClient {
+export interface IHttpClient {
+    get(url: string): Promise<string>;
+    post(url: string, content: string): Promise<string>;
+}
+
+export class HttpClient implements IHttpClient {
     get(url: string): Promise<string> {
         return this.xhr("GET", url);
     }
