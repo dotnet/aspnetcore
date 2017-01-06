@@ -12,39 +12,52 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
-    public class TextPlainFormatterTests
+    public class StringOutputFormatterTests
     {
-        public static IEnumerable<object[]> OutputFormatterContextValues
+        public static IEnumerable<object[]> CanWriteStringsData
         {
             get
             {
-                // object value, bool useDeclaredTypeAsString, bool expectedCanWriteResult
-                yield return new object[] { "valid value", true, true };
-                yield return new object[] { null, true, true };
-                yield return new object[] { null, false, false };
-                yield return new object[] { new object(), false, false };
+                // object value, bool useDeclaredTypeAsString
+                yield return new object[] { "declared and runtime type are same", true };
+                yield return new object[] { "declared and runtime type are different", false };
+                yield return new object[] { null, true };
             }
         }
 
-        [Fact]
-        public void CanWriteResult_SetsAcceptContentType()
+        public static TheoryData<object> CannotWriteNonStringsData
+        {
+            get
+            {
+                return new TheoryData<object>()
+                {
+                    null,
+                    new object()
+                };
+            }
+        }
+
+        [Theory]
+        [InlineData("application/json")]
+        [InlineData("application/xml")]
+        public void CannotWriteUnsupportedMediaType(string contentType)
         {
             // Arrange
             var formatter = new StringOutputFormatter();
-            var expectedContentType = new StringSegment("application/json");
+            var expectedContentType = new StringSegment(contentType);
 
             var context = new OutputFormatterWriteContext(
                 new DefaultHttpContext(),
                 new TestHttpResponseStreamWriterFactory().CreateWriter,
                 typeof(string),
                 "Thisisastring");
-            context.ContentType = expectedContentType;
+            context.ContentType = new StringSegment(contentType);
 
             // Act
             var result = formatter.CanWriteResult(context);
 
             // Assert
-            Assert.True(result);
+            Assert.False(result);
             Assert.Equal(expectedContentType, context.ContentType);
         }
 
@@ -53,7 +66,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             // Arrange
             var formatter = new StringOutputFormatter();
-
             var context = new OutputFormatterWriteContext(
                 new DefaultHttpContext(),
                 new TestHttpResponseStreamWriterFactory().CreateWriter,
@@ -65,18 +77,17 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             Assert.True(result);
-            Assert.Equal(new StringSegment("text/plain; charset=utf-8"), context.ContentType);
+            Assert.Equal(new StringSegment("text/plain"), context.ContentType);
         }
 
         [Theory]
-        [MemberData(nameof(OutputFormatterContextValues))]
-        public void CanWriteResult_ReturnsTrueForStringTypes(
+        [MemberData(nameof(CanWriteStringsData))]
+        public void CanWriteStrings(
             object value,
-            bool useDeclaredTypeAsString,
-            bool expectedCanWriteResult)
+            bool useDeclaredTypeAsString)
         {
             // Arrange
-            var expectedContentType = new StringSegment("application/json");
+            var expectedContentType = new StringSegment("text/plain");
 
             var formatter = new StringOutputFormatter();
             var type = useDeclaredTypeAsString ? typeof(string) : typeof(object);
@@ -86,13 +97,35 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 new TestHttpResponseStreamWriterFactory().CreateWriter,
                 type,
                 value);
-            context.ContentType = expectedContentType;
+            context.ContentType = new StringSegment("text/plain");
 
             // Act
             var result = formatter.CanWriteResult(context);
 
             // Assert
-            Assert.Equal(expectedCanWriteResult, result);
+            Assert.True(result);
+            Assert.Equal(expectedContentType, context.ContentType);
+        }
+
+        [Theory]
+        [MemberData(nameof(CannotWriteNonStringsData))]
+        public void CannotWriteNonStrings(object value)
+        {
+            // Arrange
+            var expectedContentType = new StringSegment("text/plain");
+            var formatter = new StringOutputFormatter();
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                typeof(object),
+                value);
+            context.ContentType = new StringSegment("text/plain");
+
+            // Act
+            var result = formatter.CanWriteResult(context);
+
+            // Assert
+            Assert.False(result);
             Assert.Equal(expectedContentType, context.ContentType);
         }
 

@@ -11,7 +11,7 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     /// <summary>
-    /// Always writes a string value to the response, regardless of requested content type.
+    /// A <see cref="TextOutputFormatter"/> for simple text content.
     /// </summary>
     public class StringOutputFormatter : TextOutputFormatter
     {
@@ -29,18 +29,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // Ignore the passed in content type, if the object is string
-            // always return it as a text/plain format.
             if (context.ObjectType == typeof(string) || context.Object is string)
             {
-                if (!context.ContentType.HasValue)
-                {
-                    var mediaType = SupportedMediaTypes[0];
-                    var encoding = SupportedEncodings[0];
-                    context.ContentType = new StringSegment(MediaType.ReplaceEncoding(mediaType, encoding));
-                }
-
-                return true;
+                // Call into base to check if the current request's content type is a supported media type.
+                return base.CanWriteResult(context);
             }
 
             return false;
