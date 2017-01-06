@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 var targetFramework = DeploymentParameters.TargetFramework ?? (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.1");
 
                 executableName = DotnetCommandName;
-                executableArgs = $"run -p \"{DeploymentParameters.ApplicationPath}\" --framework {targetFramework} {DotnetArgumentSeparator}";
+                executableArgs = $"run --framework {targetFramework} {DotnetArgumentSeparator}";
             }
 
             executableArgs += $" --server.urls {uri} "

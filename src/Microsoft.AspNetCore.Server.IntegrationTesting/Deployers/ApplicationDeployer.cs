@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
             DeploymentParameters.PublishedApplicationRootPath = publishRoot ?? Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            var parameters = $"publish \"{DeploymentParameters.ApplicationPath}\""
+            var parameters = $"publish "
                 + $" --output \"{DeploymentParameters.PublishedApplicationRootPath}\""
                 + $" --framework {DeploymentParameters.TargetFramework}"
                 + $" --configuration {DeploymentParameters.Configuration}";
@@ -59,7 +59,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardError = true,
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                WorkingDirectory = DeploymentParameters.ApplicationPath,
             };
 
             AddEnvironmentVariablesToProcess(startInfo, DeploymentParameters.PublishEnvironmentVariables);
