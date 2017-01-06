@@ -113,6 +113,7 @@ VOID
 }
 
 HRESULT
+__stdcall
 RegisterModule(
 DWORD                           dwServerVersion,
 IHttpModuleRegistrationInfo *   pModuleInfo,
