@@ -19,24 +19,6 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Runtime\Microsoft.AspNetCore.Razor.Runtime.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Reference Include="System.IO">
-      <FromP2P>true</FromP2P>
-    </Reference>
-    <Reference Include="System.Xml">
-      <FromP2P>true</FromP2P>
-    </Reference>
-    <Reference Include="System.Xml.Linq">
-      <FromP2P>true</FromP2P>
-    </Reference>
-    <Reference Include="System.Runtime">
-      <FromP2P>true</FromP2P>
-    </Reference>
-    <Reference Include="System.Threading.Tasks" />
-    <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20161123-03" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-beta4-build1194" />
