@@ -6,7 +6,7 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
-    <GlobalExclude>$(GlobalExclude);bin\**;obj\**;node_modules\**;**\*.user;**\*.suo;**\*.*proj</GlobalExclude>
+    <GlobalExclude>$(GlobalExclude);bin\**;obj\**;node_modules\**;**\*.user;**\*.suo;**\*.*proj;.git\**</GlobalExclude>
   </PropertyGroup>
   <ItemGroup>
     <None Include="**\*" Exclude="$(GlobalExclude)"/>
@@ -68,21 +68,23 @@
     <!-- Files not to show in IDE -->
     <None Remove=".bowerrc" />
     <None Remove="yarn.lock" />
-  </ItemGroup>
-  <ItemGroup>
-    <!-- Only publish ClientApp\dist\**, but tell IDE to show all of ClientApp\** in Solution Explorer -->
+
+    <!-- Files not to publish (note that the 'dist' subfolders are re-added below) -->
     <Content Remove="ClientApp\**" />
-    <Content Include="ClientApp\**" Exclude="ClientApp\dist\**">
-      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-    </Content>
-    <Content Include="ClientApp\dist\**">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
   </ItemGroup>
-  <Target Name="RunWebpack" AfterTargets="PrepareForPublish">
+  <Target Name="RunWebpack" AfterTargets="ComputeFilesToPublish">
     <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
     <Exec Command="npm install" />
     <Exec Command="node node_modules/webpack/bin/webpack.js --config webpack.config.vendor.js --env.prod" />
     <Exec Command="node node_modules/webpack/bin/webpack.js --env.prod" />
+
+    <!-- Include the newly-built files in the publish output -->
+    <ItemGroup>
+      <DistFiles Include="wwwroot\dist\**; ClientApp\dist\**" />
+      <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>%(DistFiles.Identity)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
   </Target>
 </Project>
