@@ -211,7 +211,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     errors[i] = CurrentErrors[i];
                 }
 
-                symbol = CreateSymbol(GetSymbolContent(type), type, errors);
+                var symbolContent = GetSymbolContent(type);
+                Debug.Assert(string.Equals(symbolContent, Buffer.ToString(), StringComparison.Ordinal));
+                symbol = CreateSymbol(symbolContent, type, errors);
 
                 Buffer.Clear();
                 CurrentErrors.Clear();

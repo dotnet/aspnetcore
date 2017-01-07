@@ -168,6 +168,181 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
+        // Optimize memory allocation by returning constants for the most frequent cases
+        protected override string GetSymbolContent(CSharpSymbolType type)
+        {
+            var symbolLength = Buffer.Length;
+
+            if (symbolLength == 1)
+            {
+                switch (type)
+                {
+                    case CSharpSymbolType.IntegerLiteral:
+                        switch (Buffer[0])
+                        {
+                            case '0':
+                                return "0";
+                            case '1':
+                                return "1";
+                            case '2':
+                                return "2";
+                            case '3':
+                                return "3";
+                            case '4':
+                                return "4";
+                            case '5':
+                                return "5";
+                            case '6':
+                                return "6";
+                            case '7':
+                                return "7";
+                            case '8':
+                                return "8";
+                            case '9':
+                                return "9";
+                        }
+                        break;
+                    case CSharpSymbolType.NewLine:
+                        if (Buffer[0] == '\n')
+                        {
+                            return "\n";
+                        }
+                        break;
+                    case CSharpSymbolType.WhiteSpace:
+                        if (Buffer[0] == ' ')
+                        {
+                            return " ";
+                        }
+                        if (Buffer[0] == '\t')
+                        {
+                            return "\t";
+                        }
+                        break;
+                    case CSharpSymbolType.Minus:
+                        return "-";
+                    case CSharpSymbolType.Not:
+                        return "!";
+                    case CSharpSymbolType.Modulo:
+                        return "%";
+                    case CSharpSymbolType.And:
+                        return "&";
+                    case CSharpSymbolType.LeftParenthesis:
+                        return "(";
+                    case CSharpSymbolType.RightParenthesis:
+                        return ")";
+                    case CSharpSymbolType.Star:
+                        return "*";
+                    case CSharpSymbolType.Comma:
+                        return ",";
+                    case CSharpSymbolType.Dot:
+                        return ".";
+                    case CSharpSymbolType.Slash:
+                        return "/";
+                    case CSharpSymbolType.Colon:
+                        return ":";
+                    case CSharpSymbolType.Semicolon:
+                        return ";";
+                    case CSharpSymbolType.QuestionMark:
+                        return "?";
+                    case CSharpSymbolType.RightBracket:
+                        return "]";
+                    case CSharpSymbolType.LeftBracket:
+                        return "[";
+                    case CSharpSymbolType.Xor:
+                        return "^";
+                    case CSharpSymbolType.LeftBrace:
+                        return "{";
+                    case CSharpSymbolType.Or:
+                        return "|";
+                    case CSharpSymbolType.RightBrace:
+                        return "}";
+                    case CSharpSymbolType.Tilde:
+                        return "~";
+                    case CSharpSymbolType.Plus:
+                        return "+";
+                    case CSharpSymbolType.LessThan:
+                        return "<";
+                    case CSharpSymbolType.Assign:
+                        return "=";
+                    case CSharpSymbolType.GreaterThan:
+                        return ">";
+                    case CSharpSymbolType.Hash:
+                        return "#";
+                    case CSharpSymbolType.Transition:
+                        return "@";
+
+                }
+            }
+            else if (symbolLength == 2)
+            {
+                switch (type)
+                {
+                    case CSharpSymbolType.NewLine:
+                        return "\r\n";
+                    case CSharpSymbolType.Arrow:
+                        return "->";
+                    case CSharpSymbolType.Decrement:
+                        return "--";
+                    case CSharpSymbolType.MinusAssign:
+                        return "-=";
+                    case CSharpSymbolType.NotEqual:
+                        return "!=";
+                    case CSharpSymbolType.ModuloAssign:
+                        return "%=";
+                    case CSharpSymbolType.AndAssign:
+                        return "&=";
+                    case CSharpSymbolType.DoubleAnd:
+                        return "&&";
+                    case CSharpSymbolType.MultiplyAssign:
+                        return "*=";
+                    case CSharpSymbolType.DivideAssign:
+                        return "/=";
+                    case CSharpSymbolType.DoubleColon:
+                        return "::";
+                    case CSharpSymbolType.NullCoalesce:
+                        return "??";
+                    case CSharpSymbolType.XorAssign:
+                        return "^=";
+                    case CSharpSymbolType.OrAssign:
+                        return "|=";
+                    case CSharpSymbolType.DoubleOr:
+                        return "||";
+                    case CSharpSymbolType.PlusAssign:
+                        return "+=";
+                    case CSharpSymbolType.Increment:
+                        return "++";
+                    case CSharpSymbolType.LessThanEqual:
+                        return "<=";
+                    case CSharpSymbolType.LeftShift:
+                        return "<<";
+                    case CSharpSymbolType.Equals:
+                        return "==";
+                    case CSharpSymbolType.GreaterThanEqual:
+                        if (Buffer[0] == '=')
+                        {
+                            return "=>";
+                        }
+                        return ">=";
+                    case CSharpSymbolType.RightShift:
+                        return ">>";
+
+
+                }
+            }
+            else if (symbolLength == 3)
+            {
+                switch (type)
+                {
+                    case CSharpSymbolType.LeftShiftAssign:
+                        return "<<=";
+                    case CSharpSymbolType.RightShiftAssign:
+                        return ">>=";
+                }
+            }
+
+            return base.GetSymbolContent(type);
+        }
+
         protected override CSharpSymbol CreateSymbol(string content, CSharpSymbolType type, IReadOnlyList<RazorError> errors)
         {
             return new CSharpSymbol(content, type, errors);
