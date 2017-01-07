@@ -50,7 +50,7 @@ const templates = [
 const sdkChoices = [{
     value: '1.0.0-preview2-1-003177',   // Current released version
     name: 'project.json' + chalk.gray(' (compatible with .NET Core tooling preview 2 and Visual Studio 2015)'),
-    includeFiles: [/^project.json$/, /\.xproj$/]
+    includeFiles: [/^project.json$/, /\.xproj$/, /_placeholder.txt$/]
 }, {
     value: '1.0.0-preview3-004056',     // Version that ships with VS2017RC
     name: '.csproj' + chalk.gray('      (compatible with .NET Core tooling preview 3 and Visual Studio 2017)'),
