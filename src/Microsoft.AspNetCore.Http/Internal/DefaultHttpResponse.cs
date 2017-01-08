@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             }
             set
             {
-                if (string.IsNullOrWhiteSpace(value))
+                if (string.IsNullOrEmpty(value))
                 {
                     HttpResponseFeature.Headers.Remove(HeaderNames.ContentType);
                 }
