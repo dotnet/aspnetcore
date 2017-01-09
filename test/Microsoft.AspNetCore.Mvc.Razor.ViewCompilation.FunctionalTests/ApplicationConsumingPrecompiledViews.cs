@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.DotNet.Cli.Utils;
 using Xunit;
 
@@ -25,7 +26,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux,
+            SkipReason = "https://github.com/NuGet/Home/issues/4243, https://github.com/NuGet/Home/issues/4240")]
+        [OSSkipCondition(OperatingSystems.MacOSX,
+            SkipReason = "https://github.com/NuGet/Home/issues/4243, https://github.com/NuGet/Home/issues/4240")]
         [MemberData(nameof(SupportedFlavorsTheoryData))]
         public async Task ConsumingClassLibrariesWithPrecompiledViewsWork(RuntimeFlavor flavor)
         {
@@ -66,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             {
                 RestoreProject(ClassLibraryPath);
                 ExecuteForClassLibrary(Command.CreateDotNet(
-                    "build", 
+                    "build",
                     new[] { "-c", "Release" }));
                 var packCommand = Command
                     .CreateDotNet("pack", new[] { "-c", "Release", "-o", _packOutputDirectory });
