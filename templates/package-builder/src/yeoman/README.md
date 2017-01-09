@@ -3,6 +3,7 @@ Generates ASP.NET Core projects for single-page applications.
 Can generate projects with:
 
  * Angular 2
+ * Aurelia
  * Knockout
  * React
  * React with Redux
