@@ -161,6 +161,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
         protected void AssertDesignTimeDocumentMatchBaseline(RazorCodeDocument document)
         {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
+
             if (Filename == null)
             {
                 var message = $"{nameof(AssertDesignTimeDocumentMatchBaseline)} should only be called from an integration test ({nameof(Filename)} is null).";
