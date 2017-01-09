@@ -13,6 +13,7 @@ namespace SocialWeather
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRouting();
+            services.AddSockets();
             services.AddSingleton<SocialWeatherEndPoint>();
             services.AddTransient<PersistentConnectionLifeTimeManager>();
             services.AddSingleton(typeof(JsonStreamFormatter<>), typeof(JsonStreamFormatter<>));
