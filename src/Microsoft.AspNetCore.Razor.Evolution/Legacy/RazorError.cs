@@ -65,6 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var hashCodeCombiner = HashCodeCombiner.Start();
             hashCodeCombiner.Add(Message, StringComparer.Ordinal);
             hashCodeCombiner.Add(Location);
+            hashCodeCombiner.Add(Length);
 
             return hashCodeCombiner;
         }
