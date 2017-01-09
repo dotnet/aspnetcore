@@ -22,8 +22,8 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.0.0-rc3-*" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Remote.Razor.ServiceHub" Version="2.0.0-rc3-*" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.0.0-rc3-61306-01" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Remote.Razor.ServiceHub" Version="2.0.0-rc3-61306-01" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.CodeAnalysis.Razor.Workspaces\Microsoft.CodeAnalysis.Razor.Workspaces.csproj" />
