@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         public async Task NoMatch_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(TestDirectory.BaseDirectory, baseDir)))
             {
                 var server = StaticFilesTestServer.Create(
                     app => app.UseDirectoryBrowser(new DirectoryBrowserOptions
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         public async Task FoundDirectory_Served(string baseUrl, string baseDir, string requestUrl)
         {
-            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(TestDirectory.BaseDirectory, baseDir)))
             {
                 var server = StaticFilesTestServer.Create(
                     app => app.UseDirectoryBrowser(new DirectoryBrowserOptions
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         public async Task NearMatch_RedirectAddSlash(string baseUrl, string baseDir, string requestUrl, string queryString)
         {
-            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(TestDirectory.BaseDirectory, baseDir)))
             {
                 var server = StaticFilesTestServer.Create(
                     app => app.UseDirectoryBrowser(new DirectoryBrowserOptions
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         public async Task PostDirectory_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(TestDirectory.BaseDirectory, baseDir)))
             {
                 var server = StaticFilesTestServer.Create(
                     app => app.UseDirectoryBrowser(new DirectoryBrowserOptions
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         public async Task HeadDirectory_HeadersButNotBodyServed(string baseUrl, string baseDir, string requestUrl)
         {
-            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(TestDirectory.BaseDirectory, baseDir)))
             {
                 var server = StaticFilesTestServer.Create(
                     app => app.UseDirectoryBrowser(new DirectoryBrowserOptions

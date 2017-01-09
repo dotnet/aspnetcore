@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         [Fact]
         public async Task FoundFile_LastModifiedTrimsSeconds()
         {
-            using (var fileProvider = new PhysicalFileProvider(Directory.GetCurrentDirectory()))
+            using (var fileProvider = new PhysicalFileProvider(TestDirectory.BaseDirectory))
             {
                 var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
                 {
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         public async Task FoundFile_Served(string baseUrl, string baseDir, string requestUrl)
         {
-            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(TestDirectory.BaseDirectory, baseDir)))
             {
                 var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
                 {
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(ExistingFiles))]
         public async Task HeadFile_HeadersButNotBodyServed(string baseUrl, string baseDir, string requestUrl)
         {
-            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(TestDirectory.BaseDirectory, baseDir)))
             {
                 var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
                 {
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         public async Task PassesThrough(string method, string baseUrl, string baseDir, string requestUrl)
         {
-            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(TestDirectory.BaseDirectory, baseDir)))
             {
                 var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
                 {
