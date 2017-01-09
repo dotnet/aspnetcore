@@ -30,7 +30,8 @@ namespace Microsoft.AspNetCore.Http
         }
 
 #elif NETSTANDARD1_3
-        private AsyncLocal<HttpContext> _httpContextCurrent = new AsyncLocal<HttpContext>();
+        private static AsyncLocal<HttpContext> _httpContextCurrent = new AsyncLocal<HttpContext>();
+
         public HttpContext HttpContext
         {
             get
