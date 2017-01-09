@@ -23,6 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.0.0-rc3-*" />
+    <PackageReference Include="NetStandard.Library" Version="1.6.2-*" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Evolution\Microsoft.AspNetCore.Razor.Evolution.csproj" />

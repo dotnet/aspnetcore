@@ -26,13 +26,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Runtime.Test", "test\Microsoft.AspNetCore.Razor.Runtime.Test\Microsoft.AspNetCore.Razor.Runtime.Test.csproj", "{277AB67E-9C8D-4799-A18C-C628E70A8664}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CodeAnalysis.Razor.Workspaces", "src\Microsoft.CodeAnalysis.Razor.Workspaces\Microsoft.CodeAnalysis.Razor.Workspaces.csproj", "{0F265874-C592-448B-BC4F-3430AB03E0DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis.Razor.Workspaces", "src\Microsoft.CodeAnalysis.Razor.Workspaces\Microsoft.CodeAnalysis.Razor.Workspaces.csproj", "{0F265874-C592-448B-BC4F-3430AB03E0DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CodeAnalysis.Remote.Razor", "src\Microsoft.CodeAnalysis.Remote.Razor\Microsoft.CodeAnalysis.Remote.Razor.csproj", "{4EAD959D-73B2-4FB2-B46F-16CEB1EF49D4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis.Remote.Razor", "src\Microsoft.CodeAnalysis.Remote.Razor\Microsoft.CodeAnalysis.Remote.Razor.csproj", "{4EAD959D-73B2-4FB2-B46F-16CEB1EF49D4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tooling", "tooling", "{C0CC1E1F-1559-44DE-93A8-63259CEA2AAB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.LanguageServices.Razor", "tooling\Microsoft.VisualStudio.LanguageServices.Razor\Microsoft.VisualStudio.LanguageServices.Razor.csproj", "{53489966-7486-434F-AA76-6FBC488E3D29}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.VisualStudio.RazorExtension", "tooling\Microsoft.VisualStudio.RazorExtension\Microsoft.VisualStudio.RazorExtension.csproj", "{D66B45B5-CBFD-4947-81F1-F30AB80EA992}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -164,6 +166,18 @@ Global
 		{53489966-7486-434F-AA76-6FBC488E3D29}.Release|x64.Build.0 = Release|x64
 		{53489966-7486-434F-AA76-6FBC488E3D29}.Release|x86.ActiveCfg = Release|x86
 		{53489966-7486-434F-AA76-6FBC488E3D29}.Release|x86.Build.0 = Release|x86
+		{D66B45B5-CBFD-4947-81F1-F30AB80EA992}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D66B45B5-CBFD-4947-81F1-F30AB80EA992}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D66B45B5-CBFD-4947-81F1-F30AB80EA992}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D66B45B5-CBFD-4947-81F1-F30AB80EA992}.Debug|x64.Build.0 = Debug|Any CPU
+		{D66B45B5-CBFD-4947-81F1-F30AB80EA992}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D66B45B5-CBFD-4947-81F1-F30AB80EA992}.Debug|x86.Build.0 = Debug|Any CPU
+		{D66B45B5-CBFD-4947-81F1-F30AB80EA992}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D66B45B5-CBFD-4947-81F1-F30AB80EA992}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D66B45B5-CBFD-4947-81F1-F30AB80EA992}.Release|x64.ActiveCfg = Release|Any CPU
+		{D66B45B5-CBFD-4947-81F1-F30AB80EA992}.Release|x64.Build.0 = Release|Any CPU
+		{D66B45B5-CBFD-4947-81F1-F30AB80EA992}.Release|x86.ActiveCfg = Release|Any CPU
+		{D66B45B5-CBFD-4947-81F1-F30AB80EA992}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -179,5 +193,6 @@ Global
 		{0F265874-C592-448B-BC4F-3430AB03E0DC} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
 		{4EAD959D-73B2-4FB2-B46F-16CEB1EF49D4} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
 		{53489966-7486-434F-AA76-6FBC488E3D29} = {C0CC1E1F-1559-44DE-93A8-63259CEA2AAB}
+		{D66B45B5-CBFD-4947-81F1-F30AB80EA992} = {C0CC1E1F-1559-44DE-93A8-63259CEA2AAB}
 	EndGlobalSection
 EndGlobal

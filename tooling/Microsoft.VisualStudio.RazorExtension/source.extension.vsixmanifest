@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+  <Metadata>
+    <Identity Id="Microsoft.VisualStudio.RazorExtension" Version="1.0" Language="en-US" Publisher="Ryan Nowak" />
+    <DisplayName>Microsoft.VisualStudio.RazorExtension</DisplayName>
+    <Description xml:space="preserve"></Description>
+  </Metadata>
+  <Installation>
+    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0]" />
+  </Installation>
+  <Dependencies>
+    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.6,)" />
+    <Dependency Id="Microsoft.VisualStudio.MPF.15.0" DisplayName="Visual Studio MPF 15.0" d:Source="Installed" Version="[15.0]" />
+    <Dependency d:Source="Installed" Id="58293943-56F1-4734-82FC-0411DCF49DE1" DisplayName="Roslyn Language Services for Visual Studio 15" Version="[2.0.0.6121305,3.0)" />
+  </Dependencies>
+  <Prerequisites>
+    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,16.0)" DisplayName="Visual Studio core editor" />
+  </Prerequisites>
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
+    <Asset Type="Microsoft.ServiceHub.Service" d:Source="File" Path="razorLanguageService.servicehub.service.json" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.AspNetCore.Razor.Evolution.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" Path="Microsoft.AspNetCore.Razor.Evolution.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" Path="Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.CodeAnalysis.Remote.Razor.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" Path="Microsoft.CodeAnalysis.Remote.Razor.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly"  Path="Microsoft.VisualStudio.LanguageServices.Razor.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent"  Path="Microsoft.VisualStudio.LanguageServices.Razor.dll" />
+  </Assets>
+</PackageManifest>
