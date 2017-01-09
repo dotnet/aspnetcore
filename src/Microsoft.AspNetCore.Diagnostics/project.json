@@ -2,6 +2,7 @@
   "version": "1.2.0-*",
   "description": "ASP.NET Core middleware for exception handling, exception display pages, and diagnostics information. Includes developer exception page middleware, exception handler middleware, runtime info middleware, status code page middleware, and welcome page middleware",
   "buildOptions": {
+    "compile": "../shared/**/*.cs",
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -21,10 +22,6 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Diagnostics.Abstractions": {
-      "target": "project"
-    },
-    "Microsoft.AspNetCore.DiagnosticsViewPage.Sources": {
-      "type": "build",
       "target": "project"
     },
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.2.0-*",

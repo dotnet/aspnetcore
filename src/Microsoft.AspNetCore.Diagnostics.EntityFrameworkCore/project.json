@@ -13,6 +13,7 @@
     ]
   },
   "buildOptions": {
+    "compile": "../shared/**/*.cs",
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -21,10 +22,6 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.DiagnosticsViewPage.Sources": {
-      "type": "build",
-      "target": "project"
-    },
     "Microsoft.AspNetCore.Http.Abstractions": "1.2.0-*",
     "Microsoft.EntityFrameworkCore.Relational": "1.2.0-*",
     "Microsoft.Extensions.RazorViews.Sources": {

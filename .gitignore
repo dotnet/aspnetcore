@@ -28,6 +28,7 @@ node_modules
 *.sln.ide
 project.lock.json
 .vs/
+.vscode/
 launchSettings.json
 .build/
 .testPublish/
