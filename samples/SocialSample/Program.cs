@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Net;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Hosting;
@@ -14,9 +16,16 @@ namespace SocialSample
             var host = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
-                    //Configure SSL
-                    var serverCertificate = LoadCertificate();
-                    options.UseHttps(serverCertificate);
+                    if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_PORT")))
+                    {
+                        // ANCM is not hosting the process
+                        options.Listen(IPAddress.Loopback, 5000, listenOptions =>
+                        {
+                            // Configure SSL
+                            var serverCertificate = LoadCertificate();
+                            listenOptions.UseHttps(serverCertificate);
+                        });
+                    }
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
