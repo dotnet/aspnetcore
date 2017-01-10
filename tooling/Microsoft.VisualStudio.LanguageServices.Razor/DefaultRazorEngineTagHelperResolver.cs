@@ -22,7 +22,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             using (var session = await client.CreateSessionAsync(project.Solution))
             {
-                var results = await session.InvokeAsync<IEnumerable<TagHelperDescriptor>>("GetTagHelpersAsync", new object[] { project.Id.Id, "Foo" }).ConfigureAwait(false);
+                var results = await session.InvokeAsync<IEnumerable<TagHelperDescriptor>>("GetTagHelpersAsync", new object[] { project.Id.Id, "Foo", }).ConfigureAwait(false);
                 return results;
             }
         }

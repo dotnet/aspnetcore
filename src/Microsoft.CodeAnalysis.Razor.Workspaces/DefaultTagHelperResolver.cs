@@ -33,7 +33,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 var assembly = compilation.GetAssemblyOrModuleSymbol(reference) as IAssemblySymbol;
                 if (assembly != null)
                 {
-                    visitor.Visit(compilation.Assembly.GlobalNamespace);
+                    visitor.Visit(assembly.GlobalNamespace);
                 }
             }
 

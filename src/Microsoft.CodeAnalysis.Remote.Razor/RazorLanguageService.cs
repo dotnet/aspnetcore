@@ -21,9 +21,9 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
         {
         }
 
-        public async Task<IEnumerable<TagHelperDescriptor>> GetTagHelpersAsync(byte[] projectIdBytes, string projectDebugName, byte[] solutionChecksum, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IEnumerable<TagHelperDescriptor>> GetTagHelpersAsync(Guid projectIdBytes, string projectDebugName, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var projectId = ProjectId.CreateFromSerialized(new Guid(projectIdBytes), projectDebugName);
+            var projectId = ProjectId.CreateFromSerialized(projectIdBytes, projectDebugName);
 
             var solution = await GetSolutionAsync().ConfigureAwait(false);
             var project = solution.GetProject(projectId);
@@ -34,15 +34,19 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
             return results;
         }
 
-        public Task<IEnumerable<DirectiveDescriptor>> GetDirectivesAsync(byte[] projectIdBytes, string projectDebugName, byte[] solutionChecksum, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<IEnumerable<DirectiveDescriptor>> GetDirectivesAsync(Guid projectIdBytes, string projectDebugName, CancellationToken cancellationToken = default(CancellationToken))
         {
+            var projectId = ProjectId.CreateFromSerialized(projectIdBytes, projectDebugName);
+
             var engine = RazorEngine.Create();
             var directives = engine.Features.OfType<IRazorDirectiveFeature>().FirstOrDefault()?.Directives;
             return Task.FromResult(directives ?? Enumerable.Empty<DirectiveDescriptor>());
         }
 
-        public Task<GeneratedDocument> GenerateDocumentAsync(byte[] projectIdBytes, string projectDebugName, string filename, string text, byte[] solutionChecksum, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<GeneratedDocument> GenerateDocumentAsync(Guid projectIdBytes, string projectDebugName, string filename, string text, CancellationToken cancellationToken = default(CancellationToken))
         {
+            var projectId = ProjectId.CreateFromSerialized(projectIdBytes, projectDebugName);
+
             var engine = RazorEngine.Create();
 
             RazorSourceDocument source;
