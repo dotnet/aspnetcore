@@ -15,7 +15,7 @@
     <ItemGroup>
         <Compile Include="**\*.cs" />
         <None Include="build\**\*" Pack="true" PackagePath="%(Identity)" />
-        <None Include="buildCrossTargeting/*" Pack="true" PackagePath="%(Identity)" />
+        <None Include="buildMultiTargeting/*" Pack="true" PackagePath="%(Identity)" />
 
     </ItemGroup>
 
