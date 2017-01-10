@@ -32,10 +32,6 @@
   },
   "frameworks": {
     "netstandard1.6": {},
-    "net46": {
-      "dependencies": {
-        "System.Security.Claims": "4.0.1"
-      }
-    }
+    "net46": {}
   }
 }
