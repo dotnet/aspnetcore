@@ -108,8 +108,6 @@ namespace Microsoft.AspNetCore.SignalR
             catch (Exception ex)
             {
                 _logger.LogError(0, ex, "Error when invoking OnConnectedAsync on hub.");
-                connection.Transport.Input.Complete(ex);
-                connection.Transport.Output.Complete(ex);
                 throw;
             }
         }
