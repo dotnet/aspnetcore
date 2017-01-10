@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             {
                 while (true)
                 {
-                    using (var message = await _application.ReadAsync())
+                    using (var message = await _application.ReadAsync(context.RequestAborted))
                     {
                         await Send(context, message);
                     }
@@ -41,6 +41,10 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             catch (Exception ex) when (ex.GetType().IsNested && ex.GetType().DeclaringType == typeof(Channel))
             {
                 // Gross that we have to catch this this way. See https://github.com/dotnet/corefxlab/issues/1068
+            }
+            catch (OperationCanceledException)
+            {
+                // Closed connection
             }
         }
 

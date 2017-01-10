@@ -93,7 +93,6 @@ namespace Microsoft.AspNetCore.Sockets
                 state.Active = true;
 
                 var longPolling = new LongPollingTransport(application.Input, _loggerFactory);
-                RegisterLongPollingDisconnect(context, longPolling);
 
                 // Start the transport
                 var transportTask = longPolling.ProcessRequestAsync(context);
@@ -110,6 +109,9 @@ namespace Microsoft.AspNetCore.Sockets
                     // REVIEW: This is super gross, this all needs to be cleaned up...
                     state.Close = async () =>
                     {
+                        // Close the end point's connection
+                        state.Connection.Dispose();
+
                         try
                         {
                             await endpointTask;
@@ -118,8 +120,6 @@ namespace Microsoft.AspNetCore.Sockets
                         {
                             // possibly invoked on a ThreadPool thread
                         }
-
-                        state.Connection.Dispose();
                     };
 
                     endpointTask = endpoint.OnConnectedAsync(state.Connection);
@@ -139,6 +139,7 @@ namespace Microsoft.AspNetCore.Sockets
                     {
                         state.TerminateTransport(endpointTask.Exception.InnerException);
                     }
+
                     state.Connection.Dispose();
 
                     await transportTask;
@@ -180,9 +181,6 @@ namespace Microsoft.AspNetCore.Sockets
                                                          HttpContext context,
                                                          ConnectionState state)
         {
-            // Register this transport for disconnect
-            RegisterDisconnect(context, state);
-
             // Start the transport
             var transportTask = transport.ProcessRequestAsync(context);
 
@@ -197,18 +195,6 @@ namespace Microsoft.AspNetCore.Sockets
 
             // Wait for both
             await Task.WhenAll(endpointTask, transportTask);
-        }
-
-        private static void RegisterLongPollingDisconnect(HttpContext context, LongPollingTransport transport)
-        {
-            // For long polling, we need to end the transport but not the overall connection so we write 0 bytes
-            context.RequestAborted.Register(state => ((LongPollingTransport)state).Cancel(), transport);
-        }
-
-        private static void RegisterDisconnect(HttpContext context, ConnectionState connectionState)
-        {
-            // We just kill the output writing as a signal to the transport that it is done
-            context.RequestAborted.Register(state => ((ConnectionState)state).Dispose(), connectionState);
         }
 
         private Task ProcessGetId(HttpContext context, ConnectionMode mode)

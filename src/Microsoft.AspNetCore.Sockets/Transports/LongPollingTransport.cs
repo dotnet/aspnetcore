@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Sockets.Transports
     public class LongPollingTransport : IHttpTransport
     {
         private readonly IReadableChannel<Message> _connection;
-        private CancellationTokenSource _cancellationSource = new CancellationTokenSource();
         private readonly ILogger _logger;
 
         public LongPollingTransport(IReadableChannel<Message> connection, ILoggerFactory loggerFactory)
@@ -35,7 +34,10 @@ namespace Microsoft.AspNetCore.Sockets.Transports
 
             try
             {
-                using (var message = await _connection.ReadAsync(_cancellationSource.Token))
+                // TODO: We need the ability to yield the connection without completing the channel.
+                // This is to force ReadAsync to yield without data to end to poll but not the entire connection.
+                // This is for cases when the client reconnects see issue #27
+                using (var message = await _connection.ReadAsync(context.RequestAborted))
                 {
                     _logger.LogDebug("Writing {0} byte message to response", message.Payload.Buffer.Length);
                     context.Response.ContentLength = message.Payload.Buffer.Length;
@@ -57,11 +59,6 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                 _logger.LogError("Error reading next message from Application: {0}", ex);
                 throw;
             }
-        }
-
-        public void Cancel()
-        {
-            _cancellationSource.Cancel();
         }
     }
 }

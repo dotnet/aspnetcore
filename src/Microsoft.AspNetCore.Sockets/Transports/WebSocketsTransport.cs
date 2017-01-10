@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
 
         private async Task StartSending(IWebSocketConnection ws)
         {
-            while (!_connection.Input.Completion.IsCompleted)
+            while (true)
             {
                 // Get a frame from the application
                 try
@@ -188,6 +188,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                 catch (Exception ex) when (ex.GetType().IsNested && ex.GetType().DeclaringType == typeof(Channel))
                 {
                     // Gross that we have to catch this this way. See https://github.com/dotnet/corefxlab/issues/1068
+                    break;
                 }
             }
         }
