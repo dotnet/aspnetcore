@@ -878,11 +878,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     throw onStartingException;
                 }, null);
 
-                response.Headers["Content-Length"] = new[] { "11" };
-
-                var writeException = await Assert.ThrowsAsync<ObjectDisposedException>(async () =>
-                    await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
-
+                var writeException = await Assert.ThrowsAsync<ObjectDisposedException>(async () => await response.Body.FlushAsync());
                 Assert.Same(onStartingException, writeException.InnerException);
 
                 failedWriteCount++;
@@ -896,7 +892,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "GET / HTTP/1.1",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.Receive(
                         "HTTP/1.1 500 Internal Server Error",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
