@@ -56,8 +56,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
                 // Windows-only IIS tests, and Kestrel SSL tests (due to: https://github.com/aspnet/WebSockets/issues/102)
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    // Disabled due to https://github.com/dotnet/corefx/issues/14698
-                    //await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: true, environment: "ManagedSockets", cancellationToken: cts.Token);
+                    await tester.DeployTestAndAddToSpec(ServerType.Kestrel, ssl: true, environment: "ManagedSockets", cancellationToken: cts.Token);
 
                     if (IsWindows8OrHigher())
                     {
