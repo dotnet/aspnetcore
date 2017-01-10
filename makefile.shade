@@ -7,3 +7,8 @@ var SAMPLES_PROJECT_GLOB='samples/misc/*/project.json'
 
 use-standard-lifecycle
 k-standard-goals
+
+@{
+    // The build quality values are set in each of the project.json files
+    BuildQuality = "";
+}
