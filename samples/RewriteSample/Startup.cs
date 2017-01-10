@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -30,9 +31,13 @@ namespace RewriteSample
             var host = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
-                    options.UseHttps("testCert.pfx", "testPassword");
+                    options.Listen(IPAddress.Loopback, 5000);
+                    options.Listen(IPAddress.Loopback, 5001, listenOptions =>
+                    {
+                        // Configure SSL
+                        listenOptions.UseHttps("testCert.pfx", "testPassword");
+                    });
                 })
-                .UseUrls("http://localhost:5000", "https://localhost:5001")
                 .UseStartup<Startup>()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .Build();
