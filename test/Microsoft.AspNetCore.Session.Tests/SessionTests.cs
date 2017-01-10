@@ -288,7 +288,9 @@ namespace Microsoft.AspNetCore.Session
         [Fact]
         public async Task SessionStart_LogsInformation()
         {
-            var sink = new TestSink();
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<DistributedSession>,
+                TestSink.EnableWithTypeName<DistributedSession>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -314,9 +316,9 @@ namespace Microsoft.AspNetCore.Session
                 response.EnsureSuccessStatusCode();
             }
 
-            var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<DistributedSession>().ToArray();
+            var sessionLogMessages = sink.Writes;
 
-            Assert.Equal(2, sessionLogMessages.Length);
+            Assert.Equal(2, sessionLogMessages.Count);
             Assert.Contains("started", sessionLogMessages[0].State.ToString());
             Assert.Equal(LogLevel.Information, sessionLogMessages[0].LogLevel);
             Assert.Contains("stored", sessionLogMessages[1].State.ToString());
@@ -326,7 +328,9 @@ namespace Microsoft.AspNetCore.Session
         [Fact]
         public async Task ExpiredSession_LogsWarning()
         {
-            var sink = new TestSink();
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<DistributedSession>,
+                TestSink.EnableWithTypeName<DistributedSession>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -370,10 +374,10 @@ namespace Microsoft.AspNetCore.Session
                 result = await client.GetStringAsync("/second");
             }
 
-            var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<DistributedSession>().ToArray();
+            var sessionLogMessages = sink.Writes;
 
             Assert.Equal("2", result);
-            Assert.Equal(3, sessionLogMessages.Length);
+            Assert.Equal(3, sessionLogMessages.Count);
             Assert.Contains("started", sessionLogMessages[0].State.ToString());
             Assert.Contains("stored", sessionLogMessages[1].State.ToString());
             Assert.Contains("expired", sessionLogMessages[2].State.ToString());
@@ -551,7 +555,9 @@ namespace Microsoft.AspNetCore.Session
         [Fact]
         public async Task SessionLogsCacheReadException()
         {
-            var sink = new TestSink();
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<DistributedSession>,
+                TestSink.EnableWithTypeName<DistributedSession>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -584,9 +590,9 @@ namespace Microsoft.AspNetCore.Session
                 response.EnsureSuccessStatusCode();
             }
 
-            var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<DistributedSession>().ToArray();
+            var sessionLogMessages = sink.Writes;
 
-            Assert.Equal(1, sessionLogMessages.Length);
+            Assert.Equal(1, sessionLogMessages.Count);
             Assert.Contains("Session cache read exception", sessionLogMessages[0].State.ToString());
             Assert.Equal(LogLevel.Error, sessionLogMessages[0].LogLevel);
         }
@@ -594,7 +600,17 @@ namespace Microsoft.AspNetCore.Session
         [Fact]
         public async Task SessionLogsCacheWriteException()
         {
-            var sink = new TestSink();
+            var sink = new TestSink(
+                writeContext =>
+                {
+                    return writeContext.LoggerName.Equals(typeof(SessionMiddleware).FullName)
+                        || writeContext.LoggerName.Equals(typeof(DistributedSession).FullName);
+                },
+                beginScopeContext =>
+                {
+                    return beginScopeContext.LoggerName.Equals(typeof(SessionMiddleware).FullName)
+                        || beginScopeContext.LoggerName.Equals(typeof(DistributedSession).FullName);
+                });
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -623,22 +639,23 @@ namespace Microsoft.AspNetCore.Session
                 response.EnsureSuccessStatusCode();
             }
 
-            var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<DistributedSession>().ToArray();
+            var sessionLogMessage = sink.Writes.Where(message => message.LoggerName.Equals(typeof(DistributedSession).FullName, StringComparison.Ordinal)).Single();
 
-            Assert.Equal(1, sessionLogMessages.Length);
-            Assert.Contains("Session started", sessionLogMessages[0].State.ToString());
-            Assert.Equal(LogLevel.Information, sessionLogMessages[0].LogLevel);
+            Assert.Contains("Session started", sessionLogMessage.State.ToString());
+            Assert.Equal(LogLevel.Information, sessionLogMessage.LogLevel);
 
-            var sessionMiddlewareLogMessages = sink.Writes.OnlyMessagesFromSource<SessionMiddleware>().ToArray();
-            Assert.Equal(1, sessionMiddlewareLogMessages.Length);
-            Assert.Contains("Error closing the session.", sessionMiddlewareLogMessages[0].State.ToString());
-            Assert.Equal(LogLevel.Error, sessionMiddlewareLogMessages[0].LogLevel);
+            var sessionMiddlewareLogMessage = sink.Writes.Where(message => message.LoggerName.Equals(typeof(SessionMiddleware).FullName, StringComparison.Ordinal)).Single();
+
+            Assert.Contains("Error closing the session.", sessionMiddlewareLogMessage.State.ToString());
+            Assert.Equal(LogLevel.Error, sessionMiddlewareLogMessage.LogLevel);
         }
 
         [Fact]
         public async Task SessionLogsCacheRefreshException()
         {
-            var sink = new TestSink();
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<SessionMiddleware>,
+                TestSink.EnableWithTypeName<SessionMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -667,9 +684,9 @@ namespace Microsoft.AspNetCore.Session
                 response.EnsureSuccessStatusCode();
             }
 
-            var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<SessionMiddleware>().ToArray();
+            var sessionLogMessages = sink.Writes;
 
-            Assert.Equal(1, sessionLogMessages.Length);
+            Assert.Equal(1, sessionLogMessages.Count);
             Assert.Contains("Error closing the session.", sessionLogMessages[0].State.ToString());
             Assert.Equal(LogLevel.Error, sessionLogMessages[0].LogLevel);
         }
