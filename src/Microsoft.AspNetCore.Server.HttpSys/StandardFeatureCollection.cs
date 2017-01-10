@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             { typeof(IHttpBufferingFeature), _identityFunc },
             { typeof(IHttpRequestLifetimeFeature), _identityFunc },
             { typeof(IHttpUpgradeFeature), _identityFunc },
-            { typeof(IHttpWebSocketFeature), _identityFunc },
             { typeof(IHttpAuthenticationFeature), _identityFunc },
             { typeof(IHttpRequestIdentifierFeature), _identityFunc },
             { typeof(RequestContext), ctx => ctx.RequestContext },
