@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 
@@ -23,12 +24,35 @@ namespace AutobahnTestApp
             {
                 builder.UseHttpSys();
             }
+            else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_PORT")))
+            {
+                // ANCM is hosting the process.
+                // The port will not yet be configure at this point, but will also not require HTTPS.
+                builder.UseKestrel();
+            }
             else
             {
+                // Also check "server.urls" for back-compat.
+                var urls = builder.GetSetting(WebHostDefaults.ServerUrlsKey) ?? builder.GetSetting("server.urls");
+                builder.UseSetting(WebHostDefaults.ServerUrlsKey, string.Empty);
+
+                if (urls.Contains(";"))
+                {
+                    throw new NotSupportedException("This test app does not support multiple endpoints.");
+                }
+
+                var uri = new Uri(urls);
+
                 builder.UseKestrel(options =>
                 {
-                    var certPath = Path.Combine(AppContext.BaseDirectory, "TestResources", "testCert.pfx");
-                    options.UseHttps(certPath, "testPassword");
+                    options.Listen(IPAddress.Loopback, uri.Port, listenOptions =>
+                    {
+                        if (uri.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var certPath = Path.Combine(AppContext.BaseDirectory, "TestResources", "testCert.pfx");
+                            listenOptions.UseHttps(certPath, "testPassword");
+                        }
+                    });
                 });
             }
 
