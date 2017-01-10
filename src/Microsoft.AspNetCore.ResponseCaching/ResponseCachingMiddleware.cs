@@ -74,38 +74,52 @@ namespace Microsoft.AspNetCore.ResponseCaching
             var context = new ResponseCachingContext(httpContext, _logger);
 
             // Should we attempt any caching logic?
-            if (_policyProvider.IsRequestCacheable(context))
+            if (_policyProvider.AttemptResponseCaching(context))
             {
                 // Can this request be served from cache?
-                if (await TryServeFromCacheAsync(context))
+                if (_policyProvider.AllowCacheLookup(context) && await TryServeFromCacheAsync(context))
                 {
                     return;
                 }
 
-                // Hook up to listen to the response stream
-                ShimResponseStream(context);
-
-                try
+                // Should we store the response to this request?
+                if (_policyProvider.AllowCacheStorage(context))
                 {
-                    // Subscribe to OnStarting event
-                    httpContext.Response.OnStarting(_onStartingCallback, context);
+                    // Hook up to listen to the response stream
+                    ShimResponseStream(context);
 
-                    await _next(httpContext);
+                    try
+                    {
+                        // Subscribe to OnStarting event
+                        httpContext.Response.OnStarting(_onStartingCallback, context);
 
-                    // If there was no response body, check the response headers now. We can cache things like redirects.
-                    await OnResponseStartingAsync(context);
+                        await _next(httpContext);
 
-                    // Finalize the cache entry
-                    await FinalizeCacheBodyAsync(context);
-                }
-                finally
-                {
-                    UnshimResponseStream(context);
+                        // If there was no response body, check the response headers now. We can cache things like redirects.
+                        await OnResponseStartingAsync(context);
+
+                        // Finalize the cache entry
+                        await FinalizeCacheBodyAsync(context);
+                    }
+                    finally
+                    {
+                        UnshimResponseStream(context);
+                    }
+
+                    return;
                 }
             }
-            else
+
+            // Response should not be captured but add IResponseCachingFeature which may be required when the response is generated
+            AddResponseCachingFeature(httpContext);
+
+            try
             {
                 await _next(httpContext);
+            }
+            finally
+            {
+                RemoveResponseCachingFeature(httpContext);
             }
         }
 
@@ -220,6 +234,12 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     (context.ResponseExpires - context.ResponseTime.Value) ??
                     DefaultExpirationTimeSpan;
 
+                // Generate a base key if none exist
+                if (string.IsNullOrEmpty(context.BaseKey))
+                {
+                    context.BaseKey = _keyProvider.CreateBaseKey(context);
+                }
+
                 // Check if any vary rules exist
                 if (!StringValues.IsNullOrEmpty(varyHeaders) || !StringValues.IsNullOrEmpty(varyQueryKeys))
                 {
@@ -279,9 +299,9 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         internal async Task FinalizeCacheBodyAsync(ResponseCachingContext context)
         {
-            var contentLength = context.HttpContext.Response.ContentLength;
             if (context.ShouldCacheResponse && context.ResponseCachingStream.BufferingEnabled)
             {
+                var contentLength = context.HttpContext.Response.ContentLength;
                 var bufferStream = context.ResponseCachingStream.GetBufferStream();
                 if (!contentLength.HasValue || contentLength == bufferStream.Length)
                 {
@@ -322,6 +342,15 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
         }
 
+        internal static void AddResponseCachingFeature(HttpContext context)
+        {
+            if (context.Features.Get<IResponseCachingFeature>() != null)
+            {
+                throw new InvalidOperationException($"Another instance of {nameof(ResponseCachingFeature)} already exists. Only one instance of {nameof(ResponseCachingMiddleware)} can be configured for an application.");
+            }
+            context.Features.Set<IResponseCachingFeature>(new ResponseCachingFeature());
+        }
+
         internal void ShimResponseStream(ResponseCachingContext context)
         {
             // Shim response stream
@@ -337,12 +366,11 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
 
             // Add IResponseCachingFeature
-            if (context.HttpContext.Features.Get<IResponseCachingFeature>() != null)
-            {
-                throw new InvalidOperationException($"Another instance of {nameof(ResponseCachingFeature)} already exists. Only one instance of {nameof(ResponseCachingMiddleware)} can be configured for an application.");
-            }
-            context.HttpContext.Features.Set<IResponseCachingFeature>(new ResponseCachingFeature());
+            AddResponseCachingFeature(context.HttpContext);
         }
+
+        internal static void RemoveResponseCachingFeature(HttpContext context) =>
+            context.Features.Set<IResponseCachingFeature>(null);
 
         internal static void UnshimResponseStream(ResponseCachingContext context)
         {
@@ -353,7 +381,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             context.HttpContext.Features.Set(context.OriginalSendFileFeature);
 
             // Remove IResponseCachingFeature
-            context.HttpContext.Features.Set<IResponseCachingFeature>(null);
+            RemoveResponseCachingFeature(context.HttpContext);
         }
 
         internal static bool ContentIsNotModified(ResponseCachingContext context)
@@ -388,8 +416,8 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
             else
             {
-                var ifUnmodifiedSince = context.HttpContext.Request.Headers[HeaderNames.IfUnmodifiedSince];
-                if (!StringValues.IsNullOrEmpty(ifUnmodifiedSince))
+                var ifModifiedSince = context.HttpContext.Request.Headers[HeaderNames.IfModifiedSince];
+                if (!StringValues.IsNullOrEmpty(ifModifiedSince))
                 {
                     DateTimeOffset modified;
                     if (!HeaderUtilities.TryParseDate(cachedResponseHeaders[HeaderNames.LastModified], out modified) &&
@@ -398,11 +426,11 @@ namespace Microsoft.AspNetCore.ResponseCaching
                         return false;
                     }
 
-                    DateTimeOffset unmodifiedSince;
-                    if (HeaderUtilities.TryParseDate(ifUnmodifiedSince, out unmodifiedSince) &&
-                        modified <= unmodifiedSince)
+                    DateTimeOffset modifiedSince;
+                    if (HeaderUtilities.TryParseDate(ifModifiedSince, out modifiedSince) &&
+                        modified <= modifiedSince)
                     {
-                        context.Logger.LogNotModifiedIfUnmodifiedSinceSatisfied(modified, unmodifiedSince);
+                        context.Logger.LogNotModifiedIfModifiedSinceSatisfied(modified, modifiedSince);
                         return true;
                     }
                 }

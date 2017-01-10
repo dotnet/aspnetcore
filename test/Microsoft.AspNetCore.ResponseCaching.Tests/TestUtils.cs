@@ -20,6 +20,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Xunit;
+using ISystemClock = Microsoft.AspNetCore.ResponseCaching.Internal.ISystemClock;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Tests
 {
@@ -42,11 +43,19 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             }
 
             var uniqueId = Guid.NewGuid().ToString();
-            headers.CacheControl = new CacheControlHeaderValue
+            if (headers.CacheControl == null)
             {
-                Public = true,
-                MaxAge = string.IsNullOrEmpty(expires) ? TimeSpan.FromSeconds(10) : (TimeSpan?)null
-            };
+                headers.CacheControl = new CacheControlHeaderValue
+                {
+                    Public = true,
+                    MaxAge = string.IsNullOrEmpty(expires) ? TimeSpan.FromSeconds(10) : (TimeSpan?)null
+                };
+            }
+            else
+            {
+                headers.CacheControl.Public = true;
+                headers.CacheControl.MaxAge = string.IsNullOrEmpty(expires) ? TimeSpan.FromSeconds(10) : (TimeSpan?)null;
+            }
             headers.Date = DateTimeOffset.UtcNow;
             headers.Headers["X-Value"] = uniqueId;
 
@@ -103,12 +112,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         internal static ResponseCachingMiddleware CreateTestMiddleware(
+            RequestDelegate next = null,
             IResponseCache cache = null,
             ResponseCachingOptions options = null,
             TestSink testSink = null,
             IResponseCachingKeyProvider keyProvider = null,
             IResponseCachingPolicyProvider policyProvider = null)
         {
+            if (next == null)
+            {
+                next = httpContext => TaskCache.CompletedTask;
+            }
             if (cache == null)
             {
                 cache = new TestResponseCache();
@@ -127,7 +141,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             }
 
             return new ResponseCachingMiddleware(
-                httpContext => TaskCache.CompletedTask,
+                next,
                 Options.Create(options),
                 testSink == null ? (ILoggerFactory)NullLoggerFactory.Instance : new TestLoggerFactory(testSink, true),
                 policyProvider,
@@ -188,7 +202,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         internal static LoggedMessage ResponseWithUnsuccessfulStatusCodeNotCacheable => new LoggedMessage(17, LogLevel.Debug);
         internal static LoggedMessage NotModifiedIfNoneMatchStar => new LoggedMessage(18, LogLevel.Debug);
         internal static LoggedMessage NotModifiedIfNoneMatchMatched => new LoggedMessage(19, LogLevel.Debug);
-        internal static LoggedMessage NotModifiedIfUnmodifiedSinceSatisfied => new LoggedMessage(20, LogLevel.Debug);
+        internal static LoggedMessage NotModifiedIfModifiedSinceSatisfied => new LoggedMessage(20, LogLevel.Debug);
         internal static LoggedMessage NotModifiedServed => new LoggedMessage(21, LogLevel.Information);
         internal static LoggedMessage CachedResponseServed => new LoggedMessage(22, LogLevel.Information);
         internal static LoggedMessage GatewayTimeoutServed => new LoggedMessage(23, LogLevel.Information);
@@ -197,6 +211,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         internal static LoggedMessage ResponseCached => new LoggedMessage(26, LogLevel.Information);
         internal static LoggedMessage ResponseNotCached => new LoggedMessage(27, LogLevel.Information);
         internal static LoggedMessage ResponseContentLengthMismatchNotCached => new LoggedMessage(28, LogLevel.Warning);
+        internal static LoggedMessage ExpirationInfiniteMaxStaleSatisfied => new LoggedMessage(29, LogLevel.Debug);
 
         private LoggedMessage(int evenId, LogLevel logLevel)
         {
@@ -218,11 +233,21 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
     internal class TestResponseCachingPolicyProvider : IResponseCachingPolicyProvider
     {
-        public bool IsCachedEntryFresh(ResponseCachingContext context) => true;
+        public bool AllowCacheLookupValue { get; set; } = false;
+        public bool AllowCacheStorageValue { get; set; } = false;
+        public bool AttemptResponseCachingValue { get; set; } = false;
+        public bool IsCachedEntryFreshValue { get; set; } = true;
+        public bool IsResponseCacheableValue { get; set; } = true;
 
-        public bool IsRequestCacheable(ResponseCachingContext context) => true;
+        public bool AllowCacheLookup(ResponseCachingContext context) => AllowCacheLookupValue;
 
-        public bool IsResponseCacheable(ResponseCachingContext context) => true;
+        public bool AllowCacheStorage(ResponseCachingContext context) => AllowCacheStorageValue;
+
+        public bool AttemptResponseCaching(ResponseCachingContext context) => AttemptResponseCachingValue;
+
+        public bool IsCachedEntryFresh(ResponseCachingContext context) => IsCachedEntryFreshValue;
+
+        public bool IsResponseCacheable(ResponseCachingContext context) => IsResponseCacheableValue;
     }
 
     internal class TestResponseCachingKeyProvider : IResponseCachingKeyProvider
@@ -283,5 +308,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             _storage[key] = entry;
             return TaskCache.CompletedTask;
         }
+    }
+
+    internal class TestClock : ISystemClock
+    {
+        public DateTimeOffset UtcNow { get; set; }
     }
 }

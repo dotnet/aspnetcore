@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         private static Action<ILogger, int, Exception> _logResponseWithUnsuccessfulStatusCodeNotCacheable;
         private static Action<ILogger, Exception> _logNotModifiedIfNoneMatchStar;
         private static Action<ILogger, EntityTagHeaderValue, Exception> _logNotModifiedIfNoneMatchMatched;
-        private static Action<ILogger, DateTimeOffset, DateTimeOffset, Exception> _logNotModifiedIfUnmodifiedSinceSatisfied;
+        private static Action<ILogger, DateTimeOffset, DateTimeOffset, Exception> _logNotModifiedIfModifiedSinceSatisfied;
         private static Action<ILogger, Exception> _logNotModifiedServed;
         private static Action<ILogger, Exception> _logCachedResponseServed;
         private static Action<ILogger, Exception> _logGatewayTimeoutServed;
@@ -40,6 +40,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         private static Action<ILogger, Exception> _logResponseCached;
         private static Action<ILogger, Exception> _logResponseNotCached;
         private static Action<ILogger, Exception> _logResponseContentLengthMismatchNotCached;
+        private static Action<ILogger, TimeSpan, TimeSpan, Exception> _logExpirationInfiniteMaxStaleSatisfied;
 
         static LoggerExtensions()
         {
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             _logExpirationMustRevalidate = LoggerMessage.Define<TimeSpan, TimeSpan>(
                 logLevel: LogLevel.Debug,
                 eventId: 7,
-                formatString: "The age of the entry is {Age} and has exceeded the maximum age of {MaxAge} specified by the 'max-age' cache directive. It must be revalidated because the 'must-revalidate' cache directive is specified.");
+                formatString: "The age of the entry is {Age} and has exceeded the maximum age of {MaxAge} specified by the 'max-age' cache directive. It must be revalidated because the 'must-revalidate' or 'proxy-revalidate' cache directive is specified.");
             _logExpirationMaxStaleSatisfied = LoggerMessage.Define<TimeSpan, TimeSpan, TimeSpan>(
                 logLevel: LogLevel.Debug,
                 eventId: 8,
@@ -119,10 +120,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 logLevel: LogLevel.Debug,
                 eventId: 19,
                 formatString: $"The ETag {{ETag}} in the '{HeaderNames.IfNoneMatch}' header matched the ETag of a cached entry.");
-            _logNotModifiedIfUnmodifiedSinceSatisfied = LoggerMessage.Define<DateTimeOffset, DateTimeOffset>(
+            _logNotModifiedIfModifiedSinceSatisfied = LoggerMessage.Define<DateTimeOffset, DateTimeOffset>(
                 logLevel: LogLevel.Debug,
                 eventId: 20,
-                formatString: $"The last modified date of {{LastModified}} is before the date {{IfUnmodifiedSince}} specified in the '{HeaderNames.IfUnmodifiedSince}' header.");
+                formatString: $"The last modified date of {{LastModified}} is before the date {{IfModifiedSince}} specified in the '{HeaderNames.IfModifiedSince}' header.");
             _logNotModifiedServed = LoggerMessage.Define(
                 logLevel: LogLevel.Information,
                 eventId: 21,
@@ -155,6 +156,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 logLevel: LogLevel.Warning,
                 eventId: 28,
                 formatString: $"The response could not be cached for this request because the '{HeaderNames.ContentLength}' did not match the body length.");
+            _logExpirationInfiniteMaxStaleSatisfied = LoggerMessage.Define<TimeSpan, TimeSpan>(
+                logLevel: LogLevel.Debug,
+                eventId: 29,
+                formatString: "The age of the entry is {Age} and has exceeded the maximum age of {MaxAge} specified by the 'max-age' cache directive. However, the 'max-stale' cache directive was specified without an assigned value and a stale response of any age is accepted.");
         }
 
         internal static void LogRequestMethodNotCacheable(this ILogger logger, string method)
@@ -252,9 +257,9 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             _logNotModifiedIfNoneMatchMatched(logger, etag, null);
         }
 
-        internal static void LogNotModifiedIfUnmodifiedSinceSatisfied(this ILogger logger, DateTimeOffset lastModified, DateTimeOffset ifUnmodifiedSince)
+        internal static void LogNotModifiedIfModifiedSinceSatisfied(this ILogger logger, DateTimeOffset lastModified, DateTimeOffset ifModifiedSince)
         {
-            _logNotModifiedIfUnmodifiedSinceSatisfied(logger, lastModified, ifUnmodifiedSince, null);
+            _logNotModifiedIfModifiedSinceSatisfied(logger, lastModified, ifModifiedSince, null);
         }
 
         internal static void LogNotModifiedServed(this ILogger logger)
@@ -295,6 +300,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         internal static void LogResponseContentLengthMismatchNotCached(this ILogger logger)
         {
             _logResponseContentLengthMismatchNotCached(logger, null);
+        }
+
+        internal static void LogExpirationInfiniteMaxStaleSatisfied(this ILogger logger, TimeSpan age, TimeSpan maxAge)
+        {
+            _logExpirationInfiniteMaxStaleSatisfied(logger, age, maxAge, null);
         }
     }
 }
