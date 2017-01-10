@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <see cref="ObjectResult.ContentTypes"/>.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class ProducesAttribute : ResultFilterAttribute, IApiResponseMetadataProvider
+    public class ProducesAttribute : Attribute, IResultFilter, IOrderedFilter, IApiResponseMetadataProvider
     {
         /// <summary>
         /// Initializes an instance of <see cref="ProducesAttribute"/>.
@@ -72,14 +72,16 @@ namespace Microsoft.AspNetCore.Mvc
         public int StatusCode => StatusCodes.Status200OK;
 
         /// <inheritdoc />
-        public override void OnResultExecuting(ResultExecutingContext context)
+        public int Order { get; set; }
+
+        /// <inheritdoc />
+        public virtual void OnResultExecuting(ResultExecutingContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            base.OnResultExecuting(context);
             var objectResult = context.Result as ObjectResult;
 
             if (objectResult != null)
@@ -97,6 +99,21 @@ namespace Microsoft.AspNetCore.Mvc
                 }
 
                 SetContentTypes(objectResult.ContentTypes);
+            }
+        }
+
+        /// <inheritdoc />
+        public virtual void OnResultExecuted(ResultExecutedContext context)
+        {
+        }
+
+        /// <inheritdoc />
+        public void SetContentTypes(MediaTypeCollection contentTypes)
+        {
+            contentTypes.Clear();
+            foreach (var contentType in ContentTypes)
+            {
+                contentTypes.Add(contentType);
             }
         }
 
@@ -120,16 +137,6 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             return contentTypes;
-        }
-
-        /// <inheritdoc />
-        public void SetContentTypes(MediaTypeCollection contentTypes)
-        {
-            contentTypes.Clear();
-            foreach (var contentType in ContentTypes)
-            {
-                contentTypes.Add(contentType);
-            }
         }
     }
 }

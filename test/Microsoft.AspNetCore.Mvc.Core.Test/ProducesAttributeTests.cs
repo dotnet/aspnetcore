@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Test
     public class ProducesAttributeTests
     {
         [Fact]
-        public async Task ProducesAttribute_SetsContentType()
+        public void ProducesAttribute_SetsContentType()
         {
             // Arrange
             var mediaType1 = new StringSegment("application/json");
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Test
                             () => Task.FromResult(CreateResultExecutedContext(resultExecutingContext)));
 
             // Act
-            await producesContentAttribute.OnResultExecutionAsync(resultExecutingContext, next);
+            producesContentAttribute.OnResultExecuting(resultExecutingContext);
 
             // Assert
             var objectResult = resultExecutingContext.Result as ObjectResult;
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Test
         }
 
         [Fact]
-        public async Task ProducesContentAttribute_FormatFilterAttribute_NotActive()
+        public void ProducesContentAttribute_FormatFilterAttribute_NotActive()
         {
             // Arrange
             var producesContentAttribute = new ProducesAttribute("application/xml");
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.Test
                             () => Task.FromResult(CreateResultExecutedContext(resultExecutingContext)));
 
             // Act
-            await producesContentAttribute.OnResultExecutionAsync(resultExecutingContext, next);
+            producesContentAttribute.OnResultExecuting(resultExecutingContext);
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Test
         }
 
         [Fact]
-        public async Task ProducesContentAttribute_FormatFilterAttribute_Active()
+        public void ProducesContentAttribute_FormatFilterAttribute_Active()
         {
             // Arrange
             var producesContentAttribute = new ProducesAttribute("application/xml");
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.Test
                             () => Task.FromResult(CreateResultExecutedContext(resultExecutingContext)));
 
             // Act
-            await producesContentAttribute.OnResultExecutionAsync(resultExecutingContext, next);
+            producesContentAttribute.OnResultExecuting(resultExecutingContext);
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultExecutingContext.Result);

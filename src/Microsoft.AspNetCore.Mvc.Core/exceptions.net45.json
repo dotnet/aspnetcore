@@ -1,0 +1,6 @@
+[
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.ProducesAttribute : Microsoft.AspNetCore.Mvc.Filters.ResultFilterAttribute, Microsoft.AspNetCore.Mvc.ApiExplorer.IApiResponseMetadataProvider",
+        "Kind": "Removal"
+    }
+]
