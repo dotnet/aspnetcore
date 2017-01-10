@@ -43,6 +43,15 @@ namespace Microsoft.AspNetCore.Sockets.Internal
             }
         }
 
+        private void CancelRead()
+        {
+            // We need to fake cancellation support until we get a newer build of pipelines that has CancelPendingRead()
+
+            // HACK: from hell, we attempt to cast the input to a pipeline writer and write 0 bytes so it so that we can
+            // force yielding the awaiter, this is buggy because overlapping writes can be a problem.
+            (_connection.Input as IPipelineWriter)?.WriteAsync(Span<byte>.Empty);
+        }
+
         bool IReadableChannel<Message>.TryRead(out Message item)
         {
             // We need to think about how we do this. There's no way to check if there is data available in a Pipeline... though maybe there should be
@@ -81,14 +90,18 @@ namespace Microsoft.AspNetCore.Sockets.Internal
         bool IWritableChannel<Message>.TryComplete(Exception error)
         {
             _connection.Output.Complete(error);
+            _connection.Input.Complete(error);
             return true;
         }
 
         private async Task<Message> AwaitReadAsync(ReadableBufferAwaitable awaiter, CancellationToken cancellationToken)
         {
-            // Just await and then call ReadSync
-            var result = await awaiter;
-            return ReadSync(result, cancellationToken);
+            using (cancellationToken.Register(state => ((FramingChannel)state).CancelRead(), this))
+            {
+                // Just await and then call ReadSync
+                var result = await awaiter;
+                return ReadSync(result, cancellationToken);
+            }
         }
 
         private Message ReadSync(ReadResult result, CancellationToken cancellationToken)
@@ -105,6 +118,16 @@ namespace Microsoft.AspNetCore.Sockets.Internal
             {
                 // Complete the task
                 _tcs.TrySetResult(null);
+            }
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                _tcs.TrySetCanceled();
+
+                msg.Dispose();
+
+                // In order to keep the behavior consistent between the transports, we throw if the token was cancelled
+                throw new OperationCanceledException();
             }
 
             return msg;
