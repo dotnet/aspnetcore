@@ -4,12 +4,12 @@
 using System;
 using System.Reflection;
 
-namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
+namespace Microsoft.AspNetCore.Razor.Evolution
 {
     /// <summary>
     /// A metadata class describing a tag helper attribute.
     /// </summary>
-    internal class TagHelperAttributeDescriptor
+    public class TagHelperAttributeDescriptor
     {
         private string _typeName;
         private string _name;

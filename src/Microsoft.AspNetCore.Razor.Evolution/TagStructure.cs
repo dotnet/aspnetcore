@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
+namespace Microsoft.AspNetCore.Razor.Evolution
 {
     /// <summary>
     /// The structure the element should be written in.
     /// </summary>
-    internal enum TagStructure
+    public enum TagStructure
     {
         /// <summary>
         /// If no other tag helper applies to the same element and specifies a <see cref="TagStructure"/>,

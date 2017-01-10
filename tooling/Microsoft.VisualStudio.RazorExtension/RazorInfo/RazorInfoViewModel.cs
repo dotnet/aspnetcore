@@ -22,7 +22,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
         private readonly IRazorEngineAssemblyResolver _assemblyResolver;
         private readonly IRazorEngineDirectiveResolver _directiveResolver;
         private readonly IRazorEngineDocumentGenerator _documentGenerator;
-        private readonly IRazorEngineTagHelperResolver _tagHelperResolver;
+        private readonly ITagHelperResolver _tagHelperResolver;
         private readonly IServiceProvider _services;
         private readonly Workspace _workspace;
 
@@ -39,7 +39,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
             Workspace workspace,
             IRazorEngineAssemblyResolver assemblyResolver,
             IRazorEngineDirectiveResolver directiveResolver,
-            IRazorEngineTagHelperResolver tagHelperResolver,
+            ITagHelperResolver tagHelperResolver,
             IRazorEngineDocumentGenerator documentGenerator)
         {
             _services = services;
@@ -166,7 +166,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
                 var assemblies = await _assemblyResolver.GetRazorEngineAssembliesAsync(project);
 
                 var directives = await _directiveResolver.GetRazorEngineDirectivesAsync(_workspace, project);
-                var tagHelpers = await _tagHelperResolver.GetRazorEngineTagHelpersAsync(_workspace, project);
+                var tagHelpers = await _tagHelperResolver.GetTagHelpersAsync(project);
 
                 var files = GetCshtmlDocuments(project);
 

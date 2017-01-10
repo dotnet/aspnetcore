@@ -3,13 +3,13 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
+using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
-    internal interface IRazorEngineTagHelperResolver
+    public interface ITagHelperResolver
     {
-        Task<IEnumerable<TagHelperDescriptor>> GetRazorEngineTagHelpersAsync(Workspace workspace, Project project);
+        Task<IEnumerable<TagHelperDescriptor>> GetTagHelpersAsync(Project project);
     }
 }

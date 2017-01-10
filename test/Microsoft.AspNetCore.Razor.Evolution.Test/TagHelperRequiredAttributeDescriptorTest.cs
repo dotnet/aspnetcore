@@ -1,6 +1,6 @@
 ﻿using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
+namespace Microsoft.AspNetCore.Razor.Evolution
 {
     public class TagHelperRequiredAttributeDescriptorTest
     {

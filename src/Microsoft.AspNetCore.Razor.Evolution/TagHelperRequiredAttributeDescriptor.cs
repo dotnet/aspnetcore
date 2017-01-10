@@ -5,12 +5,12 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
+namespace Microsoft.AspNetCore.Razor.Evolution
 {
     /// <summary>
     /// A metadata class describing a required tag helper attribute.
     /// </summary>
-    internal class TagHelperRequiredAttributeDescriptor
+    public class TagHelperRequiredAttributeDescriptor
     {
         /// <summary>
         /// The HTML attribute name.

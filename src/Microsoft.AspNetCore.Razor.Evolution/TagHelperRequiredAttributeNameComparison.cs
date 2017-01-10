@@ -1,12 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
+namespace Microsoft.AspNetCore.Razor.Evolution
 {
     /// <summary>
     /// Acceptable <see cref="TagHelperRequiredAttributeDescriptor.Name"/> comparison modes.
     /// </summary>
-    internal enum TagHelperRequiredAttributeNameComparison
+    public enum TagHelperRequiredAttributeNameComparison
     {
         /// <summary>
         /// HTML attribute name case insensitively matches <see cref="TagHelperRequiredAttributeDescriptor.Name"/>.

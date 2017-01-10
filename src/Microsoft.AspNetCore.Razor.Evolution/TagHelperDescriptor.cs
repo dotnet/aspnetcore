@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
+namespace Microsoft.AspNetCore.Razor.Evolution
 {
     /// <summary>
     /// A metadata class describing a tag helper.
     /// </summary>
-    internal class TagHelperDescriptor
+    public class TagHelperDescriptor
     {
         private string _prefix = string.Empty;
         private string _tagName;

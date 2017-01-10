@@ -1,10 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Evolution;
+using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
@@ -30,8 +31,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             foreach (var reference in compilation.References)
             {
-                var assembly = compilation.GetAssemblyOrModuleSymbol(reference) as IAssemblySymbol;
-                if (assembly != null)
+                if (compilation.GetAssemblyOrModuleSymbol(reference) is IAssemblySymbol assembly)
                 {
                     visitor.Visit(assembly.GlobalNamespace);
                 }

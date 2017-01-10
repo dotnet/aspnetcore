@@ -3,10 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
+namespace Microsoft.AspNetCore.Razor.Evolution
 {
     public class TagHelperDescriptorTest
     {

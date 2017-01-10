@@ -17,7 +17,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
         private IRazorEngineAssemblyResolver _assemblyResolver;
         private IRazorEngineDocumentGenerator _documentGenerator;
         private IRazorEngineDirectiveResolver _directiveResolver;
-        private IRazorEngineTagHelperResolver _tagHelperResolver;
+        private ITagHelperResolver _tagHelperResolver;
         private VisualStudioWorkspace _workspace;
 
         public RazorInfoToolWindow() : base(null)
@@ -35,7 +35,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
             _assemblyResolver = componentModel.GetService<IRazorEngineAssemblyResolver>();
             _documentGenerator = componentModel.GetService<IRazorEngineDocumentGenerator>();
             _directiveResolver = componentModel.GetService<IRazorEngineDirectiveResolver>();
-            _tagHelperResolver = componentModel.GetService<IRazorEngineTagHelperResolver>();
+            _tagHelperResolver = componentModel.GetService<ITagHelperResolver>();
 
             _workspace = componentModel.GetService<VisualStudioWorkspace>();
             _workspace.WorkspaceChanged += Workspace_WorkspaceChanged;
