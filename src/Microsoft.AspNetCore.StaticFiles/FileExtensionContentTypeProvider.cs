@@ -352,8 +352,8 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".wmv", "video/x-ms-wmv" },
                 { ".wmx", "video/x-ms-wmx" },
                 { ".wmz", "application/x-ms-wmz" },
-                { ".woff", "application/font-woff" },
-                { ".woff2", "application/font-woff2" },
+                { ".woff", "application/font-woff" }, // https://www.w3.org/TR/WOFF/#appendix-b
+                { ".woff2", "font/woff2" }, // https://www.w3.org/TR/WOFF2/#IMT
                 { ".wps", "application/vnd.ms-works" },
                 { ".wri", "application/x-mswrite" },
                 { ".wrl", "x-world/x-vrml" },
