@@ -2,7 +2,7 @@
   <PropertyGroup>
     <_MvcRazorOutputPath Condition="'$(MvcRazorOutputPath)'!=''">$([MSBuild]::EnsureTrailingSlash('$(MvcRazorOutputPath)'))</_MvcRazorOutputPath>
     <_MvcRazorOutputPath Condition="'$(_MvcRazorOutputPath)'==''">$(IntermediateOutputPath)</_MvcRazorOutputPath>
-    <_MvcRazorOutputFullPath>$([System.IO.Path]::Combine($([System.IO.Path]::GetFullPath('$(_MvcRazorOutputPath)')), '$(MSBuildProjectName).PrecompiledViews.dll'))</_MvcRazorOutputFullPath>
+    <_MvcRazorOutputFullPath>$([System.IO.Path]::Combine($(_MvcRazorOutputPath), '$(MSBuildProjectName).PrecompiledViews.dll'))</_MvcRazorOutputFullPath>
     <_MvcRazorResponseFilePath>$(IntermediateOutputPath)microsoft.aspnetcore.mvc.razor.viewcompilation.rsp</_MvcRazorResponseFilePath>
 
     <MvcRazorContentRoot Condition="'$(MvcRazorContentRoot)'==''">$(MSBuildProjectDirectory)</MvcRazorContentRoot>
