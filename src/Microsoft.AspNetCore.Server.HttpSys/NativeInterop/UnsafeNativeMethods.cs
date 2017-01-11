@@ -100,28 +100,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 [In] IntPtr contextBuffer);
 
 #if NETSTANDARD1_3
-            [DllImport(sspicli_LIB, ExactSpelling = true, SetLastError = true)]
-#else
-            [DllImport(SECUR32, ExactSpelling = true, SetLastError = true)]
-#endif        
-            internal static unsafe extern int QueryContextAttributesW(
-                ref SSPIHandle contextHandle,
-                [In] ContextAttribute attribute,
-                [In] void* buffer);
-
-#if NETSTANDARD1_3
             [DllImport(api_ms_win_core_handle_LIB, ExactSpelling = true, SetLastError = true)]
 #else
             [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
 #endif
             internal static extern bool CloseHandle(IntPtr handle);
-
-#if NETSTANDARD1_3
-            [DllImport(api_ms_win_core_heap_obsolete_LIB, ExactSpelling = true, SetLastError = true)]
-#else
-            [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
-#endif
-            internal static extern SafeLocalFree LocalAlloc(int uFlags, UIntPtr sizetdwBytes);
 
 #if NETSTANDARD1_3
             [DllImport(api_ms_win_core_heap_obsolete_LIB, EntryPoint = "LocalAlloc", SetLastError = true)]
@@ -137,20 +120,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
 #endif
             internal static extern IntPtr LocalFree(IntPtr handle);
-
-#if NETSTANDARD1_3
-            [DllImport(api_ms_win_core_libraryloader_LIB, ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
-#else
-            [DllImport(KERNEL32, ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
-#endif            
-            internal static extern unsafe SafeLoadLibrary LoadLibraryExW([In] string lpwLibFileName, [In] void* hFile, [In] uint dwFlags);
-
-#if NETSTANDARD1_3
-            [DllImport(api_ms_win_core_libraryloader_LIB, ExactSpelling = true, SetLastError = true)]
-#else
-            [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
-#endif
-            internal static extern unsafe bool FreeLibrary([In] IntPtr hModule);
         }
 
         // from tokenbinding.h

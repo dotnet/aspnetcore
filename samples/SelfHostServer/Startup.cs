@@ -1,7 +1,4 @@
 using System;
-using System.Net.WebSockets;
-using System.Text;
-using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -29,19 +26,8 @@ namespace SelfHostServer
 
             app.Run(async context =>
             {
-                if (context.WebSockets.IsWebSocketRequest)
-                {
-                    byte[] bytes = Encoding.ASCII.GetBytes("Hello World: " + DateTime.Now);
-                    WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    await webSocket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length), WebSocketMessageType.Text, true, CancellationToken.None);
-                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Goodbye", CancellationToken.None);
-                    webSocket.Dispose();
-                }
-                else
-                {
-                    context.Response.ContentType = "text/plain";
-                    await context.Response.WriteAsync("Hello world from " + context.Request.Host + " at " + DateTime.Now);
-                }
+                context.Response.ContentType = "text/plain";
+                await context.Response.WriteAsync("Hello world from " + context.Request.Host + " at " + DateTime.Now);
             });
         }
 

@@ -398,7 +398,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                                 &httpResponse,
                                 null,
                                 &dataWritten,
-                                SafeLocalFree.Zero,
+                                IntPtr.Zero,
                                 0,
                                 SafeNativeOverlapped.Zero,
                                 IntPtr.Zero);

@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // The native request queue
         private long _requestQueueLength = DefaultRequestQueueLength;
         private RequestQueue _requestQueue;
-        private ILogger _logger = NullLogger.Instance;
 
         public HttpSysOptions()
         {

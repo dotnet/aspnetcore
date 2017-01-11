@@ -191,26 +191,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        public string ContentType
-        {
-            get
-            {
-                return Headers[HttpKnownHeaderNames.ContentType];
-            }
-            set
-            {
-                CheckResponseStarted();
-                if (string.IsNullOrEmpty(value))
-                {
-                    Headers.Remove(HttpKnownHeaderNames.ContentType);
-                }
-                else
-                {
-                    Headers[HttpKnownHeaderNames.ContentType] = value;
-                }
-            }
-        }
-
         /// <summary>
         /// Enable kernel caching for the response with the given timeout. Http.Sys determines if the response
         /// can be cached.
@@ -368,7 +348,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                                 pResponse,
                                 &cachePolicy,
                                 &bytesSent,
-                                SafeLocalFree.Zero,
+                                IntPtr.Zero,
                                 0,
                                 asyncResult == null ? SafeNativeOverlapped.Zero : asyncResult.NativeOverlapped,
                                 IntPtr.Zero);

@@ -28,10 +28,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal static extern uint HttpReceiveHttpRequest(SafeHandle requestQueueHandle, ulong requestId, uint flags, HTTP_REQUEST* pRequestBuffer, uint requestBufferLength, uint* pBytesReturned, SafeNativeOverlapped pOverlapped);
 
         [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
-        internal static extern uint HttpSendHttpResponse(SafeHandle requestQueueHandle, ulong requestId, uint flags, HTTP_RESPONSE_V2* pHttpResponse, HTTP_CACHE_POLICY* pCachePolicy, uint* pBytesSent, SafeLocalFree pRequestBuffer, uint requestBufferLength, SafeNativeOverlapped pOverlapped, IntPtr pLogData);
+        internal static extern uint HttpSendHttpResponse(SafeHandle requestQueueHandle, ulong requestId, uint flags, HTTP_RESPONSE_V2* pHttpResponse, HTTP_CACHE_POLICY* pCachePolicy, uint* pBytesSent, IntPtr pReserved1, uint Reserved2, SafeNativeOverlapped pOverlapped, IntPtr pLogData);
 
         [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
-        internal static extern uint HttpSendResponseEntityBody(SafeHandle requestQueueHandle, ulong requestId, uint flags, ushort entityChunkCount, HTTP_DATA_CHUNK* pEntityChunks, uint* pBytesSent, SafeLocalFree pRequestBuffer, uint requestBufferLength, SafeNativeOverlapped pOverlapped, IntPtr pLogData);
+        internal static extern uint HttpSendResponseEntityBody(SafeHandle requestQueueHandle, ulong requestId, uint flags, ushort entityChunkCount, HTTP_DATA_CHUNK* pEntityChunks, uint* pBytesSent, IntPtr pReserved1, uint Reserved2, SafeNativeOverlapped pOverlapped, IntPtr pLogData);
 
         [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
         internal static extern uint HttpCancelHttpRequest(SafeHandle requestQueueHandle, ulong requestId, IntPtr pOverlapped);
@@ -633,65 +633,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             HTTP_AUTH_ENABLE_KERBEROS = 0x00000010,
         }
 
-        private const int HttpHeaderRequestMaximum = (int)HttpSysRequestHeader.UserAgent + 1;
-        private const int HttpHeaderResponseMaximum = (int)HttpSysResponseHeader.WwwAuthenticate + 1;
-
-        internal static class HTTP_REQUEST_HEADER_ID
-        {
-            internal static string ToString(int position)
-            {
-                return _strings[position];
-            }
-
-            private static string[] _strings =
-            {
-                    "Cache-Control",
-                    "Connection",
-                    "Date",
-                    "Keep-Alive",
-                    "Pragma",
-                    "Trailer",
-                    "Transfer-Encoding",
-                    "Upgrade",
-                    "Via",
-                    "Warning",
-
-                    "Allow",
-                    "Content-Length",
-                    "Content-Type",
-                    "Content-Encoding",
-                    "Content-Language",
-                    "Content-Location",
-                    "Content-MD5",
-                    "Content-Range",
-                    "Expires",
-                    "Last-Modified",
-
-                    "Accept",
-                    "Accept-Charset",
-                    "Accept-Encoding",
-                    "Accept-Language",
-                    "Authorization",
-                    "Cookie",
-                    "Expect",
-                    "From",
-                    "Host",
-                    "If-Match",
-
-                    "If-Modified-Since",
-                    "If-None-Match",
-                    "If-Range",
-                    "If-Unmodified-Since",
-                    "Max-Forwards",
-                    "Proxy-Authorization",
-                    "Referer",
-                    "Range",
-                    "Te",
-                    "Translate",
-                    "User-Agent",
-                };
-        }
-
         internal static class HTTP_RESPONSE_HEADER_ID
         {
             private static string[] _strings =
@@ -746,11 +687,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 int index;
                 return _lookupTable.TryGetValue(HeaderName, out index) ? index : -1;
-            }
-
-            internal static string ToString(int position)
-            {
-                return _strings[position];
             }
 
             internal enum Enum

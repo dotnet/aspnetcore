@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                                 (ushort)dataChunks.Length,
                                 pDataChunks,
                                 null,
-                                SafeLocalFree.Zero,
+                                IntPtr.Zero,
                                 0,
                                 SafeNativeOverlapped.Zero,
                                 IntPtr.Zero);
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         asyncResult.DataChunkCount,
                         asyncResult.DataChunks,
                         &bytesSent,
-                        SafeLocalFree.Zero,
+                        IntPtr.Zero,
                         0,
                         asyncResult.NativeOverlapped,
                         IntPtr.Zero);
@@ -600,7 +600,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                             asyncResult.DataChunkCount,
                             asyncResult.DataChunks,
                             &bytesSent,
-                            SafeLocalFree.Zero,
+                            IntPtr.Zero,
                             0,
                             asyncResult.NativeOverlapped,
                             IntPtr.Zero);

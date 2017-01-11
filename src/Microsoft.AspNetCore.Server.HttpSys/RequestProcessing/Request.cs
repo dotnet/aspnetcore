@@ -214,8 +214,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // HTTP.Sys allows you to upgrade anything to opaque unless content-length > 0 or chunked are specified.
         internal bool IsUpgradable => !HasEntityBody && ComNetOS.IsWin8orLater;
 
-        public string ContentType => Headers[HttpKnownHeaderNames.ContentType];
-
         internal ClaimsPrincipal User { get; }
 
         // Populates the client certificate.  The result may be null if there is no client cert.
