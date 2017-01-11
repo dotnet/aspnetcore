@@ -24,20 +24,17 @@ namespace Microsoft.AspNetCore.Sockets.Transports
 
         public async Task ProcessRequestAsync(HttpContext context)
         {
-            if (_application.Completion.IsCompleted)
-            {
-                // Client should stop if it receives a 204
-                _logger.LogInformation("Terminating Long Polling connection by sending 204 response.");
-                context.Response.StatusCode = 204;
-                return;
-            }
-
             try
             {
                 // TODO: We need the ability to yield the connection without completing the channel.
                 // This is to force ReadAsync to yield without data to end to poll but not the entire connection.
                 // This is for cases when the client reconnects see issue #27
-                await _application.WaitToReadAsync(context.RequestAborted);
+                if (!await _application.WaitToReadAsync(context.RequestAborted))
+                {
+                    _logger.LogInformation("Terminating Long Polling connection by sending 204 response.");
+                    context.Response.StatusCode = 204;
+                    return;
+                }
 
                 Message message;
                 if (_application.TryRead(out message))

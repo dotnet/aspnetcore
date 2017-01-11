@@ -145,58 +145,61 @@ namespace Microsoft.AspNetCore.SignalR
 
             while (await connection.Transport.Input.WaitToReadAsync())
             {
-                Message message;
-                if (!connection.Transport.Input.TryRead(out message))
+                Message incomingMessage;
+                while (connection.Transport.Input.TryRead(out incomingMessage))
                 {
-                    continue;
-                }
-
-                InvocationDescriptor invocationDescriptor;
-                using (message)
-                {
-                    var inputStream = new MemoryStream(message.Payload.Buffer.ToArray());
-
-                    // TODO: Handle receiving InvocationResultDescriptor
-                    invocationDescriptor = await invocationAdapter.ReadMessageAsync(inputStream, this) as InvocationDescriptor;
-                }
-
-                // Is there a better way of detecting that a connection was closed?
-                if (invocationDescriptor == null)
-                {
-                    break;
-                }
-
-                if (_logger.IsEnabled(LogLevel.Debug))
-                {
-                    _logger.LogDebug("Received hub invocation: {invocation}", invocationDescriptor);
-                }
-
-                InvocationResultDescriptor result;
-                Func<Connection, InvocationDescriptor, Task<InvocationResultDescriptor>> callback;
-                if (_callbacks.TryGetValue(invocationDescriptor.Method, out callback))
-                {
-                    result = await callback(connection, invocationDescriptor);
-                }
-                else
-                {
-                    // If there's no method then return a failed response for this request
-                    result = new InvocationResultDescriptor
+                    InvocationDescriptor invocationDescriptor;
+                    using (incomingMessage)
                     {
-                        Id = invocationDescriptor.Id,
-                        Error = $"Unknown hub method '{invocationDescriptor.Method}'"
-                    };
+                        var inputStream = new MemoryStream(incomingMessage.Payload.Buffer.ToArray());
 
-                    _logger.LogError("Unknown hub method '{method}'", invocationDescriptor.Method);
-                }
+                        // TODO: Handle receiving InvocationResultDescriptor
+                        invocationDescriptor = await invocationAdapter.ReadMessageAsync(inputStream, this) as InvocationDescriptor;
+                    }
 
-                // TODO: Pool memory
-                var outStream = new MemoryStream();
-                await invocationAdapter.WriteMessageAsync(result, outStream);
+                    // Is there a better way of detecting that a connection was closed?
+                    if (invocationDescriptor == null)
+                    {
+                        break;
+                    }
 
-                var buffer = ReadableBuffer.Create(outStream.ToArray()).Preserve();
-                if (await connection.Transport.Output.WaitToWriteAsync())
-                {
-                    connection.Transport.Output.TryWrite(new Message(buffer, connection.Metadata.Format, endOfMessage: true));
+                    if (_logger.IsEnabled(LogLevel.Debug))
+                    {
+                        _logger.LogDebug("Received hub invocation: {invocation}", invocationDescriptor);
+                    }
+
+                    InvocationResultDescriptor result;
+                    Func<Connection, InvocationDescriptor, Task<InvocationResultDescriptor>> callback;
+                    if (_callbacks.TryGetValue(invocationDescriptor.Method, out callback))
+                    {
+                        result = await callback(connection, invocationDescriptor);
+                    }
+                    else
+                    {
+                        // If there's no method then return a failed response for this request
+                        result = new InvocationResultDescriptor
+                        {
+                            Id = invocationDescriptor.Id,
+                            Error = $"Unknown hub method '{invocationDescriptor.Method}'"
+                        };
+
+                        _logger.LogError("Unknown hub method '{method}'", invocationDescriptor.Method);
+                    }
+
+                    // TODO: Pool memory
+                    var outStream = new MemoryStream();
+                    await invocationAdapter.WriteMessageAsync(result, outStream);
+
+                    var buffer = ReadableBuffer.Create(outStream.ToArray()).Preserve();
+                    var outMessage = new Message(buffer, connection.Metadata.Format, endOfMessage: true);
+
+                    while (await connection.Transport.Output.WaitToWriteAsync())
+                    {
+                        if (connection.Transport.Output.TryWrite(outMessage))
+                        {
+                            break;
+                        }
+                    }
                 }
             }
         }

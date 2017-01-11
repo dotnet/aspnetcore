@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                 while (await _application.WaitToReadAsync(context.RequestAborted))
                 {
                     Message message;
-                    if (_application.TryRead(out message))
+                    while (_application.TryRead(out message))
                     {
                         using (message)
                         {

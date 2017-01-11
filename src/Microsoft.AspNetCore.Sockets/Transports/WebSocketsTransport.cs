@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             {
                 // Get a frame from the application
                 Message message;
-                if (_application.Input.TryRead(out message))
+                while (_application.Input.TryRead(out message))
                 {
                     using (message)
                     {
