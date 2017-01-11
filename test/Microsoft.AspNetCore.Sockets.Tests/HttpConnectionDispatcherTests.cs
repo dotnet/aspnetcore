@@ -22,96 +22,65 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task GetIdReservesConnectionIdAndReturnsIt()
         {
-            using (var factory = new PipelineFactory())
-            {
-                var manager = new ConnectionManager(factory);
-                var dispatcher = new HttpConnectionDispatcher(manager, factory, new LoggerFactory());
-                var context = new DefaultHttpContext();
-                var services = new ServiceCollection();
-                services.AddSingleton<TestEndPoint>();
-                context.RequestServices = services.BuildServiceProvider();
-                var ms = new MemoryStream();
-                context.Request.Path = "/getid";
-                context.Response.Body = ms;
-                await dispatcher.ExecuteAsync<TestEndPoint>("", context);
+            var manager = new ConnectionManager();
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+            var context = new DefaultHttpContext();
+            var services = new ServiceCollection();
+            services.AddSingleton<TestEndPoint>();
+            context.RequestServices = services.BuildServiceProvider();
+            var ms = new MemoryStream();
+            context.Request.Path = "/getid";
+            context.Response.Body = ms;
+            await dispatcher.ExecuteAsync<TestEndPoint>("", context);
 
-                var id = Encoding.UTF8.GetString(ms.ToArray());
+            var id = Encoding.UTF8.GetString(ms.ToArray());
 
-                ConnectionState state;
-                Assert.True(manager.TryGetConnection(id, out state));
-                Assert.Equal(id, state.Connection.ConnectionId);
-            }
+            ConnectionState state;
+            Assert.True(manager.TryGetConnection(id, out state));
+            Assert.Equal(id, state.Connection.ConnectionId);
         }
-
-        // REVIEW: No longer relevant since we establish the connection right away.
-        //[Fact]
-        //public async Task SendingToReservedConnectionsThatHaveNotConnectedThrows()
-        //{
-        //    using (var factory = new PipelineFactory())
-        //    {
-        //        var manager = new ConnectionManager(factory);
-        //        var state = manager.ReserveConnection();
-
-        //        var dispatcher = new HttpConnectionDispatcher(manager, factory, loggerFactory: null);
-        //        var context = new DefaultHttpContext();
-        //        context.Request.Path = "/send";
-        //        var values = new Dictionary<string, StringValues>();
-        //        values["id"] = state.Connection.ConnectionId;
-        //        var qs = new QueryCollection(values);
-        //        context.Request.Query = qs;
-        //        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-        //        {
-        //            await dispatcher.ExecuteAsync<TestEndPoint>("", context);
-        //        });
-        //    }
-        //}
 
         [Fact]
         public async Task SendingToUnknownConnectionIdThrows()
         {
-            using (var factory = new PipelineFactory())
+            var manager = new ConnectionManager();
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+            var context = new DefaultHttpContext();
+            var services = new ServiceCollection();
+            services.AddSingleton<TestEndPoint>();
+            context.RequestServices = services.BuildServiceProvider();
+            context.Request.Path = "/send";
+            var values = new Dictionary<string, StringValues>();
+            values["id"] = "unknown";
+            var qs = new QueryCollection(values);
+            context.Request.Query = qs;
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
-                var manager = new ConnectionManager(factory);
-                var dispatcher = new HttpConnectionDispatcher(manager, factory, new LoggerFactory());
-                var context = new DefaultHttpContext();
-                var services = new ServiceCollection();
-                services.AddSingleton<TestEndPoint>();
-                context.RequestServices = services.BuildServiceProvider();
-                context.Request.Path = "/send";
-                var values = new Dictionary<string, StringValues>();
-                values["id"] = "unknown";
-                var qs = new QueryCollection(values);
-                context.Request.Query = qs;
-                await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-                {
-                    await dispatcher.ExecuteAsync<TestEndPoint>("", context);
-                });
-            }
+                await dispatcher.ExecuteAsync<TestEndPoint>("", context);
+            });
         }
 
         [Fact]
         public async Task SendingWithoutConnectionIdThrows()
         {
-            using (var factory = new PipelineFactory())
+
+            var manager = new ConnectionManager();
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+            var context = new DefaultHttpContext();
+            var services = new ServiceCollection();
+            services.AddSingleton<TestEndPoint>();
+            context.RequestServices = services.BuildServiceProvider();
+            context.Request.Path = "/send";
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
-                var manager = new ConnectionManager(factory);
-                var dispatcher = new HttpConnectionDispatcher(manager, factory, new LoggerFactory());
-                var context = new DefaultHttpContext();
-                var services = new ServiceCollection();
-                services.AddSingleton<TestEndPoint>();
-                context.RequestServices = services.BuildServiceProvider();
-                context.Request.Path = "/send";
-                await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-                {
-                    await dispatcher.ExecuteAsync<TestEndPoint>("", context);
-                });
-            }
+                await dispatcher.ExecuteAsync<TestEndPoint>("", context);
+            });
         }
     }
 
-    public class TestEndPoint : StreamingEndPoint
+    public class TestEndPoint : EndPoint
     {
-        public override Task OnConnectedAsync(StreamingConnection connection)
+        public override Task OnConnectedAsync(Connection connection)
         {
             throw new NotImplementedException();
         }

@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Sockets.Internal;
@@ -15,11 +13,9 @@ namespace Microsoft.AspNetCore.Sockets
     {
         private readonly ConcurrentDictionary<string, ConnectionState> _connections = new ConcurrentDictionary<string, ConnectionState>();
         private readonly Timer _timer;
-        private readonly PipelineFactory _pipelineFactory;
 
-        public ConnectionManager(PipelineFactory pipelineFactory)
+        public ConnectionManager()
         {
-            _pipelineFactory = pipelineFactory;
             _timer = new Timer(Scan, this, 0, 1000);
         }
 
@@ -28,8 +24,23 @@ namespace Microsoft.AspNetCore.Sockets
             return _connections.TryGetValue(id, out state);
         }
 
-        public ConnectionState CreateConnection(ConnectionMode mode) =>
-            mode == ConnectionMode.Streaming ? CreateStreamingConnection() : CreateMessagingConnection();
+        public ConnectionState CreateConnection()
+        {
+            var id = MakeNewConnectionId();
+
+            var transportToApplication = Channel.CreateUnbounded<Message>();
+            var applicationToTransport = Channel.CreateUnbounded<Message>();
+
+            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
+            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+
+            var state = new ConnectionState(
+                new Connection(id, applicationSide),
+                transportSide);
+
+            _connections.TryAdd(id, state);
+            return state;
+        }
 
         public void RemoveConnection(string id)
         {
@@ -91,42 +102,6 @@ namespace Microsoft.AspNetCore.Sockets
                     }
                 }
             }
-        }
-
-        private ConnectionState CreateMessagingConnection()
-        {
-            var id = MakeNewConnectionId();
-
-            var transportToApplication = Channel.Create<Message>();
-            var applicationToTransport = Channel.Create<Message>();
-
-            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
-            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
-
-            var state = new MessagingConnectionState(
-                new MessagingConnection(id, applicationSide),
-                transportSide);
-
-            _connections.TryAdd(id, state);
-            return state;
-        }
-
-        private ConnectionState CreateStreamingConnection()
-        {
-            var id = MakeNewConnectionId();
-
-            var transportToApplication = _pipelineFactory.Create();
-            var applicationToTransport = _pipelineFactory.Create();
-
-            var transportSide = new PipelineConnection(applicationToTransport, transportToApplication);
-            var applicationSide = new PipelineConnection(transportToApplication, applicationToTransport);
-
-            var state = new StreamingConnectionState(
-                new StreamingConnection(id, applicationSide),
-                transportSide);
-
-            _connections.TryAdd(id, state);
-            return state;
         }
     }
 }

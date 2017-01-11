@@ -30,17 +30,17 @@ namespace Microsoft.AspNetCore.Sockets.Transports
 
             try
             {
-                while (true)
+                while (await _application.WaitToReadAsync(context.RequestAborted))
                 {
-                    using (var message = await _application.ReadAsync(context.RequestAborted))
+                    Message message;
+                    if (_application.TryRead(out message))
                     {
-                        await Send(context, message);
+                        using (message)
+                        {
+                            await Send(context, message);
+                        }
                     }
                 }
-            }
-            catch (Exception ex) when (ex.GetType().IsNested && ex.GetType().DeclaringType == typeof(Channel))
-            {
-                // Gross that we have to catch this this way. See https://github.com/dotnet/corefxlab/issues/1068
             }
             catch (OperationCanceledException)
             {

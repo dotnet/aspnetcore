@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 
 namespace Microsoft.AspNetCore.Sockets.Internal
@@ -15,7 +12,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal
         public IChannel<T> Output { get; }
 
         IReadableChannel<T> IChannelConnection<T>.Input => Input;
-
         IWritableChannel<T> IChannelConnection<T>.Output => Output;
 
         public ChannelConnection(IChannel<T> input, IChannel<T> output)

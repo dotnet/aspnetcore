@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task SSESetsContentType()
         {
-            var channel = Channel.Create<Message>();
+            var channel = Channel.CreateUnbounded<Message>();
             var context = new DefaultHttpContext();
             var sse = new ServerSentEventsTransport(channel, new LoggerFactory());
 
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task SSEAddsAppropriateFraming()
         {
-            var channel = Channel.Create<Message>();
+            var channel = Channel.CreateUnbounded<Message>();
             var context = new DefaultHttpContext();
             var sse = new ServerSentEventsTransport(channel, new LoggerFactory());
             var ms = new MemoryStream();

@@ -134,10 +134,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     EnsureConnectionEstablished(connection);
 
-                    var ex = await Assert.ThrowsAnyAsync<InvalidOperationException>(
-                        async () => await connection.Invoke<Task>("!@#$%"));
+                    var ex = await Assert.ThrowsAnyAsync<Exception>(
+                        async () => await connection.Invoke<object>("!@#$%"));
 
-                    Assert.Equal(ex.Message, "The hub method '!@#$%' could not be resolved.");
+                    Assert.Equal(ex.Message, "Unknown hub method '!@#$%'");
                 }
             }
         }

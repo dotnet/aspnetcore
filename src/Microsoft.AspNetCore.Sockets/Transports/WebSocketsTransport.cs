@@ -22,20 +22,20 @@ namespace Microsoft.AspNetCore.Sockets.Transports
         private bool _lastFrameIncomplete = false;
 
         private readonly ILogger _logger;
-        private readonly IChannelConnection<Message> _connection;
+        private readonly IChannelConnection<Message> _application;
 
-        public WebSocketsTransport(IChannelConnection<Message> connection, ILoggerFactory loggerFactory)
+        public WebSocketsTransport(IChannelConnection<Message> application, ILoggerFactory loggerFactory)
         {
-            if (connection == null)
+            if (application == null)
             {
-                throw new ArgumentNullException(nameof(connection));
+                throw new ArgumentNullException(nameof(application));
             }
             if (loggerFactory == null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _connection = connection;
+            _application = application;
             _logger = loggerFactory.CreateLogger<WebSocketsTransport>();
         }
 
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                 // Shutting down because we received a close frame from the client.
                 // Complete the input writer so that the application knows there won't be any more input.
                 _logger.LogDebug("Client closed connection with status code '{0}' ({1}). Signaling end-of-input to application", receiving.Result.Status, receiving.Result.Description);
-                _connection.Output.TryComplete();
+                _application.Output.TryComplete();
 
                 // Wait for the application to finish sending.
                 _logger.LogDebug("Waiting for the application to finish sending data");
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             }
             else
             {
-                var failed = sending.IsFaulted || sending.IsCompleted;
+                var failed = sending.IsFaulted || _application.Input.Completion.IsFaulted;
 
                 // The application finished sending. Close our end of the connection
                 _logger.LogDebug(!failed ? "Application finished sending. Sending close frame." : "Application failed during sending. Sending InternalServerError close frame");
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                 // Wait for the client to close.
                 // TODO: Consider timing out here and cancelling the receive loop.
                 await receiving;
-                _connection.Output.TryComplete();
+                _application.Output.TryComplete();
             }
         }
 
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             var message = new Message(frame.Payload.Preserve(), effectiveOpcode == WebSocketOpcode.Binary ? Format.Binary : Format.Text, frame.EndOfMessage);
 
             // Write the message to the channel
-            return _connection.Output.WriteAsync(message);
+            return _application.Output.WriteAsync(message);
         }
 
         private void LogFrame(string action, WebSocketFrame frame)
@@ -152,12 +152,13 @@ namespace Microsoft.AspNetCore.Sockets.Transports
 
         private async Task StartSending(IWebSocketConnection ws)
         {
-            while (true)
+            while (await _application.Input.WaitToReadAsync())
             {
                 // Get a frame from the application
-                try
+                Message message;
+                if (_application.Input.TryRead(out message))
                 {
-                    using (var message = await _connection.Input.ReadAsync())
+                    using (message)
                     {
                         if (message.Payload.Buffer.Length > 0)
                         {
@@ -184,11 +185,6 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                             }
                         }
                     }
-                }
-                catch (Exception ex) when (ex.GetType().IsNested && ex.GetType().DeclaringType == typeof(Channel))
-                {
-                    // Gross that we have to catch this this way. See https://github.com/dotnet/corefxlab/issues/1068
-                    break;
                 }
             }
         }

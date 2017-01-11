@@ -22,8 +22,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [InlineData(Format.Binary, WebSocketOpcode.Binary)]
         public async Task ReceivedFramesAreWrittenToChannel(Format format, WebSocketOpcode opcode)
         {
-            var transportToApplication = Channel.Create<Message>();
-            var applicationToTransport = Channel.Create<Message>();
+            var transportToApplication = Channel.CreateUnbounded<Message>();
+            var applicationToTransport = Channel.CreateUnbounded<Message>();
 
             var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
             var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
@@ -70,8 +70,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [InlineData(Format.Binary, WebSocketOpcode.Binary)]
         public async Task MultiFrameMessagesArePropagatedToTheChannel(Format format, WebSocketOpcode opcode)
         {
-            var transportToApplication = Channel.Create<Message>();
-            var applicationToTransport = Channel.Create<Message>();
+            var transportToApplication = Channel.CreateUnbounded<Message>();
+            var applicationToTransport = Channel.CreateUnbounded<Message>();
 
             var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
             var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
@@ -129,8 +129,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [InlineData(Format.Binary, WebSocketOpcode.Binary)]
         public async Task IncompleteMessagesAreWrittenAsMultiFrameWebSocketMessages(Format format, WebSocketOpcode opcode)
         {
-            var transportToApplication = Channel.Create<Message>();
-            var applicationToTransport = Channel.Create<Message>();
+            var transportToApplication = Channel.CreateUnbounded<Message>();
+            var applicationToTransport = Channel.CreateUnbounded<Message>();
 
             var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
             var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
@@ -177,8 +177,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [InlineData(Format.Binary, WebSocketOpcode.Binary)]
         public async Task DataWrittenToOutputPipelineAreSentAsFrames(Format format, WebSocketOpcode opcode)
         {
-            var transportToApplication = Channel.Create<Message>();
-            var applicationToTransport = Channel.Create<Message>();
+            var transportToApplication = Channel.CreateUnbounded<Message>();
+            var applicationToTransport = Channel.CreateUnbounded<Message>();
 
             var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
             var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
@@ -218,8 +218,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [InlineData(Format.Binary, WebSocketOpcode.Binary)]
         public async Task FrameReceivedAfterServerCloseSent(Format format, WebSocketOpcode opcode)
         {
-            var transportToApplication = Channel.Create<Message>();
-            var applicationToTransport = Channel.Create<Message>();
+            var transportToApplication = Channel.CreateUnbounded<Message>();
+            var applicationToTransport = Channel.CreateUnbounded<Message>();
 
             var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
             var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
@@ -261,8 +261,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task TransportFailsWhenClientDisconnectsAbnormally()
         {
-            var transportToApplication = Channel.Create<Message>();
-            var applicationToTransport = Channel.Create<Message>();
+            var transportToApplication = Channel.CreateUnbounded<Message>();
+            var applicationToTransport = Channel.CreateUnbounded<Message>();
 
             var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
             var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
@@ -289,8 +289,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task ClientReceivesInternalServerErrorWhenTheApplicationFails()
         {
-            var transportToApplication = Channel.Create<Message>();
-            var applicationToTransport = Channel.Create<Message>();
+            var transportToApplication = Channel.CreateUnbounded<Message>();
+            var applicationToTransport = Channel.CreateUnbounded<Message>();
 
             var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
             var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);

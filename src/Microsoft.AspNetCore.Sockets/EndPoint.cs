@@ -12,14 +12,6 @@ namespace Microsoft.AspNetCore.Sockets
     public abstract class EndPoint
     {
         /// <summary>
-        /// Gets the connection mode supported by this endpoint.
-        /// </summary>
-        /// <remarks>
-        /// This maps directly to whichever of <see cref="MessagingEndPoint"/> or <see cref="StreamingEndPoint"/> the end point subclasses.
-        /// </remarks>
-        public abstract ConnectionMode Mode { get; }
-
-        /// <summary>
         /// Called when a new connection is accepted to the endpoint
         /// </summary>
         /// <param name="connection">The new <see cref="Connection"/></param>

@@ -18,14 +18,12 @@ namespace Microsoft.AspNetCore.Sockets
     public class HttpConnectionDispatcher
     {
         private readonly ConnectionManager _manager;
-        private readonly PipelineFactory _pipelineFactory;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
 
-        public HttpConnectionDispatcher(ConnectionManager manager, PipelineFactory factory, ILoggerFactory loggerFactory)
+        public HttpConnectionDispatcher(ConnectionManager manager, ILoggerFactory loggerFactory)
         {
             _manager = manager;
-            _pipelineFactory = factory;
             _loggerFactory = loggerFactory;
             _logger = _loggerFactory.CreateLogger<HttpConnectionDispatcher>();
         }
@@ -37,7 +35,7 @@ namespace Microsoft.AspNetCore.Sockets
 
             if (context.Request.Path.StartsWithSegments(path + "/getid"))
             {
-                await ProcessGetId(context, endpoint.Mode);
+                await ProcessGetId(context);
             }
             else if (context.Request.Path.StartsWithSegments(path + "/send"))
             {
@@ -56,10 +54,10 @@ namespace Microsoft.AspNetCore.Sockets
                     ? Format.Binary
                     : Format.Text;
 
-            var state = GetOrCreateConnection(context, endpoint.Mode);
+            var state = GetOrCreateConnection(context);
 
             // Adapt the connection to a message-based transport if necessary, since all the HTTP transports are message-based.
-            var application = GetMessagingChannel(state, format);
+            var application = state.Application;
 
             // Server sent events transport
             if (context.Request.Path.StartsWithSegments(path + "/sse"))
@@ -137,7 +135,7 @@ namespace Microsoft.AspNetCore.Sockets
                     // Notify the long polling transport to end
                     if (endpointTask.IsFaulted)
                     {
-                        state.TerminateTransport(endpointTask.Exception.InnerException);
+                        state.Connection.Transport.Output.TryComplete(endpointTask.Exception.InnerException);
                     }
 
                     state.Connection.Dispose();
@@ -148,19 +146,6 @@ namespace Microsoft.AspNetCore.Sockets
                 // Mark the connection as inactive
                 state.LastSeenUtc = DateTime.UtcNow;
                 state.Active = false;
-            }
-        }
-
-        private static IChannelConnection<Message> GetMessagingChannel(ConnectionState state, Format format)
-        {
-            if (state.Connection.Mode == ConnectionMode.Messaging)
-            {
-                return ((MessagingConnectionState)state).Application;
-            }
-            else
-            {
-                // We need to build an adapter
-                return new FramingChannel(((StreamingConnectionState)state).Application, format);
             }
         }
 
@@ -197,10 +182,10 @@ namespace Microsoft.AspNetCore.Sockets
             await Task.WhenAll(endpointTask, transportTask);
         }
 
-        private Task ProcessGetId(HttpContext context, ConnectionMode mode)
+        private Task ProcessGetId(HttpContext context)
         {
             // Establish the connection
-            var state = _manager.CreateConnection(mode);
+            var state = _manager.CreateConnection();
 
             // Get the bytes for the connection id
             var connectionIdBuffer = Encoding.UTF8.GetBytes(state.Connection.ConnectionId);
@@ -221,34 +206,27 @@ namespace Microsoft.AspNetCore.Sockets
             ConnectionState state;
             if (_manager.TryGetConnection(connectionId, out state))
             {
-                if (state.Connection.Mode == ConnectionMode.Streaming)
+                // Collect the message and write it to the channel
+                // TODO: Need to use some kind of pooled memory here.
+                byte[] buffer;
+                using (var stream = new MemoryStream())
                 {
-                    var streamingState = (StreamingConnectionState)state;
-
-                    await context.Request.Body.CopyToAsync(streamingState.Application.Output);
+                    await context.Request.Body.CopyToAsync(stream);
+                    buffer = stream.ToArray();
                 }
-                else
-                {
-                    // Collect the message and write it to the channel
-                    // TODO: Need to use some kind of pooled memory here.
-                    byte[] buffer;
-                    using (var strm = new MemoryStream())
-                    {
-                        await context.Request.Body.CopyToAsync(strm);
-                        await strm.FlushAsync();
-                        buffer = strm.ToArray();
-                    }
 
-                    var format =
-                        string.Equals(context.Request.Query["format"], "binary", StringComparison.OrdinalIgnoreCase)
-                            ? Format.Binary
-                            : Format.Text;
-                    var message = new Message(
-                        ReadableBuffer.Create(buffer).Preserve(),
-                        format,
-                        endOfMessage: true);
-                    await ((MessagingConnectionState)state).Application.Output.WriteAsync(message);
-                }
+                var format =
+                    string.Equals(context.Request.Query["format"], "binary", StringComparison.OrdinalIgnoreCase)
+                        ? Format.Binary
+                        : Format.Text;
+
+                var message = new Message(
+                    ReadableBuffer.Create(buffer).Preserve(),
+                    format,
+                    endOfMessage: true);
+
+                await state.Application.Output.WriteAsync(message);
+
             }
             else
             {
@@ -256,7 +234,7 @@ namespace Microsoft.AspNetCore.Sockets
             }
         }
 
-        private ConnectionState GetOrCreateConnection(HttpContext context, ConnectionMode mode)
+        private ConnectionState GetOrCreateConnection(HttpContext context)
         {
             var connectionId = context.Request.Query["id"];
             ConnectionState connectionState;
@@ -264,7 +242,7 @@ namespace Microsoft.AspNetCore.Sockets
             // There's no connection id so this is a brand new connection
             if (StringValues.IsNullOrEmpty(connectionId))
             {
-                connectionState = _manager.CreateConnection(mode);
+                connectionState = _manager.CreateConnection();
             }
             else if (!_manager.TryGetConnection(connectionId, out connectionState))
             {

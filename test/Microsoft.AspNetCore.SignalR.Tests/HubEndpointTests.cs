@@ -4,9 +4,11 @@
 using System;
 using System.IO;
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,7 +35,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await connectionWrapper.ApplicationStartedReading;
 
                 // kill the connection
-                connectionWrapper.ConnectionState.Dispose();
+                connectionWrapper.Dispose();
 
                 await endPointTask;
 
@@ -42,43 +44,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task OnDisconnectedCalledWithExceptionIfHubMethodNotFound()
-        {
-            var hub = Mock.Of<Hub>();
-
-            var endPointType = GetEndPointType(hub.GetType());
-            var serviceProvider = CreateServiceProvider(s =>
-            {
-                s.AddSingleton(endPointType);
-                s.AddTransient(hub.GetType(), sp => hub);
-            });
-
-            dynamic endPoint = serviceProvider.GetService(endPointType);
-
-            using (var connectionWrapper = new ConnectionWrapper())
-            {
-                var endPointTask = endPoint.OnConnectedAsync(connectionWrapper.Connection);
-
-                await connectionWrapper.ApplicationStartedReading;
-
-                var invocationAdapter = serviceProvider.GetService<InvocationAdapterRegistry>();
-                var adapter = invocationAdapter.GetInvocationAdapter("json");
-                await SendRequest(connectionWrapper.Connection.Transport, adapter, "0xdeadbeef");
-
-                connectionWrapper.Dispose();
-
-                await Assert.ThrowsAsync<InvalidOperationException>(async () => await endPointTask);
-
-                Mock.Get(hub).Verify(h => h.OnDisconnectedAsync(It.IsNotNull<InvalidOperationException>()), Times.Once());
-            }
-        }
-
-        [Fact]
         public async Task LifetimeManagerOnDisconnectedAsyncCalledIfLifetimeManagerOnConnectedAsyncThrows()
         {
             var mockLifetimeManager = new Mock<HubLifetimeManager<Hub>>();
             mockLifetimeManager
-                .Setup(m => m.OnConnectedAsync(It.IsAny<StreamingConnection>()))
+                .Setup(m => m.OnConnectedAsync(It.IsAny<Connection>()))
                 .Throws(new InvalidOperationException("Lifetime manager OnConnectedAsync failed."));
             var mockHubActivator = new Mock<IHubActivator<Hub, IClientProxy>>();
 
@@ -97,10 +67,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         async () => await endPoint.OnConnectedAsync(connectionWrapper.Connection));
                 Assert.Equal("Lifetime manager OnConnectedAsync failed.", exception.Message);
 
-                connectionWrapper.ConnectionState.Dispose();
+                connectionWrapper.Dispose();
 
-                mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<StreamingConnection>()), Times.Once);
-                mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<StreamingConnection>()), Times.Once);
+                mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<Connection>()), Times.Once);
+                mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<Connection>()), Times.Once);
                 // No hubs should be created since the connection is terminated
                 mockHubActivator.Verify(m => m.Create(), Times.Never);
                 mockHubActivator.Verify(m => m.Release(It.IsAny<Hub>()), Times.Never);
@@ -121,13 +91,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var connectionWrapper = new ConnectionWrapper())
             {
                 var endPointTask = endPoint.OnConnectedAsync(connectionWrapper.Connection);
-                connectionWrapper.ConnectionState.Dispose();
+                connectionWrapper.Dispose();
 
                 var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await endPointTask);
                 Assert.Equal("Hub OnConnected failed.", exception.Message);
 
-                mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<StreamingConnection>()), Times.Once);
-                mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<StreamingConnection>()), Times.Once);
+                mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<Connection>()), Times.Once);
+                mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<Connection>()), Times.Once);
             }
         }
 
@@ -145,44 +115,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var connectionWrapper = new ConnectionWrapper())
             {
                 var endPointTask = endPoint.OnConnectedAsync(connectionWrapper.Connection);
-                connectionWrapper.ConnectionState.Dispose();
+                connectionWrapper.Dispose();
 
                 var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await endPointTask);
                 Assert.Equal("Hub OnDisconnected failed.", exception.Message);
 
-                mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<StreamingConnection>()), Times.Once);
-                mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<StreamingConnection>()), Times.Once);
-            }
-        }
-
-        private static Type GetEndPointType(Type hubType)
-        {
-            var endPointType = typeof(HubEndPoint<>);
-            return endPointType.MakeGenericType(hubType);
-        }
-
-        private static Type GetGenericType(Type genericType, Type hubType)
-        {
-            return genericType.MakeGenericType(hubType);
-        }
-
-        public class OnConnectedThrowsHub : Hub
-        {
-            public override Task OnConnectedAsync()
-            {
-                var tcs = new TaskCompletionSource<object>();
-                tcs.SetException(new InvalidOperationException("Hub OnConnected failed."));
-                return tcs.Task;
-            }
-        }
-
-        public class OnDisconnectedThrowsHub : Hub
-        {
-            public override Task OnDisconnectedAsync(Exception exception)
-            {
-                var tcs = new TaskCompletionSource<object>();
-                tcs.SetException(new InvalidOperationException("Hub OnDisconnected failed."));
-                return tcs.Task;
+                mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<Connection>()), Times.Once);
+                mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<Connection>()), Times.Once);
             }
         }
 
@@ -202,10 +141,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var invocationAdapter = serviceProvider.GetService<InvocationAdapterRegistry>();
                 var adapter = invocationAdapter.GetInvocationAdapter("json");
 
-                await SendRequest(connectionWrapper.Connection.Transport, adapter, "TaskValueMethod");
-                var res = await ReadConnectionOutputAsync<InvocationResultDescriptor>(connectionWrapper.Connection.Transport);
+                await SendRequest(connectionWrapper, adapter, nameof(MethodHub.TaskValueMethod));
+                var result = await ReadConnectionOutputAsync<InvocationResultDescriptor>(connectionWrapper);
+
                 // json serializer makes this a long
-                Assert.Equal(42L, res.Result);
+                Assert.Equal(42L, result.Result);
 
                 // kill the connection
                 connectionWrapper.Connection.Dispose();
@@ -230,10 +170,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var invocationAdapter = serviceProvider.GetService<InvocationAdapterRegistry>();
                 var adapter = invocationAdapter.GetInvocationAdapter("json");
 
-                await SendRequest(connectionWrapper.Connection.Transport, adapter, "ValueMethod");
-                var res = await ReadConnectionOutputAsync<InvocationResultDescriptor>(connectionWrapper.Connection.Transport);
+                await SendRequest(connectionWrapper, adapter, "ValueMethod");
+                var result = await ReadConnectionOutputAsync<InvocationResultDescriptor>(connectionWrapper);
+
                 // json serializer makes this a long
-                Assert.Equal(43L, res.Result);
+                Assert.Equal(43L, result.Result);
 
                 // kill the connection
                 connectionWrapper.Connection.Dispose();
@@ -258,9 +199,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var invocationAdapter = serviceProvider.GetService<InvocationAdapterRegistry>();
                 var adapter = invocationAdapter.GetInvocationAdapter("json");
 
-                await SendRequest(connectionWrapper.Connection.Transport, adapter, "StaticMethod");
-                var res = await ReadConnectionOutputAsync<InvocationResultDescriptor>(connectionWrapper.Connection.Transport);
-                Assert.Equal("fromStatic", res.Result);
+                await SendRequest(connectionWrapper, adapter, "StaticMethod");
+                var result = await ReadConnectionOutputAsync<InvocationResultDescriptor>(connectionWrapper);
+
+                Assert.Equal("fromStatic", result.Result);
 
                 // kill the connection
                 connectionWrapper.Connection.Dispose();
@@ -285,9 +227,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var invocationAdapter = serviceProvider.GetService<InvocationAdapterRegistry>();
                 var adapter = invocationAdapter.GetInvocationAdapter("json");
 
-                await SendRequest(connectionWrapper.Connection.Transport, adapter, "VoidMethod");
-                var res = await ReadConnectionOutputAsync<InvocationResultDescriptor>(connectionWrapper.Connection.Transport);
-                Assert.Equal(null, res.Result);
+                await SendRequest(connectionWrapper, adapter, "VoidMethod");
+                var result = await ReadConnectionOutputAsync<InvocationResultDescriptor>(connectionWrapper);
+
+                Assert.Null(result.Result);
 
                 // kill the connection
                 connectionWrapper.Connection.Dispose();
@@ -312,9 +255,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var invocationAdapter = serviceProvider.GetService<InvocationAdapterRegistry>();
                 var adapter = invocationAdapter.GetInvocationAdapter("json");
 
-                await SendRequest(connectionWrapper.Connection.Transport, adapter, "ConcatString", (byte)32, 42, 'm', "string");
-                var res = await ReadConnectionOutputAsync<InvocationResultDescriptor>(connectionWrapper.Connection.Transport);
-                Assert.Equal("32, 42, m, string", res.Result);
+                await SendRequest(connectionWrapper, adapter, "ConcatString", (byte)32, 42, 'm', "string");
+                var result = await ReadConnectionOutputAsync<InvocationResultDescriptor>(connectionWrapper);
+                Assert.Equal("32, 42, m, string", result.Result);
 
                 // kill the connection
                 connectionWrapper.Connection.Dispose();
@@ -339,17 +282,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var invocationAdapter = serviceProvider.GetService<InvocationAdapterRegistry>();
                 var adapter = invocationAdapter.GetInvocationAdapter("json");
 
-                await SendRequest(connectionWrapper.Connection.Transport, adapter, "OnDisconnectedAsync");
+                await SendRequest(connectionWrapper, adapter, "OnDisconnectedAsync");
+                var result = await ReadConnectionOutputAsync<InvocationResultDescriptor>(connectionWrapper);
 
-                try
-                {
-                    await endPointTask;
-                    Assert.True(false);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    Assert.Equal("The hub method 'OnDisconnectedAsync' could not be resolved.", ex.Message);
-                }
+                Assert.Equal("Unknown hub method 'OnDisconnectedAsync'", result.Error);
             }
         }
 
@@ -371,21 +307,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var invocationAdapter = serviceProvider.GetService<InvocationAdapterRegistry>();
                 var adapter = invocationAdapter.GetInvocationAdapter("json");
 
-                await SendRequest(firstConnection.Connection.Transport, adapter, "BroadcastMethod", "test");
+                await SendRequest(firstConnection, adapter, "BroadcastMethod", "test");
 
-                foreach (var res in await Task.WhenAll(
-                    ReadConnectionOutputAsync<InvocationDescriptor>(firstConnection.Connection.Transport),
-                    ReadConnectionOutputAsync<InvocationDescriptor>(secondConnection.Connection.Transport)))
+                foreach (var result in await Task.WhenAll(
+                    ReadConnectionOutputAsync<InvocationDescriptor>(firstConnection),
+                    ReadConnectionOutputAsync<InvocationDescriptor>(secondConnection)))
                 {
-                    Assert.Equal("Broadcast", res.Method);
-                    Assert.Equal(1, res.Arguments.Length);
-                    Assert.Equal("test", res.Arguments[0]);
+                    Assert.Equal("Broadcast", result.Method);
+                    Assert.Equal(1, result.Arguments.Length);
+                    Assert.Equal("test", result.Arguments[0]);
                 }
 
                 // kill the connections
                 firstConnection.Connection.Dispose();
                 secondConnection.Connection.Dispose();
-                
+
                 await Task.WhenAll(firstEndPointTask, secondEndPointTask);
             }
         }
@@ -408,18 +344,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var invocationAdapter = serviceProvider.GetService<InvocationAdapterRegistry>();
                 var adapter = invocationAdapter.GetInvocationAdapter("json");
 
-                await SendRequest_IgnoreReceive(firstConnection.Connection.Transport, adapter, "GroupSendMethod", "testGroup", "test");
+                await SendRequest_IgnoreReceive(firstConnection, adapter, "GroupSendMethod", "testGroup", "test");
                 // check that 'secondConnection' hasn't received the group send
-                Assert.False(((PipelineReaderWriter)secondConnection.Connection.Transport.Output).ReadAsync().IsCompleted);
+                Message message;
+                Assert.False(secondConnection.Transport.Output.TryRead(out message));
 
-                await SendRequest_IgnoreReceive(secondConnection.Connection.Transport, adapter, "GroupAddMethod", "testGroup");
+                await SendRequest_IgnoreReceive(secondConnection, adapter, "GroupAddMethod", "testGroup");
 
-                await SendRequest(firstConnection.Connection.Transport, adapter, "GroupSendMethod", "testGroup", "test");
+                await SendRequest(firstConnection, adapter, "GroupSendMethod", "testGroup", "test");
+
                 // check that 'firstConnection' hasn't received the group send
-                Assert.False(((PipelineReaderWriter)firstConnection.Connection.Transport.Output).ReadAsync().IsCompleted);
+                Assert.False(firstConnection.Transport.Output.TryRead(out message));
 
                 // check that 'secondConnection' has received the group send
-                var res = await ReadConnectionOutputAsync<InvocationDescriptor>(secondConnection.Connection.Transport);
+                var res = await ReadConnectionOutputAsync<InvocationDescriptor>(secondConnection);
                 Assert.Equal("Send", res.Method);
                 Assert.Equal(1, res.Arguments.Length);
                 Assert.Equal("test", res.Arguments[0]);
@@ -448,7 +386,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var invocationAdapter = serviceProvider.GetService<InvocationAdapterRegistry>();
                 var writer = invocationAdapter.GetInvocationAdapter("json");
 
-                await SendRequest_IgnoreReceive(connection.Connection.Transport, writer, "GroupRemoveMethod", "testGroup");
+                await SendRequest_IgnoreReceive(connection, writer, "GroupRemoveMethod", "testGroup");
 
                 // kill the connection
                 connection.Connection.Dispose();
@@ -475,10 +413,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var invocationAdapter = serviceProvider.GetService<InvocationAdapterRegistry>();
                 var adapter = invocationAdapter.GetInvocationAdapter("json");
 
-                await SendRequest_IgnoreReceive(firstConnection.Connection.Transport, adapter, "ClientSendMethod", secondConnection.Connection.User.Identity.Name, "test");
+                await SendRequest_IgnoreReceive(firstConnection, adapter, "ClientSendMethod", secondConnection.Connection.User.Identity.Name, "test");
 
                 // check that 'secondConnection' has received the group send
-                var res = await ReadConnectionOutputAsync<InvocationDescriptor>(secondConnection.Connection.Transport);
+                var res = await ReadConnectionOutputAsync<InvocationDescriptor>(secondConnection);
                 Assert.Equal("Send", res.Method);
                 Assert.Equal(1, res.Arguments.Length);
                 Assert.Equal("test", res.Arguments[0]);
@@ -509,19 +447,97 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var invocationAdapter = serviceProvider.GetService<InvocationAdapterRegistry>();
                 var adapter = invocationAdapter.GetInvocationAdapter("json");
 
-                await SendRequest_IgnoreReceive(firstConnection.Connection.Transport, adapter, "ConnectionSendMethod", secondConnection.Connection.ConnectionId, "test");
+                await SendRequest_IgnoreReceive(firstConnection, adapter, "ConnectionSendMethod", secondConnection.Connection.ConnectionId, "test");
 
                 // check that 'secondConnection' has received the group send
-                var res = await ReadConnectionOutputAsync<InvocationDescriptor>(secondConnection.Connection.Transport);
-                Assert.Equal("Send", res.Method);
-                Assert.Equal(1, res.Arguments.Length);
-                Assert.Equal("test", res.Arguments[0]);
+                var result = await ReadConnectionOutputAsync<InvocationDescriptor>(secondConnection);
+                Assert.Equal("Send", result.Method);
+                Assert.Equal(1, result.Arguments.Length);
+                Assert.Equal("test", result.Arguments[0]);
 
                 // kill the connections
                 firstConnection.Connection.Dispose();
                 secondConnection.Connection.Dispose();
 
                 await Task.WhenAll(firstEndPointTask, secondEndPointTask);
+            }
+        }
+
+        private static Type GetEndPointType(Type hubType)
+        {
+            var endPointType = typeof(HubEndPoint<>);
+            return endPointType.MakeGenericType(hubType);
+        }
+
+        private static Type GetGenericType(Type genericType, Type hubType)
+        {
+            return genericType.MakeGenericType(hubType);
+        }
+
+        public async Task SendRequest(ConnectionWrapper connection, IInvocationAdapter writer, string method, params object[] args)
+        {
+            if (connection == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            var stream = new MemoryStream();
+            await writer.WriteMessageAsync(new InvocationDescriptor
+            {
+                Arguments = args,
+                Method = method
+            },
+            stream);
+
+            var buffer = ReadableBuffer.Create(stream.ToArray()).Preserve();
+            await connection.Transport.Input.WriteAsync(new Message(buffer, Format.Binary, endOfMessage: true));
+        }
+
+        public async Task SendRequest_IgnoreReceive(ConnectionWrapper connection, IInvocationAdapter writer, string method, params object[] args)
+        {
+            await SendRequest(connection, writer, method, args);
+
+            // Consume the result
+            await connection.Transport.Output.ReadAsync();
+        }
+
+        private async Task<T> ReadConnectionOutputAsync<T>(ConnectionWrapper connection)
+        {
+            // TODO: other formats?
+            var message = await connection.Transport.Output.ReadAsync();
+            var serializer = new JsonSerializer();
+            return serializer.Deserialize<T>(new JsonTextReader(new StreamReader(new MemoryStream(message.Payload.Buffer.ToArray()))));
+        }
+
+        private IServiceProvider CreateServiceProvider(Action<ServiceCollection> addServices = null)
+        {
+            var services = new ServiceCollection();
+            services.AddOptions()
+                .AddLogging()
+                .AddSignalR();
+
+            addServices?.Invoke(services);
+
+            return services.BuildServiceProvider();
+        }
+
+        public class OnConnectedThrowsHub : Hub
+        {
+            public override Task OnConnectedAsync()
+            {
+                var tcs = new TaskCompletionSource<object>();
+                tcs.SetException(new InvalidOperationException("Hub OnConnected failed."));
+                return tcs.Task;
+            }
+        }
+
+        public class OnDisconnectedThrowsHub : Hub
+        {
+            public override Task OnDisconnectedAsync(Exception exception)
+            {
+                var tcs = new TaskCompletionSource<object>();
+                tcs.SetException(new InvalidOperationException("Hub OnDisconnected failed."));
+                return tcs.Task;
             }
         }
 
@@ -610,83 +626,91 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public int DisposeCount = 0;
         }
 
-        public async Task SendRequest(IPipelineConnection connection, IInvocationAdapter writer, string method, params object[] args)
+        public class ConnectionWrapper : IDisposable
         {
-            if (connection == null)
-            {
-                throw new ArgumentNullException();
-            }
+            private static int _id;
+            private readonly TestChannel<Message> _input;
 
-            var stream = new MemoryStream();
-            await writer.WriteMessageAsync(new InvocationDescriptor
-            {
-                Arguments = args,
-                Method = method
-            }, stream);
+            public Connection Connection { get; }
 
-            var buffer = ((PipelineReaderWriter)connection.Input).Alloc();
-            buffer.Write(stream.ToArray());
-            await buffer.FlushAsync();
-        }
+            public ChannelConnection<Message> Transport { get; }
 
-        public async Task SendRequest_IgnoreReceive(IPipelineConnection connection, IInvocationAdapter writer, string method, params object[] args)
-        {
-            await SendRequest(connection, writer, method, args);
-
-            var methodResult = await ((PipelineReaderWriter)connection.Output).ReadAsync();
-            ((PipelineReaderWriter)connection.Output).AdvanceReader(methodResult.Buffer.End, methodResult.Buffer.End);
-        }
-
-        private async Task<T> ReadConnectionOutputAsync<T>(IPipelineConnection connection)
-        {
-            // TODO: other formats?
-            var methodResult = await ((PipelineReaderWriter)connection.Output).ReadAsync();
-            var serializer = new JsonSerializer();
-            var res = serializer.Deserialize<T>(new JsonTextReader(new StreamReader(new MemoryStream(methodResult.Buffer.ToArray()))));
-            ((PipelineReaderWriter)connection.Output).AdvanceReader(methodResult.Buffer.End, methodResult.Buffer.End);
-
-            return res;
-        }
-
-        private IServiceProvider CreateServiceProvider(Action<ServiceCollection> addServices = null)
-        {
-            var services = new ServiceCollection();
-            services.AddOptions()
-                .AddLogging()
-                .AddSignalR();
-
-            addServices?.Invoke(services);
-
-            return services.BuildServiceProvider();
-        }
-
-        private class ConnectionWrapper : IDisposable
-        {
-            private static int ID;
-            private PipelineFactory _factory;
-
-            public StreamingConnectionState ConnectionState;
-
-            public StreamingConnection Connection => ConnectionState.Connection;
-
-            // Still kinda gross...
-            public Task ApplicationStartedReading => ((PipelineReaderWriter)Connection.Transport.Input).ReadingStarted;
+            public Task ApplicationStartedReading => _input.ReadingStarted;
 
             public ConnectionWrapper(string format = "json")
             {
-                _factory = new PipelineFactory();
+                var transportToApplication = Channel.CreateUnbounded<Message>();
+                var applicationToTransport = Channel.CreateUnbounded<Message>();
 
-                var connectionManager = new ConnectionManager(_factory);
+                _input = new TestChannel<Message>(transportToApplication);
 
-                ConnectionState = (StreamingConnectionState)connectionManager.CreateConnection(ConnectionMode.Streaming);
-                ConnectionState.Connection.Metadata["formatType"] = format;
-                ConnectionState.Connection.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, Interlocked.Increment(ref ID).ToString()) }));
+                Transport = new ChannelConnection<Message>(_input, applicationToTransport);
+
+                Connection = new Connection(Guid.NewGuid().ToString(), Transport);
+                Connection.Metadata["formatType"] = format;
+                Connection.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, Interlocked.Increment(ref _id).ToString()) }));
             }
 
             public void Dispose()
             {
-                ConnectionState.Dispose();
-                _factory.Dispose();
+                Connection.Dispose();
+            }
+
+            private class TestChannel<T> : IChannel<T>
+            {
+                private IChannel<T> _channel;
+                private TaskCompletionSource<object> _tcs = new TaskCompletionSource<object>();
+
+                public TestChannel(IChannel<T> channel)
+                {
+                    _channel = channel;
+                }
+
+                public Task Completion => _channel.Completion;
+
+                public Task ReadingStarted => _tcs.Task;
+
+                public ValueAwaiter<T> GetAwaiter()
+                {
+                    return _channel.GetAwaiter();
+                }
+
+                public ValueTask<T> ReadAsync(CancellationToken cancellationToken = default(CancellationToken))
+                {
+                    _tcs.TrySetResult(null);
+                    return _channel.ReadAsync(cancellationToken);
+                }
+
+                public bool TryComplete(Exception error = null)
+                {
+                    return _channel.TryComplete(error);
+                }
+
+                public bool TryRead(out T item)
+                {
+                    return _channel.TryRead(out item);
+                }
+
+                public bool TryWrite(T item)
+                {
+                    return _channel.TryWrite(item);
+                }
+
+                public Task<bool> WaitToReadAsync(CancellationToken cancellationToken = default(CancellationToken))
+                {
+                    _tcs.TrySetResult(null);
+                    return _channel.WaitToReadAsync(cancellationToken);
+                }
+
+                public Task<bool> WaitToWriteAsync(CancellationToken cancellationToken = default(CancellationToken))
+                {
+                    return _channel.WaitToWriteAsync(cancellationToken);
+                }
+
+                public Task WriteAsync(T item, CancellationToken cancellationToken = default(CancellationToken))
+                {
+                    return _channel.WriteAsync(item, cancellationToken);
+                }
             }
         }
     }

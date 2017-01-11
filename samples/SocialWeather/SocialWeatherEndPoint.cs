@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets;
@@ -8,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace SocialWeather
 {
-    public class SocialWeatherEndPoint : StreamingEndPoint
+    public class SocialWeatherEndPoint : EndPoint
     {
         private readonly PersistentConnectionLifeTimeManager _lifetimeManager;
         private readonly FormatterResolver _formatterResolver;
@@ -22,22 +23,24 @@ namespace SocialWeather
             _logger = logger;
         }
 
-        public async override Task OnConnectedAsync(StreamingConnection connection)
+        public async override Task OnConnectedAsync(Connection connection)
         {
             _lifetimeManager.OnConnectedAsync(connection);
             await ProcessRequests(connection);
             _lifetimeManager.OnDisconnectedAsync(connection);
         }
 
-        public async Task ProcessRequests(StreamingConnection connection)
+        public async Task ProcessRequests(Connection connection)
         {
-            var stream = connection.Transport.GetStream();
             var formatter = _formatterResolver.GetFormatter<WeatherReport>(
                 connection.Metadata.Get<string>("formatType"));
 
-            WeatherReport weatherReport;
-            while ((weatherReport = await formatter.ReadAsync(stream)) != null)
+            while (true)
             {
+                Message message = await connection.Transport.Input.ReadAsync();
+                var stream = new MemoryStream();
+                await message.Payload.Buffer.CopyToAsync(stream);
+                WeatherReport weatherReport = await formatter.ReadAsync(stream);
                 await _lifetimeManager.SendToAllAsync(weatherReport);
             }
         }

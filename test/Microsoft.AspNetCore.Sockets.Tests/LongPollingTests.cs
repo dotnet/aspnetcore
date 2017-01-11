@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task Set204StatusCodeWhenChannelComplete()
         {
-            var channel = Channel.Create<Message>();
+            var channel = Channel.CreateUnbounded<Message>();
             var context = new DefaultHttpContext();
             var poll = new LongPollingTransport(channel, new LoggerFactory());
 
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task FrameSentAsSingleResponse()
         {
-            var channel = Channel.Create<Message>();
+            var channel = Channel.CreateUnbounded<Message>();
             var context = new DefaultHttpContext();
             var poll = new LongPollingTransport(channel, new LoggerFactory());
             var ms = new MemoryStream();

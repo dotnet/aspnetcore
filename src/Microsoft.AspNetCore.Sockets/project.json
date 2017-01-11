@@ -20,7 +20,6 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "System.IO.Pipelines": "0.1.0-*",
     "System.Threading.Tasks.Channels": "0.1.0-*",
 
     "System.Security.Claims": "4.4.0-*",

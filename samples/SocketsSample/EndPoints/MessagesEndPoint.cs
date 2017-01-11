@@ -12,11 +12,11 @@ using Microsoft.AspNetCore.Sockets;
 
 namespace SocketsSample.EndPoints
 {
-    public class MessagesEndPoint : MessagingEndPoint
+    public class MessagesEndPoint : EndPoint
     {
-        public ConnectionList<MessagingConnection> Connections { get; } = new ConnectionList<MessagingConnection>();
+        public ConnectionList Connections { get; } = new ConnectionList();
 
-        public override async Task OnConnectedAsync(MessagingConnection connection)
+        public override async Task OnConnectedAsync(Connection connection)
         {
             Connections.Add(connection);
 
@@ -24,18 +24,18 @@ namespace SocketsSample.EndPoints
 
             try
             {
-                while (true)
+                while (await connection.Transport.Input.WaitToReadAsync())
                 {
-                    using (var message = await connection.Transport.Input.ReadAsync())
+                    Message message;
+                    if (connection.Transport.Input.TryRead(out message))
                     {
-                        // We can avoid the copy here but we'll deal with that later
-                        await Broadcast(message.Payload.Buffer, message.MessageFormat, message.EndOfMessage);
+                        using (message)
+                        {
+                            // We can avoid the copy here but we'll deal with that later
+                            await Broadcast(message.Payload.Buffer, message.MessageFormat, message.EndOfMessage);
+                        }
                     }
                 }
-            }
-            catch (Exception ex) when (ex.GetType().IsNested && ex.GetType().DeclaringType == typeof(Channel))
-            {
-                // Gross that we have to catch this this way. See https://github.com/dotnet/corefxlab/issues/1068
             }
             finally
             {

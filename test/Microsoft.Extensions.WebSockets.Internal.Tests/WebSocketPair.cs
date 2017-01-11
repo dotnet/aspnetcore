@@ -14,13 +14,13 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
         private PipelineFactory _factory;
         private readonly bool _ownFactory;
 
-        public PipelineReaderWriter ServerToClient { get; }
-        public PipelineReaderWriter ClientToServer { get; }
+        public Pipe ServerToClient { get; }
+        public Pipe ClientToServer { get; }
 
         public IWebSocketConnection ClientSocket { get; }
         public IWebSocketConnection ServerSocket { get; }
 
-        public WebSocketPair(bool ownFactory, PipelineFactory factory, PipelineReaderWriter serverToClient, PipelineReaderWriter clientToServer, IWebSocketConnection clientSocket, IWebSocketConnection serverSocket)
+        public WebSocketPair(bool ownFactory, PipelineFactory factory, Pipe serverToClient, Pipe clientToServer, IWebSocketConnection clientSocket, IWebSocketConnection serverSocket)
         {
             _ownFactory = ownFactory;
             _factory = factory;

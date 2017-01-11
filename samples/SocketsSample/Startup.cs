@@ -29,7 +29,6 @@ namespace SocketsSample
                     });
             // .AddRedis();
 
-            services.AddSingleton<ChatEndPoint>();
             services.AddSingleton<MessagesEndPoint>();
             services.AddSingleton<ProtobufSerializer>();
         }
@@ -53,8 +52,7 @@ namespace SocketsSample
 
             app.UseSockets(routes =>
             {
-                routes.MapEndpoint<ChatEndPoint>("/chat");
-                routes.MapEndpoint<MessagesEndPoint>("/msgs");
+                routes.MapEndpoint<MessagesEndPoint>("/chat");
             });
         }
     }

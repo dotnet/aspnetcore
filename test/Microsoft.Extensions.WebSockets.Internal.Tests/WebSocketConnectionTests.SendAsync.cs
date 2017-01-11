@@ -197,7 +197,7 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
                 }
             }
 
-            private static void CompleteChannels(params PipelineReaderWriter[] readerWriters)
+            private static void CompleteChannels(params Pipe[] readerWriters)
             {
                 foreach (var readerWriter in readerWriters)
                 {

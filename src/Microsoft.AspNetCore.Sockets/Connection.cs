@@ -3,24 +3,28 @@
 
 using System;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public abstract class Connection : IDisposable
+    public class Connection : IDisposable
     {
-        public abstract ConnectionMode Mode { get; }
         public string ConnectionId { get; }
 
         public ClaimsPrincipal User { get; set; }
         public ConnectionMetadata Metadata { get; } = new ConnectionMetadata();
 
-        protected Connection(string id)
+        public IChannelConnection<Message> Transport { get; }
+
+        public Connection(string id, IChannelConnection<Message> transport)
         {
+            Transport = transport;
             ConnectionId = id;
         }
 
-        public virtual void Dispose()
+        public void Dispose()
         {
+            Transport.Dispose();
         }
     }
 }

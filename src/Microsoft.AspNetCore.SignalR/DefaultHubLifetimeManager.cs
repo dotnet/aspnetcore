@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets;
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub>
     {
-        private readonly ConnectionList<StreamingConnection> _connections = new ConnectionList<StreamingConnection>();
+        private readonly ConnectionList _connections = new ConnectionList();
         private readonly InvocationAdapterRegistry _registry;
 
         public DefaultHubLifetimeManager(InvocationAdapterRegistry registry)
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.SignalR
             _registry = registry;
         }
 
-        public override Task AddGroupAsync(StreamingConnection connection, string groupName)
+        public override Task AddGroupAsync(Connection connection, string groupName)
         {
             var groups = connection.Metadata.GetOrAdd("groups", _ => new HashSet<string>());
 
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.SignalR
             return TaskCache.CompletedTask;
         }
 
-        public override Task RemoveGroupAsync(StreamingConnection connection, string groupName)
+        public override Task RemoveGroupAsync(Connection connection, string groupName)
         {
             var groups = connection.Metadata.Get<HashSet<string>>("groups");
 
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.SignalR
             return InvokeAllWhere(methodName, args, c => true);
         }
 
-        private Task InvokeAllWhere(string methodName, object[] args, Func<StreamingConnection, bool> include)
+        private Task InvokeAllWhere(string methodName, object[] args, Func<Connection, bool> include)
         {
             var tasks = new List<Task>(_connections.Count);
             var message = new InvocationDescriptor
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.SignalR
 
                 var invocationAdapter = _registry.GetInvocationAdapter(connection.Metadata.Get<string>("formatType"));
 
-                tasks.Add(invocationAdapter.WriteMessageAsync(message, connection.Transport.GetStream()));
+                tasks.Add(WriteAsync(connection, invocationAdapter, message));
             }
 
             return Task.WhenAll(tasks);
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.SignalR
                 Arguments = args
             };
 
-            return invocationAdapter.WriteMessageAsync(message, connection.Transport.GetStream());
+            return WriteAsync(connection, invocationAdapter, message);
         }
 
         public override Task InvokeGroupAsync(string groupName, string methodName, object[] args)
@@ -111,17 +112,24 @@ namespace Microsoft.AspNetCore.SignalR
             });
         }
 
-        public override Task OnConnectedAsync(StreamingConnection connection)
+        public override Task OnConnectedAsync(Connection connection)
         {
             _connections.Add(connection);
             return TaskCache.CompletedTask;
         }
 
-        public override Task OnDisconnectedAsync(StreamingConnection connection)
+        public override Task OnDisconnectedAsync(Connection connection)
         {
             _connections.Remove(connection);
             return TaskCache.CompletedTask;
         }
-    }
 
+        private static Task WriteAsync(Connection connection, IInvocationAdapter invocationAdapter, InvocationDescriptor message)
+        {
+            var stream = new MemoryStream();
+            invocationAdapter.WriteMessageAsync(message, stream);
+            var buffer = ReadableBuffer.Create(stream.ToArray()).Preserve();
+            return connection.Transport.Output.WriteAsync(new Message(buffer, Format.Binary, endOfMessage: true));
+        }
+    }
 }

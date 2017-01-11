@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Reflection;
@@ -25,10 +26,10 @@ namespace Microsoft.AspNetCore.SignalR
         }
     }
 
-    public class HubEndPoint<THub, TClient> : StreamingEndPoint, IInvocationBinder where THub : Hub<TClient>
+    public class HubEndPoint<THub, TClient> : EndPoint, IInvocationBinder where THub : Hub<TClient>
     {
-        private readonly Dictionary<string, Func<StreamingConnection, InvocationDescriptor, Task<InvocationResultDescriptor>>> _callbacks
-            = new Dictionary<string, Func<StreamingConnection, InvocationDescriptor, Task<InvocationResultDescriptor>>>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Func<Connection, InvocationDescriptor, Task<InvocationResultDescriptor>>> _callbacks
+            = new Dictionary<string, Func<Connection, InvocationDescriptor, Task<InvocationResultDescriptor>>>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Type[]> _paramTypes = new Dictionary<string, Type[]>();
 
         private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.SignalR
             DiscoverHubMethods();
         }
 
-        public override async Task OnConnectedAsync(StreamingConnection connection)
+        public override async Task OnConnectedAsync(Connection connection)
         {
             // TODO: Dispatch from the caller
             await Task.Yield();
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task RunHubAsync(StreamingConnection connection)
+        private async Task RunHubAsync(Connection connection)
         {
             await HubOnConnectedAsync(connection);
 
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.SignalR
             await HubOnDisconnectedAsync(connection, null);
         }
 
-        private async Task HubOnConnectedAsync(StreamingConnection connection)
+        private async Task HubOnConnectedAsync(Connection connection)
         {
             try
             {
@@ -112,7 +113,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task HubOnDisconnectedAsync(StreamingConnection connection, Exception exception)
+        private async Task HubOnDisconnectedAsync(Connection connection, Exception exception)
         {
             try
             {
@@ -138,15 +139,26 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task DispatchMessagesAsync(StreamingConnection connection)
+        private async Task DispatchMessagesAsync(Connection connection)
         {
-            var stream = connection.Transport.GetStream();
             var invocationAdapter = _registry.GetInvocationAdapter(connection.Metadata.Get<string>("formatType"));
 
-            while (true)
+            while (await connection.Transport.Input.WaitToReadAsync())
             {
-                // TODO: Handle receiving InvocationResultDescriptor
-                var invocationDescriptor = await invocationAdapter.ReadMessageAsync(stream, this) as InvocationDescriptor;
+                Message message;
+                if (!connection.Transport.Input.TryRead(out message))
+                {
+                    continue;
+                }
+
+                InvocationDescriptor invocationDescriptor;
+                using (message)
+                {
+                    var inputStream = new MemoryStream(message.Payload.Buffer.ToArray());
+
+                    // TODO: Handle receiving InvocationResultDescriptor
+                    invocationDescriptor = await invocationAdapter.ReadMessageAsync(inputStream, this) as InvocationDescriptor;
+                }
 
                 // Is there a better way of detecting that a connection was closed?
                 if (invocationDescriptor == null)
@@ -160,7 +172,7 @@ namespace Microsoft.AspNetCore.SignalR
                 }
 
                 InvocationResultDescriptor result;
-                Func<StreamingConnection, InvocationDescriptor, Task<InvocationResultDescriptor>> callback;
+                Func<Connection, InvocationDescriptor, Task<InvocationResultDescriptor>> callback;
                 if (_callbacks.TryGetValue(invocationDescriptor.Method, out callback))
                 {
                     result = await callback(connection, invocationDescriptor);
@@ -177,11 +189,19 @@ namespace Microsoft.AspNetCore.SignalR
                     _logger.LogError("Unknown hub method '{method}'", invocationDescriptor.Method);
                 }
 
-                await invocationAdapter.WriteMessageAsync(result, stream);
+                // TODO: Pool memory
+                var outStream = new MemoryStream();
+                await invocationAdapter.WriteMessageAsync(result, outStream);
+
+                var buffer = ReadableBuffer.Create(outStream.ToArray()).Preserve();
+                if (await connection.Transport.Output.WaitToWriteAsync())
+                {
+                    connection.Transport.Output.TryWrite(new Message(buffer, Format.Binary, endOfMessage: true));
+                }
             }
         }
 
-        private void InitializeHub(THub hub, StreamingConnection connection)
+        private void InitializeHub(THub hub, Connection connection)
         {
             hub.Clients = _hubContext.Clients;
             hub.Context = new HubCallerContext(connection);
@@ -290,7 +310,7 @@ namespace Microsoft.AspNetCore.SignalR
             Type[] types;
             if (!_paramTypes.TryGetValue(methodName, out types))
             {
-                throw new InvalidOperationException($"The hub method '{methodName}' could not be resolved.");
+                return Type.EmptyTypes;
             }
             return types;
         }
