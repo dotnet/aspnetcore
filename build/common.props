@@ -1,20 +1,17 @@
 <Project ToolsVersion="15.0">
-    <Import Project="..\version.props" />
-    <Import Project="..\.build\common.props" Condition="Exists('..\.build\common.props')" />
+  <Import Project="..\version.props" />
 
-    <PropertyGroup>
-        <RepositoryUrl>https://github.com/aspnet/StaticFiles</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <Product>Microsoft ASP.NET Core</Product>
-        <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Key.snk</AssemblyOriginatorKeyFile>
-        <SignAssembly>true</SignAssembly>
-        <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
-    </PropertyGroup>
+  <PropertyGroup>
+    <Product>Microsoft ASP.NET Core</Product>
+    <RepositoryUrl>https://github.com/aspnet/StaticFiles</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Key.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
+  </PropertyGroup>
 
-    <Target Name="EnsureInitialized"
-            BeforeTargets="Build"
-            Condition="!Exists('$(MSBuildThisFileDirectory)..\.build\common.props')">
-        <Error File="$(MSBuildProjectFile)"
-            Text="Project has not been initialized. Run 'build initialize' in the solution directory '$(MSBuildThisFileDirectory)'" />
-    </Target>
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.Sdk" Version="1.0.0-*" PrivateAssets="All" />
+  </ItemGroup>
+
 </Project>
