@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 using Xunit;
@@ -57,6 +58,36 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Equal(new StringSegment("pretty"), result.GetParameter("format"));
             Assert.Equal(new StringSegment("0.8"), result.GetParameter("q"));
             Assert.Equal(new StringSegment("utf-8"), result.GetParameter("charset"));
+        }
+
+        [Fact]
+        public void Constructor_NullMediaType_Throws()
+        {
+            // Arrange, Act and Assert
+            Assert.Throws<ArgumentNullException>("mediaType", () => new MediaType(null, 0, 2));
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(7)]
+        public void Constructor_NegativeOffset_Throws(int offset)
+        {
+            // Arrange, Act and Assert
+            Assert.Throws<ArgumentOutOfRangeException>("offset", () => new MediaType("media", offset, 5));
+        }
+
+        [Fact]
+        public void Constructor_NegativeLength_Throws()
+        {
+            // Arrange, Act and Assert
+            Assert.Throws<ArgumentOutOfRangeException>("length", () => new MediaType("media", 0, -1));
+        }
+
+        [Fact]
+        public void Constructor_OffsetOrLengthOutOfBounds_Throws()
+        {
+            // Arrange, Act and Assert
+            Assert.Throws<ArgumentException>(() => new MediaType("lengthof9", 5, 5));
         }
 
         [Theory]

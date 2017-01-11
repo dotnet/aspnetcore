@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Text;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters.Internal;
 using Microsoft.Extensions.Primitives;
 
@@ -54,9 +55,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentOutOfRangeException(nameof(offset));
             }
 
-            if (length != null && offset + length > mediaType.Length)
+            if (length < 0 || length > mediaType.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(length));
+            }
+
+            if (offset > mediaType.Length - length)
+            {
+                throw new ArgumentException(Resources.FormatArgument_InvalidOffsetLength(nameof(offset), nameof(length)));
             }
 
             _parameterParser = default(MediaTypeParameterParser);

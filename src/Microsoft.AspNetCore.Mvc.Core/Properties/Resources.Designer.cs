@@ -1386,6 +1386,22 @@ namespace Microsoft.AspNetCore.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("MiddlewareFilterConfigurationProvider_CreateConfigureDelegate_CannotCreateType"), p0, p1);
         }
 
+        /// <summary>
+        /// '{0}' and '{1}' are out of bounds for the string.
+        /// </summary>
+        internal static string Argument_InvalidOffsetLength
+        {
+            get { return GetString("Argument_InvalidOffsetLength"); }
+        }
+
+        /// <summary>
+        /// '{0}' and '{1}' are out of bounds for the string.
+        /// </summary>
+        internal static string FormatArgument_InvalidOffsetLength(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Argument_InvalidOffsetLength"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
