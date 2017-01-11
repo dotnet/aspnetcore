@@ -6,10 +6,12 @@
     <_MvcRazorResponseFilePath>$(IntermediateOutputPath)microsoft.aspnetcore.mvc.razor.viewcompilation.rsp</_MvcRazorResponseFilePath>
 
     <MvcRazorContentRoot Condition="'$(MvcRazorContentRoot)'==''">$(MSBuildProjectDirectory)</MvcRazorContentRoot>
+    <MvcRazorExcludeViewFilesFromPublish Condition="'$(MvcRazorExcludeViewFilesFromPublish)'==''">true</MvcRazorExcludeViewFilesFromPublish>
   </PropertyGroup>
 
   <ItemGroup>
     <_MvcRazorContentFiles Include="$([MSBuild]::EnsureTrailingSlash('$(MvcRazorOutputPath)'))**\*.cshtml"  />
+    <Content Update="**\*.cshtml" CopyToPublishDirectory="Never" Condition="'$(MvcRazorExcludeViewFilesFromPublish)'=='true'" />
   </ItemGroup>
 
   <Target Name="_CreateResponseFileForMvcRazorPrecompile">
