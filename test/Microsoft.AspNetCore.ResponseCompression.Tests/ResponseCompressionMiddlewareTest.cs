@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var response = await InvokeMiddleware(100, requestAcceptEncodings: null, responseType: TextPlain);
 
-            CheckResponseNotCompressed(response, expectedBodyLength: 100);
+            CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: false);
         }
 
         [Fact]
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var response = await InvokeMiddleware(100, requestAcceptEncodings: new string[] { "unknown" }, responseType: TextPlain);
 
-            CheckResponseNotCompressed(response, expectedBodyLength: 100);
+            CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: true);
         }
 
         [Theory]
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             var response = await client.SendAsync(request);
 
-            CheckResponseNotCompressed(response, expectedBodyLength: 100);
+            CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: false);
         }
 
         [Theory]
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             var response = await client.SendAsync(request);
 
-            CheckResponseNotCompressed(response, expectedBodyLength: 0);
+            CheckResponseNotCompressed(response, expectedBodyLength: 0, sendVaryHeader: false);
         }
 
         [Fact]
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var response = await InvokeMiddleware(100, requestAcceptEncodings: new string[] { "identity" }, responseType: TextPlain);
 
-            CheckResponseNotCompressed(response, expectedBodyLength: 100);
+            CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: true);
         }
 
         [Theory]
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var response = await InvokeMiddleware(100, requestAcceptEncodings: acceptEncodings, responseType: TextPlain);
 
-            CheckResponseNotCompressed(response, expectedBodyLength: expectedBodyLength);
+            CheckResponseNotCompressed(response, expectedBodyLength: expectedBodyLength, sendVaryHeader: true);
         }
 
         [Fact]
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var response = await InvokeMiddleware(100, requestAcceptEncodings: new string[] { "gzip" }, responseType: "text/custom");
 
-            CheckResponseNotCompressed(response, expectedBodyLength: 100);
+            CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: false);
         }
 
         [Fact]
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 r.Headers[HeaderNames.ContentRange] = "1-2/*";
             });
 
-            CheckResponseNotCompressed(response, expectedBodyLength: 50);
+            CheckResponseNotCompressed(response, expectedBodyLength: 50, sendVaryHeader: false);
         }
 
         [Fact]
@@ -446,7 +446,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             request.Headers.AcceptEncoding.ParseAdd("gzip");
 
             var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-            
+
             IEnumerable<string> contentMD5 = null;
             Assert.False(response.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
             Assert.Single(response.Content.Headers.ContentEncoding, "gzip");
@@ -662,7 +662,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             var response = await client.SendAsync(request);
 
-            CheckResponseNotCompressed(response, expectedBodyLength: 1024);
+            CheckResponseNotCompressed(response, expectedBodyLength: 1024, sendVaryHeader: false);
 
             Assert.True(fakeSendFile.Invoked);
         }
@@ -793,13 +793,40 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             IEnumerable<string> contentMD5 = null;
 
+            var containsVaryAcceptEncoding = false;
+            foreach (var value in response.Headers.GetValues(HeaderNames.Vary))
+            {
+                if (value.Contains(HeaderNames.AcceptEncoding))
+                {
+                    containsVaryAcceptEncoding = true;
+                    break;
+                }
+            }
+            Assert.True(containsVaryAcceptEncoding);
             Assert.False(response.Headers.TryGetValues(HeaderNames.ContentMD5, out contentMD5));
             Assert.Single(response.Content.Headers.ContentEncoding, "gzip");
             Assert.Equal(expectedBodyLength, response.Content.Headers.ContentLength);
         }
 
-        private void CheckResponseNotCompressed(HttpResponseMessage response, int expectedBodyLength)
+        private void CheckResponseNotCompressed(HttpResponseMessage response, int expectedBodyLength, bool sendVaryHeader)
         {
+            if (sendVaryHeader)
+            {
+                var containsVaryAcceptEncoding = false;
+                foreach (var value in response.Headers.GetValues(HeaderNames.Vary))
+                {
+                    if (value.Contains(HeaderNames.AcceptEncoding))
+                    {
+                        containsVaryAcceptEncoding = true;
+                        break;
+                    }
+                }
+                Assert.True(containsVaryAcceptEncoding);
+            }
+            else
+            {
+                Assert.False(response.Headers.Contains(HeaderNames.Vary));
+            }
             Assert.NotNull(response.Headers.GetValues(HeaderNames.ContentMD5));
             Assert.Empty(response.Content.Headers.ContentEncoding);
             Assert.Equal(expectedBodyLength, response.Content.Headers.ContentLength);

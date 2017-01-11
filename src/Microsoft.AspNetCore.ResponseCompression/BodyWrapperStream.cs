@@ -211,6 +211,24 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 _compressionChecked = true;
                 if (_provider.ShouldCompressResponse(_context))
                 {
+                    // If the MIME type indicates that the response could be compressed, caches will need to vary by the Accept-Encoding header
+                    var varyValues = _context.Response.Headers.GetCommaSeparatedValues(HeaderNames.Vary);
+                    var varyByAcceptEncoding = false;
+
+                    for (var i = 0; i < varyValues.Length; i++)
+                    {
+                        if (string.Equals(varyValues[i], HeaderNames.AcceptEncoding, StringComparison.OrdinalIgnoreCase))
+                        {
+                            varyByAcceptEncoding = true;
+                            break;
+                        }
+                    }
+
+                    if (!varyByAcceptEncoding)
+                    {
+                        _context.Response.Headers.Append(HeaderNames.Vary, HeaderNames.AcceptEncoding);
+                    }
+
                     var compressionProvider = ResolveCompressionProvider();
                     if (compressionProvider != null)
                     {

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -14,6 +15,25 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 {
     public class BodyWrapperStreamTests
     {
+        [Theory]
+        [InlineData(null, "Accept-Encoding")]
+        [InlineData("", "Accept-Encoding")]
+        [InlineData("AnotherHeader", "AnotherHeader,Accept-Encoding")]
+        [InlineData("Accept-Encoding", "Accept-Encoding")]
+        [InlineData("accepT-encodinG", "accepT-encodinG")]
+        [InlineData("accept-encoding,AnotherHeader", "accept-encoding,AnotherHeader")]
+        public void OnWrite_AppendsAcceptEncodingToVaryHeader_IfNotPresent(string providedVaryHeader, string expectedVaryHeader)
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Response.Headers[HeaderNames.Vary] = providedVaryHeader;
+            var stream = new BodyWrapperStream(httpContext, new MemoryStream(), new MockResponseCompressionProvider(flushable: true), null, null);
+
+            stream.Write(new byte[] { }, 0, 0);
+
+
+            Assert.Equal(expectedVaryHeader, httpContext.Response.Headers[HeaderNames.Vary]);
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
