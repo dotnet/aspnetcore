@@ -54,8 +54,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
                 using (var connection = await HubConnection.ConnectAsync(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), transport, httpClient, pipelineFactory, loggerFactory))
                 {
-                    //TODO: Get rid of this. This is to prevent "No channel" failures due to sends occuring before the first poll.
-                    await Task.Delay(500);
                     EnsureConnectionEstablished(connection);
 
                     var result = await connection.Invoke<string>("HelloWorld");
@@ -77,8 +75,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
                 using (var connection = await HubConnection.ConnectAsync(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), transport, httpClient, pipelineFactory, loggerFactory))
                 {
-                    //TODO: Get rid of this. This is to prevent "No channel" failures due to sends occuring before the first poll.
-                    await Task.Delay(500);
                     EnsureConnectionEstablished(connection);
 
                     var result = await connection.Invoke<string>("Echo", originalMessage);
@@ -106,8 +102,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                         tcs.TrySetResult((string)a[0]);
                     });
 
-                    //TODO: Get rid of this. This is to prevent "No channel" failures due to sends occuring before the first poll.
-                    await Task.Delay(500);
                     EnsureConnectionEstablished(connection);
 
                     await connection.Invoke<Task>("CallEcho", originalMessage);
@@ -129,9 +123,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
                 using (var connection = await HubConnection.ConnectAsync(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), transport, httpClient, pipelineFactory, loggerFactory))
                 {
-                    //TODO: Get rid of this. This is to prevent "No channel" failures due to sends occuring before the first poll.
-                    await Task.Delay(500);
-
                     EnsureConnectionEstablished(connection);
 
                     var ex = await Assert.ThrowsAnyAsync<Exception>(
