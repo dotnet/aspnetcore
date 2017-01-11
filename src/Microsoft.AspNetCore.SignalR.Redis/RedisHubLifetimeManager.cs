@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
         private Task WriteAsync(Connection connection, byte[] data)
         {
             var buffer = ReadableBuffer.Create(data).Preserve();
-            return connection.Transport.Output.WriteAsync(new Message(buffer, Format.Binary, endOfMessage: true));
+            return connection.Transport.Output.WriteAsync(new Message(buffer, connection.Metadata.Format, endOfMessage: true));
         }
 
         private class LoggerTextWriter : TextWriter

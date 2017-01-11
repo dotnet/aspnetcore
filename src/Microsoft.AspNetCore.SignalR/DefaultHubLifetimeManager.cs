@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.SignalR
             var stream = new MemoryStream();
             invocationAdapter.WriteMessageAsync(message, stream);
             var buffer = ReadableBuffer.Create(stream.ToArray()).Preserve();
-            return connection.Transport.Output.WriteAsync(new Message(buffer, Format.Binary, endOfMessage: true));
+            return connection.Transport.Output.WriteAsync(new Message(buffer, connection.Metadata.Format, endOfMessage: true));
         }
     }
 }

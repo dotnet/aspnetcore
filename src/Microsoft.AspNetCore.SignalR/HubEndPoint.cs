@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.SignalR
                 var buffer = ReadableBuffer.Create(outStream.ToArray()).Preserve();
                 if (await connection.Transport.Output.WaitToWriteAsync())
                 {
-                    connection.Transport.Output.TryWrite(new Message(buffer, Format.Binary, endOfMessage: true));
+                    connection.Transport.Output.TryWrite(new Message(buffer, connection.Metadata.Format, endOfMessage: true));
                 }
             }
         }

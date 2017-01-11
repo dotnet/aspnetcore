@@ -159,4 +159,9 @@ click('groupmsg', event => {
     invoke(connection, 'SendToGroup', groupName, message);
 });
 
+click('send', event => {
+    let data = getText('me');
+    invoke(connection, 'Echo', data);
+});
+
 </script>
