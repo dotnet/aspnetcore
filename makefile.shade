@@ -4,5 +4,42 @@ var FULL_VERSION='0.1'
 use-standard-lifecycle
 k-standard-goals
 
+#restore-nuget-packages target='initialize'
+    exec program='${Path.Combine(Directory.GetCurrentDirectory(), ".build", "nuget.exe")}' commandline='restore'
+
+#build-vsix-core
+    @{
+        var programFilesx86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+        // Microsoft Visual Studio\2017
+        var buildToolsDirectory = Path.Combine(programFilesx86, "Microsoft Visual Studio", "2017");
+        if (!Directory.Exists(buildToolsDirectory))
+        {
+            throw new Exception("MSBuild 15.0 installation directory could not be located.");
+        }
+
+        var msBuildDirectory = Directory.EnumerateDirectories(buildToolsDirectory).FirstOrDefault();
+        // If VS 2017 is installed, look for MSBuild under Enterprise \ Professional \ Community directory
+        // If the MSBuild tools are separately installed, look for MSBuild under the BuildTools directory
+        if (msBuildDirectory == null)
+        {
+            throw new Exception("MSBuild 15.0 installation directory could not be located.");
+        }
+
+        var msbuildPath = Path.Combine(msBuildDirectory, "MSBuild", "15.0", "bin", "MSBuild.exe");
+        var toolsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "tooling", "Microsoft.VisualStudio.RazorExtension");
+        var artifactsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "artifacts");
+        Directory.CreateDirectory(artifactsDirectory);
+        var logFilePath = Path.Combine(artifactsDirectory, "msbuild.log");
+    }
+    exec program='${msbuildPath}' commandline='/p:DeployExtension=false /fl /flp:v=D /flp:LogFile=${logFilePath}' workingdir='${toolsDirectory}'
+
+#build-vsix .initialize .compile .build-vsix-core
+    @{
+        var baseDirectory = Directory.GetCurrentDirectory();
+        var buildPath = Path.Combine(baseDirectory, "artifacts", "build");
+        var vsixPath = Directory.EnumerateFiles(baseDirectory, "*.vsix", SearchOption.AllDirectories).First();
+        File.Copy(vsixPath, Path.Combine(buildPath, Path.GetFileName(vsixPath)));
+    }
+
 #pack-sources target='build-pack'
     dotnet command='msbuild shared/build.proj /t:Pack /v:n'

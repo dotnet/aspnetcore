@@ -8,6 +8,9 @@
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
+
+    <!-- Workaround for the **/*.cs **/*.resx being auto included in the SDK installed by the latest builds of VS and the rc2 SDK that we currently use -->
+    <EnableDefaultItems>false</EnableDefaultItems>
   </PropertyGroup>
 
   <ItemGroup>
