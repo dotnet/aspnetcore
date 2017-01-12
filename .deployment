@@ -1,2 +1,2 @@
 +[config]
-+project = src/MusicStore/project.json
++project = src/MusicStore/MusicStore.csproj

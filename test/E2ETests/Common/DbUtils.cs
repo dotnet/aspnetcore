@@ -23,8 +23,7 @@ namespace E2ETests
 
         public static void DropDatabase(string databaseName, ILogger logger)
         {
-            if (Helpers.RunningOnMono
-                || !TestPlatformHelper.IsWindows)
+            if (!TestPlatformHelper.IsWindows)
             {
                 return;
             }

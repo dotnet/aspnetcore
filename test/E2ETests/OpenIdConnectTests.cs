@@ -4,8 +4,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using E2ETests.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
@@ -77,6 +77,11 @@ namespace E2ETests
                         DbUtils.DropDatabase(musicStoreDbName, _logger);
                     }
                 };
+
+                if (applicationType == ApplicationType.Standalone)
+                {
+                    deploymentParameters.AdditionalPublishParameters = "/p:RuntimeIdentifier=" + RuntimeEnvironment.GetRuntimeIdentifier();
+                }
 
                 // Override the connection strings using environment based configuration
                 deploymentParameters.EnvironmentVariables

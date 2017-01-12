@@ -1,0 +1,13 @@
+<Project>
+  <Import Project="..\version.props" />
+
+  <PropertyGroup>
+    <NetCoreAppImplicitPackageVersion>1.2.0-*</NetCoreAppImplicitPackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- TODO remove this. Currently only required to workaround issues in dotnet/sdk -->
+    <PackageReference Include="Internal.AspNetCore.Sdk" Version="1.0.1-*" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>

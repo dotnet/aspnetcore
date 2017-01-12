@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using E2ETests.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
@@ -28,7 +29,7 @@ namespace E2ETests
         //[InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable, "http://localhost:5025/", false)]
         [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable, "http://localhost:5026/", false)]
         [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, "http://localhost:5027/", false)]
-        //[InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable, "http://localhost:5028/", false)]
+        // [InlineData(ServerType.Kestrel, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable, "http://localhost:5028/", false)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable, "http://localhost:5029/", false)]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone, "http://localhost:5030/", false)]
         public async Task WindowsOS(
@@ -157,6 +158,11 @@ namespace E2ETests
                         DbUtils.DropDatabase(musicStoreDbName, _logger);
                     }
                 };
+
+                if (applicationType == ApplicationType.Standalone)
+                {
+                    deploymentParameters.AdditionalPublishParameters = "--runtime " + RuntimeEnvironment.GetRuntimeIdentifier();
+                }
 
                 // Override the connection strings using environment based configuration
                 deploymentParameters.EnvironmentVariables

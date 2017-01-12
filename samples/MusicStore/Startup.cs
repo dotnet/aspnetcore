@@ -170,8 +170,6 @@ namespace MusicStore
             // http://localhost:5001/ for test applications.
             // As such, here is how to change this sample to uses http://ktesting.com:5001/ instead.
 
-            // Edit the Project.json file and replace http://localhost:5001/ with http://ktesting.com:5001/.
-
             // From an admin command console first enter:
             // notepad C:\Windows\System32\drivers\etc\hosts
             // and add this to the file, save, and exit (and reboot?):

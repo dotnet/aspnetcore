@@ -15,13 +15,13 @@ $ErrorActionPreference = "Stop"
 
 function UpdateHostInProjectJson($projectFile, $newhost)
 {
-    (Get-Content $projectFile) | 
+    (Get-Content $projectFile) |
     Foreach-Object {
         $_ -replace "http://localhost", "http://$newhost"
     } |
-    Set-Content $projectFile 
+    Set-Content $projectFile
 }
- 
+
 if (-not (Test-Path $projectFile)) {
     Write-Error "Couldn't find $projectFile"
     exit 1
@@ -62,13 +62,13 @@ try
     }
 
     if ($remoteInvoke) {
-        $packedProjectJsonFile = Join-Path $packDir -ChildPath "approot\src\$projectName\project.json"
+        $packedProjectJsonFile = Join-Path $packDir -ChildPath "approot\src\$projectName\$projectName.csproj"
         Write-Host "Setting host to $server in $packedProjectJsonFile"
         if (-not (Test-Path $packedProjectJsonFile)) {
             Write-Error "Couldn't find $packedProjectJsonFile"
             exit 1
         }
-    
+
         UpdateHostInProjectJson $packedProjectJsonFile $server
     }
 

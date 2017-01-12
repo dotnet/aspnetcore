@@ -1,5 +1,4 @@
 .git
-**/project.lock.json
 
 **/Obj/
 **/obj/
@@ -41,7 +40,6 @@ node_modules
 *.sln.ide
 *.ng.ts
 *.sln.ide
-project.lock.json
 .build/
 .testpublish/
 launchSettings.json

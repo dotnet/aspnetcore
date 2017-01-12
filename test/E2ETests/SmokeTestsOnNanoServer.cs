@@ -287,7 +287,7 @@ namespace E2ETests
                 var configuration = new ConfigurationBuilder()
                         .SetBasePath(Directory.GetCurrentDirectory())
                         .AddJsonFile("remoteDeploymentConfig.json")
-                        .AddUserSecrets()
+                        .AddUserSecrets("MusicStore.E2ETests")
                         .AddEnvironmentVariables()
                         .Build();
 

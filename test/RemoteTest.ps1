@@ -6,7 +6,7 @@ param(
 )
 $ErrorActionPreference = "Stop"
 
-$projectFile = "MusicStore.Test\project.json"
+$projectFile = "MusicStore.Test\MusicStore.Test.csproj"
 
 Write-Host "Test server:  $server"
 Write-Host "Test folder:  $serverFolder"
@@ -25,9 +25,9 @@ Set-Item WSMan:\localhost\Client\TrustedHosts "$server" -Force
 $remoteScript = {
     $ErrorActionPreference = "Continue"
     cd C:\$using:serverFolder\$using:projectName
-    dir 
+    dir
     $env:DNX_TRACE=1
-    
+
     $output = & .\approot\test.cmd 2>&1
     $output
     $lastexitcode

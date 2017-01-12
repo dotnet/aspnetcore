@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using E2ETests.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
@@ -44,13 +45,18 @@ namespace E2ETests
                     ApplicationType = applicationType,
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "NtlmAuthentication", //Will pick the Start class named 'StartupNtlmAuthentication'
-                    ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("NtlmAuthentation.config") : null,
+                    ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "NtlmAuthentation.config")) : null,
                     SiteName = "MusicStoreNtlmAuthentication", //This is configured in the NtlmAuthentication.config
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, _logger);
                     }
                 };
+
+                if (applicationType == ApplicationType.Standalone)
+                {
+                    deploymentParameters.AdditionalPublishParameters = "/p:RuntimeIdentifier=" + RuntimeEnvironment.GetRuntimeIdentifier();
+                }
 
                 // Override the connection strings using environment based configuration
                 deploymentParameters.EnvironmentVariables

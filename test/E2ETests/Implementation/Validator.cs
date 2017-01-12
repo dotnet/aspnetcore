@@ -301,23 +301,14 @@ namespace E2ETests
             response = await DoPostAsync("Account/LogOff", content);
             responseContent = await response.Content.ReadAsStringAsync();
 
-            if (!Helpers.RunningOnMono)
-            {
-                Assert.Contains("ASP.NET MVC Music Store", responseContent, StringComparison.OrdinalIgnoreCase);
-                Assert.Contains("Register", responseContent, StringComparison.OrdinalIgnoreCase);
-                Assert.Contains("Login", responseContent, StringComparison.OrdinalIgnoreCase);
-                Assert.Contains("www.github.com/aspnet/MusicStore", responseContent, StringComparison.OrdinalIgnoreCase);
-                Assert.Contains("/Images/home-showcase.png", responseContent, StringComparison.OrdinalIgnoreCase);
-                //Verify cookie cleared on logout
-                Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(IdentityCookieName));
-                _logger.LogInformation("Successfully signed out of '{email}''s session", email);
-            }
-            else
-            {
-                //Bug in Mono - on logout the cookie is not cleared in the cookie container and not redirected. Work around by reinstantiating the httpClient.
-                _httpClientHandler = new HttpClientHandler();
-                _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
-            }
+            Assert.Contains("ASP.NET MVC Music Store", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("Register", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("Login", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("www.github.com/aspnet/MusicStore", responseContent, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("/Images/home-showcase.png", responseContent, StringComparison.OrdinalIgnoreCase);
+            //Verify cookie cleared on logout
+            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(IdentityCookieName));
+            _logger.LogInformation("Successfully signed out of '{email}''s session", email);
         }
 
         public async Task SignInWithInvalidPassword(string email, string invalidPassword)

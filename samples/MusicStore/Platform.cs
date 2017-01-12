@@ -19,7 +19,6 @@ namespace MusicStore
               out int pdwReturnedProductType);
 
         private bool? _isNano;
-        private bool? _isMono;
         private bool? _isWindows;
 
         public bool IsRunningOnWindows
@@ -32,19 +31,6 @@ namespace MusicStore
                 }
 
                 return _isWindows.Value;
-            }
-        }
-
-        public bool IsRunningOnMono
-        {
-            get
-            {
-                if (_isMono == null)
-                {
-                    _isMono = Type.GetType("Mono.Runtime") != null;
-                }
-
-                return _isMono.Value;
             }
         }
 
@@ -87,7 +73,7 @@ namespace MusicStore
         {
             get
             {
-                return !IsRunningOnWindows || IsRunningOnMono || IsRunningOnNanoServer;
+                return !IsRunningOnWindows || IsRunningOnNanoServer;
             }
         }
 
