@@ -18,12 +18,19 @@
     "nowarn": [
       "CS1591"
     ],
-    "xmlDoc": true
+    "xmlDoc": true,
+    "compile": {
+      "include": [
+        "../Microsoft.AspNetCore.Sockets/IChannelConnection.cs",
+        "../Microsoft.AspNetCore.Sockets/Internal/ChannelConnection.cs"
+      ]
+    }
   },
 
   "dependencies": {
     "NETStandard.Library": "1.6.2-*",
     "System.IO.Pipelines": "0.1.0-*",
+    "System.Threading.Tasks.Channels": "0.1.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.2.0-*",
     "Microsoft.Extensions.TaskCache.Sources": {
       "type": "build",
