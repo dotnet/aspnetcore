@@ -24,7 +24,8 @@
     "net46": { }
   },
   "buildOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "emitEntryPoint": true
   },
   "runtimeOptions": {
     "configProperties": {

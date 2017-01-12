@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest
 {
     public class AutobahnTests
     {
-        [ConditionalFact(Skip = "Failing test. See https://github.com/aspnet/SignalR/issues/23")]
+        [ConditionalFact]
         [SkipIfWsTestNotPresent]
         public async Task AutobahnTestSuite()
         {
