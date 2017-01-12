@@ -233,7 +233,7 @@
                 <term>DT</term>
                 <Justification>abbreviation for DateTime</Justification>
             </SrcExclusions>
-            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\WelcomePage.Designer.cs;
+            <SrcExclusions Include="$(PoliCheckPath)**\WelcomePage\Views\WelcomePage.Designer.cs;
                                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.Diagnostics\WelcomePage\Views\Obsolete\WelcomePage.cs">
                 <term>FE</term>
                 <Justification>Text appears in base64 encoded string of an image.</Justification>
@@ -261,7 +261,8 @@
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.SignalR.Server\Transports\LongPollingTransport.cs;
                                     $(PoliCheckPath)**\src\Microsoft.AspNetCore.TestHost\ResponseStream.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\NuGet\Core\Configuration\Settings.cs">
+                                    $(PoliCheckPath)**\src\Microsoft.Dnx.Tooling\NuGet\Core\Configuration\Settings.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.AspNetCore.SignalR.Client\**\HubConnection.cs">
                 <term>hang</term>
                 <Justification>Refers to a stuck process/thread.</Justification>
             </SrcExclusions>
