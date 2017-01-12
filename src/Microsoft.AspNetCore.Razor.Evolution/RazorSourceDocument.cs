@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 {
     public abstract class RazorSourceDocument
     {
+        internal static readonly RazorSourceDocument[] EmptyArray = new RazorSourceDocument[0];
+
         public abstract Encoding Encoding { get; }
 
         public abstract string Filename { get; }
