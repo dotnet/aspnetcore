@@ -48,7 +48,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             var parameters = $"publish "
                 + $" --output \"{DeploymentParameters.PublishedApplicationRootPath}\""
                 + $" --framework {DeploymentParameters.TargetFramework}"
-                + $" --configuration {DeploymentParameters.Configuration}";
+                + $" --configuration {DeploymentParameters.Configuration}"
+                + $" {DeploymentParameters.AdditionalPublishParameters}";
 
             Logger.LogInformation($"Executing command {DotnetCommandName} {parameters}");
 
@@ -103,6 +104,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         {
             if (hostProcess != null && !hostProcess.HasExited)
             {
+                Logger.LogInformation("Attempting to cancel process {0}", hostProcess.Id);
+
                 // Shutdown the host process.
                 hostProcess.KillTree();
                 if (!hostProcess.HasExited)

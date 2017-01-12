@@ -77,6 +77,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         public string Configuration { get; set; } = "Debug";
 
         /// <summary>
+        /// Space separated command line arguments to be passed to dotnet-publish
+        /// </summary>
+        public string AdditionalPublishParameters { get; set; }
+
+        /// <summary>
         /// To publish the application before deployment.
         /// </summary>
         public bool PublishApplicationBeforeDeployment { get; set; }
