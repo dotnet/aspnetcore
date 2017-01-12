@@ -668,7 +668,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        public async Task WhenAppSetsContentLengthButDoesNotWriteBody500ResponseSentAndConnectionCloses()
+        public async Task WhenAppSetsContentLengthButDoesNotWriteBody500ResponseSentAndConnectionDoesNotClose()
         {
             var testLogger = new TestApplicationErrorLogger();
             var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
@@ -684,10 +684,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await connection.Send(
                         "GET / HTTP/1.1",
                         "",
+                        "GET / HTTP/1.1",
+                        "",
                         "");
-                    await connection.ReceiveForcedEnd(
-                        $"HTTP/1.1 500 Internal Server Error",
-                        "Connection: close",
+                    await connection.Receive(
+                        "HTTP/1.1 500 Internal Server Error",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "HTTP/1.1 500 Internal Server Error",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
                         "",
@@ -695,10 +700,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
 
-            var errorMessage = Assert.Single(testLogger.Messages, message => message.LogLevel == LogLevel.Error);
-            Assert.Equal(
-                $"Response Content-Length mismatch: too few bytes written (0 of 5).",
-                errorMessage.Exception.Message);
+            var error = testLogger.Messages.Where(message => message.LogLevel == LogLevel.Error);
+            Assert.Equal(2, error.Count());
+            Assert.All(error, message => message.Equals("Response Content-Length mismatch: too few bytes written (0 of 5)."));
         }
 
         [Theory]

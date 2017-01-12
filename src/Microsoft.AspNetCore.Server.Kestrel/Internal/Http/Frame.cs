@@ -695,7 +695,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 responseHeaders.HeaderContentLengthValue.HasValue &&
                 _responseBytesWritten < responseHeaders.HeaderContentLengthValue.Value)
             {
-                _keepAlive = false;
+                // We need to close the connection if any bytes were written since the client
+                // cannot be certain of how many bytes it will receive.
+                if (_responseBytesWritten > 0)
+                {
+                    _keepAlive = false;
+                }
+
                 ReportApplicationError(new InvalidOperationException(
                     $"Response Content-Length mismatch: too few bytes written ({_responseBytesWritten} of {responseHeaders.HeaderContentLengthValue.Value})."));
             }
