@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                     await previousTask;
 
                     var tasks = new List<Task>(group.Connections.Count);
-                    foreach (var groupConnection in group.Connections.Cast<Connection>())
+                    foreach (var groupConnection in group.Connections)
                     {
                         tasks.Add(WriteAsync(groupConnection, data));
                     }
@@ -275,10 +275,18 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             _redisServerConnection.Dispose();
         }
 
-        private Task WriteAsync(Connection connection, byte[] data)
+        private async Task WriteAsync(Connection connection, byte[] data)
         {
             var buffer = ReadableBuffer.Create(data).Preserve();
-            return connection.Transport.Output.WriteAsync(new Message(buffer, connection.Metadata.Format, endOfMessage: true));
+            var message = new Message(buffer, connection.Metadata.Format, endOfMessage: true);
+
+            while (await connection.Transport.Output.WaitToWriteAsync())
+            {
+                if (connection.Transport.Output.TryWrite(message))
+                {
+                    break;
+                }
+            }
         }
 
         private class LoggerTextWriter : TextWriter
