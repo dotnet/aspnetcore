@@ -10,8 +10,6 @@ namespace Microsoft.AspNetCore.Sockets
     {
         private ConcurrentDictionary<object, object> _metadata = new ConcurrentDictionary<object, object>();
 
-        public Format Format { get; set; } = Format.Text;
-
         public object this[object key]
         {
             get

@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.SignalR
             await invocationAdapter.WriteMessageAsync(invocation, stream);
 
             var buffer = ReadableBuffer.Create(stream.ToArray()).Preserve();
-            var message = new Message(buffer, connection.Metadata.Format, endOfMessage: true);
+            var message = new Message(buffer, Format.Text, endOfMessage: true);
 
             while (await connection.Transport.Output.WaitToWriteAsync())
             {

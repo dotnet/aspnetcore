@@ -27,7 +27,7 @@ connection.start();
 document.getElementById('sendmessage').addEventListener('submit', event => {
     let data = document.getElementById('new-message').value;
 
-    connection.invoke('Send', data, 'json').catch(err => {
+    connection.invoke('Send', data).catch(err => {
         var child = document.createElement('li');
         child.style.color = 'red';
         child.innerText = err;

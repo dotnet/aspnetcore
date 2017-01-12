@@ -153,7 +153,6 @@ namespace Microsoft.AspNetCore.Sockets
         {
             state.Connection.User = context.User;
             state.Connection.Metadata["transport"] = transport;
-            state.Connection.Metadata.Format = format;
 
             // TODO: this is wrong. + how does the user add their own metadata based on HttpContext
             var formatType = (string)context.Request.Query["formatType"];
