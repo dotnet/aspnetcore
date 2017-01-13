@@ -3,9 +3,10 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.Extensions.Localization;
 
-namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
+namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 {
     /// <summary>
     /// Creates an <see cref="IAttributeAdapter"/> for the given attribute.

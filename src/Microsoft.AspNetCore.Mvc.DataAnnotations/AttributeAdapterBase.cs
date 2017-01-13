@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Localization;
 
-namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
+namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 {
     /// <summary>
     /// An abstract subclass of <see cref="ValidationAttributeAdapter{TAttribute}"/> which wraps up all the required
