@@ -9,14 +9,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Evolution;
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.CodeAnalysis.Remote.Razor
 {
     internal class RazorLanguageService : ServiceHubServiceBase
     {
-        public RazorLanguageService(Stream stream, IServiceProvider serviceProvider) 
+        public RazorLanguageService(Stream stream, IServiceProvider serviceProvider)
             : base(stream, serviceProvider)
         {
         }
@@ -28,7 +27,7 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
             var solution = await GetSolutionAsync().ConfigureAwait(false);
             var project = solution.GetProject(projectId);
 
-            var resolver = new DefaultTagHelperResolver();
+            var resolver = new DefaultTagHelperResolver(designTime: true);
             var results = await resolver.GetTagHelpersAsync(project, cancellationToken).ConfigureAwait(false);
 
             return results;

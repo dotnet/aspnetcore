@@ -11,7 +11,7 @@ namespace Microsoft.CodeAnalysis.Razor
     {
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
         {
-            return new DefaultTagHelperResolver();
+            return new DefaultTagHelperResolver(designTime: true);
         }
     }
 }

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.CodeAnalysis.Razor
-{ 
+{
     internal static class TagHelperTypes
     {
         public const string ITagHelper = "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper";
@@ -15,10 +15,13 @@ namespace Microsoft.CodeAnalysis.Razor
 
         public const string HtmlTargetElementAttribute = "Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute";
 
+        public const string OutputElementHintAttribute = "Microsoft.AspNetCore.Razor.TagHelpers.OutputElementHintAttribute";
+
         public const string RestrictChildrenAttribute = "Microsoft.AspNetCore.Razor.TagHelpers.RestrictChildrenAttribute";
 
         public static class HtmlAttributeName
         {
+            public const string Name = "Name";
             public const string DictionaryAttributePrefix = "DictionaryAttributePrefix";
         }
 

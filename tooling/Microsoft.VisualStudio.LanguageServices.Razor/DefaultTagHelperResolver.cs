@@ -22,7 +22,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             if (client == null)
             {
                 // The OOP host is turned off, so let's do this in process.
-                var resolver = new CodeAnalysis.Razor.DefaultTagHelperResolver();
+                var resolver = new CodeAnalysis.Razor.DefaultTagHelperResolver(designTime: true);
                 return await resolver.GetTagHelpersAsync(project, CancellationToken.None).ConfigureAwait(false);
             }
 

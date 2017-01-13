@@ -7,9 +7,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;cshtml;razor</PackageTags>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration">
-    <RootNamespace>Microsoft.CodeAnalysis.Razor</RootNamespace>
-  </PropertyGroup>
   <ItemGroup>
     <Compile Include="**\*.cs" />
     <EmbeddedResource Include="**\*.resx" />
