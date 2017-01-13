@@ -11,11 +11,8 @@
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
   </PropertyGroup>
 
-  <Target Name="EnsureInitialized"
-          BeforeTargets="Build"
-          Condition="!Exists('$(MSBuildThisFileDirectory)..\.build\common.props')">
-    <Error File="$(MSBuildProjectFile)"
-           Text="Project has not been initialized. Run 'build initialize' in the solution directory." />
-  </Target>
+   <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.Sdk" Version="1.0.0-*" PrivateAssets="All" />
+  </ItemGroup>
   
 </Project>
