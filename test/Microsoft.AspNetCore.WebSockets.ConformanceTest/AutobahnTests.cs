@@ -69,8 +69,10 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
                                 .OkOrNonStrict("3.2", "3.3", "3.4", "4.1.3", "4.1.4", "4.1.5", "4.2.3", "4.2.4", "4.2.5", "5.15")); // These occasionally get non-strict results
                         }
 
+                        // WebListener occasionally gives a non-strict response on 3.2. IIS Express seems to have the same behavior. Wonder if it's related to HttpSys?
+                        // For now, just allow the non-strict response, it's not a failure.
                         await tester.DeployTestAndAddToSpec(ServerType.WebListener, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token, expectationConfig: expect => expect
-                            .OkOrNonStrict("4.2.4"));
+                            .OkOrNonStrict("3.2", "4.2.4"));
                     }
                 }
 
