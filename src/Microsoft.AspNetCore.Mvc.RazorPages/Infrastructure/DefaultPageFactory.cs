@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
+namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     public class DefaultPageFactory : IPageFactoryProvider
     {

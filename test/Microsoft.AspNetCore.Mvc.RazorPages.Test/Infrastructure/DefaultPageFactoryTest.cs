@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
+namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     public class DefaultPageFactoryProviderTest
     {

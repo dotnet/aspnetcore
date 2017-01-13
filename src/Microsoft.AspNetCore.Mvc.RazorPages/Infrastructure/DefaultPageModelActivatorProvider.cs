@@ -2,15 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
+namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     /// <summary>
-    /// <see cref="IPageActivatorProvider"/> that uses type activation to create Pages.
+    /// <see cref="IPageActivatorProvider"/> that uses type activation to create Razor Page instances.
     /// </summary>
-    public class DefaultPageActivator : IPageActivatorProvider
+    public class DefaultPageModelActivatorProvider : IPageModelActivatorProvider
     {
         private readonly Action<PageContext, object> _disposer = Dispose;
 
@@ -22,16 +23,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 throw new ArgumentNullException(nameof(actionDescriptor));
             }
 
-            var pageTypeInfo = actionDescriptor.PageTypeInfo?.AsType();
-            if (pageTypeInfo == null)
+            var modelTypeInfo = actionDescriptor.ModelTypeInfo?.AsType();
+            if (modelTypeInfo == null)
             {
                 throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
-                    nameof(actionDescriptor.PageTypeInfo),
+                    nameof(actionDescriptor.ModelTypeInfo),
                     nameof(actionDescriptor)),
                     nameof(actionDescriptor));
             }
 
-            return CreatePageFactory(pageTypeInfo);
+            var factory = ActivatorUtilities.CreateFactory(modelTypeInfo, Type.EmptyTypes);
+            return (context) => factory(context.HttpContext.RequestServices, EmptyArray<object>.Instance);
         }
 
         public virtual Action<PageContext, object> CreateReleaser(CompiledPageActionDescriptor actionDescriptor)
@@ -41,26 +43,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 throw new ArgumentNullException(nameof(actionDescriptor));
             }
 
-            if (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.PageTypeInfo))
+            if (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.ModelTypeInfo))
             {
                 return _disposer;
             }
 
             return null;
-        }
-
-        private static Func<PageContext, object> CreatePageFactory(Type pageTypeInfo)
-        {
-            var parameter = Expression.Parameter(typeof(PageContext), "pageContext");
-
-            // new Page();
-            var newExpression = Expression.New(pageTypeInfo);
-
-            // () => new Page();
-            var pageFactory = Expression
-                .Lambda<Func<PageContext, object>>(newExpression, parameter)
-                .Compile();
-            return pageFactory;
         }
 
         private static void Dispose(PageContext context, object page)
@@ -76,21 +64,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
 
             ((IDisposable)page).Dispose();
-        }
-
-        private static void NullDisposer(PageContext context, object page)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (page == null)
-            {
-                throw new ArgumentNullException(nameof(page));
-            }
-
-            // No-op
         }
     }
 }

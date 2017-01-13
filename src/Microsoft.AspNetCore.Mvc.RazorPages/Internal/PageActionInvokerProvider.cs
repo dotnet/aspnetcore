@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         private const string ModelPropertyName = "Model";
         private readonly IPageLoader _loader;
         private readonly IPageFactoryProvider _pageFactoryProvider;
+        private readonly IPageModelFactoryProvider _modelFactoryProvider;
         private readonly IActionDescriptorCollectionProvider _collectionProvider;
         private readonly IFilterProvider[] _filterProviders;
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
@@ -38,6 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public PageActionInvokerProvider(
             IPageLoader loader,
             IPageFactoryProvider pageFactoryProvider,
+            IPageModelFactoryProvider modelFactoryProvider,
             IActionDescriptorCollectionProvider collectionProvider,
             IEnumerable<IFilterProvider> filterProviders,
             IEnumerable<IValueProviderFactory> valueProviderFactories,
@@ -49,8 +51,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             ILoggerFactory loggerFactory)
         {
             _loader = loader;
-            _collectionProvider = collectionProvider;
             _pageFactoryProvider = pageFactoryProvider;
+            _modelFactoryProvider = modelFactoryProvider;
+            _collectionProvider = collectionProvider;
             _filterProviders = filterProviders.ToArray();
             _valueProviderFactories = valueProviderFactories.ToArray();
             _modelMetadataProvider = modelMetadataProvider;
@@ -157,12 +160,23 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 PageTypeInfo = compiledType,
             };
 
+            var pageFactory = _pageFactoryProvider.CreatePageFactory(compiledActionDescriptor);
+            var pageDisposer = _pageFactoryProvider.CreatePageDisposer(compiledActionDescriptor);
+
+            Func<PageContext, object> modelFactory = null;
+            Action<PageContext, object> modelReleaser = null;
+            if (modelType != null)
+            {
+                modelFactory = _modelFactoryProvider.CreateModelFactory(compiledActionDescriptor);
+                modelReleaser = _modelFactoryProvider.CreateModelDisposer(compiledActionDescriptor);
+            }
+
             return new PageActionInvokerCacheEntry(
                 compiledActionDescriptor,
-                _pageFactoryProvider.CreatePageFactory(compiledActionDescriptor),
-                _pageFactoryProvider.CreatePageDisposer(compiledActionDescriptor),
-                c => { throw new NotImplementedException(); },
-                (_, __) => { throw new NotImplementedException(); },
+                pageFactory,
+                pageDisposer,
+                modelFactory,
+                modelReleaser,
                 cachedFilters);
         }
 
