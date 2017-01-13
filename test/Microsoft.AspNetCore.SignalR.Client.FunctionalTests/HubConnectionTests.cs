@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -49,10 +48,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             var loggerFactory = CreateLogger();
 
             using (var httpClient = _testServer.CreateClient())
-            using (var pipelineFactory = new PipelineFactory())
             {
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                using (var connection = await HubConnection.ConnectAsync(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), transport, httpClient, pipelineFactory, loggerFactory))
+                using (var connection = await HubConnection.ConnectAsync(new Uri("http://test/hubs"),
+                    new JsonNetInvocationAdapter(), transport, httpClient, loggerFactory))
                 {
                     EnsureConnectionEstablished(connection);
 
@@ -70,10 +69,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             const string originalMessage = "SignalR";
 
             using (var httpClient = _testServer.CreateClient())
-            using (var pipelineFactory = new PipelineFactory())
             {
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                using (var connection = await HubConnection.ConnectAsync(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), transport, httpClient, pipelineFactory, loggerFactory))
+                using (var connection = await HubConnection.ConnectAsync(new Uri("http://test/hubs"),
+                    new JsonNetInvocationAdapter(), transport, httpClient, loggerFactory))
                 {
                     EnsureConnectionEstablished(connection);
 
@@ -91,10 +90,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             const string originalMessage = "SignalR";
 
             using (var httpClient = _testServer.CreateClient())
-            using (var pipelineFactory = new PipelineFactory())
             {
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                using (var connection = await HubConnection.ConnectAsync(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), transport, httpClient, pipelineFactory, loggerFactory))
+                using (var connection = await HubConnection.ConnectAsync(new Uri("http://test/hubs"),
+                    new JsonNetInvocationAdapter(), transport, httpClient, loggerFactory))
                 {
                     var tcs = new TaskCompletionSource<string>();
                     connection.On("Echo", new[] { typeof(string) }, a =>
@@ -118,10 +117,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             var loggerFactory = CreateLogger();
 
             using (var httpClient = _testServer.CreateClient())
-            using (var pipelineFactory = new PipelineFactory())
             {
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                using (var connection = await HubConnection.ConnectAsync(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), transport, httpClient, pipelineFactory, loggerFactory))
+                using (var connection = await HubConnection.ConnectAsync(new Uri("http://test/hubs"),
+                    new JsonNetInvocationAdapter(), transport, httpClient, loggerFactory))
                 {
                     EnsureConnectionEstablished(connection);
 

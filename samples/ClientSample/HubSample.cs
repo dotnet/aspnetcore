@@ -28,11 +28,11 @@ namespace ClientSample
             var logger = loggerFactory.CreateLogger<Program>();
 
             using (var httpClient = new HttpClient(new LoggingMessageHandler(loggerFactory, new HttpClientHandler())))
-            using (var pipelineFactory = new PipelineFactory())
             {
                 logger.LogInformation("Connecting to {0}", baseUrl);
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                using (var connection = await HubConnection.ConnectAsync(new Uri(baseUrl), new JsonNetInvocationAdapter(), transport, httpClient, pipelineFactory, loggerFactory))
+                using (var connection = await HubConnection.ConnectAsync(new Uri(baseUrl),
+                    new JsonNetInvocationAdapter(), transport, httpClient, loggerFactory))
                 {
                     logger.LogInformation("Connected to {0}", baseUrl);
 

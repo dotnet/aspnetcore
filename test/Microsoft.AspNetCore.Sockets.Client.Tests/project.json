@@ -4,7 +4,10 @@
   },
 
   "dependencies": {
+    "Microsoft.AspNetCore.Sockets.Client": "1.0.0-*",
+    "Microsoft.Extensions.Logging": "1.2.0-*",
     "dotnet-test-xunit": "2.2.0-*",
+    "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"
   },
   "frameworks": {

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
@@ -20,12 +21,10 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
-        private readonly CancellationTokenSource _senderCts = new CancellationTokenSource();
-        private readonly CancellationTokenSource _pollCts = new CancellationTokenSource();
-
-        private IPipelineConnection _pipeline;
+        private IChannelConnection<Message> _application;
         private Task _sender;
         private Task _poller;
+        private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
 
         public Task Running { get; private set; }
 
@@ -37,26 +36,21 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public void Dispose()
         {
-            _senderCts.Cancel();
-            _pollCts.Cancel();
-            _pipeline?.Dispose();
+            _transportCts.Cancel();
         }
 
-        public Task StartAsync(Uri url, IPipelineConnection pipeline)
+        public Task StartAsync(Uri url, IChannelConnection<Message> application)
         {
-            _pipeline = pipeline;
-
-            // Schedule shutdown of the poller when the output is closed
-            pipeline.Output.Writing.ContinueWith(_ =>
-            {
-                _pollCts.Cancel();
-                return TaskCache.CompletedTask;
-            });
+            _application = application;
 
             // Start sending and polling
-            _poller = Poll(Utils.AppendPath(url, "poll"), _pollCts.Token);
-            _sender = SendMessages(Utils.AppendPath(url, "send"), _senderCts.Token);
-            Running = Task.WhenAll(_sender, _poller);
+            _poller = Poll(Utils.AppendPath(url, "poll"), _transportCts.Token);
+            _sender = SendMessages(Utils.AppendPath(url, "send"), _transportCts.Token);
+
+            Running = Task.WhenAll(_sender, _poller).ContinueWith(t => {
+                _application.Output.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
+                return t;
+            }).Unwrap();
 
             return TaskCache.CompletedTask;
         }
@@ -80,63 +74,70 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     }
                     else
                     {
-                        // Write the data to the output
-                        var buffer = _pipeline.Output.Alloc();
-                        var stream = new WriteableBufferStream(buffer);
-                        await response.Content.CopyToAsync(stream);
-                        await buffer.FlushAsync();
+                        var ms = new MemoryStream();
+                        await response.Content.CopyToAsync(ms);
+                        var message = new Message(ReadableBuffer.Create(ms.ToArray()).Preserve(), Format.Text);
+
+                        while (await _application.Output.WaitToWriteAsync(cancellationToken))
+                        {
+                            if (_application.Output.TryWrite(message))
+                            {
+                                break;
+                            }
+                        }
                     }
                 }
-
-                // Polling complete
-                _pipeline.Output.Complete();
+            }
+            catch (OperationCanceledException)
+            {
+                // transport is being closed
             }
             catch (Exception ex)
             {
-                // Shut down the output pipeline and log
                 _logger.LogError("Error while polling '{0}': {1}", pollUrl, ex);
-                _pipeline.Output.Complete(ex);
-                _pipeline.Input.Complete(ex);
+                throw;
+            }
+            finally
+            {
+                // Make sure the send loop is terminated
+                _transportCts.Cancel();
             }
         }
 
         private async Task SendMessages(Uri sendUrl, CancellationToken cancellationToken)
         {
-            using (cancellationToken.Register(() => _pipeline.Input.Complete()))
+            try
             {
-                try
+                while (await _application.Input.WaitToReadAsync(cancellationToken))
                 {
-                    while (!cancellationToken.IsCancellationRequested)
+                    Message message;
+                    while (!cancellationToken.IsCancellationRequested && _application.Input.TryRead(out message))
                     {
-                        var result = await _pipeline.Input.ReadAsync();
-                        var buffer = result.Buffer;
-                        if (buffer.IsEmpty || result.IsCompleted)
+                        using (message)
                         {
-                            // No more data to send
-                            break;
+                            var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
+                            request.Headers.UserAgent.Add(DefaultUserAgentHeader);
+                            request.Content = new ReadableBufferContent(message.Payload.Buffer);
+
+                            var response = await _httpClient.SendAsync(request);
+                            response.EnsureSuccessStatusCode();
                         }
-
-                        // Create a message to send
-                        var message = new HttpRequestMessage(HttpMethod.Post, sendUrl);
-                        message.Headers.UserAgent.Add(DefaultUserAgentHeader);
-                        message.Content = new ReadableBufferContent(buffer);
-
-                        // Send it
-                        var response = await _httpClient.SendAsync(message);
-                        response.EnsureSuccessStatusCode();
-
-                        _pipeline.Input.Advance(buffer.End);
                     }
-
-                    // Sending complete
-                    _pipeline.Input.Complete();
                 }
-                catch (Exception ex)
-                {
-                    // Shut down the input pipeline and log
-                    _logger.LogError("Error while sending to '{0}': {1}", sendUrl, ex);
-                    _pipeline.Input.Complete(ex);
-                }
+            }
+            catch (OperationCanceledException)
+            {
+                // transport is being closed
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error while sending to '{0}': {1}", sendUrl, ex);
+                throw;
+            }
+            finally
+            {
+                // Make sure the poll loop is terminated
+                _transportCts.Cancel();
             }
         }
     }

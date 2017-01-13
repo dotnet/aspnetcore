@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.Extensions.Logging;
 
@@ -27,11 +28,10 @@ namespace ClientSample
             var logger = loggerFactory.CreateLogger<Program>();
 
             using (var httpClient = new HttpClient(new LoggingMessageHandler(loggerFactory, new HttpClientHandler())))
-            using (var pipelineFactory = new PipelineFactory())
             {
                 logger.LogInformation("Connecting to {0}", baseUrl);
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                using (var connection = await Connection.ConnectAsync(new Uri(baseUrl), transport, httpClient, pipelineFactory, loggerFactory))
+                using (var connection = await Connection.ConnectAsync(new Uri(baseUrl), transport, httpClient, loggerFactory))
                 {
                     logger.LogInformation("Connected to {0}", baseUrl);
 
@@ -44,8 +44,10 @@ namespace ClientSample
                     };
 
                     // Ready to start the loops
-                    var receive = StartReceiving(loggerFactory.CreateLogger("ReceiveLoop"), connection, cts.Token);
-                    var send = StartSending(loggerFactory.CreateLogger("SendLoop"), connection, cts.Token);
+                    var receive =
+                        StartReceiving(loggerFactory.CreateLogger("ReceiveLoop"), connection, cts.Token).ContinueWith(_ => cts.Cancel());
+                    var send =
+                        StartSending(loggerFactory.CreateLogger("SendLoop"), connection, cts.Token).ContinueWith(_ => cts.Cancel());
 
                     await Task.WhenAll(receive, send);
                 }
@@ -60,7 +62,9 @@ namespace ClientSample
                 var line = Console.ReadLine();
                 logger.LogInformation("Sending: {0}", line);
 
-                await connection.Output.WriteAsync(Encoding.UTF8.GetBytes(line));
+                await connection.Output.WriteAsync(new Message(
+                    ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello World")).Preserve(),
+                    Format.Text));
             }
             logger.LogInformation("Send loop terminated");
         }
@@ -68,30 +72,31 @@ namespace ClientSample
         private static async Task StartReceiving(ILogger logger, Connection connection, CancellationToken cancellationToken)
         {
             logger.LogInformation("Receive loop starting");
-            using (cancellationToken.Register(() => connection.Input.Complete()))
+            try
             {
-                while (!cancellationToken.IsCancellationRequested)
+                while (await connection.Input.WaitToReadAsync(cancellationToken))
                 {
-                    var result = await connection.Input.ReadAsync();
-                    var buffer = result.Buffer;
-                    try
+                    Message message;
+                    if (!connection.Input.TryRead(out message))
                     {
-                        if (!buffer.IsEmpty)
-                        {
-                            var message = Encoding.UTF8.GetString(buffer.ToArray());
-                            logger.LogInformation("Received: {0}", message);
-                        }
+                        continue;
                     }
-                    finally
+
+                    using (message)
                     {
-                        connection.Input.Advance(buffer.End);
-                    }
-                    if (result.IsCompleted)
-                    {
-                        break;
+                        logger.LogInformation("Received: {0}", Encoding.UTF8.GetString(message.Payload.Buffer.ToArray()));
                     }
                 }
             }
+            catch (OperationCanceledException)
+            {
+                logger.LogInformation("Connection is closing");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(0, ex, "Connection terminated due to an exception");
+            }
+
             logger.LogInformation("Receive loop terminated");
         }
     }

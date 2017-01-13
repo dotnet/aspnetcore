@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.Extensions.Logging;
 
@@ -19,7 +20,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
     public class HubConnection : IDisposable
     {
         private readonly Task _reader;
-        private readonly Stream _stream;
         private readonly ILogger _logger;
         private readonly Connection _connection;
         private readonly IInvocationAdapter _adapter;
@@ -42,13 +42,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             _binder = new HubBinder(this);
             _connection = connection;
-            _stream = connection.GetStream();
             _adapter = adapter;
             _logger = logger;
 
             _reader = ReceiveMessages(_readerCts.Token);
-            Completion = _connection.Output.Writing.ContinueWith(
-                t => Shutdown(t)).Unwrap();
+            Completion = _connection.Input.Completion.ContinueWith(t => Shutdown(t)).Unwrap();
         }
 
         // TODO: Client return values/tasks?
@@ -98,9 +96,21 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 _logger.LogTrace("Invocation #{0}: {1} {2}({3})", descriptor.Id, returnType.FullName, methodName, argsList);
             }
 
-            // Write the invocation to the stream
+            var ms = new MemoryStream();
+            await _adapter.WriteMessageAsync(descriptor, ms, cancellationToken);
+
             _logger.LogInformation("Sending Invocation #{0}", descriptor.Id);
-            await _adapter.WriteMessageAsync(descriptor, _stream, cancellationToken);
+
+            // TODO: Format.Text - who, where and when decides about the format of outgoing messages
+            var message = new Message(ReadableBuffer.Create(ms.ToArray()).Preserve(), Format.Text);
+            while (await _connection.Output.WaitToWriteAsync())
+            {
+                if (_connection.Output.TryWrite(message))
+                {
+                    break;
+                }
+            }
+
             _logger.LogInformation("Sending Invocation #{0} complete", descriptor.Id);
 
             // Return the completion task. It will be completed by ReceiveMessages when the response is received.
@@ -114,12 +124,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
         }
 
         // TODO: Clean up the API here. Negotiation of format would be better than providing an adapter instance. Similarly, we should not require a logger factory
-        public static Task<HubConnection> ConnectAsync(Uri url, IInvocationAdapter adapter, ITransport transport, PipelineFactory pipelineFactory, ILoggerFactory loggerFactory) => ConnectAsync(url, adapter, transport, new HttpClient(), pipelineFactory, loggerFactory);
+        public static Task<HubConnection> ConnectAsync(Uri url, IInvocationAdapter adapter, ITransport transport, ILoggerFactory loggerFactory) => ConnectAsync(url, adapter, transport, new HttpClient(), loggerFactory);
 
-        public static async Task<HubConnection> ConnectAsync(Uri url, IInvocationAdapter adapter, ITransport transport, HttpClient httpClient, PipelineFactory pipelineFactory, ILoggerFactory loggerFactory)
+        public static async Task<HubConnection> ConnectAsync(Uri url, IInvocationAdapter adapter, ITransport transport, HttpClient httpClient, ILoggerFactory loggerFactory)
         {
             // Connect the underlying connection
-            var connection = await Connection.ConnectAsync(url, transport, httpClient, pipelineFactory, loggerFactory);
+            var connection = await Connection.ConnectAsync(url, transport, httpClient, loggerFactory);
 
             // Create the RPC connection wrapper
             return new HubConnection(connection, adapter, loggerFactory.CreateLogger<HubConnection>());
@@ -132,30 +142,38 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _logger.LogTrace("Beginning receive loop");
             try
             {
-                while (!cancellationToken.IsCancellationRequested)
+                while (await _connection.Input.WaitToReadAsync(cancellationToken))
                 {
-                    // This is a little odd... we want to remove the InvocationRequest once and only once so we pull it out in the callback,
-                    // and stash it here because we know the callback will have finished before the end of the await.
-                    var message = await _adapter.ReadMessageAsync(_stream, _binder, cancellationToken);
+                    Message incomingMessage;
+                    while (_connection.Input.TryRead(out incomingMessage))
+                    {
 
-                    var invocationDescriptor = message as InvocationDescriptor;
-                    if (invocationDescriptor != null)
-                    {
-                        DispatchInvocation(invocationDescriptor, cancellationToken);
-                    }
-                    else
-                    {
-                        var invocationResultDescriptor = message as InvocationResultDescriptor;
-                        if (invocationResultDescriptor != null)
+                        InvocationMessage message;
+                        using (incomingMessage)
                         {
-                            InvocationRequest irq;
-                            lock (_pendingCallsLock)
+                            message = await _adapter.ReadMessageAsync(
+                                 new MemoryStream(incomingMessage.Payload.Buffer.ToArray()), _binder, cancellationToken);
+                        }
+
+                        var invocationDescriptor = message as InvocationDescriptor;
+                        if (invocationDescriptor != null)
+                        {
+                            DispatchInvocation(invocationDescriptor, cancellationToken);
+                        }
+                        else
+                        {
+                            var invocationResultDescriptor = message as InvocationResultDescriptor;
+                            if (invocationResultDescriptor != null)
                             {
-                                _connectionActive.Token.ThrowIfCancellationRequested();
-                                irq = _pendingCalls[invocationResultDescriptor.Id];
-                                _pendingCalls.Remove(invocationResultDescriptor.Id);
+                                InvocationRequest irq;
+                                lock (_pendingCallsLock)
+                                {
+                                    _connectionActive.Token.ThrowIfCancellationRequested();
+                                    irq = _pendingCalls[invocationResultDescriptor.Id];
+                                    _pendingCalls.Remove(invocationResultDescriptor.Id);
+                                }
+                                DispatchInvocationResult(invocationResultDescriptor, irq, cancellationToken);
                             }
-                            DispatchInvocationResult(invocationResultDescriptor, irq, cancellationToken);
                         }
                     }
                 }

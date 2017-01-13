@@ -2,56 +2,45 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO.Pipelines;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Channels;
+using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Sockets.Client
 {
-    public class Connection : IPipelineConnection
+    public class Connection : IChannelConnection<Message>
     {
-        private IPipelineConnection _consumerPipe;
+        private IChannelConnection<Message> _transportChannel;
         private ITransport _transport;
         private readonly ILogger _logger;
 
         public Uri Url { get; }
 
         // TODO: Review. This is really only designed to be used from ConnectAsync
-        private Connection(Uri url, ITransport transport, IPipelineConnection consumerPipe, ILogger logger)
+        private Connection(Uri url, ITransport transport, IChannelConnection<Message> transportChannel, ILogger logger)
         {
             Url = url;
 
             _logger = logger;
             _transport = transport;
-            _consumerPipe = consumerPipe;
-
-            _consumerPipe.Output.Writing.ContinueWith(t =>
-            {
-                if (t.IsFaulted)
-                {
-                    _consumerPipe.Input.Complete(t.Exception);
-                }
-
-                return t;
-            });
+            _transportChannel = transportChannel;
         }
 
-        public IPipelineReader Input => _consumerPipe.Input;
-        public IPipelineWriter Output => _consumerPipe.Output;
+        public ReadableChannel<Message> Input => _transportChannel.Input;
+        public WritableChannel<Message> Output => _transportChannel.Output;
 
         public void Dispose()
         {
-            _consumerPipe.Dispose();
             _transport.Dispose();
         }
 
-        // TODO: More overloads. PipelineFactory should be optional but someone needs to dispose the pool, if we're OK with it being the GC, then this is easy.
-        public static Task<Connection> ConnectAsync(Uri url, ITransport transport, PipelineFactory pipelineFactory) => ConnectAsync(url, transport, new HttpClient(), pipelineFactory, NullLoggerFactory.Instance);
-        public static Task<Connection> ConnectAsync(Uri url, ITransport transport, PipelineFactory pipelineFactory, ILoggerFactory loggerFactory) => ConnectAsync(url, transport, new HttpClient(), pipelineFactory, loggerFactory);
-        public static Task<Connection> ConnectAsync(Uri url, ITransport transport, HttpClient httpClient, PipelineFactory pipelineFactory) => ConnectAsync(url, transport, httpClient, pipelineFactory, NullLoggerFactory.Instance);
+        public static Task<Connection> ConnectAsync(Uri url, ITransport transport) => ConnectAsync(url, transport, new HttpClient(), NullLoggerFactory.Instance);
+        public static Task<Connection> ConnectAsync(Uri url, ITransport transport, ILoggerFactory loggerFactory) => ConnectAsync(url, transport, new HttpClient(), loggerFactory);
+        public static Task<Connection> ConnectAsync(Uri url, ITransport transport, HttpClient httpClient) => ConnectAsync(url, transport, httpClient, NullLoggerFactory.Instance);
 
-        public static async Task<Connection> ConnectAsync(Uri url, ITransport transport, HttpClient httpClient, PipelineFactory pipelineFactory, ILoggerFactory loggerFactory)
+        public static async Task<Connection> ConnectAsync(Uri url, ITransport transport, HttpClient httpClient, ILoggerFactory loggerFactory)
         {
             if (url == null)
             {
@@ -66,11 +55,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
             if (httpClient == null)
             {
                 throw new ArgumentNullException(nameof(httpClient));
-            }
-
-            if (pipelineFactory == null)
-            {
-                throw new ArgumentNullException(nameof(pipelineFactory));
             }
 
             if (loggerFactory == null)
@@ -97,12 +81,16 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             var connectedUrl = Utils.AppendQueryString(url, "id=" + connectionId);
 
-            var pair = pipelineFactory.CreatePipelinePair();
+            var applicationToTransport = Channel.CreateUnbounded<Message>();
+            var transportToApplication = Channel.CreateUnbounded<Message>();
+            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+            var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
+
 
             // Start the transport, giving it one end of the pipeline
             try
             {
-                await transport.StartAsync(connectedUrl, pair.Item1);
+                await transport.StartAsync(connectedUrl, applicationSide);
             }
             catch (Exception ex)
             {
@@ -111,7 +99,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
 
             // Create the connection, giving it the other end of the pipeline
-            return new Connection(url, transport, pair.Item2, logger);
+            return new Connection(url, transport, transportSide, logger);
         }
     }
 }
