@@ -163,9 +163,16 @@ namespace Microsoft.AspNetCore.Http.Extensions
         /// </summary>
         /// <param name="request">The request to assemble the uri pieces from.</param>
         /// <returns></returns>
-        public static string GetEncodedUrl(this HttpRequest request)
+        public static string GetEncodedUrl(this HttpRequest request,bool relative = false)
         {
-            return BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path, request.QueryString);
+            if(relative)
+            {
+                return BuildRelative(request.PathBase, request.Path, request.QueryString);
+            }
+            else
+            {
+                return BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path, request.QueryString);
+            }
         }
 
         /// <summary>
