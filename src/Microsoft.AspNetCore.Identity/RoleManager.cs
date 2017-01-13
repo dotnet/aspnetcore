@@ -69,13 +69,13 @@ namespace Microsoft.AspNetCore.Identity
         /// <value>
         /// The <see cref="ILogger"/> used to log messages from the manager.
         /// </value>
-        protected internal virtual ILogger Logger { get; set; }
+        public virtual ILogger Logger { get; set; }
 
         /// <summary>
         /// Gets a list of validators for roles to call before persistence.
         /// </summary>
         /// <value>A list of validators for roles to call before persistence.</value>
-        internal IList<IRoleValidator<TRole>> RoleValidators { get; } = new List<IRoleValidator<TRole>>();
+        public IList<IRoleValidator<TRole>> RoleValidators { get; } = new List<IRoleValidator<TRole>>();
 
         /// <summary>
         /// Gets the <see cref="IdentityErrorDescriber"/> used to provider error messages.
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <value>
         /// The <see cref="IdentityErrorDescriber"/> used to provider error messages.
         /// </value>
-        internal IdentityErrorDescriber ErrorDescriber { get; set; }
+        public IdentityErrorDescriber ErrorDescriber { get; set; }
 
         /// <summary>
         /// Gets the normalizer to use when normalizing role names to keys.
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <value>
         /// The normalizer to use when normalizing role names to keys.
         /// </value>
-        internal ILookupNormalizer KeyNormalizer { get; set; }
+        public ILookupNormalizer KeyNormalizer { get; set; }
 
         /// <summary>
         /// Gets an IQueryable collection of Roles if the persistence store is an <see cref="IQueryableRoleStore{TRole}"/>,

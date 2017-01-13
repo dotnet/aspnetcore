@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -71,27 +69,27 @@ namespace Microsoft.AspNetCore.Identity
         /// <value>
         /// The <see cref="ILogger"/> used to log messages from the manager.
         /// </value>
-        protected internal virtual ILogger Logger { get; set; }
+        public virtual ILogger Logger { get; set; }
 
         /// <summary>
         /// The <see cref="UserManager{TUser}"/> used.
         /// </summary>
-        protected internal UserManager<TUser> UserManager { get; set; }
+        public UserManager<TUser> UserManager { get; set; }
 
         /// <summary>
         /// The <see cref="IUserClaimsPrincipalFactory{TUser}"/> used.
         /// </summary>
-        protected internal IUserClaimsPrincipalFactory<TUser> ClaimsFactory { get; set; }
+        public IUserClaimsPrincipalFactory<TUser> ClaimsFactory { get; set; }
 
         /// <summary>
         /// The <see cref="IdentityOptions"/> used.
         /// </summary>
-        protected internal IdentityOptions Options { get; set; }
+        public IdentityOptions Options { get; set; }
 
         /// <summary>
         /// The <see cref="HttpContext"/> used.
         /// </summary>
-        protected internal HttpContext Context { 
+        public HttpContext Context { 
             get
             {
                 var context = _context ?? _contextAccessor?.HttpContext;

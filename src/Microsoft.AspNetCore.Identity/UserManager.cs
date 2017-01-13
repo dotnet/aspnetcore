@@ -122,37 +122,37 @@ namespace Microsoft.AspNetCore.Identity
         /// <value>
         /// The <see cref="ILogger"/> used to log messages from the manager.
         /// </value>
-        protected internal virtual ILogger Logger { get; set; }
+        public virtual ILogger Logger { get; set; }
 
         /// <summary>
         /// The <see cref="IPasswordHasher{TUser}"/> used to hash passwords.
         /// </summary>
-        protected internal IPasswordHasher<TUser> PasswordHasher { get; set; }
+        public IPasswordHasher<TUser> PasswordHasher { get; set; }
 
         /// <summary>
         /// The <see cref="IUserValidator{TUser}"/> used to validate users.
         /// </summary>
-        protected internal IList<IUserValidator<TUser>> UserValidators { get; } = new List<IUserValidator<TUser>>();
+        public IList<IUserValidator<TUser>> UserValidators { get; } = new List<IUserValidator<TUser>>();
 
         /// <summary>
         /// The <see cref="IPasswordValidator{TUser}"/> used to validate passwords.
         /// </summary>
-        protected internal IList<IPasswordValidator<TUser>> PasswordValidators { get; } = new List<IPasswordValidator<TUser>>();
+        public IList<IPasswordValidator<TUser>> PasswordValidators { get; } = new List<IPasswordValidator<TUser>>();
 
         /// <summary>
         /// The <see cref="ILookupNormalizer"/> used to normalize things like user and role names.
         /// </summary>
-        protected internal ILookupNormalizer KeyNormalizer { get; set; }
+        public ILookupNormalizer KeyNormalizer { get; set; }
 
         /// <summary>
         /// The <see cref="IdentityErrorDescriber"/> used to generate error messages.
         /// </summary>
-        protected internal IdentityErrorDescriber ErrorDescriber { get; set; }
+        public IdentityErrorDescriber ErrorDescriber { get; set; }
 
         /// <summary>
         /// The <see cref="IdentityOptions"/> used to configure Identity.
         /// </summary>
-        protected internal IdentityOptions Options { get; set; }
+        public IdentityOptions Options { get; set; }
 
         /// <summary>
         /// Gets a flag indicating whether the backing user store supports authentication tokens.
