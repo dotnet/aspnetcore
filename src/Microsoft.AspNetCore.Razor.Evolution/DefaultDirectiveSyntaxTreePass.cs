@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             if (errorSink.Errors.Count > 0)
             {
                 var combinedErrors = syntaxTree.Diagnostics.Concat(errorSink.Errors).ToList();
-                syntaxTree = RazorSyntaxTree.Create(syntaxTree.Root, combinedErrors, syntaxTree.Options);
+                syntaxTree = RazorSyntaxTree.Create(syntaxTree.Root, syntaxTree.Source, combinedErrors, syntaxTree.Options);
             }
 
             return syntaxTree;

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var whitespaceRewriter = new WhiteSpaceRewriter();
             rewritten = whitespaceRewriter.Rewrite(rewritten);
 
-            var rewrittenSyntaxTree = RazorSyntaxTree.Create(rewritten, syntaxTree.Diagnostics, syntaxTree.Options);
+            var rewrittenSyntaxTree = RazorSyntaxTree.Create(rewritten, syntaxTree.Source, syntaxTree.Diagnostics, syntaxTree.Options);
             return rewrittenSyntaxTree;
         }
     }

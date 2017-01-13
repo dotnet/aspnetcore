@@ -13,9 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             var parser = new RazorParser();
             var sourceDocument = TestRazorSourceDocument.CreateResource("TestFiles/Source/BasicMarkup.cshtml");
-            var sourceContent = new char[sourceDocument.Length];
-            sourceDocument.CopyTo(0, sourceContent, 0, sourceDocument.Length);
-            var output = parser.Parse(sourceContent);
+            var output = parser.Parse(sourceDocument);
 
             Assert.NotNull(output);
         }
@@ -29,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var parser = new RazorParser();
 
             // Act/Assert
-            ParserTestBase.EvaluateResults(parser.Parse(new StringReader("foo @bar baz")),
+            ParserTestBase.EvaluateResults(parser.Parse(TestRazorSourceDocument.Create("foo @bar baz")),
                 new MarkupBlock(
                     factory.Markup("foo "),
                     new ExpressionBlock(
@@ -49,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var parser = new RazorParser();
 
             // Act
-            var results = parser.Parse(new StringReader("foo @bar baz"));
+            var results = parser.Parse(TestRazorSourceDocument.Create("foo @bar baz"));
 
             // Assert
             ParserTestBase.EvaluateResults(results,

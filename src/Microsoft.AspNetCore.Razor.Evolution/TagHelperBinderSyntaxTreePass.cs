@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 if (errorSink.Errors.Count > 0)
                 {
                     var combinedErrors = CombineErrors(syntaxTree.Diagnostics, errorSink.Errors);
-                    var erroredTree = RazorSyntaxTree.Create(syntaxTree.Root, combinedErrors, syntaxTree.Options);
+                    var erroredTree = RazorSyntaxTree.Create(syntaxTree.Root, syntaxTree.Source, combinedErrors, syntaxTree.Options);
 
                     return erroredTree;
                 }
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 diagnostics = CombineErrors(diagnostics, errorSink.Errors);
             }
 
-            var newSyntaxTree = RazorSyntaxTree.Create(rewrittenRoot, diagnostics, syntaxTree.Options);
+            var newSyntaxTree = RazorSyntaxTree.Create(rewrittenRoot, syntaxTree.Source, diagnostics, syntaxTree.Options);
             return newSyntaxTree;
         }
 

@@ -106,7 +106,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
-            var erroredOriginalTree = RazorSyntaxTree.Create(originalTree.Root, new[] { expectedErrors[0] }, originalTree.Options);
+            var erroredOriginalTree = RazorSyntaxTree.Create(
+                originalTree.Root, 
+                originalTree.Source, 
+                new[] { expectedErrors[0] }, 
+                originalTree.Options);
 
             // Act
             var outputTree = pass.Execute(codeDocument, erroredOriginalTree);

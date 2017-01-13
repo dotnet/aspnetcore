@@ -145,7 +145,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
             var initialError = new RazorError("Initial test error", SourceLocation.Zero, length: 1);
-            var erroredOriginalTree = RazorSyntaxTree.Create(originalTree.Root, new[] { initialError }, originalTree.Options);
+            var erroredOriginalTree = RazorSyntaxTree.Create(
+                originalTree.Root,
+                originalTree.Source,
+                new[] { initialError },
+                originalTree.Options);
 
             // Act
             var outputTree = pass.Execute(codeDocument, erroredOriginalTree);
@@ -194,7 +198,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 LegacyResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper("form"),
                 new SourceLocation(Environment.NewLine.Length * 2 + 30, 2, 1),
                 length: 4);
-            var erroredOriginalTree = RazorSyntaxTree.Create(originalTree.Root, new[] { initialError }, originalTree.Options);
+            var erroredOriginalTree = RazorSyntaxTree.Create(originalTree.Root, originalTree.Source, new[] { initialError }, originalTree.Options);
 
             // Act
             var outputTree = pass.Execute(codeDocument, erroredOriginalTree);

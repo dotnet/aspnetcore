@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
@@ -25,17 +24,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public RazorParserOptions Options { get; }
 
-        public virtual RazorSyntaxTree Parse(TextReader input) => Parse(input.ReadToEnd());
-
-        public virtual RazorSyntaxTree Parse(string input) => Parse(((ITextDocument)new SeekableTextReader(input)));
-
-        public virtual RazorSyntaxTree Parse(char[] input) => Parse(((ITextDocument)new SeekableTextReader(input)));
-
-        public virtual RazorSyntaxTree Parse(ITextDocument input) => ParseCore(input);
-
-        private RazorSyntaxTree ParseCore(ITextDocument input)
+        public virtual RazorSyntaxTree Parse(RazorSourceDocument source)
         {
-            var context = new ParserContext(input, Options.DesignTimeMode);
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            var chars = new char[source.Length];
+            source.CopyTo(0, chars, 0, source.Length);
+
+            var reader = new SeekableTextReader(chars);
+
+            var context = new ParserContext(reader, Options.DesignTimeMode);
 
             var codeParser = new CSharpCodeParser(Options.Directives, context);
             var markupParser = new HtmlMarkupParser(context);
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             
             var root = context.Builder.Build();
             var diagnostics = context.ErrorSink.Errors;
-            return RazorSyntaxTree.Create(root, diagnostics, Options);
+            return RazorSyntaxTree.Create(root, source, diagnostics, Options);
         }
     }
 }

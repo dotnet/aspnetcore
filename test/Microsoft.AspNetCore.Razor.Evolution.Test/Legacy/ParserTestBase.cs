@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
                 var parser = new RazorParser(options);
 
-                var tree = parser.Parse((ITextDocument)reader);
+                var tree = parser.Parse(TestRazorSourceDocument.Create(document));
                 var defaultDirectivePass = new DefaultDirectiveSyntaxTreePass();
                 tree = defaultDirectivePass.Execute(codeDocument: null, syntaxTree: tree);
 
@@ -51,6 +51,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         internal virtual RazorSyntaxTree ParseHtmlBlock(string document, bool designTime = false)
         {
+            var source = TestRazorSourceDocument.Create(document);
+
             using (var reader = new SeekableTextReader(document))
             {
                 var context = new ParserContext(reader, designTime);
@@ -68,7 +70,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 var options = RazorParserOptions.CreateDefaultOptions();
                 options.DesignTimeMode = designTime;
 
-                return RazorSyntaxTree.Create(root, diagnostics, options);
+                return RazorSyntaxTree.Create(root, source, diagnostics, options);
             }
         }
 
@@ -82,6 +84,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             IEnumerable<DirectiveDescriptor> descriptors,
             bool designTime)
         {
+            var source = TestRazorSourceDocument.Create(document);
+
             using (var reader = new SeekableTextReader(document))
             {
                 var context = new ParserContext(reader, designTime);
@@ -106,7 +110,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     options.Directives.Add(directive);
                 }
 
-                return RazorSyntaxTree.Create(root, diagnostics, options);
+                return RazorSyntaxTree.Create(root, source, diagnostics, options);
             }
         }
 

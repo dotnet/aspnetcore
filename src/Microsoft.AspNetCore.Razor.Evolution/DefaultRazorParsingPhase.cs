@@ -24,6 +24,20 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             var syntaxTree = RazorSyntaxTree.Parse(codeDocument.Source, options);
             codeDocument.SetSyntaxTree(syntaxTree);
+
+            var importSyntaxTrees = new RazorSyntaxTree[codeDocument.Imports.Count];
+            for (var i = 0; i < codeDocument.Imports.Count; i++)
+            {
+                importSyntaxTrees[i] = RazorSyntaxTree.Parse(codeDocument.Imports[i], options);
+            }
+            codeDocument.SetImportSyntaxTrees(importSyntaxTrees);
+
+            var includeSyntaxTrees = new RazorSyntaxTree[codeDocument.Includes.Count];
+            for (var i = 0; i < codeDocument.Includes.Count; i++)
+            {
+                includeSyntaxTrees[i] = RazorSyntaxTree.Parse(codeDocument.Includes[i], options);
+            }
+            codeDocument.SetIncludeSyntaxTrees(includeSyntaxTrees);
         }
     }
 }

@@ -40,6 +40,38 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         }
 
         [Fact]
+        public void GetAndSetImportSyntaxTrees_ReturnsSyntaxTrees()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.CreateEmpty();
+
+            var expected = new[] { RazorSyntaxTree.Parse(codeDocument.Source), };
+            codeDocument.SetImportSyntaxTrees(expected);
+
+            // Act
+            var actual = codeDocument.GetImportSyntaxTrees();
+
+            // Assert
+            Assert.Same(expected, actual);
+        }
+
+        [Fact]
+        public void GetAndSetIncludeSyntaxTrees_ReturnsSyntaxTrees()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.CreateEmpty();
+
+            var expected = new[] { RazorSyntaxTree.Parse(codeDocument.Source), };
+            codeDocument.SetIncludeSyntaxTrees(expected);
+
+            // Act
+            var actual = codeDocument.GetIncludeSyntaxTrees();
+
+            // Assert
+            Assert.Same(expected, actual);
+        }
+
+        [Fact]
         public void GetIRDocument_ReturnsIRDocument()
         {
             // Arrange

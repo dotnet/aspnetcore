@@ -46,6 +46,46 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             Assert.Equal("test_directive", directive.Name);
         }
 
+        [Fact]
+        public void Execute_ParsesIncludesAndImports()
+        {
+            // Arrange
+            var phase = new DefaultRazorParsingPhase();
+            var engine = RazorEngine.CreateEmpty((b) =>
+            {
+                b.Phases.Add(phase);
+                b.Features.Add(new MyConfigureParserOptions());
+            });
+
+            var imports = new[]
+            {
+                TestRazorSourceDocument.Create(),
+                TestRazorSourceDocument.Create(),
+            };
+
+            var includes = new[]
+            {
+                TestRazorSourceDocument.Create(),
+                TestRazorSourceDocument.Create(),
+            };
+
+            var codeDocument = TestRazorCodeDocument.Create(TestRazorSourceDocument.Create(), imports, includes);
+
+            // Act
+            phase.Execute(codeDocument);
+
+            // Assert
+            Assert.Collection(
+                codeDocument.GetImportSyntaxTrees(),
+                t => { Assert.Same(t.Source, imports[0]); Assert.Equal("test_directive", Assert.Single(t.Options.Directives).Name); },
+                t => { Assert.Same(t.Source, imports[1]); Assert.Equal("test_directive", Assert.Single(t.Options.Directives).Name); });
+
+            Assert.Collection(
+                codeDocument.GetIncludeSyntaxTrees(),
+                t => { Assert.Same(t.Source, includes[0]); Assert.Equal("test_directive", Assert.Single(t.Options.Directives).Name); },
+                t => { Assert.Same(t.Source, includes[1]); Assert.Equal("test_directive", Assert.Single(t.Options.Directives).Name); });
+        }
+
         private class MyConfigureParserOptions : IRazorConfigureParserFeature
         {
             public RazorEngine Engine { get; set; }
