@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.Sockets.Transports
     public class ServerSentEventsTransport : IHttpTransport
     {
         public static readonly string Name = "serverSentEvents";
-        private readonly IReadableChannel<Message> _application;
+        private readonly ReadableChannel<Message> _application;
         private readonly ILogger _logger;
 
-        public ServerSentEventsTransport(IReadableChannel<Message> application, ILoggerFactory loggerFactory)
+        public ServerSentEventsTransport(ReadableChannel<Message> application, ILoggerFactory loggerFactory)
         {
             _application = application;
             _logger = loggerFactory.CreateLogger<ServerSentEventsTransport>();

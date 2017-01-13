@@ -46,14 +46,14 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     payload: ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello"))));
                 await pair.ClientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure);
 
-                using (var message = await applicationSide.Input.ReadAsync())
+                using (var message = await applicationSide.Input.In.ReadAsync())
                 {
                     Assert.True(message.EndOfMessage);
                     Assert.Equal(format, message.MessageFormat);
                     Assert.Equal("Hello", Encoding.UTF8.GetString(message.Payload.Buffer.ToArray()));
                 }
 
-                Assert.True(applicationSide.Output.TryComplete());
+                Assert.True(applicationSide.Output.Out.TryComplete());
 
                 // The transport should finish now
                 await transport;
@@ -98,21 +98,21 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     payload: ReadableBuffer.Create(Encoding.UTF8.GetBytes("World"))));
                 await pair.ClientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure);
 
-                using (var message1 = await applicationSide.Input.ReadAsync())
+                using (var message1 = await applicationSide.Input.In.ReadAsync())
                 {
                     Assert.False(message1.EndOfMessage);
                     Assert.Equal(format, message1.MessageFormat);
                     Assert.Equal("Hello", Encoding.UTF8.GetString(message1.Payload.Buffer.ToArray()));
                 }
 
-                using (var message2 = await applicationSide.Input.ReadAsync())
+                using (var message2 = await applicationSide.Input.In.ReadAsync())
                 {
                     Assert.True(message2.EndOfMessage);
                     Assert.Equal(format, message2.MessageFormat);
                     Assert.Equal("World", Encoding.UTF8.GetString(message2.Payload.Buffer.ToArray()));
                 }
 
-                Assert.True(applicationSide.Output.TryComplete());
+                Assert.True(applicationSide.Output.Out.TryComplete());
 
                 // The transport should finish now
                 await transport;
@@ -147,15 +147,15 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var client = pair.ClientSocket.ExecuteAndCaptureFramesAsync();
 
                 // Write multi-frame message to the output channel, and then complete it
-                await applicationSide.Output.WriteAsync(new Message(
+                await applicationSide.Output.Out.WriteAsync(new Message(
                     ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello")).Preserve(),
                     format,
                     endOfMessage: false));
-                await applicationSide.Output.WriteAsync(new Message(
+                await applicationSide.Output.Out.WriteAsync(new Message(
                     ReadableBuffer.Create(Encoding.UTF8.GetBytes("World")).Preserve(),
                     format,
                     endOfMessage: true));
-                Assert.True(applicationSide.Output.TryComplete());
+                Assert.True(applicationSide.Output.Out.TryComplete());
 
                 // The client should finish now, as should the server
                 var clientSummary = await client;
@@ -195,11 +195,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var client = pair.ClientSocket.ExecuteAndCaptureFramesAsync();
 
                 // Write to the output channel, and then complete it
-                await applicationSide.Output.WriteAsync(new Message(
+                await applicationSide.Output.Out.WriteAsync(new Message(
                     ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello")).Preserve(),
                     format,
                     endOfMessage: true));
-                Assert.True(applicationSide.Output.TryComplete());
+                Assert.True(applicationSide.Output.Out.TryComplete());
 
                 // The client should finish now, as should the server
                 var clientSummary = await client;
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var client = pair.ClientSocket.ExecuteAndCaptureFramesAsync();
 
                 // Close the output and wait for the close frame
-                Assert.True(applicationSide.Output.TryComplete());
+                Assert.True(applicationSide.Output.Out.TryComplete());
                 await client;
 
                 // Send another frame. Then close
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 await pair.ClientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure);
 
                 // Read that frame from the input
-                using (var message = await applicationSide.Input.ReadAsync())
+                using (var message = await applicationSide.Input.In.ReadAsync())
                 {
                     Assert.True(message.EndOfMessage);
                     Assert.Equal(format, message.MessageFormat);
@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var client = pair.ClientSocket.ExecuteAndCaptureFramesAsync();
 
                 // Fail in the app
-                Assert.True(applicationSide.Output.TryComplete(new InvalidOperationException()));
+                Assert.True(applicationSide.Output.Out.TryComplete(new InvalidOperationException()));
                 var clientSummary = await client;
                 Assert.Equal(WebSocketCloseStatus.InternalServerError, clientSummary.CloseResult.Status);
 

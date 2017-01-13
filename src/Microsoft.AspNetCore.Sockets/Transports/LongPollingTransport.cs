@@ -14,10 +14,10 @@ namespace Microsoft.AspNetCore.Sockets.Transports
     public class LongPollingTransport : IHttpTransport
     {
         public static readonly string Name = "longPolling";
-        private readonly IReadableChannel<Message> _application;
+        private readonly ReadableChannel<Message> _application;
         private readonly ILogger _logger;
 
-        public LongPollingTransport(IReadableChannel<Message> application, ILoggerFactory loggerFactory)
+        public LongPollingTransport(ReadableChannel<Message> application, ILoggerFactory loggerFactory)
         {
             _application = application;
             _logger = loggerFactory.CreateLogger<LongPollingTransport>();

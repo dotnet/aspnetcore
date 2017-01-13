@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Sockets
     // access to two separate channels, the read end for one and the write end for the other.
     public interface IChannelConnection<T> : IDisposable
     {
-        IReadableChannel<T> Input { get; }
-        IWritableChannel<T> Output { get; }
+        ReadableChannel<T> Input { get; }
+        WritableChannel<T> Output { get; }
     }
 }

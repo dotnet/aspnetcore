@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var context = new DefaultHttpContext();
             var poll = new LongPollingTransport(channel, new LoggerFactory());
 
-            Assert.True(channel.TryComplete());
+            Assert.True(channel.Out.TryComplete());
 
             await poll.ProcessRequestAsync(context);
 
@@ -41,12 +41,12 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var ms = new MemoryStream();
             context.Response.Body = ms;
 
-            await channel.WriteAsync(new Message(
+            await channel.Out.WriteAsync(new Message(
                 ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello World")).Preserve(),
                 Format.Text,
                 endOfMessage: true));
 
-            Assert.True(channel.TryComplete());
+            Assert.True(channel.Out.TryComplete());
 
             await poll.ProcessRequestAsync(context);
 
