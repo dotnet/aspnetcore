@@ -16,6 +16,7 @@ namespace Microsoft.DotNet.Watcher
         public bool IsQuiet { get; private set; }
         public bool IsVerbose { get; private set; }
         public IList<string> RemainingArguments { get; private set; }
+        public bool ListFiles { get; private set; }
 
         public static CommandLineOptions Parse(string[] args, IConsole console)
         {
@@ -63,6 +64,9 @@ Examples:
                 CommandOptionType.NoValue);
             var optVerbose = app.VerboseOption();
 
+            var optList = app.Option("--list", "Lists all discovered files without starting the watcher",
+                CommandOptionType.NoValue);
+
             app.VersionOptionFromAssemblyAttributes(typeof(Program).GetTypeInfo().Assembly);
 
             if (app.Execute(args) != 0)
@@ -75,7 +79,9 @@ Examples:
                 throw new CommandParsingException(app, Resources.Error_QuietAndVerboseSpecified);
             }
 
-            if (app.RemainingArguments.Count == 0)
+            if (app.RemainingArguments.Count == 0
+                && !app.IsShowingInformation
+                && !optList.HasValue())
             {
                 app.ShowHelp();
             }
@@ -86,7 +92,8 @@ Examples:
                 IsQuiet = optQuiet.HasValue(),
                 IsVerbose = optVerbose.HasValue(),
                 RemainingArguments = app.RemainingArguments,
-                IsHelp = app.IsShowingInformation
+                IsHelp = app.IsShowingInformation,
+                ListFiles = optList.HasValue(),
             };
         }
     }

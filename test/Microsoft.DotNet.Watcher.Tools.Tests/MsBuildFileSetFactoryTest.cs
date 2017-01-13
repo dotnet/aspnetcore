@@ -297,7 +297,8 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         }
 
         private Task<IFileSet> GetFileSet(TemporaryCSharpProject target)
-            => GetFileSet(new MsBuildFileSetFactory(_reporter, target.Path));
+            => GetFileSet(new MsBuildFileSetFactory(_reporter, target.Path, waitOnError: false));
+
         private async Task<IFileSet> GetFileSet(MsBuildFileSetFactory filesetFactory)
         {
             _tempDir.Create();
@@ -305,6 +306,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
             var finished = await Task.WhenAny(createTask, Task.Delay(TimeSpan.FromSeconds(10)));
 
             Assert.Same(createTask, finished);
+            Assert.NotNull(createTask.Result);
             return createTask.Result;
         }
 

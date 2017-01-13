@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -9,8 +10,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.Extensions.Internal;
-using Xunit.Abstractions;
 using Microsoft.Extensions.Tools.Internal;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
@@ -71,6 +72,21 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             return null;
         }
 
+        public async Task<IList<string>> GetAllOutputLines()
+        {
+            var lines = new List<string>();
+            while (!_source.Completion.IsCompleted)
+            {
+                while (await _source.OutputAvailableAsync())
+                {
+                    var next = await _source.ReceiveAsync();
+                    _logger.WriteLine($"{DateTime.Now}: recv: '{next}'");
+                    lines.Add(next);
+                }
+            }
+            return lines;
+        }
+
         private void StartProcessingOutput(StreamReader streamReader)
         {
             _source = _source ?? new BufferBlock<string>();
@@ -80,7 +96,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 string line;
                 while ((line = streamReader.ReadLine()) != null)
                 {
-                    _logger.WriteLine($"{DateTime.Now} post: {line}");
+                    _logger.WriteLine($"{DateTime.Now}: post: '{line}'");
                     _source.Post(line);
                 }
 

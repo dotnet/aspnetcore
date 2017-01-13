@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -80,7 +80,20 @@ namespace Microsoft.DotNet.Watcher
 
                 try
                 {
-                    return await MainInternalAsync(reporter, options.Project, options.RemainingArguments, ctrlCTokenSource.Token);
+                    if (options.ListFiles)
+                    {
+                        return await ListFilesAsync(reporter,
+                            options.Project,
+                            ctrlCTokenSource.Token);
+                    }
+                    else
+                    {
+
+                        return await MainInternalAsync(reporter,
+                            options.Project,
+                            options.RemainingArguments,
+                            ctrlCTokenSource.Token);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -115,8 +128,7 @@ namespace Microsoft.DotNet.Watcher
                 return 1;
             }
 
-            var fileSetFactory = new MsBuildFileSetFactory(reporter, projectFile);
-
+            var fileSetFactory = new MsBuildFileSetFactory(reporter, projectFile, waitOnError: true);
             var processInfo = new ProcessSpec
             {
                 Executable = DotNetMuxer.MuxerPathOrDefault(),
@@ -126,6 +138,39 @@ namespace Microsoft.DotNet.Watcher
 
             await new DotNetWatcher(reporter)
                 .WatchAsync(processInfo, fileSetFactory, cancellationToken);
+
+            return 0;
+        }
+
+        private async Task<int> ListFilesAsync(
+            IReporter reporter,
+            string project,
+            CancellationToken cancellationToken)
+        {
+            // TODO multiple projects should be easy enough to add here
+            string projectFile;
+            try
+            {
+                projectFile = MsBuildProjectFinder.FindMsBuildProject(_workingDir, project);
+            }
+            catch (FileNotFoundException ex)
+            {
+                reporter.Error(ex.Message);
+                return 1;
+            }
+
+            var fileSetFactory = new MsBuildFileSetFactory(reporter, projectFile, waitOnError: false);
+            var files = await fileSetFactory.CreateAsync(cancellationToken);
+
+            if (files == null)
+            {
+                return 1;
+            }
+
+            foreach (var file in files)
+            {
+                _console.Out.WriteLine(file);
+            }
 
             return 0;
         }

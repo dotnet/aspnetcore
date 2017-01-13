@@ -1,12 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.Tools.Internal;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Tools.Internal;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
@@ -16,11 +17,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         private const string StartedMessage = "Started";
         private const string ExitingMessage = "Exiting";
 
-        protected ProjectToolScenario Scenario { get; }
         private readonly ITestOutputHelper _logger;
-        protected AwaitableProcess Process { get; set; }
         private string _appName;
         private bool _prepared;
+
 
         public WatchableApp(string appName, ITestOutputHelper logger)
         {
@@ -31,6 +31,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             SourceDirectory = Path.Combine(Scenario.WorkFolder, appName);
         }
 
+        public ProjectToolScenario Scenario { get; }
+
+        public AwaitableProcess Process { get; protected set; }
+
         public string SourceDirectory { get; }
 
         public Task HasRestarted()
@@ -40,9 +44,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             => Process.GetOutputLineAsync(ExitingMessage);
 
         public bool UsePollingWatcher { get; set; }
-
-        public Task StartWatcher([CallerMemberName] string name = null)
-            => StartWatcher(Array.Empty<string>(), name);
 
         public async Task<int> GetProcessId()
         {
@@ -58,7 +59,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _prepared = true;
         }
 
-        public async Task StartWatcher(string[] arguments, [CallerMemberName] string name = null)
+        public void Start(IEnumerable<string> arguments, [CallerMemberName] string name = null)
         {
             if (!_prepared)
             {
@@ -67,7 +68,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
             var args = Scenario
                 .GetDotnetWatchArguments()
-                .Concat(new[] { "run", "--" })
                 .Concat(arguments);
 
             var spec = new ProcessSpec
@@ -79,6 +79,15 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
             Process = new AwaitableProcess(spec, _logger);
             Process.Start();
+        }
+
+        public Task StartWatcherAsync([CallerMemberName] string name = null)
+            => StartWatcherAsync(Array.Empty<string>(), name);
+
+        public async Task StartWatcherAsync(string[] arguments, [CallerMemberName] string name = null)
+        {
+            var args = new[] { "run", "--" }.Concat(arguments);
+            Start(args, name);
             await Process.GetOutputLineAsync(StartedMessage);
         }
 

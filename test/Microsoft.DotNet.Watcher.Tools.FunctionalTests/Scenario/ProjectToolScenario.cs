@@ -118,17 +118,17 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             // this launches a new .NET Core process using the runtime of the current test app
             // and the version of dotnet-watch that this test app is compiled against
             var thisAssembly = Path.GetFileNameWithoutExtension(GetType().GetTypeInfo().Assembly.Location);
-            var args = new List<string>();
-            args.Add("exec");
 
-            args.Add("--depsfile");
-            args.Add(Path.Combine(AppContext.BaseDirectory, thisAssembly + ".deps.json"));
+            var args = new List<string>
+            {
+                "exec",
+                "--depsfile",
+                Path.Combine(AppContext.BaseDirectory, thisAssembly + ".deps.json"),
+                "--runtimeconfig",
+                Path.Combine(AppContext.BaseDirectory, thisAssembly + ".runtimeconfig.json")
+            };
 
-            args.Add("--runtimeconfig");
-            args.Add(Path.Combine(AppContext.BaseDirectory, thisAssembly + ".runtimeconfig.json"));
-
-            var currentFxVersion = AppContext.GetData("FX_DEPS_FILE") as string;
-            if (currentFxVersion != null)
+            if (AppContext.GetData("FX_DEPS_FILE") is string currentFxVersion)
             {
                 // This overrides the version of shared fx in the runtimeconfig.json file.
                 // Tests do this to ensure dotnet-watch is executing on the version of Microsoft.NETCore.App

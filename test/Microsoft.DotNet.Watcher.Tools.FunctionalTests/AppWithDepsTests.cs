@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         [Fact]
         public async Task ChangeFileInDependency()
         {
-            await _app.StartWatcher().OrTimeout();
+            await _app.StartWatcherAsync().OrTimeout();
 
             var fileToChange = Path.Combine(_app.DependencyFolder, "Foo.cs");
             var programCs = File.ReadAllText(fileToChange);

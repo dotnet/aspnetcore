@@ -34,6 +34,13 @@ namespace Microsoft.DotNet.Watcher
             while (true)
             {
                 var fileSet = await fileSetFactory.CreateAsync(cancellationToken);
+
+                if (fileSet == null)
+                {
+                    _reporter.Error("Failed to find a list of files to watch");
+                    return;
+                }
+
                 if (cancellationToken.IsCancellationRequested)
                 {
                     return;

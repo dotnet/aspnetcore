@@ -16,17 +16,19 @@ namespace Microsoft.DotNet.Watcher.Internal
     public class MsBuildFileSetFactory : IFileSetFactory
     {
         private const string TargetName = "GenerateWatchList";
-        private const string ProjectExtensionFileExtension = ".dotnetwatch.targets";
+        private const string ProjectExtensionFileExtension = ".dotnetwatch.g.targets";
         private const string WatchTargetsFileName = "DotNetWatchCommon.targets";
         private readonly IReporter _reporter;
         private readonly string _projectFile;
         private readonly string _watchTargetsDir;
         private readonly OutputSink _outputSink;
         private readonly ProcessRunner _processRunner;
+        private readonly bool _waitOnError;
 
-        public MsBuildFileSetFactory(IReporter reporter, string projectFile)
+        public MsBuildFileSetFactory(IReporter reporter, string projectFile, bool waitOnError)
             : this(reporter, projectFile, new OutputSink())
         {
+            _waitOnError = waitOnError;
         }
 
         // output sink is for testing
@@ -86,7 +88,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                     var exitCode = await _processRunner.RunAsync(processSpec, cancellationToken);
 
-                    if (exitCode == 0)
+                    if (exitCode == 0 && File.Exists(watchList))
                     {
                         var fileset = new FileSet(
                             File.ReadAllLines(watchList)
@@ -109,28 +111,41 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                     _reporter.Error($"Error(s) finding watch items project file '{Path.GetFileName(_projectFile)}'");
 
-                    _reporter.Output($"MSBuild output from target '{TargetName}'");
+                    _reporter.Output($"MSBuild output from target '{TargetName}':");
+                    _reporter.Output(string.Empty);
 
                     foreach (var line in capture.Lines)
                     {
-                        _reporter.Output($"  [MSBUILD] : {line}");
+                        _reporter.Output($"   {line}");
                     }
 
-                    _reporter.Warn("Fix the error to continue or press Ctrl+C to exit.");
+                    _reporter.Output(string.Empty);
 
-                    var fileSet = new FileSet(new[] {_projectFile});
-
-                    using (var watcher = new FileSetWatcher(fileSet))
+                    if (!_waitOnError)
                     {
-                        await watcher.GetChangedFileAsync(cancellationToken);
+                        return null;
+                    }
+                    else
+                    {
+                        _reporter.Warn("Fix the error to continue or press Ctrl+C to exit.");
 
-                        _reporter.Output($"File changed: {_projectFile}");
+                        var fileSet = new FileSet(new[] { _projectFile });
+
+                        using (var watcher = new FileSetWatcher(fileSet))
+                        {
+                            await watcher.GetChangedFileAsync(cancellationToken);
+
+                            _reporter.Output($"File changed: {_projectFile}");
+                        }
                     }
                 }
             }
             finally
             {
-                File.Delete(watchList);
+                if (File.Exists(watchList))
+                {
+                    File.Delete(watchList);
+                }
             }
         }
 
