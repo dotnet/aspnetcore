@@ -753,13 +753,11 @@ namespace Microsoft.AspNetCore.Identity
         /// Removes a user's password.
         /// </summary>
         /// <param name="user">The user whose password should be removed.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
         /// of the operation.
         /// </returns>
-        public virtual async Task<IdentityResult> RemovePasswordAsync(TUser user,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IdentityResult> RemovePasswordAsync(TUser user)
         {
             ThrowIfDisposed();
             var passwordStore = GetPasswordStore();

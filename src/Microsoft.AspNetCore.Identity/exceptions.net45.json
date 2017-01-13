@@ -1,0 +1,7 @@
+[
+  {
+         "OldTypeId": "public class Microsoft.AspNetCore.Identity.UserManager<T0> : System.IDisposable where T0 : class",
+         "OldMemberId": "public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult> RemovePasswordAsync(T0 user, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))",
+         "Kind": "Removal"
+   }
+]
