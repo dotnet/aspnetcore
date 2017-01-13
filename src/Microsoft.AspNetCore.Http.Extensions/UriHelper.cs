@@ -162,18 +162,19 @@ namespace Microsoft.AspNetCore.Http.Extensions
         /// and other HTTP operations.
         /// </summary>
         /// <param name="request">The request to assemble the uri pieces from.</param>
-        /// <param name="relative">Build relative url or not </param>
         /// <returns></returns>
-        public static string GetEncodedUrl(this HttpRequest request,bool relative = false)
+        public static string GetEncodedUrl(this HttpRequest request)
         {
-            if(relative)
-            {
-                return BuildRelative(request.PathBase, request.Path, request.QueryString);
-            }
-            else
-            {
-                return BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path, request.QueryString);
-            }
+            return BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path, request.QueryString);
+        }
+        /// <summary>
+        /// Returns the relative url 
+        /// </summary>
+        /// <param name="request">The request to assemble the uri pieces from.</param>
+        /// <returns></returns>
+        public static string GetEncodedPathAndQuery(this HttpRequest request)
+        {
+            return BuildRelative(request.PathBase, request.Path, request.QueryString);
         }
 
         /// <summary>
