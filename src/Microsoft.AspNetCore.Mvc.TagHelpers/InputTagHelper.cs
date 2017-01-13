@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 { "Url", "url" },
                 { "EmailAddress", "email" },
                 { "Date", "date" },
-                { "DateTime", "datetime" },
+                { "DateTime", "datetime-local" },
                 { "DateTime-local", "datetime-local" },
                 { "Time", "time" },
                 { nameof(Byte), "number" },

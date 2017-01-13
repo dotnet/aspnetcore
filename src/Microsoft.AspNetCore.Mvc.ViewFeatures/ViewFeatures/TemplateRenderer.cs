@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 { "Text", DefaultEditorTemplates.StringTemplate },
                 { "Url", DefaultEditorTemplates.UrlInputTemplate },
                 { "Date", DefaultEditorTemplates.DateInputTemplate },
-                { "DateTime", DefaultEditorTemplates.DateTimeInputTemplate },
+                { "DateTime", DefaultEditorTemplates.DateTimeLocalInputTemplate },
                 { "DateTime-local", DefaultEditorTemplates.DateTimeLocalInputTemplate },
                 { "Time", DefaultEditorTemplates.TimeInputTemplate },
                 { typeof(byte).Name, DefaultEditorTemplates.NumberInputTemplate },

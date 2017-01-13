@@ -248,7 +248,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Theory]
-        [InlineData(null, "datetime")]
+        [InlineData("datetime", "datetime")]
+        [InlineData(null, "datetime-local")]
         [InlineData("hidden", "hidden")]
         public void Process_GeneratesFormattedOutput(string specifiedType, string expectedType)
         {
@@ -820,7 +821,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     { "custom-datatype", null, "text" },
                     { "Custom-Datatype", null, "text" },
                     { "date", null, "date" },                  // No date/time special cases since ModelType is string.
-                    { "datetime", null, "datetime" },
+                    { "datetime", null, "datetime-local" },
                     { "datetime-local", null, "datetime-local" },
                     { "DATETIME-local", null, "datetime-local" },
                     { "Decimal", "{0:0.00}", "text" },
@@ -921,20 +922,88 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Equal(expectedTagName, output.TagName);
         }
 
+        [Fact]
+        public async Task ProcessAsync_CallsGenerateTextBox_InputTypeDateTime_RendersAsDateTime()
+        {
+            // Arrange
+            var expectedAttributes = new TagHelperAttributeList
+            {
+                { "type", "datetime" },                   // Calculated; not passed to HtmlGenerator.
+            };
+            var expectedTagName = "not-input";
+
+            var context = new TagHelperContext(
+                allAttributes: new TagHelperAttributeList()
+                {
+                    {"type", "datetime" }
+                },
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+
+            var output = new TagHelperOutput(
+                expectedTagName,
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(
+                    new DefaultTagHelperContent()))
+            {
+                TagMode = TagMode.SelfClosing,
+            };
+
+            var htmlAttributes = new Dictionary<string, object>
+            {
+                { "type", "datetime" }
+            };
+
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+
+            var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
+            var tagHelper = GetTagHelper(
+                htmlGenerator.Object,
+                model: null,
+                propertyName: "DateTime",
+                metadataProvider: metadataProvider);
+            tagHelper.ViewContext.Html5DateRenderingMode = Html5DateRenderingMode.Rfc3339;
+            tagHelper.InputTypeName = "datetime";
+            var tagBuilder = new TagBuilder("input");
+            htmlGenerator
+                .Setup(mock => mock.GenerateTextBox(
+                    tagHelper.ViewContext,
+                    tagHelper.For.ModelExplorer,
+                    tagHelper.For.Name,
+                    null,                                   // value
+                    "{0:yyyy-MM-ddTHH:mm:ss.fffK}",
+                    htmlAttributes))                    // htmlAttributes
+                .Returns(tagBuilder)
+                .Verifiable();
+
+            // Act
+            await tagHelper.ProcessAsync(context, output);
+
+            // Assert
+            htmlGenerator.Verify();
+
+            Assert.Equal(TagMode.SelfClosing, output.TagMode);
+            Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Empty(output.PreContent.GetContent());
+            Assert.Equal(string.Empty, output.Content.GetContent());
+            Assert.Empty(output.PostContent.GetContent());
+            Assert.Equal(expectedTagName, output.TagName);
+        }
+
         [Theory]
         [InlineData("Date", Html5DateRenderingMode.CurrentCulture, "{0:d}", "date")]    // Format from [DataType].
         [InlineData("Date", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-dd}", "date")]
-        [InlineData("DateTime", Html5DateRenderingMode.CurrentCulture, null, "datetime")]
-        [InlineData("DateTime", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fffK}", "datetime")]
-        [InlineData("DateTimeOffset", Html5DateRenderingMode.CurrentCulture, null, "datetime")]
-        [InlineData("DateTimeOffset", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fffK}", "datetime")]
+        [InlineData("DateTime", Html5DateRenderingMode.CurrentCulture, null, "datetime-local")]
+        [InlineData("DateTime", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fff}", "datetime-local")]
+        [InlineData("DateTimeOffset", Html5DateRenderingMode.CurrentCulture, null, "datetime-local")]
+        [InlineData("DateTimeOffset", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fff}", "datetime-local")]
         [InlineData("DateTimeLocal", Html5DateRenderingMode.CurrentCulture, null, "datetime-local")]
         [InlineData("DateTimeLocal", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fff}", "datetime-local")]
         [InlineData("Time", Html5DateRenderingMode.CurrentCulture, "{0:t}", "time")]    // Format from [DataType].
         [InlineData("Time", Html5DateRenderingMode.Rfc3339, "{0:HH:mm:ss.fff}", "time")]
         [InlineData("NullableDate", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-dd}", "date")]
-        [InlineData("NullableDateTime", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fffK}", "datetime")]
-        [InlineData("NullableDateTimeOffset", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fffK}", "datetime")]
+        [InlineData("NullableDateTime", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fff}", "datetime-local")]
+        [InlineData("NullableDateTimeOffset", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fff}", "datetime-local")]
         public async Task ProcessAsync_CallsGenerateTextBox_AddsExpectedAttributesForRfc3339(
             string propertyName,
             Html5DateRenderingMode dateRenderingMode,
@@ -967,7 +1036,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 { "type", expectedType }
             };
+
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+
             var htmlGenerator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             var tagHelper = GetTagHelper(
                 htmlGenerator.Object,
