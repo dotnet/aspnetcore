@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         protected virtual Type GetViewInfoContainerType(AssemblyPart assemblyPart)
         {
 #if NETSTANDARD1_6
-            if (!assemblyPart.Assembly.IsDynamic && assemblyPart.Assembly.Location != null)
+            if (!assemblyPart.Assembly.IsDynamic && !string.IsNullOrEmpty(assemblyPart.Assembly.Location))
             {
                 var precompiledAssemblyFileName = assemblyPart.Assembly.GetName().Name
                     + PrecompiledViewsAssemblySuffix
