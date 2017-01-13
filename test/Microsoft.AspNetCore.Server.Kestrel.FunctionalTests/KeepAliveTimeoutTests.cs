@@ -100,6 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "1",
                         "a",
                         "");
+                    await Task.Delay(ShortDelay);
                 }
 
                 await connection.Send(
