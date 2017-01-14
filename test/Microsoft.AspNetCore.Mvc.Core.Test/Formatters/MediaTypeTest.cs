@@ -61,6 +61,16 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
+        public void Constructor_NullLength_IgnoresLength()
+        {
+            // Arrange & Act
+            var result = new MediaType("mediaType", 1, length: null);
+
+            // Assert
+            Assert.Equal(new StringSegment("ediaType"), result.Type);
+        }
+
+        [Fact]
         public void Constructor_NullMediaType_Throws()
         {
             // Arrange, Act and Assert

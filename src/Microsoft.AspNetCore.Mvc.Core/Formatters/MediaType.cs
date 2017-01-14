@@ -55,16 +55,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentOutOfRangeException(nameof(offset));
             }
 
-            if (length < 0 || length > mediaType.Length)
+            if (length != null)
             {
-                throw new ArgumentOutOfRangeException(nameof(length));
-            }
+                if(length < 0 || length > mediaType.Length)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(length));
+                }
 
-            if (offset > mediaType.Length - length)
-            {
-                throw new ArgumentException(Resources.FormatArgument_InvalidOffsetLength(nameof(offset), nameof(length)));
+                if (offset > mediaType.Length - length)
+                {
+                    throw new ArgumentException(Resources.FormatArgument_InvalidOffsetLength(nameof(offset), nameof(length)));
+                }
             }
-
+            
             _parameterParser = default(MediaTypeParameterParser);
 
             StringSegment type;
