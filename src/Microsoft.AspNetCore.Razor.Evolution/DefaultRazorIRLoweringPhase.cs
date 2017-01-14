@@ -16,13 +16,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var syntaxTree = codeDocument.GetSyntaxTree();
             ThrowForMissingDependency(syntaxTree);
 
-            var visitor = new Visitor(codeDocument, syntaxTree.Options);
+            var builder = RazorIRBuilder.Document();
+            var namespaces = new HashSet<string>();
 
             var i = 0;
-            var builder = visitor.Builder;
             foreach (var namespaceImport in syntaxTree.Options.NamespaceImports)
             {
-                if (visitor.Namespaces.Add(namespaceImport))
+                if (namespaces.Add(namespaceImport))
                 {
                     var @using = new UsingStatementIRNode()
                     {
@@ -34,35 +34,158 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             }
 
             var checksum = ChecksumIRNode.Create(codeDocument.Source);
-            visitor.Builder.Insert(0, checksum);
+            builder.Insert(0, checksum);
+
+            // The import documents should be inserted logically before the main document.
+            var imports = codeDocument.GetImportSyntaxTrees();
+            if (imports != null)
+            {
+                var importsVisitor = new ImportsVisitor(builder, namespaces);
+
+                for (var j = 0; j < imports.Count; j++)
+                {
+                    var import = imports[j];
+
+                    importsVisitor.Filename = import.Source.Filename;
+                    importsVisitor.VisitBlock(import.Root);
+                }
+            }
+
+            var visitor = new MainSourceVisitor(builder, namespaces)
+            {
+                 Filename = syntaxTree.Source.Filename,
+            };
 
             visitor.VisitBlock(syntaxTree.Root);
 
-
-            var irDocument = (DocumentIRNode)visitor.Builder.Build();
+            var irDocument = (DocumentIRNode)builder.Build();
             codeDocument.SetIRDocument(irDocument);
         }
 
-        private class Visitor : ParserVisitor
+        private class LoweringVisitor : ParserVisitor
         {
-            private readonly RazorParserOptions _options;
-            private readonly RazorCodeDocument _codeDocument;
+            protected readonly RazorIRBuilder _builder;
+            protected readonly HashSet<string> _namespaces;
 
-            private DeclareTagHelperFieldsIRNode _tagHelperFields;
-
-            public Visitor(RazorCodeDocument codeDocument, RazorParserOptions options)
+            public LoweringVisitor(RazorIRBuilder builder, HashSet<string> namespaces)
             {
-                _codeDocument = codeDocument;
-                _options = options;
-
-                Namespaces = new HashSet<string>();
-
-                Builder = RazorIRBuilder.Document();
+                _builder = builder;
+                _namespaces = namespaces;
             }
 
-            public RazorIRBuilder Builder { get; }
+            public string Filename { get; set; }
 
-            public HashSet<string> Namespaces { get; }
+            public override void VisitImportSpan(AddImportChunkGenerator chunkGenerator, Span span)
+            {
+                var namespaceImport = chunkGenerator.Namespace.Trim();
+
+                // Track seen namespaces so we don't add duplicates from options.
+                if (_namespaces.Add(namespaceImport))
+                {
+                    _builder.Add(new UsingStatementIRNode()
+                    {
+                        Content = namespaceImport,
+                        Source = BuildSourceSpanFromNode(span),
+                    });
+                }
+            }
+
+            public override void VisitDirectiveToken(DirectiveTokenChunkGenerator chunkGenerator, Span span)
+            {
+                _builder.Add(new DirectiveTokenIRNode()
+                {
+                    Content = span.Content,
+                    Descriptor = chunkGenerator.Descriptor,
+                    Source = BuildSourceSpanFromNode(span),
+                });
+            }
+
+            public override void VisitStartDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
+            {
+                _builder.Push(new DirectiveIRNode()
+                {
+                    Name = chunkGenerator.Descriptor.Name,
+                    Descriptor = chunkGenerator.Descriptor,
+                });
+            }
+
+            public override void VisitEndDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
+            {
+                _builder.Pop();
+            }
+
+            public override void VisitAddTagHelperSpan(AddTagHelperChunkGenerator chunkGenerator, Span span)
+            {
+            }
+
+            public override void VisitRemoveTagHelperSpan(RemoveTagHelperChunkGenerator chunkGenerator, Span span)
+            {
+            }
+
+            public override void VisitTagHelperPrefixDirectiveSpan(TagHelperPrefixDirectiveChunkGenerator chunkGenerator, Span span)
+            {
+            }
+
+            protected SourceSpan BuildSourceSpanFromNode(SyntaxTreeNode node)
+            {
+                var location = node.Start;
+                var sourceRange = new SourceSpan(
+                    node.Start.FilePath ?? Filename,
+                    node.Start.AbsoluteIndex,
+                    node.Start.LineIndex,
+                    node.Start.CharacterIndex,
+                    node.Length);
+                return sourceRange;
+            }
+        }
+
+        private class ImportsVisitor : LoweringVisitor
+        {
+            // Imports only supports usings and single-line directives. We only want to include directive tokens
+            // when we're inside a single line directive. Also single line directives can't nest which makes
+            // this simple.
+            private bool _insideLineDirective;
+
+            public ImportsVisitor(RazorIRBuilder builder, HashSet<string> namespaces)
+                : base(builder, namespaces)
+            {
+            }
+
+            public override void VisitDirectiveToken(DirectiveTokenChunkGenerator chunkGenerator, Span span)
+            {
+                if (_insideLineDirective)
+                {
+                    base.VisitDirectiveToken(chunkGenerator, span);
+                }
+            }
+
+            public override void VisitStartDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
+            {
+                if (chunkGenerator.Descriptor.Kind == DirectiveDescriptorKind.SingleLine)
+                {
+                    _insideLineDirective = true;
+                    base.VisitStartDirectiveBlock(chunkGenerator, block);
+                }
+            }
+
+            public override void VisitEndDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
+            {
+                if (_insideLineDirective)
+                {
+                    _insideLineDirective = false;
+                    base.VisitEndDirectiveBlock(chunkGenerator, block);
+                }
+            }
+        }
+        
+        private class MainSourceVisitor : LoweringVisitor
+        {
+            private DeclareTagHelperFieldsIRNode _tagHelperFields;
+
+            public MainSourceVisitor(RazorIRBuilder builder, HashSet<string> namespaces)
+                : base(builder, namespaces)
+            {
+            }
 
             // Example
             // <input` checked="hello-world @false"`/>
@@ -71,18 +194,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             //  Suffix="
             public override void VisitStartAttributeBlock(AttributeBlockChunkGenerator chunkGenerator, Block block)
             {
-                Builder.Push(new HtmlAttributeIRNode()
+                _builder.Push(new HtmlAttributeIRNode()
                 {
                     Name = chunkGenerator.Name,
                     Prefix = chunkGenerator.Prefix,
                     Suffix = chunkGenerator.Suffix,
-                    Source = BuildSourceRangeFromNode(block),
+                    Source = BuildSourceSpanFromNode(block),
                 });
             }
 
             public override void VisitEndAttributeBlock(AttributeBlockChunkGenerator chunkGenerator, Block block)
             {
-                Builder.Pop();
+                _builder.Pop();
             }
 
             // Example
@@ -91,36 +214,36 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             //  Children will contain a token for @false.
             public override void VisitStartDynamicAttributeBlock(DynamicAttributeBlockChunkGenerator chunkGenerator, Block block)
             {
-                Builder.Push(new CSharpAttributeValueIRNode()
+                _builder.Push(new CSharpAttributeValueIRNode()
                 {
                     Prefix = chunkGenerator.Prefix,
-                    Source = BuildSourceRangeFromNode(block),
+                    Source = BuildSourceSpanFromNode(block),
                 });
             }
 
             public override void VisitEndDynamicAttributeBlock(DynamicAttributeBlockChunkGenerator chunkGenerator, Block block)
             {
-                Builder.Pop();
+                _builder.Pop();
             }
 
             public override void VisitLiteralAttributeSpan(LiteralAttributeChunkGenerator chunkGenerator, Span span)
             {
-                Builder.Add(new HtmlAttributeValueIRNode()
+                _builder.Add(new HtmlAttributeValueIRNode()
                 {
                     Prefix = chunkGenerator.Prefix,
                     Content = chunkGenerator.Value,
-                    Source = BuildSourceRangeFromNode(span),
+                    Source = BuildSourceSpanFromNode(span),
                 });
             }
 
             public override void VisitStartTemplateBlock(TemplateBlockChunkGenerator chunkGenerator, Block block)
             {
-                Builder.Push(new TemplateIRNode());
+                _builder.Push(new TemplateIRNode());
             }
 
             public override void VisitEndTemplateBlock(TemplateBlockChunkGenerator chunkGenerator, Block block)
             {
-                var templateNode = Builder.Pop();
+                var templateNode = _builder.Pop();
                 if (templateNode.Children.Count > 0)
                 {
                     var sourceRangeStart = templateNode
@@ -133,7 +256,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         var contentLength = templateNode.Children.Sum(child => child.Source?.Length ?? 0);
 
                         templateNode.Source = new SourceSpan(
-                            sourceRangeStart.Value.FilePath ?? _codeDocument.Source.Filename,
+                            sourceRangeStart.Value.FilePath ?? Filename,
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
@@ -150,12 +273,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // We need to capture this in the IR so that we can give each piece the correct source mappings
             public override void VisitStartExpressionBlock(ExpressionChunkGenerator chunkGenerator, Block block)
             {
-                Builder.Push(new CSharpExpressionIRNode());
+                _builder.Push(new CSharpExpressionIRNode());
             }
 
             public override void VisitEndExpressionBlock(ExpressionChunkGenerator chunkGenerator, Block block)
             {
-                var expressionNode = Builder.Pop();
+                var expressionNode = _builder.Pop();
 
                 if (expressionNode.Children.Count > 0)
                 {
@@ -169,7 +292,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         var contentLength = expressionNode.Children.Sum(child => child.Source?.Length ?? 0);
 
                         expressionNode.Source = new SourceSpan(
-                            sourceRangeStart.Value.FilePath ?? _codeDocument.Source.Filename,
+                            sourceRangeStart.Value.FilePath ?? Filename,
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
@@ -192,19 +315,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     }
                 }
 
-                Builder.Add(new CSharpTokenIRNode()
+                _builder.Add(new CSharpTokenIRNode()
                 {
                     Content = span.Content,
-                    Source = BuildSourceRangeFromNode(span),
+                    Source = BuildSourceSpanFromNode(span),
                 });
             }
 
             public override void VisitStatementSpan(StatementChunkGenerator chunkGenerator, Span span)
             {
-                Builder.Add(new CSharpStatementIRNode()
+                _builder.Add(new CSharpStatementIRNode()
                 {
                     Content = span.Content,
-                    Source = BuildSourceRangeFromNode(span),
+                    Source = BuildSourceSpanFromNode(span),
                 });
             }
 
@@ -222,7 +345,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     }
                 }
 
-                var currentChildren = Builder.Current.Children;
+                var currentChildren = _builder.Current.Children;
                 if (currentChildren.Count > 0 && currentChildren[currentChildren.Count - 1] is HtmlContentIRNode)
                 {
                     var existingHtmlContent = (HtmlContentIRNode)currentChildren[currentChildren.Count - 1];
@@ -233,7 +356,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         var contentLength = existingHtmlContent.Source.Value.Length + span.Content.Length;
 
                         existingHtmlContent.Source = new SourceSpan(
-                            existingHtmlContent.Source.Value.FilePath ?? _codeDocument.Source.Filename,
+                            existingHtmlContent.Source.Value.FilePath ?? Filename,
                             existingHtmlContent.Source.Value.AbsoluteIndex,
                             existingHtmlContent.Source.Value.LineIndex,
                             existingHtmlContent.Source.Value.CharacterIndex,
@@ -242,51 +365,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 }
                 else
                 {
-                    Builder.Add(new HtmlContentIRNode()
+                    _builder.Add(new HtmlContentIRNode()
                     {
                         Content = span.Content,
-                        Source = BuildSourceRangeFromNode(span),
+                        Source = BuildSourceSpanFromNode(span),
                     });
                 }
-            }
-
-            public override void VisitImportSpan(AddImportChunkGenerator chunkGenerator, Span span)
-            {
-                var namespaceImport = chunkGenerator.Namespace.Trim();
-
-                // Track seen namespaces so we don't add duplicates from options.
-                if (Namespaces.Add(namespaceImport)) 
-                {
-                    Builder.Add(new UsingStatementIRNode()
-                    {
-                        Content = namespaceImport,
-                        Source = BuildSourceRangeFromNode(span),
-                    });
-                }
-            }
-
-            public override void VisitDirectiveToken(DirectiveTokenChunkGenerator chunkGenerator, Span span)
-            {
-                Builder.Add(new DirectiveTokenIRNode()
-                {
-                    Content = span.Content,
-                    Descriptor = chunkGenerator.Descriptor,
-                    Source = BuildSourceRangeFromNode(span),
-                });
-            }
-
-            public override void VisitStartDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
-            {
-                Builder.Push(new DirectiveIRNode()
-                {
-                    Name = chunkGenerator.Descriptor.Name,
-                    Descriptor = chunkGenerator.Descriptor,
-                });
-            }
-
-            public override void VisitEndDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
-            {
-                Builder.Pop();
             }
 
             public override void VisitStartTagHelperBlock(TagHelperChunkGenerator chunkGenerator, Block block)
@@ -299,12 +383,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                 DeclareTagHelperFields(tagHelperBlock);
 
-                Builder.Push(new TagHelperIRNode()
+                _builder.Push(new TagHelperIRNode()
                 {
-                    Source = BuildSourceRangeFromNode(block)
+                    Source = BuildSourceSpanFromNode(block)
                 });
 
-                Builder.Push(new InitializeTagHelperStructureIRNode()
+                _builder.Push(new InitializeTagHelperStructureIRNode()
                 {
                     TagName = tagHelperBlock.TagName,
                     TagMode = tagHelperBlock.TagMode
@@ -319,25 +403,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     return;
                 }
 
-                Builder.Pop(); // Pop InitializeTagHelperStructureIRNode
+                _builder.Pop(); // Pop InitializeTagHelperStructureIRNode
 
                 AddTagHelperCreation(tagHelperBlock.Descriptors);
                 AddTagHelperAttributes(tagHelperBlock.Attributes, tagHelperBlock.Descriptors);
                 AddExecuteTagHelpers();
 
-                Builder.Pop(); // Pop TagHelperIRNode
-            }
-
-            public override void VisitAddTagHelperSpan(AddTagHelperChunkGenerator chunkGenerator, Span span)
-            {
-            }
-
-            public override void VisitRemoveTagHelperSpan(RemoveTagHelperChunkGenerator chunkGenerator, Span span)
-            {
-            }
-
-            public override void VisitTagHelperPrefixDirectiveSpan(TagHelperPrefixDirectiveChunkGenerator chunkGenerator, Span span)
-            {
+                _builder.Pop(); // Pop TagHelperIRNode
             }
 
             private void DeclareTagHelperFields(TagHelperBlock block)
@@ -345,7 +417,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 if (_tagHelperFields == null)
                 {
                     _tagHelperFields = new DeclareTagHelperFieldsIRNode();
-                    Builder.Add(_tagHelperFields);
+                    _builder.Add(_tagHelperFields);
                 }
 
                 foreach (var descriptor in block.Descriptors)
@@ -364,7 +436,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         Descriptor = descriptor
                     };
 
-                    Builder.Add(createTagHelper);
+                    _builder.Add(createTagHelper);
                 }
             }
 
@@ -397,12 +469,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                                 TagHelperTypeName = associatedDescriptor.TypeName,
                                 Descriptor = associatedAttributeDescriptor,
                                 ValueStyle = attribute.ValueStyle,
-                                Source = BuildSourceRangeFromNode(attributeValueNode)
+                                Source = BuildSourceSpanFromNode(attributeValueNode)
                             };
 
-                            Builder.Push(setTagHelperProperty);
+                            _builder.Push(setTagHelperProperty);
                             attributeValueNode.Accept(this);
-                            Builder.Pop();
+                            _builder.Pop();
                         }
                     }
                     else
@@ -413,31 +485,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                             ValueStyle = attribute.ValueStyle
                         };
 
-                        Builder.Push(addHtmlAttribute);
+                        _builder.Push(addHtmlAttribute);
                         if (attributeValueNode != null)
                         {
                             attributeValueNode.Accept(this);
                         }
-                        Builder.Pop();
+                        _builder.Pop();
                     }
                 }
             }
 
             private void AddExecuteTagHelpers()
             {
-                Builder.Add(new ExecuteTagHelpersIRNode());
-            }
-
-            private SourceSpan BuildSourceRangeFromNode(SyntaxTreeNode node)
-            {
-                var location = node.Start;
-                var sourceRange = new SourceSpan(
-                    node.Start.FilePath ?? _codeDocument.Source.Filename, 
-                    node.Start.AbsoluteIndex,
-                    node.Start.LineIndex,
-                    node.Start.CharacterIndex,
-                    node.Length);
-                return sourceRange;
+                _builder.Add(new ExecuteTagHelpersIRNode());
             }
         }
     }

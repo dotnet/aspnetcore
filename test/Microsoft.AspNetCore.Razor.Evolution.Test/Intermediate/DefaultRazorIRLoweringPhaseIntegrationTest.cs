@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
             // Assert
             Children(irDocument,
-                n => Assert.IsType<ChecksumIRNode>(n),
+                n => Checksum(n),
                 n => Using("System", n),
                 n => Using("System.Threading.Tasks", n));
         }
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
             // Assert
             Children(irDocument,
-                n => Assert.IsType<ChecksumIRNode>(n),
+                n => Checksum(n),
                 n => Assert.IsType<UsingStatementIRNode>(n),
                 n => Assert.IsType<UsingStatementIRNode>(n),
                 n => Html("Hello, World!", n));
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
             // Assert
             Children(irDocument,
-                n => Assert.IsType<ChecksumIRNode>(n),
+                n => Checksum(n),
                 n => Assert.IsType<UsingStatementIRNode>(n),
                 n => Assert.IsType<UsingStatementIRNode>(n),
                 n => Html(
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
             // Assert
             Children(irDocument,
-                n => Assert.IsType<ChecksumIRNode>(n),
+                n => Checksum(n),
                 n => Assert.IsType<UsingStatementIRNode>(n),
                 n => Assert.IsType<UsingStatementIRNode>(n),
                 n => Html(
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
             // Assert
             Children(irDocument,
-                n => Assert.IsType<ChecksumIRNode>(n),
+                n => Checksum(n),
                 n => Assert.IsType<UsingStatementIRNode>(n),
                 n => Assert.IsType<UsingStatementIRNode>(n),
                 n => Directive(
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
             // Assert
             Children(irDocument,
-                n => Assert.IsType<ChecksumIRNode>(n),
+                n => Checksum(n),
                 n => Using("System", n),
                 n => Using(typeof(Task).Namespace, n));
         }
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         {
             // Arrange
             var codeDocument = TestRazorCodeDocument.Create(@"<span val=""@Hello World""></span>");
-            var descriptors = new[]
+            var tagHelpers = new[]
             {
                 new TagHelperDescriptor
                 {
@@ -167,18 +167,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             };
 
             // Act
-            var irDocument = Lower(codeDocument, descriptors);
+            var irDocument = Lower(codeDocument, tagHelpers: tagHelpers);
 
             // Assert
             Children(irDocument,
-                n => Assert.IsType<ChecksumIRNode>(n),
+                n => Checksum(n),
                 n => Using("System", n),
                 n => Using(typeof(Task).Namespace, n),
                 n => TagHelperFieldDeclaration(n, "SpanTagHelper"),
                 n =>
                 {
                     var tagHelperNode = Assert.IsType<TagHelperIRNode>(n);
-                    Children(tagHelperNode,
+                    Children(
+                        tagHelperNode,
                         c => TagHelperStructure("span", TagMode.StartTagAndEndTag, c),
                         c => Assert.IsType<CreateTagHelperIRNode>(c),
                         c => TagHelperHtmlAttribute(
@@ -209,11 +210,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             };
 
             // Act
-            var irDocument = Lower(codeDocument, new[] { descriptor });
+            var irDocument = Lower(codeDocument, tagHelpers: new[] { descriptor });
 
             // Assert
-            Children(irDocument,
-                n => Assert.IsType<ChecksumIRNode>(n),
+            Children(
+                irDocument,
+                n => Checksum(n),
                 n => Using("System", n),
                 n => Using(typeof(Task).Namespace, n),
                 n => TagHelperFieldDeclaration(n, "InputTagHelper"),
@@ -233,16 +235,102 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 });
         }
 
-        private DocumentIRNode Lower(RazorCodeDocument codeDocument)
+        [Fact]
+        public void Lower_WithImports_Using()
         {
-            return Lower(codeDocument, Enumerable.Empty<TagHelperDescriptor>());
+            // Arrange
+            var source = TestRazorSourceDocument.Create("<p>Hi!</p>");
+            var imports = new[]
+            {
+                TestRazorSourceDocument.Create("@using System.Globalization"),
+                TestRazorSourceDocument.Create("@using System.Text"),
+            };
+            
+            var codeDocument = TestRazorCodeDocument.Create(source, imports);
+
+            // Act
+            var irDocument = Lower(codeDocument);
+
+            // Assert
+            Children(
+                irDocument,
+                n => Checksum(n),
+                n => Using("System", n),
+                n => Using(typeof(Task).Namespace, n),
+                n => Using("System.Globalization", n),
+                n => Using("System.Text", n),
+                n => Html("<p>Hi!</p>", n));
         }
 
-        private DocumentIRNode Lower(RazorCodeDocument codeDocument, IEnumerable<TagHelperDescriptor> descriptors)
+        [Fact]
+        public void Lower_WithImports_Directive()
         {
-            var engine = RazorEngine.Create(builder =>
+            // Arrange
+            var source = TestRazorSourceDocument.Create("<p>Hi!</p>");
+            var imports = new[]
             {
-                builder.Features.Add(new TagHelperFeature(new TestTagHelperDescriptorResolver(descriptors)));
+                TestRazorSourceDocument.Create("@test value1"),
+                TestRazorSourceDocument.Create("@test value2"),
+            };
+
+            var codeDocument = TestRazorCodeDocument.Create(source, imports);
+
+            // Act
+            var irDocument = Lower(codeDocument, b =>
+            {
+                b.AddDirective(DirectiveDescriptorBuilder.Create("test").AddMember().Build());
+            });
+
+            // Assert
+            Children(
+                irDocument,
+                n => Checksum(n),
+                n => Using("System", n),
+                n => Using(typeof(Task).Namespace, n),
+                n => Directive("test", n, c => DirectiveToken(DirectiveTokenKind.Member, "value1", c)),
+                n => Directive("test", n, c => DirectiveToken(DirectiveTokenKind.Member, "value2", c)),
+                n => Html("<p>Hi!</p>", n));
+        }
+
+        [Fact]
+        public void Lower_WithImports_IgnoresBlockDirective()
+        {
+            // Arrange
+            var source = TestRazorSourceDocument.Create("<p>Hi!</p>");
+            var imports = new[]
+            {
+                TestRazorSourceDocument.Create("@block token { }"),
+            };
+
+            var codeDocument = TestRazorCodeDocument.Create(source, imports);
+
+            // Act
+            var irDocument = Lower(codeDocument, b =>
+            {
+                b.AddDirective(DirectiveDescriptorBuilder.CreateRazorBlock("block").AddMember().Build());
+            });
+
+            // Assert
+            Children(
+                irDocument,
+                n => Checksum(n),
+                n => Using("System", n),
+                n => Using(typeof(Task).Namespace, n),
+                n => Html("<p>Hi!</p>", n));
+        }
+
+        private DocumentIRNode Lower(
+            RazorCodeDocument codeDocument,
+            Action<IRazorEngineBuilder> builder = null,
+            IEnumerable<TagHelperDescriptor> tagHelpers = null)
+        {
+            tagHelpers = tagHelpers ?? new TagHelperDescriptor[0];
+
+            var engine = RazorEngine.Create(b =>
+            {
+                builder?.Invoke(b);
+
+                b.Features.Add(new TagHelperFeature(new TestTagHelperDescriptorResolver(tagHelpers)));
             });
 
             for (var i = 0; i < engine.Phases.Count; i++)

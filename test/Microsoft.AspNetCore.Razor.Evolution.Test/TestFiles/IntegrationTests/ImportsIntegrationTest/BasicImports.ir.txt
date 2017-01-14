@@ -1,0 +1,11 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - 
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        UsingStatement - (31:1,1 [28] BasicImports_Imports0.cshtml) - System.Globalization
+        UsingStatement - (80:3,1 [29] BasicImports_Imports0.cshtml) - System.ComponentModel
+        UsingStatement - (23:1,1 [20] BasicImports_Imports1.cshtml) - System.Text
+        ClassDeclaration -  -  -  -  - 
+            RazorMethodDeclaration -  -  -  -  - 
+                HtmlContent - (0:0,0 [18] BasicImports.cshtml) - <p>Hi there!</p>\n

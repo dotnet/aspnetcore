@@ -102,6 +102,20 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             Children(node, childValidators);
         }
 
+        public static void DirectiveToken(DirectiveTokenKind expectedKind, string expectedContent, RazorIRNode node)
+        {
+            try
+            {
+                var token = Assert.IsType<DirectiveTokenIRNode>(node);
+                Assert.Equal(expectedKind, token.Descriptor.Kind);
+                Assert.Equal(expectedContent, token.Content);
+            }
+            catch (XunitException e)
+            {
+                throw new IRAssertException(node, node.Children, e.Message, e);
+            }
+        }
+
         public static void Using(string expected, RazorIRNode node)
         {
             try
@@ -165,6 +179,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             catch (XunitException e)
             {
                 throw new IRAssertException(attributeValue, e.Message);
+            }
+        }
+
+        public static void Checksum(RazorIRNode node)
+        {
+            try
+            {
+                Assert.IsType<ChecksumIRNode>(node);
+            }
+            catch (XunitException e)
+            {
+                throw new IRAssertException(node, node.Children, e.Message, e);
             }
         }
 

@@ -88,7 +88,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 throw new XunitException($"The resource {sourceFilename} was not found.");
             }
 
-            var codeDocument = RazorCodeDocument.Create(TestRazorSourceDocument.CreateResource(sourceFilename));
+            var imports = new List<RazorSourceDocument>();
+            while (true)
+            {
+                var importsFilename = Path.ChangeExtension(Filename + "_Imports" + imports.Count.ToString(), ".cshtml");
+                if (!TestFile.Create(importsFilename).Exists())
+                {
+                    break;
+                }
+                
+                imports.Add(TestRazorSourceDocument.CreateResource(importsFilename));
+            }
+
+            var codeDocument = RazorCodeDocument.Create(TestRazorSourceDocument.CreateResource(sourceFilename), imports);
 
             // This will ensure that we're not putting any randomly generated data in a baseline.
             codeDocument.Items[DefaultRazorRuntimeCSharpLoweringPhase.SuppressUniqueIds] = "test";
