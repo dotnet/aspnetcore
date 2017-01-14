@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
@@ -35,5 +36,10 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// Gets or sets the parameter type.
         /// </summary>
         public Type Type { get; set; }
+
+        /// <summary>
+        /// Gets or sets the parameter descriptor.
+        /// </summary>
+        public ParameterDescriptor ParameterDescriptor { get; set; }
     }
 }

@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// </summary>
         /// <remarks>
         /// Will be null if the action returns no response, or if the response type is unclear. Use
-        /// <see cref="ProducesAttribute"/> or <see cref="ProducesResponseTypeAttribute"/> on an action method
+        /// <c>Microsoft.AspNetCore.Mvc.ProducesAttribute</c> or <c>Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute</c> on an action method
         /// to specify a response type.
         /// </remarks>
         public Type Type { get; set; }

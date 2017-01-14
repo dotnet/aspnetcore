@@ -26,8 +26,16 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// </remarks>
         int Order { get; }
 
+        /// <summary>
+        /// Creates or modifies <see cref="ApiDescription"/>s.
+        /// </summary>
+        /// <param name="context">The <see cref="ApiDescriptionProviderContext"/>.</param>
         void OnProvidersExecuting(ApiDescriptionProviderContext context);
 
+        /// <summary>
+        /// Called after <see cref="IApiDescriptionProvider"/> implementations with higher <see cref="Order"/> values have been called.
+        /// </summary>
+        /// <param name="context">The <see cref="ApiDescriptionProviderContext"/>.</param>
         void OnProvidersExecuted(ApiDescriptionProviderContext context);
     }
 }

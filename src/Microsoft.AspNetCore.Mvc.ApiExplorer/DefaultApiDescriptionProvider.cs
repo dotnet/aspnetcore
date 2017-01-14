@@ -688,6 +688,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     Name = GetName(containerName, bindingContext),
                     Source = source,
                     Type = bindingContext.ModelMetadata.ModelType,
+                    ParameterDescriptor = Parameter,
                 };
             }
 
