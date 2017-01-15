@@ -11,7 +11,10 @@
 
   <ItemGroup>
     <_MvcRazorContentFiles Include="$([MSBuild]::EnsureTrailingSlash('$(MvcRazorOutputPath)'))**\*.cshtml"  />
-    <Content Update="**\*.cshtml" CopyToPublishDirectory="Never" Condition="'$(MvcRazorExcludeViewFilesFromPublish)'=='true'" />
+    <Content
+      Update="**\*.cshtml"
+      CopyToPublishDirectory="Never"
+      Condition="'$(MvcRazorCompileOnPublish)'=='true' AND '$(MvcRazorExcludeViewFilesFromPublish)'=='true'" />
   </ItemGroup>
 
   <Target Name="_CreateResponseFileForMvcRazorPrecompile">
