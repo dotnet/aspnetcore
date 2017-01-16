@@ -2,6 +2,7 @@
   "name": "music-store",
   "version": "0.0.0",
   "dependencies": {
+    "@types/history": "^2.0.0",
     "@types/react": "^0.14.29",
     "@types/react-bootstrap": "^0.0.35",
     "@types/react-dom": "^0.14.14",
@@ -41,7 +42,7 @@
     "redux-typed": "^2.0.0",
     "style-loader": "^0.13.0",
     "ts-loader": "^0.8.1",
-    "typescript": "2.0.3",
+    "typescript": "^2.0.3",
     "url-loader": "^0.5.7",
     "webpack": "^1.13.2",
     "webpack-hot-middleware": "^2.12.2",
