@@ -30,7 +30,8 @@ const templates: { [key: string]: { dir: string, dotNetNewId: string, displayNam
 };
 
 function isTextFile(filename: string): boolean {
-    return textFileExtensions.indexOf(path.extname(filename).toLowerCase()) >= 0;
+    return textFileExtensions.indexOf(path.extname(filename).toLowerCase()) >= 0
+        || textFileExtensions.indexOf(path.basename(filename)) >= 0;
 }
 
 function writeFileEnsuringDirExists(root: string, filename: string, contents: string | Buffer) {
@@ -92,6 +93,9 @@ function buildYeomanNpmPackage(outputRoot: string) {
         { from: /.*\.csproj$/, to: 'tokenreplace-namePascalCase.csproj' }
     ];
     const contentReplacements = [
+        // Dockerfile items
+        { from: /FROM microsoft\/dotnet:1.1.0-sdk-projectjson/g, to: 'FROM <%= dockerBaseImage %>' },
+
         // .xproj items
         { from: /\bWebApplicationBasic\b/g, to: '<%= namePascalCase %>' },
         { from: /<ProjectGuid>[0-9a-f\-]{36}<\/ProjectGuid>/g, to: '<ProjectGuid><%= projectGuid %></ProjectGuid>' },
