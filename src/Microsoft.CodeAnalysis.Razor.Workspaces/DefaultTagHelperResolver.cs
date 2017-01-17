@@ -45,7 +45,8 @@ namespace Microsoft.CodeAnalysis.Razor
 
             foreach (var type in types)
             {
-                results.AddRange(factory.CreateDescriptors(type.ContainingAssembly.Identity.GetDisplayName(), type, errors));
+                var descriptors = factory.CreateDescriptors(type, errors);
+                results.AddRange(descriptors);
             }
 
             return results;

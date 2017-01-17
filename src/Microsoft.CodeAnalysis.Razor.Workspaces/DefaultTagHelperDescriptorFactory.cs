@@ -62,7 +62,6 @@ namespace Microsoft.CodeAnalysis.Razor
 
         /// <inheritdoc />
         public virtual IEnumerable<TagHelperDescriptor> CreateDescriptors(
-            string assemblyName,
             INamedTypeSymbol type,
             ErrorSink errorSink)
         {
@@ -88,7 +87,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var tagHelperDescriptors =
                 BuildTagHelperDescriptors(
                     type,
-                    assemblyName,
+                    type.ContainingAssembly.Identity.Name,
                     attributeDescriptors,
                     targetElementAttributes,
                     allowedChildren);

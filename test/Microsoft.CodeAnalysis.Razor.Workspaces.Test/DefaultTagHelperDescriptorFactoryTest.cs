@@ -245,10 +245,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(tagHelperType.FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -335,10 +332,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(tagHelperType.FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -420,10 +414,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(tagHelperType.FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -510,10 +501,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(tagHelperType.FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -747,10 +735,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(tagHelperType.FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -1015,10 +1000,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(tagHelperType.FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -1065,10 +1047,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(tagHelperType.FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -1103,10 +1082,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(OverriddenAttributeTagHelper).FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -1138,10 +1114,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(InheritedOverriddenAttributeTagHelper).FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -1173,10 +1146,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(InheritedNotOverriddenAttributeTagHelper).FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
             // Assert
             Assert.Empty(errorSink.Errors);
             Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
@@ -1204,10 +1174,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(InheritedSingleAttributeTagHelper).FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -1233,10 +1200,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(SingleAttributeTagHelper).FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: new ErrorSink());
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -1263,10 +1227,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(MissingAccessorTagHelper).FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -1293,10 +1254,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(NonPublicAccessorTagHelper).FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -1326,9 +1284,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(NotBoundAttributeTagHelper).FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
+            var descriptors = factory.CreateDescriptors(typeSymbol,
                 errorSink: errorSink);
 
             // Assert
@@ -1346,10 +1302,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(DuplicateAttributeNameTagHelper).FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(descriptors);
@@ -1396,10 +1349,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(MultiTagTagHelper).FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -1429,10 +1379,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(InheritedMultiTagTagHelper).FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -1460,10 +1407,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(DuplicateTagNameTagHelper).FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -1491,10 +1435,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(OverrideNameTagHelper).FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -1666,10 +1607,7 @@ public class DynamicTestTagHelper : {typeof(AspNetCore.Razor.TagHelpers.TagHelpe
             var typeSymbol = Compilation.GetTypeByMetadataName(type.FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             var actualErrors = errorSink.Errors.ToArray();
@@ -2167,10 +2105,7 @@ public class DynamicTestTagHelper : {typeof(AspNetCore.Razor.TagHelpers.TagHelpe
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(object).FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                objectAssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -2191,10 +2126,7 @@ public class DynamicTestTagHelper : {typeof(AspNetCore.Razor.TagHelpers.TagHelpe
             var typeSymbol = Compilation.GetTypeByMetadataName(tagHelperType.FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             var errors = errorSink.Errors.ToArray();
@@ -2337,10 +2269,7 @@ public class DynamicTestTagHelper : {typeof(AspNetCore.Razor.TagHelpers.TagHelpe
             var typeSymbol = Compilation.GetTypeByMetadataName(tagHelperType.FullName);
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -2381,10 +2310,7 @@ public class DocumentedTagHelper : " + typeof(AspNetCore.Razor.TagHelpers.TagHel
             };
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -2441,10 +2367,7 @@ public class DocumentedTagHelper : " + typeof(AspNetCore.Razor.TagHelpers.TagHel
             };
 
             // Act
-            var descriptors = factory.CreateDescriptors(
-                AssemblyName,
-                typeSymbol,
-                errorSink: errorSink);
+            var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
