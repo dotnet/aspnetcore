@@ -63,14 +63,8 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         public override long? ContentLength
         {
-            get
-            {
-                return ParsingHelpers.GetContentLength(Headers);
-            }
-            set
-            {
-                ParsingHelpers.SetContentLength(Headers, value);
-            }
+            get { return Headers.ContentLength; }
+            set { Headers.ContentLength = value; }
         }
 
         public override string ContentType

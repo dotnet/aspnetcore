@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Owin
 {
@@ -40,6 +41,40 @@ namespace Microsoft.AspNetCore.Owin
         {
             get { return Inner[key]; }
             set { Inner[key] = value; }
+        }
+
+        public long? ContentLength
+        {
+            get
+            {
+                long value;
+
+                string[] rawValue;
+                if (!Inner.TryGetValue(HeaderNames.ContentLength, out rawValue))
+                {
+                    return null;
+                }
+
+                if (rawValue.Length == 1 &&
+                    !string.IsNullOrWhiteSpace(rawValue[0]) &&
+                    HeaderUtilities.TryParseInt64(new StringSegment(rawValue[0]).Trim(), out value))
+                {
+                    return value;
+                }
+
+                return null;
+            }
+            set
+            {
+                if (value.HasValue)
+                {
+                    Inner[HeaderNames.ContentLength] = (StringValues)HeaderUtilities.FormatInt64(value.Value);
+                }
+                else
+                {
+                    Inner.Remove(HeaderNames.ContentLength);
+                }
+            }
         }
 
         int ICollection<KeyValuePair<string, StringValues>>.Count => Inner.Count;

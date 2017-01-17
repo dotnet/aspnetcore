@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -95,6 +96,34 @@ namespace Microsoft.AspNetCore.Http
         {
             get { return Store[key]; }
             set { this[key] = value; }
+        }
+
+        public long? ContentLength
+        {
+            get
+            {
+                long value;
+                var rawValue = this[HeaderNames.ContentLength];
+                if (rawValue.Count == 1 &&
+                    !string.IsNullOrWhiteSpace(rawValue[0]) &&
+                    HeaderUtilities.TryParseInt64(new StringSegment(rawValue[0]).Trim(), out value))
+                {
+                    return value;
+                }
+
+                return null;
+            }
+            set
+            {
+                if (value.HasValue)
+                {
+                    this[HeaderNames.ContentLength] = HeaderUtilities.FormatInt64(value.Value);
+                }
+                else
+                {
+                    this.Remove(HeaderNames.ContentLength);
+                }
+            }
         }
 
         /// <summary>

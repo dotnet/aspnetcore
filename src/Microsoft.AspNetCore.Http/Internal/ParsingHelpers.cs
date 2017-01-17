@@ -403,41 +403,5 @@ namespace Microsoft.AspNetCore.Http.Internal
 
             return value;
         }
-
-        public static long? GetContentLength(IHeaderDictionary headers)
-        {
-            if (headers == null)
-            {
-                throw new ArgumentNullException(nameof(headers));
-            }
-
-            long value;
-            var rawValue = headers[HeaderNames.ContentLength];
-            if (rawValue.Count == 1 &&
-                !string.IsNullOrWhiteSpace(rawValue[0]) &&
-                HeaderUtilities.TryParseInt64(new StringSegment(rawValue[0]).Trim(), out value))
-            {
-                return value;
-            }
-
-            return null;
-        }
-
-        public static void SetContentLength(IHeaderDictionary headers, long? value)
-        {
-            if (headers == null)
-            {
-                throw new ArgumentNullException(nameof(headers));
-            }
-
-            if (value.HasValue)
-            {
-                headers[HeaderNames.ContentLength] = HeaderUtilities.FormatInt64(value.Value);
-            }
-            else
-            {
-                headers.Remove(HeaderNames.ContentLength);
-            }
-        }
     }
 }
