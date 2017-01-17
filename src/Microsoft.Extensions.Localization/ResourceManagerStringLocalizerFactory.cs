@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Reflection;
 using System.Resources;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Localization
@@ -24,29 +23,20 @@ namespace Microsoft.Extensions.Localization
         private readonly IResourceNamesCache _resourceNamesCache = new ResourceNamesCache();
         private readonly ConcurrentDictionary<string, ResourceManagerStringLocalizer> _localizerCache =
             new ConcurrentDictionary<string, ResourceManagerStringLocalizer>();
-        private readonly string _applicationName;
         private readonly string _resourcesRelativePath;
 
         /// <summary>
         /// Creates a new <see cref="ResourceManagerStringLocalizer"/>.
         /// </summary>
-        /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
         /// <param name="localizationOptions">The <see cref="IOptions{LocalizationOptions}"/>.</param>
         public ResourceManagerStringLocalizerFactory(
-            IHostingEnvironment hostingEnvironment,
             IOptions<LocalizationOptions> localizationOptions)
         {
-            if (hostingEnvironment == null)
-            {
-                throw new ArgumentNullException(nameof(hostingEnvironment));
-            }
-
             if (localizationOptions == null)
             {
                 throw new ArgumentNullException(nameof(localizationOptions));
             }
 
-            _applicationName = hostingEnvironment.ApplicationName;
             _resourcesRelativePath = localizationOptions.Value.ResourcesPath ?? string.Empty;
             if (!string.IsNullOrEmpty(_resourcesRelativePath))
             {
@@ -162,7 +152,10 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(baseName));
             }
 
-            location = location ?? _applicationName;
+            if (location == null)
+            {
+                throw new ArgumentNullException(nameof(location));
+            }
 
             return _localizerCache.GetOrAdd($"B={baseName},L={location}", _ =>
             {

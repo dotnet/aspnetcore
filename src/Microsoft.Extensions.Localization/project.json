@@ -19,7 +19,6 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Hosting.Abstractions": "1.2.0-*",
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.2.0-*",
     "Microsoft.Extensions.Localization.Abstractions": {
       "target": "project"
