@@ -25,18 +25,19 @@ $@"Microsoft Razor Precompilation Utility {GetToolVersion()}
 Usage: razor-precompile [arguments] [options]
 
 Arguments:
-  project  The path to the project (project folder or project.json) with precompilation.
+  project  The path to the project file.
 
 Options:
   -?|-h|--help                  Show help information
+  --output-path                 Path to the emit the precompiled assembly to.
+  --application-name            Name of the application to produce precompiled assembly for.
   --configure-compilation-type  Type with Configure method
   --content-root                The application's content root.
   --embed-view-sources          Embed view sources as resources in the generated assembly.
-  --key-file                    Strong name key path
+  --key-file                    Strong name key path.
   --delay-sign                  Determines if the precompiled view assembly is to be delay signed.
   --public-sign                 Determines if the precompiled view assembly is to be public signed.
-  --output-path                 Path to the emit the precompiled assembly to.
-  --application-name            Name of the application to produce precompiled assembly for.";
+  --file                        Razor files to compile.";
 
             var args = new[]
             {

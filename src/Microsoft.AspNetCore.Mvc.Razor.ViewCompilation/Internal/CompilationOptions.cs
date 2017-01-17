@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
@@ -15,6 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
         public static readonly string PublicSignTemplate = "--public-sign";
         public static readonly string ApplicationNameTemplate = "--application-name";
         public static readonly string OutputPathTemplate = "--output-path";
+        public static readonly string ViewsToCompileTemplate = "--file";
 
         public CompilationOptions(CommandLineApplication app)
         {
@@ -30,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 
             ProjectArgument = app.Argument(
                 "project",
-                "The path to the project (project folder or project.json) with precompilation.");
+                "The path to the project file.");
 
             ConfigureCompilationType = app.Option(
                 ConfigureCompilationTypeTemplate,
@@ -49,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 
             KeyFileOption = app.Option(
                 StrongNameKeyPath,
-                "Strong name key path",
+                "Strong name key path.",
                 CommandOptionType.SingleValue);
 
             DelaySignOption = app.Option(
@@ -61,6 +63,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
                 PublicSignTemplate,
                 "Determines if the precompiled view assembly is to be public signed.",
                 CommandOptionType.NoValue);
+
+            ViewsToCompileOption = app.Option(
+                ViewsToCompileTemplate,
+                "Razor files to compile.",
+                CommandOptionType.MultipleValue);
         }
 
         public CommandArgument ProjectArgument { get; }
@@ -81,6 +88,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 
         public CommandOption ApplicationNameOption { get; }
 
+        public CommandOption ViewsToCompileOption { get; }
+
         public string OutputPath => OutputPathOption.Value();
 
         public string ApplicationName => ApplicationNameOption.Value();
@@ -90,5 +99,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
         public bool DelaySign => DelaySignOption.HasValue();
 
         public bool PublicSign => PublicSignOption.HasValue();
+
+        public List<string> ViewsToCompile => ViewsToCompileOption.Values;
     }
 }

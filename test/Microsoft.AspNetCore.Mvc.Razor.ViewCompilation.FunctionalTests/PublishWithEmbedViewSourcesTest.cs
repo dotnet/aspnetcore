@@ -32,9 +32,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
             // Arrange
             var expectedViews = new[]
             {
-                "Areas/TestArea/Views/Home/Index.cshtml",
-                "Views/Home/About.cshtml",
-                "Views/Home/Index.cshtml",
+                "/Areas/TestArea/Views/Home/Index.cshtml",
+                "/Views/Home/About.cshtml",
+                "/Views/Home/Index.cshtml",
             };
             var expectedText = "Hello Index!";
             using (var deployer = Fixture.CreateDeployment(flavor))

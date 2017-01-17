@@ -16,7 +16,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.CommandLineUtils;
-using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 {
@@ -109,11 +108,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             var resources = new ResourceDescription[results.Length];
             for (var i = 0; i < results.Length; i++)
             {
-                var fileInfo = results[i].RelativeFileInfo;
+                var fileInfo = results[i].ViewFileInfo;
 
                 resources[i] = new ResourceDescription(
-                    fileInfo.RelativePath.Replace('\\', '/'),
-                    fileInfo.FileInfo.CreateReadStream,
+                    fileInfo.ViewEnginePath,
+                    fileInfo.CreateReadStream,
                     isPublic: true);
             }
 
@@ -171,9 +170,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             {
                 var result = results[i];
                 var sourceText = SourceText.From(result.GeneratorResults.GeneratedCode, Encoding.UTF8);
-                var fileInfo = result.RelativeFileInfo;
+                var fileInfo = result.ViewFileInfo;
                 var syntaxTree = compiler.CreateSyntaxTree(sourceText)
-                    .WithFilePath(fileInfo.FileInfo.PhysicalPath ?? fileInfo.RelativePath);
+                    .WithFilePath(fileInfo.FullPath ?? fileInfo.ViewEnginePath);
                 syntaxTrees[i] = syntaxTree;
             });
 
@@ -231,15 +230,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 
         private ViewCompilationInfo[] GenerateCode()
         {
-            var files = new List<RelativeFileInfo>();
-            GetRazorFiles(MvcServiceProvider.FileProvider, files, root: string.Empty);
+            var files = GetRazorFiles();
             var results = new ViewCompilationInfo[files.Count];
             Parallel.For(0, results.Length, ParalellOptions, i =>
             {
                 var fileInfo = files[i];
-                using (var fileStream = fileInfo.FileInfo.CreateReadStream())
+                using (var fileStream = fileInfo.CreateReadStream())
                 {
-                    var result = MvcServiceProvider.Host.GenerateCode(fileInfo.RelativePath, fileStream);
+                    var result = MvcServiceProvider.Host.GenerateCode(fileInfo.ViewEnginePath, fileStream);
                     results[i] = new ViewCompilationInfo(fileInfo, result);
                 }
             });
@@ -247,20 +245,24 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             return results;
         }
 
-        private static void GetRazorFiles(IFileProvider fileProvider, List<RelativeFileInfo> razorFiles, string root)
+        private List<ViewFileInfo> GetRazorFiles()
         {
-            foreach (var fileInfo in fileProvider.GetDirectoryContents(root))
+            var contentRoot = Options.ContentRootOption.Value();
+            var viewFiles = Options.ViewsToCompile;
+            var relativeFiles = new List<ViewFileInfo>(viewFiles.Count);
+            var trimLength = contentRoot.EndsWith("/") ? contentRoot.Length - 1 : contentRoot.Length;
+
+            for (var i = 0; i < viewFiles.Count; i++)
             {
-                var relativePath = Path.Combine(root, fileInfo.Name);
-                if (fileInfo.IsDirectory)
+                var fullPath = viewFiles[i];
+                if (fullPath.StartsWith(contentRoot, StringComparison.OrdinalIgnoreCase))
                 {
-                    GetRazorFiles(fileProvider, razorFiles, relativePath);
-                }
-                else if (fileInfo.Name.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase))
-                {
-                    razorFiles.Add(new RelativeFileInfo(fileInfo, relativePath));
+                    var viewEnginePath = fullPath.Substring(trimLength).Replace('\\', '/');
+                    relativeFiles.Add(new ViewFileInfo(fullPath, viewEnginePath));
                 }
             }
+
+            return relativeFiles;
         }
 
         private string ReadTypeInfo(CSharpCompilation compilation, SyntaxTree syntaxTree)

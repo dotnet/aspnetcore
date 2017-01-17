@@ -1,21 +1,19 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <_MvcRazorOutputPath Condition="'$(MvcRazorOutputPath)'!=''">$([MSBuild]::EnsureTrailingSlash('$(MvcRazorOutputPath)'))</_MvcRazorOutputPath>
-    <_MvcRazorOutputPath Condition="'$(_MvcRazorOutputPath)'==''">$(IntermediateOutputPath)</_MvcRazorOutputPath>
-    <_MvcRazorOutputFullPath>$([System.IO.Path]::Combine($(_MvcRazorOutputPath), '$(MSBuildProjectName).PrecompiledViews.dll'))</_MvcRazorOutputFullPath>
-    <_MvcRazorResponseFilePath>$(IntermediateOutputPath)microsoft.aspnetcore.mvc.razor.viewcompilation.rsp</_MvcRazorResponseFilePath>
+  <Target Name="_ResolveInputArguments">
+    <PropertyGroup>
+      <_MvcRazorOutputPath Condition="'$(MvcRazorOutputPath)'!=''">$([MSBuild]::EnsureTrailingSlash('$(MvcRazorOutputPath)'))</_MvcRazorOutputPath>
+      <_MvcRazorOutputPath Condition="'$(_MvcRazorOutputPath)'==''">$(IntermediateOutputPath)</_MvcRazorOutputPath>
+      <_MvcRazorOutputFullPath>$(_MvcRazorOutputPath)$(MSBuildProjectName).PrecompiledViews.dll</_MvcRazorOutputFullPath>
+      <_MvcRazorResponseFilePath>$(IntermediateOutputPath)microsoft.aspnetcore.mvc.razor.viewcompilation.rsp</_MvcRazorResponseFilePath>
 
-    <MvcRazorContentRoot Condition="'$(MvcRazorContentRoot)'==''">$(MSBuildProjectDirectory)</MvcRazorContentRoot>
-    <MvcRazorExcludeViewFilesFromPublish Condition="'$(MvcRazorExcludeViewFilesFromPublish)'==''">true</MvcRazorExcludeViewFilesFromPublish>
-  </PropertyGroup>
+      <MvcRazorContentRoot Condition="'$(MvcRazorContentRoot)'==''">$(MSBuildProjectDirectory)</MvcRazorContentRoot>
+      <MvcRazorExcludeViewFilesFromPublish Condition="'$(MvcRazorExcludeViewFilesFromPublish)'==''">true</MvcRazorExcludeViewFilesFromPublish>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <_MvcRazorContentFiles Include="$([MSBuild]::EnsureTrailingSlash('$(MvcRazorOutputPath)'))**\*.cshtml"  />
-    <Content
-      Update="**\*.cshtml"
-      CopyToPublishDirectory="Never"
-      Condition="'$(MvcRazorCompileOnPublish)'=='true' AND '$(MvcRazorExcludeViewFilesFromPublish)'=='true'" />
-  </ItemGroup>
+    <ItemGroup Condition="'@(MvcRazorFilesToCompile)' == ''">
+      <MvcRazorFilesToCompile Include="@(Content)" Condition="'%(Extension)'=='.cshtml'" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="_CreateResponseFileForMvcRazorPrecompile">
     <ItemGroup>
@@ -28,13 +26,15 @@
       <ExecArgs
         Condition="'$(MvcRazorEmbedViewSources)'=='true'"
         Include="--embed-view-sources" />
+
+      <ExecArgs Include="--file=%(MvcRazorFilesToCompile.FullPath)" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(SignAssembly)'=='true'">
-      <ExecArgs 
+      <ExecArgs
         Condition="'$(DelaySign)'=='true'"
         Include="--delay-sign" />
-      <ExecArgs 
+      <ExecArgs
         Condition="'$(PublicSign)'=='true'"
         Include="--public-sign" />
       <ExecArgs Include="--key-file=$(AssemblyOriginatorKeyFile)" />
@@ -42,17 +42,25 @@
 
     <WriteLinesToFile
       File="$(_MvcRazorResponseFilePath)"
-      Lines="@(ExecArgs)" 
+      Lines="@(ExecArgs)"
       Overwrite="true"  />
   </Target>
 
-   <Target 
-      Name="_MvcRazorPrecompileOnPublish"
-      DependsOnTargets="MvcRazorPrecompile"
-      AfterTargets="PrepareForPublish"
-      Condition="'$(MvcRazorCompileOnPublish)'=='true'">
+  <Target
+     Name="_MvcRazorPrecompileOnPublish"
+     DependsOnTargets="MvcRazorPrecompile"
+     AfterTargets="PrepareForPublish"
+     Condition="'$(MvcRazorCompileOnPublish)'=='true'" />
+
+  <Target Name="_MvcRazorResolveFilesToCompute"
+    AfterTargets="ComputeFilesToPublish"
+    Condition="'$(MvcRazorCompileOnPublish)'=='true'">
 
     <ItemGroup>
+      <ResolvedFileToPublish
+          Remove="%(MvcRazorFilesToCompile.FullPath)"
+          Condition="'$(MvcRazorExcludeViewFilesFromPublish)'=='true'" />
+
       <ResolvedFileToPublish Include="$(_MvcRazorOutputFullPath)" CopyToPublishDirectory="Always">
         <RelativePath>$([System.IO.Path]::GetFileName('$(_MvcRazorOutputFullPath)'))</RelativePath>
       </ResolvedFileToPublish>

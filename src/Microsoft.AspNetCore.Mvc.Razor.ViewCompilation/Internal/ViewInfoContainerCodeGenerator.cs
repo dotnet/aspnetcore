@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             var precompiledViewsArray = new StringBuilder();
             foreach (var item in result)
             {
-                var path = item.RelativeFileInfo.RelativePath;
+                var path = item.ViewFileInfo.ViewEnginePath;
                 precompiledViewsArray.AppendLine(
                     $"new global::{typeof(ViewInfo).FullName}(@\"{path}\", typeof({item.TypeName})),");
             }

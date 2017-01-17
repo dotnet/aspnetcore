@@ -38,14 +38,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             Host = serviceProvider.GetRequiredService<IMvcRazorHost>();
             Compiler = serviceProvider.GetRequiredService<CSharpCompiler>();
             ViewEngineOptions = serviceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>().Value;
-            FileProvider = serviceProvider.GetRequiredService<IRazorViewEngineFileProviderAccessor>().FileProvider;
         }
 
         public IMvcRazorHost Host { get; }
 
         public CSharpCompiler Compiler { get; }
-
-        public IFileProvider FileProvider { get; }
 
         public RazorViewEngineOptions ViewEngineOptions { get; }
 

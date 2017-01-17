@@ -5,10 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="**\*.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.csproj" />
   </ItemGroup>
 

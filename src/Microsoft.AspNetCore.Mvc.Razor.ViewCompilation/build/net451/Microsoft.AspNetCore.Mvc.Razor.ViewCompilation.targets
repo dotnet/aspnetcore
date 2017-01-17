@@ -6,7 +6,8 @@
 
   <Target
       Name="MvcRazorPrecompile"
-      Inputs="$(MSBuildThisFileFullPath);@(_MvcRazorContentFiles);@(IntermediateAssembly);@(DocFileItem);@(_DebugSymbolsIntermediatePath);@(ReferencePath);$(MSBuildAllProjects);"
+      DependsOnTargets="_ResolveInputArguments"
+      Inputs="$(MSBuildThisFileFullPath);@(MvcRazorFilesToCompile);@(IntermediateAssembly);@(DocFileItem);@(_DebugSymbolsIntermediatePath);@(ReferencePath);$(MSBuildAllProjects);"
       Outputs="$(_MvcRazorOutputFullPath)">
 
     <CallTarget Targets="_CreateResponseFileForMvcRazorPrecompile" />
@@ -20,7 +21,7 @@
       </FilesToCopy>
     </ItemGroup>
 
-    <Copy 
+    <Copy
       SourceFiles="@(FilesToCopy)"
       DestinationFiles="%(Destination)" />
 
@@ -28,7 +29,7 @@
       Text="Executing Razor view precompilation."
       Importance="Low" />
 
-    <Exec 
+    <Exec
       Command="$(MvcRazorRunCommand) @&quot;$(_MvcRazorResponseFilePath)&quot;"
       WorkingDirectory="$(MSBuildProjectDirectory)"/>
 
@@ -37,6 +38,6 @@
       Importance="High" />
 
     <Delete Files="%(FilesToCopy.Destination)" />
-    
+
   </Target>
 </Project>

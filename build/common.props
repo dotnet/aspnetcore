@@ -11,7 +11,12 @@
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
   </PropertyGroup>
 
-   <ItemGroup>
+   <!-- Workaround for RC3 VS -->
+  <ItemGroup Condition="'$(BuildingInsideVisualStudio)'!='true'">
+    <Compile Include="**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Sdk" Version="1.0.0-alpha-15156" PrivateAssets="All" />
   </ItemGroup>
 
