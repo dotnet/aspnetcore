@@ -141,7 +141,7 @@ private:
              <li> Enable logging the application process' stdout messages </li> \
              <li> Attach a debugger to the application process and inspect </li></ul></fieldset> \
              <fieldset><h4> For more information visit: \
-             <a href=\"http://go.microsoft.com/fwlink/?linkid=808681\" <cite> http://go.microsoft.com/fwlink/?LinkID=808681 </cite></a></h4> \
+             <a href=\"https://go.microsoft.com/fwlink/?linkid=808681\" <cite> https://go.microsoft.com/fwlink/?LinkID=808681 </cite></a></h4> \
              </fieldset> \
           </div> \
        </div></body></html>")

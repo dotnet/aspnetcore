@@ -29,6 +29,8 @@ SERVER_PROCESS::Initialize(
     m_dwShutdownTimeLimitInMS = dwShtudownTimeLimitInMS;
     m_fStdoutLogEnabled = fStdoutLogEnabled;
 
+    m_pProcessManager->ReferenceProcessManager();
+
     hr = m_ProcessPath.Copy(*pszProcessExePath);
     if (FAILED(hr))
     {
@@ -1208,7 +1210,7 @@ Finished:
     return hr;
 }
 
-// send ctrl-c signnal to the process to let it graceful shutdown
+// send ctrl-c signnal to the process to let it gracefully shutdown
 // if the process cannot shutdown within given time, terminate it
 // todo: allow user to config this shutdown timeout
 
@@ -1217,7 +1219,7 @@ SERVER_PROCESS::SendSignal(
     VOID
 )
 {
-    HANDLE    hProc;
+    HANDLE    hProc = INVALID_HANDLE_VALUE;
     BOOL      fIsSuccess = FALSE;
     LPCWSTR   apsz[1];
     STACK_STRU(strEventMsg, 256);
@@ -1225,54 +1227,61 @@ SERVER_PROCESS::SendSignal(
     hProc = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, FALSE, m_dwProcessId);
     if (hProc != INVALID_HANDLE_VALUE)
     {
-        fIsSuccess = GenerateConsoleCtrlEvent(CTRL_C_EVENT, m_dwProcessId);
+        fIsSuccess = GenerateConsoleCtrlEvent(CTRL_C_EVENT, m_dwProcessId); 
 
         if (!fIsSuccess)
         {
             if (AttachConsole(m_dwProcessId))
             {
-                fIsSuccess = GenerateConsoleCtrlEvent(CTRL_C_EVENT, m_dwProcessId);
+                fIsSuccess = GenerateConsoleCtrlEvent(CTRL_C_EVENT, m_dwProcessId); 
                 FreeConsole();
-                CloseHandle(m_hProcessHandle);
-                m_hProcessHandle = INVALID_HANDLE_VALUE;
             }
-
-            if (!fIsSuccess)
-            {
-                if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                    ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE_MSG,
-                    m_dwProcessId )))
-                {
-                    apsz[0] = strEventMsg.QueryStr();
-                    // log a warning for ungraceful shutdown
-                    if (FORWARDING_HANDLER::QueryEventLog() != NULL)
-                    {
-                        ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
-                            EVENTLOG_INFORMATION_TYPE,
-                            0,
-                            ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE,
-                            NULL,
-                            1,
-                            0,
-                            apsz,
-                            NULL);
-                    }
-                }
-            }
+        } 
+    }
+       
+    if (!fIsSuccess || (WaitForSingleObject(hProc, m_dwShutdownTimeLimitInMS) != WAIT_OBJECT_0))
+    {
+        //Backend process will be terminated, remove the waitcallback
+        if (m_hProcessWaitHandle != NULL) 
+        {
+            UnregisterWait(m_hProcessWaitHandle);
+            m_hProcessWaitHandle = NULL;
         }
 
-        if (!fIsSuccess || (WaitForSingleObject(hProc, m_dwShutdownTimeLimitInMS) != WAIT_OBJECT_0))
+        // cannot gracefully shutdown or timeout, terminate the process
+        TerminateProcess(m_hProcessHandle, 0);
+
+        // log a warning for ungraceful shutdown
+        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+            ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE_MSG,
+            m_dwProcessId)))
         {
-            // cannot gracefule shutdown or timeout
-            // terminate the process
-            TerminateProcess(m_hProcessHandle, 0);
+            apsz[0] = strEventMsg.QueryStr();
+            if (FORWARDING_HANDLER::QueryEventLog() != NULL)
+            {
+                ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
+                    EVENTLOG_WARNING_TYPE,
+                    0,
+                    ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE,
+                    NULL,
+                    1,
+                    0,
+                    apsz,
+                    NULL);
+            }
         }
     }
+
     if (hProc != INVALID_HANDLE_VALUE)
     {
         CloseHandle(hProc);
         hProc = INVALID_HANDLE_VALUE;
     }
+    if (m_hProcessHandle != INVALID_HANDLE_VALUE)
+    {
+        CloseHandle(m_hProcessHandle);
+        m_hProcessHandle = INVALID_HANDLE_VALUE;
+    }    
 }
 
 //
@@ -1640,7 +1649,6 @@ Finished:
 
 SERVER_PROCESS::SERVER_PROCESS() : 
     m_cRefs( 1 ),
-    m_CancelEvent( NULL ),
     m_hProcessHandle( NULL ),
     m_hProcessWaitHandle( NULL ),
     m_dwProcessId( 0 ),
@@ -1679,13 +1687,6 @@ SERVER_PROCESS::~SERVER_PROCESS()
     {
         UnregisterWait( m_hProcessWaitHandle );
         m_hProcessWaitHandle = NULL;
-    }
-
-    if( m_CancelEvent != NULL )
-    {
-        SetEvent( m_CancelEvent );
-        CloseHandle( m_CancelEvent );
-        m_CancelEvent = NULL;
     }
 
     for(INT i=0;i<MAX_ACTIVE_CHILD_PROCESSES;++i)

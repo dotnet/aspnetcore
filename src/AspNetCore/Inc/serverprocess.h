@@ -237,7 +237,6 @@ private:
     DWORD                   m_dwProcessId;
     DWORD                   m_dwListeningProcessId;
     STRA                    m_straGuid;
-    HANDLE                  m_CancelEvent;
 
     //
     // m_hProcessHandle is the handle to process this object creates.

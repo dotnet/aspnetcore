@@ -232,7 +232,6 @@ PROCESS_MANAGER::GetProcess(
                 goto Finished;
             }
 
-            this->ReferenceProcessManager();
             hr = m_ppServerProcessList[dwProcessIndex]->Initialize(
                                     this,
                                     pConfig->QueryProcessPath(),
