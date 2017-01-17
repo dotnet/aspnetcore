@@ -118,11 +118,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NotIdentityRole" xml:space="preserve">
-    <value>AddEntityFrameworkStores can only be called with a role that derives from IdentityRole&lt;TKey&gt;. If you are specifying more generic arguments, use AddRoleStore&lt;TStore&gt;() where TStore is your custom IRoleStore that uses your generics instead.</value>
+    <value>AddEntityFrameworkStores can only be called with a role that derives from IdentityRole&lt;TKey, TUserRole, TRoleClaim&gt;.</value>
     <comment>error when the role does not derive from IdentityRole</comment>
   </data>
   <data name="NotIdentityUser" xml:space="preserve">
-    <value>AddEntityFrameworkStores can only be called with a user that derives from IdentityUser&lt;TKey&gt;. If you are specifying more generic arguments, use IdentityBuilder.AddUserStore&lt;TStore&gt;() where TStore is your custom IUserStore that uses your generics instead.</value>
+    <value>AddEntityFrameworkStores can only be called with a user that derives from IdentityUser&lt;TKey, TUserClaim, TUserRole, TUserLogin, TUserToken&gt;.</value>
     <comment>error when the user does not derive from IdentityUser</comment>
   </data>
   <data name="RoleNotFound" xml:space="preserve">

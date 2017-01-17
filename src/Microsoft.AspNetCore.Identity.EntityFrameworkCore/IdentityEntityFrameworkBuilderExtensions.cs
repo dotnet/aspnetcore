@@ -24,60 +24,53 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IdentityBuilder AddEntityFrameworkStores<TContext>(this IdentityBuilder builder)
             where TContext : DbContext
         {
-            var keyType = InferKeyType(typeof(TContext));
-            AddStores(builder.Services, builder.UserType, builder.RoleType, typeof(TContext), keyType);
+            AddStores(builder.Services, builder.UserType, builder.RoleType, typeof(TContext));
             return builder;
         }
 
-        /// <summary>
-        /// Adds an Entity Framework implementation of identity information stores.
-        /// </summary>
-        /// <typeparam name="TContext">The Entity Framework database context to use.</typeparam>
-        /// <typeparam name="TKey">The type of the primary key used for the users and roles.</typeparam>
-        /// <param name="builder">The <see cref="IdentityBuilder"/> instance this method extends.</param>
-        /// <returns>The <see cref="IdentityBuilder"/> instance this method extends.</returns>
-        public static IdentityBuilder AddEntityFrameworkStores<TContext, TKey>(this IdentityBuilder builder)
-            where TContext : DbContext
-            where TKey : IEquatable<TKey>
+        private static void AddStores(IServiceCollection services, Type userType, Type roleType, Type contextType)
         {
-            AddStores(builder.Services, builder.UserType, builder.RoleType, typeof(TContext), typeof(TKey));
-            return builder;
-        }
-
-        private static void AddStores(IServiceCollection services, Type userType, Type roleType, Type contextType, Type keyType)
-        {
-            var identityUserType = typeof(IdentityUser<>).MakeGenericType(keyType);
-            if (!identityUserType.GetTypeInfo().IsAssignableFrom(userType.GetTypeInfo()))
+            var identityUserType = FindGenericBaseType(userType, typeof(IdentityUser<,,,,>));
+            if (identityUserType == null)
             {
                 throw new InvalidOperationException(Resources.NotIdentityUser);
             }
-            var identityRoleType = typeof(IdentityRole<>).MakeGenericType(keyType);
-            if (!identityRoleType.GetTypeInfo().IsAssignableFrom(roleType.GetTypeInfo()))
+            var identityRoleType = FindGenericBaseType(roleType, typeof(IdentityRole<,,>));
+            if (identityRoleType == null)
             {
                 throw new InvalidOperationException(Resources.NotIdentityRole);
             }
+
             services.TryAddScoped(
                 typeof(IUserStore<>).MakeGenericType(userType),
-                typeof(UserStore<,,,>).MakeGenericType(userType, roleType, contextType, keyType));
+                typeof(UserStore<,,,,,,,,>).MakeGenericType(userType, roleType, contextType,
+                    identityUserType.GenericTypeArguments[0],
+                    identityUserType.GenericTypeArguments[1],
+                    identityUserType.GenericTypeArguments[2],
+                    identityUserType.GenericTypeArguments[3],
+                    identityUserType.GenericTypeArguments[4],
+                    identityRoleType.GenericTypeArguments[2]));
             services.TryAddScoped(
                 typeof(IRoleStore<>).MakeGenericType(roleType),
-                typeof(RoleStore<,,>).MakeGenericType(roleType, contextType, keyType));
+                typeof(RoleStore<,,,,>).MakeGenericType(roleType, contextType,
+                    identityRoleType.GenericTypeArguments[0],
+                    identityRoleType.GenericTypeArguments[1],
+                    identityRoleType.GenericTypeArguments[2]));
         }
 
-        private static Type InferKeyType(Type contextType)
+        private static TypeInfo FindGenericBaseType(Type currentType, Type genericBaseType)
         {
-            var type = contextType.GetTypeInfo();
+            var type = currentType.GetTypeInfo();
             while (type.BaseType != null)
             {
                 type = type.BaseType.GetTypeInfo();
                 var genericType = type.IsGenericType ? type.GetGenericTypeDefinition() : null;
-                if (genericType != null && genericType == typeof(IdentityDbContext<,,>))
+                if (genericType != null && genericType == genericBaseType)
                 {
-                    return type.GenericTypeArguments[2];
+                    return type;
                 }
             }
-            // Default is string
-            return typeof(string);
+            return null;
         }
     }
 }

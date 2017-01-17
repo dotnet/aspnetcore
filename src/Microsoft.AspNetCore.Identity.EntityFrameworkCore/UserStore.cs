@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TRole">The type representing a role.</typeparam>
     /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
     /// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
-    public class UserStore<TUser, TRole, TContext, TKey> : UserStore<TUser, TRole, TContext, TKey, IdentityUserClaim<TKey>, IdentityUserRole<TKey>, IdentityUserLogin<TKey>, IdentityUserToken<TKey>>
+    public class UserStore<TUser, TRole, TContext, TKey> : UserStore<TUser, TRole, TContext, TKey, IdentityUserClaim<TKey>, IdentityUserRole<TKey>, IdentityUserLogin<TKey>, IdentityUserToken<TKey>, IdentityRoleClaim<TKey>>
         where TUser : IdentityUser<TKey>
         where TRole : IdentityRole<TKey>
         where TContext : DbContext
@@ -81,102 +81,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <param name="context">The <see cref="DbContext"/>.</param>
         /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
         public UserStore(TContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
-
-        /// <summary>
-        /// Called to create a new instance of a <see cref="IdentityUserRole{TKey}"/>.
-        /// </summary>
-        /// <param name="user">The associated user.</param>
-        /// <param name="role">The associated role.</param>
-        /// <returns></returns>
-        protected override IdentityUserRole<TKey> CreateUserRole(TUser user, TRole role)
-        {
-            return new IdentityUserRole<TKey>()
-            {
-                UserId = user.Id,
-                RoleId = role.Id
-            };
-        }
-
-        /// <summary>
-        /// Called to create a new instance of a <see cref="IdentityUserClaim{TKey}"/>.
-        /// </summary>
-        /// <param name="user">The associated user.</param>
-        /// <param name="claim">The associated claim.</param>
-        /// <returns></returns>
-        protected override IdentityUserClaim<TKey> CreateUserClaim(TUser user, Claim claim)
-        {
-            var userClaim = new IdentityUserClaim<TKey> { UserId = user.Id };
-            userClaim.InitializeFromClaim(claim);
-            return userClaim;
-        }
-
-        /// <summary>
-        /// Called to create a new instance of a <see cref="IdentityUserLogin{TKey}"/>.
-        /// </summary>
-        /// <param name="user">The associated user.</param>
-        /// <param name="login">The sasociated login.</param>
-        /// <returns></returns>
-        protected override IdentityUserLogin<TKey> CreateUserLogin(TUser user, UserLoginInfo login)
-        {
-            return new IdentityUserLogin<TKey>
-            {
-                UserId = user.Id,
-                ProviderKey = login.ProviderKey,
-                LoginProvider = login.LoginProvider,
-                ProviderDisplayName = login.ProviderDisplayName
-            };
-        }
-
-        /// <summary>
-        /// Called to create a new instance of a <see cref="IdentityUserToken{TKey}"/>.
-        /// </summary>
-        /// <param name="user">The associated user.</param>
-        /// <param name="loginProvider">The associated login provider.</param>
-        /// <param name="name">The name of the user token.</param>
-        /// <param name="value">The value of the user token.</param>
-        /// <returns></returns>
-        protected override IdentityUserToken<TKey> CreateUserToken(TUser user, string loginProvider, string name, string value)
-        {
-            return new IdentityUserToken<TKey>
-            {
-                UserId = user.Id,
-                LoginProvider = loginProvider,
-                Name = name,
-                Value = value
-            };
-        }
     }
-
-    /// <summary>
-    /// Represents a new instance of a persistence store for the specified user and role types.
-    /// </summary>
-    /// <typeparam name="TUser">The type representing a user.</typeparam>
-    /// <typeparam name="TRole">The type representing a role.</typeparam>
-    /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
-    /// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
-    /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
-    /// <typeparam name="TUserRole">The type representing a user role.</typeparam>
-    /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
-    /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
-    public abstract class UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken> :
-        UserStore<TUser, TRole, TContext, TKey,TUserClaim, TUserRole, TUserLogin, TUserToken, IdentityRoleClaim<TKey>>
-        where TUser : IdentityUser<TKey, TUserClaim, TUserRole, TUserLogin>
-        where TRole : IdentityRole<TKey, TUserRole, IdentityRoleClaim<TKey>>
-        where TContext : DbContext
-        where TKey : IEquatable<TKey>
-        where TUserClaim : IdentityUserClaim<TKey>
-        where TUserRole : IdentityUserRole<TKey>
-        where TUserLogin : IdentityUserLogin<TKey>
-        where TUserToken : IdentityUserToken<TKey>
-    {
-        /// <summary>
-        /// Creates a new instance of <see cref="UserStore"/>.
-        /// </summary>
-        /// <param name="context">The context used to access the store.</param>
-        /// <param name="describer">The <see cref="IdentityErrorDescriber"/> used to describe store errors.</param>
-        public UserStore(TContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
-    }
-
 
     /// <summary>
     /// Represents a new instance of a persistence store for the specified user and role types.
@@ -190,7 +95,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
     /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
     /// <typeparam name="TRoleClaim">The type representing a role claim.</typeparam>
-    public abstract class UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim> :
+    public class UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim> :
         IUserLoginStore<TUser>,
         IUserRoleStore<TUser>,
         IUserClaimStore<TUser>,
@@ -204,15 +109,15 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         IUserAuthenticationTokenStore<TUser>,
         IUserAuthenticatorKeyStore<TUser>,
         IUserTwoFactorRecoveryCodeStore<TUser>
-        where TUser : IdentityUser<TKey, TUserClaim, TUserRole, TUserLogin>
+        where TUser : IdentityUser<TKey, TUserClaim, TUserRole, TUserLogin, TUserToken>
         where TRole : IdentityRole<TKey, TUserRole, TRoleClaim>
         where TContext : DbContext
         where TKey : IEquatable<TKey>
-        where TUserClaim : IdentityUserClaim<TKey>
-        where TUserRole : IdentityUserRole<TKey>
-        where TUserLogin : IdentityUserLogin<TKey>
-        where TUserToken : IdentityUserToken<TKey>
-        where TRoleClaim : IdentityRoleClaim<TKey>
+        where TUserClaim : IdentityUserClaim<TKey>, new()
+        where TUserRole : IdentityUserRole<TKey>, new()
+        where TUserLogin : IdentityUserLogin<TKey>, new()
+        where TUserToken : IdentityUserToken<TKey>, new()
+        where TRoleClaim : IdentityRoleClaim<TKey>, new()
     {
         /// <summary>
         /// Creates a new instance of <see cref="UserStore"/>.
@@ -249,38 +154,68 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         private DbSet<TUserToken> UserTokens { get { return Context.Set<TUserToken>(); } }
 
         /// <summary>
-        /// Creates a new entity to represent a user role.
+        /// Called to create a new instance of a <see cref="IdentityUserRole{TKey}"/>.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="role"></param>
+        /// <param name="user">The associated user.</param>
+        /// <param name="role">The associated role.</param>
         /// <returns></returns>
-        protected abstract TUserRole CreateUserRole(TUser user, TRole role);
+        protected virtual TUserRole CreateUserRole(TUser user, TRole role)
+        {
+            return new TUserRole()
+            {
+                UserId = user.Id,
+                RoleId = role.Id
+            };
+        }
 
         /// <summary>
-        /// Create a new entity representing a user claim.
+        /// Called to create a new instance of a <see cref="IdentityUserClaim{TKey}"/>.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="claim"></param>
+        /// <param name="user">The associated user.</param>
+        /// <param name="claim">The associated claim.</param>
         /// <returns></returns>
-        protected abstract TUserClaim CreateUserClaim(TUser user, Claim claim);
+        protected virtual TUserClaim CreateUserClaim(TUser user, Claim claim)
+        {
+            var userClaim = new TUserClaim { UserId = user.Id };
+            userClaim.InitializeFromClaim(claim);
+            return userClaim;
+        }
 
         /// <summary>
-        /// Create a new entity representing a user login.
+        /// Called to create a new instance of a <see cref="IdentityUserLogin{TKey}"/>.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="login"></param>
+        /// <param name="user">The associated user.</param>
+        /// <param name="login">The sasociated login.</param>
         /// <returns></returns>
-        protected abstract TUserLogin CreateUserLogin(TUser user, UserLoginInfo login);
+        protected virtual TUserLogin CreateUserLogin(TUser user, UserLoginInfo login)
+        {
+            return new TUserLogin
+            {
+                UserId = user.Id,
+                ProviderKey = login.ProviderKey,
+                LoginProvider = login.LoginProvider,
+                ProviderDisplayName = login.ProviderDisplayName
+            };
+        }
 
         /// <summary>
-        /// Create a new entity representing a user token.
+        /// Called to create a new instance of a <see cref="IdentityUserToken{TKey}"/>.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="loginProvider"></param>
-        /// <param name="name"></param>
-        /// <param name="value"></param>
+        /// <param name="user">The associated user.</param>
+        /// <param name="loginProvider">The associated login provider.</param>
+        /// <param name="name">The name of the user token.</param>
+        /// <param name="value">The value of the user token.</param>
         /// <returns></returns>
-        protected abstract TUserToken CreateUserToken(TUser user, string loginProvider, string name, string value);
+        protected virtual TUserToken CreateUserToken(TUser user, string loginProvider, string name, string value)
+        {
+            return new TUserToken
+            {
+                UserId = user.Id,
+                LoginProvider = loginProvider,
+                Name = name,
+                Value = value
+            };
+        }
 
         /// <summary>
         /// Gets or sets a flag indicating if changes should be persisted after CreateAsync, UpdateAsync and DeleteAsync are called.

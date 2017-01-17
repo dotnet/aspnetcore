@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             = new ResourceManager("Microsoft.AspNetCore.Identity.EntityFrameworkCore.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// AddEntityFrameworkStores can only be called with a role that derives from IdentityRole&lt;TKey&gt;. If you are specifying more generic arguments, use AddRoleStore&lt;TStore&gt;() where TStore is your custom IRoleStore that uses your generics instead.
+        /// AddEntityFrameworkStores can only be called with a role that derives from IdentityRole&lt;TKey, TUserRole, TRoleClaim&gt;.
         /// </summary>
         internal static string NotIdentityRole
         {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         }
 
         /// <summary>
-        /// AddEntityFrameworkStores can only be called with a role that derives from IdentityRole&lt;TKey&gt;. If you are specifying more generic arguments, use AddRoleStore&lt;TStore&gt;() where TStore is your custom IRoleStore that uses your generics instead.
+        /// AddEntityFrameworkStores can only be called with a role that derives from IdentityRole&lt;TKey, TUserRole, TRoleClaim&gt;.
         /// </summary>
         internal static string FormatNotIdentityRole()
         {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         }
 
         /// <summary>
-        /// AddEntityFrameworkStores can only be called with a user that derives from IdentityUser&lt;TKey&gt;. If you are specifying more generic arguments, use IdentityBuilder.AddUserStore&lt;TStore&gt;() where TStore is your custom IUserStore that uses your generics instead.
+        /// AddEntityFrameworkStores can only be called with a user that derives from IdentityUser&lt;TKey, TUserClaim, TUserRole, TUserLogin, TUserToken&gt;.
         /// </summary>
         internal static string NotIdentityUser
         {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         }
 
         /// <summary>
-        /// AddEntityFrameworkStores can only be called with a user that derives from IdentityUser&lt;TKey&gt;. If you are specifying more generic arguments, use IdentityBuilder.AddUserStore&lt;TStore&gt;() where TStore is your custom IUserStore that uses your generics instead.
+        /// AddEntityFrameworkStores can only be called with a user that derives from IdentityUser&lt;TKey, TUserClaim, TUserRole, TUserLogin, TUserToken&gt;.
         /// </summary>
         internal static string FormatNotIdentityUser()
         {

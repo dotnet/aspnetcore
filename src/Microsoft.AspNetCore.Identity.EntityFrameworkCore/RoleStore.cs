@@ -64,17 +64,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <param name="context">The <see cref="DbContext"/>.</param>
         /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
         public RoleStore(TContext context, IdentityErrorDescriber describer = null) : base(context, describer) { }
-
-        /// <summary>
-        /// Creates a entity representing a role claim.
-        /// </summary>
-        /// <param name="role">The associated role.</param>
-        /// <param name="claim">The associated claim.</param>
-        /// <returns>The role claim entity.</returns>
-        protected override IdentityRoleClaim<TKey> CreateRoleClaim(TRole role, Claim claim)
-        {
-            return new IdentityRoleClaim<TKey> { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value };
-        }
     }
 
     /// <summary>
@@ -85,14 +74,14 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
     /// <typeparam name="TUserRole">The type of the class representing a user role.</typeparam>
     /// <typeparam name="TRoleClaim">The type of the class representing a role claim.</typeparam>
-    public abstract class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
+    public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
         IQueryableRoleStore<TRole>,
         IRoleClaimStore<TRole>
         where TRole : IdentityRole<TKey, TUserRole, TRoleClaim>
         where TKey : IEquatable<TKey>
         where TContext : DbContext
-        where TUserRole : IdentityUserRole<TKey>
-        where TRoleClaim : IdentityRoleClaim<TKey>
+        where TUserRole : IdentityUserRole<TKey>, new()
+        where TRoleClaim : IdentityRoleClaim<TKey>, new()
     {
         /// <summary>
         /// Constructs a new instance of <see cref="RoleStore{TRole, TContext, TKey, TUserRole, TRoleClaim}"/>.
@@ -458,6 +447,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <param name="role">The associated role.</param>
         /// <param name="claim">The associated claim.</param>
         /// <returns>The role claim entity.</returns>
-        protected abstract TRoleClaim CreateRoleClaim(TRole role, Claim claim);
+        protected virtual TRoleClaim CreateRoleClaim(TRole role, Claim claim)
+        {
+            return new TRoleClaim { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value };
+        }
     }
 }

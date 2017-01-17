@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TRoleClaim">The type of the role claim object.</typeparam>
     /// <typeparam name="TUserToken">The type of the user token object.</typeparam>
     public abstract class IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken> : DbContext
-        where TUser : IdentityUser<TKey, TUserClaim, TUserRole, TUserLogin>
+        where TUser : IdentityUser<TKey, TUserClaim, TUserRole, TUserLogin, TUserToken>
         where TRole : IdentityRole<TKey, TUserRole, TRoleClaim>
         where TKey : IEquatable<TKey>
         where TUserClaim : IdentityUserClaim<TKey>
@@ -162,6 +162,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 b.HasMany(u => u.Claims).WithOne().HasForeignKey(uc => uc.UserId).IsRequired();
                 b.HasMany(u => u.Logins).WithOne().HasForeignKey(ul => ul.UserId).IsRequired();
                 b.HasMany(u => u.Roles).WithOne().HasForeignKey(ur => ur.UserId).IsRequired();
+                b.HasMany(u => u.Tokens).WithOne().HasForeignKey(ut => ut.UserId).IsRequired();
             });
 
             builder.Entity<TRole>(b =>

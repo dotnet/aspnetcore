@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         public void AddEntityFrameworkStoresWithInvalidUserThrows()
         {
             var services = new ServiceCollection();
-            var builder = services.AddIdentity<IdentityUserWithGenerics, IdentityRole>();
+            var builder = services.AddIdentity<object, IdentityRole>();
             var e = Assert.Throws<InvalidOperationException>(() => builder.AddEntityFrameworkStores<ContextWithGenerics>());
             Assert.Contains("AddEntityFrameworkStores", e.Message);
         }
@@ -96,9 +96,18 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         public void AddEntityFrameworkStoresWithInvalidRoleThrows()
         {
             var services = new ServiceCollection();
-            var builder = services.AddIdentity<IdentityUser, MyIdentityRole>();
+            var builder = services.AddIdentity<IdentityUser, object>();
             var e = Assert.Throws<InvalidOperationException>(() => builder.AddEntityFrameworkStores<ContextWithGenerics>());
             Assert.Contains("AddEntityFrameworkStores", e.Message);
+        }
+
+        [Fact]
+        public void AddEntityFrameworkStoresWithMismatchedUserRoleThrows()
+        {
+            var services = new ServiceCollection();
+            var builder = services.AddIdentity<IdentityUserWithGenerics, IdentityRole>();
+            var e = Assert.Throws<ArgumentException>(() => builder.AddEntityFrameworkStores<ContextWithGenerics>());
+            Assert.Contains("violates the constraint of type 'TRole'", e.Message);
         }
 
         [Fact]
@@ -209,7 +218,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
     #region Generic Type defintions
 
-    public class IdentityUserWithGenerics : IdentityUser<string, IdentityUserClaimWithIssuer, IdentityUserRoleWithDate, IdentityUserLoginWithContext>
+    public class IdentityUserWithGenerics : IdentityUser<string, IdentityUserClaimWithIssuer, IdentityUserRoleWithDate, IdentityUserLoginWithContext, IdentityUserTokenWithStuff>
     {
         public IdentityUserWithGenerics()
         {

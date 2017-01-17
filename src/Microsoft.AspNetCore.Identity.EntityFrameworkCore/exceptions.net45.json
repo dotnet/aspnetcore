@@ -1,0 +1,56 @@
+[
+  {
+        "OldTypeId": "public abstract class Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<T0, T1, T2, T3, T4, T5, T6, T7> : Microsoft.AspNetCore.Identity.IUserLoginStore<T0>, Microsoft.AspNetCore.Identity.IUserRoleStore<T0>, Microsoft.AspNetCore.Identity.IUserClaimStore<T0>, Microsoft.AspNetCore.Identity.IUserPasswordStore<T0>, Microsoft.AspNetCore.Identity.IUserSecurityStampStore<T0>, Microsoft.AspNetCore.Identity.IUserEmailStore<T0>, Microsoft.AspNetCore.Identity.IUserLockoutStore<T0>, Microsoft.AspNetCore.Identity.IUserPhoneNumberStore<T0>, Microsoft.AspNetCore.Identity.IQueryableUserStore<T0>, Microsoft.AspNetCore.Identity.IUserTwoFactorStore<T0>, Microsoft.AspNetCore.Identity.IUserAuthenticationTokenStore<T0> where T0 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<T3, T4, T5, T6> where T1 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<T3, T5, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<T3>> where T2 : Microsoft.EntityFrameworkCore.DbContext where T3 : System.IEquatable<T3> where T4 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<T3> where T5 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T3> where T6 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<T3> where T7 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserToken<T3>",
+        "Kind": "Removal"
+  },
+  {
+        "OldTypeId": "public class Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<T0, T1, T2, T3> : Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<T0, T1, T2, T3, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<T3>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T3>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<T3>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserToken<T3>> where T0 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<T3> where T1 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<T3> where T2 : Microsoft.EntityFrameworkCore.DbContext where T3 : System.IEquatable<T3>",
+        "Kind": "Removal"
+  },
+  {
+        "OldTypeId": "public class Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<T0, T1, T2, T3> where T0 : System.IEquatable<T0>",
+        "Kind": "Removal"
+  },
+  {
+        "OldTypeId": "public class Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<T0> : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<T0, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<T0>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T0>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<T0>> where T0 : System.IEquatable<T0>",
+        "Kind": "Removal"
+  },
+  {
+        "OldTypeId": "public static class Microsoft.Extensions.DependencyInjection.IdentityEntityFrameworkBuilderExtensions",
+        "OldMemberId": "public static new Microsoft.AspNetCore.Identity.IdentityBuilder AddEntityFrameworkStores<T0, T1>(this Microsoft.AspNetCore.Identity.IdentityBuilder builder) where T0 : Microsoft.EntityFrameworkCore.DbContext where T1 : System.IEquatable<T1>",
+        "Kind": "Removal"
+  },
+  {
+        "OldTypeId": "public abstract class Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<T0, T1, T2, T3, T4, T5, T6, T7> : Microsoft.EntityFrameworkCore.DbContext where T0 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<T2, T3, T4, T5> where T1 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<T2, T4, T6> where T2 : System.IEquatable<T2> where T3 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<T2> where T4 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T2> where T5 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<T2> where T6 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<T2> where T7 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserToken<T2>",
+        "Kind": "Removal"
+  },
+  {
+        "OldTypeId": "public class Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<T0, T1, T2, T3> : Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<T0, T1, T2, T3, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<T3>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T3>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<T3>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserToken<T3>> where T0 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<T3> where T1 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<T3> where T2 : Microsoft.EntityFrameworkCore.DbContext where T3 : System.IEquatable<T3>",
+        "OldMemberId": "protected override Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<T3> CreateUserLogin(T0 user, Microsoft.AspNetCore.Identity.UserLoginInfo login)",
+        "Kind": "Removal"
+  },
+  {
+        "OldTypeId": "public class Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<T0, T1, T2, T3> : Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<T0, T1, T2, T3, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<T3>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T3>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<T3>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserToken<T3>> where T0 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<T3> where T1 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<T3> where T2 : Microsoft.EntityFrameworkCore.DbContext where T3 : System.IEquatable<T3>",
+        "OldMemberId": "protected override Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<T3> CreateUserClaim(T0 user, System.Security.Claims.Claim claim)",
+        "Kind": "Removal"
+  },
+  {
+        "OldTypeId": "public class Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<T0, T1, T2, T3> : Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<T0, T1, T2, T3, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<T3>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T3>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<T3>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserToken<T3>> where T0 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<T3> where T1 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<T3> where T2 : Microsoft.EntityFrameworkCore.DbContext where T3 : System.IEquatable<T3>",
+        "OldMemberId": "protected override Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T3> CreateUserRole(T0 user, T1 role)",
+        "Kind": "Removal"
+  },
+  {
+        "OldTypeId": "public class Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<T0, T1, T2> : Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<T0, T1, T2, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T2>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<T2>> where T0 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<T2> where T1 : Microsoft.EntityFrameworkCore.DbContext where T2 : System.IEquatable<T2>",
+        "OldMemberId": "protected override Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<T2> CreateRoleClaim(T0 role, System.Security.Claims.Claim claim)",
+        "Kind": "Removal"
+  },
+  {
+        "OldTypeId": "public class Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<T0, T1, T2, T3> : Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<T0, T1, T2, T3, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserClaim<T3>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T3>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserLogin<T3>, Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserToken<T3>> where T0 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUser<T3> where T1 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<T3> where T2 : Microsoft.EntityFrameworkCore.DbContext where T3 : System.IEquatable<T3>",
+        "OldMemberId": "protected override Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserToken<T3> CreateUserToken(T0 user, System.String loginProvider, System.String name, System.String value)",
+        "Kind": "Removal"
+  },
+  {
+        "OldTypeId": "public abstract class Microsoft.AspNetCore.Identity.EntityFrameworkCore.RoleStore<T0, T1, T2, T3, T4> : Microsoft.AspNetCore.Identity.IQueryableRoleStore<T0>, Microsoft.AspNetCore.Identity.IRoleClaimStore<T0> where T0 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole<T2, T3, T4> where T1 : Microsoft.EntityFrameworkCore.DbContext where T2 : System.IEquatable<T2> where T3 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityUserRole<T2> where T4 : Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<T2>",
+        "Kind": "Removal"
+  }
+]

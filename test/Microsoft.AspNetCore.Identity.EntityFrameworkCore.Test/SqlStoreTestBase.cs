@@ -218,6 +218,25 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             Assert.Equal(0, roles.Count());
         }
 
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        public async Task DeleteUserRemovesTokensTest()
+        {
+            // Need fail if not empty?
+            var userMgr = CreateManager();
+            var user = CreateTestUser();
+            IdentityResultAssert.IsSuccess(await userMgr.CreateAsync(user));
+            IdentityResultAssert.IsSuccess(await userMgr.SetAuthenticationTokenAsync(user, "provider", "test", "value"));
+
+            Assert.Equal("value", await userMgr.GetAuthenticationTokenAsync(user, "provider", "test"));
+
+            IdentityResultAssert.IsSuccess(await userMgr.DeleteAsync(user));
+
+            Assert.Null(await userMgr.GetAuthenticationTokenAsync(user, "provider", "test"));
+        }
+
 
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
