@@ -58,14 +58,14 @@ namespace {ViewsFeatureProvider.ViewInfoContainerNamespace}
 
         public void AddAssemblyMetadata(
             AssemblyName applicationAssemblyName,
-            StrongNameOptions strongNameOptions)
+            CompilationOptions compilationOptions)
         {
-            if (!string.IsNullOrEmpty(strongNameOptions.KeyFile))
+            if (!string.IsNullOrEmpty(compilationOptions.KeyFile))
             {
                 var updatedOptions = Compilation.Options.WithStrongNameProvider(new DesktopStrongNameProvider());
-                var keyFilePath = Path.GetFullPath(strongNameOptions.KeyFile);
+                var keyFilePath = Path.GetFullPath(compilationOptions.KeyFile);
 
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || strongNameOptions.PublicSign)
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || compilationOptions.PublicSign)
                 {
                     updatedOptions = updatedOptions.WithCryptoPublicKey(
                         SnkUtils.ExtractPublicKey(File.ReadAllBytes(keyFilePath)));
@@ -73,7 +73,7 @@ namespace {ViewsFeatureProvider.ViewInfoContainerNamespace}
                 else
                 {
                     updatedOptions = updatedOptions.WithCryptoKeyFile(keyFilePath)
-                        .WithDelaySign(strongNameOptions.DelaySign);
+                        .WithDelaySign(compilationOptions.DelaySign);
                 }
 
                 Compilation = Compilation.WithOptions(updatedOptions);

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -23,8 +22,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 {
     public class PrecompileRunCommand
     {
-        public static readonly string ApplicationNameTemplate = "--application-name";
-        public static readonly string OutputPathTemplate = "--output-path";
         private static readonly ParallelOptions ParalellOptions = new ParallelOptions
         {
             MaxDegreeOfParallelism = 4
@@ -32,33 +29,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 
         private CommandLineApplication Application { get; set; }
 
-        private CommandOption OutputPathOption { get; set; }
-
-        private CommandOption ApplicationNameOption { get; set; }
-
         private MvcServiceProvider MvcServiceProvider { get; set; }
 
-        private CommonOptions Options { get; } = new CommonOptions();
-
-        private StrongNameOptions StrongNameOptions { get; } = new StrongNameOptions();
+        private CompilationOptions Options { get; set; }
 
         private string ProjectPath { get; set; }
 
         public void Configure(CommandLineApplication app)
         {
             Application = app;
-            Options.Configure(app);
-            StrongNameOptions.Configure(app);
-
-            OutputPathOption = app.Option(
-               OutputPathTemplate,
-                "Path to the emit the precompiled assembly to.",
-                CommandOptionType.SingleValue);
-
-            ApplicationNameOption = app.Option(
-                ApplicationNameTemplate,
-                "Name of the application to produce precompiled assembly for.",
-                CommandOptionType.SingleValue);
+            Options = new CompilationOptions(app);
 
             app.OnExecute(() => Execute());
         }
@@ -72,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 
             MvcServiceProvider = new MvcServiceProvider(
                 ProjectPath,
-                ApplicationNameOption.Value(),
+                Options.ApplicationNameOption.Value(),
                 Options.ContentRootOption.Value(),
                 Options.ConfigureCompilationType.Value());
 
@@ -95,11 +75,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
                 return 1;
             }
 
-            var precompileAssemblyName = $"{ApplicationNameOption.Value()}{ViewsFeatureProvider.PrecompiledViewsAssemblySuffix}";
+            var precompileAssemblyName = $"{Options.ApplicationName}{ViewsFeatureProvider.PrecompiledViewsAssemblySuffix}";
             var compilation = CompileViews(results, precompileAssemblyName);
             var resources = GetResources(results);
 
-            var assemblyPath = Path.Combine(OutputPathOption.Value(), precompileAssemblyName + ".dll");
+            var assemblyPath = Path.Combine(Options.OutputPath, precompileAssemblyName + ".dll");
             var emitResult = EmitAssembly(
                 compilation,
                 MvcServiceProvider.Compiler.EmitOptions,
@@ -212,9 +192,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             var codeGenerator = new ViewInfoContainerCodeGenerator(compiler, compilation);
             codeGenerator.AddViewFactory(results);
 
-            var assemblyName = new AssemblyName(ApplicationNameOption.Value());
+            var assemblyName = new AssemblyName(Options.ApplicationName);
             assemblyName = Assembly.Load(assemblyName).GetName();
-            codeGenerator.AddAssemblyMetadata(assemblyName, StrongNameOptions);
+            codeGenerator.AddAssemblyMetadata(assemblyName, Options);
 
             return codeGenerator.Compilation;
         }
@@ -228,21 +208,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
                 return false;
             }
 
-            if (!OutputPathOption.HasValue())
+            if (!Options.OutputPathOption.HasValue())
             {
-                Application.Error.WriteLine($"Option {OutputPathTemplate} does not specify a value.");
+                Application.Error.WriteLine($"Option {CompilationOptions.OutputPathTemplate} does not specify a value.");
                 return false;
             }
 
-            if (!ApplicationNameOption.HasValue())
+            if (!Options.ApplicationNameOption.HasValue())
             {
-                Application.Error.WriteLine($"Option {ApplicationNameTemplate} does not specify a value.");
+                Application.Error.WriteLine($"Option {CompilationOptions.ApplicationNameTemplate} does not specify a value.");
                 return false;
             }
 
             if (!Options.ContentRootOption.HasValue())
             {
-                Application.Error.WriteLine($"Option {CommonOptions.ContentRootTemplate} does not specify a value.");
+                Application.Error.WriteLine($"Option {CompilationOptions.ContentRootTemplate} does not specify a value.");
                 return false;
             }
 
