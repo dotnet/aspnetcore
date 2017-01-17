@@ -25,7 +25,7 @@
     "Microsoft.AspNetCore.Mvc.Razor": {
       "target": "project"
     },
-    "Microsoft.AspNetCore.Razor.Evolution": "1.0.0-*",
+    "Microsoft.AspNetCore.Razor.Evolution": "1.2.0-*",
     "Microsoft.Extensions.PropertyActivator.Sources": {
       "version": "1.2.0-*",
       "type": "build"

@@ -12,7 +12,7 @@
     },
     "Microsoft.AspNetCore.Razor.Tools": {
       "type": "build",
-      "version": "1.2.0-*"
+      "version": "1.1.0-preview4-final"
     },
     "Microsoft.AspNetCore.Server.IISIntegration": "1.2.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.2.0-*",
@@ -37,7 +37,7 @@
   },
   "tools": {
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.1.0-preview4-final",
-    "Microsoft.AspNetCore.Razor.Tools": "1.2.0-*"
+    "Microsoft.AspNetCore.Razor.Tools": "1.1.0-preview4-final"
   },
   "scripts": {
     "postpublish": "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%"
