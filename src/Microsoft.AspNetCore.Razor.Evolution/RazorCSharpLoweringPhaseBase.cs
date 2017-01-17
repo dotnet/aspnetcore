@@ -189,6 +189,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             public ICollection<DirectiveDescriptor> Directives { get; set; }
 
+            public Func<string> IdGenerator { get; set; } = () => Guid.NewGuid().ToString("N");
+
             public List<LineMapping> LineMappings { get; } = new List<LineMapping>();
 
             public CSharpCodeWriter Writer { get; set; }

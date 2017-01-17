@@ -1408,7 +1408,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 throw new XunitException($"The resource {sourceFilename} was not found.");
             }
 
-            return RazorCodeDocument.Create(TestRazorSourceDocument.CreateResource(sourceFilename));
+            var codeDocument = RazorCodeDocument.Create(TestRazorSourceDocument.CreateResource(sourceFilename));
+
+            // This will ensure that we're not putting any randomly generated data in a baseline.
+            codeDocument.Items[DefaultRazorRuntimeCSharpLoweringPhase.SuppressUniqueIds] = "test";
+            return codeDocument;
         }
 
         private void RunRuntimeTagHelpersTest(IEnumerable<TagHelperDescriptor> descriptors)

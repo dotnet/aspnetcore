@@ -12,18 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 {
     internal class DefaultRazorRuntimeCSharpLoweringPhase : RazorCSharpLoweringPhaseBase
     {
-        private static string _tagHelperId;
-
-        internal static string GenerateUniqueTagHelperId {
-            get
-            {
-                return _tagHelperId ?? Guid.NewGuid().ToString("N");
-            }
-            set
-            {
-                _tagHelperId = value;
-            }
-        }
+        internal static readonly object SuppressUniqueIds = "SuppressUniqueIds";
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {
@@ -39,6 +28,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 SourceDocument = codeDocument.Source,
                 Options = syntaxTree.Options,
             };
+
+            var idValue = codeDocument.Items[SuppressUniqueIds];
+            if (idValue != null)
+            {
+                renderingContext.IdGenerator = () => idValue.ToString();
+            }
+
             var visitor = new CSharpRenderer(renderingContext);
             visitor.VisitDocument(irDocument);
             var csharpDocument = new RazorCSharpDocument()
@@ -300,7 +296,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     .Write(".")
                     .Write(node.TagMode.ToString())
                     .WriteParameterSeparator()
-                    .WriteStringLiteral(GenerateUniqueTagHelperId)
+                    .WriteStringLiteral(Context.IdGenerator())
                     .WriteParameterSeparator();
 
                 // We remove and redirect writers so TagHelper authors can retrieve content.
