@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebSockets.Internal;
 using Microsoft.Extensions.Internal;
@@ -15,8 +14,10 @@ namespace Microsoft.AspNetCore.Sockets.Transports
 {
     public class WebSocketsTransport : IHttpTransport
     {
+        public static readonly string Name = "webSockets";
+
         private static readonly TimeSpan _closeTimeout = TimeSpan.FromSeconds(5);
-        private static readonly WebSocketAcceptContext EmptyContext = new WebSocketAcceptContext();
+        private static readonly WebSocketAcceptContext _emptyContext = new WebSocketAcceptContext();
 
         private WebSocketOpcode _lastOpcode = WebSocketOpcode.Continuation;
         private bool _lastFrameIncomplete = false;
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                 return;
             }
 
-            using (var ws = await feature.AcceptWebSocketConnectionAsync(EmptyContext))
+            using (var ws = await feature.AcceptWebSocketConnectionAsync(_emptyContext))
             {
                 _logger.LogInformation("Socket opened.");
 

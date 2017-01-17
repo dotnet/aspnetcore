@@ -65,7 +65,7 @@
                 xhr.send(data);
             };
 
-            xhr('GET', `${sock.url}/getid`).then(connectionId => {
+            xhr('GET', `${sock.url}/negotiate`).then(connectionId => {
                 sock.connectionId = connectionId;
 
                 sock.onopen();

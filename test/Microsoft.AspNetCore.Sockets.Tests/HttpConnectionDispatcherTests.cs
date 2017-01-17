@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -20,7 +19,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
     public class HttpConnectionDispatcherTests
     {
         [Fact]
-        public async Task GetIdReservesConnectionIdAndReturnsIt()
+        public async Task NegotiateReservesConnectionIdAndReturnsIt()
         {
             var manager = new ConnectionManager();
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
@@ -29,7 +28,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             services.AddSingleton<TestEndPoint>();
             context.RequestServices = services.BuildServiceProvider();
             var ms = new MemoryStream();
-            context.Request.Path = "/getid";
+            context.Request.Path = "/negotiate";
             context.Response.Body = ms;
             await dispatcher.ExecuteAsync<TestEndPoint>("", context);
 
@@ -40,41 +39,61 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             Assert.Equal(id, state.Connection.ConnectionId);
         }
 
-        [Fact]
-        public async Task SendingToUnknownConnectionIdThrows()
+        [Theory]
+        [InlineData("/send")]
+        [InlineData("/sse")]
+        [InlineData("/poll")]
+        [InlineData("/ws")]
+        public async Task EndpointsThatAcceptConnectionId404WhenUnknownConnectionIdProvided(string path)
         {
             var manager = new ConnectionManager();
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-            var context = new DefaultHttpContext();
-            var services = new ServiceCollection();
-            services.AddSingleton<TestEndPoint>();
-            context.RequestServices = services.BuildServiceProvider();
-            context.Request.Path = "/send";
-            var values = new Dictionary<string, StringValues>();
-            values["id"] = "unknown";
-            var qs = new QueryCollection(values);
-            context.Request.Query = qs;
-            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+
+            using (var strm = new MemoryStream())
             {
+                var context = new DefaultHttpContext();
+                context.Response.Body = strm;
+
+                var services = new ServiceCollection();
+                services.AddSingleton<TestEndPoint>();
+                context.RequestServices = services.BuildServiceProvider();
+                context.Request.Path = path;
+                var values = new Dictionary<string, StringValues>();
+                values["id"] = "unknown";
+                var qs = new QueryCollection(values);
+                context.Request.Query = qs;
+
                 await dispatcher.ExecuteAsync<TestEndPoint>("", context);
-            });
+
+                Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
+                await strm.FlushAsync();
+                Assert.Equal("No Connection with that ID", Encoding.UTF8.GetString(strm.ToArray()));
+            }
         }
 
-        [Fact]
-        public async Task SendingWithoutConnectionIdThrows()
+        [Theory]
+        [InlineData("/send")]
+        [InlineData("/sse")]
+        [InlineData("/poll")]
+        public async Task EndpointsThatRequireConnectionId400WhenNoConnectionIdProvided(string path)
         {
-
             var manager = new ConnectionManager();
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-            var context = new DefaultHttpContext();
-            var services = new ServiceCollection();
-            services.AddSingleton<TestEndPoint>();
-            context.RequestServices = services.BuildServiceProvider();
-            context.Request.Path = "/send";
-            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            using (var strm = new MemoryStream())
             {
+                var context = new DefaultHttpContext();
+                context.Response.Body = strm;
+                var services = new ServiceCollection();
+                services.AddSingleton<TestEndPoint>();
+                context.RequestServices = services.BuildServiceProvider();
+                context.Request.Path = path;
+
                 await dispatcher.ExecuteAsync<TestEndPoint>("", context);
-            });
+
+                Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+                await strm.FlushAsync();
+                Assert.Equal("Connection ID required", Encoding.UTF8.GetString(strm.ToArray()));
+            }
         }
     }
 

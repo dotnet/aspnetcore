@@ -53,7 +53,7 @@
             };
 
             // Start the connection
-            xhr('GET', `${sock.url}/getid`).then(connectionId => {
+            xhr('GET', `${sock.url}/negotiate`).then(connectionId => {
                 sock.connectionId = connectionId;
 
                 let source = new EventSource(`${sock.url}/sse?id=${connectionId}`);

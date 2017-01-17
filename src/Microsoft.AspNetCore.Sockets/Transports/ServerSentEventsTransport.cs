@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http;
@@ -12,6 +11,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
 {
     public class ServerSentEventsTransport : IHttpTransport
     {
+        public static readonly string Name = "serverSentEvents";
         private readonly IReadableChannel<Message> _application;
         private readonly ILogger _logger;
 

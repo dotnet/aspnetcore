@@ -79,19 +79,19 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
 
             var logger = loggerFactory.CreateLogger<Connection>();
-            var getIdUrl = Utils.AppendPath(url, "getid");
+            var negotiateUrl = Utils.AppendPath(url, "negotiate");
 
             string connectionId;
             try
             {
                 // Get a connection ID from the server
-                logger.LogDebug("Reserving Connection Id from: {0}", getIdUrl);
-                connectionId = await httpClient.GetStringAsync(getIdUrl);
-                logger.LogDebug("Reserved Connection Id: {0}", connectionId);
+                logger.LogDebug("Establishing Connection at: {0}", negotiateUrl);
+                connectionId = await httpClient.GetStringAsync(negotiateUrl);
+                logger.LogDebug("Connection Id: {0}", connectionId);
             }
             catch (Exception ex)
             {
-                logger.LogError("Failed to start connection. Error getting connection id from '{0}': {1}", getIdUrl, ex);
+                logger.LogError("Failed to start connection. Error getting connection id from '{0}': {1}", negotiateUrl, ex);
                 throw;
             }
 
