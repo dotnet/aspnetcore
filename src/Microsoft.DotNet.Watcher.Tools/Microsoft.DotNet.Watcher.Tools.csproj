@@ -23,7 +23,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.App" Version="1.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Process.Sources" Version="1.1.0-*" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
