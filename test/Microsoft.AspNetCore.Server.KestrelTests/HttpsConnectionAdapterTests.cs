@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class HttpsConnectionAdapterTests
     {
-        private static X509Certificate2 _x509Certificate2 = new X509Certificate2("TestResources/testCert.pfx", "testPassword");
+        private static X509Certificate2 _x509Certificate2 = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
 
         // https://github.com/aspnet/KestrelHttpServer/issues/240
         // This test currently fails on mono because of an issue with SslStream.

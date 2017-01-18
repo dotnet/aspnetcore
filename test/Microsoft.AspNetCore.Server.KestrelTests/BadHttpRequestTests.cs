@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.Send($"GET / HTTP/1.1\r\nContent-Length: {contentLength}\r\n\r\n");
+                    await connection.SendAll($"GET / HTTP/1.1\r\nContent-Length: {contentLength}\r\n\r\n");
                     await ReceiveBadRequestResponse(connection, "400 Bad Request", server.Context.DateHeaderValue);
                 }
             }

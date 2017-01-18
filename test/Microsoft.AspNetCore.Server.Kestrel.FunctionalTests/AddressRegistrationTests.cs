@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         if (testUrl(listenOptions.IPEndPoint).StartsWith("https"))
                         {
-                            listenOptions.UseHttps("TestResources/testCert.pfx", "testPassword");
+                            listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                         }
                     });
                 })

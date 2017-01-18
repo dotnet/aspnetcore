@@ -15,16 +15,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             Add(JitOptimizationsValidator.FailOnError);
             Add(new RpsColumn());
 
-            Add(Job.Default.
-                With(BenchmarkDotNet.Environments.Runtime.Core).
-                WithRemoveOutliers(false).
-                With(new GcMode() { Server = true }).
-                With(RunStrategy.Throughput).
-                WithLaunchCount(3).
-                WithWarmupCount(5).
-                WithTargetCount(10).
-                With(new Core12Toolchain())
-                );
+            Add(Job.Default
+                .With(BenchmarkDotNet.Environments.Runtime.Core)
+                .WithRemoveOutliers(false)
+                .With(new GcMode() { Server = true })
+                .With(RunStrategy.Throughput)
+                .WithLaunchCount(3)
+                .WithWarmupCount(5)
+                .WithTargetCount(10)
+                .With(new MsBuildToolchain()));
         }
     }
 }

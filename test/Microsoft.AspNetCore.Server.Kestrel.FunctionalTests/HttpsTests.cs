@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
                     {
-                        listenOptions.UseHttps("TestResources/testCert.pfx", "testPassword");
+                        listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
                 .UseLoggerFactory(loggerFactory)
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
                     {
-                        listenOptions.UseHttps("TestResources/testCert.pfx", "testPassword");
+                        listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
                 .UseLoggerFactory(loggerFactory)
@@ -94,14 +94,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task DoesNotThrowObjectDisposedExceptionOnConnectionAbort()
         {
-            var x509Certificate2 = new X509Certificate2("TestResources/testCert.pfx", "testPassword");
+            var x509Certificate2 = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
             var loggerFactory = new HandshakeErrorLoggerFactory();
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
                     {
-                        listenOptions.UseHttps("TestResources/testCert.pfx", "testPassword");
+                        listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
                 .UseLoggerFactory(loggerFactory)
@@ -147,14 +147,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task DoesNotThrowObjectDisposedExceptionFromWriteAsyncAfterConnectionIsAborted()
         {
             var tcs = new TaskCompletionSource<object>();
-            var x509Certificate2 = new X509Certificate2("TestResources/testCert.pfx", "testPassword");
+            var x509Certificate2 = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
             var loggerFactory = new HandshakeErrorLoggerFactory();
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
                     {
-                        listenOptions.UseHttps("TestResources/testCert.pfx", "testPassword");
+                        listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
                 .UseLoggerFactory(loggerFactory)
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
                     {
-                        listenOptions.UseHttps("TestResources/testCert.pfx", "testPassword");
+                        listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
                 .UseLoggerFactory(loggerFactory)

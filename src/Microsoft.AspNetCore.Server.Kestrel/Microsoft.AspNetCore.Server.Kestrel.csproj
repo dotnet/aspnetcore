@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>ASP.NET Core Kestrel cross-platform web server.</Description>
+    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;kestrel</PackageTags>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>CS1591;$(NoWarn)</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Libuv" Version="1.10.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.2.0-*" />
+    <PackageReference Include="System.Numerics.Vectors" Version="4.4.0-*" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.4.0-*" />
+    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <PackageReference Include="System.Diagnostics.Process" Version="4.4.0-*" />
+    <PackageReference Include="System.Threading.Thread" Version="4.4.0-*" />
+    <PackageReference Include="System.Threading.ThreadPool" Version="4.4.0-*" />
+  </ItemGroup>
+
+</Project>

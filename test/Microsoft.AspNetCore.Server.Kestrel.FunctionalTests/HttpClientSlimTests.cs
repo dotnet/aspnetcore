@@ -2,11 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -84,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         if (protocol == "https")
                         {
-                            listenOptions.UseHttps("TestResources/testCert.pfx", "testPassword");
+                            listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                         }
                     });
                 })

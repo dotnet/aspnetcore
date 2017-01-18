@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\shared\TestApplicationErrorLogger.cs" />
+    <Compile Include="..\shared\TestFrame.cs" />
+    <Compile Include="..\shared\TestKestrelTrace.cs" />
+    <Compile Include="..\shared\MockConnection.cs" />
+    <Compile Include="..\shared\MockSocketOutput.cs" />
+    <Compile Include="..\shared\SocketInputExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.Kestrel\Microsoft.AspNetCore.Server.Kestrel.csproj" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.10.2.*" />
+    <PackageReference Include="Moq" Version="4.6.36-*" />
+  </ItemGroup>
+
+</Project>

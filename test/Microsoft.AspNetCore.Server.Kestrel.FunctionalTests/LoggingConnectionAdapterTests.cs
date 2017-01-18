@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
                     {
                         listenOptions.UseConnectionLogging();
-                        listenOptions.UseHttps("TestResources/testCert.pfx", "testPassword");
+                        listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
             .Configure(app =>
