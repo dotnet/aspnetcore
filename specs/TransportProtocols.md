@@ -26,7 +26,7 @@ The WebSockets transport is unique in that it is full duplex, and a persistent c
 
 The WebSocket transport is activated by making a WebSocket connection to `[endpoint-base]/ws`. Upon doing so, the connection is fully established and immediately ready for frames to be sent/received. The WebSocket OpCode field is used to indicate the type of the frame (Text or Binary) and the WebSocket "FIN" flag is used to indicate the end of a message.
 
-Establishing a second WebSocket connection when there is already a WebSocket connection associated with the Endpoints connection is not permitted and will fail with a `400` (Bad Request) status code.
+Establishing a second WebSocket connection when there is already a WebSocket connection associated with the Endpoints connection is not permitted and will fail with a `409 Conflict` status code.
 
 ## HTTP Post (Client-to-Server only)
 
