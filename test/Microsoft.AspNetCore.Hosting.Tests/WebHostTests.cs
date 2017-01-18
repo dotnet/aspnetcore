@@ -915,6 +915,8 @@ namespace Microsoft.AspNetCore.Hosting
 
             public Stream Body { get; set; }
 
+            public long? ContentLength { get; set; }
+
             public int Count => 0;
 
             public bool HasStarted { get; set; }
