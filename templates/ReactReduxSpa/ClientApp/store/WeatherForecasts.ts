@@ -1,5 +1,5 @@
 import { fetch, addTask } from 'domain-task';
-import { Action, Reducer, ThunkAction, ActionCreator } from 'redux';
+import { Action, Reducer, ActionCreator } from 'redux';
 import { AppThunkAction } from './';
 
 // -----------------
