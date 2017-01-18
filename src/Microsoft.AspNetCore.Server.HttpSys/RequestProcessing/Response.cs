@@ -147,48 +147,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // Header accessors
         public long? ContentLength
         {
-            get
-            {
-                string contentLengthString = Headers[HttpKnownHeaderNames.ContentLength];
-                long contentLength;
-                if (!string.IsNullOrWhiteSpace(contentLengthString))
-                {
-                    contentLengthString = contentLengthString.Trim();
-                    if (string.Equals(Constants.Zero, contentLengthString, StringComparison.Ordinal))
-                    {
-                        return 0;
-                    }
-                    else if (long.TryParse(contentLengthString, NumberStyles.None, CultureInfo.InvariantCulture.NumberFormat, out contentLength))
-                    {
-                        return contentLength;
-                    }
-                }
-                return null;
-            }
-            set
-            {
-                CheckResponseStarted();
-                if (!value.HasValue)
-                {
-                    Headers.Remove(HttpKnownHeaderNames.ContentLength);
-                }
-                else
-                {
-                    if (value.Value < 0)
-                    {
-                        throw new ArgumentOutOfRangeException("value", value.Value, "Cannot be negative.");
-                    }
-
-                    if (value.Value == 0)
-                    {
-                        Headers[HttpKnownHeaderNames.ContentLength] = Constants.Zero;
-                    }
-                    else
-                    {
-                        Headers[HttpKnownHeaderNames.ContentLength] = value.Value.ToString(CultureInfo.InvariantCulture);
-                    }
-                }
-            }
+            get { return Headers.ContentLength; }
+            set { Headers.ContentLength = value; }
         }
 
         /// <summary>

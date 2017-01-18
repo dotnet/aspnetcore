@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _enableResponseCaching = enableResponseCaching;
 
             // Pre-initialize any fields that are not lazy at the lower level.
-            _requestHeaders = new HeaderDictionary(Request.Headers);
+            _requestHeaders = Request.Headers;
             _httpMethod = Request.Method;
             _path = Request.Path;
             _pathBase = Request.PathBase;
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _user = _requestContext.User;
 
             _responseStream = new ResponseStream(requestContext.Response.Body, OnStart);
-            _responseHeaders = new HeaderDictionary(Response.Headers);
+            _responseHeaders = Response.Headers;
         }
 
         internal IFeatureCollection Features => _features;

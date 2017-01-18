@@ -4,12 +4,17 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal class HeaderCollection : IDictionary<string, StringValues>
+    internal class HeaderCollection : IHeaderDictionary
     {
+        private long? _contentLength;
+        private StringValues _contentLengthText;
+
         public HeaderCollection()
             : this(new Dictionary<string, StringValues>(4, StringComparer.OrdinalIgnoreCase))
         {
@@ -73,6 +78,52 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public ICollection<StringValues> Values
         {
             get { return Store.Values; }
+        }
+
+        public long? ContentLength
+        {
+            get
+            {
+                long value;
+                var rawValue = this[HttpKnownHeaderNames.ContentLength];
+
+                if (_contentLengthText.Equals(rawValue))
+                {
+                    return _contentLength;
+                }
+
+                if (rawValue.Count == 1 &&
+                    !string.IsNullOrWhiteSpace(rawValue[0]) &&
+                    HeaderUtilities.TryParseInt64(new StringSegment(rawValue[0]).Trim(), out value))
+                {
+                    _contentLengthText = rawValue;
+                    _contentLength = value;
+                    return value;
+                }
+
+                return null;
+            }
+            set
+            {
+                ThrowIfReadOnly();
+
+                if (value.HasValue)
+                {
+                    if (value.Value < 0)
+                    {
+                        throw new ArgumentOutOfRangeException("value", value.Value, "Cannot be negative.");
+                    }
+                    _contentLengthText = HeaderUtilities.FormatInt64(value.Value);
+                    this[HttpKnownHeaderNames.ContentLength] = _contentLengthText;
+                    _contentLength = value;
+                }
+                else
+                {
+                    Remove(HttpKnownHeaderNames.ContentLength);
+                    _contentLengthText = StringValues.Empty;
+                    _contentLength = null;
+                }
+            }
         }
 
         public void Add(KeyValuePair<string, StringValues> item)

@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Assert.Equal("TEST", requestInfo.Method);
                     requestInfo.Body = new MemoryStream();
                     Assert.IsType<MemoryStream>(requestInfo.Body);
-                    var customHeaders = new HeaderDictionary(new HeaderCollection());
+                    var customHeaders = new HeaderCollection();
                     requestInfo.Headers = customHeaders;
                     Assert.Same(customHeaders, requestInfo.Headers);
                     requestInfo.Scheme = "abcd";
