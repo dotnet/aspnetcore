@@ -112,22 +112,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 }
 
                 engine.Start(threadCount);
-                var atLeastOneListener = false;
 
                 var listenOptions = Options.ListenOptions;
+                var hasListenOptions = listenOptions.Any();
+                var hasServerAddresses = _serverAddresses.Addresses.Any();
 
-                if (listenOptions.Any())
+                if (hasListenOptions && hasServerAddresses)
                 {
-                    var addresses = _serverAddresses.Addresses;
-                    if (addresses.SingleOrDefault() != "http://localhost:5000")
-                    {
-                        var joined = string.Join(", ", addresses);
-                        throw new NotSupportedException($"Specifying address(es) '{joined}' is incompatible with also configuring endpoint(s) in UseKestrel.");
-                    }
+                    var joined = string.Join(", ", _serverAddresses.Addresses);
+                    _logger.LogWarning($"Overriding address(es) '{joined}'. Binding to endpoints defined in {nameof(WebHostBuilderKestrelExtensions.UseKestrel)}() instead.");
 
                     _serverAddresses.Addresses.Clear();
                 }
-                else
+                else if (!hasListenOptions && !hasServerAddresses)
+                {
+                    _logger.LogDebug($"No listening endpoints were configured. Binding to {Constants.DefaultIPEndPoint} by default.");
+                    listenOptions.Add(new ListenOptions(Constants.DefaultIPEndPoint));
+                }
+                else if (!hasListenOptions)
                 {
                     // If no endpoints are configured directly using KestrelServerOptions, use those configured via the IServerAddressesFeature.
                     var copiedAddresses = _serverAddresses.Addresses.ToArray();
@@ -155,7 +157,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                                 // If StartLocalhost doesn't throw, there is at least one listener.
                                 // The port cannot change for "localhost".
                                 _serverAddresses.Addresses.Add(parsedAddress.ToString());
-                                atLeastOneListener = true;
                             }
                             else
                             {
@@ -172,8 +173,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
                 foreach (var endPoint in listenOptions)
                 {
-                    atLeastOneListener = true;
-
                     try
                     {
                         _disposables.Push(engine.CreateServer(endPoint));
@@ -190,11 +189,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
                     // If requested port was "0", replace with assigned dynamic port.
                     _serverAddresses.Addresses.Add(endPoint.ToString());
-                }
-
-                if (!atLeastOneListener)
-                {
-                    throw new InvalidOperationException("No recognized listening addresses were configured.");
                 }
             }
             catch (Exception ex)

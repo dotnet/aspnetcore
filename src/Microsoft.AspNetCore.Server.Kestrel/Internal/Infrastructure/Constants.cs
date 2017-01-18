@@ -1,18 +1,23 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Net;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 {
-    internal class Constants
+    internal static class Constants
     {
         public const int ListenBacklog = 128;
 
         public const int EOF = -4095;
         public static readonly int? ECONNRESET = GetECONNRESET();
         public static readonly int? EADDRINUSE = GetEADDRINUSE();
+
+        /// <summary>
+        /// The IPEndPoint Kestrel will bind to if nothing else is specified.
+        /// </summary>
+        public static readonly IPEndPoint DefaultIPEndPoint = new IPEndPoint(IPAddress.Loopback, 5000);
 
         /// <summary>
         /// Prefix of host name used to specify Unix sockets in the configuration.

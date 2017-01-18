@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
+using System.Net;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel;
@@ -43,16 +45,26 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.Equal(1, testLogger.CriticalErrorsLogged);
         }
 
-        [Fact]
-        public void StartWithEmptyAddressesThrows()
+        [Theory]
+        [InlineData("http://localhost:5000")]
+        [InlineData("The value of the string shouldn't matter.")]
+        [InlineData(null)]
+        public void StartWarnsWhenIgnoringIServerAddressesFeature(string ignoredAddress)
         {
             var testLogger = new TestApplicationErrorLogger();
-            var server = CreateServer(new KestrelServerOptions(), testLogger);
+            var kestrelOptions = new KestrelServerOptions();
 
-            var exception = Assert.Throws<InvalidOperationException>(() => StartDummyApplication(server));
+            // Directly configuring an endpoint using Listen causes the IServerAddressesFeature to be ignored.
+            kestrelOptions.Listen(IPAddress.Loopback, 0);
 
-            Assert.Equal("No recognized listening addresses were configured.", exception.Message);
-            Assert.Equal(1, testLogger.CriticalErrorsLogged);
+            using (var server = CreateServer(kestrelOptions, testLogger))
+            {
+                server.Features.Get<IServerAddressesFeature>().Addresses.Add(ignoredAddress);
+                StartDummyApplication(server);
+
+                var warning = testLogger.Messages.Single(log => log.LogLevel == LogLevel.Warning);
+                Assert.True(warning.Message.Contains("Overriding"));
+            }
         }
 
         [Theory]
@@ -87,37 +99,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             var lifetime = new LifetimeNotImplemented();
 
-            return new KestrelServer(Options.Create(options), lifetime, new TestLoggerFactory(testLogger));
+            return new KestrelServer(Options.Create(options), lifetime, new KestrelTestLoggerFactory(testLogger));
         }
 
         private static void StartDummyApplication(IServer server)
         {
             server.Start(new DummyApplication(context => TaskCache.CompletedTask));
-        }
-
-        private class TestLoggerFactory : ILoggerFactory
-        {
-            private readonly ILogger _testLogger;
-
-            public TestLoggerFactory(ILogger testLogger)
-            {
-                _testLogger = testLogger;
-            }
-
-            public ILogger CreateLogger(string categoryName)
-            {
-                return _testLogger;
-            }
-
-            public void AddProvider(ILoggerProvider provider)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Dispose()
-            {
-                throw new NotImplementedException();
-            }
         }
     }
 }

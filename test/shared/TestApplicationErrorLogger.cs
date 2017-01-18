@@ -38,7 +38,13 @@ namespace Microsoft.AspNetCore.Testing
             Console.WriteLine($"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception?.Message}");
 #endif
 
-            Messages.Add(new LogMessage { LogLevel = logLevel, EventId = eventId, Exception = exception });
+            Messages.Add(new LogMessage
+            {
+                LogLevel = logLevel,
+                EventId = eventId,
+                Exception = exception,
+                Message = formatter(state, exception)
+            });
         }
 
         public class LogMessage
@@ -46,6 +52,7 @@ namespace Microsoft.AspNetCore.Testing
             public LogLevel LogLevel { get; set; }
             public EventId EventId { get; set; }
             public Exception Exception { get; set; }
+            public string Message { get; set; }
         }
     }
 }

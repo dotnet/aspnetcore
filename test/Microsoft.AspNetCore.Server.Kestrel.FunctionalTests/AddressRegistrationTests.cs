@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -123,6 +125,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // Compare the response with Uri.ToString(), rather than testUrl directly.
                 // Required to handle IPv6 addresses with zone index, like "fe80::3%1"
                 Assert.Equal(new Uri(testUrl(listenOptions.IPEndPoint)).ToString(), response);
+            }
+        }
+
+        [ConditionalFact(Skip = "Waiting on https://github.com/aspnet/Hosting/issues/917")]
+        [PortSupportedCondition(5000)]
+        public async Task DefaultsToPort5000()
+        {
+            var testLogger = new TestApplicationErrorLogger();
+
+            var hostBuilder = new WebHostBuilder()
+               .UseKestrel()
+               .ConfigureServices(services =>
+                {
+                    services.AddSingleton<ILoggerFactory>(new KestrelTestLoggerFactory(testLogger));
+                })
+               .Configure(ConfigureEchoAddress);
+
+            using (var host = hostBuilder.Build())
+            {
+                host.Start();
+
+                var debugLog = testLogger.Messages.Single(log => log.LogLevel == LogLevel.Debug);
+                Assert.True(debugLog.Message.Contains("default"));
+
+                foreach (var testUrl in new[] { "http://127.0.0.1:5000", "http://localhost:5000" })
+                {
+                    var response = await HttpClientSlim.GetStringAsync(testUrl);
+                    Assert.Equal(new Uri(testUrl).ToString(), response);
+                }
             }
         }
 

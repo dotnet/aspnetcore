@@ -34,33 +34,34 @@ namespace SampleApp
 
         public static void Main(string[] args)
         {
-            var hostBuilder = new WebHostBuilder().UseKestrel(options =>
-            {
-                options.Listen(IPAddress.Loopback, 5000, listenOptions =>
+            var host = new WebHostBuilder()
+                .UseKestrel(options =>
                 {
-                    // Uncomment the following to enable Nagle's algorithm for this endpoint.
-                    //listenOptions.NoDelay = false;
+                    options.Listen(IPAddress.Loopback, 5000, listenOptions =>
+                    {
+                        // Uncomment the following to enable Nagle's algorithm for this endpoint.
+                        //listenOptions.NoDelay = false;
 
-                    listenOptions.UseConnectionLogging();
-                });
-                options.Listen(IPAddress.Loopback, 5001, listenOptions =>
-                {
-                    listenOptions.UseHttps("testCert.pfx", "testPassword");
-                    listenOptions.UseConnectionLogging();
-                });
+                        listenOptions.UseConnectionLogging();
+                    });
+                    options.Listen(IPAddress.Loopback, 5001, listenOptions =>
+                    {
+                        listenOptions.UseHttps("testCert.pfx", "testPassword");
+                        listenOptions.UseConnectionLogging();
+                    });
 
-                options.UseSystemd();
+                    options.UseSystemd();
 
-                // The following section should be used to demo sockets
-                //options.ListenUnixSocket("/tmp/kestrel-test.sock");
+                    // The following section should be used to demo sockets
+                    //options.ListenUnixSocket("/tmp/kestrel-test.sock");
 
-                // Uncomment the following line to change the default number of libuv threads for all endpoints.
-                //options.ThreadCount = 4;
-            })
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseStartup<Startup>();
+                    // Uncomment the following line to change the default number of libuv threads for all endpoints.
+                    //options.ThreadCount = 4;
+                })
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseStartup<Startup>()
+                .Build();
 
-            var host = hostBuilder.Build();
             host.Run();
         }
     }
