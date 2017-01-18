@@ -11,8 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
     {
         public DefaultRazorCodeDocument(
             RazorSourceDocument source,
-            IEnumerable<RazorSourceDocument> imports,
-            IEnumerable<RazorSourceDocument> includes)
+            IEnumerable<RazorSourceDocument> imports)
         {
             if (source == null)
             {
@@ -21,14 +20,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             Source = source;
             Imports = imports?.ToArray() ?? RazorSourceDocument.EmptyArray;
-            Includes = includes?.ToArray() ?? RazorSourceDocument.EmptyArray;
 
             Items = new DefaultItemCollection();
         }
 
         public override IReadOnlyList<RazorSourceDocument> Imports { get; }
-
-        public override IReadOnlyList<RazorSourceDocument> Includes { get; }
 
         public override ItemCollection Items { get; }
 

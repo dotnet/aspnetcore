@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         }
 
         [Fact]
-        public void Execute_ParsesIncludesAndImports()
+        public void Execute_ParsesImports()
         {
             // Arrange
             var phase = new DefaultRazorParsingPhase();
@@ -63,13 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 TestRazorSourceDocument.Create(),
             };
 
-            var includes = new[]
-            {
-                TestRazorSourceDocument.Create(),
-                TestRazorSourceDocument.Create(),
-            };
-
-            var codeDocument = TestRazorCodeDocument.Create(TestRazorSourceDocument.Create(), imports, includes);
+            var codeDocument = TestRazorCodeDocument.Create(TestRazorSourceDocument.Create(), imports);
 
             // Act
             phase.Execute(codeDocument);
@@ -79,11 +73,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 codeDocument.GetImportSyntaxTrees(),
                 t => { Assert.Same(t.Source, imports[0]); Assert.Equal("test_directive", Assert.Single(t.Options.Directives).Name); },
                 t => { Assert.Same(t.Source, imports[1]); Assert.Equal("test_directive", Assert.Single(t.Options.Directives).Name); });
-
-            Assert.Collection(
-                codeDocument.GetIncludeSyntaxTrees(),
-                t => { Assert.Same(t.Source, includes[0]); Assert.Equal("test_directive", Assert.Single(t.Options.Directives).Name); },
-                t => { Assert.Same(t.Source, includes[1]); Assert.Equal("test_directive", Assert.Single(t.Options.Directives).Name); });
         }
 
         private class MyConfigureParserOptions : IRazorConfigureParserFeature

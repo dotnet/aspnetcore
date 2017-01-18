@@ -17,14 +17,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 TestRazorSourceDocument.Create(),
             };
-
-            var includes = new RazorSourceDocument[]
-            {
-                TestRazorSourceDocument.Create(),
-            };
-
+            
             // Act
-            var code = new DefaultRazorCodeDocument(source, imports, includes);
+            var code = new DefaultRazorCodeDocument(source, imports);
 
             // Assert
             Assert.Same(source, code.Source);
@@ -32,25 +27,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             Assert.NotSame(imports, code.Imports);
             Assert.Collection(imports, d => Assert.Same(imports[0], d));
-
-            Assert.NotSame(includes, code.Includes);
-            Assert.Collection(includes, d => Assert.Same(includes[0], d));
         }
 
         [Fact]
-        public void Ctor_AllowsNullForImportsAndIncludes()
+        public void Ctor_AllowsNullForImports()
         {
             // Arrange
             var source = TestRazorSourceDocument.Create();
 
             // Act
-            var code = new DefaultRazorCodeDocument(source, imports: null, includes: null);
+            var code = new DefaultRazorCodeDocument(source, imports: null);
 
             // Assert
             Assert.Same(source, code.Source);
             Assert.NotNull(code.Items);
             Assert.Empty(code.Imports);
-            Assert.Empty(code.Includes);
         }
     }
 }

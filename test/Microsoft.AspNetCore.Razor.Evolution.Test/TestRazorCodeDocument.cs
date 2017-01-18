@@ -10,20 +10,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public static TestRazorCodeDocument CreateEmpty()
         {
             var source = TestRazorSourceDocument.Create(content: string.Empty);
-            return new TestRazorCodeDocument(source, imports: null, includes: null);
+            return new TestRazorCodeDocument(source, imports: null);
         }
 
         public static TestRazorCodeDocument Create(string content)
         {
             var source = TestRazorSourceDocument.Create(content);
-            return new TestRazorCodeDocument(source, imports: null, includes: null);
+            return new TestRazorCodeDocument(source, imports: null);
         }
 
         private TestRazorCodeDocument(
             RazorSourceDocument source,
-            IEnumerable<RazorSourceDocument> imports,
-            IEnumerable<RazorSourceDocument> includes)
-            : base(source, imports, includes)
+            IEnumerable<RazorSourceDocument> imports)
+            : base(source, imports)
         {
         }
     }

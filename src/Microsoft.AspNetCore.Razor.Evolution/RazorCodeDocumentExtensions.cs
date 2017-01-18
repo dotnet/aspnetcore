@@ -49,26 +49,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             document.Items[typeof(ImportSyntaxTreesHolder)] = new ImportSyntaxTreesHolder(syntaxTrees);
         }
 
-        public static IReadOnlyList<RazorSyntaxTree> GetIncludeSyntaxTrees(this RazorCodeDocument document)
-        {
-            if (document == null)
-            {
-                throw new ArgumentNullException(nameof(document));
-            }
-
-            return (document.Items[typeof(IncludeSyntaxTreesHolder)] as IncludeSyntaxTreesHolder)?.SyntaxTrees;
-        }
-
-        public static void SetIncludeSyntaxTrees(this RazorCodeDocument document, IReadOnlyList<RazorSyntaxTree> syntaxTrees)
-        {
-            if (document == null)
-            {
-                throw new ArgumentNullException(nameof(document));
-            }
-
-            document.Items[typeof(IncludeSyntaxTreesHolder)] = new IncludeSyntaxTreesHolder(syntaxTrees);
-        }
-
         public static DocumentIRNode GetIRDocument(this RazorCodeDocument document)
         {
             if (document == null)

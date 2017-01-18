@@ -15,27 +15,24 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 throw new ArgumentNullException(nameof(source));
             }
 
-            return Create(source, imports: null, includes: null);
+            return Create(source, imports: null);
         }
 
         public static RazorCodeDocument Create(
             RazorSourceDocument source,
-            IEnumerable<RazorSourceDocument> imports,
-            IEnumerable<RazorSourceDocument> includes)
+            IEnumerable<RazorSourceDocument> imports)
         {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
             
-            return new DefaultRazorCodeDocument(source, imports, includes);
+            return new DefaultRazorCodeDocument(source, imports);
         }
 
         public abstract IReadOnlyList<RazorSourceDocument> Imports { get; }
 
         public abstract ItemCollection Items { get; }
-
-        public abstract IReadOnlyList<RazorSourceDocument> Includes { get; }
 
         public abstract RazorSourceDocument Source { get; }
     }
