@@ -28,17 +28,17 @@ artifacts:
 #  - build.cmd verify
 clone_depth: 1
 test_script:
-  - dotnet restore ./src
-  - npm install -g selenium-standalone
-  - selenium-standalone install
+  # - dotnet restore ./src
+  # - npm install -g selenium-standalone
+  # - selenium-standalone install
   # The nosys flag is needed for selenium to work on Appveyor
-  - ps: Start-Process selenium-standalone 'start','--','-Djna.nosys=true'
-  - ps: Push-Location
-  - cd test
-  - npm install
-  - npm test
+  # - ps: Start-Process selenium-standalone 'start','--','-Djna.nosys=true'
+  # - ps: Push-Location
+  # - cd test
+  # - npm install
+  # - npm test
 on_finish :
-  - ps: Pop-Location
+  # - ps: Pop-Location
   # After running tests, upload results to Appveyor
-  - ps: (new-object net.webclient).UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test\tmp\junit\*.xml))
+  # - ps: (new-object net.webclient).UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test\tmp\junit\*.xml))
 deploy: off
