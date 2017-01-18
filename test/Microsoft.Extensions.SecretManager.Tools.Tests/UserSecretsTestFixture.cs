@@ -37,11 +37,11 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Tests
     <OutputType>Exe</OutputType>
     <TargetFrameworks>netcoreapp1.0</TargetFrameworks>
     {0}
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include=""**\*.cs"" Exclude=""Excluded.cs"" />
-    <PackageReference Include=""Microsoft.NETCore.App"" Version=""1.0.1"" />
+    <Compile Include=""**\*.cs"" Exclude=""Excluded.cs;$(DefaultItemExcludes)"" />
   </ItemGroup>
 </Project>";
 

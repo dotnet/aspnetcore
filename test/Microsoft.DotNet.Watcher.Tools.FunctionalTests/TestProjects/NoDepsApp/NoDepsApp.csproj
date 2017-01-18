@@ -5,10 +5,4 @@
     <OutputType>exe</OutputType>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="**\*.cs" />
-    <EmbeddedResource Include="**\*.resx" />
-    <PackageReference Include="Microsoft.NETCore.App" Version="1.0.1" />
-  </ItemGroup>
-
 </Project>

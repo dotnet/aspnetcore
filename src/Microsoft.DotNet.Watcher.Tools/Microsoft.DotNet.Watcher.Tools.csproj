@@ -9,21 +9,21 @@
     <PackageId>Microsoft.DotNet.Watcher.Tools</PackageId>
     <PackageTags>dotnet;watch</PackageTags>
     <PackageType>DotnetCliTool</PackageType>
+    <NetCoreAppImplicitPackageVersion>1.0.0</NetCoreAppImplicitPackageVersion>
+    <ContentTargetFolders>toolassets</ContentTargetFolders>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="**\*.cs" />
     <Compile Include="..\..\shared\**\*.cs" />
-    <EmbeddedResource Include="**\*.resx" />
     <EmbeddedResource Include="dotnetwatch.targets" LogicalName="dotnetwatch.targets" />
-    <Content Include="toolassets\*.targets" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="%(Identity)" />
     <None Include="prefercliruntime" Pack="true" PackagePath="\prefercliruntime" />
-    <None Include="$(ProjectRuntimeConfigFilePath)" Pack="true" PackagePath="lib\$(TargetFramework)" Condition="'$(DesignTimeBuild)'!='true'" />
+    <None Include="toolassets\*.targets" Pack="true" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.App" Version="1.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Process.Sources" Version="1.1.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.Process.Sources" Version="1.2.0-*" PrivateAssets="All" />
   </ItemGroup>
+
+  <Import Project="..\workaround.targets" />
 
 </Project>
