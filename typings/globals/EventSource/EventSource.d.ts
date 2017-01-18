@@ -10,7 +10,7 @@ declare class EventSource extends EventTarget {
     readonly CONNECTING: number;
     readonly OPEN: number;
 
-    close();
+    close(): void;
 
     onerror: (this: this, ev: ErrorEvent) => any;
     onmessage: (this: this, ev: MessageEvent) => any;

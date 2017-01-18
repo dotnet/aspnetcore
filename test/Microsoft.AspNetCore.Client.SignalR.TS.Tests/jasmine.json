@@ -1,0 +1,6 @@
+{
+    "spec_dir": "artifacts/test/Microsoft.AspNetCore.Client.SignalR.TS.Tests",
+    "spec_files": [
+        "./**/*[sS]pec.js"
+    ]
+}

@@ -9,7 +9,7 @@
         "removeComments": false,
         "noImplicitAny": true,
         "suppressImplicitAnyIndexErrors": true,
-        "outDir": "../../artifacts/lib/signalr-client-modules"
+        "outDir": "../../artifacts/test/Microsoft.AspNetCore.Client.SignalR.TS.Tests/"
     },
     "include": [
         "./**/*",

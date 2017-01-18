@@ -1,3 +1,4 @@
+import { DataReceived, ErrorHandler } from "./Common"
 import { IHttpClient } from "./HttpClient"
 
 export interface ITransport {

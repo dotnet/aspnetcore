@@ -1,3 +1,4 @@
+import { ConnectionClosed } from "./Common"
 import { Connection } from "./Connection"
 
 interface InvocationDescriptor {
@@ -28,7 +29,7 @@ export class HubConnection {
             thisHubConnection.dataReceived(data);
         };
 
-        this.callbacks = new Map<string, (InvocationResultDescriptor) => void>();
+        this.callbacks = new Map<string, (invocationDescriptor: InvocationResultDescriptor) => void>();
         this.methods = new Map<string, (...args: any[]) => void>();
         this.id = 0;
     }

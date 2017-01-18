@@ -1,3 +1,4 @@
+import { DataReceived, ConnectionClosed } from "./Common"
 import { ITransport, WebSocketTransport, ServerSentEventsTransport, LongPollingTransport } from "./Transports"
 import { IHttpClient, HttpClient } from "./HttpClient"
 import { ISignalROptions } from "./ISignalROptions"
