@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         }
 
         [Fact]
-        public void Imports_Runtime()
+        public void Usings_Runtime()
         {
             // Arrange
             var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
@@ -922,7 +922,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         }
 
         [Fact]
-        public void Imports_DesignTime()
+        public void Usings_DesignTime()
         {
             // Arrange
             var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));

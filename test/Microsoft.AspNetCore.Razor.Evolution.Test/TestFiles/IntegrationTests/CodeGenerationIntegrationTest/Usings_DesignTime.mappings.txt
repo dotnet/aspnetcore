@@ -1,0 +1,10 @@
+Source Location: (197:8,29 [21] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml)
+|typeof(Path).FullName|
+Generated Location: (839:21,32 [21] )
+|typeof(Path).FullName|
+
+Source Location: (259:9,35 [20] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml)
+|typeof(Foo).FullName|
+Generated Location: (1015:26,38 [20] )
+|typeof(Foo).FullName|
+

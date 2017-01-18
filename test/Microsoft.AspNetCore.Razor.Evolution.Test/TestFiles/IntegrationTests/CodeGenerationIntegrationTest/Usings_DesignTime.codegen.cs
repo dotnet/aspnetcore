@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     using static System;
     using static System.Console;
     using static global::System.Text.Encoding;
-    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Imports_DesignTime
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Usings_DesignTime
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -18,12 +18,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
-#line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Imports.cshtml"
+#line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
                           __o = typeof(Path).FullName;
 
 #line default
 #line hidden
-#line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Imports.cshtml"
+#line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
                                 __o = typeof(Foo).FullName;
 
 #line default
