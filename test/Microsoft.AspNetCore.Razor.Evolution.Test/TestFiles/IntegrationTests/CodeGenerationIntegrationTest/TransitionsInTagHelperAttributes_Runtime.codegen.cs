@@ -1,4 +1,4 @@
-#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TransitionsInTagHelperAttributes.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "b9b5a5baa9e2ea89cb37a127c0623b083bff74c3"
+#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TransitionsInTagHelperAttributes.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "f3bafd9eaf3c9718228a830b5c71dc8536f1f7f2"
 namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 {
     #line hidden
@@ -45,9 +45,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_PTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "class", 1, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-            AddHtmlAttributeValue("", 107, new HelperResult(async(__razor_attribute_value_writer) => {
+            AddHtmlAttributeValue("", 109, new HelperResult(async(__razor_attribute_value_writer) => {
             }
-            ), 107, 6, false);
+            ), 109, 6, false);
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TransitionsInTagHelperAttributes.cshtml"
 __TestNamespace_PTagHelper.Age = 1337;
@@ -70,7 +70,7 @@ __TestNamespace_PTagHelper.Age = 1337;
             __tagHelperExecutionContext.Add(__TestNamespace_PTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "class", 1, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TransitionsInTagHelperAttributes.cshtml"
-AddHtmlAttributeValue("", 153, @class, 153, 9, false);
+AddHtmlAttributeValue("", 155, @class, 155, 9, false);
 
 #line default
 #line hidden
@@ -155,9 +155,9 @@ __TestNamespace_PTagHelper.Age = (@int);
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_PTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "class", 2, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-            AddHtmlAttributeValue("", 296, "custom-", 296, 7, true);
+            AddHtmlAttributeValue("", 298, "custom-", 298, 7, true);
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TransitionsInTagHelperAttributes.cshtml"
-AddHtmlAttributeValue("", 303, @class, 303, 9, false);
+AddHtmlAttributeValue("", 305, @class, 305, 9, false);
 
 #line default
 #line hidden

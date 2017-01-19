@@ -1,4 +1,4 @@
-#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "3cc5f5ed458e4e33874c4242798b195a31ab065c"
+#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "51e77018024aeb0f14e5fc30bf13b895e48b90e2"
 namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 {
     #line hidden
@@ -220,10 +220,10 @@ __TestNamespace_InputTagHelper2.Checked = true;
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_PTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "time", 3, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
-            AddHtmlAttributeValue("", 146, "Current", 146, 7, true);
-            AddHtmlAttributeValue(" ", 153, "Time:", 154, 6, true);
+            AddHtmlAttributeValue("", 148, "Current", 148, 7, true);
+            AddHtmlAttributeValue(" ", 155, "Time:", 156, 6, true);
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
-AddHtmlAttributeValue(" ", 159, DateTime.Now, 160, 13, false);
+AddHtmlAttributeValue(" ", 161, DateTime.Now, 162, 13, false);
 
 #line default
 #line hidden

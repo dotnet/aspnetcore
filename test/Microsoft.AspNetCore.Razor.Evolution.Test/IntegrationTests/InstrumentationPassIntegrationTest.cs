@@ -16,17 +16,20 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 new TagHelperDescriptor
                 {
                     TagName = "p",
-                    TypeName = "PTagHelper"
+                    TypeName = "PTagHelper",
+                    AssemblyName = "TestAssembly",
                 },
                 new TagHelperDescriptor
                 {
                     TagName = "form",
-                    TypeName = "FormTagHelper"
+                    TypeName = "FormTagHelper",
+                    AssemblyName = "TestAssembly",
                 },
                 new TagHelperDescriptor
                 {
                     TagName = "input",
                     TypeName = "InputTagHelper",
+                    AssemblyName = "TestAssembly",
                     Attributes = new[] 
                     {
                         new TagHelperAttributeDescriptor

@@ -1,14 +1,14 @@
-Source Location: (72:5,21 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithWeirdlySpacedAttributes.cshtml)
+Source Location: (74:5,21 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithWeirdlySpacedAttributes.cshtml)
 |1337|
 Generated Location: (1101:20,33 [4] )
 |1337|
 
-Source Location: (97:6,19 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithWeirdlySpacedAttributes.cshtml)
+Source Location: (99:6,19 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithWeirdlySpacedAttributes.cshtml)
 |true|
 Generated Location: (1274:25,22 [4] )
 |true|
 
-Source Location: (184:10,11 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithWeirdlySpacedAttributes.cshtml)
+Source Location: (186:10,11 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithWeirdlySpacedAttributes.cshtml)
 |1234|
 Generated Location: (1910:35,33 [4] )
 |1234|

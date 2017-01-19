@@ -1,4 +1,4 @@
-Source Location: (61:2,28 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SingleTagHelper.cshtml)
+Source Location: (63:2,28 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SingleTagHelper.cshtml)
 |1337|
 Generated Location: (869:18,33 [4] )
 |1337|

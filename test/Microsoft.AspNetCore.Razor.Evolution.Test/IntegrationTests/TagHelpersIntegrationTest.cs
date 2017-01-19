@@ -16,7 +16,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 new TagHelperDescriptor
                 {
                     TagName = "input",
-                    TypeName = "InputTagHelper"
+                    TypeName = "InputTagHelper",
+                    AssemblyName = "TestAssembly",
                 }
             };
 
@@ -40,6 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 {
                     TagName = "input",
                     TypeName = "InputTagHelper",
+                    AssemblyName = "TestAssembly",
                     Attributes = new[] { new TagHelperAttributeDescriptor
                     {
                         Name = "bound",
@@ -68,17 +70,20 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 new TagHelperDescriptor
                 {
                     TagName = "p",
-                    TypeName = "PTagHelper"
+                    TypeName = "PTagHelper",
+                    AssemblyName = "TestAssembly",
                 },
                 new TagHelperDescriptor
                 {
                     TagName = "form",
-                    TypeName = "FormTagHelper"
+                    TypeName = "FormTagHelper",
+                    AssemblyName = "TestAssembly",
                 },
                 new TagHelperDescriptor
                 {
                     TagName = "input",
                     TypeName = "InputTagHelper",
+                    AssemblyName = "TestAssembly",
                     Attributes = new[] { new TagHelperAttributeDescriptor
                     {
                         Name = "value",

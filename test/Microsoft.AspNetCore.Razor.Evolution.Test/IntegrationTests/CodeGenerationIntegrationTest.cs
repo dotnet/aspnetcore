@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using Xunit;
 using Xunit.Sdk;
 
@@ -1449,21 +1448,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
             // Assert
             AssertDesignTimeDocumentMatchBaseline(document);
-        }
-
-        private class TestTagHelperDescriptorResolver : ITagHelperDescriptorResolver
-        {
-            private readonly IEnumerable<TagHelperDescriptor> _descriptors;
-
-            public TestTagHelperDescriptorResolver(IEnumerable<TagHelperDescriptor> descriptors)
-            {
-                _descriptors = descriptors;
-            }
-
-            public IEnumerable<TagHelperDescriptor> Resolve(TagHelperDescriptorResolutionContext resolutionContext)
-            {
-                return _descriptors;
-            }
         }
 
         private class ApiSetsIRTestAdapter : RazorIRPassBase

@@ -1,21 +1,21 @@
-Source Location: (193:5,13 [46] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml)
+Source Location: (195:5,13 [46] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml)
 |for(var i = 0; i < 5; i++) {
                 |
 Generated Location: (962:19,13 [46] )
 |for(var i = 0; i < 5; i++) {
                 |
 
-Source Location: (337:7,50 [23] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml)
+Source Location: (339:7,50 [23] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml)
 |ViewBag.DefaultInterval|
 Generated Location: (1403:27,53 [23] )
 |ViewBag.DefaultInterval|
 
-Source Location: (387:7,100 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml)
+Source Location: (389:7,100 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml)
 |true|
 Generated Location: (1809:34,100 [4] )
 |true|
 
-Source Location: (420:8,25 [15] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml)
+Source Location: (422:8,25 [15] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml)
 |
             }|
 Generated Location: (1973:39,25 [15] )

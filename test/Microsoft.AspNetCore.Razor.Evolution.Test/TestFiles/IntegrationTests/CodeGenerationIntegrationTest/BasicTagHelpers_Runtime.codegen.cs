@@ -1,4 +1,4 @@
-#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "02f53fe4a386cdc0885235e5fd3f5d6d317dd4d6"
+#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "56c40717284b82fcb2ee9f60f09e8c6c0bda8959"
 namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 {
     #line hidden

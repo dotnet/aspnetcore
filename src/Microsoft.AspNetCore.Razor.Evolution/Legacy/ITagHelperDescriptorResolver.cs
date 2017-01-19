@@ -10,14 +10,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
     /// </summary>
     internal interface ITagHelperDescriptorResolver
     {
-        /// <summary>
-        /// Resolves <see cref="TagHelperDescriptor"/>s based on the given <paramref name="resolutionContext"/>.
-        /// </summary>
-        /// <param name="resolutionContext">
-        /// <see cref="TagHelperDescriptorResolutionContext"/> used to resolve descriptors for the Razor page.
-        /// </param>
-        /// <returns>An <see cref="IEnumerable{TagHelperDescriptor}"/> of <see cref="TagHelperDescriptor"/>s based
-        /// on the given <paramref name="resolutionContext"/>.</returns>
-        IEnumerable<TagHelperDescriptor> Resolve(TagHelperDescriptorResolutionContext resolutionContext);
+        IEnumerable<TagHelperDescriptor> Resolve(ErrorSink errorSink);
     }
 }

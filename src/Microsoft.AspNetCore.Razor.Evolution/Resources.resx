@@ -120,6 +120,12 @@
   <data name="FeatureDependencyMissing" xml:space="preserve">
     <value>The '{0}' feature requires a '{1}' provided by the '{2}'.</value>
   </data>
+  <data name="InvalidTagHelperLookupText" xml:space="preserve">
+    <value>Invalid tag helper directive look up text '{0}'. The correct look up text format is: "typeName, assemblyName".</value>
+  </data>
+  <data name="InvalidTagHelperPrefixValue" xml:space="preserve">
+    <value>Invalid tag helper directive '{0}' value. '{1}' is not allowed in prefix '{2}'.</value>
+  </data>
   <data name="IRBuilder_PopInvalid" xml:space="preserve">
     <value>The '{0}' operation is not valid when the builder is empty.</value>
   </data>
@@ -131,5 +137,11 @@
   </data>
   <data name="PhaseMustBeInitialized" xml:space="preserve">
     <value>The phase must be initialized by setting the '{0}' property.</value>
+  </data>
+  <data name="TagHelperAssemblyNameCannotBeEmptyOrNull" xml:space="preserve">
+    <value>Tag helper directive assembly name cannot be null or empty.</value>
+  </data>
+  <data name="TagHelperAssemblyCouldNotBeResolved" xml:space="preserve">
+    <value>The assembly '{0}' could not be resolved or contains no tag helpers.</value>
   </data>
 </root>

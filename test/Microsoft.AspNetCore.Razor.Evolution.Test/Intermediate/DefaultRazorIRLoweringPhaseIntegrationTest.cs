@@ -156,13 +156,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         public void Lower_TagHelpers()
         {
             // Arrange
-            var codeDocument = TestRazorCodeDocument.Create(@"<span val=""@Hello World""></span>");
+            var codeDocument = TestRazorCodeDocument.Create(@"@addTagHelper *, TestAssembly
+<span val=""@Hello World""></span>");
             var tagHelpers = new[]
             {
                 new TagHelperDescriptor
                 {
                     TagName = "span",
-                    TypeName = "SpanTagHelper"
+                    TypeName = "SpanTagHelper",
+                    AssemblyName = "TestAssembly",
                 }
             };
 
@@ -196,17 +198,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         public void Lower_TagHelpersWithBoundAttribute()
         {
             // Arrange
-            var codeDocument = TestRazorCodeDocument.Create("<input bound='foo' />");
+            var codeDocument = TestRazorCodeDocument.Create(@"@addTagHelper *, TestAssembly
+<input bound='foo' />");
             var descriptor = new TagHelperDescriptor
             {
                 TagName = "input",
                 TypeName = "InputTagHelper",
-                Attributes = new[] { new TagHelperAttributeDescriptor
+                AssemblyName = "TestAssembly",
+                Attributes = new[] 
                 {
-                    Name = "bound",
-                    PropertyName = "FooProp",
-                    TypeName = "System.String"
-                } }
+                    new TagHelperAttributeDescriptor
+                    {
+                        Name = "bound",
+                        PropertyName = "FooProp",
+                        TypeName = "System.String"
+                    }
+                }
             };
 
             // Act
@@ -348,21 +355,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             Assert.NotNull(irDocument);
 
             return irDocument;
-        }
-
-        private class TestTagHelperDescriptorResolver : ITagHelperDescriptorResolver
-        {
-            private readonly IEnumerable<TagHelperDescriptor> _descriptors;
-
-            public TestTagHelperDescriptorResolver(IEnumerable<TagHelperDescriptor> descriptors)
-            {
-                _descriptors = descriptors;
-            }
-
-            public IEnumerable<TagHelperDescriptor> Resolve(TagHelperDescriptorResolutionContext resolutionContext)
-            {
-                return _descriptors;
-            }
         }
     }
 }

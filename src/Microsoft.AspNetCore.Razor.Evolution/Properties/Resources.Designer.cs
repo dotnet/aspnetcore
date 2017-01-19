@@ -27,6 +27,38 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         }
 
         /// <summary>
+        /// Invalid tag helper directive look up text '{0}'. The correct look up text format is: "typeName, assemblyName".
+        /// </summary>
+        internal static string InvalidTagHelperLookupText
+        {
+            get { return GetString("InvalidTagHelperLookupText"); }
+        }
+
+        /// <summary>
+        /// Invalid tag helper directive look up text '{0}'. The correct look up text format is: "typeName, assemblyName".
+        /// </summary>
+        internal static string FormatInvalidTagHelperLookupText(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("InvalidTagHelperLookupText"), p0);
+        }
+
+        /// <summary>
+        /// Invalid tag helper directive '{0}' value. '{1}' is not allowed in prefix '{2}'.
+        /// </summary>
+        internal static string InvalidTagHelperPrefixValue
+        {
+            get { return GetString("InvalidTagHelperPrefixValue"); }
+        }
+
+        /// <summary>
+        /// Invalid tag helper directive '{0}' value. '{1}' is not allowed in prefix '{2}'.
+        /// </summary>
+        internal static string FormatInvalidTagHelperPrefixValue(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("InvalidTagHelperPrefixValue"), p0, p1, p2);
+        }
+
+        /// <summary>
         /// The '{0}' operation is not valid when the builder is empty.
         /// </summary>
         internal static string IRBuilder_PopInvalid
@@ -88,6 +120,38 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         internal static string FormatPhaseMustBeInitialized(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("PhaseMustBeInitialized"), p0);
+        }
+
+        /// <summary>
+        /// Tag helper directive assembly name cannot be null or empty.
+        /// </summary>
+        internal static string TagHelperAssemblyNameCannotBeEmptyOrNull
+        {
+            get { return GetString("TagHelperAssemblyNameCannotBeEmptyOrNull"); }
+        }
+
+        /// <summary>
+        /// Tag helper directive assembly name cannot be null or empty.
+        /// </summary>
+        internal static string FormatTagHelperAssemblyNameCannotBeEmptyOrNull()
+        {
+            return GetString("TagHelperAssemblyNameCannotBeEmptyOrNull");
+        }
+
+        /// <summary>
+        /// The assembly '{0}' could not be resolved or contains no tag helpers.
+        /// </summary>
+        internal static string TagHelperAssemblyCouldNotBeResolved
+        {
+            get { return GetString("TagHelperAssemblyCouldNotBeResolved"); }
+        }
+
+        /// <summary>
+        /// The assembly '{0}' could not be resolved or contains no tag helpers.
+        /// </summary>
+        internal static string FormatTagHelperAssemblyCouldNotBeResolved(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperAssemblyCouldNotBeResolved"), p0);
         }
 
         private static string GetString(string name, params string[] formatterNames)

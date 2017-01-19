@@ -1,4 +1,4 @@
-#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SingleTagHelperWithNewlineBeforeAttributes.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "83a2d9976b209020f80917aa61a3338e37d3c446"
+#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SingleTagHelperWithNewlineBeforeAttributes.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "1fcd2e2ee0b7146c8c0ec8a1721b4ffdc71e9f1e"
 namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 {
     #line hidden

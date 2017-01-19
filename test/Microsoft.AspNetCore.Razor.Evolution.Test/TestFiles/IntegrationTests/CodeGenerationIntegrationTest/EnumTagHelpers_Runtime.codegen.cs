@@ -1,4 +1,4 @@
-#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EnumTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "f9124dcd7da8c06ab193a971690c676c5e0adaac"
+#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EnumTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "c55ebb3869f93768c36d432f769272b9f8feeb0b"
 namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 {
     #line hidden
@@ -68,7 +68,7 @@ __TestNamespace_InputTagHelper.Value = MyEnum.MyValue;
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "class", 1, global::Microsoft.AspNetCore.Razor.Evolution.Legacy.HtmlAttributeValueStyle.DoubleQuotes);
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EnumTagHelpers.cshtml"
-AddHtmlAttributeValue("", 128, MyEnum.MySecondValue, 128, 21, false);
+AddHtmlAttributeValue("", 130, MyEnum.MySecondValue, 130, 21, false);
 
 #line default
 #line hidden

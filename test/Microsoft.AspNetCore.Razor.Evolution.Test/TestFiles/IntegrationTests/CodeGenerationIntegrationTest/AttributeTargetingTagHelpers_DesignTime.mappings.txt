@@ -1,9 +1,9 @@
-Source Location: (184:5,36 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/AttributeTargetingTagHelpers.cshtml)
+Source Location: (187:5,36 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/AttributeTargetingTagHelpers.cshtml)
 |true|
 Generated Location: (1565:25,42 [4] )
 |true|
 
-Source Location: (230:6,36 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/AttributeTargetingTagHelpers.cshtml)
+Source Location: (233:6,36 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/AttributeTargetingTagHelpers.cshtml)
 |true|
 Generated Location: (2218:35,42 [4] )
 |true|

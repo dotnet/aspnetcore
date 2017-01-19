@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 {
@@ -24,17 +22,20 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     new TagHelperDescriptor
                     {
                         TagName = "span",
-                        TypeName = "SpanTagHelper"
+                        TypeName = "SpanTagHelper",
+                        AssemblyName = "TestAssembly",
                     },
                     new TagHelperDescriptor
                     {
                         TagName = "div",
-                        TypeName = "DivTagHelper"
+                        TypeName = "DivTagHelper",
+                        AssemblyName = "TestAssembly",
                     },
                     new TagHelperDescriptor
                     {
                         TagName = "input",
                         TypeName = "InputTagHelper",
+                        AssemblyName = "TestAssembly",
                         Attributes = new[]
                         {
                             new TagHelperAttributeDescriptor
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "a",
                         TypeName = "TestNamespace.ATagHelper",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         RequiredAttributes = new[]
                         {
                             new TagHelperRequiredAttributeDescriptor
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "a",
                         TypeName = "TestNamespace.ATagHelperMultipleSelectors",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         RequiredAttributes = new[]
                         {
                             new TagHelperRequiredAttributeDescriptor
@@ -107,7 +108,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "input",
                         TypeName = "TestNamespace.InputTagHelper",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         Attributes = new TagHelperAttributeDescriptor[]
                         {
                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
@@ -127,7 +128,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "input",
                         TypeName = "TestNamespace.InputTagHelper2",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         Attributes = new TagHelperAttributeDescriptor[]
                         {
                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
@@ -145,7 +146,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "*",
                         TypeName = "TestNamespace.CatchAllTagHelper",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         RequiredAttributes = new[]
                         {
                             new TagHelperRequiredAttributeDescriptor
@@ -161,7 +162,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "*",
                         TypeName = "TestNamespace.CatchAllTagHelper2",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         RequiredAttributes = new[]
                         {
                             new TagHelperRequiredAttributeDescriptor
@@ -185,7 +186,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "*",
                         TypeName = "TestNamespace.CatchAllTagHelper",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         Attributes = new[]
                         {
                             new TagHelperAttributeDescriptor
@@ -201,7 +202,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "input",
                         TypeName = "TestNamespace.InputTagHelper",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         Attributes = new[]
                         {
                             new TagHelperAttributeDescriptor
@@ -227,7 +228,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "*",
                         TypeName = "TestNamespace.CatchAllTagHelper",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         Attributes = new[]
                         {
                             new TagHelperAttributeDescriptor
@@ -283,7 +284,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "*",
                         TypeName = "TestNamespace.CatchAllTagHelper",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         Attributes = new[]
                         {
                             new TagHelperAttributeDescriptor
@@ -303,7 +304,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "input",
                         TypeName = "TestNamespace.InputTagHelper",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         Attributes = new[]
                         {
                             new TagHelperAttributeDescriptor
@@ -341,7 +342,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "input",
                         TypeName = "TestNamespace.InputTagHelper",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         Attributes = new[]
                         {
                             new TagHelperAttributeDescriptor
@@ -369,7 +370,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "*",
                         TypeName = "TestNamespace.CatchAllTagHelper",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         Attributes = new TagHelperAttributeDescriptor[]
                         {
                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
@@ -381,7 +382,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "*",
                         TypeName = "TestNamespace.CatchAllTagHelper",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         Attributes = new TagHelperAttributeDescriptor[]
                         {
                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
@@ -393,7 +394,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "input",
                         TypeName = "TestNamespace.InputTagHelper",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         Attributes = new TagHelperAttributeDescriptor[]
                         {
                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
@@ -405,7 +406,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "input",
                         TypeName = "TestNamespace.InputTagHelper",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         Attributes = new TagHelperAttributeDescriptor[]
                         {
                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
@@ -429,14 +430,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "p",
                         TypeName = "TestNamespace.PTagHelper",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "class" } },
                     },
                     new TagHelperDescriptor
                     {
                         TagName = "input",
                         TypeName = "TestNamespace.InputTagHelper",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         Attributes = new TagHelperAttributeDescriptor[]
                         {
                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
@@ -447,7 +448,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "input",
                         TypeName = "TestNamespace.InputTagHelper2",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         Attributes = new TagHelperAttributeDescriptor[]
                         {
                             new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),
@@ -463,7 +464,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "*",
                         TypeName = "TestNamespace.CatchAllTagHelper",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "catchAll" } },
                     }
                 };
@@ -480,7 +481,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "input",
                         TypeName = "TestNamespace.InputTagHelper1",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         Attributes = new[]
                         {
                             new TagHelperAttributeDescriptor
@@ -529,7 +530,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     {
                         TagName = "input",
                         TypeName = "TestNamespace.InputTagHelper2",
-                        AssemblyName = "SomeAssembly",
+                        AssemblyName = "TestAssembly",
                         Attributes = new[]
                         {
                             new TagHelperAttributeDescriptor
@@ -578,7 +579,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     Prefix = prefix,
                     TagName = "p",
                     TypeName = "TestNamespace.PTagHelper",
-                    AssemblyName = "SomeAssembly",
+                    AssemblyName = "TestAssembly",
                     Attributes = new TagHelperAttributeDescriptor[]
                     {
                         new TagHelperAttributeDescriptor("age", pAgePropertyInfo)
@@ -590,7 +591,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     Prefix = prefix,
                     TagName = "input",
                     TypeName = "TestNamespace.InputTagHelper",
-                    AssemblyName = "SomeAssembly",
+                    AssemblyName = "TestAssembly",
                     Attributes = new TagHelperAttributeDescriptor[]
                     {
                         new TagHelperAttributeDescriptor("type", inputTypePropertyInfo)
@@ -602,7 +603,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     Prefix = prefix,
                     TagName = "input",
                     TypeName = "TestNamespace.InputTagHelper2",
-                    AssemblyName = "SomeAssembly",
+                    AssemblyName = "TestAssembly",
                     Attributes = new TagHelperAttributeDescriptor[]
                     {
                         new TagHelperAttributeDescriptor("type", inputTypePropertyInfo),

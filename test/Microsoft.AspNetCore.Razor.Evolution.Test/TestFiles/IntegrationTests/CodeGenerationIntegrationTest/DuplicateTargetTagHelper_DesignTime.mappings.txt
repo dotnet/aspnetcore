@@ -1,4 +1,4 @@
-Source Location: (65:2,32 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DuplicateTargetTagHelper.cshtml)
+Source Location: (67:2,32 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DuplicateTargetTagHelper.cshtml)
 |true|
 Generated Location: (1664:26,41 [4] )
 |true|
