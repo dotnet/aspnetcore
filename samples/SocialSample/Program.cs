@@ -19,7 +19,7 @@ namespace SocialSample
                     if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_PORT")))
                     {
                         // ANCM is not hosting the process
-                        options.Listen(IPAddress.Loopback, 5000, listenOptions =>
+                        options.Listen(IPAddress.Loopback, 44318, listenOptions =>
                         {
                             // Configure SSL
                             var serverCertificate = LoadCertificate();
