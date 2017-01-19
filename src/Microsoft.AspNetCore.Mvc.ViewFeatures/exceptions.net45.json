@@ -1,0 +1,12 @@
+[
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.ViewComponentResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine get_ViewEngine()",
+        "Kind": "Removal"
+    },
+     {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.ViewComponentResult : Microsoft.AspNetCore.Mvc.ActionResult",
+        "OldMemberId": "public System.Void set_ViewEngine(Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine value)",
+        "Kind": "Removal"
+    }
+]

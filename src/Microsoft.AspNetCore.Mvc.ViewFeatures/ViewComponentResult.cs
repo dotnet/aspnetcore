@@ -52,19 +52,6 @@ namespace Microsoft.AspNetCore.Mvc
         public ITempDataDictionary TempData { get; set; }
 
         /// <summary>
-        /// <para>
-        /// This property is unused and will be removed in the next major version.
-        /// </para>
-        /// <para>
-        /// Gets or sets the <see cref="IViewEngine"/> used to locate views.
-        /// </para>
-        /// </summary>
-        /// <remarks>When <c>null</c>, an instance of <see cref="ICompositeViewEngine"/> from
-        /// <c>ActionContext.HttpContext.RequestServices</c> is used.</remarks>
-        [Obsolete("This property is unused and will be removed in the next major version.")]
-        public IViewEngine ViewEngine { get; set; }
-
-        /// <summary>
         /// Gets or sets the Content-Type header for the response.
         /// </summary>
         public string ContentType { get; set; }
