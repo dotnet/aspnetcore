@@ -95,7 +95,7 @@ namespace OpenIdConnect.AzureAdSample
                         var result = await authContext.AcquireTokenByAuthorizationCodeAsync(
                             context.ProtocolMessage.Code, new Uri(currentUri), credential, resource);
 
-                        context.HandleCodeRedemption();
+                        context.HandleCodeRedemption(result.AccessToken, result.IdToken);
                     }
                 }
             });
