@@ -20,11 +20,14 @@
         <PackagesOutputPath>$(ArtifactsPath)Signed\Packages\</PackagesOutputPath>
         <TimestampFreePackagesOutputPath>$(ArtifactsPath)Signed\Packages-NoTimeStamp\</TimestampFreePackagesOutputPath>
         <SymbolsOutputPath>$(ArtifactsPath)Signed\Symbols\</SymbolsOutputPath>
+        <SignedVSIXPath>$(ArtifactsPath)Signed\VSIX\</SignedVSIXPath>
     </PropertyGroup>
 
     <PropertyGroup>
         <UnsignedPackagesPath>$(IntermediateOutputPath)UnsignedPackages\</UnsignedPackagesPath>
         <UnsignedSymbolPackagesPath>$(IntermediateOutputPath)symbols\UnsignedPackages\</UnsignedSymbolPackagesPath>
+        <UnsignedVSIXPath>$(IntermediateOutputPath)UnsignedVSIX\</UnsignedVSIXPath>
+        <UnsignedVSIXWithSignedBinariesPath>$(IntermediateOutputPath)UnsignedVSIXWithSignedBinaries\</UnsignedVSIXWithSignedBinariesPath>
         <UnsignedBinariesPath>$(DNXBinPath)FilesToSign\</UnsignedBinariesPath>
         <BinScopePackagesPath>$(IntermediateOutputPath)\BinScopePackages\</BinScopePackagesPath>
 
@@ -34,8 +37,9 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <CodeSignCertificates>400</CodeSignCertificates>
-        <CodeSignDisplayName>Microsoft ASP.NET</CodeSignDisplayName>
+        <BinaryCodeSignCertificates>400</BinaryCodeSignCertificates>
+        <VSIXCodeSignCertificates>100040160</VSIXCodeSignCertificates>
+        <CodeSignDisplayName>Microsoft ASP.NET Core</CodeSignDisplayName>
         <CodeSignUrl>http://www.asp.net/</CodeSignUrl>
         <VerifySignatures Condition="'$(VerifySignatures)' == ''">true</VerifySignatures>
         <CodeSignCreateTestJob Condition="'$(CodeSignCreateTestJob)' == ''">false</CodeSignCreateTestJob>
@@ -43,10 +47,10 @@
 
     <ItemDefinitionGroup>
         <BinariesToSign>
-            <Certificates>$(CodeSignCertificates)</Certificates>
-            <Description>Signing DNX binaries</Description>
+            <Description>Signing AspNetCore binaries</Description>
             <DisplayName>$(CodeSignDisplayName)</DisplayName>
             <Url>$(CodeSignUrl)</Url>
+            <Certificates>$(BinaryCodeSignCertificates)</Certificates>
         </BinariesToSign>
     </ItemDefinitionGroup>
 </Project>

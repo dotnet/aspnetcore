@@ -26,22 +26,38 @@
     <Target Name="CopyAndExtractUnsignedPackages" DependsOnTargets="$(Clean)">
         <MakeDir Directories="$(OutputPath)" />
         <MakeDir Directories="$(CoherenceDestinationDir)" />
+        <MakeDir Directories="$(CoherenceDestinationDir)vsix" />
+
+        <PropertyGroup>
+            <RazorVSIXPath>$(RAZOR_VSIX_DROP_LOCATION)\build\Microsoft.VisualStudio.RazorExtension.vsix</RazorVSIXPath>
+        </PropertyGroup>
 
         <Error Text="COHERENCE_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence\{build-number}"
             Condition=" '$(COHERENCE_DROP_LOCATION)' == '' " />
 
+        <Error Text="RAZOR_VSIX_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Razor-Vsix\{branch}\{build-number}"
+            Condition=" '$(RAZOR_VSIX_DROP_LOCATION)' == '' " />
+
         <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MIR /MT $(COHERENCE_DROP_LOCATION) $(CoherenceDestinationDir) /XD build packages-expanded
-                       IF %ERRORLEVEL% LEQ 1 exit 0" />
+                       IF %ERRORLEVEL% LEQ 3 exit 0" />
+
+        <Copy SourceFiles="$(RazorVSIXPath)" DestinationFolder="$(CoherenceDestinationDir)vsix" />
 
         <ItemGroup>
-            <UnsignedPackages Include="$(CoherenceDestinationDir)\ship\*.nupkg" />
-            <UnsignedSymbolPackages Include="$(CoherenceDestinationDir)\symbols\Microsoft.Data.Sqlite*.nupkg" />
+            <UnsignedPackages Include="$(CoherenceDestinationDir)ship\*.nupkg" />
+            <UnsignedSymbolPackages Include="$(CoherenceDestinationDir)symbols\Microsoft.Data.Sqlite*.nupkg" />
+            <UnsignedVSIX Include="$(CoherenceDestinationDir)vsix\*.vsix" />
         </ItemGroup>
+
+        <PropertyGroup>
+            <UnzipCommand>$(DNXToolsPath)7za.exe x -y -scsUTF-8</UnzipCommand>
+        </PropertyGroup>
 
         <Message Text="%(UnsignedPackages.Identity)" Importance="high" />
 
-        <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)') %(UnsignedPackages.Identity)" />
-        <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(UnsignedSymbolPackages->'$(UnsignedSymbolPackagesPath)%(Filename)') %(UnsignedSymbolPackages.Identity)" />
+        <Exec Command="$(UnzipCommand) -o@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)') %(UnsignedPackages.Identity) > nul" />
+        <Exec Command="$(UnzipCommand) -o@(UnsignedSymbolPackages->'$(UnsignedSymbolPackagesPath)%(Filename)') %(UnsignedSymbolPackages.Identity) > nul" />
+        <Exec Command="$(UnzipCommand) -o@(UnsignedVSIX->'$(UnsignedVSIXPath)%(Filename)') %(UnsignedVSIX.Identity) > nul" />
 
         <RenameEncodedFolders RootDirectory="$(UnsignedPackagesPath)" />
     </Target>
@@ -57,6 +73,15 @@
                          $(UnsignedPackagesPath)**\*.ps1;"
             />
 
+            <_UnsignedVSIXBinaries
+                Include="$(UnsignedVSIXPath)**\Microsoft.VisualStudio.RazorExtension.dll;
+                         $(UnsignedVSIXPath)**\Microsoft.VisualStudio.LanguageServices.Razor.dll;"
+            />
+
+            <_VSIXBinariesToReplace
+                Include="$(UnsignedVSIXPath)**\*.dll"
+                Exclude="@(_UnsignedVSIXBinaries)" />
+
             <UnsignedBinaries Include="@(_UnsignedBinaries)">
                 <!-- Flattened file for signing -->
                 <UnsignedFlatFileName>$(UnsignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '__'))</UnsignedFlatFileName>
@@ -65,10 +90,18 @@
                 <SymbolsBinaryFullName>$(UnsignedSymbolPackagesPath)$([System.String]::new('%(RecursiveDir)').Substring(0, $([System.String]::new('%(RecursiveDir)').IndexOf('\')))).symbols$([System.String]::new('%(RecursiveDir)').Substring($([System.String]::new('%(RecursiveDir)').IndexOf('\'))))%(Filename)%(Extension)</SymbolsBinaryFullName>
             </UnsignedBinaries>
 
+            <UnsignedVSIXBinaries Include="@(_UnsignedVSIXBinaries)">
+                <!-- Flattened file for signing -->
+                <UnsignedFlatFileName>$(UnsignedVSIXPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '__'))</UnsignedFlatFileName>
+                <SignedFlatFileName>$(SignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '__'))</SignedFlatFileName>
+            </UnsignedVSIXBinaries>
+
             <PackageBinariesToSign Include="%(UnsignedBinaries.UnsignedFlatFileName)" />
+            <VSIXBinariesToSign Include="%(UnsignedVSIXBinaries.UnsignedFlatFileName)" />
         </ItemGroup>
 
         <Copy SourceFiles="@(UnsignedBinaries)" DestinationFiles="@(UnsignedBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(UnsignedVSIXBinaries)" DestinationFiles="@(UnsignedVSIXBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
     </Target>
 
     <Target Name="SignFiles" DependsOnTargets="PrepareFilesForSigning">
@@ -76,23 +109,19 @@
         <MakeDir Directories="$(CodeSignScriptsPath)" />
 
         <ItemGroup>
-            <BinariesToSign Include="@(PackageBinariesToSign)">
-                <CopyScript>ProjectKBinariesAuthentiCode400.bat</CopyScript>
-                <CopyScriptTargetPath>$(SignedOutputPath)</CopyScriptTargetPath>
-            </BinariesToSign>
+            <BinariesToSign Include="
+                @(PackageBinariesToSign);
+                @(VSIXBinariesToSign)" />
         </ItemGroup>
 
         <SubmitCodeSignJob
             Approvers="$(CodeSignApprovers)"
             Certificates="%(Certificates)"
-            CopyScript="$(CodeSignScriptsPath)\%(CopyScript)"
-            CopyScriptRemoveTargetFolder="false"
-            CopyScriptTargetPath="%(CopyScriptTargetPath)"
             Description="%(Description)"
             DisplayName="%(DisplayName)"
             DisplayUrl="%(Url)"
             Files="@(BinariesToSign)"
-            GenerateCopyScript="true"
+            GenerateCopyScript="false"
             Poll="false"
             SSL="true"
             CreateTestJob="$(CodeSignCreateTestJob)"
@@ -109,11 +138,20 @@
 
     <Target Name="ReplaceUnsignedFiles" DependsOnTargets="SignFiles">
         <Copy SourceFiles="@(UnsignedBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedBinaries->'%(FullPath)')" />
+        <Copy SourceFiles="@(UnsignedVSIXBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedVSIXBinaries->'%(FullPath)')" />
         <ItemGroup>
             <!-- only overwrite existing unsigned binaries in the symbols packages. We don't create symbols-packages for all packages. -->
             <_SignedSymbolsBinaries Include="@(UnsignedBinaries)" Condition="Exists('%(SymbolsBinaryFullName)')" />
         </ItemGroup>
         <Copy SourceFiles="@(_SignedSymbolsBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(_SignedSymbolsBinaries->'%(SymbolsBinaryFullName)')" />
+
+        <ItemGroup>
+            <VSIXBinariesToReplace Include="$(UnsignedPackagesPath)**\net451\%(_VSIXBinariesToReplace.FileName)%(_VSIXBinariesToReplace.Extension)">
+                <DestinationPath>%(_VSIXBinariesToReplace.FullPath)</DestinationPath>
+            </VSIXBinariesToReplace>
+        </ItemGroup>
+
+        <Copy SourceFiles="%(VSIXBinariesToReplace.FullPath)" DestinationFiles="%(VSIXBinariesToReplace.DestinationPath)" />
     </Target>
 
     <Target Name="UpdateLicenseURLs" DependsOnTargets="SignFiles">
@@ -136,7 +174,7 @@
 
     </Target>
 
-    <Target Name="RebuildPackages" DependsOnTargets="ReplaceUnsignedFiles;UpdateLicenseURLs">
+    <Target Name="RebuildPackages" DependsOnTargets="ReplaceUnsignedFiles;UpdateLicenseURLs;RebuildVSIXes">
         <MakeDir Directories="$(PackagesOutputPath)" />
         <MakeDir Directories="$(SymbolsOutputPath)" />
 
@@ -160,13 +198,59 @@
         </ItemGroup>
     </Target>
 
+    <!-- Repacks and signs VSIXes -->
+    <Target Name="RebuildVSIXes">
+        <ItemGroup>
+            <VSIXManifest Include="$(UnsignedVSIXPath)**\extension.vsixmanifest" />
+        </ItemGroup>
+
+        <MSBuild Projects="dnx.msbuild"
+                 Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);VSIXManifest=%(VSIXManifest.Identity);OutDir=$(UnsignedVSIXWithSignedBinariesPath)"
+                 Targets="RepackVSIX"/>
+
+        <ItemGroup>
+            <VSIXToSign Include="$(UnsignedVSIXWithSignedBinariesPath)**\*.vsix" />
+        </ItemGroup>
+
+        <SubmitCodeSignJob
+            Approvers="$(CodeSignApprovers)"
+            Certificates="$(VSIXCodeSignCertificates)"
+            Description="Signing AspNetCore VSIX"
+            DisplayName="$(CodeSignDisplayName)"
+            DisplayUrl="$(CodeSignUrl)"
+            Files="@(VSIXToSign)"
+            GenerateCopyScript="false"
+            Poll="false"
+            SSL="true"
+            CreateTestJob="$(CodeSignCreateTestJob)"
+            Test="$(TestCodeSign)">
+            <Output TaskParameter="JobNumber" ItemName="CodeSignJobNumbers" />
+            <Output TaskParameter="CompletionPath" PropertyName="CodeSignCompletionPath" />
+        </SubmitCodeSignJob>
+
+        <WaitForCodeSignJobs JobNumbers="@(CodeSignJobNumbers)" Test="$(TestCodeSign)" />
+
+        <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MIR /MT $(CodeSignCompletionPath) $(SignedVSIXPath)
+                       IF %ERRORLEVEL% LEQ 3 exit 0" />
+    </Target>
+
     <Target Name="RebuildPackage">
         <PropertyGroup>
             <WorkingDir>$([System.IO.Path]::GetDirectoryName($(NuSpecFile)))</WorkingDir>
             <PackageName>$([System.IO.Path]::GetFileName($(WorkingDir)))</PackageName>
         </PropertyGroup>
         <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
-        <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(PackageName).nupkg *" WorkingDirectory="$(WorkingDir)" />
+        <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(PackageName).nupkg * > nul" WorkingDirectory="$(WorkingDir)" />
+    </Target>
+
+    <Target Name="RepackVSIX">
+        <PropertyGroup>
+            <WorkingDir>$([System.IO.Path]::GetDirectoryName($(VSIXManifest)))</WorkingDir>
+            <VSIXName>$([System.IO.Path]::GetFileName($(WorkingDir)))</VSIXName>
+        </PropertyGroup>
+
+        <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
+        <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(VSIXName).vsix" WorkingDirectory="$(WorkingDir)" />
     </Target>
 
     <Target Name="InstallNuGetPackageVerifier" DependsOnTargets="RebuildPackages" Condition="'$(VerifySignatures)' != 'false'">
@@ -386,7 +470,7 @@
             <BinScopeTargetFiles Include="$(UnsignedSymbolPackagesPath)native\**\Microsoft*.pdb" />
         </ItemGroup>
     </Target>
-     
+
     <UsingTask TaskName="RenameEncodedFolders" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
         <ParameterGroup>
             <RootDirectory ParameterType="System.String" Required="true" />
