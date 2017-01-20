@@ -1,0 +1,29 @@
+<!-- this is a dummy project to workaround https://github.com/NuGet/Home/issues/4254 -->
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <Import Project="..\build\common.props" />
+
+  <PropertyGroup>
+    <PackageOutputPath Condition="'$(PackageOutputPath)'==''">$(MSBuildThisFileDirectory)..\artifacts\build</PackageOutputPath>
+    <NuspecBasePath>$(MSBuildThisFileDirectory)\$(PackageId)</NuspecBasePath>
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <Description>$(PackageId)</Description>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>contentFiles</ContentTargetFolders>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(NuspecBasePath)' != ''">
+    <Compile Include="$(NuspecBasePath)\**\*.cs" Pack="true" />
+    <EmbeddedResource Include="$(NuspecBasePath)\**\*.resx" Pack="true" />
+    <PackageReference Update="@(PackageReference)" PrivateAssets="All" />
+  </ItemGroup>
+
+  <Target Name="PackAll">
+    <ItemGroup>
+      <Packages Include="$([System.IO.Directory]::GetDirectories(&quot;$(MSBuildThisFileDirectory)&quot;, '*.Sources'))" />
+    </ItemGroup>
+    <MSBuild Projects="$(MSBuildThisFile)"
+             Targets="Pack"
+             Properties="PackageVersion=$(Version);PackageId=%(Packages.FileName)%(Packages.Extension);NoBuild=true" />
+  </Target>
+</Project>

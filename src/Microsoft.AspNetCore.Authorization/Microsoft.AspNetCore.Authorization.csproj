@@ -14,18 +14,9 @@ Microsoft.AspNetCore.Authorization.AuthorizeAttribute</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="**\*.cs" />
-    <EmbeddedResource Include="**\*.resx" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="1.2.0-*" />
-    <!--
-      TODO remove files in __TemporarySources__ and use this content files package
-      <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" />
-     -->
-    <PackageReference Include="NETStandard.Library" Version="1.6.2-*" />
+    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">

@@ -12,23 +12,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="**\*.cs" />
-    <EmbeddedResource Include="**\*.resx" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="1.2.0-*" />
-    <!--
-      TODO remove files in __TemporarySources__ and use this content files package
-      <PackageReference Include="Microsoft.Extensions.SecurityHelper.Sources"  Version="1.2.0-*" PrivateAssets="All" />
-      <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" />
-     -->
+    <PackageReference Include="Microsoft.Extensions.SecurityHelper.Sources"  Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="1.2.0-*" />
-    <PackageReference Include="NETStandard.Library" Version="1.6.2-*" />
   </ItemGroup>
 
 </Project>

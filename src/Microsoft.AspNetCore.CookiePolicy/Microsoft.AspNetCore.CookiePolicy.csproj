@@ -11,14 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="**\*.cs" />
-    <EmbeddedResource Include="**\*.resx" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="1.2.0-*" />
-    <PackageReference Include="NETStandard.Library" Version="1.6.2-*" />
   </ItemGroup>
 
 </Project>
