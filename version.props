@@ -1,8 +1,7 @@
 <!-- This file may be overwritten by automation. Only values allowed here are VersionPrefix and VersionSuffix.  -->
 <Project>
     <PropertyGroup>
-        <Version>1.1.0-rtm</Version>
-        <Version Condition="'$(BuildNumber)'!=''">$(Version)-$(BuildNumber)</Version>
-        <PackageVersion>1.1.0</PackageVersion>
+        <Version>1.1.0-msbuild3-update1</Version>
+        <PackageVersion>1.1.0-msbuild3-update1</PackageVersion>
     </PropertyGroup>
 </Project>

@@ -9,6 +9,8 @@
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)../build/Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
+    <Copyright Condition="'$(Copyright)'==''">© Microsoft Corporation. All rights reserved.</Copyright>
+    <NeutralLanguage Condition="'$(NeutralLanguage)'==''">en-US</NeutralLanguage>
   </PropertyGroup>
 
    <!-- Workaround for RC3 VS -->
