@@ -10,49 +10,26 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
-namespace PushCoherence
+namespace CreateTimestampFreePackages
 {
     class Program
     {
         public static void Main(string[] args)
         {
-            if (args.Length < 3)
+            if (args.Length != 1)
             {
-                Console.Error.WriteLine("Usage PushCoherence <NUGET_FEED> <DROP_ROOT> <APIKEY>");
+                Console.Error.WriteLine("Usage CreateTimestampFreePackages <DROP_ROOT>");
             }
 
-            var nugetFeed = args[0];
-            var dropRoot = args[1];
-            var apiKey = args[2];
-
-            if (string.IsNullOrEmpty(nugetFeed))
-            {
-                throw new Exception("NUGET_FEED not specified");
-            }
+            var dropRoot = args[0];
 
             if (string.IsNullOrEmpty(dropRoot))
             {
                 throw new Exception("DROP_ROOT not specified");
             }
 
-            if (string.IsNullOrEmpty(apiKey))
-            {
-                throw new Exception("APIKEY not specified");
-            }
-
             var artifactsDir = Path.Combine(Directory.GetCurrentDirectory(), "artifacts");
-            var packagesDir = Path.Combine(artifactsDir, "Signed", "Packages");
-
-            var packagesToPush = new[]
-            {
-                packagesDir,
-                Path.Combine(artifactsDir, "coherence", "noship"),
-                Path.Combine(artifactsDir, "coherence", "ext"),
-            }.SelectMany(d => Directory.EnumerateFiles(d, "*.nupkg"));
-            Console.WriteLine("Pushing packages from {0} to feed {1}", packagesDir, nugetFeed);
-
-            PackagePublisher.PublishToFeedAsync(packagesToPush, nugetFeed, apiKey).Wait();
-
+            var packagesDir = Path.Combine(artifactsDir, "Signed", "Packages");            
             var nonTimeStampedDir = Path.Combine(artifactsDir, "Signed", "Packages-NoTimeStamp");
             Directory.CreateDirectory(nonTimeStampedDir);
             var packages = Directory.GetFiles(packagesDir, "*.nupkg");

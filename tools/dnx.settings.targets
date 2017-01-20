@@ -7,6 +7,7 @@
         <DNXRootPath>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), dnx.msbuild))\</DNXRootPath>
         <DNXBinPath>$(DNXRootPath)bin\</DNXBinPath>
         <DNXToolsPath>$(DNXRootPath)tools\</DNXToolsPath>
+        <CommandsPath>$(DNXToolsPath)commands</CommandsPath>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -17,6 +18,7 @@
         <OutputPath Condition="'$(Sign)' != 'Sign'">$(DNXBinPath)$(Configuration)\</OutputPath>
         <PoliCheckPath>$(IntermediateOutputPath)policheck\</PoliCheckPath>
         <PackagesOutputPath>$(ArtifactsPath)Signed\Packages\</PackagesOutputPath>
+        <TimestampFreePackagesOutputPath>$(ArtifactsPath)Signed\Packages-NoTimeStamp\</TimestampFreePackagesOutputPath>
         <SymbolsOutputPath>$(ArtifactsPath)Signed\Symbols\</SymbolsOutputPath>
     </PropertyGroup>
 

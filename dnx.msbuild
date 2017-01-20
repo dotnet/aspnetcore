@@ -169,14 +169,33 @@
         <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(PackageName).nupkg *" WorkingDirectory="$(WorkingDir)" />
     </Target>
 
-    <Target Name="NuGetVerify" DependsOnTargets="RebuildPackages" Condition="'$(VerifySignatures)' == 'true'">
+    <Target Name="InstallNuGetPackageVerifier" DependsOnTargets="RebuildPackages" Condition="'$(VerifySignatures)' != 'false'">
         <PropertyGroup>
             <DnxToolsFeed>https://dotnet.myget.org/F/aspnetcore-tools/api/v2</DnxToolsFeed>
-            <CommandsPath>$(DNXToolsPath)commands</CommandsPath>
         </PropertyGroup>
         <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -pre NuGetPackageVerifier -Source $(DnxToolsFeed) -out $(CommandsPath)"/>
+    </Target>
+
+    <Target Name="NuGetVerifyTimestampPackages" DependsOnTargets="RebuildPackages; InstallNuGetPackageVerifier" Condition="'$(VerifySignatures)' != 'false'">
         <Exec Command="dotnet $(CommandsPath)\NuGetPackageVerifier\NuGetPackageVerifier.dll &quot;$(PackagesOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
+    </Target>
+
+    <Target Name="CreateTimestampFreePackages" DependsOnTargets="NuGetVerifyTimestampPackages">
+        <Error Text="PUSH_NUGET_EXE is not set" Condition="'$(PUSH_NUGET_EXE)' == ''" />
+        <Exec Command="$(PUSH_NUGET_EXE) restore CreateTimestampFreePackages.sln" />
+        <MSBuild Projects="src\CreateTimestampFreePackages\CreateTimestampFreePackages.csproj" Properties="Configuration=$(Configuration)" />
+        <Exec Command="src\CreateTimestampFreePackages\bin\$(Configuration)\CreateTimestampFreePackages.exe $(DROP_ROOT)" />        
+    </Target>
+
+    <Target Name="NuGetVerifyTimestampFreePackages" DependsOnTargets="CreateTimestampFreePackages" Condition="'$(VerifySignatures)' != 'false'">       
+        <Exec Command="dotnet $(CommandsPath)\NuGetPackageVerifier\NuGetPackageVerifier.dll &quot;$(TimestampFreePackagesOutputPath) &quot; &quot;$(DNXToolsPath)NuGetPackageVerifier.json&quot;"/>
         <RemoveDir Directories="$(CommandsPath)"/>
+    </Target>
+
+    <Target Name="NuGetVerify" DependsOnTargets="InstallNuGetPackageVerifier;NuGetVerifyTimestampPackages;NuGetVerifyTimestampFreePackages" />
+
+    <Target Name="PushPackages" DependsOnTargets="NuGetVerifyTimestampFreePackages">
+        <Exec Command="$(PUSH_NUGET_EXE) push -Source $(NUGET_FEED) -ApiKey $(APIKEY) $(CoherenceSignedDestinationDir)\Packages\*.nupkg" />
     </Target>
 
     <Target Name="PoliCheck" DependsOnTargets="CopyAndExtractUnsignedPackages">
@@ -366,12 +385,6 @@
             <BinScopeTargetFiles Include="$(UnsignedSymbolPackagesPath)native\**\Microsoft*.dll" />
             <BinScopeTargetFiles Include="$(UnsignedSymbolPackagesPath)native\**\Microsoft*.pdb" />
         </ItemGroup>
-    </Target>
-
-    <Target Name="PushPackages">
-        <Exec Command="$(PUSH_NUGET_EXE) restore src\PushCoherence\PushCoherence.sln" />
-        <MSBuild Projects="src\PushCoherence\PushCoherence.csproj" Properties="Configuration=$(Configuration)" />
-        <Exec Command="src\PushCoherence\bin\$(Configuration)\PushCoherence.exe $(NUGET_FEED) $(DROP_ROOT) $(APIKEY)" />
     </Target>
      
     <UsingTask TaskName="RenameEncodedFolders" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
