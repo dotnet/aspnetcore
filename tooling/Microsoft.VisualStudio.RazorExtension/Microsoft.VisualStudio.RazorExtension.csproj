@@ -361,7 +361,7 @@
       <IncludeOutputGroupsInVSIXLocalOnly>
       </IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <ProjectReference Include="..\Microsoft.VisualStudio.LanguageServices.Razor\Microsoft.VisualStudio.LanguageServices.Razor.csproj">
+    <ProjectReference Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\Microsoft.VisualStudio.LanguageServices.Razor.csproj">
       <Project>{92114fe9-cb07-4712-9aa4-afab65ca28e1}</Project>
       <Name>Microsoft.VisualStudio.LanguageServices.Razor</Name>
       <Private>False</Private>
@@ -374,9 +374,9 @@
   <!-- Workaround for https://github.com/dotnet/sdk/issues/433 -->
   <ItemGroup>
     <VSIXSourceItem Include="..\..\src\Microsoft.CodeAnalysis.Remote.Razor\bin\$(Configuration)\net46\Microsoft.CodeAnalysis.Remote.Razor.dll" />
-    <VSIXSourceItem Include="..\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.AspNetCore.Razor.Evolution.dll" />
-    <VSIXSourceItem Include="..\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
-    <VSIXSourceItem Include="..\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.VisualStudio.LanguageServices.Razor.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.AspNetCore.Razor.Evolution.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.VisualStudio.LanguageServices.Razor.dll" />
     <Content Include="@(VSIXSourceItem)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
