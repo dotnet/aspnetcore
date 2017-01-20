@@ -14,6 +14,12 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
         public bool HotModuleReplacement { get; set; }
 
         /// <summary>
+        /// If set, overrides the URL that Webpack's client-side code will connect to when listening for updates.
+        /// This must be a root-relative URL similar to "/__webpack_hmr" (which is the default endpoint).
+        /// </summary>
+        public string HotModuleReplacementEndpoint { get; set; }
+
+        /// <summary>
         /// Overrides the internal port number that client-side HMR code will connect to.
         /// </summary>
         public int HotModuleReplacementServerPort { get; set; }

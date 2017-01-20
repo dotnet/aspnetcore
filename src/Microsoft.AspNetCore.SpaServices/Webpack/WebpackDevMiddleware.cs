@@ -78,7 +78,9 @@ namespace Microsoft.AspNetCore.Builder
             // Ideally, this would be relative to the application's PathBase (so it could work in virtual directories)
             // but it's not clear that such information exists during application startup, as opposed to within the context
             // of a request.
-            var hmrEndpoint = "/__webpack_hmr";
+            var hmrEndpoint = !string.IsNullOrEmpty(options.HotModuleReplacementEndpoint)
+                ? options.HotModuleReplacementEndpoint
+                : "/__webpack_hmr"; // Matches webpack's built-in default
 
             // Tell Node to start the server hosting webpack-dev-middleware
             var devServerOptions = new
