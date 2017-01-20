@@ -1,18 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
-
   <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <TargetFrameworks>netcoreapp1.1;net451</TargetFrameworks>
     <DefineConstants>$(DefineConstants);__RemoveThisBitTo__GENERATE_BASELINES</DefineConstants>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**\*</DefaultItemExcludes>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="..\..\shared\Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources\**\*.cs" />
     <EmbeddedResource Include="TestFiles\**\*" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor\Microsoft.AspNetCore.Razor.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Runtime\Microsoft.AspNetCore.Razor.Runtime.csproj" />
@@ -23,9 +19,10 @@
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     <PackageReference Include="xunit" Version="2.2.0-*" />
   </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
     <PackageReference Include="System.Diagnostics.TraceSource" Version="4.4.0-*" />
   </ItemGroup>
-
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
 </Project>

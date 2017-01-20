@@ -1,22 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
-
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <TargetFrameworks>netcoreapp1.1;net451</TargetFrameworks>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**\*</DefaultItemExcludes>
   </PropertyGroup>
-
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
     <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
   </PropertyGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="TestFiles\**\*" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.Razor.Workspaces\Microsoft.CodeAnalysis.Razor.Workspaces.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Evolution\Microsoft.AspNetCore.Razor.Evolution.csproj" />
@@ -27,5 +22,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
     <PackageReference Include="xunit" Version="2.2.0-*" />
   </ItemGroup>
-
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
 </Project>
