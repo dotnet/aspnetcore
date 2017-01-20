@@ -72,7 +72,8 @@ namespace Microsoft.AspNetCore.NodeServices
                     {
                         if (_currentNodeInstance == nodeInstance)
                         {
-                            DisposeNodeInstance(_currentNodeInstance, delay: ConnectionDrainingTimespan);
+                            var disposalDelay = ex.AllowConnectionDraining ? ConnectionDrainingTimespan : TimeSpan.Zero;
+                            DisposeNodeInstance(_currentNodeInstance, disposalDelay);
                             _currentNodeInstance = null;
                         }
                     }

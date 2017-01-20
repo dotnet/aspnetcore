@@ -42,6 +42,7 @@ If you haven't yet installed node-inspector, you can do so as follows:
         private readonly StringAsTempFile _entryPointScript;
         private FileSystemWatcher _fileSystemWatcher;
         private int _invocationTimeoutMilliseconds;
+        private bool _launchWithDebugging;
         private readonly Process _nodeProcess;
         private int? _nodeDebuggingPort;
         private bool _nodeProcessNeedsRestart;
@@ -78,9 +79,10 @@ If you haven't yet installed node-inspector, you can do so as follows:
             OutputLogger = nodeOutputLogger;
             _entryPointScript = new StringAsTempFile(entryPointScript);
             _invocationTimeoutMilliseconds = invocationTimeoutMilliseconds;
+            _launchWithDebugging = launchWithDebugging;
 
             var startInfo = PrepareNodeProcessStartInfo(_entryPointScript.FileName, projectPath, commandLineArguments,
-                environmentVars, launchWithDebugging, debuggingPort);
+                environmentVars, _launchWithDebugging, debuggingPort);
             _nodeProcess = LaunchNodeProcess(startInfo);
             _watchFileExtensions = watchFileExtensions;
             _fileSystemWatcher = BeginFileWatcher(projectPath);
@@ -103,10 +105,17 @@ If you haven't yet installed node-inspector, you can do so as follows:
             {
                 // This special kind of exception triggers a transparent retry - NodeServicesImpl will launch
                 // a new Node instance and pass the invocation to that one instead.
+                // Note that if the Node process is listening for debugger connections, then we need it to shut
+                // down immediately and not stay open for connection draining (because if it did, the new Node
+                // instance wouldn't able to start, because the old one would still hold the debugging port).
                 var message = _nodeProcess.HasExited
                     ? "The Node process has exited"
                     : "The Node process needs to restart";
-                throw new NodeInvocationException(message, null, nodeInstanceUnavailable: true);
+                throw new NodeInvocationException(
+                    message,
+                    details: null,
+                    nodeInstanceUnavailable: true,
+                    allowConnectionDraining: !_launchWithDebugging);
             }
 
             // Construct a new cancellation token that combines the supplied token with the configured invocation
