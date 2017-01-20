@@ -918,9 +918,15 @@ functions
         {
             public static MsBuildSolutionInfo LoadFromFile(string file)
             {
-                var info = new MsBuildSolutionInfo()
+                if (!Path.IsPathRooted(file))
                 {
-                    FilePath = file
+                    file = Path.Combine(System.IO.Directory.GetCurrentDirectory(), file);
+                }
+
+                var info = new MsBuildSolutionInfo
+                {
+                    FilePath = file,
+                    Directory = Path.GetDirectoryName(file)
                 };
 
                 var lines = File.ReadAllLines(file);
@@ -942,6 +948,7 @@ functions
             }
 
             public string FilePath { get; private set; }
+            public string Directory { get; private set; }
 
             public Version VisualStudioVersion { get; set; }
 
@@ -1054,7 +1061,8 @@ functions
                 {
                     UseShellExecute = false,
                     FileName = "dotnet",
-                    Arguments = "msbuild \"" + solution.FilePath + "\" /nologo /t:GenerateRestoreGraphFile \"/p:RestoreGraphOutputPath=" + dgJson + "\""
+                    // TODO revert to invoking on .sln file when https://github.com/Microsoft/msbuild/issues/1587 is resolve
+                    Arguments = "msbuild \"" + Path.Combine(Directory.GetCurrentDirectory(), "graph.proj") + "\" /v:q /p:WarningLevel=0 /p:RepoDir=\"" + solution.Directory + "\" /nologo /t:GenerateRestoreGraphFile \"/p:RestoreGraphOutputPath=" + dgJson + "\""
                 };
                 var p = Process.Start(psi);
                 p.WaitForExit();
