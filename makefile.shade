@@ -794,7 +794,6 @@ functions
                 "Microsoft.Data.Sqlite",
                 "Caching",
                 "Razor",
-                "RazorTooling",
                 "Hosting",
                 "AzureIntegration",
                 "EntityFramework",
