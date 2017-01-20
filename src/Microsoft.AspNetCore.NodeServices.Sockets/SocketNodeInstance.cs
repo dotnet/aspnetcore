@@ -62,11 +62,15 @@ namespace Microsoft.AspNetCore.NodeServices.Sockets
         {
             if (_connectionHasFailed)
             {
+                // _connectionHasFailed implies a protocol-level error. The old instance is no longer of any use.
+                var allowConnectionDraining = false;
+
                 // This special exception type forces NodeServicesImpl to restart the Node instance
                 throw new NodeInvocationException(
                     "The SocketNodeInstance socket connection failed. See logs to identify the reason.",
-                    null,
-                    nodeInstanceUnavailable: true);
+                    details: null,
+                    nodeInstanceUnavailable: true,
+                    allowConnectionDraining: allowConnectionDraining);
             }
 
             if (_virtualConnectionClient == null)
