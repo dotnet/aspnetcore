@@ -8,9 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="**\*.cs" />
     <Compile Include="..\shared\*.cs" />
-    <EmbeddedResource Include="**\*.resx" />
     <Content Include="TestDocument1MB.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -25,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20161123-03" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="0.3.0-*" />
     <PackageReference Include="Microsoft.AspNetCore.Server.HttpSys" Version="1.2.0-*" />
@@ -33,10 +31,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Testing" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="1.2.0-*" />
     <PackageReference Include="xunit" Version="2.2.0-*" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
-    <PackageReference Include="Microsoft.NETCore.App" Version="1.2.0-*" />
   </ItemGroup>
 
 </Project>

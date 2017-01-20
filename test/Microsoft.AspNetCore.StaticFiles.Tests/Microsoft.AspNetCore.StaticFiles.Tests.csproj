@@ -4,13 +4,10 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp1.1;net451</TargetFrameworks>
-    <RuntimeIdentifier Condition="'$(TargetFramework)'!='netcoreapp1.1'">win7-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="**\*.cs" />
     <Compile Include="..\shared\*.cs" />
-    <EmbeddedResource Include="**\*.resx" />
     <Content Include="SubFolder\**\*;TestDocument.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -19,19 +16,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.StaticFiles\Microsoft.AspNetCore.StaticFiles.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20161123-03" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.AspNetCore.Testing" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="1.2.0-*" />
     <PackageReference Include="xunit" Version="2.2.0-*" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
-    <PackageReference Include="Microsoft.NETCore.App" Version="1.2.0-*" />
   </ItemGroup>
 
 </Project>
