@@ -42,4 +42,4 @@ k-standard-goals
     }
 
 #pack-sources target='build-pack'
-    dotnet command='msbuild shared/build.proj /t:Pack /v:n'
+    dotnet command='msbuild shared/sources.csproj "/t:Restore;PackAll" /v:n'

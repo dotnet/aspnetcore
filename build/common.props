@@ -1,4 +1,5 @@
-<Project>
+<Project ToolsVersion="15.0">
+
   <Import Project="..\version.props" />
 
   <PropertyGroup>
@@ -8,13 +9,17 @@
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
-
-    <!-- Workaround for the **/*.cs **/*.resx being auto included in the SDK installed by the latest builds of VS and the rc2 SDK that we currently use -->
-    <EnableDefaultItems>false</EnableDefaultItems>
+    <NetCoreAppImplicitPackageVersion>1.2.0-*</NetCoreAppImplicitPackageVersion>
+    <NetStandardImplicitPackageVersion>1.6.2-*</NetStandardImplicitPackageVersion>
+    <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Internal.AspNetCore.Sdk" Version="1.0.0-*" PrivateAssets="All" />
+    <PackageReference Include="Internal.AspNetCore.Sdk" Version="1.0.1-*" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework' AND '$(OutputType)'=='library'">
+    <PackageReference Include="NETStandard.Library" Version="$(NetStandardImplicitPackageVersion)" />
   </ItemGroup>
 
 </Project>
