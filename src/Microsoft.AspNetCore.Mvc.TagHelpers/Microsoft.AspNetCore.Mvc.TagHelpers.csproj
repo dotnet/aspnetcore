@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>ASP.NET Core MVC default tag helpers. Contains tag helpers for anchor tags, HTML input elements, caching, scripts, links (for CSS), and more.</Description>
+    <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;aspnetcoremvc;taghelper;taghelpers</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="compiler\resources\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor\Microsoft.AspNetCore.Mvc.Razor.csproj" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Runtime" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.Primitives" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="1.2.0-*" PrivateAssets="All" />
+  </ItemGroup>
+</Project>

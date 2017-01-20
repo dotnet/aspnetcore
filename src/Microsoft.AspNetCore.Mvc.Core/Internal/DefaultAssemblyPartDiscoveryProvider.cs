@@ -17,20 +17,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     {
         internal static HashSet<string> ReferenceAssemblies { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            "Microsoft.AspNetCore.Mvc",
-            "Microsoft.AspNetCore.Mvc.Abstractions",
-            "Microsoft.AspNetCore.Mvc.ApiExplorer",
-            "Microsoft.AspNetCore.Mvc.Core",
-            "Microsoft.AspNetCore.Mvc.Cors",
-            "Microsoft.AspNetCore.Mvc.DataAnnotations",
-            "Microsoft.AspNetCore.Mvc.Formatters.Json",
-            "Microsoft.AspNetCore.Mvc.Formatters.Xml",
-            "Microsoft.AspNetCore.Mvc.Localization",
-            "Microsoft.AspNetCore.Mvc.Razor",
-            "Microsoft.AspNetCore.Mvc.Razor.Host",
-            "Microsoft.AspNetCore.Mvc.RazorPages",
-            "Microsoft.AspNetCore.Mvc.TagHelpers",
-            "Microsoft.AspNetCore.Mvc.ViewFeatures"
+            "microsoft.aspnetcore.mvc",
+            "microsoft.aspnetcore.mvc.abstractions",
+            "microsoft.aspnetcore.mvc.apiexplorer",
+            "microsoft.aspnetcore.mvc.core",
+            "microsoft.aspnetcore.mvc.cors",
+            "microsoft.aspnetcore.mvc.dataannotations",
+            "microsoft.aspnetcore.mvc.formatters.json",
+            "microsoft.aspnetcore.mvc.formatters.xml",
+            "microsoft.aspnetcore.mvc.localization",
+            "microsoft.aspnetcore.mvc.razor",
+            "microsoft.aspnetcore.mvc.razor.host",
+            "microsoft.aspnetcore.mvc.razorpages",
+            "microsoft.aspnetcore.mvc.taghelpers",
+            "microsoft.aspnetcore.mvc.viewfeatures"
         };
 
         public static IEnumerable<ApplicationPart> DiscoverAssemblyParts(string entryPointAssemblyName)

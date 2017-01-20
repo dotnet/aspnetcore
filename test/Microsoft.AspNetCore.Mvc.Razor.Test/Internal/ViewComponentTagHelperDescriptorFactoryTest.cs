@@ -56,7 +56,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
         {
             get
             {
-                var outParamType = typeof(ViewComponentTagHelperDescriptorFactoryTest).GetMethod("MethodWithOutParam").GetParameters().First().ParameterType;
                 var refParamType = typeof(ViewComponentTagHelperDescriptorFactoryTest).GetMethod("MethodWithRefParam").GetParameters().First().ParameterType;
 
                 return new TheoryData<Type, string>
@@ -69,7 +68,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
                         "System.Collections.Generic.Dictionary<global::System.String[], global::System.Collections.Generic.List<global::System.String>>" },
                     { typeof(Dictionary<string, List<string[,]>>),
                         "System.Collections.Generic.Dictionary<global::System.String, global::System.Collections.Generic.List<global::System.String[,]>>" },
-                    { outParamType, "System.Collections.Generic.List<global::System.Char*[]>" },
                     { refParamType, "System.String[]" },
                     { typeof(NonGeneric.Nested1<bool, string>.Nested2),
                         "Microsoft.AspNetCore.Mvc.Razor.Test.Internal.ViewComponentTagHelperDescriptorFactoryTest.NonGeneric.Nested1<global::System.Boolean, global::System.String>.Nested2" },
@@ -87,6 +85,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
         [MemberData(nameof(TypeData))]
         public void GetCSharpTypeName_ReturnsCorrectTypeNames(Type type, string expected)
         {
+            // Act
+            var typeName = ViewComponentTagHelperDescriptorFactory.GetCSharpTypeName(type);
+
+            // Assert
+            Assert.Equal(expected, typeName);
+        }
+
+        // Separated from GetCSharpTypeName_ReturnsCorrectTypeNames to work around problems serializing and
+        // deserializing this ref type.
+        [Fact]
+        public void GetCSharpTypeName_ReturnsCorrectTypeNames_ForOutParameter()
+        {
+            // Arrange
+            var type = typeof(ViewComponentTagHelperDescriptorFactoryTest).GetMethod("MethodWithOutParam").GetParameters().First().ParameterType;
+            var expected = "System.Collections.Generic.List<global::System.Char*[]>";
+
             // Act
             var typeName = ViewComponentTagHelperDescriptorFactory.GetCSharpTypeName(type);
 

@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>ASP.NET Core MVC cross-origin resource sharing (CORS) features.</Description>
+    <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;aspnetcoremvc;cors</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Cors" Version="1.2.0-*" />
+  </ItemGroup>
+
+</Project>

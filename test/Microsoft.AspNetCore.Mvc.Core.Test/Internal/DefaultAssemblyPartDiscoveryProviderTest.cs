@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         [Fact]
         public void CandidateResolver_ThrowsIfDependencyContextContainsDuplicateRuntimeLibraryNames()
         {
-            // Arrange 
+            // Arrange
             var upperCaseLibrary = "Microsoft.AspNetCore.Mvc";
             var mixedCaseLibrary = "microsoft.aspNetCore.mvc";
 
@@ -211,22 +211,22 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Arrange
             var excludeAssemblies = new string[]
             {
-                "Microsoft.AspNetCore.Mvc.WebApiCompatShim",
-                "Microsoft.AspNetCore.Mvc.TestCommon",
-                "Microsoft.AspNetCore.Mvc.Core.Test",
-                "Microsoft.AspNetCore.Mvc.TestDiagnosticListener.Sources",
+                "microsoft.aspnetcore.mvc.core.test",
+                "microsoft.aspnetcore.mvc.testcommon",
+                "microsoft.aspnetcore.mvc.testdiagnosticlistener",
+                "microsoft.aspnetcore.mvc.webapicompatshim",
             };
 
             var additionalAssemblies = new[]
             {
                 // The following assemblies are not reachable from Microsoft.AspNetCore.Mvc
-                "Microsoft.AspNetCore.Mvc.TagHelpers",
-                "Microsoft.AspNetCore.Mvc.Formatters.Xml",
+                "microsoft.aspnetcore.mvc.taghelpers",
+                "microsoft.aspnetcore.mvc.formatters.xml",
             };
 
             var expected = DependencyContext.Load(CurrentAssembly)
                 .RuntimeLibraries
-                .Where(r => r.Name.StartsWith("Microsoft.AspNetCore.Mvc", StringComparison.Ordinal) &&
+                .Where(r => r.Name.StartsWith("microsoft.aspnetcore.mvc", StringComparison.Ordinal) &&
                     !excludeAssemblies.Contains(r.Name, StringComparer.OrdinalIgnoreCase))
                 .Select(r => r.Name)
                 .Concat(additionalAssemblies)

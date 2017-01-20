@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net452;netstandard1.6</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Formatters.Xml\Microsoft.AspNetCore.Mvc.Formatters.Xml.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.ViewFeatures\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="1.2.0-*" />
+    <PackageReference Include="Moq" Version="4.6.36-*" />
+    <PackageReference Include="xunit" Version="2.2.0-*" />
+  </ItemGroup>
+
+</Project>

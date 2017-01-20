@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>ASP.NET Core MVC metadata and validation system using System.ComponentModel.DataAnnotations.</Description>
+    <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj" />
+
+    <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="1.2.0-*" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="$(CoreFxVersion)" />
+  </ItemGroup>
+</Project>

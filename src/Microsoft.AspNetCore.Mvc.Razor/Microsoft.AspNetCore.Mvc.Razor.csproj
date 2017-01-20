@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>ASP.NET Core MVC Razor view engine for CSHTML files.</Description>
+    <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;aspnetcoremvc;cshtml;razor</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor.Host\Microsoft.AspNetCore.Mvc.Razor.Host.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.ViewFeatures\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Runtime" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Razor" Version="1.0.0-*" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="1.3.0" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.PropertyActivator.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="1.2.0-*" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
+    <PackageReference Include="System.Runtime.Loader" Version="$(CoreFxVersion)" />
+  </ItemGroup>
+
+</Project>

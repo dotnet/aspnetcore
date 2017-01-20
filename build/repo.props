@@ -1,0 +1,7 @@
+<Project>
+  <ItemGroup>
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Mvc.TestCommon\*.csproj" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Mvc.TestDiagnosticListener\*.csproj" />
+    <ExcludeSolutions Include="$(RepositoryRoot)Mvc.*Fun.sln" />
+  </ItemGroup>
+</Project>

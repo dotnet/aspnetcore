@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\build\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>net452;netstandard1.3</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.2.0-*" />
+  </ItemGroup>
+</Project>

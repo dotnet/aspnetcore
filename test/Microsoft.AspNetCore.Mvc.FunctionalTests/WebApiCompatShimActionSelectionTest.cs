@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Theory]
         [InlineData("api/Admin/Test", "PostUser")]
         [InlineData("api/Admin/Test?name=mario&age=10", "PostUserByNameAndAge")]
-        public async Task LegacyActionSelection_OverloadedAction_WithUnnamedAction(string requestUrl, string expectedActionName)
+        public async Task LegacyActionSelection_OverloadedAction_WithUnnamedActionAndRequestContent(string requestUrl, string expectedActionName)
         {
             // Arrange
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/" + requestUrl);
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task LegacyActionSelection_RouteWithActionName()
+        public async Task LegacyActionSelection_RouteWithActionNameAndRequestContent()
         {
             // Arrange
             var request = new HttpRequestMessage(
@@ -452,7 +452,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task LegacyActionSelection_RouteWithActionName_Casing()
+        public async Task LegacyActionSelection_RouteWithActionNameAndRequestContent_Casing()
         {
             // Arrange
             var request = new HttpRequestMessage(

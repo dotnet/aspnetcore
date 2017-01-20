@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>ASP.NET Core MVC formatters for XML input and output using DataContractSerializer and XmlSerializer.</Description>
+    <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;aspnetcoremvc;xml</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj" />
+
+    <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="System.Runtime.Serialization.Xml" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Xml.XmlSerializer" Version="$(CoreFxVersion)" />
+  </ItemGroup>
+</Project>

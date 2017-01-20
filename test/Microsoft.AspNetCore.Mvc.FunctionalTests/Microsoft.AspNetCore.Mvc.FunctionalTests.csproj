@@ -1,0 +1,68 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <PackageTargetFallback>$(PackageTargetFallback);portable-net451+win8</PackageTargetFallback>
+
+    <DefineConstants Condition="'$(GenerateBaselines)'=='true'">$(DefineConstants);GENERATE_BASELINES</DefineConstants>
+    <DefineConstants>$(DefineConstants);__RemoveThisBitTo__GENERATE_BASELINES</DefineConstants>
+    <DefineConstants>$(DefineConstants);FUNCTIONAL_TESTS</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.AspNetCore.Mvc.Formatters.Xml.Test\XmlAssert.cs" />
+    <EmbeddedResource Include="compiler\resources\**\*" />
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WebSites\ApiExplorerWebSite\ApiExplorerWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\ApplicationModelWebSite\ApplicationModelWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\BasicWebSite\BasicWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\ControllersFromServicesWebSite\ControllersFromServicesWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\CorsWebSite\CorsWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\ErrorPageMiddlewareWebSite\ErrorPageMiddlewareWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\FilesWebSite\FilesWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\FiltersWebSite\FiltersWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\FormatterWebSite\FormatterWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\HtmlGenerationWebSite\HtmlGenerationWebSite.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.TestCommon\Microsoft.AspNetCore.Mvc.TestCommon.csproj" />
+    <ProjectReference Include="..\..\samples\MvcSandbox\MvcSandbox.csproj" />
+    <ProjectReference Include="..\WebSites\RazorPageExecutionInstrumentationWebSite\RazorPageExecutionInstrumentationWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\RazorPagesWebSite\RazorPagesWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\RazorWebSite\RazorWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\RoutingWebSite\RoutingWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\SecurityWebSite\SecurityWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\SimpleWebSite\SimpleWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\TagHelpersWebSite\TagHelpersWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\VersioningWebSite\VersioningWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\WebApiCompatShimWebSite\WebApiCompatShimWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\XmlFormattersWebSite\XmlFormattersWebSite.csproj" />
+
+    <PackageReference Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
+    <PackageReference Include="xunit" Version="2.2.0-*" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+
+  <!--
+  Our functional tests utilize DependencyContext.Load which looks next to a dll for a deps.json. For each of our test
+  applications they need to have their corresponding deps.json placed next to their .dll in order to work.
+  -->
+  <Target Name="CopyDepsFiles" AfterTargets="Build" Condition="'$(TargetFramework)'!=''">
+    <ItemGroup>
+      <DepsFilePaths Include="$([System.IO.Path]::ChangeExtension('%(_ResolvedProjectReferencePaths.FullPath)', '.deps.json'))" />
+    </ItemGroup>
+
+    <Copy SourceFiles="%(DepsFilePaths.FullPath)" DestinationFolder="$(OutputPath)" Condition="Exists('%(DepsFilePaths.FullPath)')" />
+  </Target>
+</Project>

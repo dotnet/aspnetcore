@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ApiExplorer_HttpMethod_Single()
+        public async Task ApiExplorer_HttpMethod_Single_GET()
         {
             // Arrange & Act
             var response = await Client.GetAsync("http://localhost/ApiExplorerHttpMethod/Get");
@@ -372,14 +372,35 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         // This is hitting one action with two allowed methods (using [AcceptVerbs]). This should
         // return two api descriptions.
-        [Theory]
-        [InlineData("PUT")]
-        [InlineData("POST")]
-        public async Task ApiExplorer_HttpMethod_Single(string httpMethod)
+        [Fact]
+        public async Task ApiExplorer_HttpMethod_Single_PUT()
         {
             // Arrange
             var request = new HttpRequestMessage(
-                new HttpMethod(httpMethod),
+                new HttpMethod("PUT"),
+                "http://localhost/ApiExplorerHttpMethod/Single");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            Assert.Equal(2, result.Count);
+
+            Assert.Single(result, d => d.HttpMethod == "PUT");
+            Assert.Single(result, d => d.HttpMethod == "POST");
+        }
+
+        // This is hitting one action with two allowed methods (using [AcceptVerbs]). This should
+        // return two api descriptions.
+        [Fact]
+        public async Task ApiExplorer_HttpMethod_Single_POST()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(
+                new HttpMethod("POST"),
                 "http://localhost/ApiExplorerHttpMethod/Single");
 
             // Act

@@ -22,7 +22,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             // Arrange
             var accessor = new ActionContextAccessor();
             var context = new ActionContext();
-            var domain = AppDomain.CreateDomain("newDomain");
+            var setupInfo = new AppDomainSetup
+            {
+                ApplicationBase = AppDomain.CurrentDomain.BaseDirectory
+            };
+
+            var domain = AppDomain.CreateDomain("newDomain", securityInfo: null, info: setupInfo);
 
             // Act
             domain.DoCallBack(DomainFunc);
