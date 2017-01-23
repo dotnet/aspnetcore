@@ -219,7 +219,7 @@ private:
     STRU                    m_struFullLogFile;
     STTIMER                 m_Timer;
     HANDLE                  m_hStdoutHandle;
-    volatile BOOL           m_fStopping;
+    volatile LONG           m_lStopping;
     volatile BOOL           m_fReady;
     CRITICAL_SECTION        m_csLock;
     SOCKET                  m_socket;
