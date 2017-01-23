@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
 {
@@ -114,14 +113,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
             end.Block.Pool.Return(end.Block);
         }
 
-        // Flush no-ops. We rely on connection filter streams to auto-flush.
         public void Flush()
         {
+            _outputStream.Flush();
         }
 
         public Task FlushAsync(CancellationToken cancellationToken)
         {
-            return TaskCache.CompletedTask;
+            return _outputStream.FlushAsync(cancellationToken);
         }
     }
 }
