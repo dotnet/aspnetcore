@@ -19,8 +19,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
     public class DefaultAntiforgeryTest
     {
         private const string ResponseCacheHeadersOverrideWarningMessage =
-            "The 'Cache-Control' and 'Pragma' headers have been overridden and set to 'no-cache' to prevent caching " +
-            "of this response. Any response that uses antiforgery should not be cached.";
+            "The 'Cache-Control' and 'Pragma' headers have been overridden and set to 'no-cache, no-store' and " +
+             "'no-cache' respectively to prevent caching of this response. Any response that uses antiforgery " +
+            "should not be cached.";
 
         [Fact]
         public async Task ChecksSSL_ValidateRequestAsync_Throws()
@@ -308,7 +309,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             Assert.NotNull(antiforgeryFeature);
             Assert.Equal(context.TestTokenSet.OldCookieToken, antiforgeryFeature.CookieToken);
-            Assert.Equal("no-cache", context.HttpContext.Response.Headers[HeaderNames.CacheControl]);
+            Assert.Equal("no-cache, no-store", context.HttpContext.Response.Headers[HeaderNames.CacheControl]);
             Assert.Equal("no-cache", context.HttpContext.Response.Headers[HeaderNames.Pragma]);
         }
 
@@ -339,7 +340,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             Assert.NotNull(antiforgeryFeature);
             Assert.Equal(context.TestTokenSet.OldCookieToken, antiforgeryFeature.CookieToken);
-            Assert.Equal("no-cache", context.HttpContext.Response.Headers[HeaderNames.CacheControl]);
+            Assert.Equal("no-cache, no-store", context.HttpContext.Response.Headers[HeaderNames.CacheControl]);
             Assert.Equal("no-cache", context.HttpContext.Response.Headers[HeaderNames.Pragma]);
         }
 
@@ -403,7 +404,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.NotNull(antiforgeryFeature);
             Assert.True(antiforgeryFeature.HaveDeserializedCookieToken);
             Assert.Equal(context.TestTokenSet.OldCookieToken, antiforgeryFeature.CookieToken);
-            Assert.Equal("no-cache", context.HttpContext.Response.Headers[HeaderNames.CacheControl]);
+            Assert.Equal("no-cache, no-store", context.HttpContext.Response.Headers[HeaderNames.CacheControl]);
             Assert.Equal("no-cache", context.HttpContext.Response.Headers[HeaderNames.Pragma]);
         }
 
@@ -925,7 +926,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             antiforgery.SetCookieTokenAndHeader(context.HttpContext);
 
             // Assert
-            Assert.Equal("no-cache", context.HttpContext.Response.Headers["Cache-Control"]);
+            Assert.Equal("no-cache, no-store", context.HttpContext.Response.Headers["Cache-Control"]);
             Assert.Equal("no-cache", context.HttpContext.Response.Headers["Pragma"]);
         }
 
@@ -948,7 +949,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             antiforgery.SetCookieTokenAndHeader(context.HttpContext);
 
             // Assert
-            Assert.Equal("no-cache", context.HttpContext.Response.Headers["Cache-Control"]);
+            Assert.Equal("no-cache, no-store", context.HttpContext.Response.Headers["Cache-Control"]);
             Assert.Equal("no-cache", context.HttpContext.Response.Headers["Pragma"]);
         }
 
@@ -972,7 +973,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             antiforgery.SetCookieTokenAndHeader(context.HttpContext);
 
             // Assert
-            Assert.Equal("no-cache", context.HttpContext.Response.Headers["Cache-Control"]);
+            Assert.Equal("no-cache, no-store", context.HttpContext.Response.Headers["Cache-Control"]);
             Assert.Equal("no-cache", context.HttpContext.Response.Headers["Pragma"]);
         }
 

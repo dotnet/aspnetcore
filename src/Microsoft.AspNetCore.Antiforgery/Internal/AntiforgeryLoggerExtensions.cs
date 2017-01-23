@@ -51,8 +51,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             _responseCacheHeadersOverridenToNoCache = LoggerMessage.Define(
                 LogLevel.Warning,
                 8,
-                "The 'Cache-Control' and 'Pragma' headers have been overridden and set to 'no-cache' to prevent " +
-                "caching of this response. Any response that uses antiforgery should not be cached.");
+                 "The 'Cache-Control' and 'Pragma' headers have been overridden and set to 'no-cache, no-store' and " +
+                "'no-cache' respectively to prevent caching of this response. Any response that uses antiforgery " +
+                "should not be cached.");
         }
 
         public static void ValidationFailed(this ILogger logger, string message)

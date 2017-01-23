@@ -243,8 +243,6 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 _logger.ReusedCookieToken();
             }
 
-            // Explicitly set the cache headers to 'no-cache'. This could override any user set value but this is fine
-            // as a response with antiforgery token must never be cached.
             SetDoNotCacheHeaders(httpContext);
         }
 
@@ -367,14 +365,18 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             return antiforgeryFeature;
         }
 
-        private void SetDoNotCacheHeaders(HttpContext httpContext)
+        /// <summary>
+        /// Sets the 'Cache-Control' header to 'no-cache, no-store' and 'Pragma' header to 'no-cache' overriding any user set value.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
+        protected virtual void SetDoNotCacheHeaders(HttpContext httpContext)
         {
             // Since antifogery token generation is not very obvious to the end users (ex: MVC's form tag generates them
             // by default), log a warning to let users know of the change in behavior to any cache headers they might
             // have set explicitly.
             LogCacheHeaderOverrideWarning(httpContext.Response);
 
-            httpContext.Response.Headers[HeaderNames.CacheControl] = "no-cache";
+            httpContext.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store";
             httpContext.Response.Headers[HeaderNames.Pragma] = "no-cache";
         }
 
