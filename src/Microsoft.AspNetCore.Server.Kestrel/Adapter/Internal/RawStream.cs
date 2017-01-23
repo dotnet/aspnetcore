@@ -125,6 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
             return _output.FlushAsync(cancellationToken);
         }
 
+
         private ValueTask<int> ReadAsync(ArraySegment<byte> buffer)
         {
             return _input.ReadAsync(buffer.Array, buffer.Offset, buffer.Count);
