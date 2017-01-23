@@ -186,7 +186,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             public override void Flush()
             {
-                // No-op
+                _innerStream.Flush();
+            }
+
+            public override Task FlushAsync(CancellationToken cancellationToken)
+            {
+                return _innerStream.FlushAsync(cancellationToken);
             }
 
             public override int Read(byte[] buffer, int offset, int count)

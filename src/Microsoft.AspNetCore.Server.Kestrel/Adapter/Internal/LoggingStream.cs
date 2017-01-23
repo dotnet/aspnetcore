@@ -71,6 +71,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
             _inner.Flush();
         }
 
+        public override Task FlushAsync(CancellationToken cancellationToken)
+        {
+            return _inner.FlushAsync(cancellationToken);
+        }
+
         public override int Read(byte[] buffer, int offset, int count)
         {
             int read = _inner.Read(buffer, offset, count);
