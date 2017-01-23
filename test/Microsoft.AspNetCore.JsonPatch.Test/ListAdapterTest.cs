@@ -55,12 +55,31 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 message);
         }
 
+        [Fact]
+        public void Add_WithIndexSameAsNumberOfElements_Works()
+        {
+            // Arrange
+            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
+            var targetObject = new List<string>() { "James", "Mike" };
+            var listAdapter = new ListAdapter();
+            string message = null;
+            var position = targetObject.Count.ToString();
+
+            // Act
+            var addStatus = listAdapter.TryAdd(targetObject, position, resolver.Object, "Rob", out message);
+
+            // Assert
+            Assert.Null(message);
+            Assert.True(addStatus);
+            Assert.Equal(3, targetObject.Count);
+            Assert.Equal(new List<string>() { "James", "Mike", "Rob" }, targetObject);
+        }
+
         [Theory]
         [InlineData("-1")]
         [InlineData("-2")]
-        [InlineData("2")]
         [InlineData("3")]
-        public void Patch_WithOutOfBoundsIndex_Fails(string position)
+        public void Add_WithOutOfBoundsIndex_Fails(string position)
         {
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
@@ -223,6 +242,93 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
             Assert.Equal(expected.Count, targetObject.Count);
             Assert.Equal(expected, targetObject);
+        }
+
+        [Theory]
+        [InlineData(new int[] { }, "0")]
+        [InlineData(new[] { 10, 20 }, "-1")]
+        [InlineData(new[] { 10, 20 }, "2")]
+        public void Get_IndexOutOfBounds(int[] input, string position)
+        {
+            // Arrange
+            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
+            var targetObject = new List<int>(input);
+            var listAdapter = new ListAdapter();
+            string message = null;
+            object value = null;
+
+            // Act
+            var getStatus = listAdapter.TryGet(targetObject, position, resolver.Object, out value, out message);
+
+            // Assert
+            Assert.False(getStatus);
+            Assert.Equal(
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", position),
+                message);
+        }
+
+        [Theory]
+        [InlineData(new[] { 10, 20 }, "0", 10)]
+        [InlineData(new[] { 10, 20 }, "1", 20)]
+        [InlineData(new[] { 10 }, "0", 10)]
+        public void Get(int[] input, string position, object expected)
+        {
+            // Arrange
+            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
+            var targetObject = new List<int>(input);
+            var listAdapter = new ListAdapter();
+            string message = null;
+            object value = null;
+
+            // Act
+            var getStatus = listAdapter.TryGet(targetObject, position, resolver.Object, out value, out message);
+
+            // Assert
+            Assert.True(getStatus);
+            Assert.Equal(expected, value);
+            Assert.Equal(new List<int>(input), targetObject);
+        }
+
+        [Theory]
+        [InlineData(new int[] { }, "0")]
+        [InlineData(new[] { 10, 20 }, "-1")]
+        [InlineData(new[] { 10, 20 }, "2")]
+        public void Remove_IndexOutOfBounds(int[] input, string position)
+        {
+            // Arrange
+            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
+            var targetObject = new List<int>(input);
+            var listAdapter = new ListAdapter();
+            string message = null;
+
+            // Act
+            var removeStatus = listAdapter.TryRemove(targetObject, position, resolver.Object, out message);
+
+            // Assert
+            Assert.False(removeStatus);
+            Assert.Equal(
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", position),
+                message);
+        }
+
+        [Theory]
+        [InlineData(new[] { 10, 20 }, "0", new[] { 20 })]
+        [InlineData(new[] { 10, 20 }, "1", new[] { 10 })]
+        [InlineData(new[] { 10 }, "0", new int[] { })]
+        public void Remove(int[] input, string position, int[] expected)
+        {
+            // Arrange
+            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
+            var targetObject = new List<int>(input);
+            var listAdapter = new ListAdapter();
+            string message = null;
+
+            // Act
+            var removeStatus = listAdapter.TryRemove(targetObject, position, resolver.Object, out message);
+
+            // Assert
+            Assert.True(removeStatus);
+            Assert.Equal(new List<int>(expected), targetObject);
         }
 
         [Fact]
