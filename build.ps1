@@ -64,4 +64,5 @@ if (!(Test-Path $buildFolder)) {
     }
 }
 
+&".build\dotnet\dotnet-install.ps1" -Channel 'master' -SharedRuntime -Version '1.2.0-beta-001304-00' -Architecture x64
 &"$buildFile" $args
