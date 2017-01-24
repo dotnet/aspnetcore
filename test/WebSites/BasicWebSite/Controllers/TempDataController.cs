@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BasicWebSite.Controllers
@@ -57,6 +59,13 @@ namespace BasicWebSite.Controllers
             TempData["key4"] = datetimeValue;
             TempData["key5"] = guidValue;
             return RedirectToAction("GetTempDataMultiple");
+        }
+
+        public async Task SetTempDataResponseWrite()
+        {
+            TempData["value1"] = "steve";
+
+            await Response.WriteAsync("Steve!");
         }
 
         public string GetTempDataMultiple()

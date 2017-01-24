@@ -163,6 +163,20 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task ResponseWrite_DoesNotCrashSaveTempDataFilter()
+        {
+            // Arrange
+            var nameValueCollection = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("Name", "Jordan"),
+            };
+            var content = new FormUrlEncodedContent(nameValueCollection);
+
+            // Act, checking it didn't throw
+            var response = await Client.GetAsync("/TempData/SetTempDataResponseWrite");
+        }
+
+        [Fact]
         public async Task SetInActionResultExecution_AvailableForNextRequest()
         {
             // Arrange

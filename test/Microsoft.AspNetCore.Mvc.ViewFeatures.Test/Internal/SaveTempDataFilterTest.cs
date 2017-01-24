@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Moq;
 using Xunit;
@@ -28,23 +30,46 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         }
 
         [Fact]
-        public void OnResultExecuting_RegistersOnStartingCallback()
+        public async Task OnResultExecuting_DoesntThrowIfResponseStarted()
+        {
+            // Arrange
+            var responseFeature = new TestResponseFeature(hasStarted: true);
+            var httpContext = GetHttpContext(responseFeature);
+            var tempDataFactory = new Mock<ITempDataDictionaryFactory>(MockBehavior.Loose);
+            tempDataFactory
+                .Setup(f => f.GetTempData(It.IsAny<HttpContext>()))
+                .Verifiable();
+            var filter = new SaveTempDataFilter(tempDataFactory.Object);
+            var context = GetResultExecutingContext(httpContext);
+            filter.OnResultExecuting(context);
+
+            // Act
+            // Checking it doesn't throw
+            await responseFeature.FireOnSendingHeadersAsync();
+        }
+
+        [Fact]
+        public void OnResourceExecuting_RegistersOnStartingCallback()
         {
             // Arrange
             var responseFeature = new Mock<IHttpResponseFeature>(MockBehavior.Strict);
             responseFeature
-                .Setup(rf => rf.OnStarting(It.IsAny<System.Func<object, Task>>(), It.IsAny<object>()))
+                .Setup(rf => rf.OnStarting(It.IsAny<Func<object, Task>>(), It.IsAny<object>()))
                 .Verifiable();
+            responseFeature
+                .SetupGet(rf => rf.HasStarted)
+                .Returns(false);
+
             var tempDataFactory = new Mock<ITempDataDictionaryFactory>(MockBehavior.Strict);
             tempDataFactory
                 .Setup(f => f.GetTempData(It.IsAny<HttpContext>()))
                 .Verifiable();
             var filter = new SaveTempDataFilter(tempDataFactory.Object);
             var httpContext = GetHttpContext(responseFeature.Object);
-            var context = GetResultExecutingContext(httpContext);
+            var context = GetResourceExecutingContext(httpContext);
 
             // Act
-            filter.OnResultExecuting(context);
+            filter.OnResourceExecuting(context);
 
             // Assert
             responseFeature.Verify();
@@ -52,7 +77,28 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         }
 
         [Fact]
-        public async Task OnResultExecuting_DoesNotSaveTempData_WhenTempDataAlreadySaved()
+        public void OnResultExecuted_CanBeCalledTwice()
+        {
+            // Arrange
+            var responseFeature = new TestResponseFeature();
+            var httpContext = GetHttpContext(responseFeature);
+            var tempData = GetTempDataDictionary();
+            var tempDataFactory = new Mock<ITempDataDictionaryFactory>(MockBehavior.Strict);
+            tempDataFactory
+                .Setup(f => f.GetTempData(It.IsAny<HttpContext>()))
+                .Returns(tempData.Object)
+                .Verifiable();
+            var filter = new SaveTempDataFilter(tempDataFactory.Object);
+            var context = GetResultExecutedContext(httpContext);
+
+            // Act (No Assert)
+            filter.OnResultExecuted(context);
+            // Shouldn't have thrown
+            filter.OnResultExecuted(context);
+        }
+
+        [Fact]
+        public async Task OnResourceExecuting_DoesNotSaveTempData_WhenTempDataAlreadySaved()
         {
             // Arrange
             var responseFeature = new TestResponseFeature();
@@ -63,8 +109,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 .Setup(f => f.GetTempData(It.IsAny<HttpContext>()))
                 .Verifiable();
             var filter = new SaveTempDataFilter(tempDataFactory.Object);
-            var context = GetResultExecutingContext(httpContext);
-            filter.OnResultExecuting(context); // registers callback
+            var context = GetResourceExecutingContext(httpContext);
+            filter.OnResourceExecuting(context); // registers callback
 
             // Act
             await responseFeature.FireOnSendingHeadersAsync();
@@ -81,10 +127,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var tempDataDictionary = GetTempDataDictionary();
             var filter = GetFilter(tempDataDictionary.Object);
             var responseFeature = new TestResponseFeature();
-            var actionContext = GetActionContext(GetHttpContext(responseFeature));
-            var context = GetResultExecutingContext(actionContext, result);
-            filter.OnResultExecuting(context); // registers callback
+            var httpContext = GetHttpContext(responseFeature);
+            var resourceContext = GetResourceExecutingContext(httpContext);
+            var resultContext = GetResultExecutedContext(httpContext, result);
 
+            filter.OnResourceExecuting(resourceContext); // registers callback
+            filter.OnResultExecuted(resultContext);
             // Act
             await responseFeature.FireOnSendingHeadersAsync();
 
@@ -93,15 +141,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         }
 
         [Fact]
-        public async Task OnResultExecuting_KeepsTempData_ForIKeepTempDataResult()
+        public async Task OnResourceExecuting_KeepsTempData_ForIKeepTempDataResult()
         {
             // Arrange
             var tempDataDictionary = GetTempDataDictionary();
             var filter = GetFilter(tempDataDictionary.Object);
             var responseFeature = new TestResponseFeature();
-            var actionContext = GetActionContext(GetHttpContext(responseFeature));
-            var context = GetResultExecutingContext(actionContext, new TestKeepTempDataActionResult());
-            filter.OnResultExecuting(context); // registers callback
+            var httpContext = GetHttpContext(responseFeature);
+            var resourceContext = GetResourceExecutingContext(httpContext);
+            var resultContext = GetResultExecutedContext(httpContext, new TestKeepTempDataActionResult());
+            filter.OnResourceExecuting(resourceContext); // registers callback
+            filter.OnResultExecuted(resultContext);
 
             // Act
             await responseFeature.FireOnSendingHeadersAsync();
@@ -118,9 +168,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var tempDataDictionary = GetTempDataDictionary();
             var filter = GetFilter(tempDataDictionary.Object);
             var responseFeature = new TestResponseFeature();
-            var actionContext = GetActionContext(GetHttpContext(responseFeature));
-            var context = GetResultExecutingContext(actionContext, new TestActionResult());
-            filter.OnResultExecuting(context); // registers callback
+            var actionContext = GetHttpContext(responseFeature);
+            var context = GetResourceExecutingContext(actionContext);
+            filter.OnResourceExecuting(context); // registers callback
 
             // Act
             await responseFeature.FireOnSendingHeadersAsync();
@@ -222,6 +272,21 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 .Setup(tdd => tdd.Save())
                 .Verifiable();
             return tempDataDictionary;
+        }
+
+        private ResourceExecutingContext GetResourceExecutingContext(HttpContext httpContext)
+        {
+            if (httpContext == null)
+            {
+                httpContext = GetHttpContext();
+            }
+            var actionResult = new TestActionResult();
+
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            var filters = new IFilterMetadata[] { };
+            var valueProviderFactories = new IValueProviderFactory[] { };
+
+            return new ResourceExecutingContext(actionContext, filters, valueProviderFactories);
         }
 
         private ResultExecutedContext GetResultExecutedContext(HttpContext httpContext = null, IActionResult actionResult = null)
@@ -331,6 +396,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             public override void OnStarting(Func<object, Task> callback, object state)
             {
+                if (_hasStarted)
+                {
+                    throw new ArgumentException();
+                }
+
                 var prior = _responseStartingAsync;
                 _responseStartingAsync = async () =>
                 {
