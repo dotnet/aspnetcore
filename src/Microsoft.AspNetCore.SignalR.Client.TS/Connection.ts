@@ -36,7 +36,7 @@ export class Connection {
         this.transport.onError = e => this.stopConnection(e);
 
         try {
-            this.connectionId = await this.httpClient.get(`${this.url}/getid?${this.queryString}`);
+            this.connectionId = await this.httpClient.get(`${this.url}/negotiate?${this.queryString}`);
             this.queryString = `id=${this.connectionId}`;
             await this.transport.connect(this.url, this.queryString);
             this.connectionState = ConnectionState.Connected;
