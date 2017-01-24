@@ -1,7 +1,7 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.2"
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.3"
   },
   "buildOptions": {
     "emitEntryPoint": true

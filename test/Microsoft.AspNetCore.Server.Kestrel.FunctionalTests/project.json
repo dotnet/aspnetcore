@@ -3,8 +3,8 @@
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-rc3-000000-01",
     "Microsoft.AspNetCore.Http.Abstractions": "1.0.1",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.2",
-    "Microsoft.AspNetCore.Server.Kestrel.Https": "1.0.2",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.3",
+    "Microsoft.AspNetCore.Server.Kestrel.Https": "1.0.3",
     "Microsoft.AspNetCore.Testing": "1.0.1",
     "Microsoft.Extensions.Logging.Console": "1.0.1",
     "Newtonsoft.Json": "9.0.1",

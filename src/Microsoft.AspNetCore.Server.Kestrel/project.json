@@ -1,5 +1,5 @@
 {
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "ASP.NET Core Kestrel cross-platform web server.",
   "packOptions": {
     "repository": {
