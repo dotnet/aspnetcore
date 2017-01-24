@@ -95,57 +95,57 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             return VisitDefault(node);
         }
 
-        internal virtual TResult VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
+        public virtual TResult VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
         {
             return VisitDefault(node);
         }
 
-        internal virtual TResult VisitTagHelper(TagHelperIRNode node)
+        public virtual TResult VisitTagHelper(TagHelperIRNode node)
         {
             return VisitDefault(node);
         }
 
-        internal virtual TResult VisitInitializeTagHelperStructure(InitializeTagHelperStructureIRNode node)
+        public virtual TResult VisitInitializeTagHelperStructure(InitializeTagHelperStructureIRNode node)
         {
             return VisitDefault(node);
         }
 
-        internal virtual TResult VisitCreateTagHelper(CreateTagHelperIRNode node)
+        public virtual TResult VisitCreateTagHelper(CreateTagHelperIRNode node)
         {
             return VisitDefault(node);
         }
 
-        internal virtual TResult VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
+        public virtual TResult VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
         {
             return VisitDefault(node);
         }
 
-        internal virtual TResult VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
+        public virtual TResult VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
         {
             return VisitDefault(node);
         }
 
-        internal virtual TResult VisitExecuteTagHelpers(ExecuteTagHelpersIRNode node)
+        public virtual TResult VisitExecuteTagHelpers(ExecuteTagHelpersIRNode node)
         {
             return VisitDefault(node);
         }
 
-        internal virtual TResult VisitDeclarePreallocatedTagHelperHtmlAttribute(DeclarePreallocatedTagHelperHtmlAttributeIRNode node)
+        public virtual TResult VisitDeclarePreallocatedTagHelperHtmlAttribute(DeclarePreallocatedTagHelperHtmlAttributeIRNode node)
         {
             return VisitDefault(node);
         }
 
-        internal virtual TResult VisitAddPreallocatedTagHelperHtmlAttribute(AddPreallocatedTagHelperHtmlAttributeIRNode node)
+        public virtual TResult VisitAddPreallocatedTagHelperHtmlAttribute(AddPreallocatedTagHelperHtmlAttributeIRNode node)
         {
             return VisitDefault(node);
         }
 
-        internal virtual TResult VisitDeclarePreallocatedTagHelperAttribute(DeclarePreallocatedTagHelperAttributeIRNode node)
+        public virtual TResult VisitDeclarePreallocatedTagHelperAttribute(DeclarePreallocatedTagHelperAttributeIRNode node)
         {
             return VisitDefault(node);
         }
 
-        internal virtual TResult VisitSetPreallocatedTagHelperProperty(SetPreallocatedTagHelperPropertyIRNode node)
+        public virtual TResult VisitSetPreallocatedTagHelperProperty(SetPreallocatedTagHelperPropertyIRNode node)
         {
             return VisitDefault(node);
         }

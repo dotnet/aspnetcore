@@ -87,47 +87,47 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             WriteContentNode(node, node.Content);
         }
 
-        internal override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
+        public override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
         {
             WriteContentNode(node, node.UsedTagHelperTypeNames.ToArray());
         }
 
-        internal override void VisitInitializeTagHelperStructure(InitializeTagHelperStructureIRNode node)
+        public override void VisitInitializeTagHelperStructure(InitializeTagHelperStructureIRNode node)
         {
             WriteContentNode(node, node.TagName, string.Format("{0}.{1}", nameof(TagMode), node.TagMode));
         }
 
-        internal override void VisitCreateTagHelper(CreateTagHelperIRNode node)
+        public override void VisitCreateTagHelper(CreateTagHelperIRNode node)
         {
             WriteContentNode(node, node.TagHelperTypeName);
         }
 
-        internal override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
+        public override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
         {
             WriteContentNode(node, node.AttributeName, node.PropertyName, string.Format("HtmlAttributeValueStyle.{0}", node.ValueStyle));
         }
 
-        internal override void VisitDeclarePreallocatedTagHelperAttribute(DeclarePreallocatedTagHelperAttributeIRNode node)
+        public override void VisitDeclarePreallocatedTagHelperAttribute(DeclarePreallocatedTagHelperAttributeIRNode node)
         {
             WriteContentNode(node, node.VariableName, node.Name, node.Value, string.Format("HtmlAttributeValueStyle.{0}", node.ValueStyle));
         }
 
-        internal override void VisitSetPreallocatedTagHelperProperty(SetPreallocatedTagHelperPropertyIRNode node)
+        public override void VisitSetPreallocatedTagHelperProperty(SetPreallocatedTagHelperPropertyIRNode node)
         {
             WriteContentNode(node, node.VariableName, node.AttributeName, node.PropertyName);
         }
 
-        internal override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
+        public override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
         {
             WriteContentNode(node, node.Name, string.Format("{0}.{1}", nameof(HtmlAttributeValueStyle), node.ValueStyle));
         }
 
-        internal override void VisitDeclarePreallocatedTagHelperHtmlAttribute(DeclarePreallocatedTagHelperHtmlAttributeIRNode node)
+        public override void VisitDeclarePreallocatedTagHelperHtmlAttribute(DeclarePreallocatedTagHelperHtmlAttributeIRNode node)
         {
             WriteContentNode(node, node.VariableName, node.Name, node.Value, string.Format("{0}.{1}", nameof(HtmlAttributeValueStyle), node.ValueStyle));
         }
 
-        internal override void VisitAddPreallocatedTagHelperHtmlAttribute(AddPreallocatedTagHelperHtmlAttributeIRNode node)
+        public override void VisitAddPreallocatedTagHelperHtmlAttribute(AddPreallocatedTagHelperHtmlAttributeIRNode node)
         {
             WriteContentNode(node, node.VariableName);
         }

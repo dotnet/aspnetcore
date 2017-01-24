@@ -1,11 +1,15 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.CodeAnalysis.Razor
 {
     internal static class ViewComponentTypes
     {
         public const string Assembly = "Microsoft.AspNetCore.Mvc.ViewFeatures";
+
+        public static readonly Version AssemblyVersion = new Version(1, 1, 0, 0);
 
         public const string ViewComponentSuffix = "ViewComponent";
 

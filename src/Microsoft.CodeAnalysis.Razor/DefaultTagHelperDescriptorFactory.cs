@@ -223,14 +223,14 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 if (string.IsNullOrWhiteSpace(name))
                 {
-                    var whitespaceError = Workspaces.Resources.FormatTagHelperDescriptorFactory_InvalidRestrictChildrenAttributeNameNullWhitespace(
+                    var whitespaceError = Resources.FormatTagHelperDescriptorFactory_InvalidRestrictChildrenAttributeNameNullWhitespace(
                         TagHelperTypes.RestrictChildrenAttribute,
                         tagHelperName);
                     errorSink.OnError(SourceLocation.Zero, whitespaceError, length: 0);
                 }
                 else if (TryValidateName(
                     name,
-                    invalidCharacter => Workspaces.Resources.FormatTagHelperDescriptorFactory_InvalidRestrictChildrenAttributeName(
+                    invalidCharacter => Resources.FormatTagHelperDescriptorFactory_InvalidRestrictChildrenAttributeName(
                         TagHelperTypes.RestrictChildrenAttribute,
                         name,
                         tagHelperName,
@@ -372,15 +372,15 @@ namespace Microsoft.CodeAnalysis.Razor
             }
             else if (string.IsNullOrWhiteSpace(parentTag))
             {
-                var error = Workspaces.Resources.FormatHtmlTargetElementAttribute_NameCannotBeNullOrWhitespace(
-                    Workspaces.Resources.TagHelperDescriptorFactory_ParentTag);
+                var error = Resources.FormatHtmlTargetElementAttribute_NameCannotBeNullOrWhitespace(
+                    Resources.TagHelperDescriptorFactory_ParentTag);
                 errorSink.OnError(SourceLocation.Zero, error, length: 0);
                 return false;
             }
             else if (!TryValidateName(
                 parentTag,
-                invalidCharacter => Workspaces.Resources.FormatHtmlTargetElementAttribute_InvalidName(
-                    Workspaces.Resources.TagHelperDescriptorFactory_ParentTag.ToLower(),
+                invalidCharacter => Resources.FormatHtmlTargetElementAttribute_InvalidName(
+                    Resources.TagHelperDescriptorFactory_ParentTag.ToLower(),
                     parentTag,
                     invalidCharacter),
                 errorSink))
@@ -414,18 +414,18 @@ namespace Microsoft.CodeAnalysis.Razor
             }
 
             var targetName = targetingAttributes ?
-                Workspaces.Resources.TagHelperDescriptorFactory_Attribute :
-                Workspaces.Resources.TagHelperDescriptorFactory_Tag;
+                Resources.TagHelperDescriptorFactory_Attribute :
+                Resources.TagHelperDescriptorFactory_Tag;
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                var error = Workspaces.Resources.FormatHtmlTargetElementAttribute_NameCannotBeNullOrWhitespace(targetName);
+                var error = Resources.FormatHtmlTargetElementAttribute_NameCannotBeNullOrWhitespace(targetName);
                 errorSink.OnError(SourceLocation.Zero, error, length: 0);
                 return false;
             }
             else if (!TryValidateName(
                 name,
-                invalidCharacter => Workspaces.Resources.FormatHtmlTargetElementAttribute_InvalidName(
+                invalidCharacter => Resources.FormatHtmlTargetElementAttribute_InvalidName(
                     targetName.ToLower(),
                     name,
                     invalidCharacter),
@@ -509,7 +509,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     // Specified HtmlAttributeNameAttribute.Name though property has no public setter.
                     errorSink.OnError(
                         SourceLocation.Zero,
-                        Workspaces.Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameNotNullOrEmpty(
+                        Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameNotNullOrEmpty(
                             GetFullName(type),
                             property.Name,
                             TagHelperTypes.HtmlAttributeNameAttribute,
@@ -591,13 +591,13 @@ namespace Microsoft.CodeAnalysis.Razor
             string nameOrPrefix;
             if (attributeDescriptor.IsIndexer)
             {
-                nameOrPrefix = Workspaces.Resources.TagHelperDescriptorFactory_Prefix;
+                nameOrPrefix = Resources.TagHelperDescriptorFactory_Prefix;
             }
             else if (string.IsNullOrEmpty(attributeDescriptor.Name))
             {
                 errorSink.OnError(
                     SourceLocation.Zero,
-                    Workspaces.Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameNullOrEmpty(
+                    Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameNullOrEmpty(
                         GetFullName(parentType),
                         attributeDescriptor.PropertyName),
                     length: 0);
@@ -606,7 +606,7 @@ namespace Microsoft.CodeAnalysis.Razor
             }
             else
             {
-                nameOrPrefix = Workspaces.Resources.TagHelperDescriptorFactory_Name;
+                nameOrPrefix = Resources.TagHelperDescriptorFactory_Name;
             }
 
             return ValidateTagHelperAttributeNameOrPrefix(
@@ -639,7 +639,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 // Provide a single error if the entire name is whitespace, not an error per character.
                 errorSink.OnError(
                     SourceLocation.Zero,
-                    Workspaces.Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameOrPrefixWhitespace(
+                    Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameOrPrefixWhitespace(
                         GetFullName(parentType),
                         propertyName,
                         nameOrPrefix),
@@ -654,7 +654,7 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 errorSink.OnError(
                     SourceLocation.Zero,
-                    Workspaces.Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameOrPrefixStart(
+                    Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameOrPrefixStart(
                         GetFullName(parentType),
                         propertyName,
                         nameOrPrefix,
@@ -672,7 +672,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 {
                     errorSink.OnError(
                         SourceLocation.Zero,
-                        Workspaces.Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameOrPrefixCharacter(
+                        Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameOrPrefixCharacter(
                             GetFullName(parentType),
                             propertyName,
                             nameOrPrefix,
@@ -749,7 +749,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     isInvalid = true;
                     errorSink.OnError(
                         SourceLocation.Zero,
-                        Workspaces.Resources.FormatTagHelperDescriptorFactory_InvalidAttributePrefixNotNull(
+                        Resources.FormatTagHelperDescriptorFactory_InvalidAttributePrefixNotNull(
                             GetFullName(parentType),
                             property.Name,
                             TagHelperTypes.HtmlAttributeNameAttribute,
@@ -764,7 +764,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     isInvalid = true;
                     errorSink.OnError(
                         SourceLocation.Zero,
-                        Workspaces.Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameAttribute(
+                        Resources.FormatTagHelperDescriptorFactory_InvalidAttributeNameAttribute(
                             GetFullName(parentType),
                             property.Name,
                             TagHelperTypes.HtmlAttributeNameAttribute,
@@ -784,7 +784,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 isInvalid = true;
                 errorSink.OnError(
                     SourceLocation.Zero,
-                    Workspaces.Resources.FormatTagHelperDescriptorFactory_InvalidAttributePrefixNull(
+                    Resources.FormatTagHelperDescriptorFactory_InvalidAttributePrefixNull(
                         GetFullName(parentType),
                         property.Name,
                         TagHelperTypes.HtmlAttributeNameAttribute,
@@ -973,7 +973,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     {
                         errorSink.OnError(
                             SourceLocation.Zero,
-                            Workspaces.Resources.FormatTagHelperDescriptorFactory_InvalidRequiredAttributeCharacter(Current, _requiredAttributes),
+                            Resources.FormatTagHelperDescriptorFactory_InvalidRequiredAttributeCharacter(Current, _requiredAttributes),
                             length: 0);
                         return false;
                     }
@@ -1055,7 +1055,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     {
                         errorSink.OnError(
                             SourceLocation.Zero,
-                            Workspaces.Resources.FormatTagHelperDescriptorFactory_PartialRequiredAttributeOperator(_requiredAttributes, op),
+                            Resources.FormatTagHelperDescriptorFactory_PartialRequiredAttributeOperator(_requiredAttributes, op),
                             length: 0);
                         return null;
                     }
@@ -1064,7 +1064,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 {
                     errorSink.OnError(
                         SourceLocation.Zero,
-                        Workspaces.Resources.FormatTagHelperDescriptorFactory_InvalidRequiredAttributeOperator(Current, _requiredAttributes),
+                        Resources.FormatTagHelperDescriptorFactory_InvalidRequiredAttributeOperator(Current, _requiredAttributes),
                         length: 0);
                     return null;
                 }
@@ -1089,7 +1089,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     {
                         errorSink.OnError(
                             SourceLocation.Zero,
-                            Workspaces.Resources.FormatTagHelperDescriptorFactory_InvalidRequiredAttributeMismatchedQuotes(_requiredAttributes, quote),
+                            Resources.FormatTagHelperDescriptorFactory_InvalidRequiredAttributeMismatchedQuotes(_requiredAttributes, quote),
                             length: 0);
                         return null;
                     }
@@ -1164,7 +1164,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 {
                     errorSink.OnError(
                         SourceLocation.Zero,
-                        Workspaces.Resources.FormatTagHelperDescriptorFactory_CouldNotFindMatchingEndBrace(_requiredAttributes),
+                        Resources.FormatTagHelperDescriptorFactory_CouldNotFindMatchingEndBrace(_requiredAttributes),
                         length: 0);
                     return null;
                 }
@@ -1172,7 +1172,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 {
                     errorSink.OnError(
                         SourceLocation.Zero,
-                        Workspaces.Resources.FormatTagHelperDescriptorFactory_InvalidRequiredAttributeCharacter(Current, _requiredAttributes),
+                        Resources.FormatTagHelperDescriptorFactory_InvalidRequiredAttributeCharacter(Current, _requiredAttributes),
                         length: 0);
                     return null;
                 }
@@ -1192,7 +1192,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 {
                     errorSink.OnError(
                         SourceLocation.Zero,
-                        Workspaces.Resources.FormatTagHelperDescriptorFactory_CouldNotFindMatchingEndBrace(_requiredAttributes),
+                        Resources.FormatTagHelperDescriptorFactory_CouldNotFindMatchingEndBrace(_requiredAttributes),
                         length: 0);
 
                     return false;

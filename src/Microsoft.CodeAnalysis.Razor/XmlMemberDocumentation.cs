@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.Text;
 using System.Xml.Linq;
-using Microsoft.CodeAnalysis.Razor.Workspaces;
 
 namespace Microsoft.CodeAnalysis.Razor
 {

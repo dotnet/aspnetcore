@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
-    internal class ExecuteTagHelpersIRNode : RazorIRNode
+    public class ExecuteTagHelpersIRNode : RazorIRNode
     {
         public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 

@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal enum HtmlAttributeValueStyle
+    public enum HtmlAttributeValueStyle
     {
         DoubleQuotes,
         SingleQuotes,

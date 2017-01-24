@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
-    internal class AddPreallocatedTagHelperHtmlAttributeIRNode : RazorIRNode
+    public class AddPreallocatedTagHelperHtmlAttributeIRNode : RazorIRNode
     {
         public override IList<RazorIRNode> Children { get; } = EmptyArray;
 

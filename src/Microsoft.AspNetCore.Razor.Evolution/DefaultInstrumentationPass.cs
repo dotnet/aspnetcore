@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 VisitDefault(node);
             }
 
-            internal override void VisitExecuteTagHelpers(ExecuteTagHelpersIRNode node)
+            public override void VisitExecuteTagHelpers(ExecuteTagHelpersIRNode node)
             {
                 // As a special case the TagHelperIRNode (which must be the parent) is the one that carries
                 // the location. The execute node won't have one, but the instrumentation goes around the call

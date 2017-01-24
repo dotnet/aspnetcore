@@ -3,11 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
-    internal class DeclareTagHelperFieldsIRNode : RazorIRNode
+    public class DeclareTagHelperFieldsIRNode : RazorIRNode
     {
         public override IList<RazorIRNode> Children { get; } = EmptyArray;
 

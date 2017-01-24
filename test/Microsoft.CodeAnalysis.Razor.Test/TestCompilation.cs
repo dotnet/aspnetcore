@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Microsoft.CodeAnalysis.Razor.Workspaces.Test
+namespace Microsoft.CodeAnalysis.Razor
 {
     public static class TestCompilation
     {

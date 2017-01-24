@@ -94,57 +94,57 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             VisitDefault(node);
         }
 
-        internal virtual void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
+        public virtual void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
         {
             VisitDefault(node);
         }
 
-        internal virtual void VisitTagHelper(TagHelperIRNode node)
+        public virtual void VisitTagHelper(TagHelperIRNode node)
         {
             VisitDefault(node);
         }
 
-        internal virtual void VisitInitializeTagHelperStructure(InitializeTagHelperStructureIRNode node)
+        public virtual void VisitInitializeTagHelperStructure(InitializeTagHelperStructureIRNode node)
         {
             VisitDefault(node);
         }
 
-        internal virtual void VisitCreateTagHelper(CreateTagHelperIRNode node)
+        public virtual void VisitCreateTagHelper(CreateTagHelperIRNode node)
         {
             VisitDefault(node);
         }
 
-        internal virtual void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
+        public virtual void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
         {
             VisitDefault(node);
         }
 
-        internal virtual void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
+        public virtual void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
         {
             VisitDefault(node);
         }
 
-        internal virtual void VisitExecuteTagHelpers(ExecuteTagHelpersIRNode node)
+        public virtual void VisitExecuteTagHelpers(ExecuteTagHelpersIRNode node)
         {
             VisitDefault(node);
         }
 
-        internal virtual void VisitDeclarePreallocatedTagHelperHtmlAttribute(DeclarePreallocatedTagHelperHtmlAttributeIRNode node)
+        public virtual void VisitDeclarePreallocatedTagHelperHtmlAttribute(DeclarePreallocatedTagHelperHtmlAttributeIRNode node)
         {
             VisitDefault(node);
         }
 
-        internal virtual void VisitAddPreallocatedTagHelperHtmlAttribute(AddPreallocatedTagHelperHtmlAttributeIRNode node)
+        public virtual void VisitAddPreallocatedTagHelperHtmlAttribute(AddPreallocatedTagHelperHtmlAttributeIRNode node)
         {
             VisitDefault(node);
         }
 
-        internal virtual void VisitDeclarePreallocatedTagHelperAttribute(DeclarePreallocatedTagHelperAttributeIRNode node)
+        public virtual void VisitDeclarePreallocatedTagHelperAttribute(DeclarePreallocatedTagHelperAttributeIRNode node)
         {
             VisitDefault(node);
         }
 
-        internal virtual void VisitSetPreallocatedTagHelperProperty(SetPreallocatedTagHelperPropertyIRNode node)
+        public virtual void VisitSetPreallocatedTagHelperProperty(SetPreallocatedTagHelperPropertyIRNode node)
         {
             VisitDefault(node);
         }

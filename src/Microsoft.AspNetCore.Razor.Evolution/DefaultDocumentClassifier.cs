@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 _namespace.AddAfter<UsingStatementIRNode>(node);
             }
 
-            internal override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
+            public override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
             {
                 _class.Insert(0, node);
             }

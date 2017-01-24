@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         public RazorSyntaxTree Execute(RazorCodeDocument codeDocument, RazorSyntaxTree syntaxTree)
         {
-            var resolver = Engine.Features.OfType<TagHelperFeature>().FirstOrDefault()?.Resolver;
+            var resolver = Engine.Features.OfType<ITagHelperFeature>().FirstOrDefault()?.Resolver;
             if (resolver == null)
             {
                 // No resolver, nothing to do.

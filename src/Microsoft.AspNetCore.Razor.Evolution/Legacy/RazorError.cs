@@ -7,7 +7,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class RazorError : IEquatable<RazorError>
+    public class RazorError : IEquatable<RazorError>
     {
         internal static readonly RazorError[] EmptyArray = new RazorError[0];
 

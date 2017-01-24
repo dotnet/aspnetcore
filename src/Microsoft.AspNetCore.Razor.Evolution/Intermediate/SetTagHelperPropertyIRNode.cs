@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
-    internal class SetTagHelperPropertyIRNode : RazorIRNode
+    public class SetTagHelperPropertyIRNode : RazorIRNode
     {
         public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 

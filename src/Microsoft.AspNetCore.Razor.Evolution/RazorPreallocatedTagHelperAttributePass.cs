@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 VisitDefault(node);
             }
 
-            internal override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
+            public override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
             {
                 if (node.Children.Count != 1 || !(node.Children.First() is HtmlContentIRNode))
                 {
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 node.Parent.Children[nodeIndex] = addPreAllocatedAttribute;
             }
 
-            internal override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
+            public override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
             {
                 if (!node.Descriptor.IsStringProperty ||
                     node.Children.Count != 1 ||

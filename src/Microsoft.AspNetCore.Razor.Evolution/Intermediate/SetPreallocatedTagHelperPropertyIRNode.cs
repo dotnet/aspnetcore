@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
-    internal class SetPreallocatedTagHelperPropertyIRNode : RazorIRNode
+    public class SetPreallocatedTagHelperPropertyIRNode : RazorIRNode
     {
         public override IList<RazorIRNode> Children { get; } = EmptyArray;
 

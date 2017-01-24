@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Context.Writer.WriteEndMethodInvocation(endLine: false);
             }
 
-            internal override void VisitTagHelper(TagHelperIRNode node)
+            public override void VisitTagHelper(TagHelperIRNode node)
             {
                 var initialTagHelperRenderingContext = Context.TagHelperRenderingContext;
                 Context.TagHelperRenderingContext = new TagHelperRenderingContext();
@@ -209,12 +209,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Context.TagHelperRenderingContext = initialTagHelperRenderingContext;
             }
 
-            internal override void VisitInitializeTagHelperStructure(InitializeTagHelperStructureIRNode node)
+            public override void VisitInitializeTagHelperStructure(InitializeTagHelperStructureIRNode node)
             {
                 VisitDefault(node);
             }
 
-            internal override void VisitCreateTagHelper(CreateTagHelperIRNode node)
+            public override void VisitCreateTagHelper(CreateTagHelperIRNode node)
             {
                 var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
 
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     .WriteEndMethodInvocation();
             }
 
-            internal override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
+            public override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
             {
                 var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
                 var tagHelperRenderingContext = Context.TagHelperRenderingContext;
@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 }
             }
 
-            internal override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
+            public override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
             {
                 foreach (var tagHelperTypeName in node.UsedTagHelperTypeNames)
                 {

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
-    internal class CreateTagHelperIRNode : RazorIRNode
+    public class CreateTagHelperIRNode : RazorIRNode
     {
         public override IList<RazorIRNode> Children { get; } = EmptyArray;
 
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
         public string TagHelperTypeName { get; set; }
 
-        internal TagHelperDescriptor Descriptor { get; set; }
+        public TagHelperDescriptor Descriptor { get; set; }
 
         public override void Accept(RazorIRNodeVisitor visitor)
         {

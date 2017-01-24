@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
     /// <summary>
     /// Contract used to resolve <see cref="TagHelperDescriptor"/>s.
     /// </summary>
-    internal interface ITagHelperDescriptorResolver
+    public interface ITagHelperDescriptorResolver
     {
         IEnumerable<TagHelperDescriptor> Resolve(ErrorSink errorSink);
     }

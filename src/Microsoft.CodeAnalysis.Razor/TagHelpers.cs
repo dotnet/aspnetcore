@@ -1,23 +1,16 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.AspNetCore.Razor.Evolution.Legacy;
+using System;
+using System.Collections.Generic;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    internal class DefaultTagHelperResolver : TagHelperResolver
+    public static class TagHelpers
     {
-        public DefaultTagHelperResolver(bool designTime)
-        {
-            DesignTime = designTime;
-        }
-
-        public bool DesignTime { get; }
-
-        public override IReadOnlyList<TagHelperDescriptor> GetTagHelpers(Compilation compilation)
+        public static IReadOnlyList<TagHelperDescriptor> GetTagHelpers(Compilation compilation)
         {
             var results = new List<TagHelperDescriptor>();
             var errors = new ErrorSink();
@@ -28,14 +21,14 @@ namespace Microsoft.CodeAnalysis.Razor
             return results;
         }
 
-        private void VisitTagHelpers(Compilation compilation, List<TagHelperDescriptor> results, ErrorSink errors)
+        private static void VisitTagHelpers(Compilation compilation, List<TagHelperDescriptor> results, ErrorSink errors)
         {
             var types = new List<INamedTypeSymbol>();
             var visitor = TagHelperTypeVisitor.Create(compilation, types);
 
             VisitCompilation(visitor, compilation);
 
-            var factory = new DefaultTagHelperDescriptorFactory(compilation, DesignTime);
+            var factory = new DefaultTagHelperDescriptorFactory(compilation, designTime: false);
 
             foreach (var type in types)
             {
@@ -44,7 +37,7 @@ namespace Microsoft.CodeAnalysis.Razor
             }
         }
 
-        private void VisitViewComponents(Compilation compilation, List<TagHelperDescriptor> results, ErrorSink errors)
+        private static void VisitViewComponents(Compilation compilation, List<TagHelperDescriptor> results, ErrorSink errors)
         {
             var types = new List<INamedTypeSymbol>();
             var visitor = ViewComponentTypeVisitor.Create(compilation, types);

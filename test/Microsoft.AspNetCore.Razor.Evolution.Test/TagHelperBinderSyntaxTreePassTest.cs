@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using Xunit;
 using System.Linq;
+using Moq;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
@@ -81,9 +82,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var engine = RazorEngine.Create(builder =>
             {
-
-                var tagHelperFeature = new TagHelperFeature(resolver: null);
-                builder.Features.Add(tagHelperFeature);
+                builder.Features.Add(Mock.Of<ITagHelperFeature>());
             });
             var pass = new TagHelperBinderSyntaxTreePass()
             {
@@ -107,9 +106,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var engine = RazorEngine.Create(builder =>
             {
-                var resolver = new TestTagHelperDescriptorResolver();
-                var tagHelperFeature = new TagHelperFeature(resolver);
-                builder.Features.Add(tagHelperFeature);
+                builder.Features.Add(new TestTagHelperFeature());
             });
 
             var pass = new TagHelperBinderSyntaxTreePass()
@@ -136,9 +133,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var engine = RazorEngine.Create(builder =>
             {
-                var resolver = new TestTagHelperDescriptorResolver();
-                var tagHelperFeature = new TagHelperFeature(resolver);
-                builder.Features.Add(tagHelperFeature);
+                builder.Features.Add(new TestTagHelperFeature());
             });
 
             var pass = new TagHelperBinderSyntaxTreePass()
@@ -173,8 +168,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var engine = RazorEngine.Create(builder =>
             {
                 var resolver = new ErrorLoggingTagHelperDescriptorResolver(resolverError);
-                var tagHelperFeature = new TagHelperFeature(resolver);
-                builder.Features.Add(tagHelperFeature);
+                builder.Features.Add(Mock.Of<ITagHelperFeature>(f => f.Resolver == resolver));
             });
 
             var pass = new TagHelperBinderSyntaxTreePass()

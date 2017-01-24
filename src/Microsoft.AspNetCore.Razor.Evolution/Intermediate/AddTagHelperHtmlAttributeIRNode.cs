@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
-    internal class AddTagHelperHtmlAttributeIRNode : RazorIRNode
+    public class AddTagHelperHtmlAttributeIRNode : RazorIRNode
     {
         public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 

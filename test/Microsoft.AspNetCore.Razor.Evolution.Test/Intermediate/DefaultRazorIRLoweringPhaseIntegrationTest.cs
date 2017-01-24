@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             {
                 builder?.Invoke(b);
 
-                b.Features.Add(new TagHelperFeature(new TestTagHelperDescriptorResolver(tagHelpers)));
+                b.AddTagHelpers(tagHelpers);
             });
 
             for (var i = 0; i < engine.Phases.Count; i++)

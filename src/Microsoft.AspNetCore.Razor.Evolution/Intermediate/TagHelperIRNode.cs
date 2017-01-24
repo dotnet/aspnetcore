@@ -3,11 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
-    internal class TagHelperIRNode : RazorIRNode
+    public class TagHelperIRNode : RazorIRNode
     {
         public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 

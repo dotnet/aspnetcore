@@ -1421,7 +1421,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 builder =>
                 {
                     builder.Features.Add(new ApiSetsIRTestAdapter());
-                    builder.Features.Add(new TagHelperFeature(new TestTagHelperDescriptorResolver(descriptors)));
+                    builder.AddTagHelpers(descriptors);
                 });
             var document = CreateCodeDocument();
 
@@ -1439,7 +1439,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 builder =>
                 {
                     builder.Features.Add(new ApiSetsIRTestAdapter());
-                    builder.Features.Add(new TagHelperFeature(new TestTagHelperDescriptorResolver(descriptors)));
+                    builder.AddTagHelpers(descriptors);
                 });
             var document = CreateCodeDocument();
 

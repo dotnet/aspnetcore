@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
     /// <summary>
     /// Used to manage <see cref="RazorError"/>s encountered during the Razor parsing phase.
     /// </summary>
-    internal class ErrorSink
+    public class ErrorSink
     {
         private readonly List<RazorError> _errors;
 
