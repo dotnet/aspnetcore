@@ -43,5 +43,6 @@ if test ! -d $buildFolder; then
     fi
 fi
 
+chmod +x .build/dotnet/dotnet-install.sh
 .build/dotnet/dotnet-install.sh --shared-runtime --channel master --version 1.2.0-beta-001304-00
 $buildFile -r $repoFolder "$@"
