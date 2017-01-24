@@ -33,7 +33,7 @@ cd $PSScriptRoot
 $repoFolder = $PSScriptRoot
 $env:REPO_FOLDER = $repoFolder
 
-$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/rel/1.0.0-msbuild-rtm.zip"
+$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/feature/msbuild.zip"
 if ($env:KOREBUILD_ZIP)
 {
     $koreBuildZip=$env:KOREBUILD_ZIP
@@ -64,5 +64,4 @@ if (!(Test-Path $buildFolder)) {
     }
 }
 
-&".build\dotnet\dotnet-install.ps1" -Channel 'master' -SharedRuntime -Version '1.2.0-beta-001304-00' -Architecture x64
 &"$buildFile" $args

@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <NetCoreAppImplicitPackageVersion>1.2.0-*</NetCoreAppImplicitPackageVersion>
+    <NetStandardImplicitPackageVersion>1.6.2-*</NetStandardImplicitPackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.Sdk" Version="1.0.1-*" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>

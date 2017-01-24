@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.DotNet.Cli.Utils;
@@ -64,7 +65,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             protected override void Restore()
             {
                 CreateClassLibraryPackage();
-                RestoreProject(ApplicationPath, new[] { _packOutputDirectory, "https://api.nuget.org/v3/index.json" });
+                var nuGetConfigPath = Path.Combine(ApplicationPaths.SolutionDirectory, "NuGet.config");
+                var nugetConfig = XDocument.Parse(File.ReadAllText(nuGetConfigPath));
+                var sources = nugetConfig
+                    .Root
+                    .Element("packageSources")
+                    .Elements("add")
+                    .Select(s => s.Attribute("value").Value)
+                    .ToList();
+                sources.Add(_packOutputDirectory);
+
+                RestoreProject(ApplicationPath, sources);
             }
 
             private void CreateClassLibraryPackage()

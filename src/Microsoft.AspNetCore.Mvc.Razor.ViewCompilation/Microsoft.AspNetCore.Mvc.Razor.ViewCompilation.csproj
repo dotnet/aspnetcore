@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">    
-    <Import Project="..\..\build\common.props" />
+    <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'RazorViewCompilation.sln'))\build\common.props" />
     <PropertyGroup>
         <Description>Build-time references required to enable Razor view compilation as part of building the application.</Description>
         <TargetFrameworks>netcoreapp1.1;net451</TargetFrameworks>
@@ -10,20 +10,20 @@
 
         <!-- Include the build outputs in the build directory (and not the lib directory) -->
         <BuildOutputTargetFolder>build</BuildOutputTargetFolder>
+        <ContentTargetFolders>build</ContentTargetFolders>
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="build\**\*" Pack="true" PackagePath="%(Identity)" />
-        <None Include="buildMultiTargeting/*" Pack="true" PackagePath="%(Identity)" />
+        <Content Include="build\common.targets" Pack="true" PackagePath="" />
+        <Content Include="build\net451\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.targets" Pack="true" PackagePath="" />
+        <Content Include="build\netcoreapp1.1\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.targets" Pack="true" PackagePath="" />
+        <Content Include="buildMultiTargeting\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.targets" Pack="true" PackagePath="" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="1.1.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="1.1.0" />
-        <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.0" />
-    </ItemGroup>
-    <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
-        <PackageReference Include="Microsoft.NETCore.App" Version="1.1.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="1.2.0-*" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="1.2.0-*" />
+        <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.2.0-*" />
     </ItemGroup>
    
 </Project>

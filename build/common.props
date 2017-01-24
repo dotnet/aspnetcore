@@ -1,6 +1,5 @@
 <Project>
   <Import Project="..\version.props" />
-  <Import Project="..\.build\common.props" Condition="Exists('..\.build\common.props')" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
@@ -9,17 +8,12 @@
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)../build/Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
-    <Copyright Condition="'$(Copyright)'==''">© Microsoft Corporation. All rights reserved.</Copyright>
-    <NeutralLanguage Condition="'$(NeutralLanguage)'==''">en-US</NeutralLanguage>
+    <NetCoreAppImplicitPackageVersion>1.2.0-*</NetCoreAppImplicitPackageVersion>
+    <NetStandardImplicitPackageVersion>1.6.2-*</NetStandardImplicitPackageVersion>
   </PropertyGroup>
 
-   <!-- Workaround for RC3 VS -->
-  <ItemGroup Condition="'$(BuildingInsideVisualStudio)'!='true'">
-    <Compile Include="**\*.cs" />
-  </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="Internal.AspNetCore.Sdk" Version="1.0.0-alpha-15156" PrivateAssets="All" />
+    <PackageReference Include="Internal.AspNetCore.Sdk" Version="1.0.1-*" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

@@ -2,7 +2,7 @@
 repoFolder="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $repoFolder
 
-koreBuildZip="https://github.com/aspnet/KoreBuild/archive/rel/1.0.0-msbuild-rtm.zip"
+koreBuildZip="https://github.com/aspnet/KoreBuild/archive/feature/msbuild.zip"
 if [ ! -z $KOREBUILD_ZIP ]; then
     koreBuildZip=$KOREBUILD_ZIP
 fi
@@ -44,5 +44,4 @@ if test ! -d $buildFolder; then
 fi
 
 chmod +x .build/dotnet/dotnet-install.sh
-.build/dotnet/dotnet-install.sh --shared-runtime --channel master --version 1.2.0-beta-001304-00
 $buildFile -r $repoFolder "$@"

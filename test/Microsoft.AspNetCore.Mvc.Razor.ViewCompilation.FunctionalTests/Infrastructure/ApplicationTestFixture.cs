@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             }
         }
 
-        protected void RestoreProject(string applicationDirectory, string[] additionalFeeds = null)
+        protected void RestoreProject(string applicationDirectory, IList<string> feeds = null)
         {            
             var args = new List<string>
             {
@@ -118,9 +118,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
                 TempRestoreDirectory,
             };
 
-            if (additionalFeeds != null)
+            if (feeds != null)
             {
-                foreach (var feed in additionalFeeds)
+                foreach (var feed in feeds)
                 {
                     args.Add("-s");
                     args.Add(feed);
