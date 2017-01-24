@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Context.Writer.WriteStringLiteral(node.TagName)
                     .WriteParameterSeparator()
                     .Write("global::")
-                    .Write(typeof(TagMode).FullName)
+                    .Write("Microsoft.AspNetCore.Razor.TagHelpers.TagMode")
                     .Write(".")
                     .Write(node.TagMode.ToString())
                     .WriteParameterSeparator()
@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             public override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
             {
-                var attributeValueStyleParameter = $"global::{typeof(HtmlAttributeValueStyle).FullName}.{node.ValueStyle}";
+                var attributeValueStyleParameter = $"global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.{node.ValueStyle}";
                 var isConditionalAttributeValue = node.Children.Any(child => child is CSharpAttributeValueIRNode);
 
                 // All simple text and minimized attributes will be pre-allocated.
@@ -524,7 +524,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     .WriteParameterSeparator()
                     .Write(propertyValueAccessor)
                     .WriteParameterSeparator()
-                    .Write($"global::{typeof(HtmlAttributeValueStyle).FullName}.{node.ValueStyle}")
+                    .Write($"global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.{node.ValueStyle}")
                     .WriteEndMethodInvocation();
             }
 
@@ -591,7 +591,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         .WriteStringLiteral(node.Value)
                         .WriteEndMethodInvocation(endLine: false)
                         .WriteParameterSeparator()
-                        .Write($"global::{typeof(HtmlAttributeValueStyle).FullName}.{node.ValueStyle}")
+                        .Write($"global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.{node.ValueStyle}")
                         .WriteEndMethodInvocation();
                 }
             }
@@ -609,7 +609,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     .WriteParameterSeparator()
                     .WriteStringLiteral(node.Value)
                     .WriteParameterSeparator()
-                    .Write($"global::{typeof(HtmlAttributeValueStyle).FullName}.{node.ValueStyle}")
+                    .Write($"global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.{node.ValueStyle}")
                     .WriteEndMethodInvocation();
             }
 
