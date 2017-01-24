@@ -576,6 +576,159 @@ namespace Microsoft.AspNetCore.Razor
                     factory.Markup(" baz")), additionalFlags: PartialParseResult.Provisional);
         }
 
+        [Fact]
+        public void ImplicitExpressionAcceptsWholeIdentifierReplacement()
+        {
+            // Arrange
+            var factory = SpanFactory.CreateCsHtml();
+            var old = new StringTextBuffer("foo @date baz");
+            var changed = new StringTextBuffer("foo @DateTime baz");
+
+            // Act and Assert
+            RunPartialParseTest(new TextChange(5, 4, old, 8, changed),
+                new MarkupBlock(
+                    factory.Markup("foo "),
+                    new ExpressionBlock(
+                        factory.CodeTransition(),
+                        factory.Code("DateTime").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharacters.NonWhiteSpace)),
+                    factory.Markup(" baz")));
+        }
+
+        [Fact]
+        public void ImplicitExpressionRejectsWholeIdentifierReplacementToKeyword()
+        {
+            // Arrange
+            var host = CreateHost();
+            var parser = new RazorEditorParser(host, @"C:\This\Is\A\Test\Path");
+
+            using (var manager = new TestParserManager(parser))
+            {
+                var old = new StringTextBuffer("foo @date baz");
+                var changed = new StringTextBuffer("foo @if baz");
+                var textChange = new TextChange(5, 4, old, 2, changed);
+                manager.InitializeWithDocument(old);
+
+                // Act
+                var result = manager.CheckForStructureChangesAndWait(textChange);
+
+                // Assert
+                Assert.Equal(PartialParseResult.Rejected, result);
+                Assert.Equal(2, manager.ParseCount);
+            }
+        }
+
+        [Fact]
+        public void ImplicitExpressionRejectsWholeIdentifierReplacementToDirective()
+        {
+            // Arrange
+            var host = CreateHost();
+            var parser = new RazorEditorParser(host, @"C:\This\Is\A\Test\Path");
+
+            using (var manager = new TestParserManager(parser))
+            {
+                var old = new StringTextBuffer("foo @date baz");
+                var changed = new StringTextBuffer("foo @inherits baz");
+                var textChange = new TextChange(5, 4, old, 8, changed);
+                manager.InitializeWithDocument(old);
+
+                // Act
+                var result = manager.CheckForStructureChangesAndWait(textChange);
+
+                // Assert
+                Assert.Equal(PartialParseResult.Rejected | PartialParseResult.SpanContextChanged, result);
+                Assert.Equal(2, manager.ParseCount);
+            }
+        }
+
+        [Fact]
+        public void ImplicitExpressionAcceptsPrefixIdentifierReplacements_SingleSymbol()
+        {
+            // Arrange
+            var factory = SpanFactory.CreateCsHtml();
+            var old = new StringTextBuffer("foo @dTime baz");
+            var changed = new StringTextBuffer("foo @DateTime baz");
+
+            // Act and Assert
+            RunPartialParseTest(new TextChange(5, 1, old, 4, changed),
+                new MarkupBlock(
+                    factory.Markup("foo "),
+                    new ExpressionBlock(
+                        factory.CodeTransition(),
+                        factory.Code("DateTime").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharacters.NonWhiteSpace)),
+                    factory.Markup(" baz")));
+        }
+
+        [Fact]
+        public void ImplicitExpressionAcceptsPrefixIdentifierReplacements_MultipleSymbols()
+        {
+            // Arrange
+            var factory = SpanFactory.CreateCsHtml();
+            var old = new StringTextBuffer("foo @dTime.Now baz");
+            var changed = new StringTextBuffer("foo @DateTime.Now baz");
+
+            // Act and Assert
+            RunPartialParseTest(new TextChange(5, 1, old, 4, changed),
+                new MarkupBlock(
+                    factory.Markup("foo "),
+                    new ExpressionBlock(
+                        factory.CodeTransition(),
+                        factory.Code("DateTime.Now").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharacters.NonWhiteSpace)),
+                    factory.Markup(" baz")));
+        }
+
+        [Fact]
+        public void ImplicitExpressionAcceptsSuffixIdentifierReplacements_SingleSymbol()
+        {
+            // Arrange
+            var factory = SpanFactory.CreateCsHtml();
+            var old = new StringTextBuffer("foo @Datet baz");
+            var changed = new StringTextBuffer("foo @DateTime baz");
+
+            // Act and Assert
+            RunPartialParseTest(new TextChange(9, 1, old, 4, changed),
+                new MarkupBlock(
+                    factory.Markup("foo "),
+                    new ExpressionBlock(
+                        factory.CodeTransition(),
+                        factory.Code("DateTime").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharacters.NonWhiteSpace)),
+                    factory.Markup(" baz")));
+        }
+
+        [Fact]
+        public void ImplicitExpressionAcceptsSuffixIdentifierReplacements_MultipleSymbols()
+        {
+            // Arrange
+            var factory = SpanFactory.CreateCsHtml();
+            var old = new StringTextBuffer("foo @DateTime.n baz");
+            var changed = new StringTextBuffer("foo @DateTime.Now baz");
+
+            // Act and Assert
+            RunPartialParseTest(new TextChange(14, 1, old, 3, changed),
+                new MarkupBlock(
+                    factory.Markup("foo "),
+                    new ExpressionBlock(
+                        factory.CodeTransition(),
+                        factory.Code("DateTime.Now").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharacters.NonWhiteSpace)),
+                    factory.Markup(" baz")));
+        }
+
+        [Fact]
+        public void ImplicitExpressionAcceptsSurroundedIdentifierReplacements()
+        {
+            // Arrange
+            var factory = SpanFactory.CreateCsHtml();
+            var old = new StringTextBuffer("foo @DateTime.n.ToString() baz");
+            var changed = new StringTextBuffer("foo @DateTime.Now.ToString() baz");
+
+            // Act and Assert
+            RunPartialParseTest(new TextChange(14, 1, old, 3, changed),
+                new MarkupBlock(
+                    factory.Markup("foo "),
+                    new ExpressionBlock(
+                        factory.CodeTransition(),
+                        factory.Code("DateTime.Now.ToString()").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharacters.NonWhiteSpace)),
+                    factory.Markup(" baz")));
+        }
 
         [Fact]
         public void ImplicitExpressionAcceptsDotlessCommitInsertionsInStatementBlockAfterIdentifiers()
@@ -772,6 +925,61 @@ namespace Microsoft.AspNetCore.Razor
                 textChange = new TextChange(14, 0, old, 3, changed);
 
                 applyAndVerifyPartialChange(textChange, PartialParseResult.Accepted | PartialParseResult.Provisional, "DateTime.Now.");
+            }
+        }
+
+        [Fact]
+        public void ImplicitExpressionProvisionallyAcceptsCaseInsensitiveDotlessCommitInsertions_NewRoslynIntegration()
+        {
+            var factory = SpanFactory.CreateCsHtml();
+            var old = new StringTextBuffer("foo @date baz");
+            var changed = new StringTextBuffer("foo @date. baz");
+            var textChange = new TextChange(9, 0, old, 1, changed);
+            using (var manager = CreateParserManager())
+            {
+                Action<TextChange, PartialParseResult, string> applyAndVerifyPartialChange = (changeToApply, expectedResult, expectedCode) =>
+                {
+                    var result = manager.CheckForStructureChangesAndWait(textChange);
+
+                    // Assert
+                    Assert.Equal(expectedResult, result);
+                    Assert.Equal(1, manager.ParseCount);
+
+                    ParserTestBase.EvaluateParseTree(manager.Parser.CurrentParseTree, new MarkupBlock(
+                        factory.Markup("foo "),
+                        new ExpressionBlock(
+                            factory.CodeTransition(),
+                            factory.Code(expectedCode).AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharacters.NonWhiteSpace)),
+                        factory.Markup(" baz")));
+                };
+
+                manager.InitializeWithDocument(textChange.OldBuffer);
+                
+                // This is the process of a dotless commit when doing "." insertions to commit intellisense changes.
+
+                // @date => @date.
+                applyAndVerifyPartialChange(textChange, PartialParseResult.Accepted | PartialParseResult.Provisional, "date.");
+
+                old = changed;
+                changed = new StringTextBuffer("foo @date baz");
+                textChange = new TextChange(9, 1, old, 0, changed);
+
+                // @date. => @date
+                applyAndVerifyPartialChange(textChange, PartialParseResult.Accepted, "date");
+
+                old = changed;
+                changed = new StringTextBuffer("foo @DateTime baz");
+                textChange = new TextChange(5, 4, old, 8, changed);
+
+                // @date => @DateTime
+                applyAndVerifyPartialChange(textChange, PartialParseResult.Accepted, "DateTime");
+
+                old = changed;
+                changed = new StringTextBuffer("foo @DateTime. baz");
+                textChange = new TextChange(13, 0, old, 1, changed);
+
+                // @DateTime => @DateTime.
+                applyAndVerifyPartialChange(textChange, PartialParseResult.Accepted | PartialParseResult.Provisional, "DateTime.");
             }
         }
 
