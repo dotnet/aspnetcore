@@ -100,24 +100,5 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 _method.Add(node);
             }
         }
-       
-        public void Foo()
-        {
-            //// For prettiness, let's insert the usings before the class declaration.
-            //var i = 0;
-            //for (; i < Namespace.Children.Count; i++)
-            //{
-            //    if (Namespace.Children[i] is ClassDeclarationIRNode)
-            //    {
-            //        break;
-            //    }
-            //}
-
-            //var @using = new UsingStatementIRNode()
-            //{
-            //    Content = namespaceImport,
-            //    SourceRange = BuildSourceRangeFromNode(span),
-            //};
-        }
     }
 }
