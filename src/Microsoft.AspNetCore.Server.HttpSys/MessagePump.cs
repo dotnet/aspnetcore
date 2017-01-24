@@ -221,7 +221,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             if (_outstandingRequests > 0)
             {
                 LogHelper.LogInfo(_logger, "Stopping, waiting for " + _outstandingRequests + " request(s) to drain.");
-                _shutdownSignal.WaitOne();
+                var drained = _shutdownSignal.WaitOne(Listener.Options.ShutdownTimeout);
+                if (drained)
+                {
+                    LogHelper.LogInfo(_logger, "All requests drained successfully.");
+                }
+                else
+                {
+                    LogHelper.LogInfo(_logger, "Timed out, terminating " + _outstandingRequests + " request(s).");
+                }
             }
             // All requests are finished
             _listener.Dispose();

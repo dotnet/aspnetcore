@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        public async Task Server_ShutdownDurringRequest_Success()
+        public async Task Server_ShutdownDuringRequest_Success()
         {
             Task<string> responseTask;
             ManualResetEvent received = new ManualResetEvent(false);
@@ -85,6 +85,30 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             string response = await responseTask;
             Assert.Equal("Hello World", response);
+        }
+
+        [ConditionalFact]
+        public async Task Server_ShutdownDuringLongRunningRequest_TimesOut()
+        {
+            Task<string> responseTask;
+            var received = new ManualResetEvent(false);
+            bool? shutdown = null;
+            var waitForShutdown = new ManualResetEvent(false);
+            string address;
+            using (Utilities.CreateHttpServer(out address, httpContext =>
+            {
+                received.Set();
+                shutdown = waitForShutdown.WaitOne(TimeSpan.FromSeconds(15));
+                httpContext.Response.ContentLength = 11;
+                return httpContext.Response.WriteAsync("Hello World");
+            }))
+            {
+                responseTask = SendRequestAsync(address);
+                Assert.True(received.WaitOne(TimeSpan.FromSeconds(10)));
+            }
+            Assert.False(shutdown.HasValue);
+            waitForShutdown.Set();
+            await Assert.ThrowsAsync<HttpRequestException>(async () => await responseTask);
         }
 
         [ConditionalFact]
