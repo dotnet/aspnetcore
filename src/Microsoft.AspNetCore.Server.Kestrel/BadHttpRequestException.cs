@@ -43,6 +43,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 case RequestRejectionReason.MalformedRequestInvalidHeaders:
                     ex = new BadHttpRequestException("Malformed request: invalid headers.", StatusCodes.Status400BadRequest);
                     break;
+                case RequestRejectionReason.MultipleContentLengths:
+                    ex = new BadHttpRequestException("Multiple Content-Length headers.", StatusCodes.Status400BadRequest);
+                    break;
                 case RequestRejectionReason.UnexpectedEndOfRequestContent:
                     ex = new BadHttpRequestException("Unexpected end of request content.", StatusCodes.Status400BadRequest);
                     break;

@@ -8,12 +8,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
     public abstract class MessageBody
     {
+        private static readonly MessageBody _zeroContentLengthClose = new ForZeroContentLength(keepAlive: false);
+        private static readonly MessageBody _zeroContentLengthKeepAlive = new ForZeroContentLength(keepAlive: true);
+
         private readonly Frame _context;
         private bool _send100Continue = true;
 
@@ -266,18 +268,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 return new ForChunkedEncoding(keepAlive, headers, context);
             }
 
-            var unparsedContentLength = headers.HeaderContentLength;
-            if (unparsedContentLength.Count > 0)
+            if (headers.ContentLength.HasValue)
             {
-                try
+                var contentLength = headers.ContentLength.Value;
+                if (contentLength == 0)
                 {
-                    var contentLength = FrameHeaders.ParseContentLength(unparsedContentLength);
-                    return new ForContentLength(keepAlive, contentLength, context);
+                    return keepAlive ? _zeroContentLengthKeepAlive : _zeroContentLengthClose;
                 }
-                catch (InvalidOperationException)
-                {
-                    context.RejectRequest(RequestRejectionReason.InvalidContentLength, unparsedContentLength);
-                }
+
+                return new ForContentLength(keepAlive, contentLength, context);
             }
 
             // Avoid slowing down most common case
@@ -292,7 +291,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
             }
 
-            return new ForContentLength(keepAlive, 0, context);
+            return keepAlive ? _zeroContentLengthKeepAlive : _zeroContentLengthClose;
         }
 
         private class ForRemainingData : MessageBody
@@ -306,6 +305,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             protected override ValueTask<ArraySegment<byte>> PeekAsync(CancellationToken cancellationToken)
             {
                 return _context.Input.PeekAsync();
+            }
+        }
+
+        private class ForZeroContentLength : MessageBody
+        {
+            public ForZeroContentLength(bool keepAlive)
+                : base(null)
+            {
+                RequestKeepAlive = keepAlive;
+            }
+
+            protected override ValueTask<ArraySegment<byte>> PeekAsync(CancellationToken cancellationToken)
+            {
+                return new ValueTask<ArraySegment<byte>>();
+            }
+
+            protected override void OnConsumedBytes(int count)
+            {
+                if (count > 0)
+                {
+                    throw new InvalidDataException("Consuming non-existent data");
+                }
             }
         }
 

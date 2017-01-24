@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 {
     public struct MemoryPoolIterator
     {
+        private const int _maxULongByteLength = 20;
         private const ulong _xorPowerOfTwoToHighByte = (0x07ul       |
                                                         0x06ul <<  8 |
                                                         0x05ul << 16 |
@@ -22,6 +23,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                                                         0x01ul << 48 ) + 1;
 
         private static readonly int _vectorSpan = Vector<byte>.Count;
+
+        [ThreadStatic]
+        private static byte[] _numericBytesScratch;
 
         private MemoryPoolBlock _block;
         private int _index;
@@ -1082,6 +1086,101 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             _index = blockIndex;
         }
 
+        private static byte[] NumericBytesScratch => _numericBytesScratch ?? CreateNumericBytesScratch();
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static byte[] CreateNumericBytesScratch()
+        {
+            var bytes = new byte[_maxULongByteLength];
+            _numericBytesScratch = bytes;
+            return bytes;
+        }
+
+        public unsafe void CopyFromNumeric(ulong value)
+        {
+            const byte AsciiDigitStart = (byte)'0';
+
+            var block = _block;
+            if (block == null)
+            {
+                return;
+            }
+
+            var blockIndex = _index;
+            var bytesLeftInBlock = block.Data.Offset + block.Data.Count - blockIndex;
+            var start = block.DataFixedPtr + blockIndex;
+
+            if (value < 10)
+            {
+                if (bytesLeftInBlock < 1)
+                {
+                    CopyFromNumericOverflow(value);
+                    return;
+                }
+                _index = blockIndex + 1;
+                block.End = blockIndex + 1;
+
+                *(start) = (byte)(((uint)value) + AsciiDigitStart);
+            }
+            else if (value < 100)
+            {
+                if (bytesLeftInBlock < 2)
+                {
+                    CopyFromNumericOverflow(value);
+                    return;
+                }
+                _index = blockIndex + 2;
+                block.End = blockIndex + 2;
+
+                var val = (uint)value;
+                var tens = (byte)((val * 205u) >> 11); // div10, valid to 1028
+
+                *(start)     = (byte)(tens + AsciiDigitStart);
+                *(start + 1) = (byte)(val - (tens * 10) + AsciiDigitStart);
+            }
+            else if (value < 1000)
+            {
+                if (bytesLeftInBlock < 3)
+                {
+                    CopyFromNumericOverflow(value);
+                    return;
+                }
+                _index = blockIndex + 3;
+                block.End = blockIndex + 3;
+
+                var val      = (uint)value;
+                var digit0   = (byte)((val * 41u) >> 12); // div100, valid to 1098
+                var digits01 = (byte)((val * 205u) >> 11); // div10, valid to 1028
+
+                *(start)     = (byte)(digit0 + AsciiDigitStart);
+                *(start + 1) = (byte)(digits01 - (digit0 * 10) + AsciiDigitStart);
+                *(start + 2) = (byte)(val - (digits01 * 10) + AsciiDigitStart);
+            }
+            else
+            {
+                CopyFromNumericOverflow(value);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private unsafe void CopyFromNumericOverflow(ulong value)
+        {
+            const byte AsciiDigitStart = (byte)'0';
+
+            var position = _maxULongByteLength;
+            var byteBuffer = NumericBytesScratch;
+            do
+            {
+                // Consider using Math.DivRem() if available
+                var quotient = value / 10;
+                byteBuffer[--position] = (byte)(AsciiDigitStart + (value - quotient * 10)); // 0x30 = '0'
+                value = quotient;
+            }
+            while (value != 0);
+
+            CopyFrom(byteBuffer, position, _maxULongByteLength - position);
+        }
+
         public unsafe string GetAsciiString(ref MemoryPoolIterator end)
         {
             var block = _block;
@@ -1253,6 +1352,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             // https://github.com/dotnet/coreclr/issues/7459#issuecomment-253965670
             return Vector.AsVectorByte(new Vector<uint>(vectorByte * 0x01010101u));
         }
-
     }
 }

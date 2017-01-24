@@ -10,8 +10,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using Xunit;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
@@ -175,16 +177,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(BadContentLengths))]
-        public void ThrowsWhenSettingRawContentLengthToNonNumericValue(string contentLength)
-        {
-            var headers = new FrameResponseHeaders();
-
-            var exception = Assert.Throws<InvalidOperationException>(() => headers.SetRawContentLength(contentLength, Encoding.ASCII.GetBytes(contentLength)));
-            Assert.Equal($"Invalid Content-Length: \"{contentLength}\". Value must be a positive integral number.", exception.Message);
-        }
-
-        [Theory]
-        [MemberData(nameof(BadContentLengths))]
         public void ThrowsWhenAssigningHeaderContentLengthToNonNumericValue(string contentLength)
         {
             var headers = new FrameResponseHeaders();
@@ -201,7 +193,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var dictionary = (IDictionary<string, StringValues>)headers;
             dictionary.Add("Content-Length", contentLength);
 
-            Assert.Equal(ParseLong(contentLength), headers.HeaderContentLengthValue);
+            Assert.Equal(ParseLong(contentLength), headers.ContentLength);
         }
 
         [Theory]
@@ -212,17 +204,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var dictionary = (IDictionary<string, StringValues>)headers;
             dictionary["Content-Length"] = contentLength;
 
-            Assert.Equal(ParseLong(contentLength), headers.HeaderContentLengthValue);
-        }
-
-        [Theory]
-        [MemberData(nameof(GoodContentLengths))]
-        public void ContentLengthValueCanBeReadAsLongAfterSettingRawHeader(string contentLength)
-        {
-            var headers = new FrameResponseHeaders();
-            headers.SetRawContentLength(contentLength, Encoding.ASCII.GetBytes(contentLength));
-
-            Assert.Equal(ParseLong(contentLength), headers.HeaderContentLengthValue);
+            Assert.Equal(ParseLong(contentLength), headers.ContentLength);
         }
 
         [Theory]
@@ -232,7 +214,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var headers = new FrameResponseHeaders();
             headers.HeaderContentLength = contentLength;
 
-            Assert.Equal(ParseLong(contentLength), headers.HeaderContentLengthValue);
+            Assert.Equal(ParseLong(contentLength), headers.ContentLength);
         }
 
         [Fact]
@@ -244,7 +226,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             dictionary.Remove("Content-Length");
 
-            Assert.Equal(null, headers.HeaderContentLengthValue);
+            Assert.Equal(null, headers.ContentLength);
         }
 
         [Fact]
@@ -256,7 +238,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             dictionary.Clear();
 
-            Assert.Equal(null, headers.HeaderContentLengthValue);
+            Assert.Equal(null, headers.ContentLength);
         }
 
         private static long ParseLong(string value)

@@ -3,12 +3,59 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
     public partial class FrameRequestHeaders : FrameHeaders
     {
+        private static long ParseContentLength(string value)
+        {
+            long parsed;
+            if (!HeaderUtilities.TryParseInt64(value, out parsed))
+            {
+                ThrowInvalidContentLengthException(value);
+            }
+
+            return parsed;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void SetValueUnknown(string key, StringValues value)
+        {
+            Unknown[key] = value;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private unsafe void AppendUnknownHeaders(byte* pKeyBytes, int keyLength, string value)
+        {
+            string key = new string('\0', keyLength);
+            fixed (char* keyBuffer = key)
+            {
+                if (!AsciiUtilities.TryGetAsciiString(pKeyBytes, keyBuffer, keyLength))
+                {
+                    throw BadHttpRequestException.GetException(RequestRejectionReason.InvalidCharactersInHeaderName);
+                }
+            }
+
+            StringValues existing;
+            Unknown.TryGetValue(key, out existing);
+            Unknown[key] = AppendValue(existing, value);
+        }
+
+        private static void ThrowInvalidContentLengthException(string value)
+        {
+            throw BadHttpRequestException.GetException(RequestRejectionReason.InvalidContentLength, value);
+        }
+
+        private static void ThrowMultipleContentLengthsException()
+        {
+            throw BadHttpRequestException.GetException(RequestRejectionReason.MultipleContentLengths);
+        }
+
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);

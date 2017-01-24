@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -19,47 +20,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
             return condition ? formatter() : "";
         }
 
-        static string AppendSwitch(IEnumerable<IGrouping<int, KnownHeader>> values, string className, bool handleUnknown = false) => 
-            $@"fixed (byte* ptr = &keyBytes[keyOffset])
-            {{
-                var pUB = ptr;
-                var pUL = (ulong*)pUB;
+        static string AppendSwitch(IEnumerable<IGrouping<int, KnownHeader>> values, string className) => 
+             $@"var pUL = (ulong*)pUB;
                 var pUI = (uint*)pUB;
                 var pUS = (ushort*)pUB;
+                var stringValue = new StringValues(value);
                 switch (keyLength)
                 {{{Each(values, byLength => $@"
                     case {byLength.Key}:
                         {{{Each(byLength, header => $@"
                             if ({header.EqualIgnoreCaseBytes()})
-                            {{
+                            {{{(header.Identifier == "ContentLength" ? $@"
+                                if (_contentLength.HasValue)
+                                {{
+                                    ThrowMultipleContentLengthsException();
+                                }}
+                                else
+                                {{
+                                    _contentLength = ParseContentLength(value);
+                                }}
+                                return;" : $@"
                                 if ({header.TestBit()})
                                 {{
                                     _headers._{header.Identifier} = AppendValue(_headers._{header.Identifier}, value);
                                 }}
                                 else
-                                {{{If(className == "FrameResponseHeaders" && header.Identifier == "ContentLength", () => @"
-                                    _contentLength = ParseContentLength(value);")}
+                                {{
                                     {header.SetBit()};
-                                    _headers._{header.Identifier} = new StringValues(value);{(header.EnhancedSetter == false ? "" : $@"
+                                    _headers._{header.Identifier} = stringValue;{(header.EnhancedSetter == false ? "" : $@"
                                     _headers._raw{header.Identifier} = null;")}
                                 }}
-                                return;
+                                return;")}
                             }}
                         ")}}}
                         break;
-                ")}}}
-
-                {(handleUnknown ? $@"
-                    key = new string('\0', keyLength);
-                    fixed(char *keyBuffer = key)
-                    {{
-                        if (!AsciiUtilities.TryGetAsciiString(ptr, keyBuffer, keyLength))
-                        {{
-                            throw BadHttpRequestException.GetException(RequestRejectionReason.InvalidCharactersInHeaderName);
-                        }}
-                    }}
-                ": "")}
-            }}";
+                ")}}}";
 
         class KnownHeader
         {
@@ -72,7 +67,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
             public int BytesCount { get; set; }
             public bool EnhancedSetter { get; set; }
             public bool PrimaryHeader { get; set; }
-            public string TestBit() => $"((_bits & {1L << Index}L) != 0)";
+            public string TestBit() => $"(_bits & {1L << Index}L) != 0";
+            public string TestTempBit() => $"(tempBits & {1L << Index}L) != 0";
+            public string TestNotTempBit() => $"(tempBits & ~{1L << Index}L) == 0";
+            public string TestNotBit() => $"(_bits & {1L << Index}L) == 0";
             public string SetBit() => $"_bits |= {1L << Index}L";
             public string ClearBit() => $"_bits &= ~{1L << Index}L";
             
@@ -135,7 +133,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
             {
                 "Connection",
                 "Date",
-                "Content-Length",
                 "Content-Type",
                 "Server",
             };
@@ -152,7 +149,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
                 "Via",
                 "Warning",
                 "Allow",
-                "Content-Length",
                 "Content-Type",
                 "Content-Encoding",
                 "Content-Language",
@@ -192,19 +188,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
                 "TE",
                 "Translate",
                 "User-Agent",
-            }).Concat(corsRequestHeaders).Select((header, index) => new KnownHeader
+            })
+            .Concat(corsRequestHeaders)
+            .Select((header, index) => new KnownHeader
             {
                 Name = header,
                 Index = index,
                 PrimaryHeader = requestPrimaryHeaders.Contains(header)
-            }).ToArray();
+            })
+            .Concat(new[] { new KnownHeader
+            {
+                Name = "Content-Length",
+                Index = -1,
+                PrimaryHeader = requestPrimaryHeaders.Contains("Content-Length")
+            }})
+            .ToArray();
+            Debug.Assert(requestHeaders.Length <= 64);
+            Debug.Assert(requestHeaders.Max(x => x.Index) <= 62);
+
             var enhancedHeaders = new[]
             {
                 "Connection",
                 "Server",
                 "Date",
-                "Transfer-Encoding",
-                "Content-Length",
+                "Transfer-Encoding"
             };
             // http://www.w3.org/TR/cors/#syntax
             var corsResponseHeaders = new[]
@@ -228,13 +235,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
                 "Set-Cookie",
                 "Vary",
                 "WWW-Authenticate",
-            }).Concat(corsResponseHeaders).Select((header, index) => new KnownHeader
+            })
+            .Concat(corsResponseHeaders)
+            .Select((header, index) => new KnownHeader
             {
                 Name = header,
                 Index = index,
                 EnhancedSetter = enhancedHeaders.Contains(header),
                 PrimaryHeader = responsePrimaryHeaders.Contains(header)
-            }).ToArray();
+            })
+            .Concat(new[] { new KnownHeader
+            {
+                Name = "Content-Length",
+                Index = -1,
+                EnhancedSetter = enhancedHeaders.Contains("Content-Length"),
+                PrimaryHeader = responsePrimaryHeaders.Contains("Content-Length")
+            }})
+            .ToArray();
+            // 63 for reponseHeaders as it steals one bit for Content-Length in CopyTo(ref MemoryPoolIterator output)
+            Debug.Assert(responseHeaders.Length <= 63);
+            Debug.Assert(responseHeaders.Max(x => x.Index) <= 62);
+
             var loops = new[]
             {
                 new
@@ -269,6 +290,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {{
@@ -286,61 +308,48 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private HeaderReferences _headers;
         {Each(loop.Headers, header => $@"
         public StringValues Header{header.Identifier}
-        {{
+        {{{(header.Identifier == "ContentLength" ? $@"
             get
             {{
-                if ({header.TestBit()})
+                StringValues value;
+                if (_contentLength.HasValue)
                 {{
-                    return _headers._{header.Identifier};
+                    value = new StringValues(HeaderUtilities.FormatInt64(_contentLength.Value));
                 }}
-                return StringValues.Empty;
+                return value;
             }}
             set
-            {{{If(loop.ClassName == "FrameResponseHeaders" && header.Identifier == "ContentLength", () => @"
-                _contentLength = ParseContentLength(value);")}
+            {{
+                _contentLength = ParseContentLength(value);
+            }}" : $@"
+            get
+            {{
+                StringValues value;
+                if ({header.TestBit()})
+                {{
+                    value = _headers._{header.Identifier};
+                }}
+                return value;
+            }}
+            set
+            {{
                 {header.SetBit()};
                 _headers._{header.Identifier} = value; {(header.EnhancedSetter == false ? "" : $@"
                 _headers._raw{header.Identifier} = null;")}
-            }}
+            }}")}
         }}")}
-        {Each(loop.Headers.Where(header => header.EnhancedSetter), header => $@"
+{Each(loop.Headers.Where(header => header.EnhancedSetter), header => $@"
         public void SetRaw{header.Identifier}(StringValues value, byte[] raw)
-        {{{If(loop.ClassName == "FrameResponseHeaders" && header.Identifier == "ContentLength", () => @"
-            _contentLength = ParseContentLength(value);")}
+        {{
             {header.SetBit()};
             _headers._{header.Identifier} = value;
             _headers._raw{header.Identifier} = raw;
         }}")}
         protected override int GetCountFast()
         {{
-            return BitCount(_bits) + (MaybeUnknown?.Count ?? 0);
+            return (_contentLength.HasValue ? 1 : 0 ) + BitCount(_bits) + (MaybeUnknown?.Count ?? 0);
         }}
-        protected override StringValues GetValueFast(string key)
-        {{
-            switch (key.Length)
-            {{{Each(loop.HeadersByLength, byLength => $@"
-                case {byLength.Key}:
-                    {{{Each(byLength, header => $@"
-                        if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {{
-                            if ({header.TestBit()})
-                            {{
-                                return _headers._{header.Identifier};
-                            }}
-                            else
-                            {{
-                                ThrowKeyNotFoundException();
-                            }}
-                        }}
-                    ")}}}
-                    break;
-")}}}
-            if (MaybeUnknown == null)
-            {{
-                ThrowKeyNotFoundException();
-            }}
-            return MaybeUnknown[key];
-        }}
+
         protected override bool TryGetValueFast(string key, out StringValues value)
         {{
             switch (key.Length)
@@ -348,71 +357,83 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 case {byLength.Key}:
                     {{{Each(byLength, header => $@"
                         if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {{
+                        {{{(header.Identifier == "ContentLength" ? @"
+                            if (_contentLength.HasValue)
+                            {
+                                value = HeaderUtilities.FormatInt64(_contentLength.Value);
+                                return true;
+                            }
+                            return false;" : $@"
                             if ({header.TestBit()})
                             {{
                                 value = _headers._{header.Identifier};
                                 return true;
                             }}
-                            else
-                            {{
-                                value = StringValues.Empty;
-                                return false;
-                            }}
-                        }}
-                    ")}}}
-                    break;
-")}}}
-            value = StringValues.Empty;
+                            return false;")}
+                        }}")}
+                    }}
+                    break;")}
+            }}
+
             return MaybeUnknown?.TryGetValue(key, out value) ?? false;
         }}
+
         protected override void SetValueFast(string key, StringValues value)
-        {{
-            {(loop.ClassName == "FrameResponseHeaders" ? "ValidateHeaderCharacters(value);" : "")}
+        {{{(loop.ClassName == "FrameResponseHeaders" ? @"
+            ValidateHeaderCharacters(value);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                     {{{Each(byLength, header => $@"
                         if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {{{If(loop.ClassName == "FrameResponseHeaders" && header.Identifier == "ContentLength", () => @"
-                            _contentLength = ParseContentLength(value);")}
+                        {{{(header.Identifier == "ContentLength" ? $@"
+                            _contentLength = ParseContentLength(value.ToString());" : $@"
                             {header.SetBit()};
                             _headers._{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
-                            _headers._raw{header.Identifier} = null;")}
+                            _headers._raw{header.Identifier} = null;")}")}
                             return;
-                        }}
-                    ")}}}
-                    break;
-")}}}
-            {(loop.ClassName == "FrameResponseHeaders" ? "ValidateHeaderCharacters(key);" : "")}
-            Unknown[key] = value;
+                        }}")}
+                    }}
+                    break;")}
+            }}
+
+            SetValueUnknown(key, value);
         }}
-        protected override void AddValueFast(string key, StringValues value)
-        {{
-            {(loop.ClassName == "FrameResponseHeaders" ? "ValidateHeaderCharacters(value);" : "")}
+
+        protected override bool AddValueFast(string key, StringValues value)
+        {{{(loop.ClassName == "FrameResponseHeaders" ? @"
+            ValidateHeaderCharacters(value);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                     {{{Each(byLength, header => $@"
                         if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {{
-                            if ({header.TestBit()})
+                        {{{(header.Identifier == "ContentLength" ? $@"
+                            if (!_contentLength.HasValue)
                             {{
-                                ThrowDuplicateKeyException();
-                            }}{
-                            If(loop.ClassName == "FrameResponseHeaders" && header.Identifier == "ContentLength", () => @"
-                            _contentLength = ParseContentLength(value);")}
-                            {header.SetBit()};
-                            _headers._{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
-                            _headers._raw{header.Identifier} = null;")}
-                            return;
-                        }}
-                    ")}}}
-                    break;
-            ")}}}
-            {(loop.ClassName == "FrameResponseHeaders" ? "ValidateHeaderCharacters(key);" : "")}
+                                _contentLength = ParseContentLength(value);
+                                return true;
+                            }}
+                            return false;" : $@"
+                            if ({header.TestNotBit()})
+                            {{
+                                {header.SetBit()};
+                                _headers._{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
+                                _headers._raw{header.Identifier} = null;")}
+                                return true;
+                            }}
+                            return false;")}
+                        }}")}
+                    }}
+                    break;")}
+            }}
+{(loop.ClassName == "FrameResponseHeaders" ? @"
+            ValidateHeaderCharacters(key);" : "")}
             Unknown.Add(key, value);
+            // Return true, above will throw and exit for false
+            return true;
         }}
+
         protected override bool RemoveFast(string key)
         {{
             switch (key.Length)
@@ -420,74 +441,88 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 case {byLength.Key}:
                     {{{Each(byLength, header => $@"
                         if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {{
+                        {{{(header.Identifier == "ContentLength" ? @"
+                            if (_contentLength.HasValue)
+                            {
+                                _contentLength = null;
+                                return true;
+                            }
+                            return false;" : $@"
                             if ({header.TestBit()})
-                            {{{If(loop.ClassName == "FrameResponseHeaders" && header.Identifier == "ContentLength", () => @"
-                                _contentLength = null;")}
+                            {{
                                 {header.ClearBit()};
-                                _headers._{header.Identifier} = StringValues.Empty;{(header.EnhancedSetter == false ? "" : $@"
+                                _headers._{header.Identifier} = default(StringValues);{(header.EnhancedSetter == false ? "" : $@"
                                 _headers._raw{header.Identifier} = null;")}
                                 return true;
                             }}
-                            else
-                            {{
-                                return false;
-                            }}
-                        }}
-                    ")}}}
-                    break;
-            ")}}}
+                            return false;")}
+                        }}")}
+                    }}
+                    break;")}
+            }}
+
             return MaybeUnknown?.Remove(key) ?? false;
         }}
+
         protected override void ClearFast()
-        {{            
+        {{
             MaybeUnknown?.Clear();
-            {(loop.ClassName == "FrameResponseHeaders" ? "_contentLength = null;" : "")}
-            if(FrameHeaders.BitCount(_bits) > 12)
+            _contentLength = null;
+            var tempBits = _bits;
+            _bits = 0;
+            if(FrameHeaders.BitCount(tempBits) > 12)
             {{
                 _headers = default(HeaderReferences);
-                _bits = 0;
                 return;
             }}
-            {Each(loop.Headers.OrderBy(h => !h.PrimaryHeader), header => $@"
-            if ({header.TestBit()})
+            {Each(loop.Headers.Where(header => header.Identifier != "ContentLength").OrderBy(h => !h.PrimaryHeader), header => $@"
+            if ({header.TestTempBit()})
             {{
                 _headers._{header.Identifier} = default(StringValues);
-                {header.ClearBit()};
-                if(_bits == 0)
+                if({header.TestNotTempBit()})
                 {{
                     return;
                 }}
+                tempBits &= ~{1L << header.Index}L;
             }}
             ")}
         }}
 
-        protected override void CopyToFast(KeyValuePair<string, StringValues>[] array, int arrayIndex)
+        protected override bool CopyToFast(KeyValuePair<string, StringValues>[] array, int arrayIndex)
         {{
             if (arrayIndex < 0)
             {{
-                ThrowArgumentException();
+                return false;
             }}
-            {Each(loop.Headers, header => $@"
+            {Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => $@"
                 if ({header.TestBit()})
                 {{
                     if (arrayIndex == array.Length)
                     {{
-                        ThrowArgumentException();
+                        return false;
                     }}
-
                     array[arrayIndex] = new KeyValuePair<string, StringValues>(""{header.Name}"", _headers._{header.Identifier});
                     ++arrayIndex;
+                }}")}
+                if (_contentLength.HasValue)
+                {{
+                    if (arrayIndex == array.Length)
+                    {{
+                        return false;
+                    }}
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(""Content-Length"", HeaderUtilities.FormatInt64(_contentLength.Value));
+                    ++arrayIndex;
                 }}
-            ")}
             ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
+
+            return true;
         }}
         {(loop.ClassName == "FrameResponseHeaders" ? $@"
         protected void CopyToFast(ref MemoryPoolIterator output)
         {{
-            var tempBits = _bits;
-            {Each(loop.Headers.OrderBy(h => !h.PrimaryHeader), header => $@"
-                if ({header.TestBit()})
+            var tempBits = _bits | (_contentLength.HasValue ? {1L << 63}L : 0);
+            {Each(loop.Headers.Where(header => header.Identifier != "ContentLength").OrderBy(h => !h.PrimaryHeader), header => $@"
+                if ({header.TestTempBit()})
                 {{ {(header.EnhancedSetter == false ? "" : $@"
                     if (_headers._raw{header.Identifier} != null)
                     {{
@@ -507,35 +542,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         }}
                     }}
 
-                    tempBits &= ~{1L << header.Index}L;
-                    if(tempBits == 0)
+                    if({header.TestNotTempBit()})
                     {{
                         return;
                     }}
-                }}
-            ")}
-        }}
-        
-        " : "")}
+                    tempBits &= ~{1L << header.Index}L;
+                }}{(header.Identifier == "Server" ? $@"
+                if ((tempBits & {1L << 63}L) != 0)
+                {{
+                    output.CopyFrom(_headerBytes, {loop.Headers.First(x => x.Identifier == "ContentLength").BytesOffset}, {loop.Headers.First(x => x.Identifier == "ContentLength").BytesCount});
+                    output.CopyFromNumeric((ulong)ContentLength.Value);
+
+                    if((tempBits & ~{1L << 63}L) == 0)
+                    {{
+                        return;
+                    }}
+                    tempBits &= ~{1L << 63}L;
+                }}" : "")}")}
+        }}" : "")}
         {(loop.ClassName == "FrameRequestHeaders" ? $@"
         public unsafe void Append(byte[] keyBytes, int keyOffset, int keyLength, string value)
         {{
-            {AppendSwitch(loop.Headers.Where(h => h.PrimaryHeader).GroupBy(x => x.Name.Length), loop.ClassName)}
-            
-            AppendNonPrimaryHeaders(keyBytes, keyOffset, keyLength, value);
+            fixed (byte* ptr = &keyBytes[keyOffset])
+            {{
+                var pUB = ptr;
+                {AppendSwitch(loop.Headers.Where(h => h.PrimaryHeader).GroupBy(x => x.Name.Length), loop.ClassName)}
+
+                AppendNonPrimaryHeaders(ptr, keyOffset, keyLength, value);
+            }}
         }}
         
-        private unsafe void AppendNonPrimaryHeaders(byte[] keyBytes, int keyOffset, int keyLength, string value)
+        private unsafe void AppendNonPrimaryHeaders(byte* pKeyBytes, int keyOffset, int keyLength, string value)
         {{
-            string key;
-            {AppendSwitch(loop.Headers.Where(h => !h.PrimaryHeader).GroupBy(x => x.Name.Length), loop.ClassName, true)}
+                var pUB = pKeyBytes;
+                {AppendSwitch(loop.Headers.Where(h => !h.PrimaryHeader).GroupBy(x => x.Name.Length), loop.ClassName)}
 
-            StringValues existing;
-            Unknown.TryGetValue(key, out existing);
-            Unknown[key] = AppendValue(existing, value);
+                AppendUnknownHeaders(pKeyBytes, keyLength, value);
         }}" : "")}
+
         private struct HeaderReferences
-        {{{Each(loop.Headers, header => @"
+        {{{Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => @"
             public StringValues _" + header.Identifier + ";")}
             {Each(loop.Headers.Where(header => header.EnhancedSetter), header => @"
             public byte[] _raw" + header.Identifier + ";")}
@@ -547,14 +593,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {{
                 switch (_state)
                 {{
-                    {Each(loop.Headers, header => $@"
-                        case {header.Index}:
-                            goto state{header.Index};
+                    {Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => $@"
+                    case {header.Index}:
+                        goto state{header.Index};
                     ")}
+                    case {loop.Headers.Count()}:
+                        goto state{loop.Headers.Count()};
                     default:
                         goto state_default;
                 }}
-                {Each(loop.Headers, header => $@"
+                {Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => $@"
                 state{header.Index}:
                     if ({header.TestBit()})
                     {{
@@ -563,6 +611,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         return true;
                     }}
                 ")}
+                state{loop.Headers.Count()}:
+                    if (_collection._contentLength.HasValue)
+                    {{
+                        _current = new KeyValuePair<string, StringValues>(""Content-Length"", HeaderUtilities.FormatInt64(_collection._contentLength.Value));
+                        _state = {loop.Headers.Count() + 1};
+                        return true;
+                    }}
                 state_default:
                     if (!_hasUnknown || !_unknownEnumerator.MoveNext())
                     {{

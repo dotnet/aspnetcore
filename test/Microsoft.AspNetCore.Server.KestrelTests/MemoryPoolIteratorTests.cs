@@ -1214,6 +1214,86 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
+        [Fact]
+        public void CorrectContentLengthsOutput()
+        {
+            using (var pool = new MemoryPool())
+            {
+                var block = pool.Lease();
+                try
+                {
+                    for (var i = 0u; i <= 9u; i++)
+                    {
+                        block.Reset();
+                        var iter = new MemoryPoolIterator(block);
+                        iter.CopyFromNumeric(i);
+
+                        Assert.Equal(block.Array[block.Start], (byte)(i + '0'));
+                        Assert.Equal(block.End, block.Start + 1);
+                        Assert.Equal(iter.Index, block.End);
+                    }
+                    for (var i = 10u; i <= 99u; i++)
+                    {
+                        block.Reset();
+                        var iter = new MemoryPoolIterator(block);
+                        iter.CopyFromNumeric(i);
+
+                        Assert.Equal(block.Array[block.Start], (byte)((i / 10) + '0'));
+                        Assert.Equal(block.Array[block.Start + 1], (byte)((i % 10) + '0'));
+
+                        Assert.Equal(block.End, block.Start + 2);
+                        Assert.Equal(iter.Index, block.End);
+                    }
+                    for (var i = 100u; i <= 999u; i++)
+                    {
+                        block.Reset();
+                        var iter = new MemoryPoolIterator(block);
+                        iter.CopyFromNumeric(i);
+
+                        Assert.Equal(block.Array[block.Start], (byte)((i / 100) + '0'));
+                        Assert.Equal(block.Array[block.Start + 1], (byte)(((i % 100) / 10) + '0'));
+                        Assert.Equal(block.Array[block.Start + 2], (byte)((i % 10) + '0'));
+
+                        Assert.Equal(block.End, block.Start + 3);
+                        Assert.Equal(iter.Index, block.End);
+                    }
+                    for (var i = 1000u; i <= 9999u; i++)
+                    {
+                        block.Reset();
+                        var iter = new MemoryPoolIterator(block);
+                        iter.CopyFromNumeric(i);
+
+                        Assert.Equal(block.Array[block.Start], (byte)((i / 1000) + '0'));
+                        Assert.Equal(block.Array[block.Start + 1], (byte)(((i % 1000) / 100) + '0'));
+                        Assert.Equal(block.Array[block.Start + 2], (byte)(((i % 100) / 10) + '0'));
+                        Assert.Equal(block.Array[block.Start + 3], (byte)((i % 10) + '0'));
+
+                        Assert.Equal(block.End, block.Start + 4);
+                        Assert.Equal(iter.Index, block.End);
+                    }
+                    {
+                        block.Reset();
+                        var iter = new MemoryPoolIterator(block);
+                        iter.CopyFromNumeric(ulong.MaxValue);
+
+                        var outputBytes = Encoding.ASCII.GetBytes(ulong.MaxValue.ToString("0"));
+
+                        for (var i = 0; i < outputBytes.Length; i++)
+                        {
+                            Assert.Equal(block.Array[block.Start + i], outputBytes[i]);
+                        }
+
+                        Assert.Equal(block.End, block.Start + outputBytes.Length);
+                        Assert.Equal(iter.Index, block.End);
+                    }
+                }
+                finally
+                {
+                    pool.Return(block);
+                }
+            }
+        }
+
         private delegate bool GetKnownString(MemoryPoolIterator iter, out string result);
 
         private void TestKnownStringsInterning(string input, string expected, GetKnownString action)

@@ -202,6 +202,21 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
+        [Theory]
+        [InlineData("NaN")]
+        [InlineData("-1")]
+        public async Task BadRequestIfContentLengthInvalid(string contentLength)
+        {
+            using (var server = new TestServer(context => { return Task.FromResult(0); }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send($"GET / HTTP/1.1\r\nContent-Length: {contentLength}\r\n\r\n");
+                    await ReceiveBadRequestResponse(connection, "400 Bad Request", server.Context.DateHeaderValue);
+                }
+            }
+        }
+
         private async Task ReceiveBadRequestResponse(TestConnection connection, string expectedResponseStatusCode, string expectedDateHeaderValue)
         {
             await connection.ReceiveForcedEnd(

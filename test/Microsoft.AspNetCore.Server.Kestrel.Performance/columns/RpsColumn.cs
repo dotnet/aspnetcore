@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public string GetValue(Summary summary, Benchmark benchmark)
         {
-            var totalNanos = summary.Reports.First(r => r.Benchmark == benchmark).ResultStatistics.Mean;
+            var totalNanos = summary.Reports.First(r => r.Benchmark == benchmark)?.ResultStatistics?.Mean ?? 0;
             // Make sure we don't divide by zero!!
             return Math.Abs(totalNanos) > 0.0 ? (NanosPerSecond / totalNanos).ToString("N2") : "N/A";
         }

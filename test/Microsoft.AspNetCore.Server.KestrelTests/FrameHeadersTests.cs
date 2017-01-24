@@ -1,8 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
@@ -222,6 +225,66 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var transferEncoding = new StringValues(new[] { value1, value2 });
             var transferEncodingOptions = FrameHeaders.GetFinalTransferCoding(transferEncoding);
             Assert.Equal(expectedTransferEncodingOptions, transferEncodingOptions);
+        }
+
+        [Fact]
+        public void ValidContentLengthsAccepted()
+        {
+            ValidContentLengthsAccepted(new FrameRequestHeaders());
+            ValidContentLengthsAccepted(new FrameResponseHeaders());
+        }
+
+        private static void ValidContentLengthsAccepted(FrameHeaders frameHeaders)
+        {
+            IDictionary<string, StringValues> headers = frameHeaders;
+
+            StringValues value;
+
+            Assert.False(headers.TryGetValue("Content-Length", out value));
+            Assert.Equal(null, frameHeaders.ContentLength);
+            Assert.False(frameHeaders.ContentLength.HasValue);
+
+            frameHeaders.ContentLength = 1;
+            Assert.True(headers.TryGetValue("Content-Length", out value));
+            Assert.Equal("1", value[0]);
+            Assert.Equal(1, frameHeaders.ContentLength);
+            Assert.True(frameHeaders.ContentLength.HasValue);
+
+            frameHeaders.ContentLength = long.MaxValue;
+            Assert.True(headers.TryGetValue("Content-Length", out value));
+            Assert.Equal(HeaderUtilities.FormatInt64(long.MaxValue), value[0]);
+            Assert.Equal(long.MaxValue, frameHeaders.ContentLength);
+            Assert.True(frameHeaders.ContentLength.HasValue);
+
+            frameHeaders.ContentLength = null;
+            Assert.False(headers.TryGetValue("Content-Length", out value));
+            Assert.Equal(null, frameHeaders.ContentLength);
+            Assert.False(frameHeaders.ContentLength.HasValue);
+        }
+
+        [Fact]
+        public void InvalidContentLengthsRejected()
+        {
+            InvalidContentLengthsRejected(new FrameRequestHeaders());
+            InvalidContentLengthsRejected(new FrameResponseHeaders());
+        }
+
+        private static void InvalidContentLengthsRejected(FrameHeaders frameHeaders)
+        {
+            IDictionary<string, StringValues> headers = frameHeaders;
+
+            StringValues value;
+
+            Assert.False(headers.TryGetValue("Content-Length", out value));
+            Assert.Equal(null, frameHeaders.ContentLength);
+            Assert.False(frameHeaders.ContentLength.HasValue);
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => frameHeaders.ContentLength = -1);
+            Assert.Throws<ArgumentOutOfRangeException>(() => frameHeaders.ContentLength = long.MinValue);
+
+            Assert.False(headers.TryGetValue("Content-Length", out value));
+            Assert.Equal(null, frameHeaders.ContentLength);
+            Assert.False(frameHeaders.ContentLength.HasValue);
         }
     }
 }

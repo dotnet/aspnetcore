@@ -5,18 +5,31 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
     public abstract class FrameHeaders : IHeaderDictionary
     {
+        protected long? _contentLength;
         protected bool _isReadOnly;
         protected Dictionary<string, StringValues> MaybeUnknown;
-
         protected Dictionary<string, StringValues> Unknown => MaybeUnknown ?? (MaybeUnknown = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase));
+
+        public long? ContentLength
+        {
+            get { return _contentLength; }
+            set
+            {
+                if (value.HasValue && value.Value < 0)
+                {
+                    ThrowInvalidContentLengthException(value.Value);
+                }
+                _contentLength = value;
+            }
+        }
 
         StringValues IHeaderDictionary.this[string key]
         {
@@ -41,7 +54,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             get
             {
                 // Unlike the IHeaderDictionary version, this getter will throw a KeyNotFoundException.
-                return GetValueFast(key);
+                StringValues value;
+                if (!TryGetValueFast(key, out value))
+                {
+                    ThrowKeyNotFoundException();
+                }
+                return value;
             }
             set
             {
@@ -88,6 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             ClearFast();
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         protected static StringValues AppendValue(StringValues existing, string append)
         {
             return StringValues.Concat(existing, append);
@@ -112,16 +131,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         protected virtual int GetCountFast()
         { throw new NotImplementedException(); }
 
-        protected virtual StringValues GetValueFast(string key)
-        { throw new NotImplementedException(); }
-
         protected virtual bool TryGetValueFast(string key, out StringValues value)
         { throw new NotImplementedException(); }
 
         protected virtual void SetValueFast(string key, StringValues value)
         { throw new NotImplementedException(); }
 
-        protected virtual void AddValueFast(string key, StringValues value)
+        protected virtual bool AddValueFast(string key, StringValues value)
         { throw new NotImplementedException(); }
 
         protected virtual bool RemoveFast(string key)
@@ -130,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         protected virtual void ClearFast()
         { throw new NotImplementedException(); }
 
-        protected virtual void CopyToFast(KeyValuePair<string, StringValues>[] array, int arrayIndex)
+        protected virtual bool CopyToFast(KeyValuePair<string, StringValues>[] array, int arrayIndex)
         { throw new NotImplementedException(); }
 
         protected virtual IEnumerator<KeyValuePair<string, StringValues>> GetEnumeratorFast()
@@ -147,7 +163,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 ThrowHeadersReadOnlyException();
             }
-            AddValueFast(key, value);
+
+            if (!AddValueFast(key, value))
+            {
+                ThrowDuplicateKeyException();
+            }
         }
 
         void ICollection<KeyValuePair<string, StringValues>>.Clear()
@@ -175,7 +195,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         void ICollection<KeyValuePair<string, StringValues>>.CopyTo(KeyValuePair<string, StringValues>[] array, int arrayIndex)
         {
-            CopyToFast(array, arrayIndex);
+            if (!CopyToFast(array, arrayIndex))
+            {
+                ThrowArgumentException();
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -233,17 +256,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     }
                 }
             }
-        }
-
-        public static long ParseContentLength(StringValues value)
-        {
-            long parsed;
-            if (!HeaderUtilities.TryParseInt64(value.ToString(), out parsed))
-            {
-                ThrowInvalidContentLengthException(value);
-            }
-
-            return parsed;
         }
 
         public static unsafe ConnectionOptions ParseConnection(StringValues connection)
@@ -412,9 +424,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return transferEncodingOptions;
         }
 
-        private static void ThrowInvalidContentLengthException(string value)
+        private static void ThrowInvalidContentLengthException(long value)
         {
-            throw new InvalidOperationException($"Invalid Content-Length: \"{value}\". Value must be a positive integral number.");
+            throw new ArgumentOutOfRangeException($"Invalid Content-Length: \"{value}\". Value must be a positive integral number.");
         }
 
         private static void ThrowInvalidHeaderCharacter(char ch)
