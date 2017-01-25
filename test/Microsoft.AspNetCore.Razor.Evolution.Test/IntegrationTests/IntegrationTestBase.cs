@@ -97,10 +97,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     break;
                 }
                 
-                imports.Add(TestRazorSourceDocument.CreateResource(importsFilename));
+                imports.Add(
+                    TestRazorSourceDocument.CreateResource(importsFilename, encoding: null, normalizeNewLines: true));
             }
 
-            var codeDocument = RazorCodeDocument.Create(TestRazorSourceDocument.CreateResource(sourceFilename), imports);
+            var codeDocument = RazorCodeDocument.Create(
+                TestRazorSourceDocument.CreateResource(sourceFilename, encoding: null, normalizeNewLines: true), imports);
 
             // This will ensure that we're not putting any randomly generated data in a baseline.
             codeDocument.Items[DefaultRazorRuntimeCSharpLoweringPhase.SuppressUniqueIds] = "test";
@@ -109,11 +111,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
         protected void AssertIRMatchesBaseline(DocumentIRNode document)
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return;
-            }
-
             if (Filename == null)
             {
                 var message = $"{nameof(AssertIRMatchesBaseline)} should only be called from an integration test ({nameof(Filename)} is null).";
@@ -141,11 +138,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
         protected void AssertCSharpDocumentMatchesBaseline(RazorCSharpDocument document)
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return;
-            }
-
             if (Filename == null)
             {
                 var message = $"{nameof(AssertCSharpDocumentMatchesBaseline)} should only be called from an integration test ({nameof(Filename)} is null).";
@@ -177,11 +169,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
         protected void AssertDesignTimeDocumentMatchBaseline(RazorCodeDocument document)
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return;
-            }
-
             if (Filename == null)
             {
                 var message = $"{nameof(AssertDesignTimeDocumentMatchBaseline)} should only be called from an integration test ({nameof(Filename)} is null).";

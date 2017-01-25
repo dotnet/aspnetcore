@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 {
     internal class DefaultRazorDesignTimeCSharpLoweringPhase : RazorCSharpLoweringPhaseBase
     {
+        internal static readonly object NewLineString = "NewLineString";
+
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {
             var irDocument = codeDocument.GetIRDocument();
@@ -18,9 +20,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var syntaxTree = codeDocument.GetSyntaxTree();
             ThrowForMissingDependency(syntaxTree);
 
+            var codeWriter = new CSharpCodeWriter();
+            var newLineString = codeDocument.Items[NewLineString];
+            if (newLineString != null)
+            {
+                // Set new line character to a specific string regardless of platform, for testing purposes.
+                codeWriter.NewLine = (string)newLineString;
+            }
+
             var renderingContext = new CSharpRenderingContext()
             {
-                Writer = new CSharpCodeWriter(),
+                Writer = codeWriter,
                 SourceDocument = codeDocument.Source,
                 Options = syntaxTree.Options,
             };

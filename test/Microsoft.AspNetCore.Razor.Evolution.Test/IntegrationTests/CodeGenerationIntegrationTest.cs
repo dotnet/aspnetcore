@@ -1407,10 +1407,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 throw new XunitException($"The resource {sourceFilename} was not found.");
             }
 
-            var codeDocument = RazorCodeDocument.Create(TestRazorSourceDocument.CreateResource(sourceFilename));
+            var codeDocument = RazorCodeDocument.Create(
+                TestRazorSourceDocument.CreateResource(sourceFilename, encoding: null, normalizeNewLines: true));
 
             // This will ensure that we're not putting any randomly generated data in a baseline.
             codeDocument.Items[DefaultRazorRuntimeCSharpLoweringPhase.SuppressUniqueIds] = "test";
+
+            // This is to make tests work cross platform.
+            codeDocument.Items[DefaultRazorDesignTimeCSharpLoweringPhase.NewLineString] = "\r\n";
+
             return codeDocument;
         }
 
