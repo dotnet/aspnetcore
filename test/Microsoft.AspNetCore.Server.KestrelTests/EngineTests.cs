@@ -832,12 +832,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "");
 
-                    Assert.Equal(2, onStartingCallCount1);
-                    // The second OnStarting callback should not be called since the first failed.
-                    Assert.Equal(0, onStartingCallCount2);
-                    Assert.Equal(2, testLogger.ApplicationErrorsLogged);
+
                 }
             }
+
+            Assert.Equal(2, onStartingCallCount1);
+            // The second OnStarting callback should not be called since the first failed.
+            Assert.Equal(0, onStartingCallCount2);
+            Assert.Equal(2, testLogger.ApplicationErrorsLogged);
         }
 
         [Theory]
@@ -882,12 +884,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "",
                         "Hello World");
                 }
-
-                // All OnCompleted callbacks should be called even if they throw.
-                Assert.Equal(2, testLogger.ApplicationErrorsLogged);
-                Assert.True(onCompletedCalled1);
-                Assert.True(onCompletedCalled2);
             }
+
+            // All OnCompleted callbacks should be called even if they throw.
+            Assert.Equal(2, testLogger.ApplicationErrorsLogged);
+            Assert.True(onCompletedCalled1);
+            Assert.True(onCompletedCalled2);
         }
 
         [Theory]
