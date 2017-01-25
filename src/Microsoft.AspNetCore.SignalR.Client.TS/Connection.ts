@@ -26,7 +26,7 @@ export class Connection {
         this.connectionState = ConnectionState.Disconnected;
     }
 
-    async start(transportName: string = 'webSockets'): Promise<void> {
+    async start(transportName: string = "webSockets"): Promise<void> {
         if (this.connectionState != ConnectionState.Disconnected) {
             throw new Error("Cannot start a connection that is not in the 'Disconnected' state");
         }
@@ -50,13 +50,13 @@ export class Connection {
     }
 
     private createTransport(transportName: string): ITransport {
-        if (transportName === 'webSockets') {
+        if (transportName === "webSockets") {
             return new WebSocketTransport();
         }
-        if (transportName === 'serverSentEvents') {
+        if (transportName === "serverSentEvents") {
             return new ServerSentEventsTransport(this.httpClient);
         }
-        if (transportName === 'longPolling') {
+        if (transportName === "longPolling") {
             return new LongPollingTransport(this.httpClient);
         }
 
