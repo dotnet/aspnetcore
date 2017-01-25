@@ -7,7 +7,7 @@ describe("Connection", () => {
         let options: ISignalROptions = {
             httpClient: <IHttpClient>{
                 get(url: string): Promise<string> {
-                    if (url.indexOf("/getid") >= 0) {
+                    if (url.indexOf("/negotiate") >= 0) {
                         return Promise.reject("error");
                     }
                     return Promise.resolve("");
