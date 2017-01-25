@@ -480,7 +480,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        public async Task WhenAppWritesMoreThanContentLengthWriteThrowsAndConnectionCloses()
+        public async Task ThrowsAndClosesConnectionWhenAppWritesMoreThanContentLengthWrite()
         {
             var testLogger = new TestApplicationErrorLogger();
             var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        public async Task WhenAppWritesMoreThanContentLengthWriteAsyncThrowsAndConnectionCloses()
+        public async Task ThrowsAndClosesConnectionWhenAppWritesMoreThanContentLengthWriteAsync()
         {
             var testLogger = new TestApplicationErrorLogger();
             var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
@@ -549,15 +549,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        public async Task WhenAppWritesMoreThanContentLengthAndResponseNotStarted500ResponseSentAndConnectionCloses()
+        public async Task InternalServerErrorAndConnectionClosedOnWriteWithMoreThanContentLengthAndResponseNotStarted()
         {
             var testLogger = new TestApplicationErrorLogger();
             var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
 
-            using (var server = new TestServer(async httpContext =>
+            using (var server = new TestServer(httpContext =>
             {
+                var response = Encoding.ASCII.GetBytes("hello, world");
                 httpContext.Response.ContentLength = 5;
-                await httpContext.Response.WriteAsync("hello, world");
+                httpContext.Response.Body.Write(response, 0, response.Length);
+                return TaskCache.CompletedTask;
             }, serviceContext))
             {
                 using (var connection = server.CreateConnection())
@@ -566,7 +568,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "GET / HTTP/1.1",
                         "",
                         "");
-                    await connection.ReceiveEnd(
+                    await connection.ReceiveForcedEnd(
+                        $"HTTP/1.1 500 Internal Server Error",
+                        "Connection: close",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+
+            var logMessage = Assert.Single(testLogger.Messages, message => message.LogLevel == LogLevel.Error);
+            Assert.Equal(
+                $"Response Content-Length mismatch: too many bytes written (12 of 5).",
+                logMessage.Exception.Message);
+        }
+
+        [Fact]
+        public async Task InternalServerErrorAndConnectionClosedOnWriteAsyncWithMoreThanContentLengthAndResponseNotStarted()
+        {
+            var testLogger = new TestApplicationErrorLogger();
+            var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
+
+            using (var server = new TestServer(httpContext =>
+            {
+                var response = Encoding.ASCII.GetBytes("hello, world");
+                httpContext.Response.ContentLength = 5;
+                return httpContext.Response.Body.WriteAsync(response, 0, response.Length);
+            }, serviceContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.ReceiveForcedEnd(
                         $"HTTP/1.1 500 Internal Server Error",
                         "Connection: close",
                         $"Date: {server.Context.DateHeaderValue}",
@@ -616,7 +653,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        public async Task WhenAppSetsContentLengthButDoesNotWriteBody500ResponseSentAndConnectionCloses()
+        public async Task WhenAppSetsContentLengthButDoesNotWriteBody500ResponseSentAndConnectionDoesNotClose()
         {
             var testLogger = new TestApplicationErrorLogger();
             var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
@@ -632,10 +669,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await connection.Send(
                         "GET / HTTP/1.1",
                         "",
+                        "GET / HTTP/1.1",
+                        "",
                         "");
-                    await connection.ReceiveEnd(
-                        $"HTTP/1.1 500 Internal Server Error",
-                        "Connection: close",
+                    await connection.Receive(
+                        "HTTP/1.1 500 Internal Server Error",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "HTTP/1.1 500 Internal Server Error",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 0",
                         "",
@@ -643,10 +685,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
 
-            var errorMessage = Assert.Single(testLogger.Messages, message => message.LogLevel == LogLevel.Error);
-            Assert.Equal(
-                $"Response Content-Length mismatch: too few bytes written (0 of 5).",
-                errorMessage.Exception.Message);
+            var error = testLogger.Messages.Where(message => message.LogLevel == LogLevel.Error);
+            Assert.Equal(2, error.Count());
+            Assert.All(error, message => message.Equals("Response Content-Length mismatch: too few bytes written (0 of 5)."));
         }
 
         [Theory]
@@ -1046,6 +1087,170 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         $"Transfer-Encoding: {responseTransferEncoding}",
                         "",
                         "hello, world");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task FirstWriteVerifiedAfterOnStarting()
+        {
+            using (var server = new TestServer(httpContext =>
+            {
+                httpContext.Response.OnStarting(() =>
+                {
+                    // Change response to chunked
+                    httpContext.Response.ContentLength = null;
+                    return TaskCache.CompletedTask;
+                });
+
+                var response = Encoding.ASCII.GetBytes("hello, world");
+                httpContext.Response.ContentLength = response.Length - 1;
+
+                // If OnStarting is not run before verifying writes, an error response will be sent.
+                httpContext.Response.Body.Write(response, 0, response.Length);
+                return TaskCache.CompletedTask;
+            }, new TestServiceContext()))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        $"Transfer-Encoding: chunked",
+                        "",
+                        "c",
+                        "hello, world",
+                        "0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task SubsequentWriteVerifiedAfterOnStarting()
+        {
+            using (var server = new TestServer(httpContext =>
+            {
+                httpContext.Response.OnStarting(() =>
+                {
+                    // Change response to chunked
+                    httpContext.Response.ContentLength = null;
+                    return TaskCache.CompletedTask;
+                });
+
+                var response = Encoding.ASCII.GetBytes("hello, world");
+                httpContext.Response.ContentLength = response.Length - 1;
+
+                // If OnStarting is not run before verifying writes, an error response will be sent.
+                httpContext.Response.Body.Write(response, 0, response.Length / 2);
+                httpContext.Response.Body.Write(response, response.Length / 2, response.Length - response.Length / 2);
+                return TaskCache.CompletedTask;
+            }, new TestServiceContext()))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        $"Transfer-Encoding: chunked",
+                        "",
+                        "6",
+                        "hello,",
+                        "6",
+                        " world",
+                        "0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task FirstWriteAsyncVerifiedAfterOnStarting()
+        {
+            using (var server = new TestServer(httpContext =>
+            {
+                httpContext.Response.OnStarting(() =>
+                {
+                    // Change response to chunked
+                    httpContext.Response.ContentLength = null;
+                    return TaskCache.CompletedTask;
+                });
+
+                var response = Encoding.ASCII.GetBytes("hello, world");
+                httpContext.Response.ContentLength = response.Length - 1;
+
+                // If OnStarting is not run before verifying writes, an error response will be sent.
+                return httpContext.Response.Body.WriteAsync(response, 0, response.Length);
+            }, new TestServiceContext()))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        $"Transfer-Encoding: chunked",
+                        "",
+                        "c",
+                        "hello, world",
+                        "0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task SubsequentWriteAsyncVerifiedAfterOnStarting()
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.OnStarting(() =>
+                {
+                    // Change response to chunked
+                    httpContext.Response.ContentLength = null;
+                    return TaskCache.CompletedTask;
+                });
+
+                var response = Encoding.ASCII.GetBytes("hello, world");
+                httpContext.Response.ContentLength = response.Length - 1;
+
+                // If OnStarting is not run before verifying writes, an error response will be sent.
+                await httpContext.Response.Body.WriteAsync(response, 0, response.Length / 2);
+                await httpContext.Response.Body.WriteAsync(response, response.Length / 2, response.Length - response.Length / 2);
+            }, new TestServiceContext()))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        $"Transfer-Encoding: chunked",
+                        "",
+                        "6",
+                        "hello,",
+                        "6",
+                        " world",
+                        "0",
+                        "",
+                        "");
                 }
             }
         }
