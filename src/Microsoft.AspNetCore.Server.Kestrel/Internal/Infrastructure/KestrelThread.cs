@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -23,6 +24,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
         private static readonly Action<object, object> _postCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
         private static readonly Action<object, object> _postAsyncCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
+        private static readonly Libuv.uv_walk_cb _heartbeatWalkCallback = (ptr, arg) =>
+        {
+            var streamHandle = UvMemory.FromIntPtr<UvHandle>(ptr) as UvStreamHandle;
+            var thisHandle = GCHandle.FromIntPtr(arg);
+            var kestrelThread = (KestrelThread)thisHandle.Target;
+            streamHandle?.Connection?.Tick(kestrelThread.Now);
+        };
 
         // maximum times the work queues swapped and are processed in a single pass
         // as completing a task may immediately have write data to put on the network
@@ -48,6 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
         private readonly IKestrelTrace _log;
         private readonly IThreadPool _threadPool;
         private readonly TimeSpan _shutdownTimeout;
+        private IntPtr _thisPtr;
 
         public KestrelThread(KestrelEngine engine)
         {
@@ -93,6 +102,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
         public Action<Action<IntPtr>, IntPtr> QueueCloseHandle { get; }
 
         private Action<Action<IntPtr>, IntPtr> QueueCloseAsyncHandle { get; }
+
+        // The cached result of Loop.Now() which is a timestamp in milliseconds
+        private long Now { get; set; }
 
         public Task StartAsync()
         {
@@ -246,13 +258,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
         public void Walk(Action<IntPtr> callback)
         {
+            Walk((ptr, arg) => callback(ptr), IntPtr.Zero);
+        }
+
+        private void Walk(Libuv.uv_walk_cb callback, IntPtr arg)
+        {
             _engine.Libuv.walk(
                 _loop,
-                (ptr, arg) =>
-                {
-                    callback(ptr);
-                },
-                IntPtr.Zero);
+                callback,
+                arg
+                );
         }
 
         private void PostCloseHandle(Action<IntPtr> callback, IntPtr handle)
@@ -273,7 +288,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
         {
             lock (_startSync)
             {
-                var tcs = (TaskCompletionSource<int>) parameter;
+                var tcs = (TaskCompletionSource<int>)parameter;
                 try
                 {
                     _loop.Init(_engine.Libuv);
@@ -290,8 +305,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                 }
             }
 
+            // This is used to access a 64-bit timestamp (this.Now) using a potentially 32-bit IntPtr.
+            var thisHandle = GCHandle.Alloc(this, GCHandleType.Weak);
+
             try
             {
+                _thisPtr = GCHandle.ToIntPtr(thisHandle);
+
                 _loop.Run();
                 if (_stopImmediate)
                 {
@@ -318,6 +338,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             }
             finally
             {
+                thisHandle.Free();
                 _threadTcs.SetResult(null);
             }
         }
@@ -336,13 +357,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
         private void OnHeartbeat(UvTimerHandle timer)
         {
-            var now = Loop.Now();
-
-            Walk(ptr =>
-            {
-                var handle = UvMemory.FromIntPtr<UvHandle>(ptr);
-                (handle as UvStreamHandle)?.Connection?.Tick(now);
-            });
+            Now = Loop.Now();
+            Walk(_heartbeatWalkCallback, _thisPtr);
         }
 
         private bool DoPostWork()
