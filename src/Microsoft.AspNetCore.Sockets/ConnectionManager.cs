@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Sockets.Internal;
 
@@ -71,11 +73,8 @@ namespace Microsoft.AspNetCore.Sockets
                     ConnectionState s;
                     if (_connections.TryRemove(c.Key, out s))
                     {
-                        s?.Close();
-                    }
-                    else
-                    {
-
+                        // REVIEW: Should we keep firing and forgetting this?
+                        var ignore = s.DisposeAsync();
                     }
                 }
             }
@@ -86,22 +85,18 @@ namespace Microsoft.AspNetCore.Sockets
             // Stop firing the timer
             _timer.Dispose();
 
+            var tasks = new List<Task>();
+
             foreach (var c in _connections)
             {
                 ConnectionState s;
                 if (_connections.TryRemove(c.Key, out s))
                 {
-                    // Longpolling connections should do this
-                    if (s.Close != null)
-                    {
-                        s.Close();
-                    }
-                    else
-                    {
-                        s.Dispose();
-                    }
+                    tasks.Add(s.DisposeAsync());
                 }
             }
+
+            Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(5));
         }
     }
 }

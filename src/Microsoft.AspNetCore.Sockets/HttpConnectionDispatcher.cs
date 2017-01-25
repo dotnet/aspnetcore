@@ -114,57 +114,31 @@ namespace Microsoft.AspNetCore.Sockets
                 // Mark the connection as active
                 state.Active = true;
 
-                var longPolling = new LongPollingTransport(state.Application.Input, _loggerFactory);
-
-                // Start the transport
-                var transportTask = longPolling.ProcessRequestAsync(context);
-
                 // Raise OnConnected for new connections only since polls happen all the time
-                var endpointTask = state.Connection.Metadata.Get<Task>("endpoint");
-                if (endpointTask == null)
+                if (state.ApplicationTask == null)
                 {
                     _logger.LogDebug("Establishing new Long Polling connection: {0}", state.Connection.ConnectionId);
 
                     // This will re-initialize formatType metadata, but meh...
                     state.Connection.Metadata["transport"] = LongPollingTransport.Name;
 
-                    // REVIEW: This is super gross, this all needs to be cleaned up...
-                    state.Close = async () =>
-                    {
-                        // Close the end point's connection
-                        state.Connection.Dispose();
-
-                        try
-                        {
-                            await endpointTask;
-                        }
-                        catch
-                        {
-                            // possibly invoked on a ThreadPool thread
-                        }
-                    };
-
-                    endpointTask = endpoint.OnConnectedAsync(state.Connection);
-                    state.Connection.Metadata["endpoint"] = endpointTask;
+                    state.ApplicationTask = endpoint.OnConnectedAsync(state.Connection);
                 }
                 else
                 {
                     _logger.LogDebug("Resuming existing Long Polling connection: {0}", state.Connection.ConnectionId);
                 }
 
-                var resultTask = await Task.WhenAny(endpointTask, transportTask);
+                var longPolling = new LongPollingTransport(state.Application.Input, _loggerFactory);
 
-                if (resultTask == endpointTask)
+                // Start the transport
+                state.TransportTask = longPolling.ProcessRequestAsync(context);
+
+                var resultTask = await Task.WhenAny(state.ApplicationTask, state.TransportTask);
+
+                if (resultTask == state.ApplicationTask)
                 {
-                    // Notify the long polling transport to end
-                    if (endpointTask.IsFaulted)
-                    {
-                        state.Connection.Transport.Output.TryComplete(endpointTask.Exception.InnerException);
-                    }
-
-                    state.Connection.Dispose();
-
-                    await transportTask;
+                    await state.DisposeAsync();
                 }
 
                 // Mark the connection as inactive
@@ -194,20 +168,17 @@ namespace Microsoft.AspNetCore.Sockets
                                                          HttpContext context,
                                                          ConnectionState state)
         {
-            // Start the transport
-            var transportTask = transport.ProcessRequestAsync(context);
-
             // Call into the end point passing the connection
-            var endpointTask = endpoint.OnConnectedAsync(state.Connection);
+            state.ApplicationTask = endpoint.OnConnectedAsync(state.Connection);
+
+            // Start the transport
+            state.TransportTask = transport.ProcessRequestAsync(context);
 
             // Wait for any of them to end
-            await Task.WhenAny(endpointTask, transportTask);
+            await Task.WhenAny(state.ApplicationTask, state.TransportTask);
 
             // Kill the channel
-            state.Dispose();
-
-            // Wait for both
-            await Task.WhenAll(endpointTask, transportTask);
+            await state.DisposeAsync();
         }
 
         private Task ProcessNegotiate(HttpContext context)

@@ -13,14 +13,14 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public void NewConnectionsHaveConnectionId()
         {
-
             var connectionManager = new ConnectionManager();
             var state = connectionManager.CreateConnection();
 
             Assert.NotNull(state.Connection);
             Assert.NotNull(state.Connection.ConnectionId);
             Assert.True(state.Active);
-            Assert.Null(state.Close);
+            Assert.Null(state.ApplicationTask);
+            Assert.Null(state.TransportTask);
             Assert.NotNull(state.Connection.Transport);
         }
 
@@ -83,17 +83,19 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var connectionManager = new ConnectionManager();
             var state = connectionManager.CreateConnection();
 
-            var task = Task.Run(async () =>
+            state.ApplicationTask = Task.Run(async () =>
             {
-                var connection = state.Connection;
+                Assert.False(await state.Connection.Transport.Input.WaitToReadAsync());
+            });
 
-                Assert.False(await connection.Transport.Input.WaitToReadAsync());
-                Assert.True(connection.Transport.Input.Completion.IsCompleted);
+            state.TransportTask = Task.Run(async () =>
+            {
+                Assert.False(await state.Application.Input.WaitToReadAsync());
             });
 
             connectionManager.CloseConnections();
 
-            await task;
+            await state.DisposeAsync();
         }
     }
 }

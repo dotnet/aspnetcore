@@ -2,16 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Sockets.Internal
 {
-    public class ConnectionState : IDisposable
+    public class ConnectionState
     {
         public Connection Connection { get; set; }
         public IChannelConnection<Message> Application { get; }
 
-        // These are used for long polling mostly
-        public Action Close { get; set; }
+        public Task TransportTask { get; set; }
+        public Task ApplicationTask { get; set; }
+
         public DateTime LastSeenUtc { get; set; }
         public bool Active { get; set; } = true;
 
@@ -22,10 +24,25 @@ namespace Microsoft.AspNetCore.Sockets.Internal
             LastSeenUtc = DateTime.UtcNow;
         }
 
-        public void Dispose()
+        public async Task DisposeAsync()
         {
+            // If the application task is faulted, propagate the error to the transport
+            if (ApplicationTask.IsFaulted)
+            {
+                Connection.Transport.Output.TryComplete(ApplicationTask.Exception.InnerException);
+            }
+
+            // If the transport task is faulted, propagate the error to the application
+            if (TransportTask.IsFaulted)
+            {
+                Application.Output.TryComplete(TransportTask.Exception.InnerException);
+            }
+
             Connection.Dispose();
             Application.Dispose();
+
+            // REVIEW: Add a timeout so we don't wait forever
+            await Task.WhenAll(ApplicationTask, TransportTask);
         }
     }
 }
