@@ -8,17 +8,27 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Sockets.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Sockets
 {
     public class ConnectionManager
     {
         private readonly ConcurrentDictionary<string, ConnectionState> _connections = new ConcurrentDictionary<string, ConnectionState>();
-        private readonly Timer _timer;
+        private Timer _timer;
+        private readonly ILogger<ConnectionManager> _logger;
 
-        public ConnectionManager()
+        public ConnectionManager(ILogger<ConnectionManager> logger)
         {
-            _timer = new Timer(Scan, this, 0, 1000);
+            _logger = logger;
+        }
+
+        public void Start()
+        {
+            if (_timer == null)
+            {
+                _timer = new Timer(Scan, this, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+            }
         }
 
         public bool TryGetConnection(string id, out ConnectionState state)
@@ -47,9 +57,11 @@ namespace Microsoft.AspNetCore.Sockets
         public void RemoveConnection(string id)
         {
             ConnectionState state;
-            _connections.TryRemove(id, out state);
-
-            // Remove the connection completely
+            if (_connections.TryRemove(id, out state))
+            {
+                // Remove the connection completely
+                _logger.LogDebug("Removing {connectionId} from the list of connections", id);
+            }
         }
 
         private static string MakeNewConnectionId()
@@ -65,38 +77,76 @@ namespace Microsoft.AspNetCore.Sockets
 
         private void Scan()
         {
-            // Scan the registered connections looking for ones that have timed out
-            foreach (var c in _connections)
+            // Pause the timer while we're running
+            _timer.Change(Timeout.Infinite, Timeout.Infinite);
+
+            try
             {
-                if (!c.Value.Active && (DateTimeOffset.UtcNow - c.Value.LastSeenUtc).TotalSeconds > 5)
+                // Scan the registered connections looking for ones that have timed out
+                foreach (var c in _connections)
                 {
-                    ConnectionState s;
-                    if (_connections.TryRemove(c.Key, out s))
+                    var status = ConnectionState.ConnectionStatus.Inactive;
+                    var lastSeenUtc = DateTimeOffset.UtcNow;
+
+                    try
                     {
-                        // REVIEW: Should we keep firing and forgetting this?
-                        var ignore = s.DisposeAsync();
+                        c.Value.Lock.Wait();
+
+                        // Capture the connection state
+                        status = c.Value.Status;
+
+                        lastSeenUtc = c.Value.LastSeenUtc;
+                    }
+                    finally
+                    {
+                        c.Value.Lock.Release();
+                    }
+
+                    // Once the decision has been made to to dispose we don't check the status again
+                    if (status == ConnectionState.ConnectionStatus.Inactive && (DateTimeOffset.UtcNow - lastSeenUtc).TotalSeconds > 5)
+                    {
+                        var ignore = DisposeAndRemoveAsync(c.Value);
                     }
                 }
+            }
+            finally
+            {
+                // Resume once we finished processing all connections
+                _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
             }
         }
 
         public void CloseConnections()
         {
             // Stop firing the timer
-            _timer.Dispose();
+            _timer?.Dispose();
 
             var tasks = new List<Task>();
 
             foreach (var c in _connections)
             {
-                ConnectionState s;
-                if (_connections.TryRemove(c.Key, out s))
-                {
-                    tasks.Add(s.DisposeAsync());
-                }
+                tasks.Add(DisposeAndRemoveAsync(c.Value));
             }
 
             Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(5));
+        }
+
+        public async Task DisposeAndRemoveAsync(ConnectionState state)
+        {
+            try
+            {
+                await state.DisposeAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(0, ex, "Failed disposing connection {connectionId}", state.Connection.ConnectionId);
+            }
+            finally
+            {
+                // Remove it from the list after disposal so that's it's easy to see
+                // connections that might be in a hung state via the connections list
+                RemoveConnection(state.Connection.ConnectionId);
+            }
         }
     }
 }

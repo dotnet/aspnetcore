@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebSockets.Internal;
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             _logger = loggerFactory.CreateLogger<WebSocketsTransport>();
         }
 
-        public async Task ProcessRequestAsync(HttpContext context)
+        public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)
         {
             var feature = context.Features.Get<IHttpWebSocketConnectionFeature>();
             if (feature == null || !feature.IsWebSocketRequest)

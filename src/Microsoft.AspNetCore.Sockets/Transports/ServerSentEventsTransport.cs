@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http;
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             _logger = loggerFactory.CreateLogger<ServerSentEventsTransport>();
         }
 
-        public async Task ProcessRequestAsync(HttpContext context)
+        public async Task ProcessRequestAsync(HttpContext context, CancellationToken token)
         {
             context.Response.ContentType = "text/event-stream";
             context.Response.Headers["Cache-Control"] = "no-cache";
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
 
             try
             {
-                while (await _application.WaitToReadAsync(context.RequestAborted))
+                while (await _application.WaitToReadAsync(token))
                 {
                     Message message;
                     while (_application.TryRead(out message))

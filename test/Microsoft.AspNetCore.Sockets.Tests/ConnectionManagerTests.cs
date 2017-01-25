@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets.Internal;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Sockets.Tests
@@ -13,21 +14,23 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public void NewConnectionsHaveConnectionId()
         {
-            var connectionManager = new ConnectionManager();
+            var connectionManager = CreateConnectionManager();
             var state = connectionManager.CreateConnection();
 
             Assert.NotNull(state.Connection);
             Assert.NotNull(state.Connection.ConnectionId);
-            Assert.True(state.Active);
+            Assert.Equal(ConnectionState.ConnectionStatus.Inactive, state.Status);
             Assert.Null(state.ApplicationTask);
             Assert.Null(state.TransportTask);
+            Assert.Null(state.Cancellation);
+            Assert.Null(state.RequestId);
             Assert.NotNull(state.Connection.Transport);
         }
 
         [Fact]
         public void NewConnectionsCanBeRetrieved()
         {
-            var connectionManager = new ConnectionManager();
+            var connectionManager = CreateConnectionManager();
             var state = connectionManager.CreateConnection();
 
             Assert.NotNull(state.Connection);
@@ -41,7 +44,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public void AddNewConnection()
         {
-            var connectionManager = new ConnectionManager();
+            var connectionManager = CreateConnectionManager();
             var state = connectionManager.CreateConnection();
 
             var transport = state.Connection.Transport;
@@ -59,7 +62,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public void RemoveConnection()
         {
-            var connectionManager = new ConnectionManager();
+            var connectionManager = CreateConnectionManager();
             var state = connectionManager.CreateConnection();
 
             var transport = state.Connection.Transport;
@@ -80,7 +83,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task CloseConnectionsEndsAllPendingConnections()
         {
-            var connectionManager = new ConnectionManager();
+            var connectionManager = CreateConnectionManager();
             var state = connectionManager.CreateConnection();
 
             state.ApplicationTask = Task.Run(async () =>
@@ -96,6 +99,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             connectionManager.CloseConnections();
 
             await state.DisposeAsync();
+        }
+
+        private static ConnectionManager CreateConnectionManager()
+        {
+            return new ConnectionManager(new Logger<ConnectionManager>(new LoggerFactory()));
         }
     }
 }

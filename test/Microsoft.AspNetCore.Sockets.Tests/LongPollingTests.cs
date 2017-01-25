@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             Assert.True(channel.Out.TryComplete());
 
-            await poll.ProcessRequestAsync(context);
+            await poll.ProcessRequestAsync(context, context.RequestAborted);
 
             Assert.Equal(204, context.Response.StatusCode);
         }
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             Assert.True(channel.Out.TryComplete());
 
-            await poll.ProcessRequestAsync(context);
+            await poll.ProcessRequestAsync(context, context.RequestAborted);
 
             Assert.Equal(200, context.Response.StatusCode);
             Assert.Equal("Hello World", Encoding.UTF8.GetString(ms.ToArray()));
