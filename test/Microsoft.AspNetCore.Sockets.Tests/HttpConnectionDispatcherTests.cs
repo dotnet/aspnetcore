@@ -117,6 +117,44 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         }
 
         [Fact]
+        public async Task SynchronusExceptionEndsConnection()
+        {
+            var manager = CreateConnectionManager();
+            var state = manager.CreateConnection();
+
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+
+            var context = MakeRequest<SynchronusExceptionEndPoint>("/sse", state);
+
+            await dispatcher.ExecuteAsync<SynchronusExceptionEndPoint>("", context);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            ConnectionState removed;
+            bool exists = manager.TryGetConnection(state.Connection.ConnectionId, out removed);
+            Assert.False(exists);
+        }
+
+        [Fact]
+        public async Task SynchronusExceptionEndsLongPollingConnection()
+        {
+            var manager = CreateConnectionManager();
+            var state = manager.CreateConnection();
+
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+
+            var context = MakeRequest<SynchronusExceptionEndPoint>("/poll", state);
+
+            await dispatcher.ExecuteAsync<SynchronusExceptionEndPoint>("", context);
+
+            Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
+
+            ConnectionState removed;
+            bool exists = manager.TryGetConnection(state.Connection.ConnectionId, out removed);
+            Assert.False(exists);
+        }
+
+        [Fact]
         public async Task CompletedEndPointEndsLongPollingConnection()
         {
             var manager = CreateConnectionManager();
@@ -226,6 +264,56 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         }
 
+        [Fact]
+        public async Task BlockingConnectionWorksWithStreamingConnections()
+        {
+            var manager = CreateConnectionManager();
+            var state = manager.CreateConnection();
+
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+
+            var context = MakeRequest<BlockingEndPoint>("/sse", state);
+
+            var task = dispatcher.ExecuteAsync<BlockingEndPoint>("", context);
+
+            var buffer = ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello World")).Preserve();
+
+            // Write to the application
+            await state.Application.Output.WriteAsync(new Message(buffer, Format.Text, endOfMessage: true));
+
+            await task;
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            ConnectionState removed;
+            bool exists = manager.TryGetConnection(state.Connection.ConnectionId, out removed);
+            Assert.False(exists);
+        }
+
+        [Fact]
+        public async Task BlockingConnectionWorksWithLongPollingConnection()
+        {
+            var manager = CreateConnectionManager();
+            var state = manager.CreateConnection();
+
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+
+            var context = MakeRequest<BlockingEndPoint>("/poll", state);
+
+            var task = dispatcher.ExecuteAsync<BlockingEndPoint>("", context);
+
+            var buffer = ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello World")).Preserve();
+
+            // Write to the application
+            await state.Application.Output.WriteAsync(new Message(buffer, Format.Text, endOfMessage: true));
+
+            await task;
+
+            Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
+            ConnectionState removed;
+            bool exists = manager.TryGetConnection(state.Connection.ConnectionId, out removed);
+            Assert.False(exists);
+        }
+
         private static DefaultHttpContext MakeRequest<TEndPoint>(string path, ConnectionState state) where TEndPoint : EndPoint
         {
             var context = new DefaultHttpContext();
@@ -243,6 +331,23 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         private static ConnectionManager CreateConnectionManager()
         {
             return new ConnectionManager(new Logger<ConnectionManager>(new LoggerFactory()));
+        }
+    }
+
+    public class BlockingEndPoint : EndPoint
+    {
+        public override Task OnConnectedAsync(Connection connection)
+        {
+            connection.Transport.Input.WaitToReadAsync().Wait();
+            return Task.CompletedTask;
+        }
+    }
+
+    public class SynchronusExceptionEndPoint : EndPoint
+    {
+        public override Task OnConnectedAsync(Connection connection)
+        {
+            throw new InvalidOperationException();
         }
     }
 

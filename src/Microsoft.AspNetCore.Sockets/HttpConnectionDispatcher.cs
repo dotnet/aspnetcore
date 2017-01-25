@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Sockets
 
                         state.Connection.Metadata["transport"] = LongPollingTransport.Name;
 
-                        state.ApplicationTask = endpoint.OnConnectedAsync(state.Connection);
+                        state.ApplicationTask = ExecuteApplication(endpoint, state.Connection);
                     }
                     else
                     {
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Sockets
                 state.RequestId = context.TraceIdentifier;
 
                 // Call into the end point passing the connection
-                state.ApplicationTask = endpoint.OnConnectedAsync(state.Connection);
+                state.ApplicationTask = ExecuteApplication(endpoint, state.Connection);
 
                 // Start the transport
                 state.TransportTask = transport.ProcessRequestAsync(context, context.RequestAborted);
@@ -282,6 +282,16 @@ namespace Microsoft.AspNetCore.Sockets
             await Task.WhenAny(state.ApplicationTask, state.TransportTask);
 
             await _manager.DisposeAndRemoveAsync(state);
+        }
+
+        private async Task ExecuteApplication(EndPoint endpoint, Connection connection)
+        {
+            // Jump onto the thread pool thread so blocking user code doesn't block the setup of the 
+            // connection and transport
+            await AwaitableThreadPool.Yield();
+
+            // Running this in an async method turns sync exceptions into async ones
+            await endpoint.OnConnectedAsync(connection);
         }
 
         private Task ProcessNegotiate(HttpContext context)

@@ -56,9 +56,6 @@ namespace Microsoft.AspNetCore.SignalR
 
         public override async Task OnConnectedAsync(Connection connection)
         {
-            // TODO: Dispatch from the caller
-            await Task.Yield();
-
             try
             {
                 await _lifetimeManager.OnConnectedAsync(connection);
