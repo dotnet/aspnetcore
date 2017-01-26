@@ -41,7 +41,6 @@ namespace HtmlGenerationWebSite
                     template: "{controller}/{action}/{id?}",
                     defaults: new { controller = "HtmlGeneration_Home", action = "Index" });
             });
-            
         }
 
         public static void Main(string[] args)
@@ -57,4 +56,3 @@ namespace HtmlGenerationWebSite
         }
     }
 }
-
