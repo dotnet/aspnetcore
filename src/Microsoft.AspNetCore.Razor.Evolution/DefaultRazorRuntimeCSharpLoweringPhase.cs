@@ -449,7 +449,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         Context.Writer
                             .Write("throw ")
                             .WriteStartNewObject(nameof(InvalidOperationException))
-                            .WriteStartMethodInvocation("FormatInvalidIndexerAssignment" /* ORIGINAL: FormatInvalidIndexerAssignmentMethodName */)
+                            .WriteStartMethodInvocation("InvalidTagHelperIndexerAssignment" /* ORIGINAL: FormatInvalidIndexerAssignmentMethodName */)
                             .WriteStringLiteral(node.AttributeName)
                             .WriteParameterSeparator()
                             .WriteStringLiteral(node.TagHelperTypeName)

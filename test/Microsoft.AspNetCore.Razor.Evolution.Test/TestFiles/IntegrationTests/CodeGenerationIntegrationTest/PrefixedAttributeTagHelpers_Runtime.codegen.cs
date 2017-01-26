@@ -100,7 +100,7 @@ __TestNamespace_InputTagHelper1.IntDictionaryProperty = intDictionary;
             __TestNamespace_InputTagHelper2.IntDictionaryProperty = __TestNamespace_InputTagHelper1.IntDictionaryProperty;
             if (__TestNamespace_InputTagHelper1.IntDictionaryProperty == null)
             {
-                throw new InvalidOperationException(FormatInvalidIndexerAssignment("int-prefix-garlic", "TestNamespace.InputTagHelper1", "IntDictionaryProperty"));
+                throw new InvalidOperationException(InvalidTagHelperIndexerAssignment("int-prefix-garlic", "TestNamespace.InputTagHelper1", "IntDictionaryProperty"));
             }
 #line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/PrefixedAttributeTagHelpers.cshtml"
 __TestNamespace_InputTagHelper1.IntDictionaryProperty["garlic"] = 37;
@@ -140,7 +140,7 @@ __TestNamespace_InputTagHelper1.IntProperty = 42;
             __tagHelperExecutionContext.AddTagHelperAttribute("int-prefix-grabber", __TestNamespace_InputTagHelper1.IntProperty, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             if (__TestNamespace_InputTagHelper2.IntDictionaryProperty == null)
             {
-                throw new InvalidOperationException(FormatInvalidIndexerAssignment("int-prefix-grabber", "TestNamespace.InputTagHelper2", "IntDictionaryProperty"));
+                throw new InvalidOperationException(InvalidTagHelperIndexerAssignment("int-prefix-grabber", "TestNamespace.InputTagHelper2", "IntDictionaryProperty"));
             }
             __TestNamespace_InputTagHelper2.IntDictionaryProperty["grabber"] = __TestNamespace_InputTagHelper1.IntProperty;
 #line 19 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/PrefixedAttributeTagHelpers.cshtml"
@@ -168,7 +168,7 @@ __TestNamespace_InputTagHelper1.IntDictionaryProperty["pepper"] = 98;
             __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_5);
             if (__TestNamespace_InputTagHelper1.StringDictionaryProperty == null)
             {
-                throw new InvalidOperationException(FormatInvalidIndexerAssignment("string-prefix-cumin", "TestNamespace.InputTagHelper1", "StringDictionaryProperty"));
+                throw new InvalidOperationException(InvalidTagHelperIndexerAssignment("string-prefix-cumin", "TestNamespace.InputTagHelper1", "StringDictionaryProperty"));
             }
             BeginWriteTagHelperAttribute();
             WriteLiteral("literate ");
@@ -199,7 +199,7 @@ __TestNamespace_InputTagHelper1.IntDictionaryProperty["pepper"] = 98;
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
             if (__TestNamespace_InputTagHelper1.IntDictionaryProperty == null)
             {
-                throw new InvalidOperationException(FormatInvalidIndexerAssignment("int-prefix-value", "TestNamespace.InputTagHelper1", "IntDictionaryProperty"));
+                throw new InvalidOperationException(InvalidTagHelperIndexerAssignment("int-prefix-value", "TestNamespace.InputTagHelper1", "IntDictionaryProperty"));
             }
 #line 22 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/PrefixedAttributeTagHelpers.cshtml"
 __TestNamespace_InputTagHelper1.IntDictionaryProperty["value"] = 37;
