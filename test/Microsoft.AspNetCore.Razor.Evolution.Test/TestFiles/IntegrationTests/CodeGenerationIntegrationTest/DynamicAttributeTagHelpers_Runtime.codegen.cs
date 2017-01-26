@@ -56,7 +56,7 @@ AddHtmlAttributeValue(" ", 57, DateTime.Now, 58, 13, false);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 2, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
-            AddHtmlAttributeValue("", 95, new HelperResult(async(__razor_attribute_value_writer) => {
+            AddHtmlAttributeValue("", 95, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                  if (true) { 
 
@@ -179,7 +179,7 @@ AddHtmlAttributeValue("", 347, long.MinValue, 347, 14, false);
 
 #line default
 #line hidden
-            AddHtmlAttributeValue(" ", 361, new HelperResult(async(__razor_attribute_value_writer) => {
+            AddHtmlAttributeValue(" ", 361, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                                 if (true) { 
 
@@ -259,7 +259,7 @@ AddHtmlAttributeValue(" ", 490, int.MaxValue, 491, 13, false);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 1, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
-            AddHtmlAttributeValue("", 528, new HelperResult(async(__razor_attribute_value_writer) => {
+            AddHtmlAttributeValue("", 528, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
                  if (true) { 
 

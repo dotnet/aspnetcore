@@ -46,7 +46,7 @@ System.Object NestedDelegates = null;
 
 #line default
 #line hidden
-            item => new HelperResult(async(__razor_template_writer) => {
+            item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
                                       __o = item;
 

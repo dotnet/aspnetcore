@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                 Context.Writer
                     .Write(ItemParameterName).Write(" => ")
-                    .WriteStartNewObject("HelperResult" /* ORIGINAL: TemplateTypeName */);
+                    .WriteStartNewObject("Microsoft.AspNetCore.Mvc.Razor.HelperResult" /* ORIGINAL: TemplateTypeName */);
 
                 var initialRenderingConventions = Context.RenderingConventions;
                 var redirectConventions = new CSharpRedirectRenderingConventions(TemplateWriterName, Context.Writer);

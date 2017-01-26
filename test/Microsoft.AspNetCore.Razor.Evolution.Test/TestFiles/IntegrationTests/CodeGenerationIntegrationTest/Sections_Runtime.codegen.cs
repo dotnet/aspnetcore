@@ -41,7 +41,7 @@ WriteAttributeValue(" ", 121, thing, 122, 6, false);
 
 #line default
 #line hidden
-            item => new HelperResult(async(__razor_template_writer) => {
+            item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
                 WriteLiteralTo(__razor_template_writer, "<span>");
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
         WriteTo(__razor_template_writer, item);

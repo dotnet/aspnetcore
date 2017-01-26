@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         {
             WriteLiteral("<div>");
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExplicitExpressionWithMarkup.cshtml"
-  Write(item => new HelperResult(async(__razor_template_writer) => {
+  Write(item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
     WriteLiteralTo(__razor_template_writer, "</div>");
 }
 ));

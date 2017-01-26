@@ -206,23 +206,23 @@ Generated Location: (8289:173,12 [11] )
 
 Source Location: (1361:33,64 [7] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |checked|
-Generated Location: (8711:177,63 [7] )
+Generated Location: (8742:177,63 [7] )
 |checked|
 
 Source Location: (1326:33,29 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |123|
-Generated Location: (8966:183,33 [3] )
+Generated Location: (8997:183,33 [3] )
 |123|
 
 Source Location: (1375:33,78 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |)|
-Generated Location: (9007:188,1 [1] )
+Generated Location: (9038:188,1 [1] )
 |)|
 
 Source Location: (1388:34,10 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |
 }|
-Generated Location: (9146:193,10 [3] )
+Generated Location: (9177:193,10 [3] )
 |
 }|
 

@@ -62,7 +62,7 @@ WriteAttributeValue(" ", 232, ch, 233, 3, false);
             EndWriteAttribute();
             WriteLiteral(" />\r\n    <p");
             BeginWriteAttribute("class", " class=\"", 248, "\"", 281, 1);
-            WriteAttributeValue("", 256, new HelperResult(async(__razor_attribute_value_writer) => {
+            WriteAttributeValue("", 256, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml"
                if(cls != null) { 
 

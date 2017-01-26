@@ -40,7 +40,7 @@ __o = Foo(Bar.Baz);
 #line default
 #line hidden
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DesignTime.cshtml"
-__o = Foo(item => new HelperResult(async(__razor_template_writer) => {
+__o = Foo(item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DesignTime.cshtml"
            __o = baz;
 

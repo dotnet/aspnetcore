@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 else
                 {
                     // Not an expression; need to buffer the result.
-                    Context.Writer.WriteStartNewObject("HelperResult" /* ORIGINAL: TemplateTypeName */);
+                    Context.Writer.WriteStartNewObject("Microsoft.AspNetCore.Mvc.Razor.HelperResult" /* ORIGINAL: TemplateTypeName */);
 
                     var initialRenderingConventions = Context.RenderingConventions;
                     Context.RenderingConventions = new CSharpRedirectRenderingConventions(ValueWriterName, Context.Writer);
@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                 Context.Writer
                     .Write(ItemParameterName).Write(" => ")
-                    .WriteStartNewObject("HelperResult" /* ORIGINAL: TemplateTypeName */);
+                    .WriteStartNewObject("Microsoft.AspNetCore.Mvc.Razor.HelperResult" /* ORIGINAL: TemplateTypeName */);
 
                 var initialRenderingConventions = Context.RenderingConventions;
                 Context.RenderingConventions = new CSharpRedirectRenderingConventions(TemplateWriterName, Context.Writer);

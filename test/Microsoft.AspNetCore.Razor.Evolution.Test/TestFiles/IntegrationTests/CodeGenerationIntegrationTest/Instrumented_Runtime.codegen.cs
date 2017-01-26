@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 
 #line default
 #line hidden
-            item => new HelperResult(async(__razor_template_writer) => {
+            item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
                 WriteLiteralTo(__razor_template_writer, "<p>Bar</p>");
             }
             )

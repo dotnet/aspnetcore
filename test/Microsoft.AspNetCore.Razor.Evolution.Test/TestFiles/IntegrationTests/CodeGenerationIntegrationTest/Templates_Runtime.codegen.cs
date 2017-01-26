@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 
 #line default
 #line hidden
-            item => new HelperResult(async(__razor_template_writer) => {
+            item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
                 WriteLiteralTo(__razor_template_writer, "This works ");
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
                   WriteTo(__razor_template_writer, item);
@@ -39,7 +39,7 @@ Write(foo(""));
 #line hidden
             WriteLiteral("\r\n<ul>\r\n");
 #line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
-Write(Repeat(10, item => new HelperResult(async(__razor_template_writer) => {
+Write(Repeat(10, item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
     WriteLiteralTo(__razor_template_writer, "<li>Item #");
 #line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
 WriteTo(__razor_template_writer, item);
@@ -55,7 +55,7 @@ WriteTo(__razor_template_writer, item);
             WriteLiteral("\r\n</ul>\r\n\r\n<p>\r\n");
 #line 21 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
 Write(Repeat(10,
-    item => new HelperResult(async(__razor_template_writer) => {
+    item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
     WriteLiteralTo(__razor_template_writer, " This is line#");
 #line 22 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
 WriteTo(__razor_template_writer, item);
@@ -71,7 +71,7 @@ WriteTo(__razor_template_writer, item);
             WriteLiteral("\r\n</p>\r\n\r\n<p>\r\n");
 #line 27 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
 Write(Repeat(10,
-    item => new HelperResult(async(__razor_template_writer) => {
+    item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
     WriteLiteralTo(__razor_template_writer, ": This is line#");
 #line 28 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
 WriteTo(__razor_template_writer, item);
@@ -87,7 +87,7 @@ WriteTo(__razor_template_writer, item);
             WriteLiteral("\r\n</p>\r\n\r\n<p>\r\n");
 #line 33 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
 Write(Repeat(10,
-    item => new HelperResult(async(__razor_template_writer) => {
+    item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
     WriteLiteralTo(__razor_template_writer, ":: This is line#");
 #line 34 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
 WriteTo(__razor_template_writer, item);
@@ -102,7 +102,7 @@ WriteTo(__razor_template_writer, item);
 #line hidden
             WriteLiteral("\r\n</p>\r\n\r\n\r\n<ul>\r\n    ");
 #line 40 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
-Write(Repeat(10, item => new HelperResult(async(__razor_template_writer) => {
+Write(Repeat(10, item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
     WriteLiteralTo(__razor_template_writer, "<li>\r\n        Item #");
 #line 41 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
 WriteTo(__razor_template_writer, item);
