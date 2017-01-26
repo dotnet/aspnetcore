@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Sockets
         private readonly ConcurrentDictionary<string, ConnectionState> _connections = new ConcurrentDictionary<string, ConnectionState>();
         private Timer _timer;
         private readonly ILogger<ConnectionManager> _logger;
+        private object _executionLock = new object();
+        private bool _disposed;
 
         public ConnectionManager(ILogger<ConnectionManager> logger)
         {
@@ -25,9 +27,17 @@ namespace Microsoft.AspNetCore.Sockets
 
         public void Start()
         {
-            if (_timer == null)
+            lock (_executionLock)
             {
-                _timer = new Timer(Scan, this, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+                if (_disposed)
+                {
+                    return;
+                }
+
+                if (_timer == null)
+                {
+                    _timer = new Timer(Scan, this, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+                }
             }
         }
 
@@ -77,58 +87,76 @@ namespace Microsoft.AspNetCore.Sockets
 
         private void Scan()
         {
-            // Pause the timer while we're running
-            _timer.Change(Timeout.Infinite, Timeout.Infinite);
-
-            try
+            lock (_executionLock)
             {
-                // Scan the registered connections looking for ones that have timed out
-                foreach (var c in _connections)
+                if (_disposed)
                 {
-                    var status = ConnectionState.ConnectionStatus.Inactive;
-                    var lastSeenUtc = DateTimeOffset.UtcNow;
+                    return;
+                }
 
-                    try
+                // Pause the timer while we're running
+                _timer.Change(Timeout.Infinite, Timeout.Infinite);
+
+                try
+                {
+                    // Scan the registered connections looking for ones that have timed out
+                    foreach (var c in _connections)
                     {
-                        c.Value.Lock.Wait();
+                        var status = ConnectionState.ConnectionStatus.Inactive;
+                        var lastSeenUtc = DateTimeOffset.UtcNow;
 
-                        // Capture the connection state
-                        status = c.Value.Status;
+                        try
+                        {
+                            c.Value.Lock.Wait();
 
-                        lastSeenUtc = c.Value.LastSeenUtc;
-                    }
-                    finally
-                    {
-                        c.Value.Lock.Release();
-                    }
+                            // Capture the connection state
+                            status = c.Value.Status;
 
-                    // Once the decision has been made to to dispose we don't check the status again
-                    if (status == ConnectionState.ConnectionStatus.Inactive && (DateTimeOffset.UtcNow - lastSeenUtc).TotalSeconds > 5)
-                    {
-                        var ignore = DisposeAndRemoveAsync(c.Value);
+                            lastSeenUtc = c.Value.LastSeenUtc;
+                        }
+                        finally
+                        {
+                            c.Value.Lock.Release();
+                        }
+
+                        // Once the decision has been made to to dispose we don't check the status again
+                        if (status == ConnectionState.ConnectionStatus.Inactive && (DateTimeOffset.UtcNow - lastSeenUtc).TotalSeconds > 5)
+                        {
+                            var ignore = DisposeAndRemoveAsync(c.Value);
+                        }
                     }
                 }
-            }
-            finally
-            {
-                // Resume once we finished processing all connections
-                _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+                finally
+                {
+                    // Resume once we finished processing all connections
+                    _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+                }
             }
         }
 
         public void CloseConnections()
         {
-            // Stop firing the timer
-            _timer?.Dispose();
-
-            var tasks = new List<Task>();
-
-            foreach (var c in _connections)
+            lock (_executionLock)
             {
-                tasks.Add(DisposeAndRemoveAsync(c.Value));
-            }
+                if (_disposed)
+                {
+                    return;
+                }
 
-            Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(5));
+                _disposed = true;
+
+                // Stop firing the timer
+                _timer?.Dispose();
+
+                var tasks = new List<Task>();
+
+                foreach (var c in _connections)
+                {
+                    tasks.Add(DisposeAndRemoveAsync(c.Value));
+                }
+
+                Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(5));
+            }
         }
 
         public async Task DisposeAndRemoveAsync(ConnectionState state)
