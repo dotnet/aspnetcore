@@ -84,6 +84,27 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         [Fact]
+        public async Task MethodsAreCaseInsensitive()
+        {
+            var loggerFactory = CreateLogger();
+            const string originalMessage = "SignalR";
+
+            using (var httpClient = _testServer.CreateClient())
+            {
+                var transport = new LongPollingTransport(httpClient, loggerFactory);
+                using (var connection = await HubConnection.ConnectAsync(new Uri("http://test/hubs"),
+                    new JsonNetInvocationAdapter(), transport, httpClient, loggerFactory))
+                {
+                    EnsureConnectionEstablished(connection);
+
+                    var result = await connection.Invoke<string>("echo", originalMessage);
+
+                    Assert.Equal(originalMessage, result);
+                }
+            }
+        }
+
+        [Fact]
         public async Task CanInvokeClientMethodFromServer()
         {
             var loggerFactory = CreateLogger();

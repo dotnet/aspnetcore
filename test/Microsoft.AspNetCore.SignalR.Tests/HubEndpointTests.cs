@@ -150,6 +150,33 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task HubMethodsAreCaseInsensitive()
+        {
+            var serviceProvider = CreateServiceProvider();
+
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var connectionWrapper = new ConnectionWrapper())
+            {
+                var endPointTask = endPoint.OnConnectedAsync(connectionWrapper.Connection);
+
+                var invocationAdapter = serviceProvider.GetService<InvocationAdapterRegistry>();
+                var adapter = invocationAdapter.GetInvocationAdapter("json");
+
+                await SendRequest(connectionWrapper, adapter, "echo", "hello");
+                var result = await ReadConnectionOutputAsync<InvocationResultDescriptor>(connectionWrapper).OrTimeout();
+
+                Assert.Null(result.Error);
+                Assert.Equal("hello", result.Result);
+
+                // kill the connection
+                connectionWrapper.Connection.Dispose();
+
+                await endPointTask.OrTimeout();
+            }
+        }
+
+        [Fact]
         public async Task HubMethodCanReturnValue()
         {
             var serviceProvider = CreateServiceProvider();
@@ -163,7 +190,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var invocationAdapter = serviceProvider.GetService<InvocationAdapterRegistry>();
                 var adapter = invocationAdapter.GetInvocationAdapter("json");
 
-                await SendRequest(connectionWrapper, adapter, "ValueMethod");
+                await SendRequest(connectionWrapper, adapter, nameof(MethodHub.ValueMethod));
                 var result = await ReadConnectionOutputAsync<InvocationResultDescriptor>(connectionWrapper).OrTimeout();
 
                 // json serializer makes this a long
@@ -570,6 +597,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public int ValueMethod()
             {
                 return 43;
+            }
+
+            public string Echo(string data)
+            {
+                return data;
             }
 
             static public string StaticMethod()
