@@ -702,7 +702,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 metadataProvider,
                 new UrlHelperFactory(),
                 htmlEncoder,
-                new ClientValidatorCache(),
                 attributeProvider);
         }
 

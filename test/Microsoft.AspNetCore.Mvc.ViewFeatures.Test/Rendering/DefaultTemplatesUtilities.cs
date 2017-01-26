@@ -263,7 +263,6 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                     provider,
                     urlHelperFactory.Object,
                     new HtmlTestEncoder(),
-                    new ClientValidatorCache(),
                     attributeProvider);
             }
 

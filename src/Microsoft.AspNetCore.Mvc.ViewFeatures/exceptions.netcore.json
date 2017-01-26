@@ -8,5 +8,10 @@
         "OldTypeId": "public class Microsoft.AspNetCore.Mvc.ViewComponentResult : Microsoft.AspNetCore.Mvc.ActionResult",
         "OldMemberId": "public System.Void set_ViewEngine(Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine value)",
         "Kind": "Removal"
+    },
+    {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.ViewFeatures.DefaultHtmlGenerator : Microsoft.AspNetCore.Mvc.ViewFeatures.IHtmlGenerator",
+        "OldMemberId": "public .ctor(Microsoft.AspNetCore.Antiforgery.IAntiforgery antiforgery, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> optionsAccessor, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.AspNetCore.Mvc.Internal.ClientValidatorCache clientValidatorCache)",
+        "Kind":"Removal"
     }
 ]
