@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 }
             }
 
-            return applicableDescriptors;
+            return applicableDescriptors.Distinct(TagHelperDescriptorComparer.TypeName);
         }
 
         private bool HasRequiredParentTag(

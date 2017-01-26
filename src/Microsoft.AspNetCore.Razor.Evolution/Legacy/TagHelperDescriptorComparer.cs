@@ -20,6 +20,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         public static readonly TagHelperDescriptorComparer Default = new TagHelperDescriptorComparer();
 
         /// <summary>
+        /// An instance of <see cref="TagHelperDescriptorComparer"/> that only compares 
+        /// <see cref="TagHelperDescriptor.TypeName"/>.
+        /// </summary>
+        public static readonly TagHelperDescriptorComparer TypeName = new TypeNameTagHelperDescriptorComparer();
+
+        /// <summary>
         /// Initializes a new <see cref="TagHelperDescriptorComparer"/> instance.
         /// </summary>
         protected TagHelperDescriptorComparer()
@@ -100,6 +106,35 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
 
             return hashCodeCombiner.CombinedHash;
+        }
+
+        private class TypeNameTagHelperDescriptorComparer : TagHelperDescriptorComparer
+        {
+            public override bool Equals(TagHelperDescriptor descriptorX, TagHelperDescriptor descriptorY)
+            {
+                if (object.ReferenceEquals(descriptorX, descriptorY))
+                {
+                    return true;
+                }
+                else if (descriptorX == null ^ descriptorY == null)
+                {
+                    return false;
+                }
+                else
+                {
+                    return string.Equals(descriptorX.TypeName, descriptorY.TypeName, StringComparison.Ordinal);
+                }
+            }
+
+            public override int GetHashCode(TagHelperDescriptor descriptor)
+            {
+                if (descriptor == null)
+                {
+                    throw new ArgumentNullException(nameof(descriptor));
+                }
+
+                return descriptor.TypeName == null ? 0 : StringComparer.Ordinal.GetHashCode(descriptor.TypeName);
+            }
         }
     }
 }

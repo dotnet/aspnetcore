@@ -16,20 +16,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
-            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
-            __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
             __TestNamespace_InputTagHelper.Type = "checkbox";
-            __TestNamespace_InputTagHelper.Type = __TestNamespace_InputTagHelper.Type;
-            __TestNamespace_CatchAllTagHelper.Type = __TestNamespace_InputTagHelper.Type;
             __TestNamespace_CatchAllTagHelper.Type = __TestNamespace_InputTagHelper.Type;
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DuplicateTargetTagHelper.cshtml"
 __TestNamespace_InputTagHelper.Checked = true;
 
 #line default
 #line hidden
-            __TestNamespace_InputTagHelper.Checked = __TestNamespace_InputTagHelper.Checked;
-            __TestNamespace_CatchAllTagHelper.Checked = __TestNamespace_InputTagHelper.Checked;
             __TestNamespace_CatchAllTagHelper.Checked = __TestNamespace_InputTagHelper.Checked;
         }
         #pragma warning restore 1998

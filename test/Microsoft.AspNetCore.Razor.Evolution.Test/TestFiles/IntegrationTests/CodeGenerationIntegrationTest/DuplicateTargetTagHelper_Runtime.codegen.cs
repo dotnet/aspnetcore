@@ -36,17 +36,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
             );
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
-            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
-            __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
-            __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
-            __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
             __TestNamespace_InputTagHelper.Type = (string)__tagHelperAttribute_0.Value;
-            __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
-            __TestNamespace_InputTagHelper.Type = (string)__tagHelperAttribute_0.Value;
-            __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
-            __TestNamespace_CatchAllTagHelper.Type = (string)__tagHelperAttribute_0.Value;
             __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
             __TestNamespace_CatchAllTagHelper.Type = (string)__tagHelperAttribute_0.Value;
             __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
@@ -56,8 +48,6 @@ __TestNamespace_InputTagHelper.Checked = true;
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("checked", __TestNamespace_InputTagHelper.Checked, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
-            __TestNamespace_InputTagHelper.Checked = __TestNamespace_InputTagHelper.Checked;
-            __TestNamespace_CatchAllTagHelper.Checked = __TestNamespace_InputTagHelper.Checked;
             __TestNamespace_CatchAllTagHelper.Checked = __TestNamespace_InputTagHelper.Checked;
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)

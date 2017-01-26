@@ -56,6 +56,71 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         }
 
         [Fact]
+        public void Execute_RewritesTagHelpers_TagHelperMatchesElementTwice()
+        {
+            // Arrange
+            var engine = RazorEngine.Create(builder =>
+            {
+                builder.AddTagHelpers(new[]
+                {
+                    new TagHelperDescriptor
+                    {
+                        AssemblyName = "TestAssembly",
+                        TagName = "form",
+                        TypeName = "TestFormTagHelper",
+                        RequiredAttributes = new List<TagHelperRequiredAttributeDescriptor>()
+                        {
+                             new TagHelperRequiredAttributeDescriptor()
+                             {
+                                 Name = "a",
+                                 NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch
+                             }
+                        },
+                    },
+                    new TagHelperDescriptor
+                    {
+                        AssemblyName = "TestAssembly",
+                        TagName = "form",
+                        TypeName = "TestFormTagHelper",
+                        RequiredAttributes = new List<TagHelperRequiredAttributeDescriptor>()
+                        {
+                             new TagHelperRequiredAttributeDescriptor()
+                             {
+                                 Name = "b",
+                                 NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch
+                             }
+                        },
+                    }
+                });
+            });
+
+            var pass = new TagHelperBinderSyntaxTreePass()
+            {
+                Engine = engine,
+            };
+
+            var content =
+@"
+@addTagHelper *, TestAssembly
+<form a=""hi"" b=""there"">
+</form>";
+            var sourceDocument = TestRazorSourceDocument.Create(content);
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+
+            // Act
+            var rewrittenTree = pass.Execute(codeDocument, originalTree);
+
+            // Assert
+            Assert.Empty(rewrittenTree.Diagnostics);
+            Assert.Equal(3, rewrittenTree.Root.Children.Count);
+
+            var formTagHelper = Assert.IsType<TagHelperBlock>(rewrittenTree.Root.Children[2]);
+            Assert.Equal("form", formTagHelper.TagName);
+            Assert.Single(formTagHelper.Descriptors);
+        }
+
+        [Fact]
         public void Execute_NoopsWhenNoTagHelperFeature()
         {
             // Arrange

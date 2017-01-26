@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 var catchAllDescriptor2 = new TagHelperDescriptor
                 {
                     TagName = TagHelperDescriptorProvider.ElementCatchAllTarget,
-                    TypeName = "CatchAllTagHelper",
+                    TypeName = "CatchAllTagHelper2",
                     AssemblyName = "SomeAssembly",
                     RequiredAttributes = new[]
                     {
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var provider = new TagHelperDescriptorProvider((IEnumerable<TagHelperDescriptor>)availableDescriptors);
 
             // Act
-            var resolvedDescriptors = provider.GetDescriptors(tagName, providedAttributes, parentTagName: "p");
+            var resolvedDescriptors = provider.GetDescriptors(tagName, providedAttributes, parentTagName: "p").ToArray();
 
             // Assert
             Assert.Equal((IEnumerable<TagHelperDescriptor>)expectedDescriptors, resolvedDescriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
@@ -293,6 +293,57 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             // Assert
             Assert.Empty(resolvedDescriptors);
+        }
+
+        [Fact]
+        public void GetDescriptors_DeduplicatesTagHelpersByTypeName()
+        {
+            // Arrange
+            var descriptors = new[]
+            {
+                    new TagHelperDescriptor
+                    {
+                        AssemblyName = "TestAssembly",
+                        TagName = "form",
+                        TypeName = "TestFormTagHelper",
+                        RequiredAttributes = new List<TagHelperRequiredAttributeDescriptor>()
+                        {
+                             new TagHelperRequiredAttributeDescriptor()
+                             {
+                                 Name = "a",
+                                 NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch
+                             }
+                        },
+                    },
+                    new TagHelperDescriptor
+                    {
+                        AssemblyName = "TestAssembly",
+                        TagName = "form",
+                        TypeName = "TestFormTagHelper",
+                        RequiredAttributes = new List<TagHelperRequiredAttributeDescriptor>()
+                        {
+                             new TagHelperRequiredAttributeDescriptor()
+                             {
+                                 Name = "b",
+                                 NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch
+                             }
+                        },
+                    },
+            };
+            var provider = new TagHelperDescriptorProvider(descriptors);
+
+            // Act
+            var resolvedDescriptors = provider.GetDescriptors(
+                tagName: "form",
+                attributes: new List<KeyValuePair<string, string>>()
+                {
+                    new KeyValuePair<string, string>("a", "hi" ),
+                    new KeyValuePair<string, string>("b", "there"),
+                },
+                parentTagName: "p");
+
+            // Assert
+            Assert.Same(descriptors[0], Assert.Single(resolvedDescriptors));
         }
 
         [Fact]
