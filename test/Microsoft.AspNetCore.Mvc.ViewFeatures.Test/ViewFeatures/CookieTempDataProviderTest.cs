@@ -6,9 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -17,6 +17,41 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     public class CookieTempDataProviderTest
     {
+        [Fact]
+        public void SaveTempData_UsesCookieName_FromOptions()
+        {
+            // Arrange
+            var exepectedCookieName = "TestCookieName";
+            var values = new Dictionary<string, object>();
+            values.Add("int", 10);
+
+            var tempDataProviderStore = new TempDataSerializer();
+            var expectedDataToProtect = tempDataProviderStore.Serialize(values);
+            var expectedDataInCookie = Base64UrlTextEncoder.Encode(expectedDataToProtect);
+            var tempDataProvider = GetProvider(dataProtector: null, options: new CookieTempDataProviderOptions()
+            {
+                CookieName = exepectedCookieName
+            });
+
+            var responseCookies = new MockResponseCookieCollection();
+            var httpContext = new Mock<HttpContext>();
+            httpContext
+                .SetupGet(hc => hc.Request.PathBase)
+                .Returns("/");
+            httpContext
+                .Setup(hc => hc.Response.Cookies)
+                .Returns(responseCookies);
+
+            // Act
+            tempDataProvider.SaveTempData(httpContext.Object, values);
+
+            // Assert
+            Assert.Contains(responseCookies, (cookie) => cookie.Key == exepectedCookieName);
+            var cookieInfo = responseCookies[exepectedCookieName];
+            Assert.Equal(expectedDataInCookie, cookieInfo.Value);
+            Assert.Equal("/", cookieInfo.Options.Path);
+        }
+
         [Fact]
         public void LoadTempData_ReturnsEmptyDictionary_WhenNoCookieDataIsAvailable()
         {
@@ -583,11 +618,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private CookieTempDataProvider GetProvider(IDataProtector dataProtector = null, CookieTempDataProviderOptions options = null)
         {
-            if(dataProtector == null)
+            if (dataProtector == null)
             {
                 dataProtector = new PassThroughDataProtector();
             }
-            if(options == null)
+            if (options == null)
             {
                 options = new CookieTempDataProviderOptions();
             }

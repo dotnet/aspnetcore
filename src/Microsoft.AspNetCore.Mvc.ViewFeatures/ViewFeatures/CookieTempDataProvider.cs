@@ -23,14 +23,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private readonly IDataProtector _dataProtector;
         private readonly TempDataSerializer _tempDataSerializer;
         private readonly ChunkingCookieManager _chunkingCookieManager;
-        private readonly IOptions<CookieTempDataProviderOptions> _options;
+        private readonly CookieTempDataProviderOptions _options;
 
         public CookieTempDataProvider(IDataProtectionProvider dataProtectionProvider, IOptions<CookieTempDataProviderOptions> options)
         {
             _dataProtector = dataProtectionProvider.CreateProtector(Purpose);
             _tempDataSerializer = new TempDataSerializer();
             _chunkingCookieManager = new ChunkingCookieManager();
-            _options = options;
+            _options = options.Value;
         }
 
         public IDictionary<string, object> LoadTempData(HttpContext context)
@@ -40,9 +40,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.Request.Cookies.ContainsKey(CookieName))
+            if (context.Request.Cookies.ContainsKey(_options.CookieName))
             {
-                var encodedValue = _chunkingCookieManager.GetRequestCookie(context, CookieName);
+                var encodedValue = _chunkingCookieManager.GetRequestCookie(context, _options.CookieName);
                 if (!string.IsNullOrEmpty(encodedValue))
                 {
                     var protectedData = Base64UrlTextEncoder.Decode(encodedValue);
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             var cookieOptions = new CookieOptions()
             {
-                Domain = string.IsNullOrEmpty(_options.Value.Domain) ? null : _options.Value.Domain,
+                Domain = string.IsNullOrEmpty(_options.Domain) ? null : _options.Domain,
                 HttpOnly = true,
                 Secure = context.Request.IsHttps,
             };
@@ -75,19 +75,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 var bytes = _tempDataSerializer.Serialize(values);
                 bytes = _dataProtector.Protect(bytes);
                 var encodedValue = Base64UrlTextEncoder.Encode(bytes);
-                _chunkingCookieManager.AppendResponseCookie(context, CookieName, encodedValue, cookieOptions);
+                _chunkingCookieManager.AppendResponseCookie(context, _options.CookieName, encodedValue, cookieOptions);
             }
             else
             {
-                _chunkingCookieManager.DeleteCookie(context, CookieName, cookieOptions);
+                _chunkingCookieManager.DeleteCookie(context, _options.CookieName, cookieOptions);
             }
         }
 
         private void SetCookiePath(HttpContext httpContext, CookieOptions cookieOptions)
         {
-            if (!string.IsNullOrEmpty(_options.Value.Path))
+            if (!string.IsNullOrEmpty(_options.Path))
             {
-                cookieOptions.Path = _options.Value.Path;
+                cookieOptions.Path = _options.Path;
             }
             else
             {

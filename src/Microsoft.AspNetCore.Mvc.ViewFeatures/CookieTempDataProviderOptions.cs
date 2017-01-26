@@ -22,5 +22,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// The domain set on a cookie. Defaults to <c>null</c>.
         /// </summary>
         public string Domain { get; set; }
+
+        /// <summary>
+        /// The name of the cookie which stores TempData. Defaults to <see cref="CookieTempDataProvider.CookieName"/>. 
+        /// </summary>
+        public string CookieName { get; set; } = CookieTempDataProvider.CookieName;
     }
 }
