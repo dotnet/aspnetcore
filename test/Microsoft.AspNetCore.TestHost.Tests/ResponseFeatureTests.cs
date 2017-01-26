@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -21,6 +22,23 @@ namespace Microsoft.AspNetCore.TestHost
             await responseInformation.FireOnSendingHeadersAsync();
 
             Assert.True(responseInformation.HasStarted);
+        }
+
+        [Fact]
+        public void OnStarting_ThrowsWhenHasStarted()
+        {
+            // Arrange
+            var responseInformation = new ResponseFeature();
+            responseInformation.HasStarted = true;
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                responseInformation.OnStarting((status) =>
+                {
+                    return Task.FromResult(string.Empty);
+                }, state: "string");
+            });
         }
     }
 }

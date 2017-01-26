@@ -36,6 +36,11 @@ namespace Microsoft.AspNetCore.TestHost
 
         public void OnStarting(Func<object, Task> callback, object state)
         {
+            if (HasStarted)
+            {
+                throw new InvalidOperationException();
+            }
+
             var prior = _responseStartingAsync;
             _responseStartingAsync = async () =>
             {
