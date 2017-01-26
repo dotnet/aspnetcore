@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
 
             PositionInfo positionInfo;
-            if (!TryGetPositionInfo(list, segment, out positionInfo, out errorMessage))
+            if (!TryGetPositionInfo(list, segment, OperationType.Add, out positionInfo, out errorMessage))
             {
                 return false;
             }
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
 
             PositionInfo positionInfo;
-            if (!TryGetPositionInfo(list, segment, out positionInfo, out errorMessage))
+            if (!TryGetPositionInfo(list, segment, OperationType.Get, out positionInfo, out errorMessage))
             {
                 value = null;
                 return false;
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
 
             PositionInfo positionInfo;
-            if (!TryGetPositionInfo(list, segment, out positionInfo, out errorMessage))
+            if (!TryGetPositionInfo(list, segment, OperationType.Remove, out positionInfo, out errorMessage))
             {
                 return false;
             }
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
 
             PositionInfo positionInfo;
-            if (!TryGetPositionInfo(list, segment, out positionInfo, out errorMessage))
+            if (!TryGetPositionInfo(list, segment, OperationType.Replace, out positionInfo, out errorMessage))
             {
                 return false;
             }
@@ -243,7 +243,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
         }
 
-        private bool TryGetPositionInfo(IList list, string segment, out PositionInfo positionInfo, out string errorMessage)
+        private bool TryGetPositionInfo(
+            IList list,
+            string segment,
+            OperationType operationType,
+            out PositionInfo positionInfo,
+            out string errorMessage)
         {
             if (segment == "-")
             {
@@ -261,16 +266,24 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                     errorMessage = null;
                     return true;
                 }
+                // As per JSON Patch spec, for Add operation the index value representing the number of elements is valid,
+                // where as for other operations like Remove, Replace, Move and Copy the target index MUST exist.
+                else if (position == list.Count && operationType == OperationType.Add)
+                {
+                    positionInfo = new PositionInfo(PositionType.EndOfList, -1);
+                    errorMessage = null;
+                    return true;
+                }
                 else
                 {
-                    positionInfo = default(PositionInfo);
+                    positionInfo = new PositionInfo(PositionType.OutOfBounds, position);
                     errorMessage = Resources.FormatIndexOutOfBounds(segment);
                     return false;
                 }
             }
             else
             {
-                positionInfo = default(PositionInfo);
+                positionInfo = new PositionInfo(PositionType.Invalid, -1);
                 errorMessage = Resources.FormatInvalidIndexValue(segment);
                 return false;
             }
@@ -294,6 +307,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             EndOfList, // '-'
             Invalid, // Ex: not an integer
             OutOfBounds
+        }
+
+        private enum OperationType
+        {
+            Add,
+            Remove,
+            Get,
+            Replace
         }
     }
 }
