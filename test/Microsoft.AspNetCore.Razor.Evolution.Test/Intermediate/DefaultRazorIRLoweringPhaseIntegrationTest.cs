@@ -195,6 +195,57 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         }
 
         [Fact]
+        public void Lower_TagHelper_InSection()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.Create(@"@addTagHelper *, TestAssembly
+@section test {
+<span val=""@Hello World""></span>
+}");
+            var tagHelpers = new[]
+            {
+                new TagHelperDescriptor
+                {
+                    TagName = "span",
+                    TypeName = "SpanTagHelper",
+                    AssemblyName = "TestAssembly",
+                }
+            };
+
+            // Act
+            var irDocument = Lower(codeDocument, tagHelpers: tagHelpers);
+
+            // Assert
+            Children(
+                irDocument,
+                n => Checksum(n),
+                n => Using("System", n),
+                n => Using(typeof(Task).Namespace, n),
+                n => Directive(
+                    "section",
+                    n,
+                    c1 => DirectiveToken(DirectiveTokenKind.Member, "test", c1),
+                    c1 => Html(Environment.NewLine, c1),
+                    c1 => 
+                    {
+                        var tagHelperNode = Assert.IsType<TagHelperIRNode>(c1);
+                        Children(
+                            tagHelperNode,
+                            c2 => TagHelperStructure("span", TagMode.StartTagAndEndTag, c2),
+                            c2 => Assert.IsType<CreateTagHelperIRNode>(c2),
+                            c2 => TagHelperHtmlAttribute(
+                                "val",
+                                HtmlAttributeValueStyle.DoubleQuotes,
+                                c2,
+                                v => CSharpAttributeValue(string.Empty, "Hello", v),
+                                v => LiteralAttributeValue(" ", "World", v)),
+                            c2 => Assert.IsType<ExecuteTagHelpersIRNode>(c2));
+                    },
+                    c1 => Html(Environment.NewLine, c1)),
+                n => TagHelperFieldDeclaration(n, "SpanTagHelper"));
+        }
+
+        [Fact]
         public void Lower_TagHelpersWithBoundAttribute()
         {
             // Arrange

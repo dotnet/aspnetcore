@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             ThrowForMissingDependency(syntaxTree);
 
             var builder = RazorIRBuilder.Document();
+            var document = (DocumentIRNode)builder.Current;
             var namespaces = new HashSet<string>();
 
             var i = 0;
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var imports = codeDocument.GetImportSyntaxTrees();
             if (imports != null)
             {
-                var importsVisitor = new ImportsVisitor(builder, namespaces);
+                var importsVisitor = new ImportsVisitor(document, builder, namespaces);
 
                 for (var j = 0; j < imports.Count; j++)
                 {
@@ -51,24 +52,25 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 }
             }
 
-            var visitor = new MainSourceVisitor(builder, namespaces)
+            var visitor = new MainSourceVisitor(document, builder, namespaces)
             {
                  Filename = syntaxTree.Source.Filename,
             };
 
             visitor.VisitBlock(syntaxTree.Root);
-
-            var irDocument = (DocumentIRNode)builder.Build();
-            codeDocument.SetIRDocument(irDocument);
+            
+            codeDocument.SetIRDocument(document);
         }
 
         private class LoweringVisitor : ParserVisitor
         {
             protected readonly RazorIRBuilder _builder;
+            protected readonly DocumentIRNode _document;
             protected readonly HashSet<string> _namespaces;
 
-            public LoweringVisitor(RazorIRBuilder builder, HashSet<string> namespaces)
+            public LoweringVisitor(DocumentIRNode document, RazorIRBuilder builder, HashSet<string> namespaces)
             {
+                _document = document;
                 _builder = builder;
                 _namespaces = namespaces;
             }
@@ -146,8 +148,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // this simple.
             private bool _insideLineDirective;
 
-            public ImportsVisitor(RazorIRBuilder builder, HashSet<string> namespaces)
-                : base(builder, namespaces)
+            public ImportsVisitor(DocumentIRNode document, RazorIRBuilder builder, HashSet<string> namespaces)
+                : base(document, builder, namespaces)
             {
             }
 
@@ -182,8 +184,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             private DeclareTagHelperFieldsIRNode _tagHelperFields;
 
-            public MainSourceVisitor(RazorIRBuilder builder, HashSet<string> namespaces)
-                : base(builder, namespaces)
+            public MainSourceVisitor(DocumentIRNode document, RazorIRBuilder builder, HashSet<string> namespaces)
+                : base(document, builder, namespaces)
             {
             }
 
@@ -416,8 +418,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 if (_tagHelperFields == null)
                 {
-                    _tagHelperFields = new DeclareTagHelperFieldsIRNode();
-                    _builder.Add(_tagHelperFields);
+                    _tagHelperFields = new DeclareTagHelperFieldsIRNode() { Parent = _document, };
+                    _document.Children.Add(_tagHelperFields);
                 }
 
                 foreach (var descriptor in block.Descriptors)
