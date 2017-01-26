@@ -25,7 +25,7 @@ namespace HtmlGenerationWebSite
         public void Configure(IApplicationBuilder app)
         {
             app.UseCultureReplacer();
-
+            app.UseStaticFiles();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
@@ -41,6 +41,7 @@ namespace HtmlGenerationWebSite
                     template: "{controller}/{action}/{id?}",
                     defaults: new { controller = "HtmlGeneration_Home", action = "Index" });
             });
+            
         }
 
         public static void Main(string[] args)
