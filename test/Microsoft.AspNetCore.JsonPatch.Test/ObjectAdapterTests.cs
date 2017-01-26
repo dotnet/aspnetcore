@@ -649,6 +649,26 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         }
 
         [Fact]
+        public void Replace_DTOWithNullCheck()
+        {
+            // Arrange
+            var doc = new SimpleDTOWithNullCheck()
+            {
+                StringProperty = "A",                
+            };
+
+            // create patch
+            var patchDoc = new JsonPatchDocument<SimpleDTOWithNullCheck>();
+            patchDoc.Replace(o => o.StringProperty, "B");
+
+            // Act
+            patchDoc.ApplyTo(doc);
+
+            // Assert
+            Assert.Equal("B", doc.StringProperty);
+        }
+
+        [Fact]
         public void ReplaceWithSerialization()
         {
             // Arrange

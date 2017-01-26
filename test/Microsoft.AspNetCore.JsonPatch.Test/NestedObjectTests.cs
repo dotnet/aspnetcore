@@ -908,6 +908,29 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         [Fact]
+        public void Replace_DTOWithNullCheck()
+        {
+            // Arrange
+            var doc = new SimpleDTOWithNestedDTOWithNullCheck()
+            {
+                SimpleDTOWithNullCheck = new SimpleDTOWithNullCheck()
+                {
+                    StringProperty = "A"
+                }
+            };
+
+            // create patch
+            var patchDoc = new JsonPatchDocument<SimpleDTOWithNestedDTOWithNullCheck>();
+            patchDoc.Replace(o => o.SimpleDTOWithNullCheck.StringProperty, "B");
+
+            // Act
+            patchDoc.ApplyTo(doc);
+
+            // Assert
+            Assert.Equal("B", doc.SimpleDTOWithNullCheck.StringProperty);
+        }
+
+        [Fact]
         public void ReplaceWithSerialization()
         {
             // Arrange
