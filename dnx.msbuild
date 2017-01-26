@@ -374,6 +374,10 @@
                 <term>hanging</term>
                 <Justification>Refers to a stuck process/thread.</Justification>
             </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNetCore.Sockets\ConnectionManager.cs">
+                <term>hung</term>
+                <Justification>Refers to a stuck process/thread.</Justification>
+            </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs">
                 <term>ho</term>
                 <Justification>Part of a name</Justification>
