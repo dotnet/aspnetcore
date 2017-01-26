@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    internal class DefaultInstrumentationPass : RazorIRPassBase
+    public class DefaultInstrumentationPass : RazorIRPassBase
     {
         public override int Order => RazorIRPass.DefaultLoweringOrder;
 

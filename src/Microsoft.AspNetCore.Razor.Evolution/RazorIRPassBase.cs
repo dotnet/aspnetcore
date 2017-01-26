@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    internal abstract class RazorIRPassBase : IRazorIRPass
+    public abstract class RazorIRPassBase : IRazorIRPass
     {
         private RazorEngine _engine;
 
