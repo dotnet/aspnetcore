@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     .ConfigureServices(
                     services =>
                     {
-                        services.AddEntityFramework().AddEntityFrameworkSqlServer();
+                        services.AddEntityFrameworkSqlServer();
                         var optionsBuilder = new DbContextOptionsBuilder();
                         if (!PlatformHelper.IsMono)
                         {
@@ -425,8 +425,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     })
                     .ConfigureServices(services =>
                     {
-                        services.AddEntityFramework()
-                            .AddEntityFrameworkSqlServer();
+                        services.AddEntityFrameworkSqlServer();
 
                         services.AddScoped<TContext>();
 
