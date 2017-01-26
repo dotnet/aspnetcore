@@ -39,9 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public IApplicationDeployer CreateDeployment(RuntimeFlavor flavor)
         {
-            Logger = new LoggerFactory()
-                .AddConsole()
-                .CreateLogger($"{ApplicationName}:{flavor}");
+            Logger = CreateLogger(flavor);
 
             if (!_isRestored)
             {
@@ -85,6 +83,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             };
 
             return ApplicationDeployerFactory.Create(deploymentParameters, Logger);
+        }
+
+        protected virtual ILogger CreateLogger(RuntimeFlavor flavor)
+        {
+            return new LoggerFactory()
+                .AddConsole()
+                .CreateLogger($"{ApplicationName}:{flavor}");
         }
 
         protected virtual void Restore()
