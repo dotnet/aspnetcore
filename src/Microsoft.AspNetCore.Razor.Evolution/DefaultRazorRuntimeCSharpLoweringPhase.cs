@@ -37,11 +37,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             var visitor = new CSharpRenderer(renderingContext);
             visitor.VisitDocument(irDocument);
+
+            var combinedErrors = syntaxTree.Diagnostics.Concat(renderingContext.ErrorSink.Errors).ToList();
             var csharpDocument = new RazorCSharpDocument()
             {
                 GeneratedCode = renderingContext.Writer.GenerateCode(),
                 LineMappings = renderingContext.LineMappings,
-                Diagnostics = renderingContext.ErrorSink.Errors
+                Diagnostics = combinedErrors
             };
 
             codeDocument.SetCSharpDocument(csharpDocument);
