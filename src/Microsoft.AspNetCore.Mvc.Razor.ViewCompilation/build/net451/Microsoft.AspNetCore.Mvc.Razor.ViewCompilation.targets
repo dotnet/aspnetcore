@@ -1,7 +1,8 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildThisFileDirectory)..\common.targets" />
-  <PropertyGroup>
-    <MvcRazorRunCommand Condition="'$(MvcRazorRunCommand)'==''">$(OutputPath)$(MSBuildThisFileName).exe</MvcRazorRunCommand>
+  <PropertyGroup Condition="'$(MvcRazorRunCommand)'==''">
+    <MvcRazorRunCommand Condition="'$(PlatformTarget)'=='x86'">$(OutputPath)$(MSBuildThisFileName)-x86.exe</MvcRazorRunCommand>
+    <MvcRazorRunCommand Condition="'$(PlatformTarget)'!='x86'">$(OutputPath)$(MSBuildThisFileName).exe</MvcRazorRunCommand>
   </PropertyGroup>
 
   <Target
@@ -12,12 +13,21 @@
 
     <CallTarget Targets="_CreateResponseFileForMvcRazorPrecompile" />
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(PlatformTarget)'=='x86'">
       <FilesToCopy Include="$(OutputPath)$(AssemblyName).exe.config">
+        <Destination>$(OutputPath)$(MSBuildThisFileName)-x86.exe.config</Destination>
+      </FilesToCopy>
+      <FilesToCopy Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName)-x86.exe">
+        <Destination>$(OutputPath)$(MSBuildThisFileName)-x86.exe</Destination>
+      </FilesToCopy>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(PlatformTarget)'!='x86'">
+      <FilesToCopy Include="$(OutputPath)$(AssemblyName).exe.config" Condition="">
         <Destination>$(OutputPath)$(MSBuildThisFileName).exe.config</Destination>
       </FilesToCopy>
       <FilesToCopy Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).exe">
-        <Destination>$(MvcRazorRunCommand)</Destination>
+        <Destination>$(OutputPath)$(MSBuildThisFileName).exe</Destination>
       </FilesToCopy>
     </ItemGroup>
 

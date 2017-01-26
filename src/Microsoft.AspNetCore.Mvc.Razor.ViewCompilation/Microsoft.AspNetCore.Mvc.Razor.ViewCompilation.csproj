@@ -1,29 +1,28 @@
-<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">    
-    <Import Project="..\..\build\common.props" />
-    <PropertyGroup>
-        <Description>Build-time references required to enable Razor view compilation as part of building the application.</Description>
-        <TargetFrameworks>netcoreapp1.1;net451</TargetFrameworks>
-        <RuntimeIdentifier Condition="!$(TargetFramework.StartsWith('netcoreapp'))">win7-x64</RuntimeIdentifier>
-        <PackageTags>cshtml;razor;compilation;precompilation;aspnetcore</PackageTags>
-        <PreserveCompilationContext>true</PreserveCompilationContext>
-        <OutputType>exe</OutputType>
-
-        <!-- Include the build outputs in the build directory (and not the lib directory) -->
-        <BuildOutputTargetFolder>build</BuildOutputTargetFolder>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <None Include="build\**\*" Pack="true" PackagePath="%(Identity)" />
-        <None Include="buildMultiTargeting/*" Pack="true" PackagePath="%(Identity)" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="1.1.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="1.1.0" />
-        <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.0" />
-    </ItemGroup>
-    <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
-        <PackageReference Include="Microsoft.NETCore.App" Version="1.1.0" />
-    </ItemGroup>
-   
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <Import Project="..\..\build\common.props" />
+  <PropertyGroup>
+    <Description>Build-time references required to enable Razor view compilation as part of building the application.</Description>
+    <TargetFrameworks>netcoreapp1.1;net451</TargetFrameworks>
+    <RuntimeIdentifier Condition="!$(TargetFramework.StartsWith('netcoreapp'))">win7-x64</RuntimeIdentifier>
+    <PackageTags>cshtml;razor;compilation;precompilation;aspnetcore</PackageTags>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <OutputType>exe</OutputType>
+    <X86ProjectDirectory>..\..\pack\</X86ProjectDirectory>
+    <!-- Include the build outputs in the build directory (and not the lib directory) -->
+    <BuildOutputTargetFolder>build</BuildOutputTargetFolder>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="build\**\*" Pack="true" PackagePath="%(Identity)" />
+    <None Include="buildMultiTargeting/*" Pack="true" PackagePath="%(Identity)" />
+    <None Include="$(X86ProjectDirectory)\bin\$(Configuration)\net451\$(MSBuildThisFileName)-x86.exe" Pack="true" PackagePath="build\net451\$(MSBuildThisFileName)-x86.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="1.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.0" />
+    <ProjectReference Include="$(X86ProjectDirectory)$(MSBuildThisFileName)-x86.csproj" PrivateAssets="true" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='net451'" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
+    <PackageReference Include="Microsoft.NETCore.App" Version="1.1.0" />
+  </ItemGroup>
 </Project>
