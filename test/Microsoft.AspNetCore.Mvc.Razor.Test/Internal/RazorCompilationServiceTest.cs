@@ -19,13 +19,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class RazorCompilationServiceTest
     {
+#if OLD_RAZOR
         [Theory]
         [InlineData(@"src\work\myapp", @"src\work\myapp\Views\index\home.cshtml")]
         [InlineData(@"src\work\myapp\", @"src\work\myapp\Views\index\home.cshtml")]
         public void CompileCalculatesRootRelativePath(string appPath, string viewPath)
         {
             // Arrange
-            var host = new Mock<IMvcRazorHost>();
+            var host = new Mock<RazorEngineHost>();
             host.Setup(h => h.GenerateCode(@"Views\index\home.cshtml", It.IsAny<Stream>()))
                 .Returns(GetGeneratorResult())
                 .Verifiable();
@@ -222,5 +223,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             return options.Object;
         }
+
+#endif
     }
 }

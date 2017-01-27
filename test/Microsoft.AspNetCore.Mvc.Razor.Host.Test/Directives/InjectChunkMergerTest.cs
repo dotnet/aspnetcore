@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Directives
 {
     public class InjectChunkMergerTest
     {
+#if OLD_RAZOR
         [Theory]
         [InlineData("MyApp.TestHelper<TModel>", "MyApp.TestHelper<Person>")]
         [InlineData("TestBaseType", "TestBaseType")]
@@ -168,5 +169,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Directives
                     Assert.Equal("DifferentProperty", injectChunk.MemberName);
                 });
         }
+#endif
     }
 }

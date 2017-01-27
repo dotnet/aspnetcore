@@ -5,7 +5,7 @@ using System.IO;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class DefaultRazorProjectItem : RazorProjectItem
     {

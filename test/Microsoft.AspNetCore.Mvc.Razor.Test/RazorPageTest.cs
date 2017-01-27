@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public class RazorPageTest
     {
-        private readonly RenderAsyncDelegate _nullRenderAsyncDelegate = writer => Task.FromResult(0);
+        private readonly RenderAsyncDelegate _nullRenderAsyncDelegate = () => Task.FromResult(0);
         private readonly Func<TextWriter, Task> NullAsyncWrite = writer => writer.WriteAsync(string.Empty);
 
         [Fact]
@@ -443,7 +443,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             });
             page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
-                { "bar", writer => writer.WriteAsync(expected) }
+                { "bar", () => page.Output.WriteAsync(expected) }
             };
 
             // Act
@@ -767,7 +767,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
                 { "ignored", _nullRenderAsyncDelegate },
-                { "not-ignored-section", writer => writer.WriteAsync("not-ignored-section-content") }
+                { "not-ignored-section", () => page.Output.WriteAsync("not-ignored-section-content") }
             };
 
             // Act
@@ -826,16 +826,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
                 {
-                    "footer", writer => writer.WriteLineAsync("Footer section")
+                    "footer", () => page.Output.WriteLineAsync("Footer section")
                 },
                 {
-                    "header", writer => writer.WriteLineAsync("Header section")
+                    "header", () => page.Output.WriteLineAsync("Header section")
                 },
                 {
-                    "async-header", writer => writer.WriteLineAsync("Async Header section")
+                    "async-header", () => page.Output.WriteLineAsync("Async Header section")
                 },
                 {
-                    "async-footer", writer => writer.WriteLineAsync("Async Footer section")
+                    "async-footer", () => page.Output.WriteLineAsync("Async Footer section")
                 },
             };
 
@@ -928,7 +928,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var page = CreatePage(p =>
             {
                 p.Layout = "bar";
-                p.DefineSection("test-section", async _ =>
+                p.DefineSection("test-section", async () =>
                 {
                     await p.FlushAsync();
                 });
@@ -940,7 +940,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             // Assert (does not throw)
             var renderAsyncDelegate = page.SectionWriters["test-section"];
-            await renderAsyncDelegate(TextWriter.Null);
+            await renderAsyncDelegate();
         }
 
         [Fact]

@@ -510,6 +510,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return string.Format(CultureInfo.CurrentCulture, GetString("FileProvidersAreRequired"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// Path must begin with a forward slash '/'.
+        /// </summary>
+        internal static string RazorProject_PathMustStartWithForwardSlash
+        {
+            get { return GetString("RazorProject_PathMustStartWithForwardSlash"); }
+        }
+
+        /// <summary>
+        /// Path must begin with a forward slash '/'.
+        /// </summary>
+        internal static string FormatRazorProject_PathMustStartWithForwardSlash()
+        {
+            return GetString("RazorProject_PathMustStartWithForwardSlash");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

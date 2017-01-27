@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host.Test
 {
     public class TagHelperChunkDecoratorTest
     {
+        #if OLD_RAZOR
         [Fact]
         public void Accept_CorrectlyDecoratesViewComponentChunks()
         {
@@ -63,5 +64,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host.Test
                  resultTagHelperChunk.Descriptors.First().TypeName,
                  StringComparer.Ordinal);
         }
+#endif
     }
 }

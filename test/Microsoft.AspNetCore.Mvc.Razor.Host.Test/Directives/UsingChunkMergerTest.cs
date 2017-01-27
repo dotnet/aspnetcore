@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Directives
 {
     public class UsingChunkMergerTest
     {
+        #if OLD_RAZOR
         [Fact]
         public void Merge_AddsNamespacesThatHaveNotBeenVisitedInChunkTree()
         {
@@ -98,5 +99,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Directives
             chunk = Assert.IsType<UsingChunk>(chunkTree.Children[1]);
             Assert.Equal("Microsoft.AspNetCore.mvc", chunk.Namespace);
         }
+#endif
     }
 }

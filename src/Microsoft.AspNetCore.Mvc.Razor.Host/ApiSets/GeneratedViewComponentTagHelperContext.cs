@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Mvc.Razor.Host.Internal
 {
     /// <summary>
-    /// Contains necessary information for the view component <see cref="AspNetCore.Razor.TagHelpers.TagHelper"/> code generation process.
+    /// Contains necessary information for the view component tag helper code generation process.
     /// </summary>
     public class GeneratedViewComponentTagHelperContext
     {

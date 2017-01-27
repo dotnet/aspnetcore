@@ -25,6 +25,7 @@
     "Microsoft.AspNetCore.Mvc.Razor": {
       "target": "project"
     },
+    "Microsoft.AspNetCore.Razor.Runtime": "1.2.0-*",
     "Microsoft.AspNetCore.Routing.Abstractions": "1.2.0-*",
     "Microsoft.Extensions.Caching.Memory": "1.2.0-*",
     "Microsoft.Extensions.FileSystemGlobbing": "1.2.0-*",

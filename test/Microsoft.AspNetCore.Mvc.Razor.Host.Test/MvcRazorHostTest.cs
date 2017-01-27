@@ -11,13 +11,10 @@ using System.Reflection;
 #if GENERATE_BASELINES
 using System.Text;
 #endif
-using Microsoft.AspNetCore.Mvc.Razor.Directives;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Razor;
-using Microsoft.AspNetCore.Razor.Chunks;
 using Microsoft.AspNetCore.Razor.Chunks.Generators;
 using Microsoft.AspNetCore.Razor.CodeGenerators;
-using Microsoft.AspNetCore.Razor.CodeGenerators.Visitors;
 using Microsoft.AspNetCore.Razor.Parser;
 using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Microsoft.AspNetCore.Testing;
@@ -27,6 +24,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public class MvcRazorHostTest
     {
+
+#if OLD_RAZOR
         private static Assembly _assembly = typeof(MvcRazorHostTest).GetTypeInfo().Assembly;
 
         public static TheoryData NormalizeChunkInheritanceUtilityPaths_Data
@@ -104,22 +103,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             // Assert
             Assert.Equal("src/file.cshtml", chunkInheritanceUtility.InheritedChunkTreePagePath, StringComparer.Ordinal);
-        }
-
-        [Fact]
-        public void MvcRazorHost_EnablesInstrumentationByDefault()
-        {
-            // Arrange
-            var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHost(
-                new DefaultChunkTreeCache(fileProvider),
-                new TagHelperDescriptorResolver(designTime: false));
-
-            // Act
-            var instrumented = host.EnableInstrumentation;
-
-            // Assert
-            Assert.True(instrumented);
         }
 
         [Fact]
@@ -595,148 +578,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 documentLocation: new MappingLocation(documentLocation, contentLength),
                 generatedLocation: new MappingLocation(generatedLocation, contentLength));
         }
-
-        private class PathValidatingChunkInheritanceUtility : ChunkInheritanceUtility
-        {
-            public PathValidatingChunkInheritanceUtility(MvcRazorHost razorHost, IChunkTreeCache chunkTreeCache)
-                : base(razorHost, chunkTreeCache, defaultInheritedChunks: new Chunk[0])
-            {
-            }
-
-            public string InheritedChunkTreePagePath { get; private set; }
-
-            public override IReadOnlyList<ChunkTreeResult> GetInheritedChunkTreeResults(string pagePath)
-            {
-                InheritedChunkTreePagePath = pagePath;
-
-                return new ChunkTreeResult[0];
-            }
-        }
-
-        // Normalizes the newlines in different OS platforms.
-        private class MvcRazorHostWithNormalizedNewLine : MvcRazorHost
-        {
-            public MvcRazorHostWithNormalizedNewLine(IChunkTreeCache codeTreeCache)
-                : base(codeTreeCache, new TagHelperDescriptorResolver(designTime: false))
-            { }
-
-            public override CodeGenerator DecorateCodeGenerator(
-                CodeGenerator incomingBuilder,
-                CodeGeneratorContext context)
-            {
-                base.DecorateCodeGenerator(incomingBuilder, context);
-
-                return new TestCSharpCodeGenerator(
-                    context,
-                    DefaultModel,
-                    "Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute",
-                    new GeneratedTagHelperAttributeContext
-                    {
-                        ModelExpressionTypeName = ModelExpressionType,
-                        CreateModelExpressionMethodName = CreateModelExpressionMethod,
-                        ModelExpressionProviderPropertyName = ModelExpressionProvider,
-                        ViewDataPropertyName = ViewDataPropertyName
-                    });
-            }
-
-            protected class TestCSharpCodeGenerator : MvcCSharpCodeGenerator
-            {
-                private readonly GeneratedTagHelperAttributeContext _tagHelperAttributeContext;
-
-                public TestCSharpCodeGenerator(
-                    CodeGeneratorContext context,
-                    string defaultModel,
-                    string activateAttribute,
-                    GeneratedTagHelperAttributeContext tagHelperAttributeContext)
-                    : base(context, defaultModel, activateAttribute, tagHelperAttributeContext)
-                {
-                    _tagHelperAttributeContext = tagHelperAttributeContext;
-                }
-
-                protected override CSharpCodeWriter CreateCodeWriter()
-                {
-                    // We normalize newlines so no matter what platform we're on
-                    // they're consistent (for code generation tests).
-                    var codeWriter = base.CreateCodeWriter();
-                    codeWriter.NewLine = "\r\n";
-
-                    return codeWriter;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Used when testing Tag Helpers, it disables the unique ID generation feature.
-        /// </summary>
-        private class TestMvcRazorHost : MvcRazorHost
-        {
-            public TestMvcRazorHost(IChunkTreeCache ChunkTreeCache)
-                : base(ChunkTreeCache, new TagHelperDescriptorResolver(designTime: false))
-            {
-            }
-
-            public override CodeGenerator DecorateCodeGenerator(
-                CodeGenerator incomingBuilder,
-                CodeGeneratorContext context)
-            {
-                base.DecorateCodeGenerator(incomingBuilder, context);
-
-                return new TestCSharpCodeGenerator(
-                    context,
-                    DefaultModel,
-                    "Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute",
-                    new GeneratedTagHelperAttributeContext
-                    {
-                        ModelExpressionTypeName = ModelExpressionType,
-                        CreateModelExpressionMethodName = CreateModelExpressionMethod,
-                        ModelExpressionProviderPropertyName = ModelExpressionProvider,
-                        ViewDataPropertyName = ViewDataPropertyName
-                    });
-            }
-
-            protected class TestCSharpCodeGenerator : MvcCSharpCodeGenerator
-            {
-                private readonly GeneratedTagHelperAttributeContext _tagHelperAttributeContext;
-
-                public TestCSharpCodeGenerator(
-                    CodeGeneratorContext context,
-                    string defaultModel,
-                    string activateAttribute,
-                    GeneratedTagHelperAttributeContext tagHelperAttributeContext)
-                    : base(context, defaultModel, activateAttribute, tagHelperAttributeContext)
-                {
-                    _tagHelperAttributeContext = tagHelperAttributeContext;
-                }
-
-                protected override CSharpCodeVisitor CreateCSharpCodeVisitor(
-                    CSharpCodeWriter writer,
-                    CodeGeneratorContext context)
-                {
-                    var visitor = base.CreateCSharpCodeVisitor(writer, context);
-                    visitor.TagHelperRenderer = new NoUniqueIdsTagHelperCodeRenderer(visitor, writer, context)
-                    {
-                        AttributeValueCodeRenderer =
-                            new MvcTagHelperAttributeValueCodeRenderer(_tagHelperAttributeContext)
-                    };
-                    return visitor;
-                }
-
-                private class NoUniqueIdsTagHelperCodeRenderer : CSharpTagHelperCodeRenderer
-                {
-                    public NoUniqueIdsTagHelperCodeRenderer(
-                        IChunkVisitor bodyVisitor,
-                        CSharpCodeWriter writer,
-                        CodeGeneratorContext context)
-                        : base(bodyVisitor, writer, context)
-                    {
-                    }
-
-                    protected override string GenerateUniqueId()
-                    {
-                        return "test";
-                    }
-                }
-            }
-        }
+#endif
     }
 }

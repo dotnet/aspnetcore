@@ -3,10 +3,9 @@
 
 using System.IO;
 using System.Text;
-using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
-using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.Extensions.Logging;
 
 namespace RazorPageExecutionInstrumentationWebSite
@@ -15,14 +14,15 @@ namespace RazorPageExecutionInstrumentationWebSite
     {
         public TestRazorCompilationService(
             ICompilationService compilationService,
-            IMvcRazorHost razorHost,
+            RazorEngine engine,
+            RazorProject project,
             IRazorViewEngineFileProviderAccessor fileProviderAccessor,
             ILoggerFactory loggerFactory)
-            : base(compilationService, razorHost, fileProviderAccessor, loggerFactory)
+            : base(compilationService, engine, project, fileProviderAccessor, loggerFactory)
         {
         }
 
-        protected override GeneratorResults GenerateCode(string relativePath, Stream inputStream)
+        protected override RazorCodeDocument CreateCodeDocument(string relativePath, Stream inputStream)
         {
             // Normalize line endings to '\r\n' (CRLF). This removes core.autocrlf, core.eol, core.safecrlf, and
             // .gitattributes from the equation and treats "\r\n" and "\n" as equivalent. Does not handle
@@ -36,7 +36,7 @@ namespace RazorPageExecutionInstrumentationWebSite
             var bytes = Encoding.UTF8.GetBytes(text);
             inputStream = new MemoryStream(bytes);
 
-            return base.GenerateCode(relativePath, inputStream);
+            return base.CreateCodeDocument(relativePath, inputStream);
         }
     }
 }

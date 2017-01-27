@@ -1,9 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using Microsoft.AspNetCore.Mvc.ViewComponents;
-using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Evolution;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Host.Test

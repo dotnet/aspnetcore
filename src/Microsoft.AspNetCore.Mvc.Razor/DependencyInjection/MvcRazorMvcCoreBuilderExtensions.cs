@@ -6,11 +6,12 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
-using Microsoft.AspNetCore.Mvc.Razor.Directives;
+using Microsoft.AspNetCore.Mvc.Razor.Host;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
@@ -157,12 +158,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddSingleton<IRazorViewEngine, RazorViewEngine>();
 
-            services.TryAdd(ServiceDescriptor.Singleton<IChunkTreeCache>(serviceProvider =>
-            {
-                var accessor = serviceProvider.GetRequiredService<IRazorViewEngineFileProviderAccessor>();
-                return new DefaultChunkTreeCache(accessor.FileProvider);
-            }));
-
             services.TryAddSingleton<ITagHelperTypeResolver, TagHelperTypeResolver>();
             services.TryAddSingleton<ITagHelperDescriptorFactory>(s => new TagHelperDescriptorFactory(designTime: false));
             services.TryAddSingleton<TagHelperDescriptorResolver>();
@@ -176,7 +171,32 @@ namespace Microsoft.Extensions.DependencyInjection
             // creating the singleton RazorViewEngine instance.
             services.TryAddTransient<IRazorPageFactoryProvider, DefaultRazorPageFactoryProvider>();
             services.TryAddTransient<IRazorCompilationService, RazorCompilationService>();
-            services.TryAddTransient<IMvcRazorHost, MvcRazorHost>();
+
+            services.TryAddSingleton<RazorProject>(s =>
+            {
+                return new DefaultRazorProject(s.GetRequiredService<IRazorViewEngineFileProviderAccessor>().FileProvider);
+            });
+
+            services.TryAddSingleton<RazorEngine>(s =>
+            {
+                return RazorEngine.Create(b =>
+                {
+                    InjectDirective.Register(b);
+                    ModelDirective.Register(b);
+                    
+                    b.Features.Add(new ModelExpressionPass());
+                    b.Features.Add(new ViewComponentTagHelperPass());
+                    b.Features.Add(new MvcViewDocumentClassifierPass());
+
+                    b.Features.Add(new Microsoft.CodeAnalysis.Razor.DefaultTagHelperFeature());
+
+                    var referenceManager = s.GetRequiredService<RazorReferenceManager>();
+                    b.Features.Add(new Microsoft.CodeAnalysis.Razor.DefaultMetadataReferenceFeature()
+                    {
+                        References = referenceManager.CompilationReferences.ToArray(),
+                    });
+                });
+            });
 
             // This caches Razor page activation details that are valid for the lifetime of the application.
             services.TryAddSingleton<IRazorPageActivator, RazorPageActivator>();

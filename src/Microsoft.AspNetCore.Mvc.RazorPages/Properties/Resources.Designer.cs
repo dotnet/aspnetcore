@@ -27,22 +27,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Path must begin with a forward slash '/'.
-        /// </summary>
-        internal static string RazorProject_PathMustStartWithForwardSlash
-        {
-            get { return GetString("RazorProject_PathMustStartWithForwardSlash"); }
-        }
-
-        /// <summary>
-        /// Path must begin with a forward slash '/'.
-        /// </summary>
-        internal static string FormatRazorProject_PathMustStartWithForwardSlash()
-        {
-            return GetString("RazorProject_PathMustStartWithForwardSlash");
-        }
-
-        /// <summary>
         /// The '{0}' property of '{1}' must not be null.
         /// </summary>
         internal static string PropertyOfTypeCannotBeNull

@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
             var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains($"/Views/ErrorPageMiddleware/{action}.cshtml", content);
+            Assert.Contains($"{action}.cshtml", content);
             Assert.Contains(expected, content);
             Assert.DoesNotContain(PreserveCompilationContextMessage, content);
         }
@@ -64,11 +64,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
             var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains($"/Views/ErrorPageMiddleware/{action}.cshtml", content);
+            Assert.Contains($"{action}.cshtml", content);
             Assert.Contains(expected, content);
         }
 
-        [Fact]
+        [Fact(Skip = "Razor #595")]
         public async Task CompilationFailuresFromViewImportsAreListed()
         {
             // Arrange
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
             var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains("/Views/ErrorFromViewImports/_ViewImports.cshtml", content);
+            Assert.Contains("_ViewImports.cshtml", content);
             Assert.Contains(expectedMessage, content);
             Assert.Contains(PreserveCompilationContextMessage, content);
             Assert.Contains(expectedCompilationContent, content);
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
             var content = await response.Content.ReadAsStringAsync();
-            Assert.Contains("/Views/ErrorPageMiddleware/RuntimeError.cshtml", content);
+            Assert.Contains("RuntimeError.cshtml", content);
             Assert.Contains(expectedMessage, content);
         }
 

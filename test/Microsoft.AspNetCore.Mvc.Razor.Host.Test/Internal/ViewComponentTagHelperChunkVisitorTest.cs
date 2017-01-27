@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host.Test.Internal
 {
     public class ViewComponentTagHelperChunkVisitorTest
     {
+        #if OLD_RAZOR
         public static TheoryData CodeGenerationData
         {
             get
@@ -56,5 +57,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host.Test.Internal
 #endif
 
         }
+#endif
     }
 }

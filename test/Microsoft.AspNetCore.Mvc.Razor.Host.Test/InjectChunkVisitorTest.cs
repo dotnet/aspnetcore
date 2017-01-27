@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public class InjectChunkVisitorTest
     {
+        #if OLD_RAZOR
         [Fact]
         public void Visit_IgnoresNonInjectChunks()
         {
@@ -157,5 +158,6 @@ MyType1
                     shouldGenerateLinePragmas: true),
                 new ErrorSink());
         }
+#endif
     }
 }

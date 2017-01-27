@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public class MvcTagHelperAttributeValueCodeRendererTest
     {
+        #if OLD_RAZOR
         [Theory]
         [InlineData("SomeType", "SomeType", "Provider.SomeMethod(ViewData, __model => __model.MyValue)")]
         [InlineData("SomeType", "SomeType2", "MyValue")]
@@ -55,5 +56,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             // Assert
             Assert.Equal(expectedValue, writer.GenerateCode());
         }
+#endif
     }
 }

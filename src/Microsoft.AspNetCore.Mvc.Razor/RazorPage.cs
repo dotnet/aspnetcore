@@ -856,7 +856,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             if (PreviousSectionWriters.TryGetValue(sectionName, out renderDelegate))
             {
                 _renderedSections.Add(sectionName);
-                await renderDelegate(Output);
+                
+                await renderDelegate();
 
                 // Return a token value that allows the Write call that wraps the RenderSection \ RenderSectionAsync
                 // to succeed.

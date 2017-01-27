@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private const string LayoutPath = "~/Shared/_Layout.cshtml";
 
 #pragma warning disable 1998
-        private readonly RenderAsyncDelegate _nullRenderAsyncDelegate = async writer => { };
+        private readonly RenderAsyncDelegate _nullRenderAsyncDelegate = async () => { };
 #pragma warning restore 1998
 
         [Fact]
@@ -601,13 +601,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 v.HtmlEncoder = htmlEncoder;
                 v.WriteLiteral("body-content");
                 v.Layout = LayoutPath;
-                v.DefineSection("head", async writer =>
+                v.DefineSection("head", async () =>
                 {
-                    await writer.WriteAsync("head-content");
+                    await v.Output.WriteAsync("head-content");
                 });
-                v.DefineSection("foot", async writer =>
+                v.DefineSection("foot", async () =>
                 {
-                    await writer.WriteAsync("foot-content");
+                    await v.Output.WriteAsync("foot-content");
                 });
             });
             var layout = new TestableRazorPage(v =>
@@ -702,9 +702,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 v.HtmlEncoder = htmlEncoder;
                 v.Layout = "~/Shared/Layout1.cshtml";
-                v.DefineSection("foo", async writer =>
+                v.DefineSection("foo", async () =>
                 {
-                    await writer.WriteAsync("page-section-content");
+                    await v.Output.WriteAsync("page-section-content");
                 });
             });
             var nestedLayout = new TestableRazorPage(v =>
@@ -712,9 +712,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 v.HtmlEncoder = htmlEncoder;
                 v.Layout = "~/Shared/Layout2.cshtml";
                 v.RenderBodyPublic();
-                v.DefineSection("foo", async writer =>
+                v.DefineSection("foo", async () =>
                 {
-                    await writer.WriteLineAsync("layout-section-content");
+                    await v.Output.WriteLineAsync("layout-section-content");
                     await v.RenderSectionAsync("foo");
                 });
             })
@@ -769,9 +769,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 v.HtmlEncoder = htmlEncoder;
                 v.Layout = "NestedLayout";
                 v.WriteLiteral("Page body content that will not be written");
-                v.DefineSection("sectionA", async writer =>
+                v.DefineSection("sectionA", async () =>
                 {
-                    await writer.WriteAsync("page-section-content");
+                    await v.Output.WriteAsync("page-section-content");
                 });
             });
             var nestedLayout = new TestableRazorPage(v =>
@@ -779,9 +779,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 v.HtmlEncoder = htmlEncoder;
                 v.Layout = "Layout";
                 v.WriteLiteral("Nested layout content that will not be written");
-                v.DefineSection("sectionB", async writer =>
+                v.DefineSection("sectionB", async () =>
                 {
-                    await writer.WriteLineAsync("layout-section-content");
+                    await v.Output.WriteLineAsync("layout-section-content");
                     await v.RenderSectionAsync("sectionA");
                 });
             });
@@ -832,9 +832,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 v.HtmlEncoder = htmlEncoder;
                 v.Layout = "~/Shared/Layout1.cshtml";
                 v.WriteLiteral("BodyContent");
-                v.DefineSection("foo", async writer =>
+                v.DefineSection("foo", async () =>
                 {
-                    await writer.WriteLineAsync("foo-content");
+                    await v.Output.WriteLineAsync("foo-content");
                 });
             });
             var nestedLayout = new TestableRazorPage(v =>
@@ -843,7 +843,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 v.Layout = "~/Shared/Layout2.cshtml";
                 v.Write("NestedLayout" + Environment.NewLine);
                 v.RenderBodyPublic();
-                v.DefineSection("foo", async _ =>
+                v.DefineSection("foo", async () =>
                 {
                     await v.RenderSectionAsync("foo");
                 });
@@ -894,9 +894,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 v.HtmlEncoder = htmlEncoder;
                 v.Layout = "~/Shared/Layout1.cshtml";
                 v.WriteLiteral("BodyContent");
-                v.DefineSection("foo", async writer =>
+                v.DefineSection("foo", async () =>
                 {
-                    await writer.WriteLineAsync("foo-content");
+                    await v.Output.WriteLineAsync("foo-content");
                 });
             })
             {
@@ -909,9 +909,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 v.Layout = "~/Shared/Layout2.cshtml";
                 v.Write("NestedLayout" + Environment.NewLine);
                 v.RenderBodyPublic();
-                v.DefineSection("foo", async writer =>
+                v.DefineSection("foo", async () =>
                 {
-                    await writer.WriteLineAsync("dont-render-inner-foo");
+                    await v.Output.WriteLineAsync("dont-render-inner-foo");
                 });
             })
             {
@@ -1003,9 +1003,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var page = new TestableRazorPage(v =>
             {
                 v.HtmlEncoder = htmlEncoder;
-                v.DefineSection("foo", async writer =>
+                v.DefineSection("foo", async () =>
                 {
-                    await writer.WriteLineAsync("foo-content");
+                    await v.Output.WriteLineAsync("foo-content");
                 });
                 v.Layout = "~/Shared/Layout1.cshtml";
                 v.WriteLiteral("body-content");
@@ -1015,7 +1015,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 v.HtmlEncoder = htmlEncoder;
                 v.Write("layout-1" + Environment.NewLine);
                 v.Write(v.RenderSection("foo"));
-                v.DefineSection("bar", writer => writer.WriteLineAsync("bar-content"));
+                v.DefineSection("bar", () => v.Output.WriteLineAsync("bar-content"));
                 v.RenderBodyPublic();
                 v.Layout = "~/Shared/Layout2.cshtml";
             });
@@ -1068,9 +1068,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var page = new TestableRazorPage(v =>
             {
                 v.HtmlEncoder = htmlEncoder;
-                v.DefineSection("foo", async writer =>
+                v.DefineSection("foo", async () =>
                 {
-                    await writer.WriteLineAsync("foo-content");
+                    await v.Output.WriteLineAsync("foo-content");
                 });
                 v.Layout = "Layout1.cshtml";
                 v.WriteLiteral("body-content");
@@ -1084,7 +1084,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 v.HtmlEncoder = htmlEncoder;
                 v.Write("layout-1" + Environment.NewLine);
                 v.Write(v.RenderSection("foo"));
-                v.DefineSection("bar", writer => writer.WriteLineAsync("bar-content"));
+                v.DefineSection("bar", () => v.Output.WriteLineAsync("bar-content"));
                 v.RenderBodyPublic();
                 v.Layout = "Layout2.cshtml";
             })
@@ -1238,9 +1238,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 v.HtmlEncoder = htmlEncoder;
                 v.Layout = "~/Shared/Layout1.cshtml";
                 v.WriteLiteral("BodyContent");
-                v.DefineSection("foo", async writer =>
+                v.DefineSection("foo", async () =>
                 {
-                    await writer.WriteLineAsync("foo-content");
+                    await v.Output.WriteLineAsync("foo-content");
                 });
             });
             var nestedLayout = new TestableRazorPage(v =>
@@ -1249,9 +1249,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 v.Layout = "~/Shared/Layout2.cshtml";
                 v.Write("NestedLayout" + Environment.NewLine);
                 v.RenderBodyPublic();
-                v.DefineSection("foo", async writer =>
+                v.DefineSection("foo", async () =>
                 {
-                    await writer.WriteLineAsync(htmlEncoder.Encode(v.RenderSection("foo").ToString()));
+                    await v.Output.WriteLineAsync(htmlEncoder.Encode(v.RenderSection("foo").ToString()));
                 });
             });
             nestedLayout.Path = "~/Shared/Layout1.cshtml";
@@ -1306,7 +1306,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 v.HtmlEncoder = htmlEncoder;
                 v.Layout = "layout-1";
                 v.WriteLiteral("body content" + Environment.NewLine);
-                v.DefineSection("foo", async _ =>
+                v.DefineSection("foo", async () =>
                 {
                     v.WriteLiteral("section-content-1" + Environment.NewLine);
                     await v.FlushAsync();
@@ -1360,7 +1360,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
            {
                v.HtmlEncoder = htmlEncoder;
                v.Layout = "layout-1";
-               v.DefineSection("foo", async _ =>
+               v.DefineSection("foo", async () =>
                {
                    v.WriteLiteral("section-content-1" + Environment.NewLine);
                    await v.FlushAsync();
@@ -1437,9 +1437,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 v.Path = "/Views/TestPath/Test.cshtml";
                 v.HtmlEncoder = new HtmlTestEncoder();
-                v.DefineSection("foo", async writer =>
+                v.DefineSection("foo", async () =>
                 {
-                    writer.WriteLine("foo-content");
+                    v.Output.WriteLine("foo-content");
                     await v.FlushAsync();
                 });
                 v.Layout = "~/Shared/Layout1.cshtml";
@@ -1450,7 +1450,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 v.HtmlEncoder = new HtmlTestEncoder();
                 v.Write("layout-1" + Environment.NewLine);
                 v.Write(v.RenderSection("foo"));
-                v.DefineSection("bar", writer => writer.WriteLineAsync("bar-content"));
+                v.DefineSection("bar", () => v.Output.WriteLineAsync("bar-content"));
                 v.RenderBodyPublic();
                 v.Layout = "~/Shared/Layout2.cshtml";
             });

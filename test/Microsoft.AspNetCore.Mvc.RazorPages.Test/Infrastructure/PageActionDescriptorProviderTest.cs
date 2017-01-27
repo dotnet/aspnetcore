@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 using Microsoft.AspNetCore.Razor.Evolution;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
@@ -298,7 +299,5 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             return new DefaultRazorProjectItem(testFileInfo, basePath, path);
         }
-
-
     }
 }

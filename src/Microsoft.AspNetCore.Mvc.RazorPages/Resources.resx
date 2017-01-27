@@ -120,9 +120,6 @@
   <data name="PageActionDescriptorProvider_RouteTemplateCannotBeOverrideable" xml:space="preserve">
     <value>The route for the page at '{0}' cannot start with / or ~/. Pages do not support overriding the file path of the page.</value>
   </data>
-  <data name="RazorProject_PathMustStartWithForwardSlash" xml:space="preserve">
-    <value>Path must begin with a forward slash '/'.</value>
-  </data>
   <data name="PropertyOfTypeCannotBeNull" xml:space="preserve">
     <value>The '{0}' property of '{1}' must not be null.</value>
   </data>

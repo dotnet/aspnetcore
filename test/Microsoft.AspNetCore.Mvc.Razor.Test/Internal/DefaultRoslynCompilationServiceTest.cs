@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class DefaultRoslynCompilationServiceTest
     {
+#if OLD_RAZOR
         [Fact]
         public void Compile_ReturnsCompilationResult()
         {
@@ -357,5 +358,6 @@ public class MyNonCustomDefinedClass {}
                 optionsAccessor,
                 NullLoggerFactory.Instance);
         }
+#endif
     }
 }

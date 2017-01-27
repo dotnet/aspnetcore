@@ -6,11 +6,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Razor;
 using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 
@@ -22,27 +23,52 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     public class RazorCompilationService : IRazorCompilationService
     {
         private readonly ICompilationService _compilationService;
-        private readonly IMvcRazorHost _razorHost;
+        private readonly RazorEngine _engine;
+        private readonly RazorProject _project;
         private readonly IFileProvider _fileProvider;
         private readonly ILogger _logger;
+        private readonly RazorSourceDocument _globalImports;
 
         /// <summary>
         /// Instantiates a new instance of the <see cref="RazorCompilationService"/> class.
         /// </summary>
         /// <param name="compilationService">The <see cref="ICompilationService"/> to compile generated code.</param>
-        /// <param name="razorHost">The <see cref="IMvcRazorHost"/> to generate code from Razor files.</param>
+        /// <param name="engine">The <see cref="RazorEngine"/> to generate code from Razor files.</param>
+        /// <param name="project">The <see cref="RazorProject"/> implementation for locating files.</param>
         /// <param name="fileProviderAccessor">The <see cref="IRazorViewEngineFileProviderAccessor"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public RazorCompilationService(
             ICompilationService compilationService,
-            IMvcRazorHost razorHost,
+            RazorEngine engine,
+            RazorProject project,
             IRazorViewEngineFileProviderAccessor fileProviderAccessor,
             ILoggerFactory loggerFactory)
         {
             _compilationService = compilationService;
-            _razorHost = razorHost;
+            _engine = engine;
             _fileProvider = fileProviderAccessor.FileProvider;
             _logger = loggerFactory.CreateLogger<RazorCompilationService>();
+
+            _project = project;
+
+            var stream = new MemoryStream();
+            var writer = new StreamWriter(stream, Encoding.UTF8);
+            writer.WriteLine("@using System");
+            writer.WriteLine("@using System.Linq");
+            writer.WriteLine("@using System.Collections.Generic");
+            writer.WriteLine("@using Microsoft.AspNetCore.Mvc");
+            writer.WriteLine("@using Microsoft.AspNetCore.Mvc.Rendering");
+            writer.WriteLine("@using Microsoft.AspNetCore.Mvc.ViewFeatures");
+            writer.WriteLine("@inject Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel> Html");
+            writer.WriteLine("@inject Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper Json");
+            writer.WriteLine("@inject Microsoft.AspNetCore.Mvc.IViewComponentHelper Component");
+            writer.WriteLine("@inject Microsoft.AspNetCore.Mvc.IUrlHelper Url");
+            writer.WriteLine("@inject Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider ModelExpressionProvider");
+            writer.WriteLine("@addTagHelper Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNetCore.Mvc.Razor");
+            writer.Flush();
+
+            stream.Seek(0L, SeekOrigin.Begin);
+            _globalImports = RazorSourceDocument.ReadFrom(stream, filename: null, encoding: Encoding.UTF8);
         }
 
         /// <inheritdoc />
@@ -53,43 +79,66 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 throw new ArgumentNullException(nameof(file));
             }
 
-            GeneratorResults results;
+            RazorCodeDocument codeDocument;
+            RazorCSharpDocument cSharpDocument;
             using (var inputStream = file.FileInfo.CreateReadStream())
             {
                 _logger.RazorFileToCodeCompilationStart(file.RelativePath);
 
                 var startTimestamp = _logger.IsEnabled(LogLevel.Debug) ? Stopwatch.GetTimestamp() : 0;
 
-                results = GenerateCode(file.RelativePath, inputStream);
+                codeDocument = CreateCodeDocument(file.RelativePath, inputStream);
+                cSharpDocument = ProcessCodeDocument(codeDocument);
 
                 _logger.RazorFileToCodeCompilationEnd(file.RelativePath, startTimestamp);
             }
 
-            if (!results.Success)
+            if (cSharpDocument.Diagnostics.Count > 0)
             {
-                return GetCompilationFailedResult(file, results.ParserErrors);
+                return GetCompilationFailedResult(file, cSharpDocument.Diagnostics);
             }
 
-            return _compilationService.Compile(file, results.GeneratedCode);
+            return _compilationService.Compile(codeDocument, cSharpDocument);
         }
 
-        /// <summary>
-        /// Generate code for the Razor file at <paramref name="relativePath"/> with content
-        /// <paramref name="inputStream"/>.
-        /// </summary>
-        /// <param name="relativePath">
-        /// The path of the Razor file relative to the root of the application. Used to generate line pragmas and
-        /// calculate the class name of the generated type.
-        /// </param>
-        /// <param name="inputStream">A <see cref="Stream"/> that contains the Razor content.</param>
-        /// <returns>A <see cref="GeneratorResults"/> instance containing results of code generation.</returns>
-        protected virtual GeneratorResults GenerateCode(string relativePath, Stream inputStream)
+        protected virtual RazorCodeDocument CreateCodeDocument(string relativePath, Stream inputStream)
         {
-            return _razorHost.GenerateCode(relativePath, inputStream);
+            var absolutePath = _fileProvider.GetFileInfo(relativePath)?.PhysicalPath ?? relativePath;
+
+            var source = RazorSourceDocument.ReadFrom(inputStream, absolutePath);
+
+            var imports = new List<RazorSourceDocument>()
+            {
+                _globalImports,
+            };
+
+            var paths = ViewHierarchyUtility.GetViewImportsLocations(relativePath);
+            foreach (var path in paths.Reverse())
+            {
+                var file = _fileProvider.GetFileInfo(path);
+                if (file.Exists)
+                {
+                    using (var stream = file.CreateReadStream())
+                    {
+                        imports.Add(RazorSourceDocument.ReadFrom(stream, file.PhysicalPath ?? path));
+                    }
+                }
+            }
+
+            return RazorCodeDocument.Create(source, imports);
+        }
+
+        protected virtual RazorCSharpDocument ProcessCodeDocument(RazorCodeDocument codeDocument)
+        {
+            _engine.Process(codeDocument);
+
+            return codeDocument.GetCSharpDocument();
         }
 
         // Internal for unit testing
-        internal CompilationResult GetCompilationFailedResult(RelativeFileInfo file, IEnumerable<RazorError> errors)
+        internal CompilationResult GetCompilationFailedResult(
+            RelativeFileInfo file, 
+            IEnumerable<Microsoft.AspNetCore.Razor.Evolution.Legacy.RazorError> errors)
         {
             // If a SourceLocation does not specify a file path, assume it is produced
             // from parsing the current file.
@@ -114,7 +163,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             return new CompilationResult(failures);
         }
 
-        private DiagnosticMessage CreateDiagnosticMessage(RazorError error, string filePath)
+        private DiagnosticMessage CreateDiagnosticMessage(
+            Microsoft.AspNetCore.Razor.Evolution.Legacy.RazorError error,
+            string filePath)
         {
             var location = error.Location;
             return new DiagnosticMessage(

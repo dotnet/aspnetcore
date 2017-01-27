@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Directives
 {
     public class SetBaseTypeChunkMergerTest
     {
+        #if OLD_RAZOR
         [Theory]
         [InlineData("MyApp.BaseType<TModel>", "MyApp.BaseType<Person>")]
         [InlineData("TestBaseType", "TestBaseType")]
@@ -88,5 +89,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Directives
             var setBaseTypeChunk = Assert.IsType<SetBaseTypeChunk>(chunk);
             Assert.Equal("MyBase1", setBaseTypeChunk.TypeName);
         }
+#endif
     }
 }
