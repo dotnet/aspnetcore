@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\build\common.props" Condition="'$(CommonImport)'!='true'" />
+
+  <PropertyGroup>
+    <Description>ASP.NET Core middleware for routing requests to application logic and for generating links.
+Commonly used types:
+Microsoft.AspNetCore.Routing.Route
+Microsoft.AspNetCore.Routing.RouteCollection</Description>
+    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;routing</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\shared\Microsoft.AspNetCore.Routing.DecisionTree.Sources\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Routing.Abstractions\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" />
+  </ItemGroup>
+</Project>

@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         }
 
         [Fact]
-        public void ParseRouteParameter_WithoutADefaultValue()
+        public void ParseRouteParameter_WithEmptyDefaultValue()
         {
             // Arrange & Act
             var templatePart = ParseParameter("param=");

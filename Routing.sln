@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0E966C37-7334-4D96-AAF6-9F49FBD166E3}"
 EndProject
@@ -8,24 +8,31 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{C3AD
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{95359B4B-4C85-4B44-A75B-0621905C4CF6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Routing", "src\Microsoft.AspNetCore.Routing\Microsoft.AspNetCore.Routing.xproj", "{1EE54D32-6CED-4206-ACF5-3DC1DD39D228}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routing", "src\Microsoft.AspNetCore.Routing\Microsoft.AspNetCore.Routing.csproj", "{1EE54D32-6CED-4206-ACF5-3DC1DD39D228}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Routing.Tests", "test\Microsoft.AspNetCore.Routing.Tests\Microsoft.AspNetCore.Routing.Tests.xproj", "{636D79ED-7B32-487C-BDA5-D2A1AAA97371}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routing.Tests", "test\Microsoft.AspNetCore.Routing.Tests\Microsoft.AspNetCore.Routing.Tests.csproj", "{636D79ED-7B32-487C-BDA5-D2A1AAA97371}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RoutingSample.Web", "samples\RoutingSample.Web\RoutingSample.Web.xproj", "{DB94E647-C73A-4F52-A126-AA7544CCF33B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoutingSample.Web", "samples\RoutingSample.Web\RoutingSample.Web.csproj", "{DB94E647-C73A-4F52-A126-AA7544CCF33B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C430C499-382D-47BD-B351-CF8F89C08CD2}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
+		NuGet.config = NuGet.config
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Routing.DecisionTree.Sources.Tests", "test\Microsoft.AspNetCore.Routing.DecisionTree.Sources.Tests\Microsoft.AspNetCore.Routing.DecisionTree.Sources.Tests.xproj", "{09C2933C-23AC-41B7-994D-E8A5184A629C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routing.DecisionTree.Sources.Tests", "test\Microsoft.AspNetCore.Routing.DecisionTree.Sources.Tests\Microsoft.AspNetCore.Routing.DecisionTree.Sources.Tests.csproj", "{09C2933C-23AC-41B7-994D-E8A5184A629C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Routing.Abstractions", "src\Microsoft.AspNetCore.Routing.Abstractions\Microsoft.AspNetCore.Routing.Abstractions.xproj", "{ED253B01-24F1-43D1-AA0B-079391E105A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routing.Abstractions", "src\Microsoft.AspNetCore.Routing.Abstractions\Microsoft.AspNetCore.Routing.Abstractions.csproj", "{ED253B01-24F1-43D1-AA0B-079391E105A9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Routing.Abstractions.Tests", "test\Microsoft.AspNetCore.Mvc.Routing.Abstractions.Tests\Microsoft.AspNetCore.Mvc.Routing.Abstractions.Tests.xproj", "{741B0B05-CE96-473B-B962-6B0A347DF79A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Routing.Abstractions.Tests", "test\Microsoft.AspNetCore.Mvc.Routing.Abstractions.Tests\Microsoft.AspNetCore.Mvc.Routing.Abstractions.Tests.csproj", "{741B0B05-CE96-473B-B962-6B0A347DF79A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Routing.FunctionalTests", "test\Microsoft.AspNetCore.Routing.FunctionalTests\Microsoft.AspNetCore.Routing.FunctionalTests.xproj", "{5C73140B-41F3-466F-A07B-3614E4D80DF9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routing.FunctionalTests", "test\Microsoft.AspNetCore.Routing.FunctionalTests\Microsoft.AspNetCore.Routing.FunctionalTests.csproj", "{5C73140B-41F3-466F-A07B-3614E4D80DF9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{6DC6B416-C8C4-4BFA-8C1E-A55A6D7EFD08}"
+	ProjectSection(SolutionItems) = preProject
+		build\common.props = build\common.props
+		build\Key.snk = build\Key.snk
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
