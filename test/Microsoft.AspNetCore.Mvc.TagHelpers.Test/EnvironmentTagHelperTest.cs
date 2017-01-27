@@ -67,6 +67,94 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Test
         }
 
         [Theory]
+        [InlineData("", "", "")]
+        [InlineData("", null, "Test")]
+        [InlineData("Development", "", "")]
+        [InlineData("", "Development, Test", "")]
+        [InlineData(null, "development, TEST", "Test")]
+        [InlineData("Development", "", "Test")]
+        [InlineData("Development", "Test, Development", "")]
+        [InlineData("Test", "DEVELOPMENT", null)]
+        [InlineData("Development", "Test", "")]
+        [InlineData("Development", null, "Test")]
+        [InlineData("Development", "Test", "Test")]
+        [InlineData("Test", "Development", "Test")]
+        public void ShouldShowContent_IncludeExcludeSpecified(string namesAttribute, string includeAttribute, string excludeAttribute)
+        {
+            // Arrange
+            var content = "content";
+            var context = MakeTagHelperContext(
+                attributes: new TagHelperAttributeList {
+                    { "names", namesAttribute },
+                    { "include", includeAttribute },
+                    { "exclude", excludeAttribute },
+                });
+            var output = MakeTagHelperOutput("environment", childContent: content);
+            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            hostingEnvironment.SetupProperty(h => h.EnvironmentName, "Development");
+
+            // Act
+            var helper = new EnvironmentTagHelper(hostingEnvironment.Object)
+            {
+                Names = namesAttribute,
+                Include = includeAttribute,
+                Exclude = excludeAttribute,
+            };
+            helper.Process(context, output);
+
+            // Assert
+            Assert.Null(output.TagName);
+            Assert.False(output.IsContentModified);
+        }
+
+        [Theory]
+        [InlineData(null, "", "Development")]
+        [InlineData("", "Development", "development")]
+        [InlineData("", "Test", "Development, test")]
+        [InlineData("Development", "", "Development")]
+        [InlineData("Test", "", "Development")]
+        [InlineData("Development", "Development", "DEVELOPMENT, TEST")]
+        [InlineData("Development", "Test", "Development")]
+        [InlineData("Test", "Development", "Development")]
+        [InlineData("Test", "Test", "Development")]
+        [InlineData("", "Test", "Test")]
+        [InlineData("Test", null, "Test")]
+        [InlineData("Test", "Test", "Test")]
+        [InlineData("", "Test", null)]
+        [InlineData("Test", "", "")]
+        [InlineData("Test", "Test", null)]
+        public void DoesNotShowContent_IncludeExcludeSpecified(string namesAttribute, string includeAttribute, string excludeAttribute)
+        {
+            // Arrange
+            var content = "content";
+            var context = MakeTagHelperContext(
+                attributes: new TagHelperAttributeList {
+                    { "names", namesAttribute },
+                    { "include", includeAttribute },
+                    { "exclude", excludeAttribute },
+                });
+            var output = MakeTagHelperOutput("environment", childContent: content);
+            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            hostingEnvironment.SetupProperty(h => h.EnvironmentName, "Development");
+
+            // Act
+            var helper = new EnvironmentTagHelper(hostingEnvironment.Object)
+            {
+                Names = namesAttribute,
+                Include = includeAttribute,
+                Exclude = excludeAttribute,
+            };
+            helper.Process(context, output);
+
+            // Assert
+            Assert.Null(output.TagName);
+            Assert.Empty(output.PreContent.GetContent());
+            Assert.True(output.Content.GetContent().Length == 0);
+            Assert.Empty(output.PostContent.GetContent());
+            Assert.True(output.IsContentModified);
+        }
+
+        [Theory]
         [InlineData("NotDevelopment", "Development")]
         [InlineData("NOTDEVELOPMENT", "Development")]
         [InlineData("NotDevelopment,AlsoNotDevelopment", "Development")]
@@ -82,8 +170,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Test
             var context = MakeTagHelperContext(attributes: new TagHelperAttributeList { { "names", namesAttribute } });
             var output = MakeTagHelperOutput("environment", childContent: content);
             var hostingEnvironment = new Mock<IHostingEnvironment>();
-            hostingEnvironment.SetupProperty(h => h.EnvironmentName);
-            hostingEnvironment.Object.EnvironmentName = environmentName;
+            hostingEnvironment.SetupProperty(h => h.EnvironmentName, environmentName);
 
             // Act
             var helper = new EnvironmentTagHelper(hostingEnvironment.Object)
@@ -108,8 +195,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Test
                 attributes: new TagHelperAttributeList { { "names", namesAttribute } });
             var output = MakeTagHelperOutput("environment", childContent: content);
             var hostingEnvironment = new Mock<IHostingEnvironment>();
-            hostingEnvironment.SetupProperty(h => h.EnvironmentName);
-            hostingEnvironment.Object.EnvironmentName = environmentName;
+            hostingEnvironment.SetupProperty(h => h.EnvironmentName, environmentName);
 
             // Act
             var helper = new EnvironmentTagHelper(hostingEnvironment.Object)
