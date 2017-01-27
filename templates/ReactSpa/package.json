@@ -7,8 +7,9 @@
     "@types/react": "^0.14.38",
     "@types/react-dom": "^0.14.17",
     "@types/react-router": "^2.0.38",
-    "aspnet-webpack": "^1.0.17",
-    "aspnet-webpack-react": "^1.0.2",
+    "aspnet-webpack": "^1.0.27",
+    "aspnet-webpack-react": "^1.0.4",
+    "awesome-typescript-loader": "3.0.0-beta.13 || ^3.0.0",
     "babel-core": "^6.17.0",
     "babel-loader": "^6.2.5",
     "babel-preset-es2015": "^6.16.0",
@@ -16,7 +17,7 @@
     "bootstrap": "^3.3.6",
     "css-loader": "^0.25.0",
     "event-source-polyfill": "^0.0.7",
-    "extract-text-webpack-plugin": "^1.0.1",
+    "extract-text-webpack-plugin": "^2.0.0-rc",
     "file-loader": "^0.9.0",
     "isomorphic-fetch": "^2.2.1",
     "jquery": "^2.2.1",
@@ -25,10 +26,9 @@
     "react-dom": "^15.3.2",
     "react-router": "^2.8.1",
     "style-loader": "^0.13.1",
-    "ts-loader": "^0.8.2",
     "typescript": "^2.0.3",
     "url-loader": "^0.5.7",
-    "webpack": "^1.13.2",
+    "webpack": "^2.2.0",
     "webpack-hot-middleware": "^2.12.2"
   }
 }
