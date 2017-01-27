@@ -1,6 +1,6 @@
 {
   "name": "aspnet-webpack-react",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Helpers for using Webpack with React in ASP.NET Core projects. Works in conjunction with the Microsoft.AspNetCore.SpaServices NuGet package.",
   "main": "index.js",
   "scripts": {
@@ -26,7 +26,7 @@
     "react-transform-hmr": "^1.0.4"
   },
   "devDependencies": {
-    "@types/webpack": "^1.12.34",
+    "@types/webpack": "^2.2.0",
     "rimraf": "^2.5.4",
     "typescript": "^2.0.0",
     "webpack": "^1.12.14"
