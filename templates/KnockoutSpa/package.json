@@ -12,13 +12,14 @@
     "@types/requirejs": "^2.1.26",
     "@types/signals": "0.0.16",
     "@types/whatwg-fetch": "0.0.30",
-    "aspnet-webpack": "^1.0.17",
+    "aspnet-webpack": "^1.0.27",
+    "awesome-typescript-loader": "3.0.0-beta.13 || ^3.0.0",
     "bootstrap": "^3.3.6",
     "bundle-loader": "^0.5.4",
     "crossroads": "^0.12.2",
     "css-loader": "^0.25.0",
     "event-source-polyfill": "^0.0.7",
-    "extract-text-webpack-plugin": "^1.0.1",
+    "extract-text-webpack-plugin": "^2.0.0-rc",
     "file-loader": "^0.9.0",
     "history": "^4.3.0",
     "isomorphic-fetch": "^2.2.1",
@@ -27,10 +28,9 @@
     "knockout": "^3.4.0",
     "raw-loader": "^0.5.1",
     "style-loader": "^0.13.1",
-    "ts-loader": "^0.8.2",
     "typescript": "^2.0.3",
     "url-loader": "^0.5.7",
-    "webpack": "^1.13.2",
+    "webpack": "^2.2.0",
     "webpack-hot-middleware": "^2.12.2"
   }
 }
