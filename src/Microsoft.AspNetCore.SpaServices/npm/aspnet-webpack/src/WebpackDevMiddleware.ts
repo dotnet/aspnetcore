@@ -29,6 +29,14 @@ interface DevServerOptions {
     ReactHotModuleReplacement: boolean;
 }
 
+// We support these three kinds of webpack.config.js export. We don't currently support exported promises
+// (though we might be able to add that in the future, if there's a need).
+type WebpackConfigOrArray = webpack.Configuration | webpack.Configuration[];
+interface WebpackConfigFunc {
+    (env?: any): WebpackConfigOrArray;
+}
+type WebpackConfigFileExport = WebpackConfigOrArray | WebpackConfigFunc;
+
 function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configuration, enableHotModuleReplacement: boolean, enableReactHotModuleReplacement: boolean, hmrClientEndpoint: string, hmrServerEndpoint: string) {
     // Build the final Webpack config based on supplied options
     if (enableHotModuleReplacement) {
@@ -165,10 +173,16 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
     const options: CreateDevServerOptions = JSON.parse(optionsJson);
 
     // Read the webpack config's export, and normalize it into the more general 'array of configs' format
-    let webpackConfigArray: webpack.Configuration[] = requireNewCopy(options.webpackConfigPath);
-    if (!(webpackConfigArray instanceof Array)) {
-        webpackConfigArray = [webpackConfigArray as webpack.Configuration];
+    let webpackConfigExport: WebpackConfigFileExport = requireNewCopy(options.webpackConfigPath);
+    if (webpackConfigExport instanceof Function) {
+        // If you export a function, we'll call it with an undefined 'env' arg, since we have nothing else
+        // to pass. This is the same as what the webpack CLI tool does if you specify no '--env.x' values.
+        // In the future, we could add support for configuring the 'env' param in Startup.cs. But right
+        // now, it's not clear that people will want to do that (and they can always make up their own
+        // default env values in their webpack.config.js).
+        webpackConfigExport = webpackConfigExport();
     }
+    const webpackConfigArray = webpackConfigExport instanceof Array ? webpackConfigExport : [webpackConfigExport];
 
     const enableHotModuleReplacement = options.suppliedOptions.HotModuleReplacement;
     const enableReactHotModuleReplacement = options.suppliedOptions.ReactHotModuleReplacement;

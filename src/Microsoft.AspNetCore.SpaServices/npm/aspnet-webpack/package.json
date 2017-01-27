@@ -1,6 +1,6 @@
 {
   "name": "aspnet-webpack",
-  "version": "1.0.26",
+  "version": "1.0.27",
   "description": "Helpers for using Webpack in ASP.NET Core projects. Works in conjunction with the Microsoft.AspNetCore.SpaServices NuGet package.",
   "main": "index.js",
   "scripts": {
@@ -27,7 +27,7 @@
   "devDependencies": {
     "@types/connect": "^3.4.30",
     "@types/node": "^6.0.42",
-    "@types/webpack": "^1.12.34",
+    "@types/webpack": "^2.2.0",
     "rimraf": "^2.5.4",
     "typescript": "^2.0.0",
     "webpack": "^1.13.2"

@@ -5,7 +5,8 @@
     "target": "es5",
     "declaration": true,
     "outDir": ".",
-    "lib": ["es2015"]
+    "lib": ["es2015"],
+    "types": ["node"]
   },
   "files": [
     "src/index.ts"
