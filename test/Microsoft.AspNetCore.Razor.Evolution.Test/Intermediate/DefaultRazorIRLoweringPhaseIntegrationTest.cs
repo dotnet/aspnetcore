@@ -195,6 +195,49 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
         }
 
         [Fact]
+        public void Lower_TagHelpers_WithPrefix()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.Create(@"@addTagHelper *, TestAssembly
+@tagHelperPrefix cool:
+<cool:span val=""@Hello World""></cool:span>");
+            var tagHelpers = new[]
+            {
+                new TagHelperDescriptor
+                {
+                    TagName = "span",
+                    TypeName = "SpanTagHelper",
+                    AssemblyName = "TestAssembly",
+                }
+            };
+
+            // Act
+            var irDocument = Lower(codeDocument, tagHelpers: tagHelpers);
+
+            // Assert
+            Children(irDocument,
+                n => Checksum(n),
+                n => Using("System", n),
+                n => Using(typeof(Task).Namespace, n),
+                n => TagHelperFieldDeclaration(n, "SpanTagHelper"),
+                n =>
+                {
+                    var tagHelperNode = Assert.IsType<TagHelperIRNode>(n);
+                    Children(
+                        tagHelperNode,
+                        c => TagHelperStructure("span", TagMode.StartTagAndEndTag, c), // Note: this is span not cool:span
+                        c => Assert.IsType<CreateTagHelperIRNode>(c),
+                        c => TagHelperHtmlAttribute(
+                            "val",
+                            HtmlAttributeValueStyle.DoubleQuotes,
+                            c,
+                            v => CSharpAttributeValue(string.Empty, "Hello", v),
+                            v => LiteralAttributeValue(" ", "World", v)),
+                        c => Assert.IsType<ExecuteTagHelpersIRNode>(c));
+                });
+        }
+
+        [Fact]
         public void Lower_TagHelper_InSection()
         {
             // Arrange

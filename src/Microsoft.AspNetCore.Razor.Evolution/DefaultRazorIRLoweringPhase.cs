@@ -390,9 +390,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     Source = BuildSourceSpanFromNode(block)
                 });
 
+                var tagName = tagHelperBlock.TagName;
+                if (tagHelperBlock.Descriptors.First().Prefix != null)
+                {
+                    tagName = tagName.Substring(tagHelperBlock.Descriptors.First().Prefix.Length);
+                }
+
                 _builder.Push(new InitializeTagHelperStructureIRNode()
                 {
-                    TagName = tagHelperBlock.TagName,
+                    TagName = tagName,
                     TagMode = tagHelperBlock.TagMode
                 });
             }
