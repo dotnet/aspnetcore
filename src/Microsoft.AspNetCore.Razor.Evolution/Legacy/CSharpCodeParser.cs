@@ -31,6 +31,24 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 .AddType()
                 .Build();
 
+        internal static readonly DirectiveDescriptor AddTagHelperDirectiveDescriptor =
+            DirectiveDescriptorBuilder
+                .Create(SyntaxConstants.CSharp.AddTagHelperKeyword)
+                .AddString()
+                .Build();
+
+        internal static readonly DirectiveDescriptor RemoveTagHelperDirectiveDescriptor =
+            DirectiveDescriptorBuilder
+                .Create(SyntaxConstants.CSharp.RemoveTagHelperKeyword)
+                .AddString()
+                .Build();
+
+        internal static readonly DirectiveDescriptor TagHelperPrefixDirectiveDescriptor =
+            DirectiveDescriptorBuilder
+                .Create(SyntaxConstants.CSharp.TagHelperPrefixKeyword)
+                .AddString()
+                .Build();
+
         internal static readonly IEnumerable<DirectiveDescriptor> DefaultDirectiveDescriptors = new[]
         {
             SectionDirectiveDescriptor,
@@ -1792,19 +1810,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         startLocation,
                         LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(keyword),
                         rawValue.Length);
-                }
-                else if (startsWithQuote)
-                {
-                    if (rawValue.Length > 2)
-                    {
-                        // Remove extra quotes
-                        rawValue = rawValue.Substring(1, rawValue.Length - 2);
-                    }
-                    else
-                    {
-                        // raw value is only quotes
-                        rawValue = string.Empty;
-                    }
                 }
 
                 chunkGenerator = chunkGeneratorFactory(rawValue);

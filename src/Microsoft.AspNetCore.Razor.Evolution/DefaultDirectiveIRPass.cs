@@ -94,6 +94,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                     node.Parent.Children.Insert(sectionIndex, defineSectionStartStatement);
                 }
+                else if (string.Equals(node.Name, CSharpCodeParser.AddTagHelperDirectiveDescriptor.Name, StringComparison.Ordinal))
+                {
+                    node.Parent.Children.Remove(node);
+                }
+                else if (string.Equals(node.Name, CSharpCodeParser.RemoveTagHelperDirectiveDescriptor.Name, StringComparison.Ordinal))
+                {
+                    node.Parent.Children.Remove(node);
+                }
+                else if (string.Equals(node.Name, CSharpCodeParser.TagHelperPrefixDirectiveDescriptor.Name, StringComparison.Ordinal))
+                {
+                    node.Parent.Children.Remove(node);
+                }
             }
         }
     }

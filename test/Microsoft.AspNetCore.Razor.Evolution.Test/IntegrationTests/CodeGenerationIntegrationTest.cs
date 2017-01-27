@@ -561,9 +561,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         }
 
         [Fact]
+        public void TagHelpersWithPrefix_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
+        }
+
+        [Fact]
         public void NestedTagHelpers_Runtime()
         {
-
             // Arrange, Act & Assert
             RunRuntimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
         }
@@ -608,6 +614,20 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         {
             // Arrange, Act & Assert
             RunRuntimeTagHelpersTest(TestTagHelperDescriptors.PrefixedPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void BasicTagHelpers_RemoveTagHelper_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void CssSelectorTagHelperAttributes_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.CssSelectorTagHelperDescriptors);
         }
 
         [Fact]
@@ -674,6 +694,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         }
 
         [Fact]
+        public void MinimizedTagHelpers_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.MinimizedTagHelpers_Descriptors);
+        }
+
+        [Fact]
         public void NestedScriptTagTagHelpers_Runtime()
         {
             // Arrange, Act & Assert
@@ -692,6 +719,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         {
             // Arrange, Act & Assert
             RunRuntimeTagHelpersTest(TestTagHelperDescriptors.EnumTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void TagHelpersInSection_Runtime()
+        {
+            // Arrange, Act & Assert
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.TagHelpersInSectionDescriptors);
         }
         #endregion
 
@@ -1243,6 +1277,34 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         }
 
         [Fact]
+        public void AddTagHelperDirective_DesignTime()
+        {
+            // Arrange
+            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertDesignTimeDocumentMatchBaseline(document);
+        }
+
+        [Fact]
+        public void RemoveTagHelperDirective_DesignTime()
+        {
+            // Arrange
+            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertDesignTimeDocumentMatchBaseline(document);
+        }
+
+        [Fact]
         public void SimpleTagHelpers_DesignTime()
         {
             // Arrange, Act & Assert
@@ -1257,9 +1319,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         }
 
         [Fact]
+        public void TagHelpersWithPrefix_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
+        }
+
+        [Fact]
         public void NestedTagHelpers_DesignTime()
         {
-
             // Arrange, Act & Assert
             RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
         }
@@ -1367,6 +1435,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         {
             // Arrange, Act & Assert
             RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
+        }
+
+        [Fact]
+        public void MinimizedTagHelpers_DesignTime()
+        {
+            // Arrange, Act & Assert
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.MinimizedTagHelpers_Descriptors);
         }
 
         [Fact]

@@ -7,6 +7,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
+        ((System.Action)(() => {
+System.Object __typeHelper = "*, TestAssembly";
+        }
+        ))();
         }
         #pragma warning restore 219
         private static System.Object __o = null;

@@ -3,7 +3,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     #line hidden
     using System;
     using System.Threading.Tasks;
-    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_SingleTagHelperWithNewlineBeforeAttributes_DesignTime
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_TagHelpersWithPrefix_DesignTime
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -11,19 +11,24 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 System.Object __typeHelper = "*, TestAssembly";
         }
         ))();
+        ((System.Action)(() => {
+System.Object __typeHelper = "cool:";
+        }
+        ))();
         }
         #pragma warning restore 219
         private static System.Object __o = null;
-        private global::TestNamespace.PTagHelper __TestNamespace_PTagHelper = null;
+        private global::InputTagHelper __InputTagHelper = null;
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
-            __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
-#line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SingleTagHelperWithNewlineBeforeAttributes.cshtml"
-__TestNamespace_PTagHelper.Age = 1337;
+            __InputTagHelper = CreateTagHelper<global::InputTagHelper>();
+#line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithPrefix.cshtml"
+                    __o = Hello;
 
 #line default
 #line hidden
+            __InputTagHelper.BoundProp = string.Empty;
         }
         #pragma warning restore 1998
     }

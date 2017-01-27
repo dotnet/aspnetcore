@@ -342,6 +342,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 TagHelperDirectiveType directiveType)
             {
                 directiveText = directiveText.Trim();
+                if (directiveText.StartsWith("\"", StringComparison.Ordinal) &&
+                    directiveText.EndsWith("\"", StringComparison.Ordinal))
+                {
+                    directiveText = directiveText.Substring(1, directiveText.Length - 2);
+                }
 
                 // If this is the "string literal" form of a directive, we'll need to postprocess the location
                 // and content.

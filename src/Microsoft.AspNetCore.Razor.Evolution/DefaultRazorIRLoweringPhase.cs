@@ -118,14 +118,59 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             public override void VisitAddTagHelperSpan(AddTagHelperChunkGenerator chunkGenerator, Span span)
             {
+                _builder.Push(new DirectiveIRNode()
+                {
+                    Name = CSharpCodeParser.AddTagHelperDirectiveDescriptor.Name,
+                    Descriptor = CSharpCodeParser.AddTagHelperDirectiveDescriptor,
+                    Source = BuildSourceSpanFromNode(span),
+                });
+
+                _builder.Add(new DirectiveTokenIRNode()
+                {
+                    Content = chunkGenerator.LookupText,
+                    Descriptor = CSharpCodeParser.AddTagHelperDirectiveDescriptor.Tokens.First(),
+                    Source = BuildSourceSpanFromNode(span),
+                });
+
+                _builder.Pop();
             }
 
             public override void VisitRemoveTagHelperSpan(RemoveTagHelperChunkGenerator chunkGenerator, Span span)
             {
+                _builder.Push(new DirectiveIRNode()
+                {
+                    Name = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor.Name,
+                    Descriptor = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor,
+                    Source = BuildSourceSpanFromNode(span),
+                });
+
+                _builder.Add(new DirectiveTokenIRNode()
+                {
+                    Content = chunkGenerator.LookupText,
+                    Descriptor = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor.Tokens.First(),
+                    Source = BuildSourceSpanFromNode(span),
+                });
+
+                _builder.Pop();
             }
 
             public override void VisitTagHelperPrefixDirectiveSpan(TagHelperPrefixDirectiveChunkGenerator chunkGenerator, Span span)
             {
+                _builder.Push(new DirectiveIRNode()
+                {
+                    Name = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor.Name,
+                    Descriptor = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor,
+                    Source = BuildSourceSpanFromNode(span),
+                });
+
+                _builder.Add(new DirectiveTokenIRNode()
+                {
+                    Content = chunkGenerator.Prefix,
+                    Descriptor = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor.Tokens.First(),
+                    Source = BuildSourceSpanFromNode(span),
+                });
+
+                _builder.Pop();
             }
 
             protected SourceSpan BuildSourceSpanFromNode(SyntaxTreeNode node)

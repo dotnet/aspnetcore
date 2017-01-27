@@ -1,10 +1,15 @@
+Source Location: (14:0,14 [17] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicTagHelpers.cshtml)
+|"*, TestAssembly"|
+Generated Location: (416:10,29 [17] )
+|"*, TestAssembly"|
+
 Source Location: (220:5,38 [23] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicTagHelpers.cshtml)
 |ViewBag.DefaultInterval|
-Generated Location: (1273:22,41 [23] )
+Generated Location: (1382:26,41 [23] )
 |ViewBag.DefaultInterval|
 
 Source Location: (303:6,40 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicTagHelpers.cshtml)
 |true|
-Generated Location: (1971:33,42 [4] )
+Generated Location: (2080:37,42 [4] )
 |true|
 

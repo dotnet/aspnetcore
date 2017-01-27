@@ -566,6 +566,33 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             }
         }
 
+        internal static IEnumerable<TagHelperDescriptor> TagHelpersInSectionDescriptors
+        {
+            get
+            {
+                var propertyInfo = typeof(TestType).GetProperty("BoundProperty");
+                return new[]
+                {
+                    new TagHelperDescriptor
+                    {
+                        TagName = "MyTagHelper",
+                        TypeName = "TestNamespace.MyTagHelper",
+                        AssemblyName = "TestAssembly",
+                        Attributes = new []
+                        {
+                            new TagHelperAttributeDescriptor("BoundProperty", propertyInfo)
+                        }
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "NestedTagHelper",
+                        TypeName = "TestNamespace.NestedTagHelper",
+                        AssemblyName = "TestAssembly"
+                    }
+                };
+            }
+        }
+
         private static IEnumerable<TagHelperDescriptor> BuildPAndInputTagHelperDescriptors(string prefix)
         {
             var pAgePropertyInfo = typeof(TestType).GetProperty("Age");

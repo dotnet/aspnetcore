@@ -20,11 +20,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             visitor.VisitRemoveTagHelperSpan(this, span);
         }
 
-        public override void GenerateChunk(Span target, ChunkGeneratorContext context)
-        {
-            //context.ChunkTreeBuilder.AddRemoveTagHelperChunk(LookupText, target);
-        }
-
         /// <inheritdoc />
         public override bool Equals(object obj)
         {

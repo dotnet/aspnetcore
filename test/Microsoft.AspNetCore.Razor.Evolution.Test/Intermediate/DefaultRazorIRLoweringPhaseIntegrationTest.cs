@@ -176,6 +176,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 n => Checksum(n),
                 n => Using("System", n),
                 n => Using(typeof(Task).Namespace, n),
+                n => Directive(
+                    SyntaxConstants.CSharp.AddTagHelperKeyword,
+                    n,
+                    v => DirectiveToken(DirectiveTokenKind.String, "*, TestAssembly", v)),
                 n => TagHelperFieldDeclaration(n, "SpanTagHelper"),
                 n =>
                 {
@@ -219,6 +223,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 n => Checksum(n),
                 n => Using("System", n),
                 n => Using(typeof(Task).Namespace, n),
+                n => Directive(
+                    SyntaxConstants.CSharp.AddTagHelperKeyword,
+                    n,
+                    v => DirectiveToken(DirectiveTokenKind.String, "*, TestAssembly", v)),
+                n => Directive(
+                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                    n,
+                    v => DirectiveToken(DirectiveTokenKind.String, "cool:", v)),
                 n => TagHelperFieldDeclaration(n, "SpanTagHelper"),
                 n =>
                 {
@@ -264,6 +276,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 n => Checksum(n),
                 n => Using("System", n),
                 n => Using(typeof(Task).Namespace, n),
+                n => Directive(
+                    SyntaxConstants.CSharp.AddTagHelperKeyword,
+                    n,
+                    v => DirectiveToken(DirectiveTokenKind.String, "*, TestAssembly", v)),
                 n => Directive(
                     "section",
                     n,
@@ -319,6 +335,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 n => Checksum(n),
                 n => Using("System", n),
                 n => Using(typeof(Task).Namespace, n),
+                n => Directive(
+                    SyntaxConstants.CSharp.AddTagHelperKeyword,
+                    n,
+                    v => DirectiveToken(DirectiveTokenKind.String, "*, TestAssembly", v)),
                 n => TagHelperFieldDeclaration(n, "InputTagHelper"),
                 n =>
                 {

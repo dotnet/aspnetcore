@@ -384,7 +384,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharacters.None),
                     Factory.Code("\"\"")
-                        .AsTagHelperPrefixDirective(string.Empty)));
+                        .AsTagHelperPrefixDirective("\"\"")));
         }
 
         [Fact]
@@ -410,7 +410,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharacters.None),
                     Factory.Code("\"Foo\"")
-                        .AsTagHelperPrefixDirective("Foo")));
+                        .AsTagHelperPrefixDirective("\"Foo\"")));
         }
 
         [Fact]
@@ -480,7 +480,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
                     Factory.Code("\"\"")
-                        .AsRemoveTagHelper(string.Empty)));
+                        .AsRemoveTagHelper("\"\"")));
         }
 
         [Fact]
@@ -504,7 +504,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
                     Factory.Code("\"Foo\"")
-                        .AsRemoveTagHelper("Foo")));
+                        .AsRemoveTagHelper("\"Foo\"")));
         }
 
         [Fact]
@@ -585,7 +585,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
                     Factory.Code("\"\"")
-                        .AsAddTagHelper(string.Empty)));
+                        .AsAddTagHelper("\"\"")));
         }
 
         [Fact]
@@ -609,7 +609,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
                     Factory.Code("\"Foo\"")
-                        .AsAddTagHelper("Foo")));
+                        .AsAddTagHelper("\"Foo\"")));
         }
 
         [Fact]
