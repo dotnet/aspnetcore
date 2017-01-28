@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 { 
-    internal class CodeWriter : IDisposable
+    public class CodeWriter : IDisposable
     {
         private static readonly char[] NewLineCharacters = { '\r', '\n' };
 

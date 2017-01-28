@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal struct CSharpDisableWarningScope : IDisposable
+    public struct CSharpDisableWarningScope : IDisposable
     {
         private CSharpCodeWriter _writer;
         int _warningNumber;

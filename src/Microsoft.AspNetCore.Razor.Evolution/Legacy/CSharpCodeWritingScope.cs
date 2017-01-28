@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal struct CSharpCodeWritingScope : IDisposable
+    public struct CSharpCodeWritingScope : IDisposable
     {
         private CodeWriter _writer;
         private bool _autoSpace;

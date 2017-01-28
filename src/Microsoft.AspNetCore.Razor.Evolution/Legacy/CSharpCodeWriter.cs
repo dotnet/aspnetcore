@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
-    internal class CSharpCodeWriter : CodeWriter
+    public class CSharpCodeWriter : CodeWriter
     {
         private const string InstanceMethodFormat = "{0}.{1}";
 

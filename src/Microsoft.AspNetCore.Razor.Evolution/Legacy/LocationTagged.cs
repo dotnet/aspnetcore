@@ -9,7 +9,7 @@ using Microsoft.Extensions.Internal;
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
     [DebuggerDisplay("({Location})\"{Value}\"")]
-    internal class LocationTagged<TValue> : IFormattable
+    public class LocationTagged<TValue> : IFormattable
     {
         public LocationTagged(TValue value, int absoluteIndex, int lineIndex, int characterIndex)
             : this (value, new SourceLocation(absoluteIndex, lineIndex, characterIndex))
