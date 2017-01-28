@@ -28,8 +28,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         private static void AddInstrumentation(InstrumentationItem item)
         {
-            var beginContextMethodName = "Instrumentation.BeginContext"; /* ORIGINAL: BeginContextMethodName */
-            var endContextMethodName = "Instrumentation.EndContext"; /* ORIGINAL: EndContextMethodName */
+            var beginContextMethodName = "BeginContext"; /* ORIGINAL: BeginContextMethodName */
+            var endContextMethodName = "EndContext"; /* ORIGINAL: EndContextMethodName */
 
             var beginNode = new CSharpStatementIRNode()
             {

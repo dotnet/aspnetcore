@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             try
             {
                 var beginNode = Assert.IsType<CSharpStatementIRNode>(node);
-                Assert.Equal($"Instrumentation.BeginContext({expected});", beginNode.Content);
+                Assert.Equal($"BeginContext({expected});", beginNode.Content);
             }
             catch (XunitException e)
             {
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             try
             {
                 var endNode = Assert.IsType<CSharpStatementIRNode>(node);
-                Assert.Equal("Instrumentation.EndContext();", endNode.Content);
+                Assert.Equal("EndContext();", endNode.Content);
             }
             catch (XunitException e)
             {

@@ -32,23 +32,23 @@ namespace
         #pragma warning disable 1998
            ()
         {
-            Instrumentation.BeginContext(31, 28, true);
+            BeginContext(31, 28, true);
             WriteLiteral("<span someattr>Hola</span>\r\n");
-            Instrumentation.EndContext();
-            Instrumentation.BeginContext(61, 7, false);
+            EndContext();
+            BeginContext(61, 7, false);
 #line 3 "TestFiles/IntegrationTests/InstrumentationPassIntegrationTest/BasicTest.cshtml"
 Write("Hello");
 
 #line default
 #line hidden
-            Instrumentation.EndContext();
-            Instrumentation.BeginContext(69, 2, true);
+            EndContext();
+            BeginContext(69, 2, true);
             WriteLiteral("\r\n");
-            Instrumentation.EndContext();
+            EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("form", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
-                Instrumentation.BeginContext(91, 6, true);
+                BeginContext(91, 6, true);
                 WriteLiteral("\r\n    ");
-                Instrumentation.EndContext();
+                EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
                 }
                 );
@@ -57,7 +57,7 @@ Write("Hello");
                 __InputTagHelper.FooProp = (string)__tagHelperAttribute_0.Value;
                 __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
                 __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_1);
-                Instrumentation.BeginContext(97, 33, false);
+                BeginContext(97, 33, false);
                 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 if (!__tagHelperExecutionContext.Output.IsContentModified)
                 {
@@ -65,16 +65,16 @@ Write("Hello");
                 }
                 Write(__tagHelperExecutionContext.Output);
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
-                Instrumentation.EndContext();
-                Instrumentation.BeginContext(130, 2, true);
+                EndContext();
+                BeginContext(130, 2, true);
                 WriteLiteral("\r\n");
-                Instrumentation.EndContext();
+                EndContext();
             }
             );
             __FormTagHelper = CreateTagHelper<global::FormTagHelper>();
             __tagHelperExecutionContext.Add(__FormTagHelper);
             __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_2);
-            Instrumentation.BeginContext(71, 68, false);
+            BeginContext(71, 68, false);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
@@ -82,7 +82,7 @@ Write("Hello");
             }
             Write(__tagHelperExecutionContext.Output);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.EndContext();
+            EndContext();
         }
         #pragma warning restore 1998
     }
