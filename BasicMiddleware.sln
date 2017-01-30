@@ -1,45 +1,36 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26127.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.HttpOverrides", "src\Microsoft.AspNetCore.HttpOverrides\Microsoft.AspNetCore.HttpOverrides.xproj", "{517308C3-B477-4B01-B461-CAB9C10B6928}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpOverrides", "src\Microsoft.AspNetCore.HttpOverrides\Microsoft.AspNetCore.HttpOverrides.csproj", "{517308C3-B477-4B01-B461-CAB9C10B6928}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A5076D28-FA7E-4606-9410-FEDD0D603527}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{8437B0F3-3894-4828-A945-A9187F37631D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.HttpOverrides.Tests", "test\Microsoft.AspNetCore.HttpOverrides.Tests\Microsoft.AspNetCore.HttpOverrides.Tests.xproj", "{D6341B92-3416-4F11-8DF4-CB274296175F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpOverrides.Tests", "test\Microsoft.AspNetCore.HttpOverrides.Tests\Microsoft.AspNetCore.HttpOverrides.Tests.csproj", "{D6341B92-3416-4F11-8DF4-CB274296175F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{99B72A07-32D6-434D-B44D-D064E3C13E08}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-		NuGetPackageVerifier.json = NuGetPackageVerifier.json
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Buffering", "src\Microsoft.AspNetCore.Buffering\Microsoft.AspNetCore.Buffering.csproj", "{2363D0DD-A3BF-437E-9B64-B33AE132D875}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Buffering", "src\Microsoft.AspNetCore.Buffering\Microsoft.AspNetCore.Buffering.xproj", "{2363D0DD-A3BF-437E-9B64-B33AE132D875}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Buffering.Tests", "test\Microsoft.AspNetCore.Buffering.Tests\Microsoft.AspNetCore.Buffering.Tests.xproj", "{F5F1D123-9C81-4A9E-8644-AA46B8E578FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Buffering.Tests", "test\Microsoft.AspNetCore.Buffering.Tests\Microsoft.AspNetCore.Buffering.Tests.csproj", "{F5F1D123-9C81-4A9E-8644-AA46B8E578FB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{9587FE9F-5A17-42C4-8021-E87F59CECB98}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ResponseBufferingSample", "samples\ResponseBufferingSample\ResponseBufferingSample.xproj", "{E5C55B80-7827-40EB-B661-32B0E0E431CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ResponseBufferingSample", "samples\ResponseBufferingSample\ResponseBufferingSample.csproj", "{E5C55B80-7827-40EB-B661-32B0E0E431CA}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "HttpOverridesSample", "samples\HttpOverridesSample\HttpOverridesSample.xproj", "{7F95478D-E1D4-4A64-BA42-B041591A96EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpOverridesSample", "samples\HttpOverridesSample\HttpOverridesSample.csproj", "{7F95478D-E1D4-4A64-BA42-B041591A96EB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Rewrite", "src\Microsoft.AspNetCore.Rewrite\Microsoft.AspNetCore.Rewrite.xproj", "{0E7CA1A7-1DC3-4CE6-B9C7-1688FE1410F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Rewrite", "src\Microsoft.AspNetCore.Rewrite\Microsoft.AspNetCore.Rewrite.csproj", "{0E7CA1A7-1DC3-4CE6-B9C7-1688FE1410F1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RewriteSample", "samples\RewriteSample\RewriteSample.xproj", "{9E049645-13BC-4598-89E1-5B43D36E5D14}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RewriteSample", "samples\RewriteSample\RewriteSample.csproj", "{9E049645-13BC-4598-89E1-5B43D36E5D14}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Rewrite.Tests", "test\Microsoft.AspNetCore.Rewrite.Tests\Microsoft.AspNetCore.Rewrite.Tests.xproj", "{31794F9E-A1AA-4535-B03C-A3233737CD1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Rewrite.Tests", "test\Microsoft.AspNetCore.Rewrite.Tests\Microsoft.AspNetCore.Rewrite.Tests.csproj", "{31794F9E-A1AA-4535-B03C-A3233737CD1A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.ResponseCompression", "src\Microsoft.AspNetCore.ResponseCompression\Microsoft.AspNetCore.ResponseCompression.xproj", "{45308A9D-F4C6-46A8-A24F-E73D995CC223}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ResponseCompression", "src\Microsoft.AspNetCore.ResponseCompression\Microsoft.AspNetCore.ResponseCompression.csproj", "{45308A9D-F4C6-46A8-A24F-E73D995CC223}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.ResponseCompression.Tests", "test\Microsoft.AspNetCore.ResponseCompression.Tests\Microsoft.AspNetCore.ResponseCompression.Tests.xproj", "{3360A5D1-70C0-49EE-9051-04A6A6B836DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ResponseCompression.Tests", "test\Microsoft.AspNetCore.ResponseCompression.Tests\Microsoft.AspNetCore.ResponseCompression.Tests.csproj", "{3360A5D1-70C0-49EE-9051-04A6A6B836DC}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ResponseCompressionSample", "samples\ResponseCompressionSample\ResponseCompressionSample.xproj", "{B2A3CE38-51B2-4486-982C-98C380AF140E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ResponseCompressionSample", "samples\ResponseCompressionSample\ResponseCompressionSample.csproj", "{B2A3CE38-51B2-4486-982C-98C380AF140E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
