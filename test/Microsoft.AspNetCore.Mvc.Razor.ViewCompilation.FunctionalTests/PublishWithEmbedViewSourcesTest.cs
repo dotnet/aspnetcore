@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
 
         public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
 
-        [Theory]
+        [Theory(Skip = "MVC #5736")]
         [MemberData(nameof(SupportedFlavorsTheoryData))]
         public async Task Precompilation_CanEmbedViewSourcesAsResources(RuntimeFlavor flavor)
         {

@@ -59,10 +59,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             var success = true;
             foreach (var result in results)
             {
-                if (!result.GeneratorResults.Success)
+                if (result.CSharpDocument.Diagnostics.Count > 0)
                 {
                     success = false;
-                    foreach (var error in result.GeneratorResults.ParserErrors)
+                    foreach (var error in result.CSharpDocument.Diagnostics)
                     {
                         Application.Error.WriteLine($"{error.Location.FilePath} ({error.Location.LineIndex}): {error.Message}");
                     }
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             Parallel.For(0, results.Length, ParalellOptions, i =>
             {
                 var result = results[i];
-                var sourceText = SourceText.From(result.GeneratorResults.GeneratedCode, Encoding.UTF8);
+                var sourceText = SourceText.From(result.CSharpDocument.GeneratedCode, Encoding.UTF8);
                 var fileInfo = result.ViewFileInfo;
                 var syntaxTree = compiler.CreateSyntaxTree(sourceText)
                     .WithFilePath(fileInfo.FullPath ?? fileInfo.ViewEnginePath);
@@ -237,7 +237,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
                 var fileInfo = files[i];
                 using (var fileStream = fileInfo.CreateReadStream())
                 {
-                    var result = MvcServiceProvider.Host.GenerateCode(fileInfo.ViewEnginePath, fileStream);
+                    var codeDocument = MvcServiceProvider.CompilationService.CreateCodeDocument(fileInfo.ViewEnginePath, fileStream);
+                    var result = MvcServiceProvider.CompilationService.ProcessCodeDocument(codeDocument);
                     results[i] = new ViewCompilationInfo(fileInfo, result);
                 }
             });

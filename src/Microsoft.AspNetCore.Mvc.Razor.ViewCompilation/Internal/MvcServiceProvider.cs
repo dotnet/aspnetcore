@@ -9,10 +9,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 {
@@ -35,12 +37,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             var mvcBuilderConfiguration = GetConfigureCompilationAction(configureCompilationType);
             var serviceProvider = GetProvider(mvcBuilderConfiguration);
 
-            Host = serviceProvider.GetRequiredService<IMvcRazorHost>();
+            CompilationService = (RazorCompilationService)serviceProvider.GetRequiredService<IRazorCompilationService>();
+            Engine = serviceProvider.GetRequiredService<RazorEngine>();
             Compiler = serviceProvider.GetRequiredService<CSharpCompiler>();
             ViewEngineOptions = serviceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>().Value;
         }
 
-        public IMvcRazorHost Host { get; }
+
+        public RazorCompilationService CompilationService { get; }
+
+        public RazorEngine Engine { get; }
 
         public CSharpCompiler Compiler { get; }
 

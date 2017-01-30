@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "MVC #5736")]
         [OSSkipCondition(OperatingSystems.Linux,
             SkipReason = "https://github.com/NuGet/Home/issues/4243, https://github.com/NuGet/Home/issues/4240")]
         [OSSkipCondition(OperatingSystems.MacOSX,

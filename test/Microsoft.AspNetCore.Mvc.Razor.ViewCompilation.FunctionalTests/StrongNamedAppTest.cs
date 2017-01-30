@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
 
-        [Theory]
+        [Theory(Skip = "MVC #5736")]
         [MemberData(nameof(SupportedFlavorsTheoryData))]
         public async Task PrecompiledAssembliesUseSameStrongNameAsApplication(RuntimeFlavor flavor)
         {
