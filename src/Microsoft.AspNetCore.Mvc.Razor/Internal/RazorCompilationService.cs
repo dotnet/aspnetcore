@@ -71,6 +71,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             _globalImports = RazorSourceDocument.ReadFrom(stream, filename: null, encoding: Encoding.UTF8);
         }
 
+
+
         /// <inheritdoc />
         public CompilationResult Compile(RelativeFileInfo file)
         {
@@ -101,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             return _compilationService.Compile(codeDocument, cSharpDocument);
         }
 
-        protected virtual RazorCodeDocument CreateCodeDocument(string relativePath, Stream inputStream)
+        public virtual RazorCodeDocument CreateCodeDocument(string relativePath, Stream inputStream)
         {
             var absolutePath = _fileProvider.GetFileInfo(relativePath)?.PhysicalPath ?? relativePath;
 
@@ -128,7 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             return RazorCodeDocument.Create(source, imports);
         }
 
-        protected virtual RazorCSharpDocument ProcessCodeDocument(RazorCodeDocument codeDocument)
+        public virtual RazorCSharpDocument ProcessCodeDocument(RazorCodeDocument codeDocument)
         {
             _engine.Process(codeDocument);
 

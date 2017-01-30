@@ -22,7 +22,7 @@ namespace RazorPageExecutionInstrumentationWebSite
         {
         }
 
-        protected override RazorCodeDocument CreateCodeDocument(string relativePath, Stream inputStream)
+        public override RazorCodeDocument CreateCodeDocument(string relativePath, Stream inputStream)
         {
             // Normalize line endings to '\r\n' (CRLF). This removes core.autocrlf, core.eol, core.safecrlf, and
             // .gitattributes from the equation and treats "\r\n" and "\n" as equivalent. Does not handle
