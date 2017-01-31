@@ -35,12 +35,21 @@ const testSpecificNpmPackages = [
 type YeomanPrompt = (opt: yeoman.IPromptOptions | yeoman.IPromptOptions[], callback: (answers: any) => void) => void;
 const optionOrPrompt: YeomanPrompt = require('yeoman-option-or-prompt');
 
-const templates = [
-    { value: 'angular-2', name: 'Angular 2', tests: true },
-    { value: 'aurelia', name: 'Aurelia', tests: false },
-    { value: 'knockout', name: 'Knockout', tests: false },
-    { value: 'react', name: 'React', tests: false },
-    { value: 'react-redux', name: 'React with Redux', tests: false }
+interface TemplateConfig {
+    value: string;      // Internal unique ID for Yeoman prompt
+    rootDir: string;    // Which of the template root directories should be used
+    name: string;       // Display name
+    tests: boolean;
+    mapFilenames?: { [pattern: string]: string | boolean };
+}
+
+const templates: TemplateConfig[] = [
+    { value: 'angular-2', rootDir: 'angular-2', name: 'Angular 2.0.2', tests: true, mapFilenames: { '^package\\-[\\d\\.]+.json$': false } },
+    { value: 'angular-245', rootDir: 'angular-2', name: 'Angular 2.4.5 (experimental)', tests: true, mapFilenames: { '^package.json$': false, '^package\\-2\\.4\\.5.json$': 'package.json' } },
+    { value: 'aurelia', rootDir: 'aurelia', name: 'Aurelia', tests: false },
+    { value: 'knockout', rootDir: 'knockout', name: 'Knockout', tests: false },
+    { value: 'react', rootDir: 'react', name: 'React', tests: false },
+    { value: 'react-redux', rootDir: 'react-redux', name: 'React with Redux', tests: false }
 ];
 
 // Once everyone is on .csproj-compatible tooling, we might be able to remove the global.json files and eliminate
@@ -88,7 +97,7 @@ class MyGenerator extends yeoman.Base {
             message: 'What type of project do you want to create?',
             choices: sdkChoices
         }], firstAnswers => {
-            const frameworkChoice = templates.filter(t => t.value === firstAnswers.framework)[0];
+            const templateConfig = templates.filter(t => t.value === firstAnswers.framework)[0];
             const furtherQuestions = [{
                 type: 'input',
                 name: 'name',
@@ -96,7 +105,7 @@ class MyGenerator extends yeoman.Base {
                 default: this.appname
             }];
 
-            if (frameworkChoice.tests) {
+            if (templateConfig.tests) {
                 furtherQuestions.unshift({
                     type: 'confirm',
                     name: 'tests',
@@ -109,6 +118,7 @@ class MyGenerator extends yeoman.Base {
                 answers.framework = firstAnswers.framework;
                 this._answers = answers;
                 this._answers.framework = firstAnswers.framework;
+                this._answers.templateConfig = templateConfig;
                 this._answers.sdkVersion = firstAnswers.sdkVersion;
                 this._answers.namePascalCase = toPascalCase(answers.name);
                 this._answers.projectGuid = this.options['projectguid'] || uuid.v4();
@@ -122,7 +132,8 @@ class MyGenerator extends yeoman.Base {
     }
 
     writing() {
-        const templateRoot = this.templatePath(this._answers.framework);
+        const templateConfig = this._answers.templateConfig as TemplateConfig;
+        const templateRoot = this.templatePath(templateConfig.rootDir);
         const chosenSdk = sdkChoices.filter(sdk => sdk.value === this._answers.sdkVersion)[0];
         glob.sync('**/*', { cwd: templateRoot, dot: true, nodir: true }).forEach(fn => {
             // Token replacement in filenames
@@ -133,12 +144,22 @@ class MyGenerator extends yeoman.Base {
                 outputFn = path.join(path.dirname(fn), '.gitignore');
             }
 
+            // Perform any filename replacements configured for the template
+            const mappedFilename = applyFirstMatchingReplacement(outputFn, templateConfig.mapFilenames);
+            let fileIsExcludedByTemplateConfig = false;
+            if (typeof mappedFilename === 'string') {
+                outputFn = mappedFilename;
+            } else {
+                fileIsExcludedByTemplateConfig = true;
+            }
+
             // Decide whether to emit this file
             const isTestSpecificFile = testSpecificPaths.some(regex => regex.test(outputFn));
             const isSdkSpecificFile = sdkChoices.some(sdk => sdk.includeFiles.some(regex => regex.test(outputFn)));
             const matchesChosenSdk = chosenSdk.includeFiles.some(regex => regex.test(outputFn));
             const emitFile = (matchesChosenSdk || !isSdkSpecificFile)
-                          && (this._answers.tests || !isTestSpecificFile);
+                          && (this._answers.tests || !isTestSpecificFile)
+                          && !fileIsExcludedByTemplateConfig;
 
             if (emitFile) {
                 let inputFullPath = path.join(templateRoot, fn);
@@ -245,6 +266,29 @@ function rewritePackageJson(contents, includeTests) {
     }
 
     return contents;
+}
+
+function applyFirstMatchingReplacement(inputValue: string, replacements: { [pattern: string]: string | boolean }): string | boolean {
+    if (replacements) {
+        const replacementPatterns = Object.getOwnPropertyNames(replacements);
+        for (let patternIndex = 0; patternIndex < replacementPatterns.length; patternIndex++) {
+            const pattern = replacementPatterns[patternIndex];
+            const regexp = new RegExp(pattern);
+            if (regexp.test(inputValue)) {
+                const replacement = replacements[pattern];
+
+                // To avoid bug-prone evaluation order dependencies, we only respond to the first name match per file
+                if (typeof (replacement) === 'boolean') {
+                    return replacement;
+                } else {
+                    return inputValue.replace(regexp, replacement);
+                }
+            }
+        }
+    }
+
+    // No match
+    return inputValue;
 }
 
 declare var module: any;
