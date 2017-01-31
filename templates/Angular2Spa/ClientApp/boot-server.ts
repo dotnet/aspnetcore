@@ -1,4 +1,5 @@
 import 'angular2-universal-polyfills';
+import 'angular2-universal-patch';
 import 'zone.js';
 import { createServerRenderer, RenderResult } from 'aspnet-prerendering';
 import { enableProdMode } from '@angular/core';

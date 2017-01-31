@@ -18,6 +18,7 @@
     "angular2-platform-node": "~2.0.11",
     "angular2-template-loader": "^0.6.0",
     "angular2-universal": "~2.0.11",
+    "angular2-universal-patch": "^0.2.1",
     "angular2-universal-polyfills": "~2.0.11",
     "aspnet-prerendering": "^2.0.0",
     "aspnet-webpack": "^1.0.17",
