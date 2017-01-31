@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using Microsoft.Extensions.Primitives;
@@ -200,6 +201,33 @@ namespace Microsoft.Net.Http.Headers
             return current;
         }
 
+        private static int AdvanceCacheDirectiveIndex(int current, string headerValue)
+        {
+            // Skip until the next potential name
+            current += HttpRuleParser.GetWhitespaceLength(headerValue, current);
+
+            // Skip the value if present
+            if (current < headerValue.Length && headerValue[current] == '=')
+            {
+                current++; // skip '='
+                current += NameValueHeaderValue.GetValueLength(headerValue, current);
+            }
+
+            // Find the next delimiter
+            current = headerValue.IndexOf(',', current);
+
+            if (current == -1)
+            {
+                // If no delimiter found, skip to the end
+                return headerValue.Length;
+            }
+
+            current++; // skip ','
+            current += HttpRuleParser.GetWhitespaceLength(headerValue, current);
+
+            return current;
+        }
+
         /// <summary>
         /// Try to find a target header value among the set of given header values and parse it as a
         /// <see cref="TimeSpan"/>.
@@ -237,6 +265,7 @@ namespace Microsoft.Net.Http.Headers
                 while (current < headerValues[i].Length)
                 {
                     long seconds;
+                    var initial = current;
                     var tokenLength = HttpRuleParser.GetTokenLength(headerValues[i], current);
                     if (tokenLength == targetValue.Length
                         && string.Compare(headerValues[i], current, targetValue, 0, tokenLength, StringComparison.OrdinalIgnoreCase) == 0
@@ -246,26 +275,15 @@ namespace Microsoft.Net.Http.Headers
                         value = TimeSpan.FromSeconds(seconds);
                         return true;
                     }
-                    else
+
+                    current = AdvanceCacheDirectiveIndex(current + tokenLength, headerValues[i]);
+
+                    // Ensure index was advanced
+                    if (current <= initial)
                     {
-                        // Skip until the next potential name
-                        current += tokenLength;
-                        current += HttpRuleParser.GetWhitespaceLength(headerValues[i], current);
-
-                        // Skip the value if present
-                        if (current < headerValues[i].Length && headerValues[i][current] == '=')
-                        {
-                            current++; // skip '='
-                            current += NameValueHeaderValue.GetValueLength(headerValues[i], current);
-                            current += HttpRuleParser.GetWhitespaceLength(headerValues[i], current);
-                        }
-
-                        // Skip the delimiter
-                        if (current < headerValues[i].Length && headerValues[i][current] == ',')
-                        {
-                            current++; // skip ','
-                            current += HttpRuleParser.GetWhitespaceLength(headerValues[i], current);
-                        }
+                        Debug.Assert(false, $"Index '{nameof(current)}' not advanced, this is a bug.");
+                        value = null;
+                        return false;
                     }
                 }
             }
@@ -293,7 +311,6 @@ namespace Microsoft.Net.Http.Headers
                 return false;
             }
 
-
             for (var i = 0; i < cacheControlDirectives.Count; i++)
             {
                 // Trim leading white space
@@ -301,6 +318,8 @@ namespace Microsoft.Net.Http.Headers
 
                 while (current < cacheControlDirectives[i].Length)
                 {
+                    var initial = current;
+
                     var tokenLength = HttpRuleParser.GetTokenLength(cacheControlDirectives[i], current);
                     if (tokenLength == targetDirectives.Length
                         && string.Compare(cacheControlDirectives[i], current, targetDirectives, 0, tokenLength, StringComparison.OrdinalIgnoreCase) == 0)
@@ -308,26 +327,14 @@ namespace Microsoft.Net.Http.Headers
                         // Token matches target value
                         return true;
                     }
-                    else
+
+                    current = AdvanceCacheDirectiveIndex(current + tokenLength, cacheControlDirectives[i]);
+
+                    // Ensure index was advanced
+                    if (current <= initial)
                     {
-                        // Skip until the next potential name
-                        current += tokenLength;
-                        current += HttpRuleParser.GetWhitespaceLength(cacheControlDirectives[i], current);
-
-                        // Skip the value if present
-                        if (current < cacheControlDirectives[i].Length && cacheControlDirectives[i][current] == '=')
-                        {
-                            current++; // skip '='
-                            current += NameValueHeaderValue.GetValueLength(cacheControlDirectives[i], current);
-                            current += HttpRuleParser.GetWhitespaceLength(cacheControlDirectives[i], current);
-                        }
-
-                        // Skip the delimiter
-                        if (current < cacheControlDirectives[i].Length && cacheControlDirectives[i][current] == ',')
-                        {
-                            current++; // skip ','
-                            current += HttpRuleParser.GetWhitespaceLength(cacheControlDirectives[i], current);
-                        }
+                        Debug.Assert(false, $"Index '{nameof(current)}' not advanced, this is a bug.");
+                        return false;
                     }
                 }
             }

@@ -71,6 +71,7 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("directive1", "directive")]
         [InlineData("h=directive", "directive")]
         [InlineData("directive1, directive2=80", "directive")]
+        [InlineData("directive1=;, directive2=10", "directive1")]
         public void TryParseSeconds_Fails(string headerValues, string targetValue)
         {
             TimeSpan? value;
@@ -124,6 +125,7 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("directive1", "directive", false)]
         [InlineData("h=directive", "directive", false)]
         [InlineData("directive1, directive2=80", "directive", false)]
+        [InlineData("directive1;, directive2=80", "directive", false)]
         public void ContainsCacheDirective_MatchesExactValue(string headerValues, string targetValue, bool contains)
         {
             Assert.Equal(contains, HeaderUtilities.ContainsCacheDirective(new StringValues(headerValues), targetValue));
