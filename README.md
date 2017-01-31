@@ -2,9 +2,9 @@ DotNetTools
 ===========
 
 [![Travis build status](https://img.shields.io/travis/aspnet/DotNetTools.svg?label=travis-ci&branch=dev&style=flat-square)](https://travis-ci.org/aspnet/DotNetTools/branches)
-[![AppVeyor build status](https://img.shields.io/appveyor/ci/aspnetci/dnx-watch/dev.svg?label=appveyor&style=flat-square)](https://ci.appveyor.com/project/aspnetci/dnx-watch/branch/dev)
+[![AppVeyor build status](https://img.shields.io/appveyor/ci/aspnetci/DotNetTools/dev.svg?label=appveyor&style=flat-square)](https://ci.appveyor.com/project/aspnetci/DotNetTools/branch/dev)
 
-The project contains command-line tools for the .NET Core SDK.
+The project contains command-line tools for the .NET Core CLI.
 
  - [dotnet-watch](src/Microsoft.DotNet.Watcher.Tools/)
  - [dotnet-user-secrets](src/Microsoft.Extensions.SecretManager.Tools/)

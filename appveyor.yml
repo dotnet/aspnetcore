@@ -6,11 +6,9 @@ branches:
     - release
     - dev
     - /^(.*\/)?ci-.*$/
-    - /^feature\//
 build_script:
   - build.cmd --quiet verify
 clone_depth: 1
 test: off
 deploy: off
-# Required for dotnet-test to work
-os: Visual Studio 2015
+os: Visual Studio 2017 RC
