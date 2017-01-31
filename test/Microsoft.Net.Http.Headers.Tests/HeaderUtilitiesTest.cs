@@ -54,6 +54,10 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("directive1=   89   , directive2=22", "directive1", 89)]
         [InlineData("directive1=   89   , directive2= 42", "directive2", 42)]
         [InlineData("directive1=   89   , directive= 42", "directive", 42)]
+        [InlineData("directive1,,,,,directive2 = 42 ", "directive2", 42)]
+        [InlineData("directive1=;,directive2 = 42 ", "directive2", 42)]
+        [InlineData("directive1;;,;;,directive2 = 42 ", "directive2", 42)]
+        [InlineData("directive1=value;q=0.6,directive2 = 42 ", "directive2", 42)]
         public void TryParseSeconds_Succeeds(string headerValues, string targetValue, int expectedValue)
         {
             TimeSpan? value;
@@ -69,9 +73,11 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("directive1   , directive2=80", "directive1")]
         [InlineData("h=10", "directive")]
         [InlineData("directive1", "directive")]
+        [InlineData("directive1,,,,,,,", "directive")]
         [InlineData("h=directive", "directive")]
         [InlineData("directive1, directive2=80", "directive")]
         [InlineData("directive1=;, directive2=10", "directive1")]
+        [InlineData("directive1;directive2=10", "directive2")]
         public void TryParseSeconds_Fails(string headerValues, string targetValue)
         {
             TimeSpan? value;
@@ -117,15 +123,21 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("directive1=3, directive=10", "directive", true)]
         [InlineData("directive1=   89   , directive= 42", "directive", true)]
         [InlineData("directive1=   89   , directive = 42", "directive", true)]
+        [InlineData("directive1,,,,,directive2 = 42 ", "directive2", true)]
+        [InlineData("directive1;;,;;,directive2 = 42 ", "directive2", true)]
+        [InlineData("directive1=;,directive2 = 42 ", "directive2", true)]
+        [InlineData("directive1=value;q=0.6,directive2 = 42 ", "directive2", true)]
         [InlineData(null, null, false)]
         [InlineData(null, "", false)]
         [InlineData("", null, false)]
         [InlineData("", "", false)]
         [InlineData("h=10", "directive", false)]
         [InlineData("directive1", "directive", false)]
+        [InlineData("directive1,,,,,,,", "directive", false)]
         [InlineData("h=directive", "directive", false)]
         [InlineData("directive1, directive2=80", "directive", false)]
         [InlineData("directive1;, directive2=80", "directive", false)]
+        [InlineData("directive1=value;q=0.6;directive2 = 42 ", "directive2", false)]
         public void ContainsCacheDirective_MatchesExactValue(string headerValues, string targetValue, bool contains)
         {
             Assert.Equal(contains, HeaderUtilities.ContainsCacheDirective(new StringValues(headerValues), targetValue));
