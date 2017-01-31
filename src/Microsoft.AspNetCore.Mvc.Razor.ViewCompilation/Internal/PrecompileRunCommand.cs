@@ -57,6 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 
             var results = GenerateCode();
             var success = true;
+
             foreach (var result in results)
             {
                 if (result.CSharpDocument.Diagnostics.Count > 0)
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
                     success = false;
                     foreach (var error in result.CSharpDocument.Diagnostics)
                     {
-                        Application.Error.WriteLine($"{error.Location.FilePath} ({error.Location.LineIndex}): {error.Message}");
+                        Application.Error.WriteLine($"{result.ViewFileInfo.FullPath} ({error.Location.LineIndex}): {error.Message}");
                     }
                 }
             }
