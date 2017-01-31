@@ -68,5 +68,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Gets or sets the <see cref="Metadata.ValidationMetadata"/>
         /// </summary>
         public ValidationMetadata ValidationMetadata { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ModelMetadata"/> of the container type.
+        /// </summary>
+        public ModelMetadata ContainerMetadata { get; set; }
     }
 }

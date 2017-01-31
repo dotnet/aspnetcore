@@ -87,6 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 var properties = new ModelMetadata[propertyDetails.Length];
                 for (var i = 0; i < properties.Length; i++)
                 {
+                    propertyDetails[i].ContainerMetadata = cacheEntry.Metadata;
                     properties[i] = CreateModelMetadata(propertyDetails[i]);
                 }
 

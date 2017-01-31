@@ -96,6 +96,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
         }
 
+        /// <inheritdoc />
+        public override ModelMetadata ContainerMetadata
+        {
+            get
+            {
+                return _details.ContainerMetadata;
+            }
+        }
+
         /// <summary>
         /// Gets the <see cref="Metadata.BindingMetadata"/> for the current instance.
         /// </summary>
@@ -596,6 +605,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             {
                 return _details.PropertySetter;
             }
+        }
+
+        /// <inheritdoc />
+        public override ModelMetadata GetMetadataForType(Type modelType)
+        {
+            return _provider.GetMetadataForType(modelType);
+        }
+
+        /// <inheritdoc />
+        public override IEnumerable<ModelMetadata> GetMetadataForProperties(Type modelType)
+        {
+            return _provider.GetMetadataForProperties(modelType);
         }
     }
 }

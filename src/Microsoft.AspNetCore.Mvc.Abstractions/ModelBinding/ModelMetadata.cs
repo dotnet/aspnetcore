@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// A metadata representation of a model type, property or parameter.
     /// </summary>
     [DebuggerDisplay("{DebuggerToString(),nq}")]
-    public abstract class ModelMetadata : IEquatable<ModelMetadata>
+    public abstract class ModelMetadata : IEquatable<ModelMetadata>, IModelMetadataProvider
     {
         /// <summary>
         /// The default value of <see cref="ModelMetadata.Order"/>.
@@ -42,6 +42,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         public Type ContainerType { get { return Identity.ContainerType; } }
 
+        /// <summary>
+        /// Gets the metadata of the container type that the current instance is part of.
+        /// </summary>
+        public virtual ModelMetadata ContainerMetadata
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+        
         /// <summary>
         /// Gets a value indicating the kind of metadata element represented by the current instance.
         /// </summary>
@@ -473,6 +484,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 return $"ModelMetadata (Property: '{ContainerType.Name}.{PropertyName}' Type: '{ModelType.Name}')";
             }
+        }
+
+        /// <inheritdoc />
+        public virtual ModelMetadata GetMetadataForType(Type modelType)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public virtual IEnumerable<ModelMetadata> GetMetadataForProperties(Type modelType)
+        {
+            throw new NotImplementedException();
         }
     }
 }

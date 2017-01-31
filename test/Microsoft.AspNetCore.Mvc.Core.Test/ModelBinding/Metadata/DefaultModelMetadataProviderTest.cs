@@ -58,6 +58,33 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         [Fact]
+        public void GetMetadataForProperties_IncludesContainerMetadataForAllProperties()
+        {
+            // Arrange
+            var provider = CreateProvider();
+            var modelType = typeof(ModelType);
+
+            // Act
+            var metadata = provider.GetMetadataForProperties(modelType).ToArray();
+
+            // Assert
+            Assert.Collection(
+                metadata,
+                (propertyMetadata) =>
+                {
+                    Assert.Equal("Property1", propertyMetadata.PropertyName);
+                    Assert.NotNull(propertyMetadata.ContainerMetadata);
+                    Assert.Equal(modelType, propertyMetadata.ContainerMetadata.ModelType);
+                },
+                (propertyMetadata) =>
+                {
+                    Assert.Equal("Property2", propertyMetadata.PropertyName);
+                    Assert.NotNull(propertyMetadata.ContainerMetadata);
+                    Assert.Equal(modelType, propertyMetadata.ContainerMetadata.ModelType);
+                });
+        }
+
+        [Fact]
         public void GetMetadataForProperties_IncludesAllProperties()
         {
             // Arrange

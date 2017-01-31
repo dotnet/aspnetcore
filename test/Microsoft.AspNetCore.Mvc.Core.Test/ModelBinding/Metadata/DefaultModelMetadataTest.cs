@@ -744,6 +744,46 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             Assert.False(validateChildren);
         }
 
+        [Fact]
+        public void GetMetadataForType_CallsProvider()
+        {
+            // Arrange
+            var detailsProvider = new Mock<ICompositeMetadataDetailsProvider>();
+            var key = ModelMetadataIdentity.ForType(typeof(string));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var metadataProvider = new Mock<IModelMetadataProvider>();
+            metadataProvider
+                .Setup(mp => mp.GetMetadataForType(typeof(string)))
+                .Verifiable();
+            var metadata1 = new DefaultModelMetadata(metadataProvider.Object, detailsProvider.Object, cache);
+
+            // Act
+            var metadata2 = metadata1.GetMetadataForType(typeof(string));
+
+            // Assert
+            metadataProvider.VerifyAll();
+        }
+
+        [Fact]
+        public void GetMetadataForProperties_CallsProvider()
+        {
+            // Arrange
+            var detailsProvider = new Mock<ICompositeMetadataDetailsProvider>();
+            var key = ModelMetadataIdentity.ForType(typeof(string));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var metadataProvider = new Mock<IModelMetadataProvider>();
+            metadataProvider
+                .Setup(mp => mp.GetMetadataForProperties(typeof(Exception)))
+                .Verifiable();
+            var metadata1 = new DefaultModelMetadata(metadataProvider.Object, detailsProvider.Object, cache);
+
+            // Act
+            var metadata2 = metadata1.GetMetadataForProperties(typeof(Exception));
+
+            // Assert
+            metadataProvider.VerifyAll();
+        }
+
         private void ActionMethod(string input)
         {
         }
