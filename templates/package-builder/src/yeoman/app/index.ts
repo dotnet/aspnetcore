@@ -150,7 +150,7 @@ class MyGenerator extends yeoman.Base {
             if (typeof mappedFilename === 'string') {
                 outputFn = mappedFilename;
             } else {
-                fileIsExcludedByTemplateConfig = true;
+                fileIsExcludedByTemplateConfig = (mappedFilename === false);
             }
 
             // Decide whether to emit this file
