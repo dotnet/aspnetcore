@@ -12,8 +12,10 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -21,10 +23,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public class PageActionInvokerProvider : IActionInvokerProvider
     {
+        private const string PageStartFileName = "_PageStart.cshtml";
         private const string ModelPropertyName = "Model";
         private readonly IPageLoader _loader;
         private readonly IPageFactoryProvider _pageFactoryProvider;
         private readonly IPageModelFactoryProvider _modelFactoryProvider;
+        private readonly IRazorPageFactoryProvider _razorPageFactoryProvider;
         private readonly IActionDescriptorCollectionProvider _collectionProvider;
         private readonly IFilterProvider[] _filterProviders;
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
@@ -32,6 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         private readonly ITempDataDictionaryFactory _tempDataFactory;
         private readonly HtmlHelperOptions _htmlHelperOptions;
         private readonly IPageHandlerMethodSelector _selector;
+        private readonly RazorProject _razorProject;
         private readonly DiagnosticSource _diagnosticSource;
         private readonly ILogger<PageActionInvoker> _logger;
         private volatile InnerCache _currentCache;
@@ -40,6 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             IPageLoader loader,
             IPageFactoryProvider pageFactoryProvider,
             IPageModelFactoryProvider modelFactoryProvider,
+            IRazorPageFactoryProvider razorPageFactoryProvider,
             IActionDescriptorCollectionProvider collectionProvider,
             IEnumerable<IFilterProvider> filterProviders,
             IEnumerable<IValueProviderFactory> valueProviderFactories,
@@ -47,12 +53,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             ITempDataDictionaryFactory tempDataFactory,
             IOptions<HtmlHelperOptions> htmlHelperOptions,
             IPageHandlerMethodSelector selector,
+            RazorProject razorProject,
             DiagnosticSource diagnosticSource,
             ILoggerFactory loggerFactory)
         {
             _loader = loader;
             _pageFactoryProvider = pageFactoryProvider;
             _modelFactoryProvider = modelFactoryProvider;
+            _razorPageFactoryProvider = razorPageFactoryProvider;
             _collectionProvider = collectionProvider;
             _filterProviders = filterProviders.ToArray();
             _valueProviderFactories = valueProviderFactories.ToArray();
@@ -60,6 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             _tempDataFactory = tempDataFactory;
             _htmlHelperOptions = htmlHelperOptions.Value;
             _selector = selector;
+            _razorProject = razorProject;
             _diagnosticSource = diagnosticSource;
             _logger = loggerFactory.CreateLogger<PageActionInvoker>();
         }
@@ -171,13 +180,32 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 modelReleaser = _modelFactoryProvider.CreateModelDisposer(compiledActionDescriptor);
             }
 
+            var pageStartFactories = GetPageStartFactories(compiledActionDescriptor);
+
             return new PageActionInvokerCacheEntry(
                 compiledActionDescriptor,
                 pageFactory,
                 pageDisposer,
                 modelFactory,
                 modelReleaser,
+                pageStartFactories,
                 cachedFilters);
+        }
+
+        private List<Func<IRazorPage>> GetPageStartFactories(CompiledPageActionDescriptor descriptor)
+        {
+            var pageStartFactories = new List<Func<IRazorPage>>();
+            var pageStartItems = _razorProject.FindHierarchicalItems(descriptor.ViewEnginePath, PageStartFileName);
+            foreach (var item in pageStartItems)
+            {
+                var factoryResult = _razorPageFactoryProvider.CreateFactory(item.Path);
+                if (factoryResult.Success)
+                {
+                    pageStartFactories.Insert(0, factoryResult.RazorPageFactory);
+                }
+            }
+
+            return pageStartFactories;
         }
 
         private class InnerCache

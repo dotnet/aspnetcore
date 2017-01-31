@@ -19,6 +19,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             _provider = provider;
         }
 
+        public override RazorProjectItem GetItem(string path)
+        {
+            EnsureValidPath(path);
+            var fileInfo = _provider.GetFileInfo(path);
+            return new DefaultRazorProjectItem(fileInfo, basePath: string.Empty, path: path);
+        }
+
         public override IEnumerable<RazorProjectItem> EnumerateItems(string path)
         {
             if (path == null)

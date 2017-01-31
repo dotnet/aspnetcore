@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Core.Internal;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -303,6 +304,23 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var actionDescriptor = _pageContext.ActionDescriptor;
             _page = (Page)CacheEntry.PageFactory(_pageContext);
             _pageContext.Page = _page;
+
+            IRazorPage[] pageStarts;
+
+            if (CacheEntry.PageStartFactories == null || CacheEntry.PageStartFactories.Count == 0)
+            {
+                pageStarts = EmptyArray<IRazorPage>.Instance;
+            }
+            else
+            {
+                pageStarts = new IRazorPage[CacheEntry.PageStartFactories.Count];
+                for (var i = 0; i < pageStarts.Length; i++)
+                {
+                    var pageFactory = CacheEntry.PageStartFactories[i];
+                    pageStarts[i] = pageFactory();
+                }
+            }
+            _pageContext.PageStarts = pageStarts;
 
             if (actionDescriptor.ModelTypeInfo == null)
             {

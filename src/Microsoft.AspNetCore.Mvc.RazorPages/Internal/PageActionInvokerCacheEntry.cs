@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Razor;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
@@ -14,6 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Action<PageContext, object> releasePage,
             Func<PageContext, object> modelFactory,
             Action<PageContext, object> releaseModel,
+            IReadOnlyList<Func<IRazorPage>> pageStartFactories,
             FilterItem[] cacheableFilters)
         {
             ActionDescriptor = actionDescriptor;
@@ -21,6 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             ReleasePage = releasePage;
             ModelFactory = modelFactory;
             ReleaseModel = releaseModel;
+            PageStartFactories = pageStartFactories;
             CacheableFilters = cacheableFilters;
         }
 
@@ -34,6 +38,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public Action<PageContext, object> ReleasePage { get; }
 
         public Func<PageContext, object> ModelFactory { get; }
+
+        /// <summary>
+        /// Gets the applicable PageStarts.
+        /// </summary>
+        public IReadOnlyList<Func<IRazorPage>> PageStartFactories { get; }
 
         /// <summary>
         /// The action invoked to release a model. This may be <c>null</c>.

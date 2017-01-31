@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Internal;
@@ -10,7 +11,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
@@ -24,8 +24,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// The default content-type header value for views, <c>text/html; charset=utf-8</c>.
         /// </summary>
         public static readonly string DefaultContentType = "text/html; charset=utf-8";
-
-        private readonly IModelMetadataProvider _modelMetadataProvider;
 
         /// <summary>
         /// Creates a new <see cref="ViewExecutor"/>.
@@ -43,20 +41,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             ITempDataDictionaryFactory tempDataFactory,
             DiagnosticSource diagnosticSource,
             IModelMetadataProvider modelMetadataProvider)
+            : this(writerFactory, viewEngine, diagnosticSource)
         {
             if (viewOptions == null)
             {
                 throw new ArgumentNullException(nameof(viewOptions));
-            }
-
-            if (writerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(writerFactory));
-            }
-
-            if (viewEngine == null)
-            {
-                throw new ArgumentNullException(nameof(viewEngine));
             }
 
             if (tempDataFactory == null)
@@ -69,17 +58,40 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(diagnosticSource));
             }
 
-            if (modelMetadataProvider == null)
+            ViewOptions = viewOptions.Value;
+            TempDataFactory = tempDataFactory;
+            ModelMetadataProvider = modelMetadataProvider;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="ViewExecutor"/>.
+        /// </summary>
+        /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
+        /// <param name="viewEngine">The <see cref="ICompositeViewEngine"/>.</param>
+        /// <param name="diagnosticSource">The <see cref="System.Diagnostics.DiagnosticSource"/>.</param>
+        protected ViewExecutor(
+            IHttpResponseStreamWriterFactory writerFactory,
+            ICompositeViewEngine viewEngine,
+            DiagnosticSource diagnosticSource)
+        {
+            if (writerFactory == null)
             {
-                throw new ArgumentNullException(nameof(modelMetadataProvider));
+                throw new ArgumentNullException(nameof(writerFactory));
             }
 
-            ViewOptions = viewOptions.Value;
+            if (viewEngine == null)
+            {
+                throw new ArgumentNullException(nameof(viewEngine));
+            }
+
+            if (diagnosticSource == null)
+            {
+                throw new ArgumentNullException(nameof(diagnosticSource));
+            }
+
             WriterFactory = writerFactory;
             ViewEngine = viewEngine;
-            TempDataFactory = tempDataFactory;
             DiagnosticSource = diagnosticSource;
-            _modelMetadataProvider = modelMetadataProvider;
         }
 
         /// <summary>
@@ -101,6 +113,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// Gets the <see cref="MvcViewOptions"/>.
         /// </summary>
         protected MvcViewOptions ViewOptions { get; }
+
+        /// <summary>
+        /// Gets the <see cref="IModelMetadataProvider"/>.
+        /// </summary>
+        protected IModelMetadataProvider ModelMetadataProvider { get; }
 
         /// <summary>
         /// Gets the <see cref="IHttpResponseStreamWriterFactory"/>.
@@ -140,9 +157,24 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(view));
             }
 
+            if (ViewOptions == null)
+            {
+                throw new InvalidOperationException(Resources.FormatPropertyOfTypeCannotBeNull(nameof(ViewOptions), GetType().Name));
+            }
+
+            if (TempDataFactory == null)
+            {
+                throw new InvalidOperationException(Resources.FormatPropertyOfTypeCannotBeNull(nameof(TempDataFactory), GetType().Name));
+            }
+
+            if (ModelMetadataProvider == null)
+            {
+                throw new InvalidOperationException(Resources.FormatPropertyOfTypeCannotBeNull(nameof(ModelMetadataProvider), GetType().Name));
+            }
+
             if (viewData == null)
             {
-                viewData = new ViewDataDictionary(_modelMetadataProvider, actionContext.ModelState);
+                viewData = new ViewDataDictionary(ModelMetadataProvider, actionContext.ModelState);
             }
 
             if (tempData == null)
@@ -150,7 +182,40 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 tempData = TempDataFactory.GetTempData(actionContext.HttpContext);
             }
 
-            var response = actionContext.HttpContext.Response;
+            var viewContext = new ViewContext(
+                actionContext,
+                view,
+                viewData,
+                tempData,
+                TextWriter.Null,
+                ViewOptions.HtmlHelperOptions);
+
+            await ExecuteAsync(viewContext, contentType, statusCode);
+        }
+
+        /// <summary>
+        /// Executes a view asynchronously.
+        /// </summary>
+        /// <param name="viewContext">The <see cref="ViewContext"/> associated with the current request.</param>
+        /// <param name="contentType">
+        /// The content-type header value to set in the response. If <c>null</c>,
+        /// <see cref="DefaultContentType"/> will be used.
+        /// </param>
+        /// <param name="statusCode">
+        /// The HTTP status code to set in the response. May be <c>null</c>.
+        /// </param>
+        /// <returns>A <see cref="Task"/> which will complete when view execution is completed.</returns>
+        protected async Task ExecuteAsync(
+            ViewContext viewContext,
+            string contentType,
+            int? statusCode)
+        {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
+            var response = viewContext.HttpContext.Response;
 
             string resolvedContentType = null;
             Encoding resolvedContentTypeEncoding = null;
@@ -170,19 +235,23 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             using (var writer = WriterFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
             {
-                var viewContext = new ViewContext(
-                    actionContext,
-                    view,
-                    viewData,
-                    tempData,
-                    writer,
-                    ViewOptions.HtmlHelperOptions);
+                var view = viewContext.View;
 
-                DiagnosticSource.BeforeView(view, viewContext);
+                var oldWriter = viewContext.Writer;
+                try
+                {
+                    viewContext.Writer = writer;
 
-                await view.RenderAsync(viewContext);
+                    DiagnosticSource.BeforeView(view, viewContext);
 
-                DiagnosticSource.AfterView(view, viewContext);
+                    await view.RenderAsync(viewContext);
+
+                    DiagnosticSource.AfterView(view, viewContext);
+                }
+                finally
+                {
+                    viewContext.Writer = oldWriter;
+                }
 
                 // Perf: Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
                 // response asynchronously. In the absence of this line, the buffer gets synchronously written to the

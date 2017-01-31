@@ -5,11 +5,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -346,6 +350,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 null,
                 (context) => null,
                 null,
+                null,
                 new FilterItem[0]);
             var invoker = CreateInvoker(
                 new[] { filter1.Object, filter2.Object, filter3.Object },
@@ -398,6 +403,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 (context) => createCalled = true,
                 null,
                 (context) => null,
+                null,
                 null,
                 new FilterItem[0]);
             var invoker = CreateInvoker(
@@ -530,12 +536,24 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             int maxAllowedErrorsInModelState = 200,
             List<IValueProviderFactory> valueProviderFactories = null,
             RouteData routeData = null,
-            ILogger logger = null,
-            object diagnosticListener = null)
+            ILogger logger = null)
         {
+            var diagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
+
             var httpContext = new DefaultHttpContext();
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(executor ?? new PageResultExecutor());
+            if (executor == null)
+            {
+                executor = new PageResultExecutor(
+                    Mock.Of<IHttpResponseStreamWriterFactory>(),
+                    Mock.Of<ICompositeViewEngine>(),
+                    Mock.Of<IRazorViewEngine>(),
+                    Mock.Of<IRazorPageActivator>(),
+                    diagnosticSource,
+                    HtmlEncoder.Default);
+            }
+
+            serviceCollection.AddSingleton(executor ?? executor);
             httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
             if (routeData == null)
@@ -584,8 +602,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 (c, page) => { (page as IDisposable)?.Dispose(); },
                 _ => Activator.CreateInstance(actionDescriptor.ModelTypeInfo.AsType()),
                 (c, model) => { (model as IDisposable)?.Dispose(); },
+                null,
                 new FilterItem[0]);
-            var diagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
 
             var invoker = new PageActionInvoker(
                 selector,
@@ -603,6 +621,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             private readonly Func<PageContext, Task> _executeAction;
 
             public TestPageResultExecutor(Func<PageContext, Task> executeAction)
+                : base(
+                    Mock.Of<IHttpResponseStreamWriterFactory>(),
+                    Mock.Of<ICompositeViewEngine>(),
+                    Mock.Of<IRazorViewEngine>(),
+                    Mock.Of<IRazorPageActivator>(),
+                    new DiagnosticListener("Microsoft.AspNetCore"),
+                    HtmlEncoder.Default)
             {
                 _executeAction = executeAction;
             }

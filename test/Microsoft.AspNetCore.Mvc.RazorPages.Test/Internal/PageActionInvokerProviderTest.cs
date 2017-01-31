@@ -8,10 +8,14 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
@@ -121,6 +125,53 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
+        public void OnProvidersExecuting_CachesViewStartFactories()
+        {
+            // Arrange
+            var descriptor = new PageActionDescriptor
+            {
+                RelativePath = "/Home/Path1/File.cshtml",
+                ViewEnginePath = "/Home/Path1/File.cshtml",
+                FilterDescriptors = new FilterDescriptor[0],
+            };
+
+            var loader = new Mock<IPageLoader>();
+            loader.Setup(l => l.Load(It.IsAny<PageActionDescriptor>()))
+                .Returns(typeof(PageWithModel));
+            var descriptorCollection = new ActionDescriptorCollection(new[] { descriptor }, version: 1);
+            var actionDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
+            actionDescriptorProvider.Setup(p => p.ActionDescriptors).Returns(descriptorCollection);
+            var razorPageFactoryProvider = new Mock<IRazorPageFactoryProvider>();
+            Func<IRazorPage> factory1 = () => null;
+            Func<IRazorPage> factory2 = () => null;
+            razorPageFactoryProvider.Setup(f => f.CreateFactory("/Home/Path1/_PageStart.cshtml"))
+                .Returns(new RazorPageFactoryResult(factory1, new IChangeToken[0]));
+            razorPageFactoryProvider.Setup(f => f.CreateFactory("/_PageStart.cshtml"))
+                .Returns(new RazorPageFactoryResult(factory2, new[] { Mock.Of<IChangeToken>() }));
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile("/Home/Path1/_PageStart.cshtml", "content1");
+            fileProvider.AddFile("/_PageStart.cshtml", "content2");
+            var defaultRazorProject = new DefaultRazorProject(fileProvider);
+
+            var invokerProvider = CreateInvokerProvider(
+                loader.Object,
+                actionDescriptorProvider.Object,
+                razorPageFactoryProvider: razorPageFactoryProvider.Object,
+                razorProject: defaultRazorProject);
+            var context = new ActionInvokerProviderContext(
+                new ActionContext(new DefaultHttpContext(), new RouteData(), descriptor));
+
+            // Act
+            invokerProvider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.NotNull(context.Result);
+            var actionInvoker = Assert.IsType<PageActionInvoker>(context.Result);
+            var entry = actionInvoker.CacheEntry;
+            Assert.Equal(new[] { factory2, factory1 }, entry.PageStartFactories);
+        }
+
+        [Fact]
         public void OnProvidersExecuting_CachesEntries()
         {
             // Arrange
@@ -207,16 +258,24 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             IPageLoader loader,
             IActionDescriptorCollectionProvider actionDescriptorProvider,
             IPageFactoryProvider pageProvider = null,
-            IPageModelFactoryProvider modelProvider = null)
+            IPageModelFactoryProvider modelProvider = null,
+            IRazorPageFactoryProvider razorPageFactoryProvider = null,
+            RazorProject razorProject = null)
         {
             var tempDataFactory = new Mock<ITempDataDictionaryFactory>();
             tempDataFactory.Setup(t => t.GetTempData(It.IsAny<HttpContext>()))
                 .Returns((HttpContext context) => new TempDataDictionary(context, Mock.Of<ITempDataProvider>()));
 
+            if (razorProject == null)
+            {
+                razorProject = Mock.Of<RazorProject>();
+            }
+
             return new PageActionInvokerProvider(
                 loader,
                 pageProvider ?? Mock.Of<IPageFactoryProvider>(),
                 modelProvider ?? Mock.Of<IPageModelFactoryProvider>(),
+                razorPageFactoryProvider ?? Mock.Of<IRazorPageFactoryProvider>(),
                 actionDescriptorProvider,
                 new IFilterProvider[0],
                 new IValueProviderFactory[0],
@@ -224,6 +283,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 tempDataFactory.Object,
                 new TestOptionsManager<HtmlHelperOptions>(),
                 Mock.Of<IPageHandlerMethodSelector>(),
+                razorProject,
                 new DiagnosticListener("Microsoft.AspNetCore"),
                 NullLoggerFactory.Instance);
         }
