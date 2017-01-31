@@ -18,11 +18,10 @@ export class WebSocketTransport implements ITransport {
             let connectUrl = url + "/ws?" + queryString;
 
             let webSocket = new WebSocket(connectUrl);
-            let thisWebSocketTransport = this;
 
             webSocket.onopen = (event: Event) => {
                 console.log(`WebSocket connected to ${connectUrl}`);
-                thisWebSocketTransport.webSocket = webSocket;
+                this.webSocket = webSocket;
                 resolve();
             };
 
@@ -32,16 +31,16 @@ export class WebSocketTransport implements ITransport {
 
             webSocket.onmessage = (message: MessageEvent) => {
                 console.log(`(WebSockets transport) data received: ${message.data}`);
-                if (thisWebSocketTransport.onDataReceived) {
-                    thisWebSocketTransport.onDataReceived(message.data);
+                if (this.onDataReceived) {
+                    this.onDataReceived(message.data);
                 }
             }
 
             webSocket.onclose = (event: CloseEvent) => {
                 // webSocket will be null if the transport did not start successfully
-                if (thisWebSocketTransport.webSocket && (event.wasClean === false || event.code !== 1000)) {
-                    if (thisWebSocketTransport.onError) {
-                        thisWebSocketTransport.onError(event);
+                if (this.webSocket && (event.wasClean === false || event.code !== 1000)) {
+                    if (this.onError) {
+                        this.onError(event);
                     }
                 }
             }
@@ -91,10 +90,9 @@ export class ServerSentEventsTransport implements ITransport {
             let eventSource = new EventSource(`${this.url}/sse?${this.queryString}`);
 
             try {
-                let thisEventSourceTransport = this;
                 eventSource.onmessage = (e: MessageEvent) => {
-                    if (thisEventSourceTransport.onDataReceived) {
-                        thisEventSourceTransport.onDataReceived(e.data);
+                    if (this.onDataReceived) {
+                        this.onDataReceived(e.data);
                     }
                 };
 
@@ -102,13 +100,13 @@ export class ServerSentEventsTransport implements ITransport {
                     reject();
 
                     // don't report an error if the transport did not start successfully
-                    if (thisEventSourceTransport.eventSource && thisEventSourceTransport.onError) {
-                        thisEventSourceTransport.onError(e);
+                    if (this.eventSource && this.onError) {
+                        this.onError(e);
                     }
                 }
 
                 eventSource.onopen = () => {
-                    thisEventSourceTransport.eventSource = eventSource;
+                    this.eventSource = eventSource;
                     resolve();
                 }
             }
@@ -157,22 +155,21 @@ export class LongPollingTransport implements ITransport {
             return;
         }
 
-        let thisLongPollingTransport = this;
         let pollXhr = new XMLHttpRequest();
 
         pollXhr.onload = () => {
             if (pollXhr.status == 200) {
-                if (thisLongPollingTransport.onDataReceived) {
-                    thisLongPollingTransport.onDataReceived(pollXhr.response);
+                if (this.onDataReceived) {
+                    this.onDataReceived(pollXhr.response);
                 }
-                thisLongPollingTransport.poll(url);
+                this.poll(url);
             }
             else if (this.pollXhr.status == 204) {
                 // TODO: closed event?
             }
             else {
-                if (thisLongPollingTransport.onError) {
-                    thisLongPollingTransport.onError({
+                if (this.onError) {
+                    this.onError({
                         status: pollXhr.status,
                         statusText: pollXhr.statusText
                     });
@@ -181,8 +178,8 @@ export class LongPollingTransport implements ITransport {
         };
 
         pollXhr.onerror = () => {
-            if (thisLongPollingTransport.onError) {
-                thisLongPollingTransport.onError({
+            if (this.onError) {
+                this.onError({
                     status: pollXhr.status,
                     statusText: pollXhr.statusText
                 });
@@ -190,7 +187,7 @@ export class LongPollingTransport implements ITransport {
         };
 
         pollXhr.ontimeout = () => {
-            thisLongPollingTransport.poll(url);
+            this.poll(url);
         }
 
         this.pollXhr = pollXhr;
