@@ -20,7 +20,7 @@ module.exports = function (config) {
         browsers: ['Chrome'],
         mime: { 'application/javascript': ['ts','tsx'] },
         singleRun: false,
-        webpack: require('../../webpack.config.js').filter(config => config.target !== 'node'), // Test against client bundle, because tests run in a browser
+        webpack: require('../../webpack.config.js')().filter(config => config.target !== 'node'), // Test against client bundle, because tests run in a browser
         webpackMiddleware: { stats: 'errors-only' }
     });
 };
