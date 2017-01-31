@@ -90,5 +90,9 @@
   {
         "OldTypeId": "public class Microsoft.AspNetCore.Mvc.Razor.Directives.UsingChunkMerger : Microsoft.AspNetCore.Mvc.Razor.Directives.IChunkMerger",
         "Kind": "Removal"
+  },
+  {
+        "OldTypeId": "public class Microsoft.AspNetCore.Mvc.Razor.GeneratedTagHelperAttributeContext",
+        "Kind": "Removal"
   }
 ]

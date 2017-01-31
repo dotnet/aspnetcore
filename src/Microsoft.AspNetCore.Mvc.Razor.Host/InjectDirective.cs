@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             return builder;
         }
 
-        private class Pass : IRazorIRPass
+        internal class Pass : IRazorIRPass
         {
             public RazorEngine Engine { get; set; }
 
@@ -31,17 +31,26 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                 var visitor = new Visitor();
                 visitor.Visit(irDocument);
 
-                for (var i = 0; i < visitor.Directives.Count; i++)
+                var properties = new HashSet<string>(StringComparer.Ordinal);
+
+                for (var i = visitor.Directives.Count - 1; i >= 0; i--)
                 {
                     var directive = visitor.Directives[i];
-                    var typeName = directive.Tokens.ElementAt(0).Content;;
-                    var memberName = directive.Tokens.ElementAt(1).Content;
-
-                    var modelType = "dynamic";
-                    if (visitor.ModelType.Count > 0)
+                    var tokens = directive.Tokens.ToArray();
+                    if (tokens.Length < 2)
                     {
-                        modelType = visitor.ModelType.Last().Tokens.First().Content;
+                        continue;
                     }
+
+                    var typeName = tokens[0].Content;
+                    var memberName = tokens[1].Content;
+
+                    if (!properties.Add(memberName))
+                    {
+                        continue;
+                    }
+
+                    var modelType = ModelDirective.GetModelType(irDocument);
 
                     typeName = typeName.Replace("<TModel>", "<" + modelType + ">");
 

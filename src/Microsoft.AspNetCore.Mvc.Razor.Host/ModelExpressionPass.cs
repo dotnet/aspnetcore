@@ -38,9 +38,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                         Content = "ModelExpressionProvider.CreateModelExpression(ViewData, __model => ",
                     });
 
-
                     if (node.Children.Count == 1 && node.Children[0] is HtmlContentIRNode)
                     {
+                        // A 'simple' expression will look like __model => __model.Foo
+                        //
+                        // Note that the fact we're looking for HTML here is based on a bug.
+                        // https://github.com/aspnet/Razor/issues/963
                         var original = ((HtmlContentIRNode)node.Children[0]);
 
                         builder.Add(new CSharpTokenIRNode()
@@ -58,7 +61,32 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                     {
                         for (var i = 0; i < node.Children.Count; i++)
                         {
-                            builder.Add(node.Children[i]);
+                            var nestedExpression = node.Children[i] as CSharpExpressionIRNode;
+                            if (nestedExpression != null)
+                            {
+                                for (var j = 0; j < nestedExpression.Children.Count; j++)
+                                {
+                                    var cSharpToken = nestedExpression.Children[j] as CSharpTokenIRNode;
+                                    if (cSharpToken != null)
+                                    {
+                                        builder.Add(cSharpToken);
+                                    }
+                                }
+
+                                continue;
+                            }
+
+                            // Note that the fact we're looking for HTML here is based on a bug.
+                            // https://github.com/aspnet/Razor/issues/963
+                            var html = node.Children[i] as HtmlContentIRNode;
+                            if (html != null)
+                            {
+                                builder.Add(new CSharpTokenIRNode()
+                                {
+                                    Content = html.Content,
+                                    Source = html.Source,
+                                });
+                            }
                         }
                     }
 
