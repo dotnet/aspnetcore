@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             writer.WriteAutoPropertyDeclaration(
                 "public",
                 $"global::Microsoft.AspNetCore.Mvc.Rendering.ViewContext",
-                "_context");
+                "ViewContext");
 
             var indexerAttributes = descriptor.Attributes.Where(a => a.IsIndexer);
 
@@ -187,19 +187,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                 writer.WriteInstanceMethodInvocation(
                     $"(_helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?",
                     "Contextualize",
-                    new[] { "_context" });
+                    new[] { "ViewContext" });
 
                 var methodParameters = GetMethodParameters(descriptor);
-                var viewContentVariable = "viewContent";
+                var contentVariable = "content";
                 writer.Write("var ")
-                    .WriteStartAssignment(viewContentVariable)
+                    .WriteStartAssignment(contentVariable)
                     .WriteInstanceMethodInvocation($"await _helper", "InvokeAsync", methodParameters);
                 writer.WriteStartAssignment($"{outputVariable}.TagName")
                     .WriteLine("null;");
                 writer.WriteInstanceMethodInvocation(
                     $"{outputVariable}.Content",
                     "SetHtmlContent",
-                    new[] { viewContentVariable });
+                    new[] { contentVariable });
             }
         }
 
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
         {
             var propertyNames = descriptor.Attributes.Where(a => !a.IsIndexer).Select(attribute => attribute.PropertyName);
             var joinedPropertyNames = string.Join(", ", propertyNames);
-            var parametersString = $" new {{ { joinedPropertyNames } }}";
+            var parametersString = $"new {{ { joinedPropertyNames } }}";
 
             var viewComponentName = descriptor.PropertyBag[
                 ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey];

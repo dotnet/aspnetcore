@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             return "dynamic";
         }
 
-        private class Pass : IRazorIRPass
+        internal class Pass : IRazorIRPass
         {
             public RazorEngine Engine { get; set; }
 
