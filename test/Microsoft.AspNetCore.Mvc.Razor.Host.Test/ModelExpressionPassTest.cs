@@ -14,7 +14,7 @@ using ErrorSink = Microsoft.AspNetCore.Razor.Evolution.Legacy.ErrorSink;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Host
 {
-    public class MvcTagHelperAttributeValueCodeRendererTest
+    public class ModelExpressionPassTest
     {
         [Fact]
         public void ModelExpressionPass_NonModelExpressionProperty_Ignored()
@@ -66,9 +66,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
         public void ModelExpressionPass_ModelExpressionProperty_SimpleExpression()
         {
             // Arrange
-            var codeDocument = CreateDocument(@"
-@addTagHelper TestTagHelper, TestAssembly
-<p foo=""Bar"">");
+
+            // Using \r\n here because we verify line mappings
+            var codeDocument = CreateDocument(
+                "@addTagHelper TestTagHelper, TestAssembly\r\n<p foo=\"Bar\">");
 
             var tagHelpers = new[]
             {
@@ -109,16 +110,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 
             var originalNode = Assert.IsType<CSharpTokenIRNode>(expression.Children[2]);
             Assert.Equal("Bar", originalNode.Content);
-            Assert.Equal(new SourceSpan("test.cshtml", 53, 2, 8, 3), originalNode.Source.Value);
+            Assert.Equal(new SourceSpan("test.cshtml", 51, 1, 8, 3), originalNode.Source.Value);
         }
 
         [Fact]
         public void ModelExpressionPass_ModelExpressionProperty_ComplexExpression()
         {
             // Arrange
-            var codeDocument = CreateDocument(@"
-@addTagHelper TestTagHelper, TestAssembly
-<p foo=""@Bar"">");
+
+            // Using \r\n here because we verify line mappings
+            var codeDocument = CreateDocument(
+                "@addTagHelper TestTagHelper, TestAssembly\r\n<p foo=\"@Bar\">");
 
             var tagHelpers = new[]
             {
@@ -159,7 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 
             var originalNode = Assert.IsType<CSharpTokenIRNode>(expression.Children[1]);
             Assert.Equal("Bar", originalNode.Content);
-            Assert.Equal(new SourceSpan("test.cshtml", 54, 2, 9, 3), originalNode.Source.Value);
+            Assert.Equal(new SourceSpan("test.cshtml", 52, 1, 9, 3), originalNode.Source.Value);
         }
 
         private RazorCodeDocument CreateDocument(string content)
