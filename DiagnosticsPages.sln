@@ -1,53 +1,48 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26127.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{509A6F36-AD80-4A18-B5B1-717D38DFF29D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{ACAA0157-A8C4-4152-93DE-90CCDF304087}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WelcomePageSample", "samples\WelcomePageSample\WelcomePageSample.xproj", "{C5F59CBA-DF2D-4983-8CBB-11B6AF21B416}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WelcomePageSample", "samples\WelcomePageSample\WelcomePageSample.csproj", "{C5F59CBA-DF2D-4983-8CBB-11B6AF21B416}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Diagnostics", "src\Microsoft.AspNetCore.Diagnostics\Microsoft.AspNetCore.Diagnostics.xproj", "{68A1F0E1-ECCE-46D1-B20F-C43EE5B097DE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics", "src\Microsoft.AspNetCore.Diagnostics\Microsoft.AspNetCore.Diagnostics.csproj", "{68A1F0E1-ECCE-46D1-B20F-C43EE5B097DE}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DeveloperExceptionPageSample", "samples\DeveloperExceptionPageSample\DeveloperExceptionPageSample.xproj", "{589AC17F-9455-4764-8F82-FCD2AE58DA14}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F0557697-8D86-4DF3-A385-B0BFA9596189}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeveloperExceptionPageSample", "samples\DeveloperExceptionPageSample\DeveloperExceptionPageSample.csproj", "{589AC17F-9455-4764-8F82-FCD2AE58DA14}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2AF90579-B118-4583-AE88-672EFACB5BC4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Diagnostics.Tests", "test\Microsoft.AspNetCore.Diagnostics.Tests\Microsoft.AspNetCore.Diagnostics.Tests.xproj", "{994351B4-7B2A-4139-8B72-72C5BB5CC618}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.Tests", "test\Microsoft.AspNetCore.Diagnostics.Tests\Microsoft.AspNetCore.Diagnostics.Tests.csproj", "{994351B4-7B2A-4139-8B72-72C5BB5CC618}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ExceptionHandlerSample", "samples\ExceptionHandlerSample\ExceptionHandlerSample.xproj", "{427CDB36-78B0-4583-9EBC-7F283DE60355}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExceptionHandlerSample", "samples\ExceptionHandlerSample\ExceptionHandlerSample.csproj", "{427CDB36-78B0-4583-9EBC-7F283DE60355}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore", "src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.xproj", "{4F5A6A72-FFE4-49C4-B4C6-58132CFCB9FE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore", "src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj", "{4F5A6A72-FFE4-49C4-B4C6-58132CFCB9FE}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests", "test\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests.xproj", "{5486117B-A742-49E0-94FC-12B76F061803}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests", "test\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests.csproj", "{5486117B-A742-49E0-94FC-12B76F061803}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests", "test\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.xproj", "{2F9B479D-8247-4210-804B-78E6DD5C3E98}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests", "test\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.csproj", "{2F9B479D-8247-4210-804B-78E6DD5C3E98}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Diagnostics.Elm", "src\Microsoft.AspNetCore.Diagnostics.Elm\Microsoft.AspNetCore.Diagnostics.Elm.xproj", "{624B0019-956A-4157-B008-270C5B229553}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.Elm", "src\Microsoft.AspNetCore.Diagnostics.Elm\Microsoft.AspNetCore.Diagnostics.Elm.csproj", "{624B0019-956A-4157-B008-270C5B229553}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "StatusCodePagesSample", "samples\StatusCodePagesSample\StatusCodePagesSample.xproj", "{CC1F5841-FE10-4DDB-8477-C4DE92BA759F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatusCodePagesSample", "samples\StatusCodePagesSample\StatusCodePagesSample.csproj", "{CC1F5841-FE10-4DDB-8477-C4DE92BA759F}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Diagnostics.Abstractions", "src\Microsoft.AspNetCore.Diagnostics.Abstractions\Microsoft.AspNetCore.Diagnostics.Abstractions.xproj", "{83FFB65A-97B1-45AA-BCB8-3F43966BC8A3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.Abstractions", "src\Microsoft.AspNetCore.Diagnostics.Abstractions\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj", "{83FFB65A-97B1-45AA-BCB8-3F43966BC8A3}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ElmPageSample", "samples\ElmPageSample\ElmPageSample.xproj", "{FFD28DCF-C24F-4C59-9B6B-F3B74CE13129}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElmPageSample", "samples\ElmPageSample\ElmPageSample.csproj", "{FFD28DCF-C24F-4C59-9B6B-F3B74CE13129}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DatabaseErrorPageSample", "samples\DatabaseErrorPageSample\DatabaseErrorPageSample.xproj", "{FF7F11A1-14E7-4948-A853-2487D99DE0C6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseErrorPageSample", "samples\DatabaseErrorPageSample\DatabaseErrorPageSample.csproj", "{FF7F11A1-14E7-4948-A853-2487D99DE0C6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.MiddlewareAnalysis", "src\Microsoft.AspNetCore.MiddlewareAnalysis\Microsoft.AspNetCore.MiddlewareAnalysis.xproj", "{C2DEDD37-D1EB-4819-9A9C-475E37A52358}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.MiddlewareAnalysis", "src\Microsoft.AspNetCore.MiddlewareAnalysis\Microsoft.AspNetCore.MiddlewareAnalysis.csproj", "{C2DEDD37-D1EB-4819-9A9C-475E37A52358}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MiddlewareAnalysisSample", "samples\MiddlewareAnalysisSample\MiddlewareAnalysisSample.xproj", "{95981429-F212-44E1-83AA-32DA9E2A517C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiddlewareAnalysisSample", "samples\MiddlewareAnalysisSample\MiddlewareAnalysisSample.csproj", "{95981429-F212-44E1-83AA-32DA9E2A517C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.MiddlewareAnalysis.Tests", "test\Microsoft.AspNetCore.MiddlewareAnalysis.Tests\Microsoft.AspNetCore.MiddlewareAnalysis.Tests.xproj", "{B0166AED-738F-42EE-AF4D-C487C8B21521}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.MiddlewareAnalysis.Tests", "test\Microsoft.AspNetCore.MiddlewareAnalysis.Tests\Microsoft.AspNetCore.MiddlewareAnalysis.Tests.csproj", "{B0166AED-738F-42EE-AF4D-C487C8B21521}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Diagnostics.FunctionalTests", "test\Microsoft.AspNetCore.Diagnostics.FunctionalTests\Microsoft.AspNetCore.Diagnostics.FunctionalTests.xproj", "{BFDFE1E3-A6A9-4DAB-8939-1DA306FC69C8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.FunctionalTests", "test\Microsoft.AspNetCore.Diagnostics.FunctionalTests\Microsoft.AspNetCore.Diagnostics.FunctionalTests.csproj", "{BFDFE1E3-A6A9-4DAB-8939-1DA306FC69C8}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ClassLibraryWithPortablePdbs", "test\ClassLibraryWithPortablePdbs\ClassLibraryWithPortablePdbs.xproj", "{AA3661A1-CE8D-4597-ADFD-A5A30834E5D0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibraryWithPortablePdbs", "test\ClassLibraryWithPortablePdbs\ClassLibraryWithPortablePdbs.csproj", "{AA3661A1-CE8D-4597-ADFD-A5A30834E5D0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

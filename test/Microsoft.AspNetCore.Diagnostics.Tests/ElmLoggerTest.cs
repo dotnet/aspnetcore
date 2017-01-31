@@ -323,7 +323,11 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
             var t = SetUp();
             var logger = t.Item1;
             var store = t.Item2;
-            var domain = AppDomain.CreateDomain("newDomain");
+            var setupInfo = new AppDomainSetup
+            {
+                ApplicationBase = AppDomain.CurrentDomain.BaseDirectory
+            };
+            var domain = AppDomain.CreateDomain("newDomain", null, setupInfo);
 
             // Act
             domain.DoCallBack(DomainFunc);

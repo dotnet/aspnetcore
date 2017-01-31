@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>ASP.NET Core middleware for Entity Framework Core error pages. Use this middleware to detect and diagnose errors with Entity Framework Core migrations.</Description>
+    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;diagnostics;entityframeworkcore</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\shared\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.RazorViews.Sources" Version="1.2.0-*" PrivateAssets="All"/>
+    <DotNetCliToolReference Include="RazorPageGenerator" Version="1.1.0-*" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net451'">
+    <Reference Include="System.Configuration" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp1.1;net451</TargetFrameworks>
+    <RuntimeIdentifier Condition="'$(TargetFramework)'!='netcoreapp1.1'">win7-x64</RuntimeIdentifier>
+    <SignAssembly>false</SignAssembly>
+    <PublicSign>false</PublicSign>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\samples\DatabaseErrorPageSample\DatabaseErrorPageSample.csproj" />
+    <ProjectReference Include="..\..\samples\DeveloperExceptionPageSample\DeveloperExceptionPageSample.csproj" />
+    <ProjectReference Include="..\..\samples\ElmPageSample\ElmPageSample.csproj" />
+    <ProjectReference Include="..\..\samples\ExceptionHandlerSample\ExceptionHandlerSample.csproj" />
+    <ProjectReference Include="..\..\samples\MiddlewareAnalysisSample\MiddlewareAnalysisSample.csproj" />
+    <ProjectReference Include="..\..\samples\StatusCodePagesSample\StatusCodePagesSample.csproj" />
+    <ProjectReference Include="..\..\samples\WelcomePageSample\WelcomePageSample.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
+    <PackageReference Include="xunit" Version="2.2.0-*" />
+  </ItemGroup>
+
+</Project>

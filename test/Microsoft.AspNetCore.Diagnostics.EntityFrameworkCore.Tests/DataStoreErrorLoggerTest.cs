@@ -30,7 +30,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             // Arrange
             var logger = SetUp();
-            var domain = AppDomain.CreateDomain("newDomain");
+            var setupInfo = new AppDomainSetup
+            {
+                ApplicationBase = AppDomain.CurrentDomain.BaseDirectory
+            };
+            var domain = AppDomain.CreateDomain("newDomain", null, setupInfo);
 
             // Act
             logger.StartLoggingForCurrentCallContext();
