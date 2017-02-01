@@ -36,7 +36,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                         {
                             Name = "value",
                             PropertyName = "FooProp",
-                            TypeName = "System.String"
+                            TypeName = "System.String"      // Gets preallocated
+                        },
+                        new TagHelperAttributeDescriptor
+                        {
+                            Name = "date",
+                            PropertyName = "BarProp",
+                            TypeName = "System.DateTime"   // Doesn't get preallocated
                         }
                     }
                 }
@@ -55,7 +61,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
             // Assert
             AssertIRMatchesBaseline(document.GetIRDocument());
-            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+            var csharpDocument = document.GetCSharpDocument();
+            AssertCSharpDocumentMatchesBaseline(csharpDocument);
+            Assert.Empty(csharpDocument.Diagnostics);
         }
     }
 }

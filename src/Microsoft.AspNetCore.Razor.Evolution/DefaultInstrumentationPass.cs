@@ -104,6 +104,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                 VisitDefault(node);
             }
+
+            public override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
+            {
+                // We don't want to instrument TagHelper attributes. Do nothing.
+            }
+
+            public override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
+            {
+                // We don't want to instrument TagHelper attributes. Do nothing.
+            }
         }
     }
 }

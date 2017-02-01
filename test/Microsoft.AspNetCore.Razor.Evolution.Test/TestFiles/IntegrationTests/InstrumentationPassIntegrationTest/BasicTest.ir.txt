@@ -19,24 +19,27 @@ Document -
                 CSharpStatement -  - BeginContext(69, 2, true);
                 HtmlContent - (69:2,10 [2] BasicTest.cshtml) - \n
                 CSharpStatement -  - EndContext();
-                TagHelper - (71:3,0 [68] BasicTest.cshtml)
+                TagHelper - (71:3,0 [87] BasicTest.cshtml)
                     InitializeTagHelperStructure -  - form - TagMode.StartTagAndEndTag
                         CSharpStatement -  - BeginContext(91, 6, true);
                         HtmlContent - (91:3,20 [6] BasicTest.cshtml) - \n    
                         CSharpStatement -  - EndContext();
-                        TagHelper - (97:4,4 [33] BasicTest.cshtml)
+                        TagHelper - (97:4,4 [52] BasicTest.cshtml)
                             InitializeTagHelperStructure -  - input - TagMode.SelfClosing
                             CreateTagHelper -  - InputTagHelper
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - value - FooProp
+                            SetTagHelperProperty - (121:4,28 [13] BasicTest.cshtml) - date - BarProp - HtmlAttributeValueStyle.DoubleQuotes
+                                CSharpExpression - (122:4,29 [12] BasicTest.cshtml)
+                                    CSharpToken - (122:4,29 [12] BasicTest.cshtml) - DateTime.Now
                             AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
-                            CSharpStatement -  - BeginContext(97, 33, false);
+                            CSharpStatement -  - BeginContext(97, 52, false);
                             ExecuteTagHelpers - 
                             CSharpStatement -  - EndContext();
-                        CSharpStatement -  - BeginContext(130, 2, true);
-                        HtmlContent - (130:4,37 [2] BasicTest.cshtml) - \n
+                        CSharpStatement -  - BeginContext(149, 2, true);
+                        HtmlContent - (149:4,56 [2] BasicTest.cshtml) - \n
                         CSharpStatement -  - EndContext();
                     CreateTagHelper -  - FormTagHelper
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
-                    CSharpStatement -  - BeginContext(71, 68, false);
+                    CSharpStatement -  - BeginContext(71, 87, false);
                     ExecuteTagHelpers - 
                     CSharpStatement -  - EndContext();

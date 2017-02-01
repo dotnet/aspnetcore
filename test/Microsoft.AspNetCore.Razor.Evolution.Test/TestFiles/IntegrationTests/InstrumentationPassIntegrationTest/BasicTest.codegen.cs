@@ -1,4 +1,4 @@
-#pragma checksum "TestFiles/IntegrationTests/InstrumentationPassIntegrationTest/BasicTest.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "7e1ceb3e8ebe2125cd44bea5d9f4ac1acf9ec12b"
+#pragma checksum "TestFiles/IntegrationTests/InstrumentationPassIntegrationTest/BasicTest.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "5898df8049fc1522f646a774050e93cbf5cafb84"
 namespace 
 {
     #line hidden
@@ -56,8 +56,14 @@ Write("Hello");
                 __tagHelperExecutionContext.Add(__InputTagHelper);
                 __InputTagHelper.FooProp = (string)__tagHelperAttribute_0.Value;
                 __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_0);
+#line 5 "TestFiles/IntegrationTests/InstrumentationPassIntegrationTest/BasicTest.cshtml"
+__InputTagHelper.BarProp = DateTime.Now;
+
+#line default
+#line hidden
+                __tagHelperExecutionContext.AddTagHelperAttribute("date", __InputTagHelper.BarProp, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
                 __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_1);
-                BeginContext(97, 33, false);
+                BeginContext(97, 52, false);
                 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 if (!__tagHelperExecutionContext.Output.IsContentModified)
                 {
@@ -66,7 +72,7 @@ Write("Hello");
                 Write(__tagHelperExecutionContext.Output);
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
                 EndContext();
-                BeginContext(130, 2, true);
+                BeginContext(149, 2, true);
                 WriteLiteral("\r\n");
                 EndContext();
             }
@@ -74,7 +80,7 @@ Write("Hello");
             __FormTagHelper = CreateTagHelper<global::FormTagHelper>();
             __tagHelperExecutionContext.Add(__FormTagHelper);
             __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_2);
-            BeginContext(71, 68, false);
+            BeginContext(71, 87, false);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {

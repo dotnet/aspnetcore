@@ -112,6 +112,100 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         }
 
         [Fact]
+        public void InstrumentationPass_SkipsCSharpExpression_InsideTagHelperAttribute()
+        {
+            // Arrange
+            var builder = RazorIRBuilder.Document();
+            builder.Push(new TagHelperIRNode()
+            {
+                Source = CreateSource(3)
+            });
+
+            builder.Push(new AddTagHelperHtmlAttributeIRNode());
+
+            builder.Push(new CSharpExpressionIRNode()
+            {
+                Source = CreateSource(5)
+            });
+
+            builder.Add(new CSharpTokenIRNode()
+            {
+                Content = "Hi",
+            });
+
+            var irDocument = (DocumentIRNode)builder.Build();
+
+            var pass = new DefaultInstrumentationPass();
+
+            // Act
+            var result = pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+
+            // Assert
+            Children(
+                irDocument,
+                n =>
+                {
+                    Assert.IsType<TagHelperIRNode>(n);
+                    Children(
+                        n,
+                        c =>
+                        {
+                            Assert.IsType<AddTagHelperHtmlAttributeIRNode>(c);
+                            Children(
+                                c,
+                                s => CSharpExpression("Hi", s));
+                        });
+                });
+        }
+
+        [Fact]
+        public void InstrumentationPass_SkipsCSharpExpression_InsideTagHelperProperty()
+        {
+            // Arrange
+            var builder = RazorIRBuilder.Document();
+            builder.Push(new TagHelperIRNode()
+            {
+                Source = CreateSource(3)
+            });
+
+            builder.Push(new SetTagHelperPropertyIRNode());
+
+            builder.Push(new CSharpExpressionIRNode()
+            {
+                Source = CreateSource(5)
+            });
+
+            builder.Add(new CSharpTokenIRNode()
+            {
+                Content = "Hi",
+            });
+
+            var irDocument = (DocumentIRNode)builder.Build();
+
+            var pass = new DefaultInstrumentationPass();
+
+            // Act
+            var result = pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+
+            // Assert
+            Children(
+                irDocument,
+                n =>
+                {
+                    Assert.IsType<TagHelperIRNode>(n);
+                    Children(
+                        n,
+                        c =>
+                        {
+                            Assert.IsType<SetTagHelperPropertyIRNode>(c);
+                            Children(
+                                c,
+                                s => CSharpExpression("Hi", s));
+                        });
+                });
+        }
+
+        [Fact]
         public void InstrumentationPass_InstrumentsExecuteTagHelper_InsideTagHelper()
         {
             // Arrange
@@ -171,7 +265,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         c => Assert.IsType<ExecuteTagHelpersIRNode>(c));
                 });
         }
-
 
         [Fact]
         public void InstrumentationPass_SkipsExecuteTagHelper_MalformedTagHelper()
