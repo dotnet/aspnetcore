@@ -1,39 +1,34 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26127.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E0497F39-AFFB-4819-A116-E39E361915AB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{FEB39027-9158-4DE2-997F-7ADAEF8188D0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.TestHost.Tests", "test\Microsoft.AspNetCore.TestHost.Tests\Microsoft.AspNetCore.TestHost.Tests.xproj", "{0ACB2719-9484-49B5-B8E3-117091192511}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.TestHost.Tests", "test\Microsoft.AspNetCore.TestHost.Tests\Microsoft.AspNetCore.TestHost.Tests.csproj", "{0ACB2719-9484-49B5-B8E3-117091192511}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.TestHost", "src\Microsoft.AspNetCore.TestHost\Microsoft.AspNetCore.TestHost.xproj", "{1A415A3F-1081-45DB-809B-EE19CEA02DC0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.TestHost", "src\Microsoft.AspNetCore.TestHost\Microsoft.AspNetCore.TestHost.csproj", "{1A415A3F-1081-45DB-809B-EE19CEA02DC0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Hosting", "src\Microsoft.AspNetCore.Hosting\Microsoft.AspNetCore.Hosting.xproj", "{3944F036-7E75-47E8-AA52-C4B89A64EC3A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Hosting", "src\Microsoft.AspNetCore.Hosting\Microsoft.AspNetCore.Hosting.csproj", "{3944F036-7E75-47E8-AA52-C4B89A64EC3A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Hosting.Tests", "test\Microsoft.AspNetCore.Hosting.Tests\Microsoft.AspNetCore.Hosting.Tests.xproj", "{D4F18D58-52B1-435D-A012-10F2CDF158C4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Hosting.Tests", "test\Microsoft.AspNetCore.Hosting.Tests\Microsoft.AspNetCore.Hosting.Tests.csproj", "{D4F18D58-52B1-435D-A012-10F2CDF158C4}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A66E3673-3976-4152-B902-2D0EC1428EA2}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Hosting.Abstractions", "src\Microsoft.AspNetCore.Hosting.Abstractions\Microsoft.AspNetCore.Hosting.Abstractions.csproj", "{BB780FBB-7842-4759-8DE7-96FA2E5571C1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Hosting.Abstractions", "src\Microsoft.AspNetCore.Hosting.Abstractions\Microsoft.AspNetCore.Hosting.Abstractions.xproj", "{BB780FBB-7842-4759-8DE7-96FA2E5571C1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Hosting.Server.Abstractions", "src\Microsoft.AspNetCore.Hosting.Server.Abstractions\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj", "{FDBBA081-5248-4FC0-9E08-B46BEF3FA438}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Hosting.Server.Abstractions", "src\Microsoft.AspNetCore.Hosting.Server.Abstractions\Microsoft.AspNetCore.Hosting.Server.Abstractions.xproj", "{FDBBA081-5248-4FC0-9E08-B46BEF3FA438}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.IntegrationTesting", "src\Microsoft.AspNetCore.Server.IntegrationTesting\Microsoft.AspNetCore.Server.IntegrationTesting.xproj", "{3DA89347-6731-4366-80C4-548F24E8607B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.IntegrationTesting", "src\Microsoft.AspNetCore.Server.IntegrationTesting\Microsoft.AspNetCore.Server.IntegrationTesting.csproj", "{3DA89347-6731-4366-80C4-548F24E8607B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{9C7520A0-F2EB-411C-8BB2-80B39C937217}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SampleStartups", "samples\SampleStartups\SampleStartups.xproj", "{485B6745-7648-400A-A969-F68FCF194E46}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleStartups", "samples\SampleStartups\SampleStartups.csproj", "{485B6745-7648-400A-A969-F68FCF194E46}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Hosting.WindowsServices", "src\Microsoft.AspNetCore.Hosting.WindowsServices\Microsoft.AspNetCore.Hosting.WindowsServices.xproj", "{03148731-EA95-40A2-BAE8-A12315EA1748}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Hosting.WindowsServices", "src\Microsoft.AspNetCore.Hosting.WindowsServices\Microsoft.AspNetCore.Hosting.WindowsServices.csproj", "{03148731-EA95-40A2-BAE8-A12315EA1748}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Hosting.FunctionalTests", "test\Microsoft.AspNetCore.Hosting.FunctionalTests\Microsoft.AspNetCore.Hosting.FunctionalTests.xproj", "{FC578F4E-171C-4F82-B301-3ABF6318D082}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Hosting.FunctionalTests", "test\Microsoft.AspNetCore.Hosting.FunctionalTests\Microsoft.AspNetCore.Hosting.FunctionalTests.csproj", "{FC578F4E-171C-4F82-B301-3ABF6318D082}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Hosting.TestSites", "test\Microsoft.AspNetCore.Hosting.TestSites\Microsoft.AspNetCore.Hosting.TestSites.xproj", "{542D4600-B232-4B17-A08C-E31EBFA0D74E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Hosting.TestSites", "test\Microsoft.AspNetCore.Hosting.TestSites\Microsoft.AspNetCore.Hosting.TestSites.csproj", "{542D4600-B232-4B17-A08C-E31EBFA0D74E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

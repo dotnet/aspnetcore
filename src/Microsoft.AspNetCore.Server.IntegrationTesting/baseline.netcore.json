@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Server.Testing, Version=0.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Server.IntegrationTesting, Version=0.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Server.Testing.ApplicationType",
@@ -645,7 +645,7 @@
           "Parameters": [
             {
               "Name": "environment",
-              "Type": "System.Collections.Specialized.StringDictionary"
+              "Type": "System.Collections.Generic.IDictionary<System.String, System.String>"
             },
             {
               "Name": "name",
@@ -804,54 +804,6 @@
           "Name": "Deploy",
           "Parameters": [],
           "ReturnType": "Microsoft.AspNetCore.Server.Testing.DeploymentResult",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Server.Testing.IISDeployer",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "BaseType": "Microsoft.AspNetCore.Server.Testing.ApplicationDeployer",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Deploy",
-          "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Server.Testing.DeploymentResult",
-          "Virtual": true,
-          "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Server.Testing.IApplicationDeployer",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Dispose",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Override": true,
-          "ImplementedInterface": "System.IDisposable",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "startParameters",
-              "Type": "Microsoft.AspNetCore.Server.Testing.DeploymentParameters"
-            },
-            {
-              "Name": "logger",
-              "Type": "Microsoft.Extensions.Logging.ILogger"
-            }
-          ],
-          "Visibility": "Public",
           "GenericParameter": []
         }
       ],

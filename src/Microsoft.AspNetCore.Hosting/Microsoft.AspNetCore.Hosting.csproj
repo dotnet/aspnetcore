@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>ASP.NET Core hosting infrastructure and startup logic for web applications.</Description>
+    <TargetFrameworks>net451;netstandard1.3;netstandard1.5</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;hosting</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Hosting.Abstractions\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Hosting.Server.Abstractions\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.RazorViews.Sources" Version="1.2.0-*" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.Extensions.RuntimeEnvironment.Sources" Version="1.2.0-*" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.Extensions.StackTrace.Sources" Version="1.2.0-*" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.Extensions.TypeNameHelper.Sources" Version="1.2.0-*" PrivateAssets="All"/>
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="4.4.0-*" />
+    <PackageReference Include="System.Reflection.Metadata" Version="1.5.0-*" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'net451'">
+    <PackageReference Include="System.Diagnostics.StackTrace" Version="4.4.0-*" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
+    <PackageReference Include="System.Runtime.Loader" Version="4.4.0-*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="RazorPageGenerator" Version="1.1.0-*" />
+  </ItemGroup>
+
+</Project>

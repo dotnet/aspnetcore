@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>ASP.NET Core helpers to deploy applications to IIS Express, IIS, WebListener and Kestrel for testing.</Description>
+    <VersionPrefix>0.3.0</VersionPrefix>
+    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;testing</PackageTags>
+    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.3' ">$(PackageTargetFallback);portable-net45+win8</PackageTargetFallback>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Deployers\RemoteWindowsDeployer\RemotePSSessionHelper.ps1;Deployers\RemoteWindowsDeployer\StartServer.ps1;Deployers\RemoteWindowsDeployer\StopServer.ps1" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Process.Sources" Version="1.2.0-*" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.Extensions.RuntimeEnvironment.Sources" Version="1.2.0-*" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.NETCore.Windows.ApiSets" Version="1.0.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <PackageReference Include="Microsoft.Web.Administration" Version="7.0.0" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <PackageReference Include="System.Diagnostics.Process" Version="4.4.0-*" />
+    <PackageReference Include="System.Threading.Thread" Version="4.4.0-*" />
+  </ItemGroup>
+
+</Project>
