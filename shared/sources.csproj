@@ -13,8 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(NuspecBasePath)' != ''">
-    <Compile Include="$(NuspecBasePath)\**\*.cs" Pack="true" />
-    <EmbeddedResource Include="$(NuspecBasePath)\**\*.resx" Pack="true" />
+    <Compile Include="$(NuspecBasePath)\**\*.cs" Pack="true" PackagePath="$(ContentTargetFolders)\cs\$(TargetFramework)\%(RecursiveDir)%(FileName)%(Extension)" />
     <PackageReference Update="@(PackageReference)" PrivateAssets="All" />
   </ItemGroup>
 
