@@ -13,7 +13,7 @@ using Microsoft.Extensions.Internal;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Extension methods for adding typed middlware.
+    /// Extension methods for adding typed middleware.
     /// </summary>
     public static class UseMiddlewareExtensions
     {
