@@ -15,5 +15,6 @@ Related community projects:
 * [MyTested.AspNetCore.Mvc](https://github.com/ivaylokenov/MyTested.AspNetCore.Mvc): Powerful fluent testing framework for ASP.NET Core MVC.
 * [MvcDeviceDetector](https://github.com/laskoviymishka/MvcDeviceDetector): Device detection mechanism to create mobile web applications.
 * [XmlResult](https://github.com/Wallsmedia/XmlResult): XML formatter extensions to allow defining the XML serializer type.
+* [AspNetCoreImageTagHelper](https://github.com/ignatandrei/AspNetCoreImageTagHelper): Tag helper for rendering images as inline base64 data.
 
 This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
