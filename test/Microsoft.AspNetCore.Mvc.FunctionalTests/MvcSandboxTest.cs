@@ -25,5 +25,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Contains("This sandbox should give you a quick view of a basic MVC application.", response);
         }
+        [Fact]
+        public async Task RazorPages_ReturnSuccess()
+        {
+            // Arrange & Act
+            var response = await Client.GetStringAsync("http://localhost/Pages/Test");
+
+            // Assert
+            Assert.Contains("This file should give you a quick view of a Mvc Raor Page in action.", response);
+        }
     }
 }

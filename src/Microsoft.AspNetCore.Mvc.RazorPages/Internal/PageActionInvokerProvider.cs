@@ -145,6 +145,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 tempData,
                 _htmlHelperOptions);
 
+            pageContext.ActionDescriptor = cacheEntry.ActionDescriptor;
+
             return new PageActionInvoker(
                 _selector,
                 _diagnosticSource,

@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             public IUrlHelper UrlHelper { get; set; }
 
             [RazorInject]
-            public HtmlEncoder HtmlEncoder { get; set; }
+            public new HtmlEncoder HtmlEncoder { get; set; }
 
             [RazorInject]
             public ViewDataDictionary<TestPage> ViewData { get; set; }

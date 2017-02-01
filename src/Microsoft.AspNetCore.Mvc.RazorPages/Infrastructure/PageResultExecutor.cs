@@ -6,6 +6,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.RazorPages.Internal;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             : base(writerFactory, compositeViewEngine, diagnosticSource)
         {
             _razorViewEngine = razorViewEngine;
-             _razorPageActivator = razorPageActivator;
+             _razorPageActivator = new PassThruRazorPageActivator(razorPageActivator);
             _htmlEncoder = htmlEncoder;
         }
 
@@ -54,6 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
 
             var view = new RazorView(_razorViewEngine, _razorPageActivator, pageContext.PageStarts, result.Page, _htmlEncoder);
+            pageContext.View = view;
             return ExecuteAsync(pageContext, result.ContentType, result.StatusCode);
         }
     }

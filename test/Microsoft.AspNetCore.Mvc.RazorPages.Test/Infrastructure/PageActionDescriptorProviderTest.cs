@@ -3,15 +3,14 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Mvc.RazorPages.Internal;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
-using Microsoft.AspNetCore.Razor.Evolution;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
@@ -128,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             razorProject.Setup(p => p.EnumerateItems("/"))
                 .Returns(new[]
                 {
-                    GetProjectItem("/About", "/Index.cshtml", $"@page {Environment.NewLine}"),
+                    GetProjectItem("", "/About/Index.cshtml", $"@page {Environment.NewLine}"),
                 });
             var provider = new PageActionDescriptorProvider(
                 razorProject.Object,
@@ -145,14 +144,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 {
                     var descriptor = Assert.IsType<PageActionDescriptor>(result);
                     Assert.Equal("/About/Index.cshtml", descriptor.RelativePath);
-                    Assert.Equal("/Index", descriptor.RouteValues["page"]);
+                    Assert.Equal("/About/Index", descriptor.RouteValues["page"]);
                     Assert.Equal("About/Index", descriptor.AttributeRouteInfo.Template);
                 },
                 result =>
                 {
                     var descriptor = Assert.IsType<PageActionDescriptor>(result);
                     Assert.Equal("/About/Index.cshtml", descriptor.RelativePath);
-                    Assert.Equal("/Index", descriptor.RouteValues["page"]);
+                    Assert.Equal("/About/Index", descriptor.RouteValues["page"]);
                     Assert.Equal("About", descriptor.AttributeRouteInfo.Template);
                 });
         }
@@ -165,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             razorProject.Setup(p => p.EnumerateItems("/"))
                 .Returns(new[]
                 {
-                    GetProjectItem("/Catalog/Details", "/Index.cshtml", $"@page {{id:int?}} {Environment.NewLine}"),
+                    GetProjectItem("", "/Catalog/Details/Index.cshtml", $"@page {{id:int?}} {Environment.NewLine}"),
                 });
             var provider = new PageActionDescriptorProvider(
                 razorProject.Object,
@@ -182,14 +181,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 {
                     var descriptor = Assert.IsType<PageActionDescriptor>(result);
                     Assert.Equal("/Catalog/Details/Index.cshtml", descriptor.RelativePath);
-                    Assert.Equal("/Index", descriptor.RouteValues["page"]);
+                    Assert.Equal("/Catalog/Details/Index", descriptor.RouteValues["page"]);
                     Assert.Equal("Catalog/Details/Index/{id:int?}", descriptor.AttributeRouteInfo.Template);
                 },
                 result =>
                 {
                     var descriptor = Assert.IsType<PageActionDescriptor>(result);
                     Assert.Equal("/Catalog/Details/Index.cshtml", descriptor.RelativePath);
-                    Assert.Equal("/Index", descriptor.RouteValues["page"]);
+                    Assert.Equal("/Catalog/Details/Index", descriptor.RouteValues["page"]);
                     Assert.Equal("Catalog/Details/{id:int?}", descriptor.AttributeRouteInfo.Template);
                 });
         }

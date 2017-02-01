@@ -42,6 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.AddFormatterMappings();
             builder.AddViews();
             builder.AddRazorViewEngine();
+            builder.AddRazorPages();
             builder.AddCacheTagHelper();
 
             // +1 order

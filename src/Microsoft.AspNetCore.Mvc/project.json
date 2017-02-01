@@ -35,7 +35,7 @@
     "Microsoft.AspNetCore.Mvc.Localization": {
       "target": "project"
     },
-    "Microsoft.AspNetCore.Mvc.Razor": {
+    "Microsoft.AspNetCore.Mvc.RazorPages": {
       "target": "project"
     },
     "Microsoft.AspNetCore.Mvc.TagHelpers": {

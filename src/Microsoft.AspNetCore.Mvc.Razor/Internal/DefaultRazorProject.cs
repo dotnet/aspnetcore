@@ -49,7 +49,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 {
                     if (file.IsDirectory)
                     {
-                        var children = EnumerateFiles(_provider.GetDirectoryContents(file.PhysicalPath), basePath, prefix + "/" + file.Name);
+                        var relativePath = prefix + "/" + file.Name;
+                        var subDirectory = _provider.GetDirectoryContents(relativePath);
+                        var children = EnumerateFiles(subDirectory, basePath, relativePath);
                         foreach (var child in children)
                         {
                             yield return child;

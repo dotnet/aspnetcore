@@ -1,0 +1,514 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Text.Encodings.Web;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
+using Microsoft.AspNetCore.Razor.TagHelpers;
+
+namespace Microsoft.AspNetCore.Mvc.Razor
+{
+    /// <summary>
+    /// Represents properties and methods that are needed in order to render a view that uses Razor syntax.
+    /// </summary>
+    public abstract class RazorPageBase
+    {
+        private AttributeInfo _attributeInfo;
+        private TagHelperAttributeInfo _tagHelperAttributeInfo;
+        private StringWriter _valueBuffer;
+
+        /// <summary>
+        /// Gets the <see cref="TextWriter"/> that the page is writing output to.
+        /// </summary>
+        protected abstract TextWriter Writer { get; }
+
+        protected abstract HtmlEncoder Encoder { get; }
+
+        public abstract Task ExecuteAsync();
+
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> with HTML encoding to <see cref="Writer"/>.
+        /// </summary>
+        /// <param name="value">The <see cref="object"/> to write.</param>
+        public virtual void Write(object value)
+        {
+            WriteTo(Writer, value);
+        }
+
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> with HTML encoding to <paramref name="writer"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
+        /// <param name="value">The <see cref="object"/> to write.</param>
+        /// <remarks>
+        /// <paramref name="value"/>s of type <see cref="IHtmlContent"/> are written using
+        /// <see cref="IHtmlContent.WriteTo(TextWriter, HtmlEncoder)"/>.
+        /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the
+        /// <paramref name="writer"/>.
+        /// </remarks>
+        public virtual void WriteTo(TextWriter writer, object value)
+        {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            WriteTo(writer, Encoder, value);
+        }
+
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> with HTML encoding to given <paramref name="writer"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
+        /// <param name="encoder">
+        /// The <see cref="System.Text.Encodings.Web.HtmlEncoder"/> to use when encoding <paramref name="value"/>.
+        /// </param>
+        /// <param name="value">The <see cref="object"/> to write.</param>
+        /// <remarks>
+        /// <paramref name="value"/>s of type <see cref="IHtmlContent"/> are written using
+        /// <see cref="IHtmlContent.WriteTo(TextWriter, HtmlEncoder)"/>.
+        /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the
+        /// <paramref name="writer"/>.
+        /// </remarks>
+        public static void WriteTo(TextWriter writer, HtmlEncoder encoder, object value)
+        {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (encoder == null)
+            {
+                throw new ArgumentNullException(nameof(encoder));
+            }
+
+            if (value == null || value == HtmlString.Empty)
+            {
+                return;
+            }
+
+            var htmlContent = value as IHtmlContent;
+            if (htmlContent != null)
+            {
+                var bufferedWriter = writer as ViewBufferTextWriter;
+                if (bufferedWriter == null || !bufferedWriter.IsBuffering)
+                {
+                    htmlContent.WriteTo(writer, encoder);
+                }
+                else
+                {
+                    var htmlContentContainer = value as IHtmlContentContainer;
+                    if (htmlContentContainer != null)
+                    {
+                        // This is likely another ViewBuffer.
+                        htmlContentContainer.MoveTo(bufferedWriter.Buffer);
+                    }
+                    else
+                    {
+                        // Perf: This is the common case for IHtmlContent, ViewBufferTextWriter is inefficient
+                        // for writing character by character.
+                        bufferedWriter.Buffer.AppendHtml(htmlContent);
+                    }
+                }
+
+                return;
+            }
+
+            WriteTo(writer, encoder, value.ToString());
+        }
+
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> with HTML encoding to <paramref name="writer"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
+        /// <param name="value">The <see cref="string"/> to write.</param>
+        public virtual void WriteTo(TextWriter writer, string value)
+        {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            WriteTo(writer, Encoder, value);
+        }
+
+        private static void WriteTo(TextWriter writer, HtmlEncoder encoder, string value)
+        {
+            if (!string.IsNullOrEmpty(value))
+            {
+                // Perf: Encode right away instead of writing it character-by-character.
+                // character-by-character isn't efficient when using a writer backed by a ViewBuffer.
+                var encoded = encoder.Encode(value);
+                writer.Write(encoded);
+            }
+        }
+
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Writer"/>.
+        /// </summary>
+        /// <param name="value">The <see cref="object"/> to write.</param>
+        public virtual void WriteLiteral(object value)
+        {
+            WriteLiteralTo(Writer, value);
+        }
+
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> without HTML encoding to the <paramref name="writer"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
+        /// <param name="value">The <see cref="object"/> to write.</param>
+        public virtual void WriteLiteralTo(TextWriter writer, object value)
+        {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (value != null)
+            {
+                WriteLiteralTo(writer, value.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Writer"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
+        /// <param name="value">The <see cref="string"/> to write.</param>
+        public virtual void WriteLiteralTo(TextWriter writer, string value)
+        {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (!string.IsNullOrEmpty(value))
+            {
+                writer.Write(value);
+            }
+        }
+
+        public virtual void BeginWriteAttribute(
+            string name,
+            string prefix,
+            int prefixOffset,
+            string suffix,
+            int suffixOffset,
+            int attributeValuesCount)
+        {
+            BeginWriteAttributeTo(Writer, name, prefix, prefixOffset, suffix, suffixOffset, attributeValuesCount);
+        }
+
+        public virtual void BeginWriteAttributeTo(
+            TextWriter writer,
+            string name,
+            string prefix,
+            int prefixOffset,
+            string suffix,
+            int suffixOffset,
+            int attributeValuesCount)
+        {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (prefix == null)
+            {
+                throw new ArgumentNullException(nameof(prefix));
+            }
+
+            if (suffix == null)
+            {
+                throw new ArgumentNullException(nameof(suffix));
+            }
+
+            _attributeInfo = new AttributeInfo(name, prefix, prefixOffset, suffix, suffixOffset, attributeValuesCount);
+
+            // Single valued attributes might be omitted in entirety if it the attribute value strictly evaluates to
+            // null  or false. Consequently defer the prefix generation until we encounter the attribute value.
+            if (attributeValuesCount != 1)
+            {
+                WritePositionTaggedLiteral(writer, prefix, prefixOffset);
+            }
+        }
+
+        public void WriteAttributeValue(
+            string prefix,
+            int prefixOffset,
+            object value,
+            int valueOffset,
+            int valueLength,
+            bool isLiteral)
+        {
+            WriteAttributeValueTo(Writer, prefix, prefixOffset, value, valueOffset, valueLength, isLiteral);
+        }
+
+        public void WriteAttributeValueTo(
+            TextWriter writer,
+            string prefix,
+            int prefixOffset,
+            object value,
+            int valueOffset,
+            int valueLength,
+            bool isLiteral)
+        {
+            if (_attributeInfo.AttributeValuesCount == 1)
+            {
+                if (IsBoolFalseOrNullValue(prefix, value))
+                {
+                    // Value is either null or the bool 'false' with no prefix; don't render the attribute.
+                    _attributeInfo.Suppressed = true;
+                    return;
+                }
+
+                // We are not omitting the attribute. Write the prefix.
+                WritePositionTaggedLiteral(writer, _attributeInfo.Prefix, _attributeInfo.PrefixOffset);
+
+                if (IsBoolTrueWithEmptyPrefixValue(prefix, value))
+                {
+                    // The value is just the bool 'true', write the attribute name instead of the string 'True'.
+                    value = _attributeInfo.Name;
+                }
+            }
+
+            // This block handles two cases.
+            // 1. Single value with prefix.
+            // 2. Multiple values with or without prefix.
+            if (value != null)
+            {
+                if (!string.IsNullOrEmpty(prefix))
+                {
+                    WritePositionTaggedLiteral(writer, prefix, prefixOffset);
+                }
+
+                BeginContext(valueOffset, valueLength, isLiteral);
+
+                WriteUnprefixedAttributeValueTo(writer, value, isLiteral);
+
+                EndContext();
+            }
+        }
+
+        public virtual void EndWriteAttribute()
+        {
+            EndWriteAttributeTo(Writer);
+        }
+
+        public virtual void EndWriteAttributeTo(TextWriter writer)
+        {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (!_attributeInfo.Suppressed)
+            {
+                WritePositionTaggedLiteral(writer, _attributeInfo.Suffix, _attributeInfo.SuffixOffset);
+            }
+        }
+
+        public void BeginAddHtmlAttributeValues(
+            TagHelperExecutionContext executionContext,
+            string attributeName,
+            int attributeValuesCount,
+            HtmlAttributeValueStyle attributeValueStyle)
+        {
+            _tagHelperAttributeInfo = new TagHelperAttributeInfo(
+                executionContext,
+                attributeName,
+                attributeValuesCount,
+                attributeValueStyle);
+        }
+
+        public void AddHtmlAttributeValue(
+            string prefix,
+            int prefixOffset,
+            object value,
+            int valueOffset,
+            int valueLength,
+            bool isLiteral)
+        {
+            Debug.Assert(_tagHelperAttributeInfo.ExecutionContext != null);
+            if (_tagHelperAttributeInfo.AttributeValuesCount == 1)
+            {
+                if (IsBoolFalseOrNullValue(prefix, value))
+                {
+                    // The first value was 'null' or 'false' indicating that we shouldn't render the attribute. The
+                    // attribute is treated as a TagHelper attribute so it's only available in
+                    // TagHelperContext.AllAttributes for TagHelper authors to see (if they want to see why the
+                    // attribute was removed from TagHelperOutput.Attributes).
+                    _tagHelperAttributeInfo.ExecutionContext.AddTagHelperAttribute(
+                        _tagHelperAttributeInfo.Name,
+                        value?.ToString() ?? string.Empty,
+                        _tagHelperAttributeInfo.AttributeValueStyle);
+                    _tagHelperAttributeInfo.Suppressed = true;
+                    return;
+                }
+                else if (IsBoolTrueWithEmptyPrefixValue(prefix, value))
+                {
+                    _tagHelperAttributeInfo.ExecutionContext.AddHtmlAttribute(
+                        _tagHelperAttributeInfo.Name,
+                        _tagHelperAttributeInfo.Name,
+                        _tagHelperAttributeInfo.AttributeValueStyle);
+                    _tagHelperAttributeInfo.Suppressed = true;
+                    return;
+                }
+            }
+
+            if (value != null)
+            {
+                // Perf: We'll use this buffer for all of the attribute values and then clear it to
+                // reduce allocations.
+                if (_valueBuffer == null)
+                {
+                    _valueBuffer = new StringWriter();
+                }
+
+                if (!string.IsNullOrEmpty(prefix))
+                {
+                    WriteLiteralTo(_valueBuffer, prefix);
+                }
+
+                WriteUnprefixedAttributeValueTo(_valueBuffer, value, isLiteral);
+            }
+        }
+
+        public void EndAddHtmlAttributeValues(TagHelperExecutionContext executionContext)
+        {
+            if (!_tagHelperAttributeInfo.Suppressed)
+            {
+                // Perf: _valueBuffer might be null if nothing was written. If it is set, clear it so
+                // it is reset for the next value.
+                var content = _valueBuffer == null ? HtmlString.Empty : new HtmlString(_valueBuffer.ToString());
+                _valueBuffer?.GetStringBuilder().Clear();
+
+                executionContext.AddHtmlAttribute(_tagHelperAttributeInfo.Name, content, _tagHelperAttributeInfo.AttributeValueStyle);
+            }
+        }
+
+        public abstract string Href(string contentPath);
+
+        private void WriteUnprefixedAttributeValueTo(TextWriter writer, object value, bool isLiteral)
+        {
+            var stringValue = value as string;
+
+            // The extra branching here is to ensure that we call the Write*To(string) overload where possible.
+            if (isLiteral && stringValue != null)
+            {
+                WriteLiteralTo(writer, stringValue);
+            }
+            else if (isLiteral)
+            {
+                WriteLiteralTo(writer, value);
+            }
+            else if (stringValue != null)
+            {
+                WriteTo(writer, stringValue);
+            }
+            else
+            {
+                WriteTo(writer, value);
+            }
+        }
+
+        private void WritePositionTaggedLiteral(TextWriter writer, string value, int position)
+        {
+            BeginContext(position, value.Length, isLiteral: true);
+            WriteLiteralTo(writer, value);
+            EndContext();
+        }
+
+        /// <summary>
+        /// Creates a named content section in the page.
+        /// </summary>
+        /// <param name="name">The name of the section to create.</param>
+        /// <param name="section">The <see cref="RenderAsyncDelegate"/> to execute when rendering the section.</param>
+        public abstract void DefineSection(string name, RenderAsyncDelegate section);
+
+        public abstract void BeginContext(int position, int length, bool isLiteral);
+
+        public abstract void EndContext();
+
+        private bool IsBoolFalseOrNullValue(string prefix, object value)
+        {
+            return string.IsNullOrEmpty(prefix) &&
+                (value == null ||
+                (value is bool && !(bool)value));
+        }
+
+        private bool IsBoolTrueWithEmptyPrefixValue(string prefix, object value)
+        {
+            // If the value is just the bool 'true', use the attribute name as the value.
+            return string.IsNullOrEmpty(prefix) &&
+                (value is bool && (bool)value);
+        }
+
+        private struct AttributeInfo
+        {
+            public AttributeInfo(
+                string name,
+                string prefix,
+                int prefixOffset,
+                string suffix,
+                int suffixOffset,
+                int attributeValuesCount)
+            {
+                Name = name;
+                Prefix = prefix;
+                PrefixOffset = prefixOffset;
+                Suffix = suffix;
+                SuffixOffset = suffixOffset;
+                AttributeValuesCount = attributeValuesCount;
+
+                Suppressed = false;
+            }
+
+            public int AttributeValuesCount { get; }
+
+            public string Name { get; }
+
+            public string Prefix { get; }
+
+            public int PrefixOffset { get; }
+
+            public string Suffix { get; }
+
+            public int SuffixOffset { get; }
+
+            public bool Suppressed { get; set; }
+        }
+
+        private struct TagHelperAttributeInfo
+        {
+            public TagHelperAttributeInfo(
+                TagHelperExecutionContext tagHelperExecutionContext,
+                string name,
+                int attributeValuesCount,
+                HtmlAttributeValueStyle attributeValueStyle)
+            {
+                ExecutionContext = tagHelperExecutionContext;
+                Name = name;
+                AttributeValuesCount = attributeValuesCount;
+                AttributeValueStyle = attributeValueStyle;
+
+                Suppressed = false;
+            }
+
+            public string Name { get; }
+
+            public TagHelperExecutionContext ExecutionContext { get; }
+
+            public int AttributeValuesCount { get; }
+
+            public HtmlAttributeValueStyle AttributeValueStyle { get; }
+
+            public bool Suppressed { get; set; }
+        }
+    }
+}

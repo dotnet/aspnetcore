@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             {
                 var visitor = new Visitor();
                 visitor.Visit(irDocument);
+                var modelType = ModelDirective.GetModelType(irDocument);
 
                 var properties = new HashSet<string>(StringComparer.Ordinal);
 
@@ -49,8 +50,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                     {
                         continue;
                     }
-
-                    var modelType = ModelDirective.GetModelType(irDocument);
 
                     typeName = typeName.Replace("<TModel>", "<" + modelType + ">");
 
@@ -74,8 +73,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 
             public IList<DirectiveIRNode> Directives { get; } = new List<DirectiveIRNode>();
 
-            public IList<DirectiveIRNode> ModelType { get; } = new List<DirectiveIRNode>();
-
             public override void VisitClass(ClassDeclarationIRNode node)
             {
                 if (Class == null)
@@ -92,11 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                 {
                     Directives.Add(node);
                 }
-                else if (node.Descriptor == ModelDirective.Directive)
-                {
-                    ModelType.Add(node);
                 }
             }
         }
-    }
 }

@@ -25,10 +25,7 @@ namespace RazorWebSite
             },
         };
 
-        public IDirectoryContents GetDirectoryContents(string subpath)
-        {
-            throw new NotImplementedException();
-        }
+        public IDirectoryContents GetDirectoryContents(string subpath) => new NotFoundDirectoryContents();
 
         public void UpdateContent(string subpath, string content)
         {

@@ -28,13 +28,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             }
 
             var visitor = new Visitor();
-            visitor.Visit(document);
-
-            return GetModelType(visitor);
+            return GetModelType(document, visitor);
         }
 
-        private static string GetModelType(Visitor visitor)
+        private static string GetModelType(DocumentIRNode document, Visitor visitor)
         {
+            visitor.Visit(document);
+
             for (var i = visitor.ModelDirectives.Count - 1; i >= 0; i--)
             {
                 var directive = visitor.ModelDirectives[i];
@@ -46,7 +46,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                 }
             }
 
-            return "dynamic";
+            if (document.DocumentKind == RazorPageDocumentClassifier.DocumentKind)
+            {
+                return visitor.Class.Name;
+            }
+            else
+            {
+                return  "dynamic";
+            }
         }
 
         internal class Pass : IRazorIRPass
@@ -59,9 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             public DocumentIRNode Execute(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
             {
                 var visitor = new Visitor();
-                visitor.Visit(irDocument);
-
-                var modelType = GetModelType(visitor);
+                var modelType = GetModelType(irDocument, visitor);
 
                 var baseType = visitor.Class.BaseType;
                 for (var i = visitor.InheritsDirectives.Count - 1; i >= 0; i--)

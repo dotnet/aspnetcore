@@ -71,7 +71,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             if (string.Equals(IndexFileName, item.Filename, StringComparison.OrdinalIgnoreCase))
             {
-                model.Selectors.Add(CreateSelectorModel(item.BasePath, template));
+                var parentDirectoryPath = item.Path;
+                var index = parentDirectoryPath.LastIndexOf('/');
+                if (index == -1)
+                {
+                    parentDirectoryPath = string.Empty; 
+                }
+                else
+                {
+                    parentDirectoryPath = parentDirectoryPath.Substring(0, index);
+                }
+                model.Selectors.Add(CreateSelectorModel(parentDirectoryPath, template));
             }
 
             for (var i = 0; i < _pagesOptions.Conventions.Count; i++)

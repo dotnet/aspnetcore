@@ -9,26 +9,26 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class DefaultRazorProjectItem : RazorProjectItem
     {
-        private readonly IFileInfo _fileInfo;
-
         public DefaultRazorProjectItem(IFileInfo fileInfo, string basePath, string path)
         {
-            _fileInfo = fileInfo;
+            FileInfo = fileInfo;
             BasePath = basePath;
             Path = path;
         }
+
+        public IFileInfo FileInfo { get; }
 
         public override string BasePath { get; }
 
         public override string Path { get; }
 
-        public override bool Exists => _fileInfo.Exists;
+        public override bool Exists => FileInfo.Exists;
 
-        public override string PhysicalPath => _fileInfo.PhysicalPath;
+        public override string PhysicalPath => FileInfo.PhysicalPath;
 
         public override Stream Read()
         {
-            return _fileInfo.CreateReadStream();
+            return FileInfo.CreateReadStream();
         }
     }
 }

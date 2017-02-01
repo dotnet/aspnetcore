@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             "Microsoft.AspNetCore.Mvc.Localization",
             "Microsoft.AspNetCore.Mvc.Razor",
             "Microsoft.AspNetCore.Mvc.Razor.Host",
+            "Microsoft.AspNetCore.Mvc.RazorPages",
             "Microsoft.AspNetCore.Mvc.TagHelpers",
             "Microsoft.AspNetCore.Mvc.ViewFeatures"
         };

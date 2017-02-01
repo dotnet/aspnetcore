@@ -1518,7 +1518,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 get
                 {
-                    var bufferedWriter = Assert.IsType<ViewBufferTextWriter>(Output);
+                    var bufferedWriter = Assert.IsType<ViewBufferTextWriter>(Writer);
                     using (var stringWriter = new StringWriter())
                     {
                         bufferedWriter.Buffer.WriteTo(stringWriter, HtmlEncoder);
