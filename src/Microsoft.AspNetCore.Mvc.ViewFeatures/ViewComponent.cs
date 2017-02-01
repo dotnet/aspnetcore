@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>A <see cref="ViewViewComponentResult"/>.</returns>
         public ViewViewComponentResult View()
         {
-            return View<object>(null, null);
+            return View(viewName: null);
         }
 
         /// <summary>
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>A <see cref="ViewViewComponentResult"/>.</returns>
         public ViewViewComponentResult View(string viewName)
         {
-            return View<object>(viewName, null);
+            return View(viewName, ViewData.Model);
         }
 
         /// <summary>
@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>A <see cref="ViewViewComponentResult"/>.</returns>
         public ViewViewComponentResult View<TModel>(TModel model)
         {
-            return View(null, model);
+            return View(viewName: null, model: model);
         }
 
         /// <summary>
@@ -268,12 +268,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>A <see cref="ViewViewComponentResult"/>.</returns>
         public ViewViewComponentResult View<TModel>(string viewName, TModel model)
         {
-            if (model != null)
-            {
-                ViewData.Model = model;
-            }
-
-            var viewData = new ViewDataDictionary<TModel>(ViewData);
+            var viewData = new ViewDataDictionary<TModel>(ViewData, model);
             return new ViewViewComponentResult
             {
                 ViewEngine = ViewEngine,

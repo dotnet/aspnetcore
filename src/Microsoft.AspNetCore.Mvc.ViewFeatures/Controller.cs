@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual ViewResult View(string viewName)
         {
-            return View(viewName, model: null);
+            return View(viewName, model: ViewData.Model);
         }
 
         /// <summary>
@@ -138,10 +138,7 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual ViewResult View(string viewName, object model)
         {
-            if (model != null)
-            {
-                ViewData.Model = model;
-            }
+            ViewData.Model = model;
 
             return new ViewResult()
             {
@@ -169,7 +166,7 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual PartialViewResult PartialView(string viewName)
         {
-            return PartialView(viewName, model: null);
+            return PartialView(viewName, model: ViewData.Model);
         }
 
         /// <summary>
@@ -194,10 +191,7 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual PartialViewResult PartialView(string viewName, object model)
         {
-            if (model != null)
-            {
-                ViewData.Model = model;
-            }
+            ViewData.Model = model;
 
             return new PartialViewResult()
             {

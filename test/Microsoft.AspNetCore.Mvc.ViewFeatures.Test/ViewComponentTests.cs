@@ -140,6 +140,64 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
+        public void ViewComponent_View_WithNullModelParameter_SetsResultViewWithDefaultViewNameAndNullModel()
+        {
+            // Arrange
+            var viewComponent = new TestViewComponent();
+            viewComponent.ViewData.Model = new object();
+            object model = null;
+
+            // Act
+            var actualResult = viewComponent.View(model: model);
+
+            // Assert
+            Assert.IsType<ViewViewComponentResult>(actualResult);
+            Assert.IsType<ViewDataDictionary<object>>(actualResult.ViewData);
+            Assert.NotSame(viewComponent.ViewData, actualResult.ViewData);
+            Assert.Equal(new ViewDataDictionary<object>(viewComponent.ViewData), actualResult.ViewData);
+            Assert.Null(actualResult.ViewData.Model);
+            Assert.Null(actualResult.ViewName);
+        }
+
+        [Fact]
+        public void ViewComponent_View_WithViewNameAndNullModelParameter_SetsResultViewWithViewNameAndNullModel()
+        {
+            // Arrange
+            var viewComponent = new TestViewComponent();
+            viewComponent.ViewData.Model = new object();
+
+            // Act
+            var actualResult = viewComponent.View<object>("CustomViewName", model: null);
+
+            // Assert
+            Assert.IsType<ViewViewComponentResult>(actualResult);
+            Assert.IsType<ViewDataDictionary<object>>(actualResult.ViewData);
+            Assert.NotSame(viewComponent.ViewData, actualResult.ViewData);
+            Assert.Equal(new ViewDataDictionary<object>(viewComponent.ViewData), actualResult.ViewData);
+            Assert.Null(actualResult.ViewData.Model);
+            Assert.Equal("CustomViewName", actualResult.ViewName);
+        }
+
+        [Fact]
+        public void ViewComponent_View_WithViewNameAndNonObjectNullModelParameter_SetsResultViewWithViewNameAndNullModel()
+        {
+            // Arrange
+            var viewComponent = new TestViewComponent();
+            viewComponent.ViewData.Model = "Hello World!";
+
+            // Act
+            var actualResult = viewComponent.View<string>("CustomViewName", model: null);
+
+            // Assert
+            Assert.IsType<ViewViewComponentResult>(actualResult);
+            Assert.IsType<ViewDataDictionary<string>>(actualResult.ViewData);
+            Assert.NotSame(viewComponent.ViewData, actualResult.ViewData);
+            Assert.Equal(new ViewDataDictionary<string>(viewComponent.ViewData), actualResult.ViewData);
+            Assert.Null(actualResult.ViewData.Model);
+            Assert.Equal("CustomViewName", actualResult.ViewName);
+        }
+
+        [Fact]
         public void ViewComponent_View_WithViewNameAndModelParameters_SetsResultViewWithCustomViewNameAndModel()
         {
             // Arrange
