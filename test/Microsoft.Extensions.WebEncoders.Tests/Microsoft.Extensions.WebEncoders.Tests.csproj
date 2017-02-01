@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp1.1;net451</TargetFrameworks>
+    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">$(PackageTargetFallback);dnxcore50;portable-net451+win8</PackageTargetFallback>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Microsoft.Extensions.WebEncoders/Microsoft.Extensions.WebEncoders.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
+    <PackageReference Include="xunit" Version="2.2.0-*" />
+  </ItemGroup>
+
+</Project>

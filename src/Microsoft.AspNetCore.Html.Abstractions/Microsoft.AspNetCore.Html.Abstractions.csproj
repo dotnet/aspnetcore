@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Product>Microsoft ASP.NET Core</Product>
+    <Description>ASP.NET Core HTML abstractions used for building HTML content.
+Commonly used types:
+Microsoft.AspNetCore.Html.HtmlString
+Microsoft.AspNetCore.Html.IHtmlContent</Description>
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Encodings.Web" Version="4.4.0-*" />
+  </ItemGroup>
+
+</Project>
