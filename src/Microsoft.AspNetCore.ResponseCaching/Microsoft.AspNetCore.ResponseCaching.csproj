@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>ASP.NET Core middleware for caching HTTP responses on the server.</Description>
+    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;cache;caching</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.ResponseCaching.Abstractions\Microsoft.AspNetCore.ResponseCaching.Abstractions.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All"/>
+  </ItemGroup>
+
+</Project>

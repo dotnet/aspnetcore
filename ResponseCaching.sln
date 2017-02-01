@@ -1,7 +1,7 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26127.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{367AABAF-E03C-4491-A9A7-BDDE8903D1B4}"
 EndProject
@@ -9,18 +9,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{C51D
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{89A50974-E9D4-4F87-ACF2-6A6005E64931}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ResponseCachingSample", "samples\ResponseCachingSample\ResponseCachingSample.xproj", "{1139BDEE-FA15-474D-8855-0AB91F23CF26}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResponseCachingSample", "samples\ResponseCachingSample\ResponseCachingSample.csproj", "{1139BDEE-FA15-474D-8855-0AB91F23CF26}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F787A492-C2FF-4569-A663-F8F24B900657}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.ResponseCaching.Tests", "test\Microsoft.AspNetCore.ResponseCaching.Tests\Microsoft.AspNetCore.ResponseCaching.Tests.csproj", "{151B2027-3936-44B9-A4A0-E1E5902125AB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.ResponseCaching.Tests", "test\Microsoft.AspNetCore.ResponseCaching.Tests\Microsoft.AspNetCore.ResponseCaching.Tests.xproj", "{151B2027-3936-44B9-A4A0-E1E5902125AB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.ResponseCaching", "src\Microsoft.AspNetCore.ResponseCaching\Microsoft.AspNetCore.ResponseCaching.csproj", "{D1031270-DBD3-4F02-A3DC-3E7DADE8EBE6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.ResponseCaching", "src\Microsoft.AspNetCore.ResponseCaching\Microsoft.AspNetCore.ResponseCaching.xproj", "{D1031270-DBD3-4F02-A3DC-3E7DADE8EBE6}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.ResponseCaching.Abstractions", "src\Microsoft.AspNetCore.ResponseCaching.Abstractions\Microsoft.AspNetCore.ResponseCaching.Abstractions.xproj", "{2D1022E8-CBB6-478D-A420-CB888D0EF7B7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.ResponseCaching.Abstractions", "src\Microsoft.AspNetCore.ResponseCaching.Abstractions\Microsoft.AspNetCore.ResponseCaching.Abstractions.csproj", "{2D1022E8-CBB6-478D-A420-CB888D0EF7B7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
