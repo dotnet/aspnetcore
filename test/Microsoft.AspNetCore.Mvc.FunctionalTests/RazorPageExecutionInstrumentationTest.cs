@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
-        [Fact(Skip = "Razor #961")]
+        [Fact]
         public async Task InstrumentedViews_RenderAsExpected()
         {
             // Arrange

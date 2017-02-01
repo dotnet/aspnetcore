@@ -187,6 +187,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     b.Features.Add(new ModelExpressionPass());
                     b.Features.Add(new ViewComponentTagHelperPass());
                     b.Features.Add(new MvcViewDocumentClassifierPass());
+                    b.Features.Add(new DefaultInstrumentationPass());
 
                     b.Features.Add(new Microsoft.CodeAnalysis.Razor.DefaultTagHelperFeature());
 
