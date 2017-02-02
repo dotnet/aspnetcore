@@ -1551,20 +1551,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     case DirectiveTokenKind.String:
                         AcceptAndMoveNext();
                         break;
-                    case DirectiveTokenKind.Literal:
-                        if (string.Equals(CurrentSymbol.Content, tokenDescriptor.Value, StringComparison.Ordinal))
-                        {
-                            AcceptAndMoveNext();
-                        }
-                        else
-                        {
-                            Context.ErrorSink.OnError(
-                                CurrentStart,
-                                LegacyResources.FormatUnexpectedDirectiveLiteral(descriptor.Name, tokenDescriptor.Value),
-                                CurrentSymbol.Content.Length);
-                            return;
-                        }
-                        break;
                 }
 
                 Span.ChunkGenerator = new DirectiveTokenChunkGenerator(tokenDescriptor);

@@ -80,21 +80,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         }
 
         [Fact]
-        public void AddLiteral_AddsToken()
-        {
-            // Arrange
-            var builder = DirectiveDescriptorBuilder.Create("custom");
-
-            // Act
-            var descriptor = builder.AddLiteral(",").Build();
-
-            // Assert
-            var token = Assert.Single(descriptor.Tokens);
-            Assert.Equal(DirectiveTokenKind.Literal, token.Kind);
-            Assert.Equal(",", token.Value);
-        }
-
-        [Fact]
         public void AddX_MaintainsMultipleTokens()
         {
             // Arrange
@@ -105,19 +90,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 .AddType()
                 .AddMember()
                 .AddString()
-                .AddLiteral(",")
                 .Build();
 
             // Assert
             Assert.Collection(descriptor.Tokens,
                 token => Assert.Equal(DirectiveTokenKind.Type, token.Kind),
                 token => Assert.Equal(DirectiveTokenKind.Member, token.Kind),
-                token => Assert.Equal(DirectiveTokenKind.String, token.Kind),
-                token =>
-                {
-                    Assert.Equal(DirectiveTokenKind.Literal, token.Kind);
-                    Assert.Equal(",", token.Value);
-                });
+                token => Assert.Equal(DirectiveTokenKind.String, token.Kind));
         }
     }
 }

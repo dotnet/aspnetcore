@@ -68,18 +68,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 return this;
             }
 
-            public IDirectiveDescriptorBuilder AddLiteral(string literal)
-            {
-                var descriptor = new DirectiveTokenDescriptor()
-                {
-                    Kind = DirectiveTokenKind.Literal,
-                    Value = literal,
-                };
-                _tokenDescriptors.Add(descriptor);
-
-                return this;
-            }
-
             public DirectiveDescriptor Build()
             {
                 var descriptor = new DirectiveDescriptor

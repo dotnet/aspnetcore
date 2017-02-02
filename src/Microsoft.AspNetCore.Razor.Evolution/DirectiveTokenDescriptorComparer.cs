@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             }
 
             return descriptorX != null &&
-                string.Equals(descriptorX.Value, descriptorY.Value, StringComparison.Ordinal) &&
                 descriptorX.Kind == descriptorY.Kind;
         }
 
@@ -34,11 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(descriptor.Value, StringComparer.Ordinal);
-            hashCodeCombiner.Add(descriptor.Kind);
-
-            return hashCodeCombiner.CombinedHash;
+            return descriptor.Kind.GetHashCode();
         }
     }
 }

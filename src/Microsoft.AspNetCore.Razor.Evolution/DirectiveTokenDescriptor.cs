@@ -6,7 +6,5 @@ namespace Microsoft.AspNetCore.Razor.Evolution
     public class DirectiveTokenDescriptor
     {
         public DirectiveTokenKind Kind { get; set; }
-
-        public string Value { get; set; }
     }
 }

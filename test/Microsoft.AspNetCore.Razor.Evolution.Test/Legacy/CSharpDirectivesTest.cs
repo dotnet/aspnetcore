@@ -71,26 +71,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         }
 
         [Fact]
-        public void DirectiveDescriptor_UnderstandsLiteralTokens()
-        {
-            // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddLiteral("!").Build();
-
-            // Act & Assert
-            ParseCodeBlockTest(
-                "@custom !",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "!", markup: false)
-                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace)));
-        }
-
-        [Fact]
         public void DirectiveDescriptor_UnderstandsMultipleTokens()
         {
             // Arrange
@@ -98,12 +78,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 .AddType()
                 .AddMember()
                 .AddString()
-                .AddLiteral("!")
                 .Build();
 
             // Act & Assert
             ParseCodeBlockTest(
-                "@custom System.Text.Encoding.ASCIIEncoding Some_Member AString !",
+                "@custom System.Text.Encoding.ASCIIEncoding Some_Member AString",
                 new[] { descriptor },
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
@@ -123,11 +102,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
                     Factory.Span(SpanKind.Markup, "AString", markup: false)
                         .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[2]))
-                        .Accepts(AcceptedCharacters.NonWhiteSpace),
-
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, "!", markup: false)
-                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[3]))
                         .Accepts(AcceptedCharacters.NonWhiteSpace)));
         }
 
@@ -241,28 +215,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
                     Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)),
-                expectedErorr);
-        }
-
-        [Fact]
-        public void DirectiveDescriptor_ErrorsForUnmatchedLiteralTokens()
-        {
-            // Arrange
-            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddLiteral("!").Build();
-            var expectedErorr = new RazorError(
-                LegacyResources.FormatUnexpectedDirectiveLiteral("custom", "!"),
-                new SourceLocation(8, 0, 8),
-                length: 2);
-
-            // Act & Assert
-            ParseCodeBlockTest(
-                "@custom hi",
-                new[] { descriptor },
-                new DirectiveBlock(
-                    new DirectiveChunkGenerator(descriptor),
-                    Factory.CodeTransition(),
-                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
-                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)),
                 expectedErorr);
         }
 

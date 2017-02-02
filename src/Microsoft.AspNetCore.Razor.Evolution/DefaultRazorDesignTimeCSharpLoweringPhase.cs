@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 const string TypeHelper = "__typeHelper";
 
                 var tokenKind = node.Descriptor.Kind;
-                if (node.Source == null || node.Descriptor.Kind == DirectiveTokenKind.Literal)
+                if (node.Source == null)
                 {
                     return;
                 }

@@ -8,6 +8,5 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         Type,
         Member,
         String,
-        Literal
     }
 }
