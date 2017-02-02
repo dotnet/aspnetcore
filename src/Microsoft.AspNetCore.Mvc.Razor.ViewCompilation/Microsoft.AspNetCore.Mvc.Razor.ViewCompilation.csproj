@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
     <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'RazorViewCompilation.sln'))\build\common.props" />
     <PropertyGroup>
         <Description>Build-time references required to enable Razor view compilation as part of building the application.</Description>
@@ -7,16 +7,14 @@
         <PackageTags>cshtml;razor;compilation;precompilation;aspnetcore</PackageTags>
         <PreserveCompilationContext>true</PreserveCompilationContext>
         <OutputType>exe</OutputType>
+        <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
         <X86ProjectDirectory>..\..\tools\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86\</X86ProjectDirectory>
         <!-- Include the build outputs in the build directory (and not the lib directory) -->
         <BuildOutputTargetFolder>build</BuildOutputTargetFolder>
         <ContentTargetFolders>build</ContentTargetFolders>
     </PropertyGroup>
     <ItemGroup>
-        <Content Include="build\common.targets" Pack="true" PackagePath="" />
-        <Content Include="build\net451\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.targets" Pack="true" PackagePath="" />
-        <Content Include="build\netcoreapp1.1\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.targets" Pack="true" PackagePath="" />
-        <Content Include="buildMultiTargeting\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.targets" Pack="true" PackagePath="" />
+        <Content Include="build\**\*" Pack="true" PackagePath="%(Identity)" />
         <None Include="$(X86ProjectDirectory)bin\$(Configuration)\net451\$(MSBuildThisFileName)-x86.exe" Pack="true" PackagePath="build\net451\$(MSBuildThisFileName)-x86.exe" />
     </ItemGroup>
     <ItemGroup>
