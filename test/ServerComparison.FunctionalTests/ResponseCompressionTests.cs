@@ -36,7 +36,7 @@ namespace ServerComparison.FunctionalTests
 
         [Theory]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5102/", ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5103/", ApplicationType.Standalone)]
+        //[InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5103/", ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/53")]
         public Task ResponseCompression_Kestrel_NoCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
             return ResponseCompression(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckNoCompressionAsync, applicationType, hostCompression: false);
@@ -45,7 +45,7 @@ namespace ServerComparison.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5103/", ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5104/", ApplicationType.Standalone)]
+        //[InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5104/", ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/53")]
         public Task ResponseCompression_Nginx_NoCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
             return ResponseCompression(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckNoCompressionAsync, applicationType, hostCompression: false);
@@ -55,7 +55,7 @@ namespace ServerComparison.FunctionalTests
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5105/", ApplicationType.Portable)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5106/", ApplicationType.Standalone)]
+        //[InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5106/", ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/53")]
         public Task ResponseCompression_Windows_HostCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
             return ResponseCompression(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckHostCompressionAsync, applicationType, hostCompression: true);
@@ -64,7 +64,7 @@ namespace ServerComparison.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5107/", ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5108/", ApplicationType.Standalone)]
+        //[InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5108/", ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/53")]
         public Task ResponseCompression_Nginx_HostCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
             return ResponseCompression(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckHostCompressionAsync, applicationType, hostCompression: true);
@@ -73,7 +73,7 @@ namespace ServerComparison.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5109/", ApplicationType.Standalone)]
+        //[InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5109/", ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/53")]
         [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5110/", ApplicationType.Portable)]
         public Task ResponseCompression_Windows_AppCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
@@ -82,7 +82,7 @@ namespace ServerComparison.FunctionalTests
 
         [Theory]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5111/", ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5112/", ApplicationType.Standalone)]
+        //[InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5112/", ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/53")]
         public Task ResponseCompression_Kestrel_AppCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
             return ResponseCompression(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckAppCompressionAsync, applicationType, hostCompression: false);
@@ -91,7 +91,7 @@ namespace ServerComparison.FunctionalTests
         [ConditionalTheory(Skip = "No pass-through compression https://github.com/aspnet/BasicMiddleware/issues/123")]
         [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5113/", ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5114/", ApplicationType.Standalone)]
+        //[InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5114/", ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/53")]
         public Task ResponseCompression_Nginx_AppCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
             return ResponseCompression(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckHostCompressionAsync, applicationType, hostCompression: false);
@@ -100,7 +100,7 @@ namespace ServerComparison.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5115/", ApplicationType.Standalone)]
+        //[InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5115/", ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/53")]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5116/", ApplicationType.Portable)]
         public Task ResponseCompression_Windows_AppAndHostCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
@@ -110,7 +110,7 @@ namespace ServerComparison.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5117/", ApplicationType.Portable)]
-        [InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5118/", ApplicationType.Standalone)]
+        //[InlineData(ServerType.Nginx, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5118/", ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/53")]
         public Task ResponseCompression_Nginx_AppAndHostCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
             return ResponseCompression(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckAppCompressionAsync, applicationType, hostCompression: true);
