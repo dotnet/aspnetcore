@@ -1,17 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
-using Microsoft.AspNetCore.Razor;
-using Microsoft.AspNetCore.Razor.Chunks;
-using Microsoft.AspNetCore.Razor.CodeGenerators;
-using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
-using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Evolution;
+using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -19,61 +15,82 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class RazorCompilationServiceTest
     {
-#if OLD_RAZOR
-        [Theory]
-        [InlineData(@"src\work\myapp", @"src\work\myapp\Views\index\home.cshtml")]
-        [InlineData(@"src\work\myapp\", @"src\work\myapp\Views\index\home.cshtml")]
-        public void CompileCalculatesRootRelativePath(string appPath, string viewPath)
+        [Fact]
+        public void CompileCalculatesRootRelativePath()
         {
             // Arrange
-            var host = new Mock<RazorEngineHost>();
-            host.Setup(h => h.GenerateCode(@"Views\index\home.cshtml", It.IsAny<Stream>()))
-                .Returns(GetGeneratorResult())
-                .Verifiable();
+            var viewPath = @"src\work\myapp\Views\index\home.cshtml";
+            var relativePath = @"Views\index\home.cshtml";
 
             var fileInfo = new Mock<IFileInfo>();
             fileInfo.Setup(f => f.PhysicalPath).Returns(viewPath);
-            fileInfo.Setup(f => f.CreateReadStream()).Returns(Stream.Null);
-
-            var relativeFileInfo = new RelativeFileInfo(fileInfo.Object, @"Views\index\home.cshtml");
+            fileInfo.Setup(f => f.CreateReadStream()).Returns(new MemoryStream(new byte[] { 0 }));
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile(relativePath, fileInfo.Object);
+            var relativeFileInfo = new RelativeFileInfo(fileInfo.Object, relativePath);
 
             var compiler = new Mock<ICompilationService>();
-            compiler.Setup(c => c.Compile(relativeFileInfo, It.IsAny<string>()))
+            compiler.Setup(c => c.Compile(It.IsAny<RazorCodeDocument>(), It.IsAny<RazorCSharpDocument>()))
                     .Returns(new CompilationResult(typeof(RazorCompilationServiceTest)));
 
-            var razorService = new RazorCompilationService(compiler.Object, host.Object, GetFileProviderAccessor(), NullLoggerFactory.Instance);
+            var engine = new Mock<RazorEngine>();
+            engine.Setup(e => e.Process(It.IsAny<RazorCodeDocument>()))
+                .Callback<RazorCodeDocument>(document =>
+                {
+                    document.SetCSharpDocument(new RazorCSharpDocument()
+                    {
+                        Diagnostics = new List<RazorError>()
+                    });
+
+                    Assert.Equal(viewPath, document.Source.Filename);  // Assert if source file name is the root relative path
+                }).Verifiable();
+
+            var razorService = new RazorCompilationService(
+                compiler.Object,
+                engine.Object,
+                new DefaultRazorProject(fileProvider),
+                GetFileProviderAccessor(fileProvider),
+                NullLoggerFactory.Instance);
 
             // Act
             razorService.Compile(relativeFileInfo);
 
             // Assert
-            host.Verify();
+            engine.Verify();
         }
 
         [Fact]
         public void Compile_ReturnsFailedResultIfParseFails()
         {
             // Arrange
-            var errorSink = new ErrorSink();
-            errorSink.OnError(new RazorError("some message", 1, 1, 1, 1));
-            var generatorResult = new GeneratorResults(
-                    new Block(new BlockBuilder { Type = BlockType.Comment }),
-                    Enumerable.Empty<TagHelperDescriptor>(),
-                    errorSink,
-                    new CodeGeneratorResult("", new LineMapping[0]),
-                    new ChunkTree());
-            var host = new Mock<IMvcRazorHost>();
-            host.Setup(h => h.GenerateCode(It.IsAny<string>(), It.IsAny<Stream>()))
-                .Returns(generatorResult)
-                .Verifiable();
-
+            var relativePath = @"Views\index\home.cshtml";
             var fileInfo = new Mock<IFileInfo>();
-            fileInfo.Setup(f => f.CreateReadStream())
-                    .Returns(Stream.Null);
+            fileInfo.Setup(f => f.CreateReadStream()).Returns(new MemoryStream(new byte[] { 0 }));
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile(relativePath, fileInfo.Object);
+            var relativeFileInfo = new RelativeFileInfo(fileInfo.Object, relativePath);
 
             var compiler = new Mock<ICompilationService>(MockBehavior.Strict);
-            var relativeFileInfo = new RelativeFileInfo(fileInfo.Object, @"Views\index\home.cshtml");
-            var razorService = new RazorCompilationService(compiler.Object, host.Object, GetFileProviderAccessor(), NullLoggerFactory.Instance);
+
+            var engine = new Mock<RazorEngine>();
+            engine.Setup(e => e.Process(It.IsAny<RazorCodeDocument>()))
+                .Callback<RazorCodeDocument>(document =>
+                {
+                    document.SetCSharpDocument(new RazorCSharpDocument()
+                    {
+                        Diagnostics = new List<RazorError>()
+                        {
+                            new RazorError("some message", 1, 1, 1, 1)
+                        }
+                    });
+                }).Verifiable();
+
+            var razorService = new RazorCompilationService(
+                compiler.Object,
+                engine.Object,
+                new DefaultRazorProject(fileProvider),
+                GetFileProviderAccessor(fileProvider),
+                NullLoggerFactory.Instance);
 
             // Act
             var result = razorService.Compile(relativeFileInfo);
@@ -86,35 +103,41 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     var message = Assert.Single(failure.Messages);
                     Assert.Equal("some message", message.Message);
                 });
-            host.Verify();
+            engine.Verify();
         }
 
         [Fact]
         public void Compile_ReturnsResultFromCompilationServiceIfParseSucceeds()
         {
-            // Arrange
-            var code = "compiled-content";
-            var generatorResult = new GeneratorResults(
-                    new Block(new BlockBuilder { Type = BlockType.Comment }),
-                    Enumerable.Empty<TagHelperDescriptor>(),
-                    new ErrorSink(),
-                    new CodeGeneratorResult(code, new LineMapping[0]),
-                    new ChunkTree());
-            var host = new Mock<IMvcRazorHost>();
-            host.Setup(h => h.GenerateCode(It.IsAny<string>(), It.IsAny<Stream>()))
-                .Returns(generatorResult);
-
+            var relativePath = @"Views\index\home.cshtml";
             var fileInfo = new Mock<IFileInfo>();
-            fileInfo.Setup(f => f.CreateReadStream())
-                    .Returns(Stream.Null);
-            var relativeFileInfo = new RelativeFileInfo(fileInfo.Object, @"Views\index\home.cshtml");
+            fileInfo.Setup(f => f.CreateReadStream()).Returns(new MemoryStream(new byte[] { 0 }));
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile(relativePath, fileInfo.Object);
+            var relativeFileInfo = new RelativeFileInfo(fileInfo.Object, relativePath);
 
             var compilationResult = new CompilationResult(typeof(object));
             var compiler = new Mock<ICompilationService>();
-            compiler.Setup(c => c.Compile(relativeFileInfo, code))
+            compiler.Setup(c => c.Compile(It.IsAny<RazorCodeDocument>(), It.IsAny<RazorCSharpDocument>()))
                     .Returns(compilationResult)
                     .Verifiable();
-            var razorService = new RazorCompilationService(compiler.Object, host.Object, GetFileProviderAccessor(), NullLoggerFactory.Instance);
+
+            var engine = new Mock<RazorEngine>();
+            engine.Setup(e => e.Process(It.IsAny<RazorCodeDocument>()))
+                .Callback<RazorCodeDocument>(document =>
+                {
+                    document.SetCSharpDocument(new RazorCSharpDocument()
+                    {
+                        Diagnostics = new List<RazorError>()
+                    });
+                });
+
+            var razorService = new RazorCompilationService(
+                compiler.Object,
+                engine.Object,
+                new DefaultRazorProject(fileProvider),
+                GetFileProviderAccessor(fileProvider),
+                NullLoggerFactory.Instance);
 
             // Act
             var result = razorService.Compile(relativeFileInfo);
@@ -130,7 +153,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             // Arrange
             var viewPath = @"views/index.razor";
             var viewImportsPath = @"views/global.import.cshtml";
-            var host = Mock.Of<IMvcRazorHost>();
 
             var fileProvider = new TestFileProvider();
             var file = fileProvider.AddFile(viewPath, "View Content");
@@ -138,7 +160,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var relativeFileInfo = new RelativeFileInfo(file, viewPath);
             var razorService = new RazorCompilationService(
                 Mock.Of<ICompilationService>(),
-                Mock.Of<IMvcRazorHost>(),
+                Mock.Of<RazorEngine>(),
+                new DefaultRazorProject(fileProvider),
                 GetFileProviderAccessor(fileProvider),
                 NullLoggerFactory.Instance);
             var errors = new[]
@@ -205,16 +228,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 });
         }
 
-        private static GeneratorResults GetGeneratorResult()
-        {
-            return new GeneratorResults(
-                    new Block(new BlockBuilder { Type = BlockType.Comment }),
-                    Enumerable.Empty<TagHelperDescriptor>(),
-                    new ErrorSink(),
-                    new CodeGeneratorResult("", new LineMapping[0]),
-                    new ChunkTree());
-        }
-
         private static IRazorViewEngineFileProviderAccessor GetFileProviderAccessor(IFileProvider fileProvider = null)
         {
             var options = new Mock<IRazorViewEngineFileProviderAccessor>();
@@ -223,7 +236,5 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             return options.Object;
         }
-
-#endif
     }
 }

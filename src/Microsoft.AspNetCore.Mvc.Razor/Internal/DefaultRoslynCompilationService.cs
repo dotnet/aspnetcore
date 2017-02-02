@@ -33,7 +33,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private const string CS0246 = nameof(CS0246);
 
         private readonly CSharpCompiler _compiler;
-        private readonly IFileProvider _fileProvider;
         private readonly ILogger _logger;
         private readonly Action<RoslynCompilationContext> _compilationCallback;
 
@@ -42,16 +41,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// </summary>
         /// <param name="compiler">The <see cref="CSharpCompiler"/>.</param>
         /// <param name="optionsAccessor">Accessor to <see cref="RazorViewEngineOptions"/>.</param>
-        /// <param name="fileProviderAccessor">The <see cref="IRazorViewEngineFileProviderAccessor"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public DefaultRoslynCompilationService(
             CSharpCompiler compiler,
-            IRazorViewEngineFileProviderAccessor fileProviderAccessor,
             IOptions<RazorViewEngineOptions> optionsAccessor,
             ILoggerFactory loggerFactory)
         {
             _compiler = compiler;
-            _fileProvider = fileProviderAccessor.FileProvider;
             _compilationCallback = optionsAccessor.Value.CompilationCallback;
             _logger = loggerFactory.CreateLogger<DefaultRoslynCompilationService>();
         }

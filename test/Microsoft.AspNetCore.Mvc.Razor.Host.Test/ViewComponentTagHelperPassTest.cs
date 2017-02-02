@@ -3,9 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 using Microsoft.AspNetCore.Razor.Evolution.Legacy;
@@ -38,7 +36,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                             TypeName = "System.Int32",
                             Name = "Foo",
                         }
-
                     }
                 }
             };
@@ -86,7 +83,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                             Name = "Foo",
                             PropertyName = "Foo",
                         }
-
                     }
                 }
             };
@@ -169,7 +165,6 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
                             PropertyName = "Tags",
                             IsIndexer = true,
                         }
-
                     }
                 }
             };
@@ -214,6 +209,99 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
     {
         (_helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);
         var content = await _helper.InvokeAsync(""TagCloud"", new { Tags });
+        output.TagName = null;
+        output.Content.SetHtmlContent(content);
+    }
+}
+", vcthClass.Content);
+        }
+
+        [Fact]
+        public void ViewComponentTagHelperPass_Execute_CreatesViewComponentTagHelper_Nested()
+        {
+            // Arrange
+            var codeDocument = CreateDocument(@"
+@addTagHelper *, TestAssembly
+<p foo=""17""><tagcloud foo=""17""></p>");
+
+            var tagHelpers = new[]
+            {
+                new TagHelperDescriptor()
+                {
+                    AssemblyName = "TestAssembly",
+                    TypeName = "PTestTagHelper",
+                    TagName = "p",
+                    Attributes = new TagHelperAttributeDescriptor[]
+                    {
+                        new TagHelperAttributeDescriptor()
+                        {
+                            TypeName = "System.Int32",
+                            Name = "Foo",
+                        }
+                    }
+                },
+                new TagHelperDescriptor()
+                {
+                    AssemblyName = "TestAssembly",
+                    TypeName = "TestTagHelper",
+                    TagName = "tagcloud",
+                    Attributes = new TagHelperAttributeDescriptor[]
+                    {
+                        new TagHelperAttributeDescriptor()
+                        {
+                            TypeName = "System.Int32",
+                            Name = "Foo",
+                            PropertyName = "Foo",
+                        }
+                    }
+                }
+            };
+
+            tagHelpers[1].PropertyBag.Add(ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey, "TagCloud");
+
+            var engine = CreateEngine(tagHelpers);
+            var pass = new ViewComponentTagHelperPass()
+            {
+                Engine = engine,
+            };
+
+            var irDocument = CreateIRDocument(engine, codeDocument);
+
+            var expectedTagHelperName = "PTestTagHelper";
+            var expectedVCTHName = "AspNetCore.Generated_test.__Generated__TagCloudViewComponentTagHelper";
+
+            // Act
+            pass.Execute(codeDocument, irDocument);
+
+            // Assert
+            var outerTagHelper = FindTagHelperNode(irDocument);
+            Assert.Equal(expectedTagHelperName, Assert.IsType<CreateTagHelperIRNode>(outerTagHelper.Children[1]).TagHelperTypeName);
+            Assert.Equal(expectedTagHelperName, Assert.IsType<SetTagHelperPropertyIRNode>(outerTagHelper.Children[2]).TagHelperTypeName);
+
+            var vcth = FindTagHelperNode(outerTagHelper.Children[0]);
+            Assert.Equal(expectedVCTHName, Assert.IsType<CreateTagHelperIRNode>(vcth.Children[1]).TagHelperTypeName);
+            Assert.Equal(expectedVCTHName, Assert.IsType<SetTagHelperPropertyIRNode>(vcth.Children[2]).TagHelperTypeName);
+
+
+            var @class = FindClassNode(irDocument);
+            Assert.Equal(3, @class.Children.Count);
+
+            var vcthClass = Assert.IsType<CSharpStatementIRNode>(@class.Children[2]);
+            Assert.Equal(@"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
+public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
+{
+    private readonly global::Microsoft.AspNetCore.Mvc.IViewComponentHelper _helper = null;
+    public __Generated__TagCloudViewComponentTagHelper(global::Microsoft.AspNetCore.Mvc.IViewComponentHelper helper)
+    {
+        _helper = helper;
+    }
+    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNotBoundAttribute, global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewContextAttribute]
+    public global::Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { get; set; }
+    public System.Int32 Foo { get; set; }
+    public override async global::System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output)
+    {
+        (_helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);
+        var content = await _helper.InvokeAsync(""TagCloud"", new { Foo });
         output.TagName = null;
         output.Content.SetHtmlContent(content);
     }

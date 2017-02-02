@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Reflection;
+using System.Text;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -17,7 +19,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class DefaultRoslynCompilationServiceTest
     {
-#if OLD_RAZOR
         [Fact]
         public void Compile_ReturnsCompilationResult()
         {
@@ -26,12 +27,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 public class MyTestType  {}";
 
             var compilationService = GetRoslynCompilationService();
-            var relativeFileInfo = new RelativeFileInfo(
-                new TestFileInfo { PhysicalPath = "SomePath" },
-                "some-relative-path");
+
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.ReadFrom(CreateStreamContent(), "test.cshtml"));
+
+            var csharpDocument = new RazorCSharpDocument()
+            {
+                GeneratedCode = content
+            };
 
             // Act
-            var result = compilationService.Compile(relativeFileInfo, content);
+            var result = compilationService.Compile(codeDocument, csharpDocument);
 
             // Assert
             Assert.Equal("MyTestType", result.CompiledType.Name);
@@ -46,20 +51,23 @@ public class MyTestType  {}";
             var content = $@"
 #line 1 ""{viewPath}""
 this should fail";
-            var fileProvider = new TestFileProvider();
-            var fileInfo = fileProvider.AddFile(viewPath, fileContent);
 
-            var compilationService = GetRoslynCompilationService(fileProvider: fileProvider);
-            var relativeFileInfo = new RelativeFileInfo(fileInfo, "some-relative-path");
+            var compilationService = GetRoslynCompilationService();
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.ReadFrom(CreateStreamContent(fileContent), viewPath));
+
+            var csharpDocument = new RazorCSharpDocument()
+            {
+                GeneratedCode = content
+            };
 
             // Act
-            var result = compilationService.Compile(relativeFileInfo, content);
+            var result = compilationService.Compile(codeDocument, csharpDocument);
 
             // Assert
             Assert.IsType<CompilationResult>(result);
             Assert.Null(result.CompiledType);
             var compilationFailure = Assert.Single(result.CompilationFailures);
-            Assert.Equal(relativeFileInfo.RelativePath, compilationFailure.SourceFilePath);
+            Assert.Equal(viewPath, compilationFailure.SourceFilePath);
             Assert.Equal(fileContent, compilationFailure.SourceFileContent);
         }
 
@@ -67,16 +75,20 @@ this should fail";
         public void Compile_ReturnsGeneratedCodePath_IfLinePragmaIsNotAvailable()
         {
             // Arrange
+            var viewPath = "some-relative-path";
             var fileContent = "file content";
             var content = "this should fail";
 
             var compilationService = GetRoslynCompilationService();
-            var relativeFileInfo = new RelativeFileInfo(
-                new TestFileInfo { Content = fileContent },
-                "some-relative-path");
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.ReadFrom(CreateStreamContent(fileContent), viewPath));
+
+            var csharpDocument = new RazorCSharpDocument()
+            {
+                GeneratedCode = content
+            };
 
             // Act
-            var result = compilationService.Compile(relativeFileInfo, content);
+            var result = compilationService.Compile(codeDocument, csharpDocument);
 
             // Assert
             Assert.IsType<CompilationResult>(result);
@@ -88,38 +100,10 @@ this should fail";
         }
 
         [Fact]
-        public void Compile_DoesNotThrow_IfFileCannotBeRead()
-        {
-            // Arrange
-            var path = "some-relative-path";
-            var content = $@"
-#line 1 ""{path}""
-this should fail";
-
-            var mockFileInfo = new Mock<IFileInfo>();
-            mockFileInfo.Setup(f => f.CreateReadStream())
-                .Throws(new Exception());
-            var fileProvider = new TestFileProvider();
-            fileProvider.AddFile(path, mockFileInfo.Object);
-
-            var compilationService = GetRoslynCompilationService(fileProvider: fileProvider);
-            var relativeFileInfo = new RelativeFileInfo(mockFileInfo.Object, path);
-
-            // Act
-            var result = compilationService.Compile(relativeFileInfo, content);
-
-            // Assert
-            Assert.IsType<CompilationResult>(result);
-            Assert.Null(result.CompiledType);
-            var compilationFailure = Assert.Single(result.CompilationFailures);
-            Assert.Equal(path, compilationFailure.SourceFilePath);
-            Assert.Null(compilationFailure.SourceFileContent);
-        }
-
-        [Fact]
         public void Compile_UsesApplicationsCompilationSettings_ForParsingAndCompilation()
         {
             // Arrange
+            var viewPath = "some-relative-path";
             var content = @"
 #if MY_CUSTOM_DEFINE
 public class MyCustomDefinedClass {}
@@ -130,12 +114,15 @@ public class MyNonCustomDefinedClass {}
             var options = GetOptions();
             options.ParseOptions = options.ParseOptions.WithPreprocessorSymbols("MY_CUSTOM_DEFINE");
             var compilationService = GetRoslynCompilationService(options: options);
-            var relativeFileInfo = new RelativeFileInfo(
-                new TestFileInfo { PhysicalPath = "SomePath" },
-                "some-relative-path");
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.ReadFrom(CreateStreamContent(), viewPath));
+
+            var csharpDocument = new RazorCSharpDocument()
+            {
+                GeneratedCode = content
+            };
 
             // Act
-            var result = compilationService.Compile(relativeFileInfo, content);
+            var result = compilationService.Compile(codeDocument, csharpDocument);
 
             // Assert
             Assert.NotNull(result.CompiledType);
@@ -148,11 +135,8 @@ public class MyNonCustomDefinedClass {}
             // Arrange
             var viewPath = "Views/Home/Index";
             var generatedCodeFileName = "Generated Code";
-            var fileProvider = new TestFileProvider();
-            fileProvider.AddFile(viewPath, "view-content");
-            var options = new RazorViewEngineOptions();
-            options.FileProviders.Add(fileProvider);
-            var compilationService = GetRoslynCompilationService(options: options, fileProvider: fileProvider);
+            var compilationService = GetRoslynCompilationService();
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.ReadFrom(CreateStreamContent("view-content"), viewPath));
             var assemblyName = "random-assembly-name";
 
             var diagnostics = new[]
@@ -179,7 +163,7 @@ public class MyNonCustomDefinedClass {}
 
             // Act
             var compilationResult = compilationService.GetCompilationFailedResult(
-                viewPath,
+                codeDocument,
                 "compilation-content",
                 assemblyName,
                 diagnostics);
@@ -235,13 +219,16 @@ public class MyNonCustomDefinedClass {}
             RoslynCompilationContext usedCompilation = null;
             var options = GetOptions(c => usedCompilation = c);
             var compilationService = GetRoslynCompilationService(options: options);
+            
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.ReadFrom(CreateStreamContent(), "some-relative-path"));
 
-            var relativeFileInfo = new RelativeFileInfo(
-                new TestFileInfo { PhysicalPath = "SomePath" },
-                "some-relative-path");
+            var csharpDocument = new RazorCSharpDocument()
+            {
+                GeneratedCode = content
+            };
 
             // Act
-            var result = compilationService.Compile(relativeFileInfo, content);
+            var result = compilationService.Compile(codeDocument, csharpDocument);
 
             Assert.NotNull(usedCompilation);
             Assert.Single(usedCompilation.Compilation.SyntaxTrees);
@@ -257,12 +244,15 @@ public class MyNonCustomDefinedClass {}
             });
             var content = "public class MyTestType  {}";
             var compilationService = GetRoslynCompilationService(options: options);
-            var relativeFileInfo = new RelativeFileInfo(
-                new TestFileInfo { PhysicalPath = "SomePath" },
-                "some-relative-path.cshtml");
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.ReadFrom(CreateStreamContent(), "some-relative-path.cshtml"));
+
+            var csharpDocument = new RazorCSharpDocument()
+            {
+                GeneratedCode = content
+            };
 
             // Act
-            var result = compilationService.Compile(relativeFileInfo, content);
+            var result = compilationService.Compile(codeDocument, csharpDocument);
 
             // Assert
             Assert.Single(result.CompilationFailures);
@@ -284,12 +274,15 @@ public class MyNonCustomDefinedClass {}
             var applicationPartManager = new ApplicationPartManager();
             var compilationService = GetRoslynCompilationService(applicationPartManager, options);
 
-            var relativeFileInfo = new RelativeFileInfo(
-                new TestFileInfo { PhysicalPath = "SomePath" },
-                "some-relative-path.cshtml");
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.ReadFrom(CreateStreamContent(), "some-relative-path.cshtml"));
+
+            var csharpDocument = new RazorCSharpDocument()
+            {
+                GeneratedCode = content
+            };
 
             // Act
-            var result = compilationService.Compile(relativeFileInfo, content);
+            var result = compilationService.Compile(codeDocument, csharpDocument);
 
             // Assert
             Assert.Null(result.CompilationFailures);
@@ -315,15 +308,6 @@ public class MyNonCustomDefinedClass {}
             };
         }
 
-        private static IRazorViewEngineFileProviderAccessor GetFileProviderAccessor(IFileProvider fileProvider = null)
-        {
-            var options = new Mock<IRazorViewEngineFileProviderAccessor>();
-            options.SetupGet(o => o.FileProvider)
-                .Returns(fileProvider ?? new TestFileProvider());
-
-            return options.Object;
-        }
-
         private static IOptions<RazorViewEngineOptions> GetAccessor(RazorViewEngineOptions options)
         {
             var optionsAccessor = new Mock<IOptions<RazorViewEngineOptions>>();
@@ -343,8 +327,7 @@ public class MyNonCustomDefinedClass {}
 
         private static DefaultRoslynCompilationService GetRoslynCompilationService(
             ApplicationPartManager partManager = null,
-            RazorViewEngineOptions options = null,
-            IFileProvider fileProvider = null)
+            RazorViewEngineOptions options = null)
         {
             partManager = partManager ?? GetApplicationPartManager();
             options = options ?? GetOptions();
@@ -354,10 +337,22 @@ public class MyNonCustomDefinedClass {}
 
             return new DefaultRoslynCompilationService(
                 compiler,
-                GetFileProviderAccessor(fileProvider),
                 optionsAccessor,
                 NullLoggerFactory.Instance);
         }
-#endif
+
+        private static MemoryStream CreateStreamContent(string content = "Hello, World!", Encoding encoding = null)
+        {
+            var stream = new MemoryStream();
+            encoding = encoding ?? Encoding.UTF8;
+            using (var writer = new StreamWriter(stream, encoding, bufferSize: 1024, leaveOpen: true))
+            {
+                writer.Write(content);
+            }
+
+            stream.Seek(0L, SeekOrigin.Begin);
+
+            return stream;
+        }
     }
 }
