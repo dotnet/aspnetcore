@@ -4,7 +4,7 @@ var FULL_VERSION='0.1'
 use-standard-lifecycle
 k-standard-goals
 
-#restore-nuget-packages target='initialize'
+#restore-nuget-packages target='initialize' if='!IsLinux'
     exec program='${Path.Combine(Directory.GetCurrentDirectory(), ".build", "nuget.exe")}' commandline='restore'
 
 #build-vsix-core
