@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\build\common.props" />
+  <PropertyGroup>
+    <Description>ASP.NET Core HTTP object model for HTTP requests and responses and also common extension methods for registering middleware in an IApplicationBuilder.
+Commonly used types:
+Microsoft.AspNetCore.Builder.IApplicationBuilder
+Microsoft.AspNetCore.Http.HttpContext
+Microsoft.AspNetCore.Http.HttpRequest
+Microsoft.AspNetCore.Http.HttpResponse</Description>
+    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Http.Features\Microsoft.AspNetCore.Http.Features.csproj" />
+    <PackageReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="4.4.0-*" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <PackageReference Include="System.Globalization.Extensions" Version="4.4.0-*" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.4.0-*" />
+  </ItemGroup>
+</Project>

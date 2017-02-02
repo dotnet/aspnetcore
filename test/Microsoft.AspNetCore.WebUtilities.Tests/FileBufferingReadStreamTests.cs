@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             var inner = MakeStream(1024 * 2);
             string tempFileName;
-            using (var stream = new FileBufferingReadStream(inner, 1024, null, Directory.GetCurrentDirectory()))
+            using (var stream = new FileBufferingReadStream(inner, 1024, null, GetCurrentDirectory()))
             {
                 var bytes = new byte[1000];
                 var read0 = stream.Read(bytes, 0, bytes.Length);
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             var inner = MakeStream(1024 * 2);
             string tempFileName;
-            using (var stream = new FileBufferingReadStream(inner, 512, 1024, Directory.GetCurrentDirectory()))
+            using (var stream = new FileBufferingReadStream(inner, 512, 1024, GetCurrentDirectory()))
             {
                 var bytes = new byte[500];
                 var read0 = stream.Read(bytes, 0, bytes.Length);
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             var inner = MakeStream(1024 * 2);
             string tempFileName;
-            using (var stream = new FileBufferingReadStream(inner, 1024, null, Directory.GetCurrentDirectory()))
+            using (var stream = new FileBufferingReadStream(inner, 1024, null, GetCurrentDirectory()))
             {
                 var bytes = new byte[1000];
                 var read0 = await stream.ReadAsync(bytes, 0, bytes.Length);
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             var inner = MakeStream(1024 * 2);
             string tempFileName;
-            using (var stream = new FileBufferingReadStream(inner, 512, 1024, Directory.GetCurrentDirectory()))
+            using (var stream = new FileBufferingReadStream(inner, 512, 1024, GetCurrentDirectory()))
             {
                 var bytes = new byte[500];
                 var read0 = await stream.ReadAsync(bytes, 0, bytes.Length);
@@ -289,6 +289,15 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             Assert.False(File.Exists(tempFileName));
+        }
+
+        private static string GetCurrentDirectory()
+        {
+#if NET451
+            return AppDomain.CurrentDomain.BaseDirectory;
+#else
+            return AppContext.BaseDirectory;
+#endif
         }
     }
 }

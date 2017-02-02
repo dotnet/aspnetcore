@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\build\common.props" />
+  <PropertyGroup>
+    <Description>ASP.NET Core utilities, such as for working with forms, multipart messages, and query strings.</Description>
+    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <DefineConstants>$(DefineConstants);WebEncoders_In_WebUtilities</DefineConstants>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Net.Http.Headers\Microsoft.Net.Http.Headers.csproj" />
+    <PackageReference Include="Microsoft.Extensions.WebEncoders.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="4.4.0-*" />
+  </ItemGroup>
+</Project>

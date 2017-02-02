@@ -50,7 +50,11 @@ namespace Microsoft.AspNetCore.Http
             // Arrange
             var accessor = new HttpContextAccessor();
             var contextFactory = new HttpContextFactory(new DefaultObjectPoolProvider(), Options.Create(new FormOptions()), accessor);
-            var domain = AppDomain.CreateDomain("newDomain");
+            var setupInfo = new AppDomainSetup
+            {
+               ApplicationBase = AppDomain.CurrentDomain.BaseDirectory
+            };
+            var domain = AppDomain.CreateDomain("newDomain", null, setupInfo);
 
             // Act
             var context = contextFactory.Create(new FeatureCollection());
