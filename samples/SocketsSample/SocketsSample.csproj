@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp1.1;net46</TargetFrameworks>
+    <!-- TODO remove when https://github.com/dotnet/sdk/issues/396 is resolved -->
+    <RuntimeIdentifier Condition=" '$(TargetFramework)' != 'netcoreapp1.1' ">win7-x64</RuntimeIdentifier>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <OutputType>Exe</OutputType>
+    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">$(PackageTargetFallback);portable-net45+win8+wp8+wpa81</PackageTargetFallback>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Redis\Microsoft.AspNetCore.SignalR.Redis.csproj" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.2.0-*" />
+    <PackageReference Include="Google.Protobuf" Version="3.1.0" />
+  </ItemGroup>
+
+  <Target Name="BuildTSClient"
+          BeforeTargets="BeforeBuild"
+          Condition=" '$(TargetFramework)' == '' ">
+    <Exec Command="npm install" />
+    <Exec Command="npm run gulp -- --gulpfile $(MSBuildProjectDirectory)/../../src/Microsoft.AspNetCore.SignalR.Client.TS/gulpfile.js bundle-client --bundleOutDir $(MSBuildProjectDirectory)/wwwroot/lib/signalr-client/" />
+  </Target>
+
+</Project>

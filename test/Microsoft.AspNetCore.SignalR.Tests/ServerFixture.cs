@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Builder;
+using Xunit;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
@@ -30,6 +32,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 _loggerFactory.AddConsole();
             }
+            if(Debugger.IsAttached)
+            {
+                _loggerFactory.AddDebug();
+            }
             StartServer();
         }
 
@@ -51,16 +57,25 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private void StartServer()
         {
             host = new WebHostBuilder()
+                .UseLoggerFactory(_loggerFactory)
                 .UseKestrel()
                 .UseUrls(BaseUrl)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .Build();
 
-            Task.Run(() => host.Start());
+            var t = Task.Run(() => host.Start());
             Console.WriteLine("Starting test server...");
             lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
-            lifetime.ApplicationStarted.WaitHandle.WaitOne();
+            if(!lifetime.ApplicationStarted.WaitHandle.WaitOne(TimeSpan.FromSeconds(1)))
+            {
+                // t probably faulted
+                if(t.IsFaulted)
+                {
+                    throw t.Exception.InnerException;
+                }
+                throw new TimeoutException("Timed out waiting for application to start.");
+            }
         }
 
         public void Dispose()

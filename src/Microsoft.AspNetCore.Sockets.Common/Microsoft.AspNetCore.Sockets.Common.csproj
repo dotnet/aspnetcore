@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>Common primitives for Sockets clients and servers</Description>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;signalr</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.IO.Pipelines" Version="0.1.0-*" />
+    <PackageReference Include="System.Threading.Tasks.Channels" Version="0.1.0-*" />
+  </ItemGroup>
+
+</Project>

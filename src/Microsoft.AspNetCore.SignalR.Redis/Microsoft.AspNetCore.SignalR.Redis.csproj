@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>Redis for ASP.NET Core SignalR.</Description>
+    <TargetFrameworks>netstandard1.6;net46</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;signalr</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.SignalR\Microsoft.AspNetCore.SignalR.csproj" />
+    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All"/>
+    <PackageReference Include="StackExchange.Redis.StrongName" Version="1.1.605" />
+  </ItemGroup>
+
+</Project>

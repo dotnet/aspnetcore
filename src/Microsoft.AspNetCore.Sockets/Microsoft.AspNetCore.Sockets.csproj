@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>Components for providing real-time bi-directional communication across the Web.</Description>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;signalr</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Sockets.Common\Microsoft.AspNetCore.Sockets.Common.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.WebSockets.Internal\Microsoft.AspNetCore.WebSockets.Internal.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Routing" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All"/>
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.4.0-*" />
+    <PackageReference Include="System.Security.Claims" Version="4.4.0-*" />
+    <PackageReference Include="System.Threading.Tasks.Channels" Version="0.1.0-*" />
+  </ItemGroup>
+
+</Project>

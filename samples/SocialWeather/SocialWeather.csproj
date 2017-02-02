@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Sockets\Microsoft.AspNetCore.Sockets.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.2.0-*" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="Google.Protobuf" Version="3.1.0" />
+  </ItemGroup>
+
+</Project>

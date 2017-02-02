@@ -11,11 +11,19 @@ using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest.Autobahn;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest
 {
     public class AutobahnTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public AutobahnTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         [ConditionalFact]
         [SkipIfWsTestNotPresent]
         public async Task AutobahnTestSuite()
@@ -41,7 +49,9 @@ namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest
 
             if (string.Equals(Environment.GetEnvironmentVariable("AUTOBAHN_SUITES_LOG"), "1", StringComparison.Ordinal))
             {
+                loggerFactory.AddXUnit(_output);
                 loggerFactory.AddConsole();
+                _output.WriteLine("Logging enabled");
             }
 
             AutobahnResult result;

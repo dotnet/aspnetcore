@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>WebSockets support for ASP.NET Core.</Description>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;signalr</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.WebSockets.Internal\Microsoft.Extensions.WebSockets.Internal.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.2.0-*" />
+  </ItemGroup>
+
+</Project>

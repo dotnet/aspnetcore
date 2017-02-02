@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest.Autobahn
             var resp = await RetryHelper.RetryRequest(() =>
             {
                 return client.GetAsync(result.ApplicationBaseUri);
-            }, logger, result.HostShutdownToken, retryCount: 5);
+            }, logger, result.HostShutdownToken, retryCount: 15); // High retry count because Travis macOS is slow
             resp.EnsureSuccessStatusCode();
 
             // Add to the current spec
