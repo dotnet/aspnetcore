@@ -9,24 +9,27 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.xunit
 {
     public class TestProjectHelpers
     {
-            public static string GetProjectRoot()
+        private const string SolutionName = "Hosting.sln";
+
+        public static string GetSolutionRoot()
+        {
+            var applicationName = PlatformServices.Default.Application.ApplicationName;
+            var applicationBasePath = PlatformServices.Default.Application.ApplicationBasePath;
+
+            var directoryInfo = new DirectoryInfo(applicationBasePath);
+            do
             {
-                var applicationBasePath = PlatformServices.Default.Application.ApplicationBasePath;
-
-                var directoryInfo = new DirectoryInfo(applicationBasePath);
-                do
+                var projectFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, SolutionName));
+                if (projectFileInfo.Exists)
                 {
-                    var projectFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "project.json"));
-                    if (projectFileInfo.Exists)
-                    {
-                        return projectFileInfo.DirectoryName;
-                    }
-
-                    directoryInfo = directoryInfo.Parent;
+                    return projectFileInfo.DirectoryName;
                 }
-                while (directoryInfo.Parent != null);
 
-                throw new Exception($"Project root could not be found using {applicationBasePath}");
+                directoryInfo = directoryInfo.Parent;
             }
+            while (directoryInfo.Parent != null);
+
+            throw new Exception($"Solution file {SolutionName} could not be found using {applicationBasePath}");
         }
     }
+}
