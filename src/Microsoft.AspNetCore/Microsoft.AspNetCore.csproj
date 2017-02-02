@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <TargetFrameworks>netstandard1.3;net451</TargetFrameworks>
+    <PackageTags>aspnetcore</PackageTags>
+    <Description>Microsoft.AspNetCore</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Routing" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="1.2.0-*" />
+  </ItemGroup>
+
+</Project>
