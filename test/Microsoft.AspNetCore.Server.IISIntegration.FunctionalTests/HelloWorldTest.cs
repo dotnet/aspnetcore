@@ -22,7 +22,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         //[InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5061/", ServerType.Kestrel, ApplicationType.Portable)]
         [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5062/", ServerType.Kestrel, ApplicationType.Portable)]
         //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5063/", ServerType.Kestrel, ApplicationType.Portable)]
-        [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5064/", ServerType.Kestrel, ApplicationType.Standalone)]
+        // TODO reenable when https://github.com/dotnet/sdk/issues/696 is resolved
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5064/", ServerType.Kestrel, ApplicationType.Standalone)]
         [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5065/", ServerType.Kestrel, ApplicationType.Portable)]
         public Task HelloWorld_IISExpress(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ServerType delegateServer, ApplicationType applicationType)
         {
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             using (logger.BeginScope("HelloWorldTest"))
             {
-                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(applicationType), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',

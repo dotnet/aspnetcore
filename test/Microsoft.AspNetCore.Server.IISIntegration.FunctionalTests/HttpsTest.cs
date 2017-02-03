@@ -21,7 +21,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "https://localhost:44394/", ApplicationType.Portable)]
-        [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "https://localhost:44395/", ApplicationType.Standalone)]
+        // TODO reenable when https://github.com/dotnet/sdk/issues/696 is resolved
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "https://localhost:44395/", ApplicationType.Standalone)]
         [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "https://localhost:44396/", ApplicationType.Portable)]
         public Task Https_HelloWorld(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             using (logger.BeginScope("HttpsHelloWorldTest"))
             {
-                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(applicationType), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "HttpsHelloWorld", // Will pick the Start class named 'StartupHttpsHelloWorld',
@@ -82,7 +83,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "https://localhost:44397/", ApplicationType.Standalone)]
+        // TODO reenable when https://github.com/dotnet/sdk/issues/696 is resolved
+        //[InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "https://localhost:44397/", ApplicationType.Standalone)]
         [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "https://localhost:44398/", ApplicationType.Portable)]
         //[InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x86, "https://localhost:44399/", ApplicationType.Standalone)]
         public Task Https_HelloWorld_NoClientCert(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
@@ -108,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             using (logger.BeginScope("HttpsHelloWorldTest"))
             {
-                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(applicationType), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "HttpsHelloWorld", // Will pick the Start class named 'StartupHttpsHelloWorld',
