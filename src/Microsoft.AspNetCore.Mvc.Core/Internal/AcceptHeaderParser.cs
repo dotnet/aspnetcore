@@ -36,6 +36,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Internal
 
                 while (!string.IsNullOrEmpty(value) && charIndex < value.Length)
                 {
+                    var startCharIndex = charIndex;
+
                     MediaTypeSegmentWithQuality output;
                     if (TryParseValue(value, ref charIndex, out output))
                     {
@@ -44,6 +46,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Internal
                         {
                             parsedValues.Add(output);
                         }
+                    }
+
+                    if (charIndex <= startCharIndex)
+                    {
+                        Debug.Fail("ParseAcceptHeader should advance charIndex, this is a bug.");
+                        break;
                     }
                 }
             }
@@ -110,6 +118,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Internal
             // E. g application/json, text/plain <- We must be at ',' otherwise, we've failed parsing.
             if (!separatorFound && (currentIndex < value.Length))
             {
+                index = currentIndex;
                 return false;
             }
 

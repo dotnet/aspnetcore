@@ -122,5 +122,119 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Internal
             // Assert
             Assert.Equal(expected, parsed);
         }
+
+        // The text "*/*Content-Type" parses as a valid media type value. However it's followed
+        // by ':' instead of whitespace or a delimiter, which means that it's actually invalid.
+        [Fact]
+        public void ParseAcceptHeader_ValidMediaType_FollowedByNondelimiter()
+        {
+            // Arrange
+            var expected = new MediaTypeSegmentWithQuality[0];
+
+            var input = "*/*Content-Type:application/json";
+
+            // Act
+            var parsed = AcceptHeaderParser.ParseAcceptHeader(new List<string>() { input });
+
+            // Assert
+            Assert.Equal(expected, parsed);
+        }
+
+        [Fact]
+        public void ParseAcceptHeader_ValidMediaType_FollowedBySemicolon()
+        {
+            // Arrange
+            var expected = new MediaTypeSegmentWithQuality[0];
+
+            var input = "*/*Content-Type;application/json";
+
+            // Act
+            var parsed = AcceptHeaderParser.ParseAcceptHeader(new List<string>() { input });
+
+            // Assert
+            Assert.Equal(expected, parsed);
+        }
+
+        [Fact]
+        public void ParseAcceptHeader_ValidMediaType_FollowedByComma()
+        {
+            // Arrange
+            var expected = new MediaTypeSegmentWithQuality[]
+            {
+                new MediaTypeSegmentWithQuality(new StringSegment("*/*Content-Type"), 1.0),
+                new MediaTypeSegmentWithQuality(new StringSegment("application/json"), 1.0),
+            };
+
+            var input = "*/*Content-Type,application/json";
+
+            // Act
+            var parsed = AcceptHeaderParser.ParseAcceptHeader(new List<string>() { input });
+
+            // Assert
+            Assert.Equal(expected, parsed);
+        }
+
+        [Fact]
+        public void ParseAcceptHeader_ValidMediaType_FollowedByWhitespace()
+        {
+            // Arrange
+            var expected = new MediaTypeSegmentWithQuality[]
+            {
+                new MediaTypeSegmentWithQuality(new StringSegment("application/json"), 1.0),
+            };
+
+            var input = "*/*Content-Type application/json";
+
+            // Act
+            var parsed = AcceptHeaderParser.ParseAcceptHeader(new List<string>() { input });
+
+            // Assert
+            Assert.Equal(expected, parsed);
+        }
+
+        [Fact]
+        public void ParseAcceptHeader_InvalidTokenAtStart()
+        {
+            // Arrange
+            var expected = new MediaTypeSegmentWithQuality[0];
+
+            var input = ":;:";
+
+            // Act
+            var parsed = AcceptHeaderParser.ParseAcceptHeader(new List<string>() { input });
+
+            // Assert
+            Assert.Equal(expected, parsed);
+        }
+
+        [Fact]
+        public void ParseAcceptHeader_DelimiterAtStart()
+        {
+            // Arrange
+            var expected = new MediaTypeSegmentWithQuality[0];
+
+            var input = ",;:";
+
+            // Act
+            var parsed = AcceptHeaderParser.ParseAcceptHeader(new List<string>() { input });
+
+            // Assert
+            Assert.Equal(expected, parsed);
+        }
+
+        [Fact]
+        public void ParseAcceptHeader_InvalidTokenAtEnd()
+        {
+            // Arrange
+            var expected = new MediaTypeSegmentWithQuality[0];
+
+            var input = "*/*:";
+
+            // Act
+            var parsed = AcceptHeaderParser.ParseAcceptHeader(new List<string>() { input });
+
+            // Assert
+            Assert.Equal(expected, parsed);
+        }
     }
 }
