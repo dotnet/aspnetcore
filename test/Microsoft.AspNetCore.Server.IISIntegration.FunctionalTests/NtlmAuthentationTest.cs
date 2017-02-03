@@ -31,7 +31,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [OSSkipCondition(OperatingSystems.MacOSX)]
         //[InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5050/", ApplicationType.Standalone)]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5051/", ApplicationType.Portable)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5052/", ApplicationType.Standalone)]
+        // TODO reenable when https://github.com/dotnet/sdk/issues/696 is resolved
+        //[InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5052/", ApplicationType.Standalone)]
         public async Task NtlmAuthentication(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
             var factory = new LoggerFactory().AddDebug();
