@@ -42,7 +42,7 @@ namespace LocalizationWebsite
                 }
             });
 
-            var stringLocalizer = stringLocalizerFactory.Create("Test", location: null);
+            var stringLocalizer = stringLocalizerFactory.Create("Test", location: typeof(LocalizationWebsite.StartupResourcesAtRootFolder).Assembly.GetName().Name);
 
             app.Run(async (context) =>
             {

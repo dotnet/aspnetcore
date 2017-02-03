@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 "http://localhost:5075/",
                 "ResourcesInFolder",
                 "fr-FR",
-                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Bonjour from Test in resources folder");
+                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
         }
 
         [Fact(Skip = "https://github.com/aspnet/Localization/issues/310")]
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 "http://localhost:5076",
                 "ResourcesInFolder",
                 "fr-FR-test",
-                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Bonjour from Test in resources folder");
+                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
         }
 
         [ConditionalFact]
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 "http://localhost:5077",
                 "ResourcesInFolder",
                 "fr-FR-test",
-                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Bonjour from Test in resources folder");
+                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
         }
 
         [Fact(Skip = "https://github.com/aspnet/Localization/issues/310")]
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 "http://localhost:5078/",
                 "ResourcesInFolder",
                 "fr-FR-test-again-too-deep-to-work",
-                "Hello Hello Hello Hello");
+                "Hello Hello Hello");
         }
 
         [ConditionalFact]
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 "http://localhost:5079/",
                 "ResourcesInFolder",
                 "fr-FR-test-again-too-deep-to-work",
-                "Hello Hello Hello Hello");
+                "Hello Hello Hello");
         }
 
         [Fact(Skip = "https://github.com/aspnet/Localization/issues/310")]

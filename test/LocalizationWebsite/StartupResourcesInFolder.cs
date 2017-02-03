@@ -43,10 +43,8 @@ namespace LocalizationWebsite
                 }
             });
 
-            var stringLocalizer = stringLocalizerFactory.Create("Test", location: null);
-            var assembly = typeof(StartupResourcesInFolder).GetTypeInfo().Assembly;
-            var assemblyName = new AssemblyName(assembly.FullName).Name;
-            var stringLocalizerExplicitLocation = stringLocalizerFactory.Create("Test", assemblyName);
+            var assemblyName = typeof(StartupResourcesInFolder).Assembly.GetName().Name;
+            var stringLocalizer = stringLocalizerFactory.Create("Test", assemblyName);
 
             app.Run(async (context) =>
             {
@@ -55,8 +53,6 @@ namespace LocalizationWebsite
                 await context.Response.WriteAsync(stringLocalizer["Hello"]);
                 await context.Response.WriteAsync(" ");
                 await context.Response.WriteAsync(custromerStringLocalizer["Hello"]);
-                await context.Response.WriteAsync(" ");
-                await context.Response.WriteAsync(stringLocalizerExplicitLocation["Hello"]);
             });
         }
     }
