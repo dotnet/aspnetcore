@@ -6,18 +6,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
     {
         private readonly long _maxSize;
         private readonly IConnectionControl _connectionControl;
-        private readonly KestrelThread _connectionThread;
 
         private readonly object _lock = new object();
 
         private long _size;
         private bool _connectionPaused;
 
-        public BufferSizeControl(long maxSize, IConnectionControl connectionControl, KestrelThread connectionThread)
+        public BufferSizeControl(long maxSize, IConnectionControl connectionControl)
         {
             _maxSize = maxSize;
             _connectionControl = connectionControl;
-            _connectionThread = connectionThread;
         }
 
         private long Size
@@ -50,9 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 if (!_connectionPaused && Size >= _maxSize)
                 {
                     _connectionPaused = true;
-                    _connectionThread.Post(
-                        (connectionControl) => ((IConnectionControl)connectionControl).Pause(),
-                        _connectionControl);
+                    _connectionControl.Pause();
                 }
             }
         }
@@ -73,9 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 if (_connectionPaused && Size < _maxSize)
                 {
                     _connectionPaused = false;
-                    _connectionThread.Post(
-                        (connectionControl) => ((IConnectionControl)connectionControl).Resume(),
-                        _connectionControl);
+                    _connectionControl.Resume();
                 }
             }
         }
