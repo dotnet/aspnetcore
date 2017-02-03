@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData(-1337)]
         public void StartWithNonPositiveThreadCountThrows(int threadCount)
         {
-            var testLogger = new TestApplicationErrorLogger();
+            var testLogger = new TestApplicationErrorLogger { ThrowOnCriticalErrors = false };
             var server = CreateServer(new KestrelServerOptions() { ThreadCount = threadCount }, testLogger);
 
             var exception = Assert.Throws<ArgumentOutOfRangeException>(() => StartDummyApplication(server));
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void StartWithInvalidAddressThrows()
         {
-            var testLogger = new TestApplicationErrorLogger();
+            var testLogger = new TestApplicationErrorLogger { ThrowOnCriticalErrors = false };
             var server = CreateServer(new KestrelServerOptions(), testLogger);
             server.Features.Get<IServerAddressesFeature>().Addresses.Add("http:/asdf");
 
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData(int.MaxValue - 1, int.MaxValue)]
         public void StartWithMaxRequestBufferSizeLessThanMaxRequestLineSizeThrows(long maxRequestBufferSize, int maxRequestLineSize)
         {
-            var testLogger = new TestApplicationErrorLogger();
+            var testLogger = new TestApplicationErrorLogger { ThrowOnCriticalErrors = false };
             var options = new KestrelServerOptions();
             options.Limits.MaxRequestBufferSize = maxRequestBufferSize;
             options.Limits.MaxRequestLineSize = maxRequestLineSize;

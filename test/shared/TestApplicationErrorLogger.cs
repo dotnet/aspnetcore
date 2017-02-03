@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Testing
         // Application errors are logged using 13 as the eventId.
         private const int ApplicationErrorEventId = 13;
 
+        public bool ThrowOnCriticalErrors { get; set; } = true;
+
         public ConcurrentBag<LogMessage> Messages { get; } = new ConcurrentBag<LogMessage>();
 
         public int TotalErrorsLogged => Messages.Count(message => message.LogLevel == LogLevel.Error);
@@ -34,9 +36,17 @@ namespace Microsoft.AspNetCore.Testing
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-#if false
-            Console.WriteLine($"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception?.Message}");
+#if true
+            if (logLevel == LogLevel.Critical && ThrowOnCriticalErrors)
 #endif
+            {
+                Console.WriteLine($"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception?.Message}");
+
+                if (logLevel == LogLevel.Critical && ThrowOnCriticalErrors)
+                {
+                    throw new Exception("Unexpected critical error.", exception);
+                }
+            }
 
             Messages.Add(new LogMessage
             {

@@ -51,7 +51,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
         public void Dispose()
         {
-            Task.WaitAll(Threads.Select(thread => thread.StopAsync(TimeSpan.FromSeconds(2.5))).ToArray());
+            try
+            {
+                Task.WaitAll(Threads.Select(thread => thread.StopAsync(TimeSpan.FromSeconds(2.5))).ToArray());
+            }
+            catch (AggregateException aggEx)
+            {
+                // An uncaught exception was likely thrown from the libuv event loop.
+                // The original error that crashed one loop may have caused secondary errors in others.
+                // Make sure that the stack trace of the original error is logged.
+                foreach (var ex in aggEx.InnerExceptions)
+                {
+                    Log.LogCritical("Failed to gracefully close Kestrel.", ex);
+                }
+
+                throw;
+            }
 
             Threads.Clear();
 #if DEBUG

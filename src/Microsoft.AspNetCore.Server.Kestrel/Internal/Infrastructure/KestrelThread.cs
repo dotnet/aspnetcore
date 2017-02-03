@@ -142,17 +142,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
                             Post(t => t.OnStopImmediate());
                             if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                             {
-                                _log.LogError(0, null, "KestrelThread.StopAsync failed to terminate libuv thread.");
+                                _log.LogCritical("KestrelThread.StopAsync failed to terminate libuv thread.");
                             }
                         }
                     }
                     catch (ObjectDisposedException)
                     {
-                        // REVIEW: Should we log something here?
                         // Until we rework this logic, ODEs are bound to happen sometimes.
                         if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                         {
-                            _log.LogError(0, null, "KestrelThread.StopAsync failed to terminate libuv thread.");
+                            _log.LogCritical("KestrelThread.StopAsync failed to terminate libuv thread.");
                         }
                     }
                 }
@@ -343,8 +342,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             }
             finally
             {
-                thisHandle.Free();
                 _threadTcs.SetResult(null);
+                thisHandle.Free();
             }
         }
 
