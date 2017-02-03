@@ -1,29 +1,41 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26202.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "samples\TestClient\TestClient.csproj", "{8B828433-B333-4C19-96AE-00BFFF9D8841}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{99D5E5F3-88F5-4CCF-8D8C-717C8925DF09}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{E183C826-1360-4DFF-9994-F33CED5C8525}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{3A1E31E3-2794-4CA3-B8E2-253E96BDE514}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SelfHostServer", "samples\SelfHostServer\SelfHostServer.xproj", "{1236F93A-AC5C-4A77-9477-C88F040151CA}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.HttpSys.FunctionalTests", "test\Microsoft.AspNetCore.Server.HttpSys.FunctionalTests\Microsoft.AspNetCore.Server.HttpSys.FunctionalTests.xproj", "{4492FF4C-9032-411D-853F-46B01755E504}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.HttpSys", "src\Microsoft.AspNetCore.Server.HttpSys\Microsoft.AspNetCore.Server.HttpSys.xproj", "{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5E9B546C-17AC-4BDF-BCB3-5955D4755ED8}"
 	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
+		.travis.yml = .travis.yml
+		appveyor.yml = appveyor.yml
+		build.cmd = build.cmd
+		build.ps1 = build.ps1
+		build.sh = build.sh
+		NuGet.config = NuGet.config
+		version.props = version.props
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "HotAddSample", "samples\HotAddSample\HotAddSample.xproj", "{8BFA392A-8B67-4454-916B-67C545EDFAEF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "samples\TestClient\TestClient.csproj", "{8B828433-B333-4C19-96AE-00BFFF9D8841}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.HttpSys.Tests", "test\Microsoft.AspNetCore.Server.HttpSys.Tests\Microsoft.AspNetCore.Server.HttpSys.Tests.xproj", "{E837249E-E666-4DF2-AFC3-7A4D70234F9F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SelfHostServer", "samples\SelfHostServer\SelfHostServer.csproj", "{1236F93A-AC5C-4A77-9477-C88F040151CA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.HttpSys.FunctionalTests", "test\Microsoft.AspNetCore.Server.HttpSys.FunctionalTests\Microsoft.AspNetCore.Server.HttpSys.FunctionalTests.csproj", "{4492FF4C-9032-411D-853F-46B01755E504}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.HttpSys", "src\Microsoft.AspNetCore.Server.HttpSys\Microsoft.AspNetCore.Server.HttpSys.csproj", "{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HotAddSample", "samples\HotAddSample\HotAddSample.csproj", "{8BFA392A-8B67-4454-916B-67C545EDFAEF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.HttpSys.Tests", "test\Microsoft.AspNetCore.Server.HttpSys.Tests\Microsoft.AspNetCore.Server.HttpSys.Tests.csproj", "{E837249E-E666-4DF2-AFC3-7A4D70234F9F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{85914BA9-4168-48C5-9C3F-E2E8B1479A6E}"
+	ProjectSection(SolutionItems) = preProject
+		build\common.props = build\common.props
+		build\Key.snk = build\Key.snk
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -110,5 +122,6 @@ Global
 		{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92} = {99D5E5F3-88F5-4CCF-8D8C-717C8925DF09}
 		{8BFA392A-8B67-4454-916B-67C545EDFAEF} = {3A1E31E3-2794-4CA3-B8E2-253E96BDE514}
 		{E837249E-E666-4DF2-AFC3-7A4D70234F9F} = {E183C826-1360-4DFF-9994-F33CED5C8525}
+		{85914BA9-4168-48C5-9C3F-E2E8B1479A6E} = {5E9B546C-17AC-4BDF-BCB3-5955D4755ED8}
 	EndGlobalSection
 EndGlobal
