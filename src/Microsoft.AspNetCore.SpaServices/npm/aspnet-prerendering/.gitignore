@@ -4,3 +4,5 @@
 
 /**/.d.ts
 !/src/**/*.d.ts
+
+yarn.lock
