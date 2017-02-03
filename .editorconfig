@@ -1,0 +1,24 @@
+﻿# EditorConfig is awesome:http://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+[*]
+indent_style = space
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.cs]
+indent_size = 4
+dotnet_sort_system_directives_first = true:warning
+
+# Xml files
+[*.{csproj,config,props,targets,ruleset,config,resx,xml}]
+indent_size = 2
+
+[*.{json, yml}]
+indent_size = 2
+
+[*.{ps1,sh}]
+indent_size = 4
