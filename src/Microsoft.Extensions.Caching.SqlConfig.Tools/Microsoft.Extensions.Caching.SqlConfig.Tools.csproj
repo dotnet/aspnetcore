@@ -20,6 +20,4 @@
     <PackageReference Include="System.Data.SqlClient" Version="4.1.0" />
   </ItemGroup>
 
-  <Import Project="..\workaround.targets" />
-
 </Project>
