@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <Description>Identity sample MVC application on ASP.NET Core</Description>
+    <TargetFrameworks>net451;netcoreapp1.1</TargetFrameworks>
+    <!-- TODO remove when https://github.com/dotnet/sdk/issues/396 is resolved -->
+    <RuntimeIdentifier Condition=" '$(TargetFramework)' != 'netcoreapp1.1' ">win7-x64</RuntimeIdentifier>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Identity\Microsoft.AspNetCore.Identity.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.2.0-*" />
+  </ItemGroup>
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="1.2.0-*" />
+  </ItemGroup>
+</Project>
