@@ -76,6 +76,35 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
+        public async Task TryServeFromCacheAsync_CachedResponseFound_OverwritesExistingHeaders()
+        {
+            var cache = new TestResponseCache();
+            var sink = new TestSink();
+            var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache, keyProvider: new TestResponseCachingKeyProvider("BaseKey"));
+            var context = TestUtils.CreateTestContext();
+
+            context.HttpContext.Response.Headers["MyHeader"] = "OldValue";
+            await cache.SetAsync(
+                "BaseKey",
+                new CachedResponse()
+                {
+                    Headers = new HeaderDictionary()
+                    {
+                        { "MyHeader", "NewValue" }
+                    },
+                    Body = new SegmentReadStream(new List<byte[]>(0), 0)
+                },
+                TimeSpan.Zero);
+
+            Assert.True(await middleware.TryServeFromCacheAsync(context));
+            Assert.Equal("NewValue", context.HttpContext.Response.Headers["MyHeader"]);
+            Assert.Equal(1, cache.GetCount);
+            TestUtils.AssertLoggedMessages(
+                sink.Writes,
+                LoggedMessage.CachedResponseServed);
+        }
+
+        [Fact]
         public async Task TryServeFromCacheAsync_VaryByRuleFound_CachedResponseNotFound_Fails()
         {
             var cache = new TestResponseCache();

@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     response.StatusCode = context.CachedResponse.StatusCode;
                     foreach (var header in context.CachedResponse.Headers)
                     {
-                        response.Headers.Add(header);
+                        response.Headers[header.Key] = header.Value;
                     }
 
                     // Note: int64 division truncates result and errors may be up to 1 second. This reduction in
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 {
                     if (!string.Equals(header.Key, HeaderNames.Age, StringComparison.OrdinalIgnoreCase))
                     {
-                        context.CachedResponse.Headers.Add(header);
+                        context.CachedResponse.Headers[header.Key] = header.Value;
                     }
                 }
             }
