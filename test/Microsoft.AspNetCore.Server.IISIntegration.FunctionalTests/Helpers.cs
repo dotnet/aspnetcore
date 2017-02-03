@@ -1,16 +1,22 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
-using Microsoft.AspNetCore.Server.IntegrationTesting;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     public class Helpers
     {
-        public static string GetTestSitesPath(ApplicationType applicationType)
+        public static string GetTestSitesPath()
         {
-            return Path.GetFullPath(Path.Combine("..", "..", "..", "..", "..", applicationType == ApplicationType.Standalone ? "TestSites.Standalone" : "TestSites"));
+            return Path.GetFullPath(
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
+                "..", // tfm
+                "..", // debug
+                "..", // obj
+                "..", // projectfolder
+                "TestSites"));
         }
     }
 }

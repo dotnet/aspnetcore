@@ -11,12 +11,21 @@ using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Sdk;
+using Xunit.Abstractions;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     // Uses ports ranging 5050 - 5060.
     public class NtlmAuthenticationTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public NtlmAuthenticationTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
@@ -25,21 +34,27 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5052/", ApplicationType.Standalone)]
         public async Task NtlmAuthentication(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
-            var logger = new LoggerFactory()
-                            .AddConsole()
-                            .AddDebug()
-                            .CreateLogger($"NtlmAuthentication:{serverType}:{runtimeFlavor}:{architecture}");
+            var factory = new LoggerFactory().AddDebug();
+            factory.AddProvider(new XunitLoggerProvider(_output));
+            var logger = factory.CreateLogger($"NtlmAuthentication:{serverType}:{runtimeFlavor}:{architecture}");
 
             using (logger.BeginScope("NtlmAuthenticationTest"))
             {
-                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(applicationType), serverType, runtimeFlavor, architecture)
+                var windowsRid = architecture == RuntimeArchitecture.x64
+                    ? "win7-x64"
+                    : "win7-x86";
+
+                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "NtlmAuthentication", // Will pick the Start class named 'StartupNtlmAuthentication'
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("NtlmAuthentation.config") : null,
                     SiteName = "NtlmAuthenticationTestSite", // This is configured in the NtlmAuthentication.config
                     TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.1",
-                    ApplicationType = applicationType
+                    ApplicationType = applicationType,
+                    AdditionalPublishParameters = ApplicationType.Standalone == applicationType && RuntimeFlavor.CoreClr == runtimeFlavor
+                        ? "-r " + windowsRid
+                        : null
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
