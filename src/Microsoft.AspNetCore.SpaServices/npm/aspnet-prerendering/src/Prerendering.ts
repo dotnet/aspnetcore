@@ -16,7 +16,9 @@ export function createServerRenderer(bootFunc: BootFunc): RenderToStringFunc {
         });
         const parsedAbsoluteRequestUrl = url.parse(absoluteRequestUrl);
         const params: BootFuncParams = {
-            location: url.parse(requestPathAndQuery),
+            // It's helpful for boot funcs to receive the query as a key-value object, so parse it here
+            // e.g., react-redux-router requires location.query to be a key-value object for consistency with client-side behaviour
+            location: url.parse(requestPathAndQuery, /* parseQueryString */ true),
             origin: parsedAbsoluteRequestUrl.protocol + '//' + parsedAbsoluteRequestUrl.host,
             url: requestPathAndQuery,
             baseUrl: (requestPathBase || '') + '/',
