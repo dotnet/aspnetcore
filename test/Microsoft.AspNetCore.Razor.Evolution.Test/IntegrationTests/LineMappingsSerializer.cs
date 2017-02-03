@@ -20,10 +20,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 var lineMapping = csharpDocument.LineMappings[i];
 
                 builder.Append("Source Location: ");
-                AppendMappingLocation(builder, lineMapping.DocumentLocation, sourceContent);
+                AppendMappingLocation(builder, lineMapping.OriginalSpan, sourceContent);
 
                 builder.Append("Generated Location: ");
-                AppendMappingLocation(builder, lineMapping.GeneratedLocation, csharpDocument.GeneratedCode);
+                AppendMappingLocation(builder, lineMapping.GeneratedSpan, csharpDocument.GeneratedCode);
 
                 builder.AppendLine();
             }

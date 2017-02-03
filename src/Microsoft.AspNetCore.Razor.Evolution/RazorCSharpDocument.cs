@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
     {
         public string GeneratedCode { get; set; }
 
-        internal IReadOnlyList<LineMapping> LineMappings { get; set; }
+        public IReadOnlyList<LineMapping> LineMappings { get; set; }
 
         public IReadOnlyList<RazorError> Diagnostics { get; set; }
     }

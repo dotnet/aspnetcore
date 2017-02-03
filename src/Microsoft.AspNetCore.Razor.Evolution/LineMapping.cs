@@ -1,40 +1,46 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Globalization;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
+namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    internal class LineMapping
+    public sealed class LineMapping : IEquatable<LineMapping>
     {
-        public LineMapping(SourceSpan documentLocation, SourceSpan generatedLocation)
+        public LineMapping(SourceSpan originalSourceSpan, SourceSpan generatedSourceSpan)
         {
-            DocumentLocation = documentLocation;
-            GeneratedLocation = generatedLocation;
+            OriginalSpan = originalSourceSpan;
+            GeneratedSpan = generatedSourceSpan;
         }
 
-        public SourceSpan DocumentLocation { get; }
+        public SourceSpan OriginalSpan { get; }
 
-        public SourceSpan GeneratedLocation { get; }
+        public SourceSpan GeneratedSpan { get; }
 
         public override bool Equals(object obj)
         {
             var other = obj as LineMapping;
+            return Equals(other);
+        }
+
+        public bool Equals(LineMapping other)
+        {
             if (ReferenceEquals(other, null))
             {
                 return false;
             }
 
-            return DocumentLocation.Equals(other.DocumentLocation) &&
-                GeneratedLocation.Equals(other.GeneratedLocation);
+            return OriginalSpan.Equals(other.OriginalSpan) &&
+                GeneratedSpan.Equals(other.GeneratedSpan);
         }
 
         public override int GetHashCode()
         {
             var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(DocumentLocation);
-            hashCodeCombiner.Add(GeneratedLocation);
+            hashCodeCombiner.Add(OriginalSpan);
+            hashCodeCombiner.Add(GeneratedSpan);
 
             return hashCodeCombiner;
         }
@@ -73,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public override string ToString()
         {
-            return string.Format(CultureInfo.CurrentCulture, "{0} -> {1}", DocumentLocation, GeneratedLocation);
+            return string.Format(CultureInfo.CurrentCulture, "{0} -> {1}", OriginalSpan, GeneratedSpan);
         }
     }
 }
