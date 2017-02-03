@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             cancellationToken.ThrowIfCancellationRequested();
 
             // Parse the output.
-            var outputFile = Path.Combine(Directory.GetCurrentDirectory(), Spec.OutputDirectory, "index.json");
+            var outputFile = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", Spec.OutputDirectory, "index.json");
             using (var reader = new StreamReader(File.OpenRead(outputFile)))
             {
                 return AutobahnResult.FromReportJson(JObject.Parse(await reader.ReadToEndAsync()));
@@ -95,6 +95,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             var logger = _loggerFactory.CreateLogger($"AutobahnTestApp:{server}:{sslNamePart}:{environment}");
 
             var appPath = Helpers.GetApplicationPath("AutobahnTestApp");
+            var configPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Http.config");
             var parameters = new DeploymentParameters(appPath, server, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
                 ApplicationBaseUriHint = baseUrl,
@@ -102,7 +103,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
                 TargetFramework = "netcoreapp1.1",
                 EnvironmentName = environment,
                 SiteName = "HttpTestSite", // This is configured in the Http.config
-                ServerConfigTemplateContent = (server == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
+                ServerConfigTemplateContent = (server == ServerType.IISExpress) ? File.ReadAllText(configPath) : null,
             };
 
             var deployer = ApplicationDeployerFactory.Create(parameters, logger);
