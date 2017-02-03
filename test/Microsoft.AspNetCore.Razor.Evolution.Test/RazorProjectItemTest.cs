@@ -124,6 +124,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 }
             }
 
+            public override bool Exists => true;
+
             public override Stream Read()
             {
                 throw new NotImplementedException();

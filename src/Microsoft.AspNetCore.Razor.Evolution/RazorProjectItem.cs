@@ -34,6 +34,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public abstract Stream Read();
 
         /// <summary>
+        /// Gets a value that determines if the file exists.
+        /// </summary>
+        public abstract bool Exists { get; }
+
+        /// <summary>
         /// The root relative path of the item.
         /// </summary>
         public virtual string CombinedPath
