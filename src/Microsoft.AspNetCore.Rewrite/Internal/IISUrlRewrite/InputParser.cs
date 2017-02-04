@@ -18,8 +18,9 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
         /// compare to the condition. Can contain server variables, back references, etc.
         /// </summary>
         /// <param name="testString"></param>
+        /// <param name="global"></param>
         /// <returns>A new <see cref="Pattern"/>, containing a list of <see cref="PatternSegment"/></returns>
-        public Pattern ParseInputString(string testString)
+        public Pattern ParseInputString(string testString, bool global)
         {
             if (testString == null)
             {
@@ -27,10 +28,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             }
 
             var context = new ParserContext(testString);
-            return ParseString(context);
+            return ParseString(context, global);
         }
 
-        private static Pattern ParseString(ParserContext context)
+        private static Pattern ParseString(ParserContext context, bool global)
         {
             var results = new List<PatternSegment>();
             while (context.Next())
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                         // missing {
                         throw new FormatException(Resources.FormatError_InputParserMissingCloseBrace(context.Index));
                     }
-                    ParseParameter(context, results);
+                    ParseParameter(context, results, global);
                 }
                 else if (context.Current == CloseBrace)
                 {
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             return new Pattern(results);
         }
 
-        private static void ParseParameter(ParserContext context, IList<PatternSegment> results)
+        private static void ParseParameter(ParserContext context, IList<PatternSegment> results, bool global)
         {
             context.Mark();
             // Four main cases:
@@ -75,7 +76,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                 {
                     // This is just a server variable, so we do a lookup and verify the server variable exists.
                     parameter = context.Capture();
-                    results.Add(ServerVariables.FindServerVariable(parameter, context));
+                    results.Add(ServerVariables.FindServerVariable(parameter, context, global));
                     return;
                 }
                 else if (context.Current == Colon)
@@ -87,7 +88,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                     {
                         case "ToLower":
                             {
-                                var pattern = ParseString(context);
+                                var pattern = ParseString(context, global);
                                 results.Add(new ToLowerSegment(pattern));
 
                                 // at this point, we expect our context to be on the ending closing brace,
@@ -105,7 +106,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                             }
                         case "UrlEncode":
                             {
-                                var pattern = ParseString(context);
+                                var pattern = ParseString(context, global);
                                 results.Add(new UrlEncodeSegment(pattern));
 
                                 if (context.Current != CloseBrace)

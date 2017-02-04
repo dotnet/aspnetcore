@@ -9,7 +9,15 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 {
     public static class ServerVariables
     {
-        public static PatternSegment FindServerVariable(string serverVariable, ParserContext context)
+        /// <summary>
+        /// Returns the matching <see cref="PatternSegment"/> for the given <paramref name="serverVariable"/>
+        /// </summary>
+        /// <param name="serverVariable">The server variable</param>
+        /// <param name="context">The parser context which is utilized when an exception is thrown</param>
+        /// <param name="global">Indicates if the rule being parsed is a global rule</param>
+        /// <exception cref="FormatException">Thrown when the server variable is unknown</exception>
+        /// <returns>The matching <see cref="PatternSegment"/></returns>
+        public static PatternSegment FindServerVariable(string serverVariable, ParserContext context, bool global)
         {
             switch (serverVariable)
             {
@@ -35,7 +43,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                 case "HTTP_CONNECTION":
                     return new HeaderSegment(HeaderNames.Connection);
                 case "HTTP_URL":
-                    return new UrlSegment();
+                    return global ? (PatternSegment)new GlobalRuleUrlSegment() : (PatternSegment)new UrlSegment();
                 case "HTTPS":
                     return new IsHttpsUrlSegment();
                 case "LOCAL_ADDR":
@@ -53,7 +61,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                 case "REQUEST_FILENAME":
                     return new RequestFileNameSegment();
                 case "REQUEST_URI":
-                    return new UrlSegment();
+                    return global ? (PatternSegment)new GlobalRuleUrlSegment() : (PatternSegment)new UrlSegment();
                 default:
                     throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(serverVariable, context.Index));
             }

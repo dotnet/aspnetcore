@@ -14,18 +14,30 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
         public IList<Condition> Conditions { get; }
         public UrlAction Action { get; }
         public bool TrackAllCaptures { get; }
+        public bool Global { get; }
 
         public IISUrlRewriteRule(string name,
             UrlMatch initialMatch,
             IList<Condition> conditions,
             UrlAction action,
             bool trackAllCaptures)
+            : this(name, initialMatch, conditions, action, trackAllCaptures, false)
+        {
+        }
+
+        public IISUrlRewriteRule(string name,
+            UrlMatch initialMatch,
+            IList<Condition> conditions,
+            UrlAction action,
+            bool trackAllCaptures,
+            bool global)
         {
             Name = name;
             InitialMatch = initialMatch;
             Conditions = conditions;
             Action = action;
             TrackAllCaptures = trackAllCaptures;
+            Global = global;
         }
 
         public virtual void ApplyRule(RewriteContext context)

@@ -5,6 +5,8 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite;
 using Microsoft.AspNetCore.Rewrite.Logging;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Internal;
@@ -75,11 +77,10 @@ namespace Microsoft.AspNetCore.Rewrite
             foreach (var rule in _options.Rules)
             {
                 rule.ApplyRule(rewriteContext);
-                var currentUrl = new Lazy<string>(() => context.Request.Path + context.Request.QueryString);
                 switch (rewriteContext.Result)
                 {
                     case RuleResult.ContinueRules:
-                        _logger.RewriteMiddlewareRequestContinueResults(currentUrl.Value);
+                        _logger.RewriteMiddlewareRequestContinueResults(context.Request.GetEncodedUrl());
                         break;
                     case RuleResult.EndResponse:
                         _logger.RewriteMiddlewareRequestResponseComplete(
@@ -87,7 +88,7 @@ namespace Microsoft.AspNetCore.Rewrite
                             context.Response.StatusCode);
                         return TaskCache.CompletedTask;
                     case RuleResult.SkipRemainingRules:
-                        _logger.RewriteMiddlewareRequestStopRules(currentUrl.Value);
+                        _logger.RewriteMiddlewareRequestStopRules(context.Request.GetEncodedUrl());
                         return _next(context);
                     default:
                         throw new ArgumentOutOfRangeException($"Invalid rule termination {rewriteContext.Result}");

@@ -22,40 +22,33 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             if (xmlRoot != null)
             {
                 var result = new List<IISUrlRewriteRule>();
-                // TODO Global rules are currently not treated differently than normal rules, fix.
-                // See: https://github.com/aspnet/BasicMiddleware/issues/59
-                ParseRules(xmlRoot.Descendants(RewriteTags.GlobalRules).FirstOrDefault(), result);
-                ParseRules(xmlRoot.Descendants(RewriteTags.Rules).FirstOrDefault(), result);
+                ParseRules(xmlRoot.Descendants(RewriteTags.GlobalRules).FirstOrDefault(), result, global: true);
+                ParseRules(xmlRoot.Descendants(RewriteTags.Rules).FirstOrDefault(), result, global: false);
                 return result;
             }
             return null;
         }
 
-        private void ParseRules(XElement rules, IList<IISUrlRewriteRule> result)
+        private void ParseRules(XElement rules, IList<IISUrlRewriteRule> result, bool global)
         {
             if (rules == null)
             {
                 return;
             }
 
-            if (string.Equals(rules.Name.ToString(), "GlobalRules", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new NotSupportedException("Support for global rules has not been implemented yet");
-            }
-
             foreach (var rule in rules.Elements(RewriteTags.Rule))
             {
                 var builder = new UrlRewriteRuleBuilder();
-                ParseRuleAttributes(rule, builder);
+                ParseRuleAttributes(rule, builder, global);
 
                 if (builder.Enabled)
                 {
-                    result.Add(builder.Build());
+                    result.Add(builder.Build(global));
                 }
             }
         }
 
-        private void ParseRuleAttributes(XElement rule, UrlRewriteRuleBuilder builder)
+        private void ParseRuleAttributes(XElement rule, UrlRewriteRuleBuilder builder, bool global)
         {
             builder.Name = rule.Attribute(RewriteTags.Name)?.Value;
 
@@ -84,8 +77,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             }
 
             ParseMatch(match, builder, patternSyntax);
-            ParseConditions(rule.Element(RewriteTags.Conditions), builder, patternSyntax);
-            ParseUrlAction(action, builder, stopProcessing);
+            ParseConditions(rule.Element(RewriteTags.Conditions), builder, patternSyntax, global);
+            ParseUrlAction(action, builder, stopProcessing, global);
         }
 
         private void ParseMatch(XElement match, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
@@ -101,7 +94,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             builder.AddUrlMatch(parsedInputString, ignoreCase, negate, patternSyntax);
         }
 
-        private void ParseConditions(XElement conditions, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
+        private void ParseConditions(XElement conditions, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax, bool global)
         {
             if (conditions == null)
             {
@@ -114,11 +107,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 
             foreach (var cond in conditions.Elements(RewriteTags.Add))
             {
-                ParseCondition(cond, builder, patternSyntax, trackAllCaptures);
+                ParseCondition(cond, builder, patternSyntax, trackAllCaptures, global);
             }
         }
 
-        private void ParseCondition(XElement condition, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax, bool trackAllCaptures)
+        private void ParseCondition(XElement condition, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax, bool trackAllCaptures, bool global)
         {
             var ignoreCase = ParseBool(condition, RewriteTags.IgnoreCase, defaultValue: true);
             var negate = ParseBool(condition, RewriteTags.Negate, defaultValue: false);
@@ -133,7 +126,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             var parsedPatternString = condition.Attribute(RewriteTags.Pattern)?.Value;
             try
             {
-                var input = _inputParser.ParseInputString(parsedInputString);
+                var input = _inputParser.ParseInputString(parsedInputString, global);
                 builder.AddUrlCondition(input, parsedPatternString, patternSyntax, matchType, ignoreCase, negate, trackAllCaptures);
             }
             catch (FormatException formatException)
@@ -142,7 +135,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             }
         }
 
-        private void ParseUrlAction(XElement urlAction, UrlRewriteRuleBuilder builder, bool stopProcessing)
+        private void ParseUrlAction(XElement urlAction, UrlRewriteRuleBuilder builder, bool stopProcessing, bool global)
         {
             var actionType = ParseEnum(urlAction, RewriteTags.Type, ActionType.None);
             var redirectType = ParseEnum(urlAction, RewriteTags.RedirectType, RedirectType.Permanent);
@@ -160,7 +153,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 
             try
             {
-                var input = _inputParser.ParseInputString(url);
+                var input = _inputParser.ParseInputString(url, global);
                 builder.AddUrlAction(input, actionType, appendQuery, stopProcessing, (int)redirectType);
             }
             catch (FormatException formatException)

@@ -23,14 +23,14 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
         private bool _matchAny;
         private bool _trackAllCaptures;
 
-        public IISUrlRewriteRule Build()
+        public IISUrlRewriteRule Build(bool global)
         {
             if (_initialMatch == null || _action == null)
             {
                 throw new InvalidOperationException("Cannot create UrlRewriteRule without action and match");
             }
 
-            return new IISUrlRewriteRule(Name, _initialMatch, _conditions, _action, _trackAllCaptures);
+            return new IISUrlRewriteRule(Name, _initialMatch, _conditions, _action, _trackAllCaptures, global);
         }
 
         public void AddUrlAction(

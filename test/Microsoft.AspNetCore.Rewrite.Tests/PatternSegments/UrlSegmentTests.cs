@@ -9,18 +9,27 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.PatternSegments
 {
     public class UrlSegmentTests
     {
-        [Fact]
-        public void LocalPortSegment_AssertSegmentIsCorrect()
+        [Theory]
+        [InlineData("http", "localhost", 80, "/foo/bar", "/foo/bar")]
+        [InlineData("http", "localhost", 80, "/foo:bar", "/foo:bar")]
+        [InlineData("http", "localhost", 80, "/foo bar", "/foo%20bar")]
+        public void AssertSegmentIsCorrect(string scheme, string host, int port, string path, string expectedResult)
         {
             // Arrange
-            var segement = new UrlSegment();
-            var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
-            context.HttpContext.Request.Path = new PathString("/foo/bar");
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Scheme = scheme;
+            httpContext.Request.Host = new HostString(host, port);
+            httpContext.Request.Path = new PathString(path);
+
+            var context = new RewriteContext { HttpContext = httpContext };
+            context.HttpContext = httpContext;
+
             // Act
-            var results = segement.Evaluate(context, null, null);
+            var segment = new UrlSegment();
+            var results = segment.Evaluate(context, null, null);
 
             // Assert
-            Assert.Equal("/foo/bar", results);
+            Assert.Equal(expectedResult, results);
         }
     }
 }
