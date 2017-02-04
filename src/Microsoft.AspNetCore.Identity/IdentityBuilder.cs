@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Adds an <see cref="IUserStore{TUser}"/> for the <seealso cref="UserType"/>.
         /// </summary>
-        /// <typeparam name="T">The user type whose password will be validated.</typeparam>
+        /// <typeparam name="T">The user type held in the store.</typeparam>
         /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public virtual IdentityBuilder AddUserStore<T>() where T : class
         {
