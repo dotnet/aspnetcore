@@ -1,43 +1,38 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26127.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FB313677-BAB3-4E49-8CDB-4FA4A9564767}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Localization", "src\Microsoft.Extensions.Localization\Microsoft.Extensions.Localization.xproj", "{29743CFF-120E-40EB-9B89-5818425946FA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Localization", "src\Microsoft.Extensions.Localization\Microsoft.Extensions.Localization.csproj", "{29743CFF-120E-40EB-9B89-5818425946FA}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Localization", "src\Microsoft.AspNetCore.Localization\Microsoft.AspNetCore.Localization.xproj", "{23E3BC23-3464-4D9B-BF78-02CB2182BEF0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Localization", "src\Microsoft.AspNetCore.Localization\Microsoft.AspNetCore.Localization.csproj", "{23E3BC23-3464-4D9B-BF78-02CB2182BEF0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Localization.Abstractions", "src\Microsoft.Extensions.Localization.Abstractions\Microsoft.Extensions.Localization.Abstractions.xproj", "{A1FCF259-70F6-4605-AA2D-E4B356BE771A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Localization.Abstractions", "src\Microsoft.Extensions.Localization.Abstractions\Microsoft.Extensions.Localization.Abstractions.csproj", "{A1FCF259-70F6-4605-AA2D-E4B356BE771A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{79878809-8D1C-4BD4-BA99-F1F13FF96FD8}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "LocalizationSample", "samples\LocalizationSample\LocalizationSample.xproj", "{55D9501F-15B9-4339-A0AB-6082850E5FCE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalizationSample", "samples\LocalizationSample\LocalizationSample.csproj", "{55D9501F-15B9-4339-A0AB-6082850E5FCE}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5E7E7712-E3E3-4AD5-9B89-7FC140359FF1}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-	EndProjectSection
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Globalization.CultureInfoCache", "src\Microsoft.Extensions.Globalization.CultureInfoCache\Microsoft.Extensions.Globalization.CultureInfoCache.xproj", "{F3988D3A-A4C8-4FD7-BAFE-13E0D0A1659A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Globalization.CultureInfoCache", "src\Microsoft.Extensions.Globalization.CultureInfoCache\Microsoft.Extensions.Globalization.CultureInfoCache.csproj", "{F3988D3A-A4C8-4FD7-BAFE-13E0D0A1659A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B723DB83-A670-4BCB-95FB-195361331AD2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Localization.Tests", "test\Microsoft.Extensions.Localization.Tests\Microsoft.Extensions.Localization.Tests.xproj", "{287AD58D-DF34-4F16-8616-FD78FA1CADF9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Localization.Tests", "test\Microsoft.Extensions.Localization.Tests\Microsoft.Extensions.Localization.Tests.csproj", "{287AD58D-DF34-4F16-8616-FD78FA1CADF9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Localization.Tests", "test\Microsoft.AspNetCore.Localization.Tests\Microsoft.AspNetCore.Localization.Tests.xproj", "{19A2A931-5C60-47A0-816A-0DC9C4CE5736}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Localization.Tests", "test\Microsoft.AspNetCore.Localization.Tests\Microsoft.AspNetCore.Localization.Tests.csproj", "{19A2A931-5C60-47A0-816A-0DC9C4CE5736}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "LocalizationWebsite", "test\LocalizationWebsite\LocalizationWebsite.xproj", "{EF6C7431-2FB8-4396-8947-F50F31689AF4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalizationWebsite", "test\LocalizationWebsite\LocalizationWebsite.csproj", "{EF6C7431-2FB8-4396-8947-F50F31689AF4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Localization.FunctionalTests", "test\Microsoft.AspNetCore.Localization.FunctionalTests\Microsoft.AspNetCore.Localization.FunctionalTests.xproj", "{B1B441BA-3AC8-49F8-850D-E5A178E77DE2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Localization.FunctionalTests", "test\Microsoft.AspNetCore.Localization.FunctionalTests\Microsoft.AspNetCore.Localization.FunctionalTests.csproj", "{B1B441BA-3AC8-49F8-850D-E5A178E77DE2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ResourcesClassLibraryWithAttribute", "test\ResourcesClassLibraryWithAttribute\ResourcesClassLibraryWithAttribute.xproj", "{F27639B9-913E-43AF-9D64-BBD98D9A420A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResourcesClassLibraryWithAttribute", "test\ResourcesClassLibraryWithAttribute\ResourcesClassLibraryWithAttribute.csproj", "{F27639B9-913E-43AF-9D64-BBD98D9A420A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ResourcesClassLibraryNoAttribute", "test\ResourcesClassLibraryNoAttribute\ResourcesClassLibraryNoAttribute.xproj", "{34740578-D5B5-4FB4-AFD4-5E87B5443E20}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResourcesClassLibraryNoAttribute", "test\ResourcesClassLibraryNoAttribute\ResourcesClassLibraryNoAttribute.csproj", "{34740578-D5B5-4FB4-AFD4-5E87B5443E20}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Localization.Routing", "src\Microsoft.AspNetCore.Localization.Routing\Microsoft.AspNetCore.Localization.Routing.xproj", "{E1B8DA18-7885-40ED-94ED-881BB0804F23}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Localization.Routing", "src\Microsoft.AspNetCore.Localization.Routing\Microsoft.AspNetCore.Localization.Routing.csproj", "{E1B8DA18-7885-40ED-94ED-881BB0804F23}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Localization.Routing.Tests", "test\Microsoft.AspNetCore.Localization.Routing.Tests\Microsoft.AspNetCore.Localization.Routing.Tests.xproj", "{375B000B-5DC0-4D16-AC0C-A5432D8E7581}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Localization.Routing.Tests", "test\Microsoft.AspNetCore.Localization.Routing.Tests\Microsoft.AspNetCore.Localization.Routing.Tests.csproj", "{375B000B-5DC0-4D16-AC0C-A5432D8E7581}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Product>Microsoft .NET Extensions</Product>
+    <Description>Abstractions of application localization services.
+Commonly used types:
+Microsoft.Extensions.Localization.IStringLocalizer
+Microsoft.Extensions.Localization.IStringLocalizer&lt;T&gt;</Description>
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>localization</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.4.0-*" />
+  </ItemGroup>
+
+</Project>

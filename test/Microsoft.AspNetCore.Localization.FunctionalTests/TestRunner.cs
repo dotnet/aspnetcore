@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
 
             while (di.Parent != null)
             {
-                var globalJsonPath = Path.Combine(di.FullName, "global.json");
+                var globalJsonPath = Path.Combine(di.FullName, "version.props");
 
                 if (File.Exists(globalJsonPath))
                 {
