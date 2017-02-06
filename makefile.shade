@@ -1,0 +1,51 @@
+use namespace="System.IO"
+use namespace="System.IO.Compression"
+use namespace="System.Linq"
+
+use-standard-lifecycle
+k-standard-goals
+
+#repack-x86 target='compile' if='Directory.Exists("src")'
+    @{
+        var buildDir= Path.Combine(Directory.GetCurrentDirectory(), "artifacts", "build");
+        var projectName = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation";
+        var projectNupkg = Files
+            .Include(Path.Combine(buildDir, projectName + "*.nupkg"))
+            .Where(path => !path.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(f => f)    // On local builds multiple nupkgs are generated.
+            .First();
+        
+        Log.Info("Repacking Nupkg: " + projectNupkg);
+        
+        var extractToDirectory = projectNupkg + "-temp";
+        ZipFile.ExtractToDirectory(projectNupkg, extractToDirectory);
+
+        var runtimesDirectory = Path.Combine(extractToDirectory, "runtimes");
+        var win7x86Directory = Path.Combine(runtimesDirectory, "win7-x86", "lib", "net451");
+        var win7x64Directory = Path.Combine(runtimesDirectory, "win7-x64", "lib", "net451");
+        Directory.CreateDirectory(win7x86Directory);
+        Directory.CreateDirectory(win7x64Directory);
+        var net451LibDirectory = Path.Combine(extractToDirectory, "lib", "net451");
+        
+        File.Move(
+            Path.Combine(net451LibDirectory, projectName + ".exe"),
+            Path.Combine(win7x64Directory, projectName + ".exe"));
+        File.Move(
+            Path.Combine(net451LibDirectory, projectName + "-x86.exe"),
+            Path.Combine(win7x86Directory, projectName + "-x86.exe"));
+            
+        File.WriteAllBytes(Path.Combine(net451LibDirectory, "_._"), new byte[0]);
+        
+        File.Delete(projectNupkg);
+        ZipFile.CreateFromDirectory(extractToDirectory, projectNupkg);
+        
+        try
+        {
+            // Delete temporary directory we used to repack.
+            Directory.Delete(extractToDirectory, true);
+        }
+        catch
+        {
+            // Don't care if we couldn't delete the temp directory.
+        }
+    }

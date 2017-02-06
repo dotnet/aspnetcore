@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Razor.CodeGenerators;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 {
-    public class ViewCompilationInfo
+    internal class ViewCompilationInfo
     {
         public ViewCompilationInfo(
             ViewFileInfo viewFileInfo,

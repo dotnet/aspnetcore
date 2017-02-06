@@ -9,7 +9,7 @@ using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 {
-    public class PrecompilationApplication : CommandLineApplication
+    internal class PrecompilationApplication : CommandLineApplication
     {
         private readonly Type _callingType;
 

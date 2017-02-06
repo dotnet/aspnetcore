@@ -15,7 +15,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 {
-    public class ViewInfoContainerCodeGenerator
+    internal class ViewInfoContainerCodeGenerator
     {
         public ViewInfoContainerCodeGenerator(
             CSharpCompiler compiler,

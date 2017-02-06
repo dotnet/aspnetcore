@@ -8,13 +8,11 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <OutputType>exe</OutputType>
     <X86ProjectDirectory>..\..\pack\</X86ProjectDirectory>
-    <!-- Include the build outputs in the build directory (and not the lib directory) -->
-    <BuildOutputTargetFolder>build</BuildOutputTargetFolder>
   </PropertyGroup>
   <ItemGroup>
     <None Include="build\**\*" Pack="true" PackagePath="%(Identity)" />
     <None Include="buildMultiTargeting/*" Pack="true" PackagePath="%(Identity)" />
-    <None Include="$(X86ProjectDirectory)\bin\$(Configuration)\net451\$(MSBuildThisFileName)-x86.exe" Pack="true" PackagePath="build\net451\$(MSBuildThisFileName)-x86.exe" />
+    <None Include="$(X86ProjectDirectory)\bin\$(Configuration)\net451\$(MSBuildThisFileName)-x86.exe" Pack="true" PackagePath="lib\net451\$(MSBuildThisFileName)-x86.exe" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="1.1.0" />

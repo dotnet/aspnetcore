@@ -5,7 +5,7 @@ using System.IO;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 {
-    public struct ViewFileInfo
+    internal struct ViewFileInfo
     {
         public ViewFileInfo(string fullPath, string viewEnginePath)
         {
