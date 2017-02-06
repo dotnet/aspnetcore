@@ -1,3 +1,6 @@
+use assembly="System.IO.Compression, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+use assembly="System.IO.Compression.FileSystem, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+
 use namespace="System.IO"
 use namespace="System.IO.Compression"
 use namespace="System.Linq"
@@ -17,35 +20,30 @@ k-standard-goals
         
         Log.Info("Repacking Nupkg: " + projectNupkg);
         
-        var extractToDirectory = projectNupkg + "-temp";
-        ZipFile.ExtractToDirectory(projectNupkg, extractToDirectory);
-
-        var runtimesDirectory = Path.Combine(extractToDirectory, "runtimes");
-        var win7x86Directory = Path.Combine(runtimesDirectory, "win7-x86", "lib", "net451");
-        var win7x64Directory = Path.Combine(runtimesDirectory, "win7-x64", "lib", "net451");
-        Directory.CreateDirectory(win7x86Directory);
-        Directory.CreateDirectory(win7x64Directory);
-        var net451LibDirectory = Path.Combine(extractToDirectory, "lib", "net451");
-        
-        File.Move(
-            Path.Combine(net451LibDirectory, projectName + ".exe"),
-            Path.Combine(win7x64Directory, projectName + ".exe"));
-        File.Move(
-            Path.Combine(net451LibDirectory, projectName + "-x86.exe"),
-            Path.Combine(win7x86Directory, projectName + "-x86.exe"));
-            
-        File.WriteAllBytes(Path.Combine(net451LibDirectory, "_._"), new byte[0]);
-        
-        File.Delete(projectNupkg);
-        ZipFile.CreateFromDirectory(extractToDirectory, projectNupkg);
-        
-        try
+        using (var zipArchive = ZipFile.Open(projectNupkg, ZipArchiveMode.Update))
         {
-            // Delete temporary directory we used to repack.
-            Directory.Delete(extractToDirectory, true);
-        }
-        catch
-        {
-            // Don't care if we couldn't delete the temp directory.
+            MoveEntry(zipArchive, "lib/net451/" + projectName + ".exe", "runtimes/win7-x64/lib/net451/" + projectName + ".exe");
+            MoveEntry(zipArchive, "lib/net451/" + projectName + "-x86.exe", "runtimes/win7-x86/lib/net451/" + projectName + "-x86.exe");
+            zipArchive.CreateEntry("lib/net451/_._");
         }
     }
+
+functions @{
+    private static void MoveEntry(ZipArchive archive, string oldPath, string newPath)
+    {
+        var oldEntry = archive.GetEntry(oldPath);
+        if (oldEntry == null)
+        {
+            throw new Exception(oldPath + " was not found in package.");
+        }
+
+        var newEntry = archive.CreateEntry(newPath);
+        using (var newStream = newEntry.Open())
+        using (var oldStream = oldEntry.Open())
+        {
+            oldStream.CopyTo(newStream);
+        }
+
+        oldEntry.Delete();
+    }
+}
