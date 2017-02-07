@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
@@ -40,6 +41,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             return EnumerateFiles(_provider.GetDirectoryContents(path), path, "");
         }
+
+        public virtual IChangeToken Watch(string pattern) => _provider.Watch(pattern);
 
         private IEnumerable<RazorProjectItem> EnumerateFiles(IDirectoryContents directory, string basePath, string prefix)
         {
