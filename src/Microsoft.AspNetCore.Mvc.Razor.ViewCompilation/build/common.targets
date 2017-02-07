@@ -8,6 +8,7 @@
 
       <MvcRazorContentRoot Condition="'$(MvcRazorContentRoot)'==''">$(MSBuildProjectDirectory)</MvcRazorContentRoot>
       <MvcRazorExcludeViewFilesFromPublish Condition="'$(MvcRazorExcludeViewFilesFromPublish)'==''">true</MvcRazorExcludeViewFilesFromPublish>
+      <MvcRazorExcludeRefAssembliesFromPublish Condition="'$(MvcRazorExcludeRefAssembliesFromPublish)'==''">true</MvcRazorExcludeRefAssembliesFromPublish>
     </PropertyGroup>
 
     <ItemGroup Condition="'@(MvcRazorFilesToCompile)' == ''">
@@ -53,7 +54,7 @@
      Condition="'$(MvcRazorCompileOnPublish)'=='true'" />
 
   <Target Name="_MvcRazorResolveFilesToCompute"
-    AfterTargets="ComputeFilesToPublish"
+    AfterTargets="ComputeRefAssembliesToPublish"
     Condition="'$(MvcRazorCompileOnPublish)'=='true'">
 
     <ItemGroup>
@@ -64,6 +65,12 @@
       <ResolvedFileToPublish Include="$(_MvcRazorOutputFullPath)" CopyToPublishDirectory="Always">
         <RelativePath>$([System.IO.Path]::GetFileName('$(_MvcRazorOutputFullPath)'))</RelativePath>
       </ResolvedFileToPublish>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(MvcRazorExcludeRefAssembliesFromPublish)'=='true'">
+      <ResolvedFileToPublish
+        Remove="%(ResolvedFileToPublish.Identity)"
+        Condition="'%(ResolvedFileToPublish.RelativePath)'=='$(RefAssembliesFolderName)\%(Filename)%(Extension)'" />
     </ItemGroup>
   </Target>
 </Project>

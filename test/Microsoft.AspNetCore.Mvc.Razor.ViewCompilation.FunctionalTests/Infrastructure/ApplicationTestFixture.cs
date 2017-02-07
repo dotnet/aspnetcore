@@ -39,6 +39,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public IApplicationDeployer CreateDeployment(RuntimeFlavor flavor)
         {
+            PrepareForDeployment(flavor);
+            var deploymentParameters = GetDeploymentParameters(flavor);
+            return ApplicationDeployerFactory.Create(deploymentParameters, Logger);
+        }
+
+        public virtual void PrepareForDeployment(RuntimeFlavor flavor)
+        {
             Logger = CreateLogger(flavor);
 
             if (!_isRestored)
@@ -46,7 +53,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
                 Restore();
                 _isRestored = true;
             }
+        }
 
+        public virtual DeploymentParameters GetDeploymentParameters(RuntimeFlavor flavor)
+        {
             var tempRestoreDirectoryEnvironment = new KeyValuePair<string, string>(
                 NuGetPackagesEnvironmentKey,
                 TempRestoreDirectory);
@@ -82,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
                 },
             };
 
-            return ApplicationDeployerFactory.Create(deploymentParameters, Logger);
+            return deploymentParameters;
         }
 
         protected virtual ILogger CreateLogger(RuntimeFlavor flavor)
