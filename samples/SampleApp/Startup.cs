@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -34,6 +35,11 @@ namespace SampleApp
 
         public static void Main(string[] args)
         {
+            TaskScheduler.UnobservedTaskException += (sender, e) =>
+            {
+                Console.WriteLine("Unobserved exception: {0}", e.Exception);
+            };
+
             var host = new WebHostBuilder()
                 .UseKestrel(options =>
                 {

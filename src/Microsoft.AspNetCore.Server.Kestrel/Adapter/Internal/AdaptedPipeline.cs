@@ -63,7 +63,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
                 catch (Exception ex)
                 {
                     Input.Writer.Complete(ex);
-                    throw;
+
+                    // Don't rethrow the exception. It should be handled by the Pipeline consumer.
+                    return;
                 }
             } while (bytesRead != 0);
 

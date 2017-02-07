@@ -402,10 +402,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         /// </summary>
         public Task StopAsync()
         {
-            if (!_requestProcessingStopping)
-            {
-                _requestProcessingStopping = true;
-            }
+            _requestProcessingStopping = true;
+            Input.Reader.CancelPendingRead();
 
             return _requestProcessingTask ?? TaskCache.CompletedTask;
         }

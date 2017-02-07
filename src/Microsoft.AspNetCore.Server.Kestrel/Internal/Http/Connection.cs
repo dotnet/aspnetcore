@@ -119,10 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public Task StopAsync()
         {
-            _frame.StopAsync();
-            _frame.Input.Reader.CancelPendingRead();
-
-            return _socketClosedTcs.Task;
+            return Task.WhenAll(_frame.StopAsync(), _socketClosedTcs.Task);
         }
 
         public virtual Task AbortAsync(Exception error = null)
