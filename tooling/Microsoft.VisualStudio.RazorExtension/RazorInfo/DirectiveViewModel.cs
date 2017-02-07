@@ -20,7 +20,6 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 
             foreach (var token in _directive.Tokens)
             {
-                builder.Append(token.Value);
                 builder.Append("(");
                 builder.Append(token.Kind.ToString());
                 builder.Append(")");
