@@ -11,14 +11,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     /// <summary>
     /// Application model component for RazorPages.
     /// </summary>
-    public class PageModel
+    public class PageApplicationModel
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="PageModel"/>.
+        /// Initializes a new instance of <see cref="PageApplicationModel"/>.
         /// </summary>
         /// <param name="relativePath">The application relative path of the page.</param>
         /// <param name="viewEnginePath">The path relative to the base path for page discovery.</param>
-        public PageModel(string relativePath, string viewEnginePath)
+        public PageApplicationModel(string relativePath, string viewEnginePath)
         {
             if (relativePath == null)
             {
@@ -39,10 +39,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         /// <summary>
-        /// A copy constructor for <see cref="PageModel"/>.
+        /// A copy constructor for <see cref="PageApplicationModel"/>.
         /// </summary>
-        /// <param name="other">The <see cref="PageModel"/> to copy from.</param>
-        public PageModel(PageModel other)
+        /// <param name="other">The <see cref="PageApplicationModel"/> to copy from.</param>
+        public PageApplicationModel(PageApplicationModel other)
         {
             if (other == null)
             {
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public IList<IFilterMetadata> Filters { get; }
 
         /// <summary>
-        /// Stores arbitrary metadata properties associated with the <see cref="PageModel"/>.
+        /// Stores arbitrary metadata properties associated with the <see cref="PageApplicationModel"/>.
         /// </summary>
         public IDictionary<object, object> Properties { get; }
 

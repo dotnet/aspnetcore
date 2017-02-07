@@ -304,6 +304,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var actionDescriptor = _pageContext.ActionDescriptor;
             _page = (Page)CacheEntry.PageFactory(_pageContext);
             _pageContext.Page = _page;
+            _pageContext.ValueProviderFactories = _valueProviderFactories;
 
             IRazorPage[] pageStarts;
 

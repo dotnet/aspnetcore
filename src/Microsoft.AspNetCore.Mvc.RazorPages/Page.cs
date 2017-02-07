@@ -9,6 +9,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     public abstract class Page : RazorPageBase, IRazorPage
     {
         private IUrlHelper _urlHelper;
+        private PageArgumentBinder _binder;
 
         /// <inheritdoc />
         public IHtmlContent BodyContent { get; set; }
@@ -60,6 +62,29 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         [RazorInject]
         public HtmlEncoder HtmlEncoder { get; set; }
+
+        public PageArgumentBinder Binder
+        {
+            get
+            {
+                if (_binder == null)
+                {
+                    _binder = PageContext.HttpContext.RequestServices.GetRequiredService<PageArgumentBinder>();
+                }
+
+                return _binder;
+            }
+
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _binder = value;
+            }
+        }
 
         protected override HtmlEncoder Encoder => HtmlEncoder;
 

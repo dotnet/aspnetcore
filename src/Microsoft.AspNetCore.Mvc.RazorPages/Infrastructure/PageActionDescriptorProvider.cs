@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private void AddActionDescriptors(IList<ActionDescriptor> actions, RazorProjectItem item, string template)
         {
-            var model = new PageModel(item.CombinedPath, item.PathWithoutExtension);
+            var model = new PageApplicationModel(item.CombinedPath, item.PathWithoutExtension);
             var routePrefix = item.BasePath == "/" ? item.PathWithoutExtension : item.BasePath + item.PathWithoutExtension;
             model.Selectors.Add(CreateSelectorModel(routePrefix, template));
 

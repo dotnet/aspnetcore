@@ -242,8 +242,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var options = new MvcOptions();
             options.Filters.Add(globalFilter);
             var convention = new Mock<IPageModelConvention>();
-            convention.Setup(c => c.Apply(It.IsAny<PageModel>()))
-                .Callback((PageModel model) =>
+            convention.Setup(c => c.Apply(It.IsAny<PageApplicationModel>()))
+                .Callback((PageApplicationModel model) =>
                 {
                     model.Filters.Add(localFilter);
                 });

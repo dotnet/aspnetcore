@@ -4,14 +4,14 @@
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     /// <summary>
-    /// Allows customization of the of the <see cref="PageModel"/>.
+    /// Allows customization of the of the <see cref="PageApplicationModel"/>.
     /// </summary>
     public interface IPageModelConvention
     {
         /// <summary>
-        /// Called to apply the convention to the <see cref="PageModel"/>.
+        /// Called to apply the convention to the <see cref="PageApplicationModel"/>.
         /// </summary>
-        /// <param name="model">The <see cref="PageModel"/>.</param>
-        void Apply(PageModel model);
+        /// <param name="model">The <see cref="PageApplicationModel"/>.</param>
+        void Apply(PageApplicationModel model);
     }
 }

@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -19,6 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     {
         private CompiledPageActionDescriptor _actionDescriptor;
         private Page _page;
+        private IList<IValueProviderFactory> _valueProviderFactories;
 
         /// <summary>
         /// Creates an empty <see cref="PageContext"/>.
@@ -80,5 +82,30 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// Gets or sets the applicable _PageStart instances.
         /// </summary>
         public IReadOnlyList<IRazorPage> PageStarts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of <see cref="IValueProviderFactory"/> instances for the current request.
+        /// </summary>
+        public virtual IList<IValueProviderFactory> ValueProviderFactories
+        {
+            get
+            {
+                if (_valueProviderFactories == null)
+                {
+                    _valueProviderFactories = new List<IValueProviderFactory>();
+                }
+
+                return _valueProviderFactories;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _valueProviderFactories = value;
+            }
+        }
     }
 }

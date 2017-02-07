@@ -48,9 +48,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             IRazorPageFactoryProvider razorPageFactoryProvider,
             IActionDescriptorCollectionProvider collectionProvider,
             IEnumerable<IFilterProvider> filterProviders,
-            IEnumerable<IValueProviderFactory> valueProviderFactories,
             IModelMetadataProvider modelMetadataProvider,
             ITempDataDictionaryFactory tempDataFactory,
+            IOptions<MvcOptions> mvcOptions,
             IOptions<HtmlHelperOptions> htmlHelperOptions,
             IPageHandlerMethodSelector selector,
             RazorProject razorProject,
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             _razorPageFactoryProvider = razorPageFactoryProvider;
             _collectionProvider = collectionProvider;
             _filterProviders = filterProviders.ToArray();
-            _valueProviderFactories = valueProviderFactories.ToArray();
+            _valueProviderFactories = mvcOptions.Value.ValueProviderFactories.ToArray();
             _modelMetadataProvider = modelMetadataProvider;
             _tempDataFactory = tempDataFactory;
             _htmlHelperOptions = htmlHelperOptions.Value;
@@ -180,6 +180,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 modelFactory = _modelFactoryProvider.CreateModelFactory(compiledActionDescriptor);
                 modelReleaser = _modelFactoryProvider.CreateModelDisposer(compiledActionDescriptor);
+
+                if (modelType != compiledType)
+                {
+                    // If the model and page type are different discover handler methods on the model as well.
+                    PopulateHandlerMethodDescriptors(modelType, compiledActionDescriptor);
+                }
             }
 
             var pageStartFactories = GetPageStartFactories(compiledActionDescriptor);
@@ -208,6 +214,23 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
 
             return pageStartFactories;
+        }
+
+        private static void PopulateHandlerMethodDescriptors(TypeInfo type, CompiledPageActionDescriptor actionDescriptor)
+        {
+            var methods = type.GetMethods();
+            for (var i = 0; i < methods.Length; i++)
+            {
+                var method = methods[i];
+                if (method.Name.StartsWith("OnGet", StringComparison.Ordinal) ||
+                    method.Name.StartsWith("OnPost", StringComparison.Ordinal))
+                {
+                    actionDescriptor.HandlerMethods.Add(new HandlerMethodDescriptor()
+                    {
+                        Method = method,
+                    });
+                }
+            }
         }
 
         private class InnerCache

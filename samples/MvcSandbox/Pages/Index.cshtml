@@ -3,9 +3,15 @@
 
 <div class="row">
     <div class="col-md-3">
-        <h2>RazorPages Test</h2>
+        <h2>RazorPages says Hello @Model.Name!</h2>
         <ul>
             <li>This file should give you a quick view of a Mvc Raor Page in action.</li>
         </ul>
     </div>
+
+    <form method="post">
+        <label>Say hello to <input type="text" name="name" /></label>
+        <input type="submit" value="Say" />
+    </form>
+          
 </div>
