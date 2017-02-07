@@ -1,4 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp1.1;net46</TargetFrameworks>
@@ -7,6 +9,10 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <OutputType>Exe</OutputType>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">$(PackageTargetFallback);portable-net45+win8+wp8+wpa81</PackageTargetFallback>
+    <RuntimeFrameworkVersion>1.2.0-*</RuntimeFrameworkVersion>
+
+    <!-- We don't want dotnet pack to try packing a sample -->
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,9 +26,7 @@
     <PackageReference Include="Google.Protobuf" Version="3.1.0" />
   </ItemGroup>
 
-  <Target Name="BuildTSClient"
-          BeforeTargets="BeforeBuild"
-          Condition=" '$(TargetFramework)' == '' ">
+  <Target Name="BuildTSClient" BeforeTargets="BeforeBuild" Condition=" '$(TargetFramework)' == '' ">
     <Exec Command="npm install" />
     <Exec Command="npm run gulp -- --gulpfile $(MSBuildProjectDirectory)/../../src/Microsoft.AspNetCore.SignalR.Client.TS/gulpfile.js bundle-client --bundleOutDir $(MSBuildProjectDirectory)/wwwroot/lib/signalr-client/" />
   </Target>

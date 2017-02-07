@@ -35,7 +35,7 @@ namespace SocialWeather
             }
 
             app.UseSockets(o => { o.MapEndpoint<SocialWeatherEndPoint>("/weather"); });
-            app.UseStaticFiles();
+            app.UseFileServer();
 
             var formatterResolver = app.ApplicationServices.GetRequiredService<FormatterResolver>();
             formatterResolver.AddFormatter<WeatherReport, JsonStreamFormatter<WeatherReport>>("json");

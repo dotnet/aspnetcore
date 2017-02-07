@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
 
                     // Act
                     // Wait for pings to be sent
-                    await Task.Delay(200);
+                    await Task.Delay(500);
 
                     await pair.ServerSocket.CloseAsync(WebSocketCloseStatus.NormalClosure).OrTimeout();
                     var clientSummary = await client.OrTimeout();
