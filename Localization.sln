@@ -14,8 +14,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{7987
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalizationSample", "samples\LocalizationSample\LocalizationSample.csproj", "{55D9501F-15B9-4339-A0AB-6082850E5FCE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Globalization.CultureInfoCache", "src\Microsoft.Extensions.Globalization.CultureInfoCache\Microsoft.Extensions.Globalization.CultureInfoCache.csproj", "{F3988D3A-A4C8-4FD7-BAFE-13E0D0A1659A}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B723DB83-A670-4BCB-95FB-195361331AD2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Localization.Tests", "test\Microsoft.Extensions.Localization.Tests\Microsoft.Extensions.Localization.Tests.csproj", "{287AD58D-DF34-4F16-8616-FD78FA1CADF9}"

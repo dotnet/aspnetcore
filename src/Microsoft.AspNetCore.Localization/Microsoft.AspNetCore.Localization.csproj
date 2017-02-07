@@ -12,7 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.Globalization.CultureInfoCache\Microsoft.Extensions.Globalization.CultureInfoCache.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Localization.Abstractions\Microsoft.Extensions.Localization.Abstractions.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="1.2.0-*" />
