@@ -362,10 +362,21 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             // Get value at 'from' location and add that value to the 'path' location
             if (TryGetValue(operation.from, objectToApplyTo, operation, out propertyValue))
             {
-                Add(operation.path,
-                    propertyValue,
-                    objectToApplyTo,
-                    operation);
+                // Create deep copy
+                var copyResult = ConversionResultProvider.CopyTo(propertyValue, propertyValue.GetType());
+                if (copyResult.CanBeConverted)
+                {
+                    Add(operation.path,
+                        copyResult.ConvertedInstance,
+                        objectToApplyTo,
+                        operation);
+                }
+                else
+                {
+                    var error = CreateOperationFailedError(objectToApplyTo, operation.path, operation, Resources.FormatCannotCopyProperty(operation.from));
+                    ErrorReporter(error);
+                    return;
+                }
             }
         }
 

@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.JsonPatch
 
         public SimpleDTO SimpleDTO { get; set; }
 
+        public InheritedDTO InheritedDTO { get; set; }
+
         public List<SimpleDTO> SimpleDTOList { get; set; }
 
         public IList<SimpleDTO> SimpleDTOIList { get; set; }
@@ -21,6 +23,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         {
             this.NestedDTO = new NestedDTO();
             this.SimpleDTO = new SimpleDTO();
+            this.InheritedDTO = new InheritedDTO();
             this.SimpleDTOList = new List<SimpleDTO>();
         }
     }

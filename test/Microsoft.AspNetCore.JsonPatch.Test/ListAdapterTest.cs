@@ -175,6 +175,27 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         }
 
         [Fact]
+        public void Add_CompatibleTypeWorks()
+        {
+            // Arrange
+            var sDto = new SimpleDTO();
+            var iDto = new InheritedDTO();
+            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
+            var targetObject = (new List<SimpleDTO>() { sDto });
+            var listAdapter = new ListAdapter();
+            string message = null;
+
+            // Act
+            var addStatus = listAdapter.TryAdd(targetObject, "-", resolver.Object, iDto, out message);
+
+            // Assert
+            Assert.True(addStatus);
+            Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
+            Assert.Equal(2, targetObject.Count);
+            Assert.Equal(new List<SimpleDTO>() { sDto, iDto }, targetObject);
+        }
+
+        [Fact]
         public void Add_NonCompatibleType_Fails()
         {
             // Arrange
@@ -228,6 +249,60 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         [Theory]
         [MemberData(nameof(AddingDifferentComplexTypeWorksData))]
         public void Add_DifferentComplexTypeWorks(IList targetObject, object value, string position, IList expected)
+        {
+            // Arrange
+            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
+            var listAdapter = new ListAdapter();
+            string message = null;
+
+            // Act
+            var addStatus = listAdapter.TryAdd(targetObject, position, resolver.Object, value, out message);
+
+            // Assert
+            Assert.True(addStatus);
+            Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
+            Assert.Equal(expected.Count, targetObject.Count);
+            Assert.Equal(expected, targetObject);
+        }
+
+        public static TheoryData<IList, object, string, IList> AddingKeepsObjectReferenceData {
+            get {
+                var sDto1 = new SimpleDTO();
+                var sDto2 = new SimpleDTO();
+                var sDto3 = new SimpleDTO();
+                return new TheoryData<IList, object, string, IList>()
+                {
+                    {
+                        new List<SimpleDTO>() { },
+                        sDto1,
+                        "-",
+                        new List<SimpleDTO>() { sDto1 }
+                    },
+                    {
+                        new List<SimpleDTO>() { sDto1, sDto2 },
+                        sDto3,
+                        "-",
+                        new List<SimpleDTO>() { sDto1, sDto2, sDto3 }
+                    },
+                    {
+                        new List<SimpleDTO>() { sDto1, sDto2 },
+                        sDto3,
+                        "0",
+                        new List<SimpleDTO>() { sDto3, sDto1, sDto2 }
+                    },
+                    {
+                        new List<SimpleDTO>() {  sDto1, sDto2 },
+                        sDto3,
+                        "1",
+                        new List<SimpleDTO>() { sDto1, sDto3, sDto2 }
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(AddingKeepsObjectReferenceData))]
+        public void Add_KeepsObjectReference(IList targetObject, object value, string position, IList expected)
         {
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);

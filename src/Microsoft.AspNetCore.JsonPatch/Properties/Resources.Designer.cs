@@ -27,6 +27,22 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         /// <summary>
+        /// The property at '{0}' could not be copied.
+        /// </summary>
+        internal static string CannotCannotCopyProperty
+        {
+            get { return GetString("CannotCannotCopyProperty"); }
+        }
+
+        /// <summary>
+        /// The property at '{0}' could not be copied.
+        /// </summary>
+        internal static string FormatCannotCopyProperty(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("CannotCannotCopyProperty"), p0);
+        }
+
+        /// <summary>
         /// The '{0}' operation at path '{1}' could not be performed.
         /// </summary>
         internal static string CannotPerformOperation
