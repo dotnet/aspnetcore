@@ -35,6 +35,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
+    <ProjectReference Include="..\..\tools\CodeGenerator\CodeGenerator.csproj" />
     <PackageReference Include="System.Net.NetworkInformation" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
