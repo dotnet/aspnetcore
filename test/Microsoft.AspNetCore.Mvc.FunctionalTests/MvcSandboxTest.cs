@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.GetStringAsync("http://localhost/Pages/Test");
 
             // Assert
-            Assert.Contains("This file should give you a quick view of a Mvc Raor Page in action.", response);
+            Assert.Contains("This file should give you a quick view of a Mvc Razor Page in action.", response);
         }
     }
 }

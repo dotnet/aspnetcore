@@ -66,8 +66,12 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IPageLoader, DefaultPageLoader>();
             services.TryAddSingleton<IPageHandlerMethodSelector, DefaultPageHandlerMethodSelector>();
             services.TryAddSingleton<PageResultExecutor>();
+
             services.TryAddSingleton<PageArgumentBinder, DefaultPageArgumentBinder>();
+
             services.TryAddSingleton<IActionDescriptorChangeProvider, PageActionDescriptorChangeProvider>();
+
+            services.TryAddSingleton<TempDataPropertyProvider>();
         }
     }
 }

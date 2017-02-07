@@ -283,6 +283,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 new TestOptionsManager<MvcOptions>(),
                 new TestOptionsManager<HtmlHelperOptions>(),
                 Mock.Of<IPageHandlerMethodSelector>(),
+                new TempDataPropertyProvider(),
                 razorProject,
                 new DiagnosticListener("Microsoft.AspNetCore"),
                 NullLoggerFactory.Instance);

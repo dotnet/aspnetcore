@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -194,6 +195,44 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         }
 
         [Fact]
+        public void GetDescriptors_ImplicitFilters()
+        {
+            // Arrange
+            var options = new MvcOptions();
+            var razorProject = new Mock<RazorProject>();
+            razorProject.Setup(p => p.EnumerateItems("/"))
+                .Returns(new[]
+                {
+                    GetProjectItem("/", "/Home.cshtml", $"@page {Environment.NewLine}"),
+                });
+            var provider = new PageActionDescriptorProvider(
+                razorProject.Object,
+                GetAccessor(options),
+                GetAccessor<RazorPagesOptions>());
+            var context = new ActionDescriptorProviderContext();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var result = Assert.Single(context.Results);
+            var descriptor = Assert.IsType<PageActionDescriptor>(result);
+            Assert.Collection(
+                descriptor.FilterDescriptors,
+                filterDescriptor =>
+                {
+                    Assert.Equal(FilterScope.Action, filterDescriptor.Scope);
+                    Assert.IsType<SaveTempDataPropertyFilter>(filterDescriptor.Filter);
+                },
+                filterDescriptor =>
+                {
+                    Assert.Equal(FilterScope.Action, filterDescriptor.Scope);
+                    Assert.IsType<AutoValidateAntiforgeryTokenAttribute>(filterDescriptor.Filter);
+                });
+        }
+
+
+        [Fact]
         public void GetDescriptors_AddsGlobalFilters()
         {
             // Arrange
@@ -220,7 +259,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             // Assert
             var result = Assert.Single(context.Results);
             var descriptor = Assert.IsType<PageActionDescriptor>(result);
-            Assert.Collection(descriptor.FilterDescriptors,
+            Assert.Collection(
+                descriptor.FilterDescriptors,
                 filterDescriptor =>
                 {
                     Assert.Equal(FilterScope.Global, filterDescriptor.Scope);
@@ -230,6 +270,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 {
                     Assert.Equal(FilterScope.Global, filterDescriptor.Scope);
                     Assert.Same(filter2, filterDescriptor.Filter);
+                },
+                filterDescriptor =>
+                {
+                    Assert.Equal(FilterScope.Action, filterDescriptor.Scope);
+                    Assert.IsType<SaveTempDataPropertyFilter>(filterDescriptor.Filter);
+                },
+                filterDescriptor =>
+                {
+                    Assert.Equal(FilterScope.Action, filterDescriptor.Scope);
+                    Assert.IsType<AutoValidateAntiforgeryTokenAttribute>(filterDescriptor.Filter);
                 });
         }
 
@@ -273,6 +323,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 {
                     Assert.Equal(FilterScope.Global, filterDescriptor.Scope);
                     Assert.Same(globalFilter, filterDescriptor.Filter);
+                },
+                filterDescriptor =>
+                {
+                    Assert.Equal(FilterScope.Action, filterDescriptor.Scope);
+                    Assert.IsType<SaveTempDataPropertyFilter>(filterDescriptor.Filter);
+                },
+                filterDescriptor =>
+                {
+                    Assert.Equal(FilterScope.Action, filterDescriptor.Scope);
+                    Assert.IsType<AutoValidateAntiforgeryTokenAttribute>(filterDescriptor.Filter);
                 },
                 filterDescriptor =>
                 {

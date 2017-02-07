@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
@@ -21,6 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
     {
         private readonly IPageHandlerMethodSelector _selector;
         private readonly PageContext _pageContext;
+        private readonly TempDataPropertyProvider _propertyProvider;
 
         private Page _page;
         private object _model;
@@ -28,6 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         public PageActionInvoker(
             IPageHandlerMethodSelector handlerMethodSelector,
+            TempDataPropertyProvider propertyProvider,
             DiagnosticSource diagnosticSource,
             ILogger logger,
             PageContext pageContext,
@@ -42,6 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                   valueProviderFactories)
         {
             _selector = handlerMethodSelector;
+            _propertyProvider = propertyProvider;
             _pageContext = pageContext;
             CacheEntry = cacheEntry;
         }
@@ -335,6 +339,25 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             if (_model != null)
             {
                 _pageContext.ViewData.Model = _model;
+            }
+
+            // This is a workaround for not yet having proper filter for Pages.
+            SaveTempDataPropertyFilter propertyFilter = null;
+            for (var i = 0; i < _filters.Length; i++)
+            {
+                propertyFilter = _filters[i] as SaveTempDataPropertyFilter;
+                if (propertyFilter != null)
+                {
+                    break;
+                }
+            }
+
+            var originalValues = _propertyProvider.LoadAndTrackChanges(_page, _pageContext.TempData);
+            if (propertyFilter != null)
+            {
+                propertyFilter.OriginalValues = originalValues;
+                propertyFilter.Subject = _page;
+                propertyFilter.Prefix = TempDataPropertyProvider.Prefix;
             }
 
             IActionResult result = null;

@@ -1,12 +1,22 @@
 ﻿@page Test
 @model TestModel
 
+@functions {
+
+    [TempData]
+    public string Message { get; set; }
+}
+
 <div class="row">
     <div class="col-md-3">
         <h2>RazorPages says Hello @Model.Name!</h2>
         <ul>
-            <li>This file should give you a quick view of a Mvc Raor Page in action.</li>
+            <li>This file should give you a quick view of a Mvc Razor Page in action.</li>
         </ul>
+        <p>Message from TempData: @Message</p>
+        @{ 
+            Message = $"You visited this page at {DateTime.Now}.";
+        }
     </div>
 
     <form method="post">

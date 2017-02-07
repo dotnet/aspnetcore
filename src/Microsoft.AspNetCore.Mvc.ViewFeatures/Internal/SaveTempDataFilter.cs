@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Internal;
@@ -49,15 +50,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                     SaveTempData(
                         result: null,
                         factory: saveTempDataContext.TempDataDictionaryFactory,
+                        filters: saveTempDataContext.Filters,
                         httpContext: saveTempDataContext.HttpContext);
 
                     return TaskCache.CompletedTask;
                 },
-               state: new SaveTempDataContext()
-               {
-                   HttpContext = context.HttpContext,
-                   TempDataDictionaryFactory = _factory
-               });
+                state: new SaveTempDataContext()
+                {
+                    Filters = context.Filters,
+                    HttpContext = context.HttpContext,
+                    TempDataDictionaryFactory = _factory
+                });
             }
         }
 
@@ -79,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             // late in the pipeline at which point SessionFeature would not be available.
             if (!context.HttpContext.Response.HasStarted)
             {
-                SaveTempData(context.Result, _factory, context.HttpContext);
+                SaveTempData(context.Result, _factory, context.Filters, context.HttpContext);
                 // If SaveTempDataFilter got added twice this might already be in there.
                 if (!context.HttpContext.Items.ContainsKey(TempDataSavedKey))
                 {
@@ -88,17 +91,34 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
         }
 
-        private static void SaveTempData(IActionResult result, ITempDataDictionaryFactory factory, HttpContext httpContext)
+        private static void SaveTempData(
+            IActionResult result,
+            ITempDataDictionaryFactory factory,
+            IList<IFilterMetadata> filters,
+            HttpContext httpContext)
         {
+            var tempData = factory.GetTempData(httpContext);
+
+            for (var i = 0; i < filters.Count; i++)
+            {
+                var callback = filters[i] as ISaveTempDataCallback;
+                if (callback != null)
+                {
+                    callback.OnTempDataSaving(tempData);
+                }
+            }
+
             if (result is IKeepTempDataResult)
             {
-                factory.GetTempData(httpContext).Keep();
+                tempData.Keep();
             }
-            factory.GetTempData(httpContext).Save();
+
+            tempData.Save();
         }
 
         private class SaveTempDataContext
         {
+            public IList<IFilterMetadata> Filters { get; set; }
             public HttpContext HttpContext { get; set; }
             public ITempDataDictionaryFactory TempDataDictionaryFactory { get; set; }
         }
