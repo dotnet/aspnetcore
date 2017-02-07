@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
         public const string GlobalRules = "globalRules";
         public const string IgnoreCase = "ignoreCase";
         public const string Input = "input";
+        public const string Key = "key";
         public const string LogicalGrouping = "logicalGrouping";
         public const string LogRewrittenUrl = "logRewrittenUrl";
         public const string Match = "match";
@@ -22,13 +23,16 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
         public const string Negate = "negate";
         public const string Pattern = "pattern";
         public const string PatternSyntax = "patternSyntax";
-        public const string Rewrite = "rewrite";
         public const string RedirectType = "redirectType";
+        public const string Rewrite = "rewrite";
+        public const string RewriteMap = "rewriteMap";
+        public const string RewriteMaps = "rewriteMaps";
         public const string Rule = "rule";
         public const string Rules = "rules";
         public const string StopProcessing = "stopProcessing";
         public const string TrackAllCaptures = "trackAllCaptures";
         public const string Type = "type";
         public const string Url = "url";
+        public const string Value = "value";
     }
 }

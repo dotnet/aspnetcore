@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -479,6 +480,41 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var response = await server.CreateClient().GetStringAsync($"http://localhost/{Guid.NewGuid()}/foo/bar");
 
             Assert.Equal("http://www.test.com/foo/bar", response);
+        }
+
+        [Theory]
+        [InlineData("http://fetch.environment.local/dev/path", "http://1.1.1.1/path")]
+        [InlineData("http://fetch.environment.local/qa/path", "http://fetch.environment.local/qa/path")]
+        public async Task Invoke_ReverseProxyToAnotherSiteUsingXmlConfiguredRewriteMap(string requestUri, string expectedRewrittenUri)
+        {
+            var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"
+                <rewrite>
+                    <rules>
+                        <rule name=""Proxy"">
+                            <match url=""([^/]*)(/?.*)"" />
+                            <conditions>
+                                <add input=""{environmentMap:{R:1}}"" pattern=""(.+)"" />
+                            </conditions>
+                            <action type=""Rewrite"" url=""http://{C:1}{R:2}"" appendQueryString=""true"" />
+                        </rule>
+                    </rules>
+                    <rewriteMaps>
+                        <rewriteMap name=""environmentMap"">
+                            <add key=""dev"" value=""1.1.1.1"" />
+                        </rewriteMap>
+                    </rewriteMaps>
+                </rewrite>"));
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(context.Request.GetEncodedUrl()));
+                });
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetStringAsync(new Uri(requestUri));
+
+            Assert.Equal(expectedRewrittenUri, response);
         }
     }
 }

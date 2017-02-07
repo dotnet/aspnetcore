@@ -12,21 +12,28 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 {
     public class UrlRewriteFileParser
     {
-        private readonly InputParser _inputParser = new InputParser();
+        private InputParser _inputParser;
 
+        /// <summary>
+        /// Parse an IIS rewrite section into a list of <see cref="IISUrlRewriteRule"/>s.
+        /// </summary>
+        /// <param name="reader">The reader containing the rewrite XML</param>
         public IList<IISUrlRewriteRule> Parse(TextReader reader)
         {
             var xmlDoc = XDocument.Load(reader, LoadOptions.SetLineInfo);
             var xmlRoot = xmlDoc.Descendants(RewriteTags.Rewrite).FirstOrDefault();
 
-            if (xmlRoot != null)
+            if (xmlRoot == null)
             {
-                var result = new List<IISUrlRewriteRule>();
-                ParseRules(xmlRoot.Descendants(RewriteTags.GlobalRules).FirstOrDefault(), result, global: true);
-                ParseRules(xmlRoot.Descendants(RewriteTags.Rules).FirstOrDefault(), result, global: false);
-                return result;
+                return null;
             }
-            return null;
+
+            _inputParser = new InputParser(RewriteMapParser.Parse(xmlRoot));
+
+            var result = new List<IISUrlRewriteRule>();
+            ParseRules(xmlRoot.Descendants(RewriteTags.GlobalRules).FirstOrDefault(), result, global: true);
+            ParseRules(xmlRoot.Descendants(RewriteTags.Rules).FirstOrDefault(), result, global: false);
+            return result;
         }
 
         private void ParseRules(XElement rules, IList<IISUrlRewriteRule> result, bool global)
