@@ -9,8 +9,6 @@ using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
-using Microsoft.AspNetCore.Razor;
-using Microsoft.AspNetCore.Razor.CodeGenerators;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
@@ -27,7 +25,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private readonly RazorProject _project;
         private readonly IFileProvider _fileProvider;
         private readonly ILogger _logger;
-        private readonly RazorSourceDocument _globalImports;
 
         /// <summary>
         /// Instantiates a new instance of the <see cref="RazorCompilationService"/> class.
@@ -68,10 +65,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             writer.Flush();
 
             stream.Seek(0L, SeekOrigin.Begin);
-            _globalImports = RazorSourceDocument.ReadFrom(stream, filename: null, encoding: Encoding.UTF8);
+            GlobalImports = RazorSourceDocument.ReadFrom(stream, filename: null, encoding: Encoding.UTF8);
         }
 
-
+        public RazorSourceDocument GlobalImports { get; }
 
         /// <inheritdoc />
         public CompilationResult Compile(RelativeFileInfo file)
@@ -97,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             if (cSharpDocument.Diagnostics.Count > 0)
             {
-                return GetCompilationFailedResult(file, cSharpDocument.Diagnostics);
+                return GetCompilationFailedResult(file.RelativePath, cSharpDocument.Diagnostics);
             }
 
             return _compilationService.Compile(codeDocument, cSharpDocument);
@@ -111,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             var imports = new List<RazorSourceDocument>()
             {
-                _globalImports,
+                GlobalImports,
             };
 
             var paths = ViewHierarchyUtility.GetViewImportsLocations(relativePath);
@@ -138,15 +135,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         }
 
         // Internal for unit testing
-        internal CompilationResult GetCompilationFailedResult(
-            RelativeFileInfo file, 
+        public CompilationResult GetCompilationFailedResult(
+            string relativePath,
             IEnumerable<Microsoft.AspNetCore.Razor.Evolution.Legacy.RazorError> errors)
         {
             // If a SourceLocation does not specify a file path, assume it is produced
             // from parsing the current file.
             var messageGroups = errors
                 .GroupBy(razorError =>
-                razorError.Location.FilePath ?? file.RelativePath,
+                razorError.Location.FilePath ?? relativePath,
                 StringComparer.Ordinal);
 
             var failures = new List<CompilationFailure>();

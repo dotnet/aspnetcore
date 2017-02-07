@@ -157,7 +157,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var fileProvider = new TestFileProvider();
             var file = fileProvider.AddFile(viewPath, "View Content");
             fileProvider.AddFile(viewImportsPath, "Global Import Content");
-            var relativeFileInfo = new RelativeFileInfo(file, viewPath);
             var razorService = new RazorCompilationService(
                 Mock.Of<ICompilationService>(),
                 Mock.Of<RazorEngine>(),
@@ -173,7 +172,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             };
 
             // Act
-            var result = razorService.GetCompilationFailedResult(relativeFileInfo, errors);
+            var result = razorService.GetCompilationFailedResult(viewPath, errors);
 
             // Assert
             Assert.NotNull(result.CompilationFailures);

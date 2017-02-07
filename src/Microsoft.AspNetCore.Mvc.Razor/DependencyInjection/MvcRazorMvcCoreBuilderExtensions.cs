@@ -186,6 +186,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     PageDirective.Register(b);
                     
                     b.Features.Add(new ModelExpressionPass());
+                    b.Features.Add(new PagesPropertyInjectionPass());
                     b.Features.Add(new ViewComponentTagHelperPass());
                     b.Features.Add(new RazorPageDocumentClassifier());
                     b.Features.Add(new MvcViewDocumentClassifierPass());
