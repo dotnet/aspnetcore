@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var sDto = new SimpleDTO();
             var iDto = new InheritedDTO();
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
-            var targetObject = (new List<SimpleDTO>() { sDto });
+            var targetObject = new List<SimpleDTO>() { sDto };
             var listAdapter = new ListAdapter();
             string message = null;
 
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
-            var targetObject = (new List<int>() { 10, 20 }).AsReadOnly();
+            var targetObject = new List<int>() { 10, 20 };
             var listAdapter = new ListAdapter();
             string message = null;
 
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
-            var targetObject = (new List<int>() { 10, 20 }).AsReadOnly();
+            var targetObject = new List<int>() { 10, 20 };
             var listAdapter = new ListAdapter();
             string message = null;
 
