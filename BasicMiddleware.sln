@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26127.0
+VisualStudioVersion = 15.0.26127.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpOverrides", "src\Microsoft.AspNetCore.HttpOverrides\Microsoft.AspNetCore.HttpOverrides.csproj", "{517308C3-B477-4B01-B461-CAB9C10B6928}"
 EndProject

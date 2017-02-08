@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Rewrite.Internal.UrlActions;
 using Microsoft.AspNetCore.Rewrite.Internal.UrlMatches;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
@@ -33,31 +31,13 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             return new IISUrlRewriteRule(Name, _initialMatch, _conditions, _action, _trackAllCaptures, global);
         }
 
-        public void AddUrlAction(
-            Pattern url,
-            ActionType actionType = ActionType.None,
-            bool appendQueryString = true,
-            bool stopProcessing = false,
-            int statusCode = StatusCodes.Status301MovedPermanently)
+        public void AddUrlAction(UrlAction action)
         {
-            switch (actionType)
+            if (action == null)
             {
-                case ActionType.None:
-                    _action = new VoidAction(stopProcessing ? RuleResult.SkipRemainingRules : RuleResult.ContinueRules);
-                    break;
-                case ActionType.Rewrite:
-                    _action = new RewriteAction(stopProcessing ? RuleResult.SkipRemainingRules : RuleResult.ContinueRules,
-                        url, appendQueryString);
-                    break;
-                case ActionType.Redirect:
-                    _action = new RedirectAction(statusCode, url, appendQueryString);
-                    break;
-                case ActionType.AbortRequest:
-                    _action = new AbortAction();
-                    break;
-                case ActionType.CustomResponse:
-                    throw new NotImplementedException("Custom Responses are not implemented");
+                throw new ArgumentNullException(nameof(action), "Rules must contain an action");
             }
+            _action = action;
         }
 
         public void AddUrlMatch(string input, bool ignoreCase = true, bool negate = false, PatternSyntax patternSyntax = PatternSyntax.ECMAScript)

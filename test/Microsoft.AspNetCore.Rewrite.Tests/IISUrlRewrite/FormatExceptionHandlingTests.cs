@@ -15,60 +15,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 @"<rewrite>
     <rules>
         <rule name=""Rewrite to article.aspx"">
-        </rule>
-    </rules>
-</rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'Cannot have rule without match'. Line number '3': '10'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Rewrite to article.aspx"">
-            <match url = ""(.*)"" />
-            <action type=""Rewrite"" url =""{"" />
-        </rule>
-    </rules>
-</rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'Missing close brace for parameter at string index: '1''. Line number '5': '14'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Rewrite to article.aspx"">
-            <match />
-            <action type=""Rewrite"" url=""foo"" />
-        </rule>
-    </rules>
-</rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'Match must have Url Attribute'. Line number '4': '14'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Rewrite to article.aspx"">
-            <match url = ""(.*)"" />
-            <conditions>
-                <add input=""{HTTPS"" pattern=""^OFF$"" />
-            </conditions>
-            <action type=""Rewrite"" url =""foo"" />
-        </rule>
-    </rules>
-</rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'Missing close brace for parameter at string index: '6''. Line number '6': '18'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Rewrite to article.aspx"">
-            <match url = ""(.*)"" />
-            <conditions>
-                <add pattern=""^OFF$"" />
-            </conditions>
-            <action type=""Rewrite"" url =""foo"" />
-        </rule>
-    </rules>
-</rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'Conditions must have an input attribute'. Line number '6': '18'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Rewrite to article.aspx"">
             <match url = ""(.*)"" />
             <conditions>
                 <add input=""{HTTPS}"" />
@@ -77,7 +23,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         </rule>
     </rules>
 </rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'Match does not have an associated pattern attribute in condition'. Line number '6': '18'.")]
+			"Match does not have an associated pattern attribute in condition")]
         [InlineData(
 @"<rewrite>
     <rules>
@@ -90,174 +36,30 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         </rule>
     </rules>
 </rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'Match does not have an associated pattern attribute in condition'. Line number '6': '18'.")]
+			"Match does not have an associated pattern attribute in condition")]
         [InlineData(
 @"<rewrite>
     <rules>
         <rule name=""Rewrite to article.aspx"">
             <match url = ""(.*)"" />
-            <action type=""Rewrite"" url ="""" />
-        </rule>
-    </rules>
-</rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'Url attribute cannot contain an empty string'. Line number '5': '14'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Remove trailing slash"">
-            <match url = ""(.*)/$"" />
-            <action type=""Redirect"" redirectType=""foo"" url =""{R:1}"" />
-        </rule>
-    </rules>
-</rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'The redirectType parameter 'foo' was not recognized'. Line number '5': '14'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Remove trailing slash"">
-            <match url = ""(.*)/$"" />
-            <action type=""foo"" url =""{R:1}"" />
-        </rule>
-    </rules>
-</rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'The type parameter 'foo' was not recognized'. Line number '5': '14'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Remove trailing slash"">
-            <match url = ""(.*)/$"" />
-            <conditions logicalGrouping=""foo"">
-                <add input=""{REQUEST_FILENAME}"" matchType=""isFile"" negate=""true""/>
-            </conditions>
-            <action type=""Redirect"" url =""{R:1}"" />
-        </rule>
-    </rules>
-</rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'The logicalGrouping parameter 'foo' was not recognized'. Line number '5': '14'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Remove trailing slash"" patternSyntax=""foo"">
-            <match url = ""(.*)/$"" />
-            <action type=""Redirect"" url =""{R:1}"" />
-        </rule>
-    </rules>
-</rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'The patternSyntax parameter 'foo' was not recognized'. Line number '3': '10'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Remove trailing slash"">
-            <match url = ""(.*)/$"" />
             <conditions>
-                <add input=""{REQUEST_FILENAME}"" matchType=""foo"" negate=""true""/>
+                <add input=""{HTTPS"" pattern=""^OFF$"" />
             </conditions>
-            <action type=""Redirect"" url =""{R:1}"" />
+            <action type=""Rewrite"" url =""foo"" />
         </rule>
     </rules>
 </rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'The matchType parameter 'foo' was not recognized'. Line number '6': '18'.")]
+			"Missing close brace for parameter at string index: '6'")]
         [InlineData(
 @"<rewrite>
     <rules>
-        <rule name=""Remove trailing slash"" enabled=""foo"">
-            <match url = ""(.*)/$"" />
-            <conditions>
-                <add input=""{REQUEST_FILENAME}"" negate=""true""/>
-            </conditions>
-            <action type=""Redirect"" url =""{R:1}"" />
+        <rule name=""Rewrite to article.aspx"">
+            <match url = ""(.*)"" />
+            <action type=""Rewrite"" url =""{"" />
         </rule>
     </rules>
 </rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'The enabled parameter 'foo' was not recognized'. Line number '3': '10'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Remove trailing slash"" stopProcessing=""foo"">
-            <match url = ""(.*)/$"" />
-            <conditions>
-                <add input=""{REQUEST_FILENAME}"" negate=""true""/>
-            </conditions>
-            <action type=""Redirect"" url =""{R:1}"" />
-        </rule>
-    </rules>
-</rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'The stopProcessing parameter 'foo' was not recognized'. Line number '3': '10'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Remove trailing slash"">
-            <match url = ""(.*)/$"" ignoreCase=""foo""/>
-            <conditions>
-                <add input=""{REQUEST_FILENAME}"" negate=""true""/>
-            </conditions>
-            <action type=""Redirect"" url =""{R:1}"" />
-        </rule>
-    </rules>
-</rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'The ignoreCase parameter 'foo' was not recognized'. Line number '4': '14'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Remove trailing slash"">
-            <match url = ""(.*)/$""/>
-            <conditions>
-                <add input=""{REQUEST_FILENAME}"" ignoreCase=""foo""/>
-            </conditions>
-            <action type=""Redirect"" url =""{R:1}"" />
-        </rule>
-    </rules>
-</rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'The ignoreCase parameter 'foo' was not recognized'. Line number '6': '18'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Remove trailing slash"">
-            <match url = ""(.*)/$"" negate=""foo""/>
-            <conditions>
-                <add input=""{REQUEST_FILENAME}""/>
-            </conditions>
-            <action type=""Redirect"" url =""{R:1}"" />
-        </rule>
-    </rules>
-</rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'The negate parameter 'foo' was not recognized'. Line number '4': '14'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Remove trailing slash"">
-            <match url = ""(.*)/$""/>
-            <conditions>
-                <add input=""{REQUEST_FILENAME}"" negate=""foo""/>
-            </conditions>
-            <action type=""Redirect"" url =""{R:1}"" />
-        </rule>
-    </rules>
-</rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'The negate parameter 'foo' was not recognized'. Line number '6': '18'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Remove trailing slash"">
-            <match url = ""(.*)/$""/>
-            <conditions trackAllCaptures=""foo"">
-                <add input=""{REQUEST_FILENAME}""/>
-            </conditions>
-            <action type=""Redirect"" url =""{R:1}"" />
-        </rule>
-    </rules>
-</rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'The trackAllCaptures parameter 'foo' was not recognized'. Line number '5': '14'.")]
-        [InlineData(
-@"<rewrite>
-    <rules>
-        <rule name=""Remove trailing slash"">
-            <match url = ""(.*)/$""/>
-            <action type=""Redirect"" url =""{R:1}"" appendQueryString=""foo""/>
-        </rule>
-    </rules>
-</rewrite>",
-            "Could not parse the UrlRewrite file. Message: 'The appendQueryString parameter 'foo' was not recognized'. Line number '5': '14'.")]
+			"Missing close brace for parameter at string index: '1'")]
         public void ThrowFormatExceptionWithCorrectMessage(string input, string expected)
         {
             // Arrange, Act, Assert

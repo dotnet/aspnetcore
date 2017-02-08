@@ -3,11 +3,11 @@
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
 {
-    public class VoidAction : UrlAction
+    public class NoneAction : UrlAction
     {
         public RuleResult Result { get; }
 
-        public VoidAction(RuleResult result)
+        public NoneAction(RuleResult result)
         {
             Result = result;
         }

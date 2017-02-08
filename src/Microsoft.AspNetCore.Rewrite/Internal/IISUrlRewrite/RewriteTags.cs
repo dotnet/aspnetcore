@@ -29,6 +29,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
         public const string RewriteMaps = "rewriteMaps";
         public const string Rule = "rule";
         public const string Rules = "rules";
+        public const string StatusCode = "statusCode";
+        public const string SubStatusCode = "subStatusCode";
+        public const string StatusDescription = "statusDescription";
+        public const string StatusReason = "statusReason";
         public const string StopProcessing = "stopProcessing";
         public const string TrackAllCaptures = "trackAllCaptures";
         public const string Type = "type";
