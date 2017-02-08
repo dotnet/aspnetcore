@@ -1553,7 +1553,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         outputKind = SpanKind.Code;
                         break;
                     case DirectiveTokenKind.String:
-                        AcceptAndMoveNext();
+                        AcceptUntil(CSharpSymbolType.WhiteSpace, CSharpSymbolType.NewLine);
+                        NextToken();
                         break;
                 }
 

@@ -751,6 +751,29 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)));
         }
 
+        [Theory]
+        [InlineData("token")]
+        [InlineData("{formaction?}/{id}?")]
+        public void OptionalDirectiveTokens_AreParsed(string value)
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom").BeginOptionals().AddString().Build();
+            var chunkGenerator = new DirectiveTokenChunkGenerator(descriptor.Tokens.First());
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                $"@custom {value}",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Markup, value, markup: false)
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                        .With(chunkGenerator)));
+        }
+
         internal virtual void ParseCodeBlockTest(
             string document,
             IEnumerable<DirectiveDescriptor> descriptors,
