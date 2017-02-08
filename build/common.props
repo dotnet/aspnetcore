@@ -1,6 +1,5 @@
 <Project>
   <Import Project="..\version.props" />
-  <Import Project="..\.build\common.props" Condition="Exists('..\.build\common.props')" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
