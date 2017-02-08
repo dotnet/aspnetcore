@@ -1568,6 +1568,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             {
                 case DirectiveDescriptorKind.SingleLine:
                     Optional(CSharpSymbolType.Semicolon);
+                    AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
 
                     if (At(CSharpSymbolType.NewLine))
                     {

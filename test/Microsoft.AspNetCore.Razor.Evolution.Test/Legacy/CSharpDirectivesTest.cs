@@ -219,6 +219,27 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         }
 
         [Fact]
+        public void DirectiveDescriptor_NoErrorsSemicolonAfterDirective()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom hello ;  ",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Markup, "hello", markup: false)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens[0]))
+                        .Accepts(AcceptedCharacters.NonWhiteSpace),
+                    Factory.Span(SpanKind.Markup, " ;  ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)));
+        }
+
+        [Fact]
         public void DirectiveDescriptor_ErrorsExtraContentAfterDirective()
         {
             // Arrange
