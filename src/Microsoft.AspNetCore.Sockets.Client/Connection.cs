@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
     {
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
+        private int _connectionState = ConnectionState.Initial;
         private IChannelConnection<Message> _transportChannel;
         private ITransport _transport;
 
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger = _loggerFactory.CreateLogger<Connection>();
         }
 
-        public Task StartAsync(Uri url, ITransport transport) => StartAsync((ITransport)null, null);
+        public Task StartAsync() => StartAsync(null, null);
         public Task StartAsync(HttpClient httpClient) => StartAsync(null, httpClient);
         public Task StartAsync(ITransport transport) => StartAsync(transport, null);
 
@@ -45,24 +46,24 @@ namespace Microsoft.AspNetCore.Sockets.Client
             // TODO: make transport optional
             _transport = transport ?? throw new ArgumentNullException(nameof(transport));
 
-            var connectUrl = await GetConnectUrl(Url, httpClient, _logger);
+            if (Interlocked.CompareExchange(ref _connectionState, ConnectionState.Connecting, ConnectionState.Initial)
+                != ConnectionState.Initial)
+            {
+                throw new InvalidOperationException("Cannot start a connection that is not in the Initial state.");
+            }
 
-            var applicationToTransport = Channel.CreateUnbounded<Message>();
-            var transportToApplication = Channel.CreateUnbounded<Message>();
-            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
-            _transportChannel = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
-
-
-            // Start the transport, giving it one end of the pipeline
             try
             {
-                await transport.StartAsync(connectUrl, applicationSide);
+                var connectUrl = await GetConnectUrl(Url, httpClient, _logger);
+                await StartTransport(connectUrl);
             }
-            catch (Exception ex)
+            catch
             {
-                _logger.LogError("Failed to start connection. Error starting transport '{0}': {1}", transport.GetType().Name, ex);
+                Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected);
                 throw;
             }
+
+            Interlocked.Exchange(ref _connectionState, ConnectionState.Connected);
         }
 
         private static async Task<Uri> GetConnectUrl(Uri url, HttpClient httpClient, ILogger logger)
@@ -97,6 +98,29 @@ namespace Microsoft.AspNetCore.Sockets.Client
             catch (Exception ex)
             {
                 logger.LogError("Failed to start connection. Error getting connection id from '{0}': {1}", negotiateUrl, ex);
+                throw;
+            }
+        }
+
+        private async Task StartTransport(Uri connectUrl)
+        {
+            var applicationToTransport = Channel.CreateUnbounded<Message>();
+            var transportToApplication = Channel.CreateUnbounded<Message>();
+            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+
+            _transportChannel = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            Input.Completion.ContinueWith(t => Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected));
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+
+            // Start the transport, giving it one end of the pipeline
+            try
+            {
+                await _transport.StartAsync(connectUrl, applicationSide);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to start connection. Error starting transport '{0}': {1}", _transport.GetType().Name, ex);
                 throw;
             }
         }
@@ -156,6 +180,12 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public async Task<bool> SendAsync(byte[] data, MessageType type, CancellationToken cancellationToken)
         {
+            // TODO: data == null?
+            if (_connectionState != ConnectionState.Connected)
+            {
+                return false;
+            }
+
             var message = new Message(ReadableBuffer.Create(data).Preserve(), type);
 
             while (await Output.WaitToWriteAsync(cancellationToken))
@@ -171,6 +201,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public async Task StopAsync()
         {
+            Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected);
+
             if (_transportChannel != null)
             {
                 Output.TryComplete();
@@ -184,6 +216,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public void Dispose()
         {
+            Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected);
+
             if (_transportChannel != null)
             {
                 Output.TryComplete();
@@ -193,6 +227,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 _transport.Dispose();
             }
+        }
+
+        private class ConnectionState
+        {
+            public const int Initial = 0;
+            public const int Connecting = 1;
+            public const int Connected = 2;
+            public const int Disconnected = 3;
         }
     }
 }

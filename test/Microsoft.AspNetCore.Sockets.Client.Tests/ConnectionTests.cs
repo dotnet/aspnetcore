@@ -38,6 +38,114 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
         }
 
         [Fact]
+        public async Task CannotStartRunningConnection()
+        {
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
+            using (var connection = new Connection(new Uri("http://fakeuri.org/")))
+            {
+                await connection.StartAsync(longPollingTransport, httpClient);
+                var exception =
+                    await Assert.ThrowsAsync<InvalidOperationException>(
+                        async () => await connection.StartAsync(longPollingTransport));
+                Assert.Equal("Cannot start a connection that is not in the Initial state.", exception.Message);
+
+                await connection.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task CannotStartStoppedConnection()
+        {
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
+            using (var connection = new Connection(new Uri("http://fakeuri.org/")))
+            {
+                await connection.StartAsync(longPollingTransport, httpClient);
+                await connection.StopAsync();
+                var exception =
+                    await Assert.ThrowsAsync<InvalidOperationException>(
+                        async () => await connection.StartAsync(longPollingTransport));
+
+                Assert.Equal("Cannot start a connection that is not in the Initial state.", exception.Message);
+            }
+        }
+
+        [Fact]
+        public async Task CannotStartDisposedConnection()
+        {
+            using (var httpClient = new HttpClient())
+            using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
+            {
+                var connection = new Connection(new Uri("http://fakeuri.org/"));
+                connection.Dispose();
+                var exception =
+                    await Assert.ThrowsAsync<InvalidOperationException>(
+                        async () => await connection.StartAsync(longPollingTransport));
+
+                Assert.Equal("Cannot start a connection that is not in the Initial state.", exception.Message);
+            }
+        }
+
+        [Fact]
+        public async Task SendReturnsFalseIfConnectionIsNotStarted()
+        {
+            using (var connection = new Connection(new Uri("http://fakeuri.org/")))
+            {
+                Assert.False(await connection.SendAsync(new byte[0], MessageType.Binary));
+            }
+        }
+
+        [Fact]
+        public async Task SendReturnsFalseIfConnectionIsStopped()
+        {
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
+            using (var connection = new Connection(new Uri("http://fakeuri.org/")))
+            {
+                await connection.StartAsync(longPollingTransport, httpClient);
+                await connection.StopAsync();
+
+                Assert.False(await connection.SendAsync(new byte[0], MessageType.Binary));
+            }
+        }
+
+        [Fact]
+        public async Task SendReturnsFalseIfConnectionIsDisposed()
+        {
+            var connection = new Connection(new Uri("http://fakeuri.org/"));
+            connection.Dispose();
+            Assert.False(await connection.SendAsync(new byte[0], MessageType.Binary));
+        }
+
+        [Fact]
         public async Task TransportIsStoppedWhenConnectionIsStopped()
         {
             var mockHttpHandler = new Mock<HttpMessageHandler>();
