@@ -118,9 +118,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public static async Task<HubConnection> ConnectAsync(Uri url, IInvocationAdapter adapter, ITransport transport, HttpClient httpClient, ILoggerFactory loggerFactory)
         {
             // Connect the underlying connection
-            var connection = await Connection.ConnectAsync(url, transport, httpClient, loggerFactory);
+            var connection = new Connection(url, loggerFactory);
+            await connection.StartAsync(transport, httpClient);
 
-            // Create the RPC connection wrapper
             return new HubConnection(connection, adapter, loggerFactory.CreateLogger<HubConnection>());
         }
 

@@ -30,8 +30,10 @@ namespace ClientSample
             {
                 logger.LogInformation("Connecting to {0}", baseUrl);
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                using (var connection = await Connection.ConnectAsync(new Uri(baseUrl), transport, httpClient, loggerFactory))
+                using (var connection = new Connection(new Uri(baseUrl), loggerFactory))
                 {
+                    await connection.StartAsync(transport, httpClient);
+
                     logger.LogInformation("Connected to {0}", baseUrl);
 
                     var cts = new CancellationTokenSource();
@@ -49,6 +51,7 @@ namespace ClientSample
                         StartSending(loggerFactory.CreateLogger("SendLoop"), connection, cts.Token).ContinueWith(_ => cts.Cancel());
 
                     await Task.WhenAll(receive, send);
+                    await connection.StopAsync();
                 }
             }
         }

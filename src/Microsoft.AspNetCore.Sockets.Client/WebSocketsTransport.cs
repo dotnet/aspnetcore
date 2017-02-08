@@ -30,8 +30,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
         }
 
         public Task Running { get; private set; }
-                                                
-        public async Task StartAsync(Uri url, IChannelConnection<Message> application)  
+
+        public async Task StartAsync(Uri url, IChannelConnection<Message> application)
         {
             if (url == null)
             {
