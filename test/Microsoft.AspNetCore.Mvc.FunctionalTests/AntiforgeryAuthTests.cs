@@ -41,5 +41,15 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
             Assert.Equal("/Home/Login", response.Headers.Location.AbsolutePath, StringComparer.OrdinalIgnoreCase);
         }
+
+        [Fact]
+        public async Task IgnoreAntiforgeryOverridesAutoAntiforgery()
+        {
+            // Arrange & Act
+            var response = await Client.PostAsync("http://localhost/Antiforgery/Index", content: null);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
     }
 }
