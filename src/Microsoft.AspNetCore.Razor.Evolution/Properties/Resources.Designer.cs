@@ -186,6 +186,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             return GetString("RazorProject_PathMustStartWithForwardSlash");
         }
 
+        /// <summary>
+        /// The method '{0}' has already been invoked.
+        /// </summary>
+        internal static string DirectiveDescriptor_BeginOptionalsAlreadyInvoked
+        {
+            get { return GetString("DirectiveDescriptor_BeginOptionalsAlreadyInvoked"); }
+        }
+
+        /// <summary>
+        /// The method '{0}' has already been invoked.
+        /// </summary>
+        internal static string FormatDirectiveDescriptor_BeginOptionalsAlreadyInvoked(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DirectiveDescriptor_BeginOptionalsAlreadyInvoked"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

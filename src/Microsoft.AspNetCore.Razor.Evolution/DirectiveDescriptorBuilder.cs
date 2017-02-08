@@ -1,6 +1,7 @@
 ﻿// Copyright(c) .NET Foundation.All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
@@ -27,6 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             private readonly List<DirectiveTokenDescriptor> _tokenDescriptors;
             private readonly string _name;
             private readonly DirectiveDescriptorKind _type;
+            private bool _optional;
 
             public DefaultDirectiveDescriptorBuilder(string name, DirectiveDescriptorKind type)
             {
@@ -39,7 +41,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 var descriptor = new DirectiveTokenDescriptor()
                 {
-                    Kind = DirectiveTokenKind.Type
+                    Kind = DirectiveTokenKind.Type,
+                    Optional = _optional,
                 };
                 _tokenDescriptors.Add(descriptor);
 
@@ -50,7 +53,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 var descriptor = new DirectiveTokenDescriptor()
                 {
-                    Kind = DirectiveTokenKind.Member
+                    Kind = DirectiveTokenKind.Member,
+                    Optional = _optional,
                 };
                 _tokenDescriptors.Add(descriptor);
 
@@ -61,10 +65,23 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 var descriptor = new DirectiveTokenDescriptor()
                 {
-                    Kind = DirectiveTokenKind.String
+                    Kind = DirectiveTokenKind.String,
+                    Optional = _optional,
                 };
                 _tokenDescriptors.Add(descriptor);
 
+                return this;
+            }
+
+            public IDirectiveDescriptorBuilder BeginOptionals()
+            {
+                if (_optional)
+                {
+                    throw new InvalidOperationException(
+                        Resources.FormatDirectiveDescriptor_BeginOptionalsAlreadyInvoked(nameof(BeginOptionals)));
+                }
+
+                _optional = true;
                 return this;
             }
 

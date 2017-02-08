@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         IDirectiveDescriptorBuilder AddString();
 
+        IDirectiveDescriptorBuilder BeginOptionals();
+
         DirectiveDescriptor Build();
     }
 }

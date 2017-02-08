@@ -150,4 +150,7 @@
   <data name="RazorProject_PathMustStartWithForwardSlash" xml:space="preserve">
     <value>Path must begin with a forward slash '/'.</value>
   </data>
+  <data name="DirectiveDescriptor_BeginOptionalsAlreadyInvoked" xml:space="preserve">
+    <value>The method '{0}' has already been invoked.</value>
+  </data>
 </root>

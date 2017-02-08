@@ -23,7 +23,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             }
 
             return descriptorX != null &&
-                descriptorX.Kind == descriptorY.Kind;
+                descriptorX.Kind == descriptorY.Kind &&
+                descriptorX.Optional == descriptorY.Optional;
         }
 
         public int GetHashCode(DirectiveTokenDescriptor descriptor)
@@ -33,7 +34,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            return descriptor.Kind.GetHashCode();
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(descriptor.Kind);
+            hashCodeCombiner.Add(descriptor.Optional ? 1 : 0);
+
+            return hashCodeCombiner.CombinedHash;
         }
     }
 }

@@ -734,6 +734,23 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                            .Accepts(AcceptedCharacters.None)));
         }
 
+        [Fact]
+        public void OptionalDirectiveTokens_AreSkipped()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom").BeginOptionals().AddString().Build();
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom ",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)));
+        }
+
         internal virtual void ParseCodeBlockTest(
             string document,
             IEnumerable<DirectiveDescriptor> descriptors,
