@@ -43,7 +43,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 _diagnosticSource.Write("Microsoft.AspNetCore.Hosting.BeginRequest", new { httpContext = httpContext, timestamp = startTimestamp });
             }
 
-            HostingEventSource.Log.RequestStart(httpContext.Request.Method, httpContext.Request.Path);
+            var hostingLog = HostingEventSource.Log;
+            if (hostingLog.IsEnabled())
+            {
+                hostingLog.RequestStart(httpContext.Request.Method, httpContext.Request.Path);
+            }
 
             return new Context
             {
@@ -56,7 +60,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public void DisposeContext(Context context, Exception exception)
         {
             var httpContext = context.HttpContext;
-
+            var hostingLog = HostingEventSource.Log;
             if (exception == null)
             {
                 var diagnoticsEnabled = _diagnosticSource.IsEnabled("Microsoft.AspNetCore.Hosting.EndRequest");
@@ -81,10 +85,16 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     _diagnosticSource.Write("Microsoft.AspNetCore.Hosting.UnhandledException", new { httpContext = httpContext, timestamp = currentTimestamp, exception = exception });
                 }
 
-                HostingEventSource.Log.UnhandledException();
+                if (hostingLog.IsEnabled())
+                {
+                    hostingLog.UnhandledException();
+                }
             }
 
-            HostingEventSource.Log.RequestStop();
+            if (hostingLog.IsEnabled())
+            {
+                hostingLog.RequestStop();
+            }
 
             context.Scope?.Dispose();
 
