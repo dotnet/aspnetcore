@@ -9,7 +9,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 {
     public static class PageDirective
     {
-        public static readonly DirectiveDescriptor DirectiveDescriptor = DirectiveDescriptorBuilder.Create("page").AddString().Build();
+        public static readonly DirectiveDescriptor DirectiveDescriptor = DirectiveDescriptorBuilder
+            .Create("page")
+            .BeginOptionals()
+            .AddString()
+            .Build();
 
         public static IRazorEngineBuilder Register(IRazorEngineBuilder builder)
         {
@@ -26,12 +30,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             }
 
             routeTemplate = visitor.RouteTemplate;
-            return routeTemplate != null;
+            return visitor.DirectiveNode != null;
         }
 
         private class Visitor : RazorIRNodeWalker
         {
-            public DirectiveIRNode DirectiveNode { get; private set;  }
+            public DirectiveIRNode DirectiveNode { get; private set; }
 
             public string RouteTemplate { get; private set; }
 
@@ -40,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                 if (node.Descriptor == DirectiveDescriptor)
                 {
                     DirectiveNode = node;
-                    RouteTemplate = node.Tokens.First().Content;
+                    RouteTemplate = node.Tokens.FirstOrDefault()?.Content;
                 }
             }
         }
