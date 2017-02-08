@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -44,6 +45,26 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         public ModelStateDictionary ModelState => PageContext.ModelState;
 
         public ViewDataDictionary ViewData => PageContext?.ViewData;
+
+        protected Task<T> BindAsync<T>(string name)
+        {
+            return Binder.BindModelAsync<T>(PageContext, name);
+        }
+
+        protected Task<T> BindAsync<T>(T @default, string name)
+        {
+            return Binder.BindModelAsync<T>(PageContext, @default, name);
+        }
+
+        protected Task<bool> TryUpdateModelAsync<T>(T value)
+        {
+            return Binder.TryUpdateModelAsync<T>(PageContext, value);
+        }
+
+        protected Task<bool> TryUpdateModelAsync<T>(T value, string name)
+        {
+            return Binder.TryUpdateModelAsync<T>(PageContext, value, name);
+        }
 
         protected IActionResult Redirect(string url)
         {
