@@ -1554,7 +1554,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         break;
                     case DirectiveTokenKind.String:
                         AcceptUntil(CSharpSymbolType.WhiteSpace, CSharpSymbolType.NewLine);
-                        NextToken();
                         break;
                 }
 

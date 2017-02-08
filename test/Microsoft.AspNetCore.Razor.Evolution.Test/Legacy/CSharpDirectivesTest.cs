@@ -751,10 +751,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)));
         }
 
-        [Theory]
-        [InlineData("token")]
-        [InlineData("{formaction?}/{id}?")]
-        public void OptionalDirectiveTokens_AreParsed(string value)
+        [Fact]
+        public void OptionalDirectiveTokens_WithSimpleTokens_AreParsed()
         {
             // Arrange
             var descriptor = DirectiveDescriptorBuilder.Create("custom").BeginOptionals().AddString().Build();
@@ -762,16 +760,98 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             // Act & Assert
             ParseCodeBlockTest(
-                $"@custom {value}",
+                "@custom simple-value",
                 new[] { descriptor },
                 new DirectiveBlock(
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
                     Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
                     Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
-                    Factory.Span(SpanKind.Markup, value, markup: false)
+                    Factory.Span(SpanKind.Markup, "simple-value", markup: false)
                         .Accepts(AcceptedCharacters.NonWhiteSpace)
                         .With(chunkGenerator)));
+        }
+
+        [Fact]
+        public void OptionalDirectiveTokens_WithBraces_AreParsed()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom").BeginOptionals().AddString().Build();
+            var chunkGenerator = new DirectiveTokenChunkGenerator(descriptor.Tokens.First());
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom {formaction}?/{id}?",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Markup, "{formaction}?/{id}?", markup: false)
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                        .With(chunkGenerator)));
+        }
+
+        [Fact]
+        public void OptionalDirectiveTokens_WithMultipleOptionalTokens_AreParsed()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("custom").BeginOptionals().AddString().AddType().Build();
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@custom {formaction}?/{id}? System.String",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Markup, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Markup, "{formaction}?/{id}?", markup: false)
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens.First())),
+                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Code, "System.String", markup: false)
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens.Last()))));
+        }
+
+        [Fact]
+        public void OptionalMemberTokens_WithMissingMember_IsParsed()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("TestDirective").BeginOptionals().AddMember().AddString().Build();
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@TestDirective ",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("TestDirective").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace)));
+        }
+
+        [Fact]
+        public void OptionalMemberTokens_WithMemberSpecified_IsParsed()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptorBuilder.Create("TestDirective").BeginOptionals().AddMember().AddString().Build();
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                "@TestDirective PropertyName",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("TestDirective").Accepts(AcceptedCharacters.None),
+                    Factory.Span(SpanKind.Code, " ", markup: false).Accepts(AcceptedCharacters.WhiteSpace),
+                    Factory.Span(SpanKind.Code, "PropertyName", markup: false)
+                        .Accepts(AcceptedCharacters.NonWhiteSpace)
+                        .With(new DirectiveTokenChunkGenerator(descriptor.Tokens.First()))));
         }
 
         internal virtual void ParseCodeBlockTest(
