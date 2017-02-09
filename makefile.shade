@@ -777,6 +777,7 @@ functions
         {
             IEnumerable<string> reposToBuild = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
+                "Microsoft.Data.Sqlite",
                 "PlatformAbstractions",
                 "Common",
                 "JsonPatch",
@@ -791,7 +792,6 @@ functions
                 "DataProtection",
                 "HttpAbstractions",
                 "Testing",
-                "Microsoft.Data.Sqlite",
                 "Caching",
                 "Razor",
                 "Hosting",
@@ -1041,6 +1041,7 @@ functions
 
             private static void ResolveMsBuildProjects(RepositoryInfo info, string repo)
             {
+                Console.WriteLine("Resolving projects from " + repo);
                 var solutions = Directory.EnumerateFiles(repo, "*.sln")
                     .Select(MsBuildSolutionInfo.LoadFromFile)
                     .Where(sln => sln.IsVs2017);
@@ -1060,8 +1061,7 @@ functions
                 {
                     UseShellExecute = false,
                     FileName = "dotnet",
-                    // TODO revert to invoking on .sln file when https://github.com/Microsoft/msbuild/issues/1587 is resolve
-                    Arguments = "msbuild \"" + Path.Combine(Directory.GetCurrentDirectory(), "graph.proj") + "\" /v:q /p:WarningLevel=0 /p:RepoDir=\"" + solution.Directory + "\" /nologo /t:GenerateRestoreGraphFile \"/p:RestoreGraphOutputPath=" + dgJson + "\""
+                    Arguments = "msbuild \"" + solution.FilePath + "\" /v:q /nologo /t:GenerateRestoreGraphFile \"/p:RestoreGraphOutputPath=" + dgJson + "\""
                 };
                 var p = Process.Start(psi);
                 p.WaitForExit();

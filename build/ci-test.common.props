@@ -1,7 +1,0 @@
-<!-- KoreBuild can discover this file is renamed to universe.props-->
-<Project ToolsVersion="15.0">
-  <PropertyGroup>
-    <!-- VS 2017 aware-packages can use this env variable to swap ProjectReference for PackageReference -->
-    <TestFromPackages>true</TestFromPackages>
-  </PropertyGroup>
-</Project>

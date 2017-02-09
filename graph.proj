@@ -1,7 +1,0 @@
-<!-- workaround https://github.com/Microsoft/msbuild/issues/1587 -->
-<Project>
-    <ItemGroup>
-        <RestoreGraphProjectInputItems Include="$(RepoDir)\**\*.csproj" />
-    </ItemGroup>
-    <Import Project="$(MSBuildToolsPath)\NuGet.targets" />
-</Project>
