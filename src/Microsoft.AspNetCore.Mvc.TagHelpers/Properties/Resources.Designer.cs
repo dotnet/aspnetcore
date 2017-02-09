@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot determine an '{4}' attribute for {0}. A {0} with a specified '{1}' must not have an '{2}' or '{3}' attribute.
+        /// Cannot determine an '{4}' attribute for {0}. A {0} with a specified '{1}' must not have an '{2}', '{3}', or '{5}' attribute.
         /// </summary>
         internal static string FormTagHelper_CannotDetermineActionWithRouteAndActionOrControllerSpecified
         {
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot override the '{6}' attribute for &lt;{0}&gt;. &lt;{0}&gt; elements with a specified '{6}' must not have attributes starting with '{5}' or an '{1}', '{2}', '{3}', or '{4}' attribute.
+        /// Cannot override the '{7}' attribute for &lt;{0}&gt;. &lt;{0}&gt; elements with a specified '{7}' must not have attributes starting with '{6}' or an '{1}', '{2}', '{3}', '{4}', or '{5}' attribute.
         /// </summary>
         internal static string FormActionTagHelper_CannotOverrideFormAction
         {
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot override the '{6}' attribute for &lt;{0}&gt;. &lt;{0}&gt; elements with a specified '{7}' must not have attributes starting with '{6}' or an '{1}', '{2}', '{3}', '{4}', or '{5}' attribute.
+        /// Cannot override the '{7}' attribute for &lt;{0}&gt;. &lt;{0}&gt; elements with a specified '{7}' must not have attributes starting with '{6}' or an '{1}', '{2}', '{3}', '{4}', or '{5}' attribute.
         /// </summary>
         internal static string FormatFormActionTagHelper_CannotOverrideFormAction(object p0, object p1, object p2, object p3, object p4, object p5, object p6, object p7)
         {
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Cannot determine a '{4}' attribute for &lt;{0}&gt;. &lt;{0}&gt; elements with a specified '{1}' must not have an '{2}' or '{3}' attribute.
+        /// Cannot determine a '{4}' attribute for &lt;{0}&gt;. &lt;{0}&gt; elements with a specified '{1}' must not have an '{2}', '{3}', or '{5}' attribute.
         /// </summary>
         internal static string FormActionTagHelper_CannotDetermineFormActionRouteActionOrControllerSpecified
         {

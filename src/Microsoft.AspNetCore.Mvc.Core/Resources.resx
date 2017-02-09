@@ -387,4 +387,10 @@
     <value>Unable to create an instance of type '{0}'. The type specified in {1} must not be abstract and must have a parameterless constructor.</value>
     <comment>0 is the type to configure. 1 is the name of the parameter, configurationType.</comment>
   </data>
+  <data name="ComplexTypeModelBinder_NoParameterlessConstructor_TopLevelObject" xml:space="preserve">
+    <value>Could not create an instance of type '{0}'. Model bound complex types must not be abstract or value types and must have a parameterless constructor.</value>
+  </data>
+  <data name="ComplexTypeModelBinder_NoParameterlessConstructor_ForProperty" xml:space="preserve">
+    <value>Could not create an instance of type '{0}'. Model bound complex types must not be abstract or value types and must have a parameterless constructor. Alternatively, set the '{1}' property to a non-null value in the '{2}' constructor.</value>
+  </data>
 </root>
