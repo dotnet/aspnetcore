@@ -14,12 +14,16 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         private readonly long _maxBufferSize;
         private readonly int _segmentSize;
         private SegmentWriteStream _segmentWriteStream;
+        private Action _startResponseCallback;
+        private Func<Task> _startResponseCallbackAsync;
 
-        internal ResponseCachingStream(Stream innerStream, long maxBufferSize, int segmentSize)
+        internal ResponseCachingStream(Stream innerStream, long maxBufferSize, int segmentSize, Action startResponseCallback, Func<Task> startResponseCallbackAsync)
         {
             _innerStream = innerStream;
             _maxBufferSize = maxBufferSize;
             _segmentSize = segmentSize;
+            _startResponseCallback = startResponseCallback;
+            _startResponseCallbackAsync = startResponseCallbackAsync;
             _segmentWriteStream = new SegmentWriteStream(_segmentSize);
         }
 
@@ -71,10 +75,32 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         }
 
         public override void Flush()
-            => _innerStream.Flush();
+        {
+            try
+            {
+                _startResponseCallback();
+                _innerStream.Flush();
+            }
+            catch
+            {
+                DisableBuffering();
+                throw;
+            }
+        }
 
-        public override Task FlushAsync(CancellationToken cancellationToken)
-            => _innerStream.FlushAsync();
+        public override async Task FlushAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _startResponseCallbackAsync();
+                await _innerStream.FlushAsync();
+            }
+            catch
+            {
+                DisableBuffering();
+                throw;
+            }
+        }
 
         // Underlying stream is write-only, no need to override other read related methods
         public override int Read(byte[] buffer, int offset, int count)
@@ -84,6 +110,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         {
             try
             {
+                _startResponseCallback();
                 _innerStream.Write(buffer, offset, count);
             }
             catch
@@ -109,6 +136,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         {
             try
             {
+                await _startResponseCallbackAsync();
                 await _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
             }
             catch

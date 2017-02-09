@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
@@ -22,34 +22,39 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             _cache = cache;
         }
 
-        public Task<IResponseCacheEntry> GetAsync(string key)
+        public IResponseCacheEntry Get(string key)
         {
             var entry = _cache.Get(key);
 
             var memoryCachedResponse = entry as MemoryCachedResponse;
             if (memoryCachedResponse != null)
             {
-                return Task.FromResult<IResponseCacheEntry>(new CachedResponse
+                return new CachedResponse
                 {
                     Created = memoryCachedResponse.Created,
                     StatusCode = memoryCachedResponse.StatusCode,
                     Headers = memoryCachedResponse.Headers,
                     Body = new SegmentReadStream(memoryCachedResponse.BodySegments, memoryCachedResponse.BodyLength)
-                });
+                };
             }
             else
             {
-                return Task.FromResult(entry as IResponseCacheEntry);
+                return entry as IResponseCacheEntry;
             }
         }
 
-        public async Task SetAsync(string key, IResponseCacheEntry entry, TimeSpan validFor)
+        public Task<IResponseCacheEntry> GetAsync(string key)
+        {
+            return Task.FromResult(Get(key));
+        }
+
+        public void Set(string key, IResponseCacheEntry entry, TimeSpan validFor)
         {
             var cachedResponse = entry as CachedResponse;
             if (cachedResponse != null)
             {
                 var segmentStream = new SegmentWriteStream(StreamUtilities.BodySegmentSize);
-                await cachedResponse.Body.CopyToAsync(segmentStream);
+                cachedResponse.Body.CopyTo(segmentStream);
 
                 _cache.Set(
                     key,
@@ -76,6 +81,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                         AbsoluteExpirationRelativeToNow = validFor
                     });
             }
+        }
+
+        public Task SetAsync(string key, IResponseCacheEntry entry, TimeSpan validFor)
+        {
+            Set(key, entry, validFor);
+            return TaskCache.CompletedTask;
         }
     }
 }

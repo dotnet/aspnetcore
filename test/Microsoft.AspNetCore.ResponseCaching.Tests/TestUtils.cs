@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             StreamUtilities.BodySegmentSize = 10;
         }
 
-        internal static RequestDelegate TestRequestDelegate = async context =>
+        private static bool TestRequestDelegate(HttpContext context, string guid)
         {
             var headers = context.Response.GetTypedHeaders();
 
@@ -42,7 +43,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 headers.Expires = DateTimeOffset.Now.AddSeconds(int.Parse(expires));
             }
 
-            var uniqueId = Guid.NewGuid().ToString();
             if (headers.CacheControl == null)
             {
                 headers.CacheControl = new CacheControlHeaderValue
@@ -57,13 +57,33 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                 headers.CacheControl.MaxAge = string.IsNullOrEmpty(expires) ? TimeSpan.FromSeconds(10) : (TimeSpan?)null;
             }
             headers.Date = DateTimeOffset.UtcNow;
-            headers.Headers["X-Value"] = uniqueId;
+            headers.Headers["X-Value"] = guid;
 
             if (context.Request.Method != "HEAD")
             {
+                return true;
+            }
+            return false;
+        }
+
+        internal static async Task TestRequestDelegateWriteAsync(HttpContext context)
+        {
+            var uniqueId = Guid.NewGuid().ToString();
+            if (TestRequestDelegate(context, uniqueId))
+            {
                 await context.Response.WriteAsync(uniqueId);
             }
-        };
+        }
+
+        internal static Task TestRequestDelegateWrite(HttpContext context)
+        {
+            var uniqueId = Guid.NewGuid().ToString();
+            if (TestRequestDelegate(context, uniqueId))
+            {
+                context.Response.Write(uniqueId);
+            }
+            return TaskCache.CompletedTask;
+        }
 
         internal static IResponseCachingKeyProvider CreateTestKeyProvider()
         {
@@ -78,37 +98,64 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         internal static IEnumerable<IWebHostBuilder> CreateBuildersWithResponseCaching(
             Action<IApplicationBuilder> configureDelegate = null,
             ResponseCachingOptions options = null,
-            RequestDelegate requestDelegate = null)
+            Action<HttpContext> contextAction = null)
+        {
+            return CreateBuildersWithResponseCaching(configureDelegate, options, new RequestDelegate[]
+                {
+                    context =>
+                    {
+                        contextAction?.Invoke(context);
+                        return TestRequestDelegateWrite(context);
+                    },
+                    context =>
+                    {
+                        contextAction?.Invoke(context);
+                        return TestRequestDelegateWriteAsync(context);
+                    },
+                });
+        }
+
+        private static IEnumerable<IWebHostBuilder> CreateBuildersWithResponseCaching(
+            Action<IApplicationBuilder> configureDelegate = null,
+            ResponseCachingOptions options = null,
+            IEnumerable<RequestDelegate> requestDelegates = null)
         {
             if (configureDelegate == null)
             {
                 configureDelegate = app => { };
             }
-            if (requestDelegate == null)
+            if (requestDelegates == null)
             {
-                requestDelegate = TestRequestDelegate;
+                requestDelegates = new RequestDelegate[]
+                {
+                    TestRequestDelegateWriteAsync,
+                    TestRequestDelegateWrite
+                };
             }
 
-            // Test with in memory ResponseCache
-            yield return new WebHostBuilder()
-                .ConfigureServices(services =>
-                {
-                    services.AddResponseCaching(responseCachingOptions =>
+            foreach (var requestDelegate in requestDelegates)
+            {
+                // Test with in memory ResponseCache
+                yield return new WebHostBuilder()
+                    .ConfigureServices(services =>
                     {
-                        if (options != null)
+                        services.AddResponseCaching(responseCachingOptions =>
                         {
-                            responseCachingOptions.MaximumBodySize = options.MaximumBodySize;
-                            responseCachingOptions.UseCaseSensitivePaths = options.UseCaseSensitivePaths;
-                            responseCachingOptions.SystemClock = options.SystemClock;
-                        }
+                            if (options != null)
+                            {
+                                responseCachingOptions.MaximumBodySize = options.MaximumBodySize;
+                                responseCachingOptions.UseCaseSensitivePaths = options.UseCaseSensitivePaths;
+                                responseCachingOptions.SystemClock = options.SystemClock;
+                            }
+                        });
+                    })
+                    .Configure(app =>
+                    {
+                        configureDelegate(app);
+                        app.UseResponseCaching();
+                        app.Run(requestDelegate);
                     });
-                })
-                .Configure(app =>
-                {
-                    configureDelegate(app);
-                    app.UseResponseCaching();
-                    app.Run(requestDelegate);
-                });
+            }
         }
 
         internal static ResponseCachingMiddleware CreateTestMiddleware(
@@ -178,6 +225,25 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public static HttpRequestMessage CreateRequest(string method, string requestUri)
         {
             return new HttpRequestMessage(new HttpMethod(method), requestUri);
+        }
+    }
+
+    internal static class HttpResponseWritingExtensions
+    {
+        internal static void Write(this HttpResponse response, string text)
+        {
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
+            byte[] data = Encoding.UTF8.GetBytes(text);
+            response.Body.Write(data, 0, data.Length);
         }
     }
 
@@ -289,23 +355,33 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         public int GetCount { get; private set; }
         public int SetCount { get; private set; }
 
-        public Task<IResponseCacheEntry> GetAsync(string key)
+        public IResponseCacheEntry Get(string key)
         {
             GetCount++;
             try
             {
-                return Task.FromResult(_storage[key]);
+                return _storage[key];
             }
             catch
             {
-                return Task.FromResult<IResponseCacheEntry>(null);
+                return null;
             }
+        }
+
+        public Task<IResponseCacheEntry> GetAsync(string key)
+        {
+            return Task.FromResult(Get(key));
+        }
+
+        public void Set(string key, IResponseCacheEntry entry, TimeSpan validFor)
+        {
+            SetCount++;
+            _storage[key] = entry;
         }
 
         public Task SetAsync(string key, IResponseCacheEntry entry, TimeSpan validFor)
         {
-            SetCount++;
-            _storage[key] = entry;
+            Set(key, entry, validFor);
             return TaskCache.CompletedTask;
         }
     }

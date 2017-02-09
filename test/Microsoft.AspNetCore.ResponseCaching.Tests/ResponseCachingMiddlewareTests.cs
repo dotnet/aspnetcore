@@ -359,7 +359,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async Task OnResponseStartingAsync_IfAllowResponseCaptureIsTrue_SetsResponseTime()
+        public async Task StartResponsegAsync_IfAllowResponseCaptureIsTrue_SetsResponseTime()
         {
             var clock = new TestClock
             {
@@ -372,13 +372,13 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var context = TestUtils.CreateTestContext();
             context.ResponseTime = null;
 
-            await middleware.OnResponseStartingAsync(context);
+            await middleware.StartResponseAsync(context);
 
             Assert.Equal(clock.UtcNow, context.ResponseTime);
         }
 
         [Fact]
-        public async Task OnResponseStartingAsync_IfAllowResponseCaptureIsTrue_SetsResponseTimeOnlyOnce()
+        public async Task StartResponseAsync_IfAllowResponseCaptureIsTrue_SetsResponseTimeOnlyOnce()
         {
             var clock = new TestClock
             {
@@ -392,12 +392,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var initialTime = clock.UtcNow;
             context.ResponseTime = null;
 
-            await middleware.OnResponseStartingAsync(context);
+            await middleware.StartResponseAsync(context);
             Assert.Equal(initialTime, context.ResponseTime);
 
             clock.UtcNow += TimeSpan.FromSeconds(10);
 
-            await middleware.OnResponseStartingAsync(context);
+            await middleware.StartResponseAsync(context);
             Assert.NotEqual(clock.UtcNow, context.ResponseTime);
             Assert.Equal(initialTime, context.ResponseTime);
         }
@@ -790,10 +790,9 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
             var context = TestUtils.CreateTestContext();
 
-            context.ShouldCacheResponse = false;
             middleware.ShimResponseStream(context);
             await context.HttpContext.Response.WriteAsync(new string('0', 10));
-
+            context.ShouldCacheResponse = false;
 
             await middleware.FinalizeCacheBodyAsync(context);
 

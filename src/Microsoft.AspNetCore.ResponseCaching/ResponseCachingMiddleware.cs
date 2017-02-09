@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
         private readonly IResponseCachingPolicyProvider _policyProvider;
         private readonly IResponseCache _cache;
         private readonly IResponseCachingKeyProvider _keyProvider;
-        private readonly Func<object, Task> _onStartingCallback;
 
         public ResponseCachingMiddleware(
             RequestDelegate next,
@@ -66,7 +65,6 @@ namespace Microsoft.AspNetCore.ResponseCaching
             _policyProvider = policyProvider;
             _cache = cache;
             _keyProvider = keyProvider;
-            _onStartingCallback = state => OnResponseStartingAsync((ResponseCachingContext)state);
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -90,13 +88,10 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
                     try
                     {
-                        // Subscribe to OnStarting event
-                        httpContext.Response.OnStarting(_onStartingCallback, context);
-
                         await _next(httpContext);
 
                         // If there was no response body, check the response headers now. We can cache things like redirects.
-                        await OnResponseStartingAsync(context);
+                        await StartResponseAsync(context);
 
                         // Finalize the cache entry
                         await FinalizeCacheBodyAsync(context);
@@ -219,10 +214,17 @@ namespace Microsoft.AspNetCore.ResponseCaching
             return false;
         }
 
-        internal async Task FinalizeCacheHeadersAsync(ResponseCachingContext context)
+
+        /// <summary>
+        /// Finalize cache headers.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns><c>true</c> if a vary by entry needs to be stored in the cache; otherwise <c>false</c>.</returns>
+        private bool OnFinalizeCacheHeaders(ResponseCachingContext context)
         {
             if (_policyProvider.IsResponseCacheable(context))
             {
+                var storeVaryByEntry = false;
                 context.ShouldCacheResponse = true;
 
                 // Create the cache entry now
@@ -262,7 +264,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
                     // Always overwrite the CachedVaryByRules to update the expiry information
                     _logger.LogVaryByRulesUpdated(normalizedVaryHeaders, normalizedVaryQueryKeys);
-                    await _cache.SetAsync(context.BaseKey, context.CachedVaryByRules, context.CachedResponseValidFor);
+                    storeVaryByEntry = true;
 
                     context.StorageVaryKey = _keyProvider.CreateStorageVaryByKey(context);
                 }
@@ -290,11 +292,29 @@ namespace Microsoft.AspNetCore.ResponseCaching
                         context.CachedResponse.Headers[header.Key] = header.Value;
                     }
                 }
+
+                return storeVaryByEntry;
             }
-            else
+
+            context.ResponseCachingStream.DisableBuffering();
+            return false;
+        }
+
+        internal void FinalizeCacheHeaders(ResponseCachingContext context)
+        {
+            if (OnFinalizeCacheHeaders(context))
             {
-                context.ResponseCachingStream.DisableBuffering();
+                _cache.Set(context.BaseKey, context.CachedVaryByRules, context.CachedResponseValidFor);
             }
+        }
+
+        internal Task FinalizeCacheHeadersAsync(ResponseCachingContext context)
+        {
+            if (OnFinalizeCacheHeaders(context))
+            {
+                return _cache.SetAsync(context.BaseKey, context.CachedVaryByRules, context.CachedResponseValidFor);
+            }
+            return TaskCache.CompletedTask;
         }
 
         internal async Task FinalizeCacheBodyAsync(ResponseCachingContext context)
@@ -327,19 +347,38 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
         }
 
-        internal Task OnResponseStartingAsync(ResponseCachingContext context)
+        /// <summary>
+        /// Mark the response as started and set the response time if no reponse was started yet.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns><c>true</c> if the response was not started before this call; otherwise <c>false</c>.</returns>
+        private bool OnStartResponse(ResponseCachingContext context)
         {
             if (!context.ResponseStarted)
             {
                 context.ResponseStarted = true;
                 context.ResponseTime = _options.SystemClock.UtcNow;
 
+                return true;
+            }
+            return false;
+        }
+
+        internal void StartResponse(ResponseCachingContext context)
+        {
+            if (OnStartResponse(context))
+            {
+                FinalizeCacheHeaders(context);
+            }
+        }
+
+        internal Task StartResponseAsync(ResponseCachingContext context)
+        {
+            if (OnStartResponse(context))
+            {
                 return FinalizeCacheHeadersAsync(context);
             }
-            else
-            {
-                return TaskCache.CompletedTask;
-            }
+            return TaskCache.CompletedTask;
         }
 
         internal static void AddResponseCachingFeature(HttpContext context)
@@ -355,7 +394,12 @@ namespace Microsoft.AspNetCore.ResponseCaching
         {
             // Shim response stream
             context.OriginalResponseStream = context.HttpContext.Response.Body;
-            context.ResponseCachingStream = new ResponseCachingStream(context.OriginalResponseStream, _options.MaximumBodySize, StreamUtilities.BodySegmentSize);
+            context.ResponseCachingStream = new ResponseCachingStream(
+                context.OriginalResponseStream,
+                _options.MaximumBodySize,
+                StreamUtilities.BodySegmentSize,
+                () => StartResponse(context),
+                () => StartResponseAsync(context));
             context.HttpContext.Response.Body = context.ResponseCachingStream;
 
             // Shim IHttpSendFileFeature

@@ -17,7 +17,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

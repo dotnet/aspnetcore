@@ -8,7 +8,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
     public interface IResponseCache
     {
+        IResponseCacheEntry Get(string key);
         Task<IResponseCacheEntry> GetAsync(string key);
+
+        void Set(string key, IResponseCacheEntry entry, TimeSpan validFor);
         Task SetAsync(string key, IResponseCacheEntry entry, TimeSpan validFor);
     }
 }
