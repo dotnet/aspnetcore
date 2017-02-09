@@ -16,7 +16,7 @@
     "@angular/router": "3.0.2",
     "@types/node": "^6.0.42",
     "angular2-platform-node": "~2.0.11",
-    "angular2-template-loader": "0.6.0",
+    "angular2-template-loader": "^0.6.2",
     "angular2-universal": "~2.0.11",
     "angular2-universal-patch": "^0.2.1",
     "angular2-universal-polyfills": "~2.0.11",
