@@ -8,7 +8,7 @@ use namespace="System.Linq"
 use-standard-lifecycle
 k-standard-goals
 
-#repack-x86 target='compile' if='Directory.Exists("src")'
+#repack-x86 target='compile' if='Directory.Exists("src") && !IsLinux'
     @{
         var buildDir= Path.Combine(Directory.GetCurrentDirectory(), "artifacts", "build");
         var projectName = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation";
