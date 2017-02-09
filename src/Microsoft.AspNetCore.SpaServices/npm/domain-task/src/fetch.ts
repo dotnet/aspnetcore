@@ -25,15 +25,6 @@ function issueRequest(baseUrl: string, req: string | Request, init?: RequestInit
         `);
     }
 
-    // Currently, some part of ASP.NET (perhaps just Kestrel on Mac - unconfirmed) doesn't complete
-    // its responses if we send 'Connection: close', which is the default. So if no 'Connection' header
-    // has been specified explicitly, use 'Connection: keep-alive'.
-    init = init || {};
-    init.headers = init.headers || {};
-    if (!init.headers['Connection']) {
-        init.headers['Connection'] = 'keep-alive';
-    }
-
     return isomorphicFetch(req, init);
 }
 
