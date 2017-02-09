@@ -7,7 +7,7 @@
     "@types/react-dom": "^0.14.14",
     "@types/react-redux": "^4.4.29",
     "@types/react-router": "^2.0.30",
-    "@types/react-router-redux": "^4.0.30",
+    "@types/react-router-redux": "4.0.30",
     "@types/redux": "3.5.27",
     "@types/webpack": "^2.2.0",
     "@types/webpack-env": "^1.13.0",
