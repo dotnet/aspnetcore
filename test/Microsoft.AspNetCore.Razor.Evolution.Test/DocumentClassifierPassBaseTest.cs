@@ -2,16 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 
+using System;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 using Xunit;
 using static Microsoft.AspNetCore.Razor.Evolution.Intermediate.RazorIRAssert;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    public class DefaultDocumentClassifierTest
+    public class DocumentClassifierPassBaseTest
     {
         [Fact]
-        public void Execute_IgnoresDocumentsWithDocumentKind()
+        public void Execute_HasDocumentKind_IgnoresDocument()
         {
             // Arrange
             var irDocument = new DocumentIRNode()
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 DocumentKind = "ignore",
             };
 
-            var pass = new DefaultDocumentClassifier();
+            var pass = new TestDocumentClassifierPass();
             pass.Engine = RazorEngine.CreateEmpty(b => { });
 
             // Act
@@ -31,19 +32,39 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         }
 
         [Fact]
-        public void Execute_CreatesClassStructure()
+        public void Execute_NoMatch_IgnoresDocument()
         {
             // Arrange
             var irDocument = new DocumentIRNode();
 
-            var pass = new DefaultDocumentClassifier();
-            pass.Engine = RazorEngine.CreateEmpty(b =>{ });
+            var pass = new TestDocumentClassifierPass()
+            {
+                Engine = RazorEngine.CreateEmpty(b => { }),
+                ShouldMatch = false,
+            };
 
             // Act
             pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
-            Assert.Equal(DefaultDocumentClassifier.DocumentKind, irDocument.DocumentKind);
+            Assert.Null(irDocument.DocumentKind);
+            NoChildren(irDocument);
+        }
+
+        [Fact]
+        public void Execute_Match_SetsDocumentType_AndCreatesStructure()
+        {
+            // Arrange
+            var irDocument = new DocumentIRNode();
+
+            var pass = new TestDocumentClassifierPass();
+            pass.Engine = RazorEngine.CreateEmpty(b => { });
+
+            // Act
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
+
+            // Assert
+            Assert.Equal("test", irDocument.DocumentKind);
 
             var @namespace = SingleChild<NamespaceDeclarationIRNode>(irDocument);
             var @class = SingleChild<ClassDeclarationIRNode>(@namespace);
@@ -60,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var builder = RazorIRBuilder.Create(irDocument);
             builder.Add(new ChecksumIRNode());
 
-            var pass = new DefaultDocumentClassifier();
+            var pass = new TestDocumentClassifierPass();
             pass.Engine = RazorEngine.CreateEmpty(b => { });
 
             // Act
@@ -82,7 +103,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var builder = RazorIRBuilder.Create(irDocument);
             builder.Add(new UsingStatementIRNode());
 
-            var pass = new DefaultDocumentClassifier();
+            var pass = new TestDocumentClassifierPass();
             pass.Engine = RazorEngine.CreateEmpty(b => { });
 
             // Act
@@ -105,7 +126,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var builder = RazorIRBuilder.Create(irDocument);
             builder.Add(new DeclareTagHelperFieldsIRNode());
 
-            var pass = new DefaultDocumentClassifier();
+            var pass = new TestDocumentClassifierPass();
             pass.Engine = RazorEngine.CreateEmpty(b => { });
 
             // Act
@@ -130,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             builder.Add(new HtmlContentIRNode());
             builder.Add(new CSharpStatementIRNode());
 
-            var pass = new DefaultDocumentClassifier();
+            var pass = new TestDocumentClassifierPass();
             pass.Engine = RazorEngine.CreateEmpty(b => { });
 
             // Act
@@ -144,6 +165,67 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 method,
                 n => Assert.IsType<HtmlContentIRNode>(n),
                 n => Assert.IsType<CSharpStatementIRNode>(n));
+        }
+
+        [Fact]
+        public void Execute_CanInitializeDefaults()
+        {
+            // Arrange
+            var irDocument = new DocumentIRNode();
+
+            var builder = RazorIRBuilder.Create(irDocument);
+            builder.Add(new HtmlContentIRNode());
+            builder.Add(new CSharpStatementIRNode());
+
+            var pass = new TestDocumentClassifierPass()
+            {
+                Engine = RazorEngine.CreateEmpty(b => { }),
+                Namespace = "TestNamespace",
+                Class = "TestClass",
+                Method = "TestMethod",
+            };
+
+            // Act
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
+
+            // Assert
+            var @namespace = SingleChild<NamespaceDeclarationIRNode>(irDocument);
+            Assert.Equal("TestNamespace", @namespace.Content);
+
+            var @class = SingleChild<ClassDeclarationIRNode>(@namespace);
+            Assert.Equal("TestClass", @class.Name);
+
+            var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
+            Assert.Equal("TestMethod", method.Name);
+        }
+
+        private class TestDocumentClassifierPass : DocumentClassifierPassBase
+        {
+            public bool ShouldMatch { get; set; } = true;
+
+            public string Namespace { get; set;  }
+
+            public string Class { get; set; }
+
+            public string Method { get; set; }
+
+            protected override string DocumentKind => "test";
+
+            protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+            {
+                return ShouldMatch;
+            }
+
+            protected override void OnDocumentStructureCreated(
+                RazorCodeDocument codeDocument,
+                NamespaceDeclarationIRNode @namespace,
+                ClassDeclarationIRNode @class,
+                RazorMethodDeclarationIRNode method)
+            {
+                @namespace.Content = Namespace;
+                @class.Name = Class;
+                @method.Name = Method;
+            }
         }
     }
 }

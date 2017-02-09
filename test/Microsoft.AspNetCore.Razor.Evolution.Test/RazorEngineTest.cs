@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 feature => Assert.IsType<DefaultDirectiveSyntaxTreePass>(feature),
                 feature => Assert.IsType<HtmlNodeOptimizationPass>(feature),
                 feature => Assert.IsType<TagHelperBinderSyntaxTreePass>(feature),
-                feature => Assert.IsType<DefaultDocumentClassifier>(feature),
+                feature => Assert.IsType<DefaultDocumentClassifierPass>(feature),
                 feature => Assert.IsType<DefaultDirectiveIRPass>(feature),
                 feature => Assert.IsType<RazorPreallocatedTagHelperAttributeOptimizationPass>(feature));
         }
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 feature => Assert.IsType<DefaultDirectiveSyntaxTreePass>(feature),
                 feature => Assert.IsType<HtmlNodeOptimizationPass>(feature),
                 feature => Assert.IsType<TagHelperBinderSyntaxTreePass>(feature),
-                feature => Assert.IsType<DefaultDocumentClassifier>(feature),
+                feature => Assert.IsType<DefaultDocumentClassifierPass>(feature),
                 feature => Assert.IsType<DefaultDirectiveIRPass>(feature),
                 feature => Assert.IsType<RazorEngine.ConfigureDesignTimeOptions>(feature),
                 feature => Assert.IsType<RazorDesignTimeIRPass>(feature));

@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             Assert.NotNull(irDocument);
 
             // These tests depend on the document->namespace->class structure.
-            irDocument = new DefaultDocumentClassifier() { Engine = engine, }.Execute(codeDocument, irDocument);
+            irDocument = new DefaultDocumentClassifierPass() { Engine = engine, }.Execute(codeDocument, irDocument);
             return irDocument;
         }
     }

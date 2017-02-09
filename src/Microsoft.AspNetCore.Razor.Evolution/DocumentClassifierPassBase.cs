@@ -6,22 +6,35 @@ using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    internal class DefaultDocumentClassifier : RazorIRPassBase
+    public abstract class DocumentClassifierPassBase : RazorIRPassBase
     {
-        public override int Order => RazorIRPass.DefaultDocumentClassifierOrder;
+        protected abstract string DocumentKind { get; }
 
-        public static string DocumentKind = "default";
+        public override int Order => RazorIRPass.DocumentClassifierOrder;
 
-        public override DocumentIRNode ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        public sealed override DocumentIRNode ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             if (irDocument.DocumentKind != null)
             {
                 return irDocument;
             }
 
+            if (!IsMatch(codeDocument, irDocument))
+            {
+                return irDocument;
+            }
+
             irDocument.DocumentKind = DocumentKind;
 
-            // Rewrite a use default namespace and class declaration.
+            Rewrite(codeDocument, irDocument);
+
+            return irDocument;
+        }
+
+        private void Rewrite(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        {
+            // Rewrite the document from a flat structure to use a sensible default structure,
+            // a namespace and class declaration with a single 'razor' method.
             var children = new List<RazorIRNode>(irDocument.Children);
             irDocument.Children.Clear();
 
@@ -39,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var method = new RazorMethodDeclarationIRNode()
             {
                 //AccessModifier = "public",
-               // Modifiers = new List<string>() { "async" },
+                // Modifiers = new List<string>() { "async" },
                 //Name = "Execute",
                 //ReturnType = "Task",
             };
@@ -62,7 +75,20 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 visitor.Visit(children[i]);
             }
 
-            return irDocument;
+            // Note that this is called at the *end* of rewriting so that user code can see the tree
+            // and look at its content to make a decision.
+            OnDocumentStructureCreated(codeDocument, @namespace, @class, method);
+        }
+
+        protected abstract bool IsMatch(RazorCodeDocument codeDocument, DocumentIRNode irDocument);
+
+        protected virtual void OnDocumentStructureCreated(
+            RazorCodeDocument codeDocument,
+            NamespaceDeclarationIRNode @namespace,
+            ClassDeclarationIRNode @class,
+            RazorMethodDeclarationIRNode @method)
+        {
+            // Intentionally empty.
         }
 
         private class Visitor : RazorIRNodeVisitor
@@ -84,7 +110,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 _document.Insert(0, node);
             }
-            
+
             public override void VisitUsingStatement(UsingStatementIRNode node)
             {
                 _namespace.AddAfter<UsingStatementIRNode>(node);
