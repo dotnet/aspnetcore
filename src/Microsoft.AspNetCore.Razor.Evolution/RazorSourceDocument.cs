@@ -50,31 +50,38 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         private static RazorSourceDocument ReadFromInternal(Stream stream, string filename, Encoding encoding)
         {
-            var reader = new StreamReader(
-                stream,
-                encoding ?? Encoding.UTF8,
-                detectEncodingFromByteOrderMarks: true,
-                bufferSize: (int)stream.Length,
-                leaveOpen: true);
+            var streamLength = (int)stream.Length;
+            var content = string.Empty;
+            var contentEncoding = encoding ?? Encoding.UTF8;
 
-            using (reader)
+            if (streamLength > 0)
             {
-                var content = reader.ReadToEnd();
+                var reader = new StreamReader(
+                    stream,
+                    contentEncoding,
+                    detectEncodingFromByteOrderMarks: true,
+                    bufferSize: streamLength,
+                    leaveOpen: true);
 
-                if (encoding == null)
+                using (reader)
                 {
-                    encoding = reader.CurrentEncoding;
-                }
-                else if (encoding != reader.CurrentEncoding)
-                {
-                    throw new InvalidOperationException(
-                        Resources.FormatMismatchedContentEncoding(
-                            encoding.EncodingName,
-                            reader.CurrentEncoding.EncodingName));
-                }
+                    content = reader.ReadToEnd();
 
-                return new DefaultRazorSourceDocument(content, encoding, filename);
+                    if (encoding == null)
+                    {
+                        contentEncoding = reader.CurrentEncoding;
+                    }
+                    else if (encoding != reader.CurrentEncoding)
+                    {
+                        throw new InvalidOperationException(
+                            Resources.FormatMismatchedContentEncoding(
+                                encoding.EncodingName,
+                                reader.CurrentEncoding.EncodingName));
+                    }
+                }
             }
+
+            return new DefaultRazorSourceDocument(content, contentEncoding, filename);
         }
     }
 }

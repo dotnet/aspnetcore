@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
     public class RazorSourceDocumentTest
     {
         [Fact]
-        public void Create()
+        public void ReadFrom()
         {
             // Arrange
             var content = TestRazorSourceDocument.CreateStreamContent();
@@ -25,10 +25,24 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         }
 
         [Fact]
-        public void Create_WithEncoding()
+        public void ReadFrom_WithEncoding()
         {
             // Arrange
             var content = TestRazorSourceDocument.CreateStreamContent(encoding: Encoding.UTF32);
+
+            // Act
+            var document = RazorSourceDocument.ReadFrom(content, "file.cshtml", Encoding.UTF32);
+
+            // Assert
+            Assert.Equal("file.cshtml", document.Filename);
+            Assert.Same(Encoding.UTF32, Assert.IsType<DefaultRazorSourceDocument>(document).Encoding);
+        }
+
+        [Fact]
+        public void ReadFrom_EmptyStream_WithEncoding()
+        {
+            // Arrange
+            var content = TestRazorSourceDocument.CreateStreamContent(content: string.Empty, encoding: Encoding.UTF32);
 
             // Act
             var document = RazorSourceDocument.ReadFrom(content, "file.cshtml", Encoding.UTF32);
@@ -43,6 +57,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var content = TestRazorSourceDocument.CreateStreamContent(encoding: Encoding.UTF32);
+
+            // Act
+            var document = RazorSourceDocument.ReadFrom(content, "file.cshtml");
+
+            // Assert
+            Assert.IsType<DefaultRazorSourceDocument>(document);
+            Assert.Equal("file.cshtml", document.Filename);
+            Assert.Equal(Encoding.UTF32, document.Encoding);
+        }
+
+        [Fact]
+        public void ReadFrom_EmptyStream_DetectsEncoding()
+        {
+            // Arrange
+            var content = TestRazorSourceDocument.CreateStreamContent(content: string.Empty, encoding: Encoding.UTF32);
 
             // Act
             var document = RazorSourceDocument.ReadFrom(content, "file.cshtml");
