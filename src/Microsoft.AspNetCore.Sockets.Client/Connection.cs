@@ -25,6 +25,10 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public Uri Url { get; }
 
+        public event Action Connected;
+        public event Action<byte[], Format> Received;
+        public event Action<Exception> Closed;
+
         public Connection(Uri url)
             : this(url, null)
         { }
@@ -64,6 +68,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
 
             Interlocked.Exchange(ref _connectionState, ConnectionState.Connected);
+
+            // Do not "simplify" - events can be removed from a different thread
+            var connectedEventHandler = Connected;
+            if (connectedEventHandler != null)
+            {
+                connectedEventHandler();
+            }
         }
 
         private static async Task<Uri> GetConnectUrl(Uri url, HttpClient httpClient, ILogger logger)
@@ -110,7 +121,17 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             _transportChannel = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            Input.Completion.ContinueWith(t => Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected));
+            Input.Completion.ContinueWith(t =>
+            {
+                Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected);
+
+                // Do not "simplify" - events can be removed from a different thread
+                var closedEventHandler = Closed;
+                if (closedEventHandler != null)
+                {
+                    closedEventHandler(t.IsFaulted ? t.Exception.InnerException : null);
+                }
+            });
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
             // Start the transport, giving it one end of the pipeline

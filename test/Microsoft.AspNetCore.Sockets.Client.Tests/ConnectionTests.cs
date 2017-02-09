@@ -146,6 +146,166 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
         }
 
         [Fact]
+        public async Task ConnectedEventRaisedWhenTheClientIsConnected()
+        {
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
+            using (var connection = new Connection(new Uri("http://fakeuri.org/")))
+            {
+                var connectedEventRaised = false;
+                connection.Connected += () => connectedEventRaised = true;
+
+                await connection.StartAsync(longPollingTransport, httpClient);
+
+                Assert.True(connectedEventRaised);
+            }
+        }
+
+        [Fact]
+        public async Task ConnectedEventNotRaisedWhenTransportFailsToStart()
+        {
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                });
+
+            var mockTransport = new Mock<ITransport>();
+            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<IChannelConnection<Message>>()))
+                .Returns(Task.FromException(new InvalidOperationException("Transport failed to start")));
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            using (var connection = new Connection(new Uri("http://fakeuri.org/")))
+            {
+                var connectedEventRaised = false;
+                connection.Connected += () => connectedEventRaised = true;
+
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    async () => await connection.StartAsync(mockTransport.Object, httpClient));
+
+                Assert.False(connectedEventRaised);
+            }
+        }
+
+        [Fact(Skip = "Need draining to make it work. Receive event may fix that.")]
+        public async Task ClosedEventRaisedWhenTheClientIsStopped()
+        {
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
+            using (var connection = new Connection(new Uri("http://fakeuri.org/")))
+            {
+                var closedEventTcs = new TaskCompletionSource<Exception>();
+                connection.Closed += e => closedEventTcs.SetResult(e);
+
+                await connection.StartAsync(longPollingTransport, httpClient);
+                await connection.StopAsync();
+
+                
+                Assert.Equal(closedEventTcs.Task, await Task.WhenAny(Task.Delay(1000), closedEventTcs.Task));
+                // in case of clean disconnect error should be null
+                Assert.Null(await closedEventTcs.Task);
+            }
+        }
+
+        [Fact(Skip = "Need draining to make it work. Receive event may fix that.")]
+        public async Task ClosedEventRaisedWhenTheClientIsDisposed()
+        {
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
+            {
+                var connection = new Connection(new Uri("http://fakeuri.org/"));
+                var closedEventTcs = new TaskCompletionSource<Exception>();
+                connection.Closed += e => closedEventTcs.TrySetResult(e);
+
+                using (connection)
+                {
+                    await connection.StartAsync(longPollingTransport, httpClient);
+                }
+
+                Assert.Equal(closedEventTcs.Task, await Task.WhenAny(Task.Delay(1000), closedEventTcs.Task));
+                Assert.Null(await closedEventTcs.Task);
+            }
+        }
+
+        [Fact]
+        public async Task ClosedEventRaisedWhenConnectionToServerLost()
+        {
+            var allowPollTcs = new TaskCompletionSource<object>();
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    if (request.RequestUri.AbsolutePath.EndsWith("/poll"))
+                    {
+                        await allowPollTcs.Task;
+                        return new HttpResponseMessage(HttpStatusCode.InternalServerError) { Content = new StringContent(string.Empty) };
+                    }
+                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
+            using (var connection = new Connection(new Uri("http://fakeuri.org/")))
+            {
+                var closedEventTcs = new TaskCompletionSource<Exception>();
+                connection.Closed += e => closedEventTcs.TrySetResult(e);
+                await connection.StartAsync(longPollingTransport, httpClient);
+
+                var receiveTask = connection.ReceiveAsync(new ReceiveData());
+                allowPollTcs.TrySetResult(null);
+                await Assert.ThrowsAsync<HttpRequestException>(async () => await receiveTask);
+
+                Assert.Equal(closedEventTcs.Task, await Task.WhenAny(Task.Delay(1000), closedEventTcs.Task));
+                Assert.IsType<HttpRequestException>(await closedEventTcs.Task);
+            }
+        }
+
+        [Fact]
+        public async Task ClosedEventNotRaisedWhenTheClientIsStoppedButWasNeverStarted()
+        {
+            using (var connection = new Connection(new Uri("http://fakeuri.org/")))
+            {
+                bool closedEventRaised = false;
+                connection.Closed += e => closedEventRaised = true;
+
+                await connection.StopAsync();
+                Assert.False(closedEventRaised);
+            }
+        }
+
+        [Fact]
         public async Task TransportIsStoppedWhenConnectionIsStopped()
         {
             var mockHttpHandler = new Mock<HttpMessageHandler>();
