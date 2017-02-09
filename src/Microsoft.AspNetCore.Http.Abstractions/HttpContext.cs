@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Http
         public abstract AuthenticationManager Authentication { get; }
 
         /// <summary>
-        /// Gets or sets the the user for this request.
+        /// Gets or sets the user for this request.
         /// </summary>
         public abstract ClaimsPrincipal User { get; set; }
 
