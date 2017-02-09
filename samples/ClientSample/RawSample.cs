@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO.Pipelines;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -62,9 +61,7 @@ namespace ClientSample
                 var line = Console.ReadLine();
                 logger.LogInformation("Sending: {0}", line);
 
-                await connection.Output.WriteAsync(new Message(
-                    ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello World")).Preserve(),
-                    Format.Text));
+                await connection.SendAsync(Encoding.UTF8.GetBytes("Hello World"), Format.Text);
             }
             logger.LogInformation("Send loop terminated");
         }
@@ -74,18 +71,10 @@ namespace ClientSample
             logger.LogInformation("Receive loop starting");
             try
             {
-                while (await connection.Input.WaitToReadAsync(cancellationToken))
+                var receiveData = new ReceiveData();
+                while (await connection.ReceiveAsync(receiveData, cancellationToken))
                 {
-                    Message message;
-                    if (!connection.Input.TryRead(out message))
-                    {
-                        continue;
-                    }
-
-                    using (message)
-                    {
-                        logger.LogInformation("Received: {0}", Encoding.UTF8.GetString(message.Payload.Buffer.ToArray()));
-                    }
+                    logger.LogInformation($"Received: {Encoding.UTF8.GetString(receiveData.Data)}");
                 }
             }
             catch (OperationCanceledException)

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -37,6 +36,30 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 {
                     Assert.Equal(connectionUrl, connection.Url);
                 }
+
+                Assert.Equal(longPollingTransport.Running, await Task.WhenAny(Task.Delay(1000), longPollingTransport.Running));
+            }
+        }
+
+        [Fact]
+        public async Task TransportIsStoppedWhenConnectionIsStopped()
+        {
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
+            using (var connection = await Connection.ConnectAsync(new Uri("http://fakeuri.org/"), longPollingTransport, httpClient))
+            {
+                Assert.False(longPollingTransport.Running.IsCompleted);
+
+                await connection.StopAsync();
 
                 Assert.Equal(longPollingTransport.Running, await Task.WhenAny(Task.Delay(1000), longPollingTransport.Running));
             }
@@ -87,11 +110,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
             using (var connection = await Connection.ConnectAsync(new Uri("http://fakeuri.org/"), longPollingTransport, httpClient))
             {
-                Assert.False(connection.Input.Completion.IsCompleted);
-
                 var data = new byte[] { 1, 1, 2, 3, 5, 8 };
-                connection.Output.TryWrite(
-                    new Message(ReadableBuffer.Create(data).Preserve(), Format.Binary));
+                await connection.SendAsync(data, Format.Binary);
 
                 Assert.Equal(sendTcs.Task, await Task.WhenAny(Task.Delay(1000), sendTcs.Task));
                 Assert.Equal(data, sendTcs.Task.Result);
@@ -120,20 +140,14 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
             using (var connection = await Connection.ConnectAsync(new Uri("http://fakeuri.org/"), longPollingTransport, httpClient))
             {
-                Assert.False(connection.Input.Completion.IsCompleted);
-
-                await connection.Input.WaitToReadAsync();
-                Message message;
-                connection.Input.TryRead(out message);
-                using (message)
-                {
-                    Assert.Equal("42", Encoding.UTF8.GetString(message.Payload.Buffer.ToArray(), 0, message.Payload.Buffer.Length));
-                }
+                var receiveData = new ReceiveData();
+                Assert.True(await connection.ReceiveAsync(receiveData));
+                Assert.Equal("42", Encoding.UTF8.GetString(receiveData.Data));
             }
         }
 
         [Fact]
-        public async Task CanCloseConnection()
+        public async Task CannotSendAfterConnectionIsStopped()
         {
             var mockHttpHandler = new Mock<HttpMessageHandler>();
             mockHttpHandler.Protected()
@@ -148,20 +162,95 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
             using (var connection = await Connection.ConnectAsync(new Uri("http://fakeuri.org/"), longPollingTransport, httpClient))
             {
-                Assert.False(connection.Input.Completion.IsCompleted);
-                connection.Output.TryComplete();
+                await connection.StopAsync();
+                Assert.False(await connection.SendAsync(new byte[] { 1, 1, 3, 5, 8 }, Format.Binary));
+            }
+        }
 
-                var whenAnyTask = Task.WhenAny(Task.Delay(1000), connection.Input.Completion);
-
-                // The channel needs to be drained for the Completion task to be completed
-                Message message;
-                while (!whenAnyTask.IsCompleted)
+        [Fact]
+        public async Task CannotReceiveAfterConnectionIsStopped()
+        {
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
                 {
-                    connection.Input.TryRead(out message);
-                    message.Dispose();
-                }
+                    await Task.Yield();
+                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                });
 
-                Assert.Equal(connection.Input.Completion, await whenAnyTask);
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
+            using (var connection = await Connection.ConnectAsync(new Uri("http://fakeuri.org/"), longPollingTransport, httpClient))
+            {
+                await connection.StopAsync();
+                var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                    async () => await connection.ReceiveAsync(new ReceiveData()));
+
+                Assert.Equal("Cannot receive messages when the connection is stopped.", exception.Message);
+            }
+        }
+
+        [Fact]
+        public async Task CannotSendAfterReceiveThrewException()
+        {
+            var allowPollTcs = new TaskCompletionSource<object>();
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    if (request.RequestUri.AbsolutePath.EndsWith("/poll"))
+                    {
+                        await allowPollTcs.Task;
+                        return new HttpResponseMessage(HttpStatusCode.InternalServerError) { Content = new StringContent(string.Empty) };
+                    }
+                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
+            using (var connection = await Connection.ConnectAsync(new Uri("http://fakeuri.org/"), longPollingTransport, httpClient))
+            {
+                var receiveTask = connection.ReceiveAsync(new ReceiveData());
+                allowPollTcs.TrySetResult(null);
+                await Assert.ThrowsAsync<HttpRequestException>(async () => await receiveTask);
+
+                Assert.False(await connection.SendAsync(new byte[] { 1, 1, 3, 5, 8 }, Format.Binary));
+            }
+        }
+
+        [Fact]
+        public async Task CannotReceiveAfterReceiveThrewException()
+        {
+            var allowPollTcs = new TaskCompletionSource<object>();
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    if (request.RequestUri.AbsolutePath.EndsWith("/poll"))
+                    {
+                        await allowPollTcs.Task;
+                        return new HttpResponseMessage(HttpStatusCode.InternalServerError) { Content = new StringContent(string.Empty) };
+                    }
+                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
+            using (var connection = await Connection.ConnectAsync(new Uri("http://fakeuri.org/"), longPollingTransport, httpClient))
+            {
+                var receiveTask = connection.ReceiveAsync(new ReceiveData());
+                allowPollTcs.TrySetResult(null);
+                await Assert.ThrowsAsync<HttpRequestException>(async () => await receiveTask);
+
+                var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                    async () => await connection.ReceiveAsync(new ReceiveData()));
+
+                Assert.Equal("Cannot receive messages when the connection is stopped.", exception.Message);
             }
         }
     }

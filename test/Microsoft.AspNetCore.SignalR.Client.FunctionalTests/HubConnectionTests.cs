@@ -53,8 +53,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 using (var connection = await HubConnection.ConnectAsync(new Uri("http://test/hubs"),
                     new JsonNetInvocationAdapter(), transport, httpClient, loggerFactory))
                 {
-                    EnsureConnectionEstablished(connection);
-
                     var result = await connection.Invoke<string>("HelloWorld");
 
                     Assert.Equal("Hello World!", result);
@@ -74,8 +72,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 using (var connection = await HubConnection.ConnectAsync(new Uri("http://test/hubs"),
                     new JsonNetInvocationAdapter(), transport, httpClient, loggerFactory))
                 {
-                    EnsureConnectionEstablished(connection);
-
                     var result = await connection.Invoke<string>("Echo", originalMessage);
 
                     Assert.Equal(originalMessage, result);
@@ -95,8 +91,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 using (var connection = await HubConnection.ConnectAsync(new Uri("http://test/hubs"),
                     new JsonNetInvocationAdapter(), transport, httpClient, loggerFactory))
                 {
-                    EnsureConnectionEstablished(connection);
-
                     var result = await connection.Invoke<string>("echo", originalMessage);
 
                     Assert.Equal(originalMessage, result);
@@ -122,8 +116,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                         tcs.TrySetResult((string)a[0]);
                     });
 
-                    EnsureConnectionEstablished(connection);
-
                     await connection.Invoke<Task>("CallEcho", originalMessage);
                     var completed = await Task.WhenAny(Task.Delay(2000), tcs.Task);
                     Assert.True(completed == tcs.Task, "Receive timed out!");
@@ -143,21 +135,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 using (var connection = await HubConnection.ConnectAsync(new Uri("http://test/hubs"),
                     new JsonNetInvocationAdapter(), transport, httpClient, loggerFactory))
                 {
-                    EnsureConnectionEstablished(connection);
-
                     var ex = await Assert.ThrowsAnyAsync<Exception>(
                         async () => await connection.Invoke<object>("!@#$%"));
 
                     Assert.Equal(ex.Message, "Unknown hub method '!@#$%'");
                 }
-            }
-        }
-
-        private static void EnsureConnectionEstablished(HubConnection connection)
-        {
-            if (connection.Completion.IsCompleted)
-            {
-                connection.Completion.GetAwaiter().GetResult();
             }
         }
 

@@ -65,31 +65,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
                 using (var connection = await ClientConnection.ConnectAsync(new Uri(baseUrl + "/echo"), transport, httpClient, loggerFactory))
                 {
-                    await connection.Output.WriteAsync(new Message(
-                        ReadableBuffer.Create(Encoding.UTF8.GetBytes(message)).Preserve(),
-                        Format.Text));
+                    await connection.SendAsync(Encoding.UTF8.GetBytes(message), Format.Text);
 
-                    var received = await ReceiveMessage(connection).OrTimeout();
-                    Assert.Equal(message, received);
+                    var receiveData = new ReceiveData();
+
+                    Assert.True(await connection.ReceiveAsync(receiveData).OrTimeout());
+                    Assert.Equal(message, Encoding.UTF8.GetString(receiveData.Data));
                 }
             }
-        }
-
-        private static async Task<string> ReceiveMessage(ClientConnection connection)
-        {
-            Message message;
-            while (await connection.Input.WaitToReadAsync())
-            {
-                if (connection.Input.TryRead(out message))
-                {
-                    using (message)
-                    {
-                        return Encoding.UTF8.GetString(message.Payload.Buffer.ToArray());
-                    }
-                }
-            }
-
-            return null;
         }
     }
 }

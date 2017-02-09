@@ -34,11 +34,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger = loggerFactory.CreateLogger<LongPollingTransport>();
         }
 
-        public void Dispose()
-        {
-            _transportCts.Cancel();
-        }
-
         public Task StartAsync(Uri url, IChannelConnection<Message> application)
         {
             _application = application;
@@ -53,6 +48,17 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }).Unwrap();
 
             return TaskCache.CompletedTask;
+        }
+
+        public async Task StopAsync()
+        {
+            _transportCts.Cancel();
+            await Running;
+        }
+
+        public void Dispose()
+        {
+            _transportCts.Cancel();
         }
 
         private async Task Poll(Uri pollUrl, CancellationToken cancellationToken)
@@ -110,8 +116,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 while (await _application.Input.WaitToReadAsync(cancellationToken))
                 {
-                    Message message;
-                    while (!cancellationToken.IsCancellationRequested && _application.Input.TryRead(out message))
+                    while (!cancellationToken.IsCancellationRequested && _application.Input.TryRead(out Message message))
                     {
                         using (message)
                         {
