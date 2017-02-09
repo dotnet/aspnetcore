@@ -167,6 +167,41 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 node => CSharpStatement("});", node));
         }
 
+        [Fact]
+        public void Execute_Custom_RemovesDirectiveIRNodeFromIRDocument()
+        {
+            // Arrange
+            var content = "@custom Hello";
+            var sourceDocument = TestRazorSourceDocument.Create(content);
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var defaultEngine = RazorEngine.Create(b =>
+            {
+                var customDirective = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
+                b.AddDirective(customDirective);
+            });
+            var originalIRDocument = Lower(codeDocument, defaultEngine);
+            var pass = new DefaultDirectiveIRPass()
+            {
+                Engine = defaultEngine,
+            };
+
+            // Act
+            var irDocument = pass.Execute(codeDocument, originalIRDocument);
+
+            // Assert
+            Children(irDocument,
+                node => Assert.IsType<ChecksumIRNode>(node),
+                node => Assert.IsType<NamespaceDeclarationIRNode>(node));
+            var @namespace = irDocument.Children[1];
+            Children(@namespace,
+                node => Assert.IsType<UsingStatementIRNode>(node),
+                node => Assert.IsType<UsingStatementIRNode>(node),
+                node => Assert.IsType<ClassDeclarationIRNode>(node));
+            var @class = @namespace.Children[2];
+            var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
+            Assert.Empty(method.Children);
+        }
+
         private static DocumentIRNode Lower(RazorCodeDocument codeDocument)
         {
             var engine = RazorEngine.Create();

@@ -50,8 +50,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 if (string.Equals(node.Name, CSharpCodeParser.FunctionsDirectiveDescriptor.Name, StringComparison.Ordinal))
                 {
-                    node.Parent.Children.Remove(node);
-
                     foreach (var child in node.Children.Except(node.Tokens))
                     {
                         child.Parent = _classNode;
@@ -60,8 +58,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 }
                 else if (string.Equals(node.Name, CSharpCodeParser.InheritsDirectiveDescriptor.Name, StringComparison.Ordinal))
                 {
-                    node.Parent.Children.Remove(node);
-
                     var token = node.Tokens.FirstOrDefault();
 
                     if (token != null)
@@ -72,7 +68,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 else if (string.Equals(node.Name, CSharpCodeParser.SectionDirectiveDescriptor.Name, StringComparison.Ordinal))
                 {
                     var sectionIndex = node.Parent.Children.IndexOf(node);
-                    node.Parent.Children.Remove(node);
 
                     var defineSectionEndStatement = new CSharpStatementIRNode()
                     {
@@ -94,18 +89,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                     node.Parent.Children.Insert(sectionIndex, defineSectionStartStatement);
                 }
-                else if (string.Equals(node.Name, CSharpCodeParser.AddTagHelperDirectiveDescriptor.Name, StringComparison.Ordinal))
-                {
-                    node.Parent.Children.Remove(node);
-                }
-                else if (string.Equals(node.Name, CSharpCodeParser.RemoveTagHelperDirectiveDescriptor.Name, StringComparison.Ordinal))
-                {
-                    node.Parent.Children.Remove(node);
-                }
-                else if (string.Equals(node.Name, CSharpCodeParser.TagHelperPrefixDirectiveDescriptor.Name, StringComparison.Ordinal))
-                {
-                    node.Parent.Children.Remove(node);
-                }
+
+                node.Parent.Children.Remove(node);
             }
         }
     }
