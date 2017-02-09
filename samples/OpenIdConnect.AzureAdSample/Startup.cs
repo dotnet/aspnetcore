@@ -28,7 +28,7 @@ namespace OpenIdConnect.AzureAdSample
             if (env.IsDevelopment())
             {
                 // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
-                builder.AddUserSecrets();
+                builder.AddUserSecrets<Startup>();
             }
 
             builder.AddEnvironmentVariables();
