@@ -51,7 +51,7 @@ module.exports = (env) => {
         output: { path: path.join(__dirname, 'wwwroot', 'dist') },
         module: {
             rules: [
-                { test: /\.css(\?|$)/, use: extractCSS.extract({ loader: 'css-loader' }) }
+                { test: /\.css(\?|$)/, use: extractCSS.extract({ use: 'css-loader' }) }
             ]
         },
         plugins: [

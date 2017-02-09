@@ -18,9 +18,9 @@ module.exports = (env) => {
         module: {
             rules: [
                 { test: /\.ts$/, include: /ClientApp/, use: 'awesome-typescript-loader?silent=true' },
-                { test: /\.html$/, loader: 'raw-loader' },
-                { test: /\.css$/, loader: isDevBuild ? 'style-loader!css-loader' : ExtractTextPlugin.extract({ loader: 'css-loader' }) },
-                { test: /\.(png|jpg|jpeg|gif|svg)$/, loader: 'url-loader?limit=25000' }
+                { test: /\.html$/, use: 'raw-loader' },
+                { test: /\.css$/, use: isDevBuild ? 'style-loader!css-loader' : ExtractTextPlugin.extract({ use: 'css-loader' }) },
+                { test: /\.(png|jpg|jpeg|gif|svg)$/, use: 'url-loader?limit=25000' }
             ]
         },
         plugins: [
