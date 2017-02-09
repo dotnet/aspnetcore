@@ -26,7 +26,7 @@ namespace E2ETests
             _smokeTestsOnNanoServer = new SmokeTestsOnNanoServer(output, _remoteDeploymentConfig, _logger);
         }
 
-        [ConditionalTheory, Trait("E2Etests", "NanoServer")]
+        [ConditionalTheory, Trait("E2ETests", "NanoServer")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [SkipIfEnvironmentVariableNotEnabled("RUN_TESTS_ON_NANO")]

@@ -1,8 +1,8 @@
 use-standard-lifecycle
 k-standard-goals
 
-#run-nano-tests .compile
+#run-nano-tests .initialize
     @{
         var e2eTestsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "test", "E2ETests");
-        Dotnet("msbuild /t:TestNano /p:Configuration=" + E("Configuration"), e2eTestsDirectory);
+        Dotnet("test --logger:trx --filter E2ETests=NanoServer --configuration " + E("Configuration"), e2eTestsDirectory);
     }

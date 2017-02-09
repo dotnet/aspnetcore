@@ -39,3 +39,4 @@ node_modules
 .testpublish/
 launchSettings.json
 .vscode/
+TestResults/
