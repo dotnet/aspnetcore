@@ -32,11 +32,14 @@ namespace ClientSample
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
                 using (var connection = new Connection(new Uri(baseUrl), loggerFactory))
                 {
+                    var cts = new CancellationTokenSource();
+                    connection.Received += (data, format) => logger.LogInformation($"Received: {Encoding.UTF8.GetString(data)}");
+                    connection.Closed += e => cts.Cancel();
+
                     await connection.StartAsync(transport, httpClient);
 
                     logger.LogInformation("Connected to {0}", baseUrl);
 
-                    var cts = new CancellationTokenSource();
                     Console.CancelKeyPress += (sender, a) =>
                     {
                         a.Cancel = true;
@@ -44,13 +47,8 @@ namespace ClientSample
                         cts.Cancel();
                     };
 
-                    // Ready to start the loops
-                    var receive =
-                        StartReceiving(loggerFactory.CreateLogger("ReceiveLoop"), connection, cts.Token).ContinueWith(_ => cts.Cancel());
-                    var send =
-                        StartSending(loggerFactory.CreateLogger("SendLoop"), connection, cts.Token).ContinueWith(_ => cts.Cancel());
+                    await StartSending(loggerFactory.CreateLogger("SendLoop"), connection, cts.Token).ContinueWith(_ => cts.Cancel());
 
-                    await Task.WhenAll(receive, send);
                     await connection.StopAsync();
                 }
             }
@@ -67,29 +65,6 @@ namespace ClientSample
                 await connection.SendAsync(Encoding.UTF8.GetBytes("Hello World"), MessageType.Text);
             }
             logger.LogInformation("Send loop terminated");
-        }
-
-        private static async Task StartReceiving(ILogger logger, Connection connection, CancellationToken cancellationToken)
-        {
-            logger.LogInformation("Receive loop starting");
-            try
-            {
-                var receiveData = new ReceiveData();
-                while (await connection.ReceiveAsync(receiveData, cancellationToken))
-                {
-                    logger.LogInformation($"Received: {Encoding.UTF8.GetString(receiveData.Data)}");
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                logger.LogInformation("Connection is closing");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(0, ex, "Connection terminated due to an exception");
-            }
-
-            logger.LogInformation("Receive loop terminated");
         }
     }
 }

@@ -66,14 +66,27 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
                 using (var connection = new ClientConnection(new Uri(baseUrl + "/echo"), loggerFactory))
                 {
+                    var receiveTcs = new TaskCompletionSource<string>();
+                    connection.Received += (data, format) => receiveTcs.TrySetResult(Encoding.UTF8.GetString(data));
+                    connection.Closed += e => 
+                        {
+                            if (e != null)
+                            {
+                                receiveTcs.TrySetException(e);
+                            }
+                            else
+                            {
+                                receiveTcs.TrySetResult(null);
+                            }
+                        };
+
                     await connection.StartAsync(transport, httpClient);
 
                     await connection.SendAsync(Encoding.UTF8.GetBytes(message), MessageType.Text);
 
                     var receiveData = new ReceiveData();
 
-                    Assert.True(await connection.ReceiveAsync(receiveData).OrTimeout());
-                    Assert.Equal(message, Encoding.UTF8.GetString(receiveData.Data));
+                    Assert.Equal(message, await receiveTcs.Task.OrTimeout());
 
                     await connection.StopAsync();
                 }
@@ -100,14 +113,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var transport = new WebSocketsTransport();
             using (var connection = new ClientConnection(new Uri(baseUrl + "/echo/ws"), loggerFactory))
             {
+                var receiveTcs = new TaskCompletionSource<byte[]>();
+                connection.Received += (data, messageType) => receiveTcs.SetResult(data);
+
                 await connection.StartAsync(transport);
 
                 await connection.SendAsync(Encoding.UTF8.GetBytes(message), MessageType.Text);
 
                 var receiveData = new ReceiveData();
 
-                Assert.True(await connection.ReceiveAsync(receiveData).OrTimeout());
-                Assert.Equal(message, Encoding.UTF8.GetString(receiveData.Data));
+                var receivedData = await receiveTcs.Task.OrTimeout();
+                Assert.Equal(message, Encoding.UTF8.GetString(receivedData));
 
                 await connection.StopAsync();
             }

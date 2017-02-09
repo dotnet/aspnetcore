@@ -18,13 +18,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
 {
     public class HubConnection : IDisposable
     {
-        private readonly Task _reader;
         private readonly ILogger _logger;
         private readonly Connection _connection;
         private readonly IInvocationAdapter _adapter;
         private readonly HubBinder _binder;
 
-        private readonly CancellationTokenSource _readerCts = new CancellationTokenSource();
         private readonly CancellationTokenSource _connectionActive = new CancellationTokenSource();
 
         // We need to ensure pending calls added after a connection failure don't hang. Right now the easiest thing to do is lock.
@@ -42,7 +40,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _adapter = adapter;
             _logger = logger;
 
-            _reader = ReceiveMessages(_readerCts.Token);
+            // TODO HIGH: Need to subscribe to events before starting connection. Requires converting HubConnection
+            _connection.Received += OnDataReceived;
         }
 
         // TODO: Client return values/tasks?
@@ -106,9 +105,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return await irq.Completion.Task;
         }
 
+        // TODO HIGH - need StopAsync
+
         public void Dispose()
         {
-            _readerCts.Cancel();
             _connection.Dispose();
         }
 
@@ -124,49 +124,30 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return new HubConnection(connection, adapter, loggerFactory.CreateLogger<HubConnection>());
         }
 
-        private async Task ReceiveMessages(CancellationToken cancellationToken)
+        private async void OnDataReceived(byte[] data, MessageType messageType)
         {
-            await Task.Yield();
+            var message
+                = await _adapter.ReadMessageAsync(new MemoryStream(data), _binder, _connectionActive.Token);
 
-            _logger.LogTrace("Beginning receive loop");
-            try
+            switch (message)
             {
-                ReceiveData receiveData = new ReceiveData();
-                while (await _connection.ReceiveAsync(receiveData, cancellationToken))
-                {
-                    var message
-                        = await _adapter.ReadMessageAsync(new MemoryStream(receiveData.Data), _binder, cancellationToken);
-
-                    switch (message)
+                case InvocationDescriptor invocationDescriptor:
+                    DispatchInvocation(invocationDescriptor, _connectionActive.Token);
+                    break;
+                case InvocationResultDescriptor invocationResultDescriptor:
+                    InvocationRequest irq;
+                    lock (_pendingCallsLock)
                     {
-                        case InvocationDescriptor invocationDescriptor:
-                            DispatchInvocation(invocationDescriptor, cancellationToken);
-                            break;
-                        case InvocationResultDescriptor invocationResultDescriptor:
-                            InvocationRequest irq;
-                            lock (_pendingCallsLock)
-                            {
-                                _connectionActive.Token.ThrowIfCancellationRequested();
-                                irq = _pendingCalls[invocationResultDescriptor.Id];
-                                _pendingCalls.Remove(invocationResultDescriptor.Id);
-                            }
-                            DispatchInvocationResult(invocationResultDescriptor, irq, cancellationToken);
-                            break;
+                        _connectionActive.Token.ThrowIfCancellationRequested();
+                        irq = _pendingCalls[invocationResultDescriptor.Id];
+                        _pendingCalls.Remove(invocationResultDescriptor.Id);
                     }
-                }
-                Shutdown();
-            }
-            catch (Exception ex)
-            {
-                Shutdown(ex);
-                throw;
-            }
-            finally
-            {
-                _logger.LogTrace("Ending receive loop");
+                    DispatchInvocationResult(invocationResultDescriptor, irq, _connectionActive.Token);
+                    break;
             }
         }
 
+        // TODO HIGH!
         private void Shutdown(Exception ex = null)
         {
             _logger.LogTrace("Shutting down connection");
