@@ -104,12 +104,24 @@ namespace Microsoft.AspNetCore.Sockets.Client
         {
             Output.TryComplete();
             await _transport.StopAsync();
+            await DrainMessages();
         }
 
         public void Dispose()
         {
             Output.TryComplete();
             _transport.Dispose();
+        }
+
+        private async Task DrainMessages()
+        {
+            while (await Input.WaitToReadAsync())
+            {
+                if (Input.TryRead(out Message message))
+                {
+                    message.Dispose();
+                }
+            }
         }
 
         public static Task<Connection> ConnectAsync(Uri url, ITransport transport) => ConnectAsync(url, transport, null, null);
