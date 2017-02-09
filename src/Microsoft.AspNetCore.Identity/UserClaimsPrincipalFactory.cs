@@ -113,7 +113,17 @@ namespace Microsoft.AspNetCore.Identity
             {
                 id.AddClaims(await UserManager.GetClaimsAsync(user));
             }
-            return new ClaimsPrincipal(id);
+            return await CreatePrincipalAsync(id);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ClaimsPrincipal"/> from a <see cref="ClaimsIdentity"/>.
+        /// </summary>
+        /// <param name="id">The <see cref="ClaimsIdentity"/> with claims.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous creation operation, containing the <see cref="ClaimsPrincipal"/> with the <see cref="ClaimsIdentity"/>.</returns>
+        protected virtual Task<ClaimsPrincipal> CreatePrincipalAsync(ClaimsIdentity id)
+        {
+            return Task.FromResult(new ClaimsPrincipal(id));
         }
     }
 }
