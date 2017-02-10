@@ -1,38 +1,29 @@
 {
-    "adx": {
-        "rules": [
-            "AdxVerificationCompositeRule"
-        ],
-        "packages": {
-            "Microsoft.DotNet.Watcher.Tools": {
-                "exclusions": {
-                    "DOC_MISSING": {
-                        "lib/netcoreapp1.0/dotnet-watch.dll": "xmldocs not required for DotnetCliTool packages"
-                    }
-                },
-                "packageTypes": ["DotnetCliTool"]
-            },
-            "Microsoft.Extensions.Caching.SqlConfig.Tools": {
-                "exclusions": {
-                    "DOC_MISSING": {
-                        "lib/netcoreapp1.0/dotnet-sql-cache.dll": "xmldocs not required for DotnetCliTool packages"
-                    }
-                },
-                "packageTypes": ["DotnetCliTool"]
-            },
-            "Microsoft.Extensions.SecretManager.Tools": {
-                "exclusions": {
-                    "DOC_MISSING": {
-                        "lib/netcoreapp1.0/dotnet-user-secrets.dll": "xmldocs not required for DotnetCliTool packages"
-                    }
-                },
-                "packageTypes": ["DotnetCliTool"]
-            }
-        }
-    },
-    "Default": {
-        "rules": [
-            "DefaultCompositeRule"
+  "adx": {
+    "rules": [
+      "AdxVerificationCompositeRule"
+    ],
+    "packages": {
+      "Microsoft.DotNet.Watcher.Tools": {
+        "packageTypes": [
+          "DotnetCliTool"
         ]
+      },
+      "Microsoft.Extensions.Caching.SqlConfig.Tools": {
+        "packageTypes": [
+          "DotnetCliTool"
+        ]
+      },
+      "Microsoft.Extensions.SecretManager.Tools": {
+        "packageTypes": [
+          "DotnetCliTool"
+        ]
+      }
     }
+  },
+  "Default": {
+    "rules": [
+      "DefaultCompositeRule"
+    ]
+  }
 }

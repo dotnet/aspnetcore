@@ -1,4 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
@@ -9,7 +10,6 @@
     <PackageId>Microsoft.DotNet.Watcher.Tools</PackageId>
     <PackageTags>dotnet;watch</PackageTags>
     <PackageType>DotnetCliTool</PackageType>
-    <NetCoreAppImplicitPackageVersion>1.0.0</NetCoreAppImplicitPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>

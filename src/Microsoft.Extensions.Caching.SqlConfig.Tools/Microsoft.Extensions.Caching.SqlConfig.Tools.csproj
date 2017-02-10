@@ -1,5 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <Import Project="..\..\build\common.props" />
+
   <PropertyGroup>
     <TargetFramework>netcoreapp1.0</TargetFramework>
     <AssemblyName>dotnet-sql-cache</AssemblyName>
@@ -8,7 +10,6 @@
     <PackageId>Microsoft.Extensions.Caching.SqlConfig.Tools</PackageId>
     <PackageTags>cache;distributedcache;sqlserver</PackageTags>
     <PackageType>DotnetCliTool</PackageType>
-    <NetCoreAppImplicitPackageVersion>1.0.0</NetCoreAppImplicitPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>

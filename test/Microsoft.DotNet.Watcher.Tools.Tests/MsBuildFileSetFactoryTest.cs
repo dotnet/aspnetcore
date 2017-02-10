@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -28,11 +28,9 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         [Fact]
         public async Task FindsCustomWatchItems()
         {
-            TemporaryCSharpProject target;
             _tempDir
-                .WithCSharpProject("Project1", out target)
+                .WithCSharpProject("Project1", out var target)
                     .WithTargetFrameworks("netcoreapp1.0")
-                    .WithDefaultGlobs()
                     .WithItem(new ItemSpec { Name = "Watch", Include = "*.js", Exclude = "gulpfile.js" })
                     .Dir()
                     .WithFile("Program.cs")
@@ -56,12 +54,10 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         [Fact]
         public async Task ExcludesDefaultItemsWithWatchFalseMetadata()
         {
-            TemporaryCSharpProject target;
             _tempDir
-                .WithCSharpProject("Project1", out target)
+                .WithCSharpProject("Project1", out var target)
                     .WithTargetFrameworks("net40")
-                    .WithItem(new ItemSpec { Name = "Compile", Include = "*.cs" })
-                    .WithItem(new ItemSpec { Name = "EmbeddedResource", Include = "*.resx", Watch = false })
+                    .WithItem(new ItemSpec { Name = "EmbeddedResource", Update = "*.resx", Watch = false })
                     .Dir()
                     .WithFile("Program.cs")
                     .WithFile("Strings.resx");
@@ -82,14 +78,11 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         [Fact]
         public async Task SingleTfm()
         {
-            TemporaryCSharpProject target;
-
             _tempDir
                 .SubDir("src")
                     .SubDir("Project1")
-                        .WithCSharpProject("Project1", out target)
+                        .WithCSharpProject("Project1", out var target)
                         .WithTargetFrameworks("netcoreapp1.0")
-                        .WithDefaultGlobs()
                         .Dir()
                         .WithFile("Program.cs")
                         .WithFile("Class1.cs")
@@ -117,12 +110,12 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         [Fact]
         public async Task MultiTfm()
         {
-            TemporaryCSharpProject target;
-            _tempDir
+             _tempDir
                 .SubDir("src")
                     .SubDir("Project1")
-                        .WithCSharpProject("Project1", out target)
+                        .WithCSharpProject("Project1", out var target)
                         .WithTargetFrameworks("netcoreapp1.0", "net451")
+                        .WithProperty("EnableDefaultCompileItems", "false")
                         .WithItem("Compile", "Class1.netcore.cs", "'$(TargetFramework)'=='netcoreapp1.0'")
                         .WithItem("Compile", "Class1.desktop.cs", "'$(TargetFramework)'=='net451'")
                         .Dir()
@@ -147,22 +140,18 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         [Fact]
         public async Task ProjectReferences_OneLevel()
         {
-            TemporaryCSharpProject target;
-            TemporaryCSharpProject proj2;
             _tempDir
                 .SubDir("src")
                     .SubDir("Project2")
-                        .WithCSharpProject("Project2", out proj2)
+                        .WithCSharpProject("Project2", out var proj2)
                         .WithTargetFrameworks("netstandard1.1")
-                        .WithDefaultGlobs()
                         .Dir()
                         .WithFile("Class2.cs")
                     .Up()
                     .SubDir("Project1")
-                        .WithCSharpProject("Project1", out target)
+                        .WithCSharpProject("Project1", out var target)
                         .WithTargetFrameworks("netcoreapp1.0", "net451")
                         .WithProjectReference(proj2)
-                        .WithDefaultGlobs()
                         .Dir()
                         .WithFile("Class1.cs");
 
@@ -184,31 +173,25 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         [Fact]
         public async Task TransitiveProjectReferences_TwoLevels()
         {
-            TemporaryCSharpProject target;
-            TemporaryCSharpProject proj2;
-            TemporaryCSharpProject proj3;
             _tempDir
                 .SubDir("src")
                     .SubDir("Project3")
-                        .WithCSharpProject("Project3", out proj3)
+                        .WithCSharpProject("Project3", out var proj3)
                         .WithTargetFrameworks("netstandard1.0")
-                        .WithDefaultGlobs()
                         .Dir()
                         .WithFile("Class3.cs")
                     .Up()
                     .SubDir("Project2")
-                        .WithCSharpProject("Project2", out proj2)
+                        .WithCSharpProject("Project2", out TemporaryCSharpProject proj2)
                         .WithTargetFrameworks("netstandard1.1")
                         .WithProjectReference(proj3)
-                        .WithDefaultGlobs()
                         .Dir()
                         .WithFile("Class2.cs")
                     .Up()
                     .SubDir("Project1")
-                        .WithCSharpProject("Project1", out target)
+                        .WithCSharpProject("Project1", out TemporaryCSharpProject target)
                         .WithTargetFrameworks("netcoreapp1.0", "net451")
                         .WithProjectReference(proj2)
-                        .WithDefaultGlobs()
                         .Dir()
                         .WithFile("Class1.cs");
 
@@ -233,7 +216,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         public async Task ProjectReferences_Graph()
         {
             var graph = new TestProjectGraph(_tempDir);
-            graph.OnCreate(p => p.WithTargetFrameworks("net45").WithDefaultGlobs());
+            graph.OnCreate(p => p.WithTargetFrameworks("net45"));
             var matches = Regex.Matches(@"
             A->B B->C C->D D->E
                  B->E
