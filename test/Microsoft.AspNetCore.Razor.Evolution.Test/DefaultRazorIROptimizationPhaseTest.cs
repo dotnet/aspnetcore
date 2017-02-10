@@ -9,16 +9,16 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    public class DefaultRazorIRPhaseTest
+    public class DefaultRazorIROptimizationPhaseTest
     {
         [Fact]
         public void OnInitialized_OrdersPassesInAscendingOrder()
         {
             // Arrange & Act
-            var phase = new DefaultRazorIRPhase();
+            var phase = new DefaultRazorIROptimizationPhase();
 
-            var first = Mock.Of<IRazorIRPass>(p => p.Order == 15);
-            var second = Mock.Of<IRazorIRPass>(p => p.Order == 17);
+            var first = Mock.Of<IRazorIROptimizationPass>(p => p.Order == 15);
+            var second = Mock.Of<IRazorIROptimizationPass>(p => p.Order == 17);
 
             var engine = RazorEngine.CreateEmpty(b =>
             {
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void Execute_ThrowsForMissingDependency()
         {
             // Arrange
-            var phase = new DefaultRazorIRPhase();
+            var phase = new DefaultRazorIROptimizationPhase();
 
             var engine = RazorEngine.CreateEmpty(b => b.Phases.Add(phase));
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Act & Assert
             ExceptionAssert.Throws<InvalidOperationException>(
                 () => phase.Execute(codeDocument),
-                $"The '{nameof(DefaultRazorIRPhase)}' phase requires a '{nameof(DocumentIRNode)}' " + 
+                $"The '{nameof(DefaultRazorIROptimizationPhase)}' phase requires a '{nameof(DocumentIRNode)}' " + 
                 $"provided by the '{nameof(RazorCodeDocument)}'.");
         }
 
@@ -65,17 +65,24 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var secondPassNode = new DocumentIRNode();
             codeDocument.SetIRDocument(originalNode);
 
-            var firstPass = new Mock<IRazorIRPass>(MockBehavior.Strict);
+            var firstPass = new Mock<IRazorIROptimizationPass>(MockBehavior.Strict);
             firstPass.SetupGet(m => m.Order).Returns(0);
             firstPass.SetupProperty(m => m.Engine);
-            firstPass.Setup(m => m.Execute(codeDocument, originalNode)).Returns(firstPassNode);
+            firstPass.Setup(m => m.Execute(codeDocument, originalNode)).Callback(() =>
+            {
+                originalNode.Children.Add(firstPassNode);
+            });
 
-            var secondPass = new Mock<IRazorIRPass>(MockBehavior.Strict);
+            var secondPass = new Mock<IRazorIROptimizationPass>(MockBehavior.Strict);
             secondPass.SetupGet(m => m.Order).Returns(1);
             secondPass.SetupProperty(m => m.Engine);
-            secondPass.Setup(m => m.Execute(codeDocument, firstPassNode)).Returns(secondPassNode);
+            secondPass.Setup(m => m.Execute(codeDocument, originalNode)).Callback(() =>
+            {
+                // Works only when the first pass has run before this.
+                originalNode.Children[0].Children.Add(secondPassNode);
+            });
 
-            var phase = new DefaultRazorIRPhase();
+            var phase = new DefaultRazorIROptimizationPhase();
 
             var engine = RazorEngine.CreateEmpty(b =>
             {
@@ -89,7 +96,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             phase.Execute(codeDocument);
 
             // Assert
-            Assert.Same(secondPassNode, codeDocument.GetIRDocument());
+            Assert.Same(secondPassNode, codeDocument.GetIRDocument().Children[0].Children[0]);
         }
     }
 }

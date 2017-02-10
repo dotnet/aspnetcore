@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    public interface IRazorIRPass : IRazorEngineFeature
+    public interface IRazorDirectiveClassifierPass : IRazorEngineFeature
     {
         int Order { get; }
 
-        DocumentIRNode Execute(RazorCodeDocument codeDocument, DocumentIRNode irDocument);
+        void Execute(RazorCodeDocument codeDocument, DocumentIRNode irDocument);
     }
 }

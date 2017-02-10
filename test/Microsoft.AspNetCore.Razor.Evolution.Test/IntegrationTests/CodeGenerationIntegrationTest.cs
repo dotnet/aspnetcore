@@ -1530,16 +1530,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
-        private class ApiSetsIRTestAdapter : RazorIRPassBase
+        private class ApiSetsIRTestAdapter : RazorIRPassBase, IRazorIROptimizationPass
         {
-            public override int Order => RazorIRPass.LoweringOrder;
-
-            public override DocumentIRNode ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+            public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
             {
                 var walker = new ApiSetsIRWalker();
                 walker.Visit(irDocument);
-
-                return irDocument;
             }
 
             private class ApiSetsIRWalker : RazorIRNodeWalker

@@ -224,6 +224,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         private class TestDocumentClassifierPass : DocumentClassifierPassBase
         {
+            public override int Order => RazorIRPass.DefaultFeatureOrder;
+
             public bool ShouldMatch { get; set; } = true;
 
             public string Namespace { get; set;  }

@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 {
     internal class DefaultDocumentClassifierPass : DocumentClassifierPassBase
     {
-        public override int Order => RazorIRPass.DefaultDocumentClassifierOrder;
+        public override int Order => RazorIRPass.DefaultFeatureOrder;
 
         protected override string DocumentKind => "default";
 

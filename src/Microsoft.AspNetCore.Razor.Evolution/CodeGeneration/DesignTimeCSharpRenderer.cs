@@ -148,7 +148,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 Context.Writer.SetIndent(originalIndent);
             }
             Context.Writer.WriteLine("))();");
-
         }
 
         public override void VisitTemplate(TemplateIRNode node)

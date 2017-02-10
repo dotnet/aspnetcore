@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var pass = new DefaultInstrumentationPass();
 
             // Act
-            var result = pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
             Children(
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var pass = new DefaultInstrumentationPass();
 
             // Act
-            var result = pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
             Children(
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var pass = new DefaultInstrumentationPass();
 
             // Act
-            var result = pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
             Children(
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var pass = new DefaultInstrumentationPass();
 
             // Act
-            var result = pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
             Children(
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var pass = new DefaultInstrumentationPass();
 
             // Act
-            var result = pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
             Children(
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var pass = new DefaultInstrumentationPass();
 
             // Act
-            var result = pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
             Children(
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var pass = new DefaultInstrumentationPass();
 
             // Act
-            var result = pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
             Children(
@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var pass = new DefaultInstrumentationPass();
 
             // Act
-            var result = pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
             Children(
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var pass = new DefaultInstrumentationPass();
 
             // Act
-            var result = pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.ExecuteCore(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
             Children(

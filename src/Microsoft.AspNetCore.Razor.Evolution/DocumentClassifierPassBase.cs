@@ -7,30 +7,26 @@ using Microsoft.AspNetCore.Razor.Evolution.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    public abstract class DocumentClassifierPassBase : RazorIRPassBase
+    public abstract class DocumentClassifierPassBase : RazorIRPassBase, IRazorDocumentClassifierPass
     {
         protected abstract string DocumentKind { get; }
 
-        public override int Order => RazorIRPass.DocumentClassifierOrder;
-
-        public sealed override DocumentIRNode ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        public sealed override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             if (irDocument.DocumentKind != null)
             {
-                return irDocument;
+                return;
             }
 
             if (!IsMatch(codeDocument, irDocument))
             {
-                return irDocument;
+                return;
             }
 
             irDocument.DocumentKind = DocumentKind;
             irDocument.Target = CreateTarget(codeDocument, irDocument.Options);
 
             Rewrite(codeDocument, irDocument);
-
-            return irDocument;
         }
 
         private void Rewrite(RazorCodeDocument codeDocument, DocumentIRNode irDocument)

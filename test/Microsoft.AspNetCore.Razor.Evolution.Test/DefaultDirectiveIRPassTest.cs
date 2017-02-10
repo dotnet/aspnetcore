@@ -10,38 +10,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution
     public class DefaultDirectiveIRPassTest
     {
         [Fact]
-        public void Execute_MutatesIRDocument()
-        {
-            // Arrange
-            var content =
-@"@inherits Hello<World[]>
-@functions {
-    var value = true;
-}";
-            var sourceDocument = TestRazorSourceDocument.Create(content);
-            var codeDocument = RazorCodeDocument.Create(sourceDocument);
-            var originalIRDocument = Lower(codeDocument);
-            var defaultEngine = RazorEngine.Create();
-            var pass = new DefaultDirectiveIRPass()
-            {
-                Engine = defaultEngine,
-            };
-
-            // Act
-            var irDocument = pass.Execute(codeDocument, originalIRDocument);
-
-            // Assert
-            Assert.Same(originalIRDocument, irDocument);
-        }
-
-        [Fact]
         public void Execute_Inherits_SetsClassDeclarationBaseType()
         {
             // Arrange
             var content = "@inherits Hello<World[]>";
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
-            var originalIRDocument = Lower(codeDocument);
+            var irDocument = Lower(codeDocument);
             var defaultEngine = RazorEngine.Create();
             var pass = new DefaultDirectiveIRPass()
             {
@@ -49,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             };
 
             // Act
-            var irDocument = pass.Execute(codeDocument, originalIRDocument);
+            pass.Execute(codeDocument, irDocument);
 
             // Assert
             Children(irDocument,
@@ -71,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var content = "@functions { var value = true; }";
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
-            var originalIRDocument = Lower(codeDocument);
+            var irDocument = Lower(codeDocument);
             var defaultEngine = RazorEngine.Create();
             var pass = new DefaultDirectiveIRPass()
             {
@@ -79,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             };
 
             // Act
-            var irDocument = pass.Execute(codeDocument, originalIRDocument);
+            pass.Execute(codeDocument, irDocument);
 
             // Assert
             Children(irDocument,
@@ -105,7 +80,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var content = "@section Header { <p>Hello World</p> }";
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
-            var originalIRDocument = Lower(codeDocument);
+            var irDocument = Lower(codeDocument);
             var defaultEngine = RazorEngine.Create();
             var pass = new DefaultDirectiveIRPass()
             {
@@ -113,7 +88,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             };
 
             // Act
-            var irDocument = pass.Execute(codeDocument, originalIRDocument);
+            pass.Execute(codeDocument, irDocument);
 
             // Assert
             Children(irDocument,
@@ -140,7 +115,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var designTimeEngine = RazorEngine.CreateDesignTime();
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
-            var originalIRDocument = Lower(codeDocument, designTimeEngine);
+            var irDocument = Lower(codeDocument, designTimeEngine);
             var defaultEngine = RazorEngine.Create();
             var pass = new DefaultDirectiveIRPass()
             {
@@ -148,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             };
 
             // Act
-            var irDocument = pass.Execute(codeDocument, originalIRDocument);
+            pass.Execute(codeDocument, irDocument);
 
             // Assert
             Children(irDocument,
@@ -167,41 +142,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 node => CSharpStatement("});", node));
         }
 
-        [Fact]
-        public void Execute_Custom_RemovesDirectiveIRNodeFromIRDocument()
-        {
-            // Arrange
-            var content = "@custom Hello";
-            var sourceDocument = TestRazorSourceDocument.Create(content);
-            var codeDocument = RazorCodeDocument.Create(sourceDocument);
-            var defaultEngine = RazorEngine.Create(b =>
-            {
-                var customDirective = DirectiveDescriptorBuilder.Create("custom").AddString().Build();
-                b.AddDirective(customDirective);
-            });
-            var originalIRDocument = Lower(codeDocument, defaultEngine);
-            var pass = new DefaultDirectiveIRPass()
-            {
-                Engine = defaultEngine,
-            };
-
-            // Act
-            var irDocument = pass.Execute(codeDocument, originalIRDocument);
-
-            // Assert
-            Children(irDocument,
-                node => Assert.IsType<ChecksumIRNode>(node),
-                node => Assert.IsType<NamespaceDeclarationIRNode>(node));
-            var @namespace = irDocument.Children[1];
-            Children(@namespace,
-                node => Assert.IsType<UsingStatementIRNode>(node),
-                node => Assert.IsType<UsingStatementIRNode>(node),
-                node => Assert.IsType<ClassDeclarationIRNode>(node));
-            var @class = @namespace.Children[2];
-            var method = SingleChild<RazorMethodDeclarationIRNode>(@class);
-            Assert.Empty(method.Children);
-        }
-
         private static DocumentIRNode Lower(RazorCodeDocument codeDocument)
         {
             var engine = RazorEngine.Create();
@@ -216,7 +156,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 var phase = engine.Phases[i];
                 phase.Execute(codeDocument);
                 
-                if (phase is IRazorIRLoweringPhase)
+                if (phase is IRazorDocumentClassifierPhase)
                 {
                     break;
                 }
@@ -225,8 +165,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var irDocument = codeDocument.GetIRDocument();
             Assert.NotNull(irDocument);
 
-            // These tests depend on the document->namespace->class structure.
-            irDocument = new DefaultDocumentClassifierPass() { Engine = engine, }.Execute(codeDocument, irDocument);
             return irDocument;
         }
     }

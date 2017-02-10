@@ -2,42 +2,89 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    internal class DefaultDirectiveIRPass : RazorIRPassBase
+    internal class DefaultDirectiveIRPass : RazorIRPassBase, IRazorDirectiveClassifierPass
     {
-        public override int Order => RazorIRPass.DefaultDirectiveClassifierOrder;
-
-        public override DocumentIRNode ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             var parserOptions = irDocument.Options;
 
             var designTime = parserOptions.DesignTimeMode;
-            var walker = new DirectiveWalker(designTime);
+            var walker = new DirectiveWalker();
             walker.VisitDocument(irDocument);
 
-            return irDocument;
+            var classNode = walker.ClassNode;
+            foreach (var node in walker.FunctionsDirectiveNodes)
+            {
+                node.Parent.Children.Remove(node);
+
+                foreach (var child in node.Children.Except(node.Tokens))
+                {
+                    child.Parent = classNode;
+                    classNode.Children.Add(child);
+                }
+            }
+
+            foreach (var node in walker.InheritsDirectiveNodes.Reverse())
+            {
+                node.Parent.Children.Remove(node);
+
+                var token = node.Tokens.FirstOrDefault();
+                if (token != null)
+                {
+                    classNode.BaseType = token.Content;
+                    break;
+                }
+            }
+
+            foreach (var node in walker.SectionDirectiveNodes)
+            {
+                var sectionIndex = node.Parent.Children.IndexOf(node);
+                node.Parent.Children.Remove(node);
+
+                var defineSectionEndStatement = new CSharpStatementIRNode()
+                {
+                    Content = "});",
+                };
+                node.Parent.Children.Insert(sectionIndex, defineSectionEndStatement);
+
+                foreach (var child in node.Children.Except(node.Tokens).Reverse())
+                {
+                    node.Parent.Children.Insert(sectionIndex, child);
+                }
+
+                var lambdaContent = designTime ? "__razor_section_writer" : string.Empty;
+                var sectionName = node.Tokens.FirstOrDefault()?.Content;
+                var defineSectionStartStatement = new CSharpStatementIRNode()
+                {
+                    Content = /* ORIGINAL: DefineSectionMethodName */ $"DefineSection(\"{sectionName}\", async ({lambdaContent}) => {{",
+                };
+
+                node.Parent.Children.Insert(sectionIndex, defineSectionStartStatement);
+            }
         }
 
         private class DirectiveWalker : RazorIRNodeWalker
         {
-            private ClassDeclarationIRNode _classNode;
-            private readonly bool _designTime;
+            public ClassDeclarationIRNode ClassNode { get; private set; }
 
-            public DirectiveWalker(bool designTime)
-            {
-                _designTime = designTime;
-            }
+            public IList<DirectiveIRNode> FunctionsDirectiveNodes { get; } = new List<DirectiveIRNode>();
+
+            public IList<DirectiveIRNode> InheritsDirectiveNodes { get; } = new List<DirectiveIRNode>();
+
+            public IList<DirectiveIRNode> SectionDirectiveNodes { get; } = new List<DirectiveIRNode>();
 
             public override void VisitClass(ClassDeclarationIRNode node)
             {
-                if (_classNode == null)
+                if (ClassNode == null)
                 {
-                    _classNode = node;
+                    ClassNode = node;
                 }
 
                 VisitDefault(node);
@@ -47,47 +94,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 if (string.Equals(node.Name, CSharpCodeParser.FunctionsDirectiveDescriptor.Name, StringComparison.Ordinal))
                 {
-                    foreach (var child in node.Children.Except(node.Tokens))
-                    {
-                        child.Parent = _classNode;
-                        _classNode.Children.Add(child);
-                    }
+                    FunctionsDirectiveNodes.Add(node);
                 }
                 else if (string.Equals(node.Name, CSharpCodeParser.InheritsDirectiveDescriptor.Name, StringComparison.Ordinal))
                 {
-                    var token = node.Tokens.FirstOrDefault();
-
-                    if (token != null)
-                    {
-                        _classNode.BaseType = token.Content;
-                    }
+                    InheritsDirectiveNodes.Add(node);
                 }
                 else if (string.Equals(node.Name, CSharpCodeParser.SectionDirectiveDescriptor.Name, StringComparison.Ordinal))
                 {
-                    var sectionIndex = node.Parent.Children.IndexOf(node);
-
-                    var defineSectionEndStatement = new CSharpStatementIRNode()
-                    {
-                        Content = "});",
-                    };
-                    node.Parent.Children.Insert(sectionIndex, defineSectionEndStatement);
-
-                    foreach (var child in node.Children.Except(node.Tokens).Reverse())
-                    {
-                        node.Parent.Children.Insert(sectionIndex, child);
-                    }
-
-                    var lambdaContent = _designTime ? "__razor_section_writer" : string.Empty;
-                    var sectionName = node.Tokens.FirstOrDefault()?.Content;
-                    var defineSectionStartStatement = new CSharpStatementIRNode()
-                    {
-                        Content = /* ORIGINAL: DefineSectionMethodName */ $"DefineSection(\"{sectionName}\", async ({lambdaContent}) => {{",
-                    };
-
-                    node.Parent.Children.Insert(sectionIndex, defineSectionStartStatement);
+                    SectionDirectiveNodes.Add(node);
                 }
-
-                node.Parent.Children.Remove(node);
             }
         }
     }

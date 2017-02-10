@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    public class DefaultInstrumentationPass : RazorIRPassBase
+    public class DefaultInstrumentationPass : RazorIRPassBase, IRazorIROptimizationPass
     {
-        public override int Order => RazorIRPass.DefaultLoweringOrder;
+        public override int Order => RazorIRPass.DefaultFeatureOrder;
 
-        public override DocumentIRNode ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             var walker = new Visitor();
             walker.VisitDocument(irDocument);
@@ -22,8 +22,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
      
                 AddInstrumentation(node);
             }
-
-            return irDocument;
         }
 
         private static void AddInstrumentation(InstrumentationItem item)

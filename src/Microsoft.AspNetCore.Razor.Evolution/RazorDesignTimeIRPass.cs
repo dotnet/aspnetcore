@@ -6,18 +6,17 @@ using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    internal class RazorDesignTimeIRPass : RazorIRPassBase
+    internal class RazorDesignTimeIRPass : RazorIRPassBase, IRazorDirectiveClassifierPass
     {
         internal const string DesignTimeVariable = "__o";
 
-        public override int Order => RazorIRPass.DirectiveClassifierOrder;
+        // This needs to run before other directive classifiers.
+        public override int Order => -10;
 
-        public override DocumentIRNode ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             var walker = new DesignTimeHelperWalker();
             walker.VisitDocument(irDocument);
-
-            return irDocument;
         }
 
         internal class DesignTimeHelperWalker : RazorIRNodeWalker
@@ -26,7 +25,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             public override void VisitClass(ClassDeclarationIRNode node)
             {
-
                 var designTimeHelperDeclaration = new CSharpStatementIRNode()
                 {
                     Content = $"private static {typeof(object).FullName} {DesignTimeVariable} = null;",

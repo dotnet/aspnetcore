@@ -51,7 +51,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             builder.Phases.Add(new DefaultRazorParsingPhase());
             builder.Phases.Add(new DefaultRazorSyntaxTreePhase());
             builder.Phases.Add(new DefaultRazorIRLoweringPhase());
-            builder.Phases.Add(new DefaultRazorIRPhase());
+            builder.Phases.Add(new DefaultRazorDocumentClassifierPhase());
+            builder.Phases.Add(new DefaultRazorDirectiveClassifierPhase());
+            builder.Phases.Add(new DefaultRazorIROptimizationPhase());
             builder.Phases.Add(new DefaultRazorCSharpLoweringPhase());
 
             // Syntax Tree passes
@@ -62,6 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // IR Passes
             builder.Features.Add(new DefaultDocumentClassifierPass());
             builder.Features.Add(new DefaultDirectiveIRPass());
+            builder.Features.Add(new DirectiveRemovalIROptimizationPass());
         }
 
         internal static void AddRuntimeDefaults(IRazorEngineBuilder builder)

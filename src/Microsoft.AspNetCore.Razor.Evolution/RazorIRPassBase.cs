@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    public abstract class RazorIRPassBase : IRazorIRPass
+    public abstract class RazorIRPassBase
     {
         private RazorEngine _engine;
 
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             }
         }
 
-        public abstract int Order { get; }
+        public virtual int Order { get; }
 
         protected void ThrowForMissingDocumentDependency<TDocumentDependency>(TDocumentDependency value)
         {
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
         }
 
-        public DocumentIRNode Execute(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        public void Execute(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             if (codeDocument == null)
             {
@@ -72,9 +72,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 throw new InvalidOperationException(Resources.FormatPhaseMustBeInitialized(nameof(Engine)));
             }
 
-            return ExecuteCore(codeDocument, irDocument);
+            ExecuteCore(codeDocument, irDocument);
         }
 
-        public abstract DocumentIRNode ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument);
+        public abstract void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument);
     }
 }

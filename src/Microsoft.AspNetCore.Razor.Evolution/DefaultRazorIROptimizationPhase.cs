@@ -5,13 +5,13 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    internal class DefaultRazorIRPhase : RazorEnginePhaseBase, IRazorIRPhase
+    internal class DefaultRazorIROptimizationPhase : RazorEnginePhaseBase, IRazorIROptimizationPhase
     {
-        public IRazorIRPass[] Passes { get; private set; }
+        public IRazorIROptimizationPass[] Passes { get; private set; }
 
         protected override void OnIntialized()
         {
-            Passes = Engine.Features.OfType<IRazorIRPass>().OrderBy(p => p.Order).ToArray();
+            Passes = Engine.Features.OfType<IRazorIROptimizationPass>().OrderBy(p => p.Order).ToArray();
         }
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             foreach (var pass in Passes)
             {
-                irDocument = pass.Execute(codeDocument, irDocument);
+                pass.Execute(codeDocument, irDocument);
             }
 
             codeDocument.SetIRDocument(irDocument);

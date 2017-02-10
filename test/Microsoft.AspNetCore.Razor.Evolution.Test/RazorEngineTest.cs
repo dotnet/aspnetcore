@@ -141,6 +141,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 feature => Assert.IsType<TagHelperBinderSyntaxTreePass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPass>(feature),
                 feature => Assert.IsType<DefaultDirectiveIRPass>(feature),
+                feature => Assert.IsType<DirectiveRemovalIROptimizationPass>(feature),
                 feature => Assert.IsType<RazorPreallocatedTagHelperAttributeOptimizationPass>(feature));
         }
 
@@ -151,7 +152,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 phase => Assert.IsType<DefaultRazorParsingPhase>(phase),
                 phase => Assert.IsType<DefaultRazorSyntaxTreePhase>(phase),
                 phase => Assert.IsType<DefaultRazorIRLoweringPhase>(phase),
-                phase => Assert.IsType<DefaultRazorIRPhase>(phase),
+                phase => Assert.IsType<DefaultRazorDocumentClassifierPhase>(phase),
+                phase => Assert.IsType<DefaultRazorDirectiveClassifierPhase>(phase),
+                phase => Assert.IsType<DefaultRazorIROptimizationPhase>(phase),
                 phase => Assert.IsType<DefaultRazorCSharpLoweringPhase>(phase));
         }
 
@@ -164,6 +167,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 feature => Assert.IsType<TagHelperBinderSyntaxTreePass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPass>(feature),
                 feature => Assert.IsType<DefaultDirectiveIRPass>(feature),
+                feature => Assert.IsType<DirectiveRemovalIROptimizationPass>(feature),
                 feature => Assert.IsType<RazorEngine.ConfigureDesignTimeOptions>(feature),
                 feature => Assert.IsType<RazorDesignTimeIRPass>(feature));
         }
@@ -175,7 +179,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 phase => Assert.IsType<DefaultRazorParsingPhase>(phase),
                 phase => Assert.IsType<DefaultRazorSyntaxTreePhase>(phase),
                 phase => Assert.IsType<DefaultRazorIRLoweringPhase>(phase),
-                phase => Assert.IsType<DefaultRazorIRPhase>(phase),
+                phase => Assert.IsType<DefaultRazorDocumentClassifierPhase>(phase),
+                phase => Assert.IsType<DefaultRazorDirectiveClassifierPhase>(phase),
+                phase => Assert.IsType<DefaultRazorIROptimizationPhase>(phase),
                 phase => Assert.IsType<DefaultRazorCSharpLoweringPhase>(phase));
         }
     }
