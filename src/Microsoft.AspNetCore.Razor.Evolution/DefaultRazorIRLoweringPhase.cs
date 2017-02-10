@@ -17,7 +17,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             ThrowForMissingDependency(syntaxTree);
 
             var builder = RazorIRBuilder.Document();
+            
             var document = (DocumentIRNode)builder.Current;
+            document.Options = syntaxTree.Options;
+
             var namespaces = new HashSet<string>();
 
             var i = 0;

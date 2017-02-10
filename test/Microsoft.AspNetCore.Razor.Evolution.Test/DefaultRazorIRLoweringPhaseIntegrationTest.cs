@@ -3,13 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Evolution.Legacy;
+using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 using Xunit;
 using static Microsoft.AspNetCore.Razor.Evolution.Intermediate.RazorIRAssert;
 
-namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
+namespace Microsoft.AspNetCore.Razor.Evolution
 {
     public class DefaultRazorIRLoweringPhaseIntegrationTest
     {
@@ -27,6 +27,20 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 n => Checksum(n),
                 n => Using("System", n),
                 n => Using("System.Threading.Tasks", n));
+        }
+
+        [Fact]
+        public void Lower_SetsOptions()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.CreateEmpty();
+
+            // Act
+            var irDocument = Lower(codeDocument);
+
+            // Assert
+            Assert.NotNull(irDocument.Options);
+            Assert.Same(codeDocument.GetSyntaxTree().Options, irDocument.Options);
         }
 
         [Fact]

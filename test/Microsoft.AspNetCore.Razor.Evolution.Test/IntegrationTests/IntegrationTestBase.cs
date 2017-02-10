@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 TestRazorSourceDocument.CreateResource(sourceFilename, encoding: null, normalizeNewLines: true), imports);
 
             // This will ensure that we're not putting any randomly generated data in a baseline.
-            codeDocument.Items[DefaultRazorRuntimeCSharpLoweringPhase.SuppressUniqueIds] = "test";
+            codeDocument.Items[DefaultRazorCSharpLoweringPhase.SuppressUniqueIds] = "test";
             return codeDocument;
         }
 

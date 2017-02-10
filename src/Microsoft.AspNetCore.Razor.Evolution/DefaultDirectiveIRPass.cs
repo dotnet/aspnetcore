@@ -14,10 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         public override DocumentIRNode ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
-            var syntaxTree = codeDocument.GetSyntaxTree();
-            ThrowForMissingDocumentDependency(syntaxTree);
-
-            var parserOptions = syntaxTree.Options;
+            var parserOptions = irDocument.Options;
 
             var designTime = parserOptions.DesignTimeMode;
             var walker = new DirectiveWalker(designTime);

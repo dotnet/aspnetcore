@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 phase => Assert.IsType<DefaultRazorSyntaxTreePhase>(phase),
                 phase => Assert.IsType<DefaultRazorIRLoweringPhase>(phase),
                 phase => Assert.IsType<DefaultRazorIRPhase>(phase),
-                phase => Assert.IsType<DefaultRazorRuntimeCSharpLoweringPhase>(phase));
+                phase => Assert.IsType<DefaultRazorCSharpLoweringPhase>(phase));
         }
 
         private static void AssertDefaultDesignTimeFeatures(IEnumerable<IRazorEngineFeature> features)
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 phase => Assert.IsType<DefaultRazorSyntaxTreePhase>(phase),
                 phase => Assert.IsType<DefaultRazorIRLoweringPhase>(phase),
                 phase => Assert.IsType<DefaultRazorIRPhase>(phase),
-                phase => Assert.IsType<DefaultRazorDesignTimeCSharpLoweringPhase>(phase));
+                phase => Assert.IsType<DefaultRazorCSharpLoweringPhase>(phase));
         }
     }
 }

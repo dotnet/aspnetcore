@@ -202,6 +202,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             return string.Format(CultureInfo.CurrentCulture, GetString("DirectiveDescriptor_BeginOptionalsAlreadyInvoked"), p0);
         }
 
+        /// <summary>
+        /// The document of kind '{0}' does not have a '{1}'. The document classifier must set a value for '{2}'.
+        /// </summary>
+        internal static string DocumentMissingTarget
+        {
+            get { return GetString("DocumentMissingTarget"); }
+        }
+
+        /// <summary>
+        /// The document of kind '{0}' does not have a '{1}'. The document classifier must set a value for '{2}'.
+        /// </summary>
+        internal static string FormatDocumentMissingTarget(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DocumentMissingTarget"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

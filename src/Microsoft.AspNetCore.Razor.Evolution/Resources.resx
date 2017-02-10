@@ -153,4 +153,7 @@
   <data name="DirectiveDescriptor_BeginOptionalsAlreadyInvoked" xml:space="preserve">
     <value>The method '{0}' has already been invoked.</value>
   </data>
+  <data name="DocumentMissingTarget" xml:space="preserve">
+    <value>The document of kind '{0}' does not have a '{1}'. The document classifier must set a value for '{2}'.</value>
+  </data>
 </root>

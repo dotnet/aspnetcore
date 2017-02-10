@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var irDocument = new DocumentIRNode()
             {
                 DocumentKind = "ignore",
+                Options = RazorParserOptions.CreateDefaultOptions(),
             };
 
             var pass = new TestDocumentClassifierPass();
@@ -35,7 +36,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void Execute_NoMatch_IgnoresDocument()
         {
             // Arrange
-            var irDocument = new DocumentIRNode();
+            var irDocument = new DocumentIRNode()
+            {
+                Options = RazorParserOptions.CreateDefaultOptions(),
+            };
 
             var pass = new TestDocumentClassifierPass()
             {
@@ -55,7 +59,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void Execute_Match_SetsDocumentType_AndCreatesStructure()
         {
             // Arrange
-            var irDocument = new DocumentIRNode();
+            var irDocument = new DocumentIRNode()
+            {
+                Options = RazorParserOptions.CreateDefaultOptions(),
+            };
 
             var pass = new TestDocumentClassifierPass();
             pass.Engine = RazorEngine.CreateEmpty(b => { });
@@ -65,6 +72,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             // Assert
             Assert.Equal("test", irDocument.DocumentKind);
+            Assert.NotNull(irDocument.Target);
 
             var @namespace = SingleChild<NamespaceDeclarationIRNode>(irDocument);
             var @class = SingleChild<ClassDeclarationIRNode>(@namespace);
@@ -76,7 +84,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void Execute_AddsCheckumFirstToDocument()
         {
             // Arrange
-            var irDocument = new DocumentIRNode();
+            var irDocument = new DocumentIRNode()
+            {
+                Options = RazorParserOptions.CreateDefaultOptions(),
+            };
 
             var builder = RazorIRBuilder.Create(irDocument);
             builder.Add(new ChecksumIRNode());
@@ -98,7 +109,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void Execute_AddsUsingsToNamespace()
         {
             // Arrange
-            var irDocument = new DocumentIRNode();
+            var irDocument = new DocumentIRNode()
+            {
+                Options = RazorParserOptions.CreateDefaultOptions(),
+            };
 
             var builder = RazorIRBuilder.Create(irDocument);
             builder.Add(new UsingStatementIRNode());
@@ -121,7 +135,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void Execute_AddsTagHelperFieldsToClass()
         {
             // Arrange
-            var irDocument = new DocumentIRNode();
+            var irDocument = new DocumentIRNode()
+            {
+                Options = RazorParserOptions.CreateDefaultOptions(),
+            };
 
             var builder = RazorIRBuilder.Create(irDocument);
             builder.Add(new DeclareTagHelperFieldsIRNode());
@@ -145,7 +162,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void Execute_AddsTheRestToMethod()
         {
             // Arrange
-            var irDocument = new DocumentIRNode();
+            var irDocument = new DocumentIRNode()
+            {
+                Options = RazorParserOptions.CreateDefaultOptions(),
+            };
 
             var builder = RazorIRBuilder.Create(irDocument);
             builder.Add(new HtmlContentIRNode());
@@ -171,7 +191,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void Execute_CanInitializeDefaults()
         {
             // Arrange
-            var irDocument = new DocumentIRNode();
+            var irDocument = new DocumentIRNode()
+            {
+                Options = RazorParserOptions.CreateDefaultOptions(),
+            };
 
             var builder = RazorIRBuilder.Create(irDocument);
             builder.Add(new HtmlContentIRNode());

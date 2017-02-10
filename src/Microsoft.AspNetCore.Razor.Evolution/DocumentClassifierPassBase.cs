@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
+using Microsoft.AspNetCore.Razor.Evolution.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
@@ -25,6 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             }
 
             irDocument.DocumentKind = DocumentKind;
+            irDocument.Target = CreateTarget(codeDocument, irDocument.Options);
 
             Rewrite(codeDocument, irDocument);
 
@@ -81,6 +83,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         }
 
         protected abstract bool IsMatch(RazorCodeDocument codeDocument, DocumentIRNode irDocument);
+
+        private RuntimeTarget CreateTarget(RazorCodeDocument codeDocument, RazorParserOptions options)
+        {
+            return RuntimeTarget.CreateDefault(codeDocument, options, (builder) => ConfigureTarget(codeDocument, builder));
+        }
+
+        protected virtual void ConfigureTarget(RazorCodeDocument codeDocument, IRuntimeTargetBuilder builder)
+        {
+            // Intentionally empty.
+        }
 
         protected virtual void OnDocumentStructureCreated(
             RazorCodeDocument codeDocument,

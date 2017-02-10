@@ -52,6 +52,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             builder.Phases.Add(new DefaultRazorSyntaxTreePhase());
             builder.Phases.Add(new DefaultRazorIRLoweringPhase());
             builder.Phases.Add(new DefaultRazorIRPhase());
+            builder.Phases.Add(new DefaultRazorCSharpLoweringPhase());
 
             // Syntax Tree passes
             builder.Features.Add(new DefaultDirectiveSyntaxTreePass());
@@ -65,15 +66,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         internal static void AddRuntimeDefaults(IRazorEngineBuilder builder)
         {
-            builder.Phases.Add(new DefaultRazorRuntimeCSharpLoweringPhase());
-
             builder.Features.Add(new RazorPreallocatedTagHelperAttributeOptimizationPass());
         }
 
         internal static void AddDesignTimeDefaults(IRazorEngineBuilder builder)
         {
-            builder.Phases.Add(new DefaultRazorDesignTimeCSharpLoweringPhase());
-
             builder.Features.Add(new ConfigureDesignTimeOptions());
             builder.Features.Add(new RazorDesignTimeIRPass());
         }

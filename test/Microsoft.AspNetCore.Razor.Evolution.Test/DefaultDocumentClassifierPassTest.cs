@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var irDocument = new DocumentIRNode()
             {
                 DocumentKind = "ignore",
+                Options = RazorParserOptions.CreateDefaultOptions(),
             };
 
             var pass = new DefaultDocumentClassifierPass();
@@ -36,7 +37,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void Execute_CreatesClassStructure()
         {
             // Arrange
-            var irDocument = new DocumentIRNode();
+            var irDocument = new DocumentIRNode()
+            {
+                Options = RazorParserOptions.CreateDefaultOptions(),
+            };
 
             var pass = new DefaultDocumentClassifierPass();
             pass.Engine = RazorEngine.CreateEmpty(b =>{ });

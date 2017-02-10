@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
+using Microsoft.AspNetCore.Razor.Evolution.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
@@ -13,9 +13,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
         public string DocumentKind { get; set; }
 
+        public RazorParserOptions Options { get; set; }
+
         public override RazorIRNode Parent { get; set; }
 
         public override SourceSpan? Source { get; set; }
+
+        public RuntimeTarget Target { get; set; }
 
         public override void Accept(RazorIRNodeVisitor visitor)
         {
