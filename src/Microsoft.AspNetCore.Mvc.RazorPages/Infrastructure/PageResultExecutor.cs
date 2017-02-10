@@ -40,8 +40,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             : base(writerFactory, compositeViewEngine, diagnosticSource)
         {
             _razorViewEngine = razorViewEngine;
-             _razorPageActivator = new PassThruRazorPageActivator(razorPageActivator);
             _htmlEncoder = htmlEncoder;
+            _razorPageActivator = new PassThruRazorPageActivator(razorPageActivator);
         }
 
         /// <summary>

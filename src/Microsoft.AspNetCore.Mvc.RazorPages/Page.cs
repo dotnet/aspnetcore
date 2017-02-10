@@ -4,14 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
@@ -28,27 +25,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         public IHtmlContent BodyContent { get; set; }
 
         /// <inheritdoc />
-        public bool IsLayoutBeingRendered { get; set; }
-
-        /// <inheritdoc />
-        public string Layout { get; set; }
-
-        /// <inheritdoc />
-        public string Path { get; set; }
-
-        /// <inheritdoc />
         public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; }
-
-        /// <inheritdoc />
-        public IDictionary<string, RenderAsyncDelegate> SectionWriters { get; }
 
         /// <summary>
         /// The <see cref="PageContext"/>.
         /// </summary>
         public PageContext PageContext { get; set; }
-
-        /// <inheritdoc />
-        public ViewContext ViewContext { get; set; }
 
         /// <summary>
         /// Gets or sets a <see cref="System.Diagnostics.DiagnosticSource"/> instance used to instrument the page execution.
@@ -61,7 +43,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// handles non-<see cref="IHtmlContent"/> C# expressions.
         /// </summary>
         [RazorInject]
-        public HtmlEncoder HtmlEncoder { get; set; }
+        public HtmlEncoder HtmlEncoder
+        {
+            get { return Encoder; }
+            set { Encoder = value; }
+        }
 
         public PageArgumentBinder Binder
         {
@@ -85,10 +71,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 _binder = value;
             }
         }
-
-        protected override HtmlEncoder Encoder => HtmlEncoder;
-
-        protected override TextWriter Writer => ViewContext.Writer;
 
         /// <inheritdoc />
         public void EnsureRenderedBodyOrSections()
@@ -131,26 +113,5 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             }
         }
 
-        public override string Href(string contentPath)
-        {
-            if (contentPath == null)
-            {
-                throw new ArgumentNullException(nameof(contentPath));
-            }
-
-            if (_urlHelper == null)
-            {
-                var services = ViewContext.HttpContext.RequestServices;
-                var factory = services.GetRequiredService<IUrlHelperFactory>();
-                _urlHelper = factory.GetUrlHelper(ViewContext);
-            }
-
-            return _urlHelper.Content(contentPath);
-        }
-
-        public override void DefineSection(string name, RenderAsyncDelegate section)
-        {
-
-        }
     }
 }

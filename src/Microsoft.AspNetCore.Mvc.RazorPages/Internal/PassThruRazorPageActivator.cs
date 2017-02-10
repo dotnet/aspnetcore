@@ -1,8 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
@@ -20,10 +22,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var razorView = (RazorView)context.View;
             if (ReferenceEquals(page, razorView.RazorPage))
             {
-                return;
-            }
+                var pageContext = (PageContext)context;
+                var vddType = typeof(ViewDataDictionary<>);
+                vddType = vddType.MakeGenericType(pageContext.ActionDescriptor.ModelTypeInfo.AsType());
 
-            _pageActivator.Activate(page, context);
+                context.ViewData = (ViewDataDictionary)Activator.CreateInstance(vddType, context.ViewData);
+            }
+            else
+            {
+                _pageActivator.Activate(page, context);
+            }
         }
     }
 }

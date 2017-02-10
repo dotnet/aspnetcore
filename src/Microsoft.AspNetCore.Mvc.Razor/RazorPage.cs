@@ -4,21 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
-using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.Razor
 {
@@ -28,34 +21,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     public abstract class RazorPage : RazorPageBase, IRazorPage
     {
         private readonly HashSet<string> _renderedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private readonly Stack<TagHelperScopeInfo> _tagHelperScopes = new Stack<TagHelperScopeInfo>();
-        private IUrlHelper _urlHelper;
-        private ITagHelperFactory _tagHelperFactory;
         private bool _renderedBody;
-        private StringWriter _valueBuffer;
-        private IViewBufferScope _bufferScope;
         private bool _ignoreBody;
         private HashSet<string> _ignoredSections;
-        private TextWriter _pageWriter;
-
-        public RazorPage()
-        {
-            SectionWriters = new Dictionary<string, RenderAsyncDelegate>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// An <see cref="HttpContext"/> representing the current request execution.
-        /// </summary>
-        public HttpContext Context => ViewContext?.HttpContext;
-
-        /// <inheritdoc />
-        public string Path { get; set; }
-
-        /// <inheritdoc />
-        public ViewContext ViewContext { get; set; }
-
-        /// <inheritdoc />
-        public string Layout { get; set; }
 
         /// <summary>
         /// Gets the <see cref="System.Text.Encodings.Web.HtmlEncoder"/> to use when this <see cref="RazorPage"/>
@@ -71,31 +39,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public DiagnosticSource DiagnosticSource { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="TextWriter"/> that the page is writing output to.
-        /// </summary>
-        public virtual TextWriter Output
-        {
-            get
-            {
-                if (ViewContext == null)
-                {
-                    var message = Resources.FormatViewContextMustBeSet("ViewContext", "Output");
-                    throw new InvalidOperationException(message);
-                }
-
-                return ViewContext.Writer;
-            }
-        }
-
-        /// <summary>
         /// Gets the <see cref="ClaimsPrincipal"/> of the current logged in user.
         /// </summary>
         public virtual ClaimsPrincipal User => Context?.User;
-
-        /// <summary>
-        /// Gets the dynamic view data dictionary.
-        /// </summary>
-        public dynamic ViewBag => ViewContext?.ViewBag;
 
         /// <summary>
         /// Gets the <see cref="ITempDataDictionary"/> from the <see cref="ViewContext"/>.
@@ -107,45 +53,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public IHtmlContent BodyContent { get; set; }
 
         /// <inheritdoc />
-        public bool IsLayoutBeingRendered { get; set; }
-
-        /// <inheritdoc />
         public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; }
 
-        /// <inheritdoc />
-        public IDictionary<string, RenderAsyncDelegate> SectionWriters { get; }
-
-        protected override TextWriter Writer => Output;
-
         protected override HtmlEncoder Encoder => HtmlEncoder;
-
-        private ITagHelperFactory TagHelperFactory
-        {
-            get
-            {
-                if (_tagHelperFactory == null)
-                {
-                    var services = ViewContext.HttpContext.RequestServices;
-                    _tagHelperFactory = services.GetRequiredService<ITagHelperFactory>();
-                }
-
-                return _tagHelperFactory;
-            }
-        }
-
-        private IViewBufferScope BufferScope
-        {
-            get
-            {
-                if (_bufferScope == null)
-                {
-                    var services = ViewContext.HttpContext.RequestServices;
-                    _bufferScope = services.GetRequiredService<IViewBufferScope>();
-                }
-
-                return _bufferScope;
-            }
-        }
 
         /// <summary>
         /// Format an error message about using an indexer when the tag helper property is <c>null</c>.
@@ -163,142 +73,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 attributeName,
                 tagHelperTypeName,
                 propertyName);
-        }
-
-        /// <summary>
-        /// Creates and activates a <see cref="ITagHelper"/>.
-        /// </summary>
-        /// <typeparam name="TTagHelper">A <see cref="ITagHelper"/> type.</typeparam>
-        /// <returns>The activated <see cref="ITagHelper"/>.</returns>
-        /// <remarks>
-        /// <typeparamref name="TTagHelper"/> must have a parameterless constructor.
-        /// </remarks>
-        public TTagHelper CreateTagHelper<TTagHelper>() where TTagHelper : ITagHelper
-        {
-            return TagHelperFactory.CreateTagHelper<TTagHelper>(ViewContext);
-        }
-
-        /// <summary>
-        /// Starts a new writing scope and optionally overrides <see cref="HtmlEncoder"/> within that scope.
-        /// </summary>
-        /// <param name="encoder">
-        /// The <see cref="System.Text.Encodings.Web.HtmlEncoder"/> to use when this <see cref="RazorPage"/> handles
-        /// non-<see cref="IHtmlContent"/> C# expressions. If <c>null</c>, does not change <see cref="HtmlEncoder"/>.
-        /// </param>
-        /// <remarks>
-        /// All writes to the <see cref="Writer"/> or <see cref="ViewContext.Writer"/> after calling this method will
-        /// be buffered until <see cref="EndTagHelperWritingScope"/> is called.
-        /// </remarks>
-        public void StartTagHelperWritingScope(HtmlEncoder encoder)
-        {
-            var buffer = new ViewBuffer(BufferScope, Path, ViewBuffer.TagHelperPageSize);
-            _tagHelperScopes.Push(new TagHelperScopeInfo(buffer, HtmlEncoder, ViewContext.Writer));
-
-            // If passed an HtmlEncoder, override the property.
-            if (encoder != null)
-            {
-                HtmlEncoder = encoder;
-            }
-
-            // We need to replace the ViewContext's Writer to ensure that all content (including content written
-            // from HTML helpers) is redirected.
-            ViewContext.Writer = new ViewBufferTextWriter(buffer, ViewContext.Writer.Encoding);
-        }
-
-        /// <summary>
-        /// Ends the current writing scope that was started by calling <see cref="StartTagHelperWritingScope"/>.
-        /// </summary>
-        /// <returns>The buffered <see cref="TagHelperContent"/>.</returns>
-        public TagHelperContent EndTagHelperWritingScope()
-        {
-            if (_tagHelperScopes.Count == 0)
-            {
-                throw new InvalidOperationException(Resources.RazorPage_ThereIsNoActiveWritingScopeToEnd);
-            }
-
-            var scopeInfo = _tagHelperScopes.Pop();
-
-            // Get the content written during the current scope.
-            var tagHelperContent = new DefaultTagHelperContent();
-            tagHelperContent.AppendHtml(scopeInfo.Buffer);
-
-            // Restore previous scope.
-            HtmlEncoder = scopeInfo.Encoder;
-            ViewContext.Writer = scopeInfo.Writer;
-
-            return tagHelperContent;
-        }
-
-        /// <summary>
-        /// Starts a new scope for writing <see cref="ITagHelper"/> attribute values.
-        /// </summary>
-        /// <remarks>
-        /// All writes to the <see cref="Writer"/> or <see cref="ViewContext.Writer"/> after calling this method will
-        /// be buffered until <see cref="EndWriteTagHelperAttribute"/> is called.
-        /// The content will be buffered using a shared <see cref="StringWriter"/> within this <see cref="RazorPage"/>
-        /// Nesting of <see cref="BeginWriteTagHelperAttribute"/> and <see cref="EndWriteTagHelperAttribute"/> method calls
-        /// is not supported.
-        /// </remarks>
-        public void BeginWriteTagHelperAttribute()
-        {
-            if (_pageWriter != null)
-            {
-                throw new InvalidOperationException(Resources.RazorPage_NestingAttributeWritingScopesNotSupported);
-            }
-
-            _pageWriter = ViewContext.Writer;
-
-            if (_valueBuffer == null)
-            {
-                _valueBuffer = new StringWriter();
-            }
-
-            // We need to replace the ViewContext's Writer to ensure that all content (including content written
-            // from HTML helpers) is redirected.
-            ViewContext.Writer = _valueBuffer;
-
-        }
-
-        /// <summary>
-        /// Ends the current writing scope that was started by calling <see cref="BeginWriteTagHelperAttribute"/>.
-        /// </summary>
-        /// <returns>The content buffered by the shared <see cref="StringWriter"/> of this <see cref="RazorPage"/>.</returns>
-        /// <remarks>
-        /// This method assumes that there will be no nesting of <see cref="BeginWriteTagHelperAttribute"/>
-        /// and <see cref="EndWriteTagHelperAttribute"/> method calls.
-        /// </remarks>
-        public string EndWriteTagHelperAttribute()
-        {
-            if (_pageWriter == null)
-            {
-                throw new InvalidOperationException(Resources.RazorPage_ThereIsNoActiveWritingScopeToEnd);
-            }
-
-            var content = _valueBuffer.ToString();
-            _valueBuffer.GetStringBuilder().Clear();
-
-            // Restore previous writer.
-            ViewContext.Writer = _pageWriter;
-            _pageWriter = null;
-
-            return content;
-        }
-
-        public override string Href(string contentPath)
-        {
-            if (contentPath == null)
-            {
-                throw new ArgumentNullException(nameof(contentPath));
-            }
-
-            if (_urlHelper == null)
-            {
-                var services = Context.RequestServices;
-                var factory = services.GetRequiredService<IUrlHelperFactory>();
-                _urlHelper = factory.GetUrlHelper(ViewContext);
-            }
-
-            return _urlHelper.Content(contentPath);
         }
 
         /// <summary>
@@ -371,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </summary>
         /// <param name="name">The name of the section to render.</param>
         /// <returns>An empty <see cref="IHtmlContent"/>.</returns>
-        /// <remarks>The method writes to the <see cref="Writer"/> and the value returned is a token
+        /// <remarks>The method writes to the <see cref="RazorPageBase.Output"/> and the value returned is a token
         /// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
         /// value does not represent the rendered content.</remarks>
         public HtmlString RenderSection(string name)
@@ -390,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <param name="name">The section to render.</param>
         /// <param name="required">Indicates if this section must be rendered.</param>
         /// <returns>An empty <see cref="IHtmlContent"/>.</returns>
-        /// <remarks>The method writes to the <see cref="Writer"/> and the value returned is a token
+        /// <remarks>The method writes to the <see cref="RazorPageBase.Output"/> and the value returned is a token
         /// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
         /// value does not represent the rendered content.</remarks>
         public HtmlString RenderSection(string name, bool required)
@@ -413,7 +187,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <returns>
         /// A <see cref="Task{HtmlString}"/> that on completion returns an empty <see cref="IHtmlContent"/>.
         /// </returns>
-        /// <remarks>The method writes to the <see cref="Writer"/> and the value returned is a token
+        /// <remarks>The method writes to the <see cref="RazorPageBase.Output"/> and the value returned is a token
         /// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
         /// value does not represent the rendered content.</remarks>
         public Task<HtmlString> RenderSectionAsync(string name)
@@ -435,7 +209,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <returns>
         /// A <see cref="Task{HtmlString}"/> that on completion returns an empty <see cref="IHtmlContent"/>.
         /// </returns>
-        /// <remarks>The method writes to the <see cref="Writer"/> and the value returned is a token
+        /// <remarks>The method writes to the <see cref="RazorPageBase.Output"/> and the value returned is a token
         /// value that allows the Write (produced due to @RenderSection(..)) to succeed. However the
         /// value does not represent the rendered content.</remarks>
         /// <exception cref="InvalidOperationException">if <paramref name="required"/> is <c>true</c> and the section
@@ -514,40 +288,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             _ignoredSections.Add(sectionName);
         }
 
-        /// <summary>
-        /// Invokes <see cref="TextWriter.FlushAsync"/> on <see cref="Writer"/> and <see cref="M:Stream.FlushAsync"/>
-        /// on the response stream, writing out any buffered content to the <see cref="HttpResponse.Body"/>.
-        /// </summary>
-        /// <returns>A <see cref="Task{HtmlString}"/> that represents the asynchronous flush operation and on
-        /// completion returns an empty <see cref="IHtmlContent"/>.</returns>
-        /// <remarks>The value returned is a token value that allows FlushAsync to work directly in an HTML
-        /// section. However the value does not represent the rendered content.
-        /// This method also writes out headers, so any modifications to headers must be done before
-        /// <see cref="FlushAsync"/> is called. For example, call <see cref="SetAntiforgeryCookieAndHeader"/> to send
-        /// antiforgery cookie token and X-Frame-Options header to client before this method flushes headers out.
-        /// </remarks>
-        public async Task<HtmlString> FlushAsync()
-        {
-            // If there are active scopes, then we should throw. Cannot flush content that has the potential to change.
-            if (_tagHelperScopes.Count > 0)
-            {
-                throw new InvalidOperationException(
-                    Resources.FormatRazorPage_CannotFlushWhileInAWritingScope(nameof(FlushAsync), Path));
-            }
-
-            // Calls to Flush are allowed if the page does not specify a Layout or if it is executing a section in the
-            // Layout.
-            if (!IsLayoutBeingRendered && !string.IsNullOrEmpty(Layout))
-            {
-                var message = Resources.FormatLayoutCannotBeRendered(Path, nameof(FlushAsync));
-                throw new InvalidOperationException(message);
-            }
-
-            await Writer.FlushAsync();
-            await Context.Response.Body.FlushAsync();
-            return HtmlString.Empty;
-        }
-
         /// <inheritdoc />
         public void EnsureRenderedBodyOrSections()
         {
@@ -619,42 +359,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
-        /// <summary>
-        /// Sets antiforgery cookie and X-Frame-Options header on the response.
-        /// </summary>
-        /// <returns>An empty <see cref="IHtmlContent"/>.</returns>
-        /// <remarks> Call this method to send antiforgery cookie token and X-Frame-Options header to client
-        /// before <see cref="FlushAsync"/> flushes the headers. </remarks>
-        public virtual HtmlString SetAntiforgeryCookieAndHeader()
-        {
-            var antiforgery = Context.RequestServices.GetRequiredService<IAntiforgery>();
-            antiforgery.SetCookieTokenAndHeader(Context);
-
-            return HtmlString.Empty;
-        }
-
         private void EnsureMethodCanBeInvoked(string methodName)
         {
             if (PreviousSectionWriters == null)
             {
                 throw new InvalidOperationException(Resources.FormatRazorPage_MethodCannotBeCalled(methodName, Path));
             }
-        }
-
-        private struct TagHelperScopeInfo
-        {
-            public TagHelperScopeInfo(ViewBuffer buffer, HtmlEncoder encoder, TextWriter writer)
-            {
-                Buffer = buffer;
-                Encoder = encoder;
-                Writer = writer;
-            }
-
-            public ViewBuffer Buffer { get; }
-
-            public HtmlEncoder Encoder { get; }
-
-            public TextWriter Writer { get; }
         }
     }
 }

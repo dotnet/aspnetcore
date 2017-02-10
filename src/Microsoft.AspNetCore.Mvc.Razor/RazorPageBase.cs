@@ -2,14 +2,20 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.Razor
 {
@@ -18,26 +24,245 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     /// </summary>
     public abstract class RazorPageBase
     {
+        private StringWriter _valueBuffer;
+        private ITagHelperFactory _tagHelperFactory;
+        private IViewBufferScope _bufferScope;
+        private TextWriter _pageWriter;
         private AttributeInfo _attributeInfo;
         private TagHelperAttributeInfo _tagHelperAttributeInfo;
-        private StringWriter _valueBuffer;
+        private IUrlHelper _urlHelper;
+
+        public ViewContext ViewContext { get; set; }
+
+        public string Layout { get; set; }
+
+        /// <summary>
+        /// An <see cref="HttpContext"/> representing the current request execution.
+        /// </summary>
+        public HttpContext Context => ViewContext?.HttpContext;
 
         /// <summary>
         /// Gets the <see cref="TextWriter"/> that the page is writing output to.
         /// </summary>
-        protected abstract TextWriter Writer { get; }
+        /// <summary>
+        /// Gets the <see cref="TextWriter"/> that the page is writing output to.
+        /// </summary>
+        public virtual TextWriter Output
+        {
+            get
+            {
+                if (ViewContext == null)
+                {
+                    var message = Resources.FormatViewContextMustBeSet("ViewContext", "Output");
+                    throw new InvalidOperationException(message);
+                }
 
-        protected abstract HtmlEncoder Encoder { get; }
+                return ViewContext.Writer;
+            }
+        }
+
+        /// <inheritdoc />
+        public string Path { get; set; }
+
+        /// <inheritdoc />
+        public IDictionary<string, RenderAsyncDelegate> SectionWriters { get; } =
+            new Dictionary<string, RenderAsyncDelegate>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Gets the dynamic view data dictionary.
+        /// </summary>
+        public dynamic ViewBag => ViewContext?.ViewBag;
+
+        public bool IsLayoutBeingRendered { get; set; }
+
+        protected virtual HtmlEncoder Encoder { get; set; }
+
+        protected Stack<TagHelperScopeInfo> TagHelperScopes { get; } = new Stack<TagHelperScopeInfo>();
+
+        private ITagHelperFactory TagHelperFactory
+        {
+            get
+            {
+                if (_tagHelperFactory == null)
+                {
+                    var services = ViewContext.HttpContext.RequestServices;
+                    _tagHelperFactory = services.GetRequiredService<ITagHelperFactory>();
+                }
+
+                return _tagHelperFactory;
+            }
+        }
+
+        private IViewBufferScope BufferScope
+        {
+            get
+            {
+                if (_bufferScope == null)
+                {
+                    var services = ViewContext.HttpContext.RequestServices;
+                    _bufferScope = services.GetRequiredService<IViewBufferScope>();
+                }
+
+                return _bufferScope;
+            }
+        }
 
         public abstract Task ExecuteAsync();
 
         /// <summary>
-        /// Writes the specified <paramref name="value"/> with HTML encoding to <see cref="Writer"/>.
+        /// Creates and activates a <see cref="ITagHelper"/>.
+        /// </summary>
+        /// <typeparam name="TTagHelper">A <see cref="ITagHelper"/> type.</typeparam>
+        /// <returns>The activated <see cref="ITagHelper"/>.</returns>
+        /// <remarks>
+        /// <typeparamref name="TTagHelper"/> must have a parameterless constructor.
+        /// </remarks>
+        public TTagHelper CreateTagHelper<TTagHelper>() where TTagHelper : ITagHelper
+        {
+            return TagHelperFactory.CreateTagHelper<TTagHelper>(ViewContext);
+        }
+
+        /// <summary>
+        /// Starts a new writing scope and optionally overrides <see cref="HtmlEncoder"/> within that scope.
+        /// </summary>
+        /// <param name="encoder">
+        /// The <see cref="System.Text.Encodings.Web.HtmlEncoder"/> to use when this <see cref="RazorPage"/> handles
+        /// non-<see cref="IHtmlContent"/> C# expressions. If <c>null</c>, does not change <see cref="HtmlEncoder"/>.
+        /// </param>
+        /// <remarks>
+        /// All writes to the <see cref="Output"/> or <see cref="ViewContext.Writer"/> after calling this method will
+        /// be buffered until <see cref="EndTagHelperWritingScope"/> is called.
+        /// </remarks>
+        public void StartTagHelperWritingScope(HtmlEncoder encoder)
+        {
+            var buffer = new ViewBuffer(BufferScope, Path, ViewBuffer.TagHelperPageSize);
+            TagHelperScopes.Push(new TagHelperScopeInfo(buffer, Encoder, ViewContext.Writer));
+
+            // If passed an HtmlEncoder, override the property.
+            if (encoder != null)
+            {
+                Encoder = encoder;
+            }
+
+            // We need to replace the ViewContext's Writer to ensure that all content (including content written
+            // from HTML helpers) is redirected.
+            ViewContext.Writer = new ViewBufferTextWriter(buffer, ViewContext.Writer.Encoding);
+        }
+
+        /// <summary>
+        /// Ends the current writing scope that was started by calling <see cref="StartTagHelperWritingScope"/>.
+        /// </summary>
+        /// <returns>The buffered <see cref="TagHelperContent"/>.</returns>
+        public TagHelperContent EndTagHelperWritingScope()
+        {
+            var scopeInfo = TagHelperScopes.Pop();
+
+            // Get the content written during the current scope.
+            var tagHelperContent = new DefaultTagHelperContent();
+            tagHelperContent.AppendHtml(scopeInfo.Buffer);
+
+            // Restore previous scope.
+            Encoder = scopeInfo.Encoder;
+            ViewContext.Writer = scopeInfo.Writer;
+
+            return tagHelperContent;
+        }
+
+        /// <summary>
+        /// Starts a new scope for writing <see cref="ITagHelper"/> attribute values.
+        /// </summary>
+        /// <remarks>
+        /// All writes to the <see cref="Output"/> or <see cref="ViewContext.Writer"/> after calling this method will
+        /// be buffered until <see cref="EndWriteTagHelperAttribute"/> is called.
+        /// The content will be buffered using a shared <see cref="StringWriter"/> within this <see cref="RazorPage"/>
+        /// Nesting of <see cref="BeginWriteTagHelperAttribute"/> and <see cref="EndWriteTagHelperAttribute"/> method calls
+        /// is not supported.
+        /// </remarks>
+        public void BeginWriteTagHelperAttribute()
+        {
+            _pageWriter = ViewContext.Writer;
+
+            if (_valueBuffer == null)
+            {
+                _valueBuffer = new StringWriter();
+            }
+
+            // We need to replace the ViewContext's Writer to ensure that all content (including content written
+            // from HTML helpers) is redirected.
+            ViewContext.Writer = _valueBuffer;
+
+        }
+
+        /// <summary>
+        /// Ends the current writing scope that was started by calling <see cref="BeginWriteTagHelperAttribute"/>.
+        /// </summary>
+        /// <returns>The content buffered by the shared <see cref="StringWriter"/> of this <see cref="RazorPage"/>.</returns>
+        /// <remarks>
+        /// This method assumes that there will be no nesting of <see cref="BeginWriteTagHelperAttribute"/>
+        /// and <see cref="EndWriteTagHelperAttribute"/> method calls.
+        /// </remarks>
+        public string EndWriteTagHelperAttribute()
+        {
+            var content = _valueBuffer.ToString();
+            _valueBuffer.GetStringBuilder().Clear();
+
+            // Restore previous writer.
+            ViewContext.Writer = _pageWriter;
+            _pageWriter = null;
+
+            return content;
+        }
+
+        public virtual string Href(string contentPath)
+        {
+            if (contentPath == null)
+            {
+                throw new ArgumentNullException(nameof(contentPath));
+            }
+
+            if (_urlHelper == null)
+            {
+                var services = Context.RequestServices;
+                var factory = services.GetRequiredService<IUrlHelperFactory>();
+                _urlHelper = factory.GetUrlHelper(ViewContext);
+            }
+
+            return _urlHelper.Content(contentPath);
+        }
+
+        /// <summary>
+        /// Creates a named content section in the page that can be invoked in a Layout page using
+        /// <c>RenderSection</c> or <c>RenderSectionAsync</c>
+        /// </summary>
+        /// <param name="name">The name of the section to create.</param>
+        /// <param name="section">The <see cref="RenderAsyncDelegate"/> to execute when rendering the section.</param>
+        public virtual void DefineSection(string name, RenderAsyncDelegate section)
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (section == null)
+            {
+                throw new ArgumentNullException(nameof(section));
+            }
+
+            if (SectionWriters.ContainsKey(name))
+            {
+                throw new InvalidOperationException(Resources.FormatSectionAlreadyDefined(name));
+            }
+            SectionWriters[name] = section;
+        }
+
+
+        /// <summary>
+        /// Writes the specified <paramref name="value"/> with HTML encoding to <see cref="Output"/>.
         /// </summary>
         /// <param name="value">The <see cref="object"/> to write.</param>
         public virtual void Write(object value)
         {
-            WriteTo(Writer, value);
+            WriteTo(Output, value);
         }
 
         /// <summary>
@@ -149,12 +374,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <summary>
-        /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Writer"/>.
+        /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Output"/>.
         /// </summary>
         /// <param name="value">The <see cref="object"/> to write.</param>
         public virtual void WriteLiteral(object value)
         {
-            WriteLiteralTo(Writer, value);
+            WriteLiteralTo(Output, value);
         }
 
         /// <summary>
@@ -176,7 +401,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <summary>
-        /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Writer"/>.
+        /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Output"/>.
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
         /// <param name="value">The <see cref="string"/> to write.</param>
@@ -201,7 +426,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             int suffixOffset,
             int attributeValuesCount)
         {
-            BeginWriteAttributeTo(Writer, name, prefix, prefixOffset, suffix, suffixOffset, attributeValuesCount);
+            BeginWriteAttributeTo(Output, name, prefix, prefixOffset, suffix, suffixOffset, attributeValuesCount);
         }
 
         public virtual void BeginWriteAttributeTo(
@@ -246,7 +471,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             int valueLength,
             bool isLiteral)
         {
-            WriteAttributeValueTo(Writer, prefix, prefixOffset, value, valueOffset, valueLength, isLiteral);
+            WriteAttributeValueTo(Output, prefix, prefixOffset, value, valueOffset, valueLength, isLiteral);
         }
 
         public void WriteAttributeValueTo(
@@ -297,7 +522,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         public virtual void EndWriteAttribute()
         {
-            EndWriteAttributeTo(Writer);
+            EndWriteAttributeTo(Output);
         }
 
         public virtual void EndWriteAttributeTo(TextWriter writer)
@@ -392,7 +617,54 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
-        public abstract string Href(string contentPath);
+        /// <summary>
+        /// Invokes <see cref="TextWriter.FlushAsync"/> on <see cref="Output"/> and <see cref="m:Stream.FlushAsync"/>
+        /// on the response stream, writing out any buffered content to the <see cref="HttpResponse.Body"/>.
+        /// </summary>
+        /// <returns>A <see cref="Task{HtmlString}"/> that represents the asynchronous flush operation and on
+        /// completion returns an empty <see cref="IHtmlContent"/>.</returns>
+        /// <remarks>The value returned is a token value that allows FlushAsync to work directly in an HTML
+        /// section. However the value does not represent the rendered content.
+        /// This method also writes out headers, so any modifications to headers must be done before
+        /// <see cref="FlushAsync"/> is called. For example, call <see cref="SetAntiforgeryCookieAndHeader"/> to send
+        /// antiforgery cookie token and X-Frame-Options header to client before this method flushes headers out.
+        /// </remarks>
+
+        public virtual async Task<HtmlString> FlushAsync()
+        {
+            // If there are active scopes, then we should throw. Cannot flush content that has the potential to change.
+            if (TagHelperScopes.Count > 0)
+            {
+                throw new InvalidOperationException(
+                    "Resources.FormatRazorPage_CannotFlushWhileInAWritingScope(nameof(FlushAsync), Path))");
+            }
+
+            // Calls to Flush are allowed if the page does not specify a Layout or if it is executing a section in the
+            // Layout.
+            if (!IsLayoutBeingRendered && !string.IsNullOrEmpty(Layout))
+            {
+                var message = Resources.FormatLayoutCannotBeRendered(Path, nameof(FlushAsync));
+                throw new InvalidOperationException(message);
+            }
+
+            await Output.FlushAsync();
+            await Context.Response.Body.FlushAsync();
+            return HtmlString.Empty;
+        }
+
+        /// <summary>
+        /// Sets antiforgery cookie and X-Frame-Options header on the response.
+        /// </summary>
+        /// <returns>An empty <see cref="IHtmlContent"/>.</returns>
+        /// <remarks> Call this method to send antiforgery cookie token and X-Frame-Options header to client
+        /// before <see cref="RazorPageBase.FlushAsync"/> flushes the headers. </remarks>
+        public virtual HtmlString SetAntiforgeryCookieAndHeader()
+        {
+            var antiforgery = Context.RequestServices.GetRequiredService<IAntiforgery>();
+            antiforgery.SetCookieTokenAndHeader(Context);
+
+            return HtmlString.Empty;
+        }
 
         private void WriteUnprefixedAttributeValueTo(TextWriter writer, object value, bool isLiteral)
         {
@@ -423,13 +695,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             WriteLiteralTo(writer, value);
             EndContext();
         }
-
-        /// <summary>
-        /// Creates a named content section in the page.
-        /// </summary>
-        /// <param name="name">The name of the section to create.</param>
-        /// <param name="section">The <see cref="RenderAsyncDelegate"/> to execute when rendering the section.</param>
-        public abstract void DefineSection(string name, RenderAsyncDelegate section);
 
         public abstract void BeginContext(int position, int length, bool isLiteral);
 
@@ -509,6 +774,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             public HtmlAttributeValueStyle AttributeValueStyle { get; }
 
             public bool Suppressed { get; set; }
+        }
+
+        protected struct TagHelperScopeInfo
+        {
+            public TagHelperScopeInfo(ViewBuffer buffer, HtmlEncoder encoder, TextWriter writer)
+            {
+                Buffer = buffer;
+                Encoder = encoder;
+                Writer = writer;
+            }
+
+            public ViewBuffer Buffer { get; }
+
+            public HtmlEncoder Encoder { get; }
+
+            public TextWriter Writer { get; }
         }
     }
 }
