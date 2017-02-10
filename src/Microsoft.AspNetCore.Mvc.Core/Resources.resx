@@ -391,4 +391,10 @@
     <value>'{0}' and '{1}' are out of bounds for the string.</value>
     <comment>'{0}' and '{1}' are the parameters which combine to be out of bounds.</comment>
   </data>
+  <data name="ComplexTypeModelBinder_NoParameterlessConstructor_TopLevelObject" xml:space="preserve">
+    <value>Could not create an instance of type '{0}'. Model bound complex types must not be abstract or value types and must have a parameterless constructor.</value>
+  </data>
+  <data name="ComplexTypeModelBinder_NoParameterlessConstructor_ForProperty" xml:space="preserve">
+    <value>Could not create an instance of type '{0}'. Model bound complex types must not be abstract or value types and must have a parameterless constructor. Alternatively, set the '{1}' property to a non-null value in the '{2}' constructor.</value>
+  </data>
 </root>

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
@@ -45,6 +46,28 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             if (!CanCreateModel(bindingContext))
             {
                 return TaskCache.CompletedTask;
+            }
+
+            // The following check causes the ComplexTypeModelBinder to NOT participate in binding structs as 
+            // reflection does not provide information about the implicit parameterless constructor for a struct.
+            // This binder would eventually fail to construct an instance of the struct as the Linq's NewExpression
+            // compile fails to construct it.
+            var modelTypeInfo = bindingContext.ModelType.GetTypeInfo();
+            if (bindingContext.Model == null &&
+                (modelTypeInfo.IsAbstract ||
+                modelTypeInfo.GetConstructor(Type.EmptyTypes) == null))
+            {
+                if (bindingContext.IsTopLevelObject)
+                {
+                    throw new InvalidOperationException(
+                        Resources.FormatComplexTypeModelBinder_NoParameterlessConstructor_TopLevelObject(modelTypeInfo.FullName));
+                }
+
+                throw new InvalidOperationException(
+                    Resources.FormatComplexTypeModelBinder_NoParameterlessConstructor_ForProperty(
+                        modelTypeInfo.FullName,
+                        bindingContext.ModelName,
+                        bindingContext.ModelMetadata.ContainerType.FullName));
             }
 
             // Perf: separated to avoid allocating a state machine when we don't

@@ -1091,6 +1091,57 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(modelStateEntry.RawValue);
         }
 
+        private class AddressWithNoParameterlessConstructor
+        {
+            private readonly int _id;
+            public AddressWithNoParameterlessConstructor(int id)
+            {
+                _id = id;
+            }
+            public string Street { get; set; }
+            public string City { get; set; }
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_ExistingModelWithNoParameterlessConstructor_OverwritesBoundValues()
+        {
+            // Arrange
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("Street", "SomeStreet");
+            });
+
+            var modelState = testContext.ModelState;
+            var model = new AddressWithNoParameterlessConstructor(10)
+            {
+                Street = "DefaultStreet",
+                City = "Toronto",
+            };
+            var oldModel = model;
+
+            // Act
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
+
+            // Assert
+            Assert.True(result);
+
+            // Model
+            Assert.Same(oldModel, model);
+            Assert.Equal("SomeStreet", model.Street);
+            Assert.Equal("Toronto", model.City);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState);
+            Assert.Equal("Street", entry.Key);
+            var state = entry.Value;
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+        }
+
         private void UpdateRequest(HttpRequest request, string data, string name)
         {
             const string fileName = "text.txt";

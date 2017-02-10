@@ -37,6 +37,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
                 while (true)
                 {
+                    if (expression1 == null && expression2 == null)
+                    {
+                        return true;
+                    }
+
                     if (expression1 == null || expression2 == null)
                     {
                         return false;
@@ -47,31 +52,41 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                         return false;
                     }
 
-                    if (expression1.NodeType == ExpressionType.MemberAccess)
+                    switch (expression1.NodeType)
                     {
-                        var memberExpression1 = (MemberExpression)expression1;
-                        var memberName1 = memberExpression1.Member.Name;
-                        expression1 = memberExpression1.Expression;
+                        case ExpressionType.MemberAccess:
+                            var memberExpression1 = (MemberExpression)expression1;
+                            var memberName1 = memberExpression1.Member.Name;
+                            expression1 = memberExpression1.Expression;
 
-                        var memberExpression2 = (MemberExpression)expression2;
-                        var memberName2 = memberExpression2.Member.Name;
-                        expression2 = memberExpression2.Expression;
+                            var memberExpression2 = (MemberExpression)expression2;
+                            var memberName2 = memberExpression2.Member.Name;
+                            expression2 = memberExpression2.Expression;
 
-                        // If identifier contains "__", it is "reserved for use by the implementation" and likely compiler-
-                        // or Razor-generated e.g. the name of a field in a delegate's generated class.
-                        if (memberName1.Contains("__") && memberName2.Contains("__"))
-                        {
-                            return true;
-                        }
+                            // If identifier contains "__", it is "reserved for use by the implementation" and likely
+                            // compiler- or Razor-generated e.g. the name of a field in a delegate's generated class.
+                            if (memberName1.Contains("__") && memberName2.Contains("__"))
+                            {
+                                return true;
+                            }
 
-                        if (!string.Equals(memberName1, memberName2, StringComparison.OrdinalIgnoreCase))
-                        {
+                            if (!string.Equals(memberName1, memberName2, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return false;
+                            }
+                            break;
+
+                        case ExpressionType.ArrayIndex:
+                            // Shouldn't be cached. Just in case, ensure indexers are all different.
                             return false;
-                        }
-                    }
-                    else
-                    {
-                        return true;
+
+                        case ExpressionType.Call:
+                            // Shouldn't be cached. Just in case, ensure indexers and other calls are all different.
+                            return false;
+
+                        default:
+                            // Everything else terminates name generation. Haven't found a difference so far...
+                            return true;
                     }
                 }
             }

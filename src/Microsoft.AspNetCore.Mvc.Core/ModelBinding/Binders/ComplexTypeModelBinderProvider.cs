@@ -20,9 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.Metadata.IsComplexType &&
-                !context.Metadata.IsCollectionType &&
-                HasDefaultConstructor(context.Metadata.ModelType.GetTypeInfo()))
+            if (context.Metadata.IsComplexType && !context.Metadata.IsCollectionType)
             {
                 var propertyBinders = new Dictionary<ModelMetadata, IModelBinder>();
                 for (var i = 0; i < context.Metadata.Properties.Count; i++)
@@ -35,15 +33,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
 
             return null;
-        }
-
-        private bool HasDefaultConstructor(TypeInfo modelTypeInfo)
-        {
-            // The following check causes the ComplexTypeModelBinder to NOT participate in binding structs.
-            // - Reflection does not provide information about the implicit parameterless constructor for a struct.
-            // - Also this binder would eventually fail to construct an instance of the struct as the Linq's
-            //   NewExpression compile fails to construct it.
-            return !modelTypeInfo.IsAbstract && modelTypeInfo.GetConstructor(Type.EmptyTypes) != null;
         }
     }
 }

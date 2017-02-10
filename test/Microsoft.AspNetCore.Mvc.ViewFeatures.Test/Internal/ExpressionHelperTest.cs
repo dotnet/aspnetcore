@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using Xunit;
 
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
     {
         private readonly ExpressionTextCache _expressionTextCache = new ExpressionTextCache();
 
-        public static IEnumerable<object[]> ExpressionAndTexts
+        public static TheoryData<Expression, string> ExpressionAndTexts
         {
             get
             {
@@ -80,11 +81,35 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                         (Expression<Func<IList<TestModel>, int>>)(model => model[2].PreferredCategories[i].CategoryId),
                         "[2].PreferredCategories[3].CategoryId"
                     },
+                    {
+                        (Expression<Func<IList<TestModel>, string>>)(model => model.FirstOrDefault().Name),
+                        "Name"
+                    },
+                    {
+                        (Expression<Func<IList<TestModel>, string>>)(model => model.FirstOrDefault().Model),
+                        "Model"
+                    },
+                    {
+                        (Expression<Func<IList<TestModel>, int>>)(model => model.FirstOrDefault().SelectedCategory.CategoryId),
+                        "SelectedCategory.CategoryId"
+                    },
+                    {
+                        (Expression<Func<IList<TestModel>, string>>)(model => model.FirstOrDefault().SelectedCategory.CategoryName.MainCategory),
+                        "SelectedCategory.CategoryName.MainCategory"
+                    },
+                    {
+                        (Expression<Func<IList<TestModel>, int>>)(model => model.FirstOrDefault().PreferredCategories.Count),
+                        "PreferredCategories.Count"
+                    },
+                    {
+                        (Expression<Func<IList<TestModel>, int>>)(model => model.FirstOrDefault().PreferredCategories.FirstOrDefault().CategoryId),
+                        "CategoryId"
+                    },
                 };
             }
         }
 
-        public static IEnumerable<object[]> CachedExpressions
+        public static TheoryData<Expression> CachedExpressions
         {
             get
             {
@@ -104,7 +129,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
         }
 
-        public static IEnumerable<object[]> IndexerExpressions
+        public static TheoryData<Expression> IndexerExpressions
         {
             get
             {
@@ -123,7 +148,29 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
         }
 
-        public static IEnumerable<object[]> EquivalentExpressions
+        public static TheoryData<Expression> UnsupportedExpressions
+        {
+            get
+            {
+                var i = 2;
+                var j = 3;
+
+                return new TheoryData<Expression>
+                {
+                    // Indexers that have multiple arguments.
+                    (Expression<Func<TestModel[][], string>>)(model => model[23][3].Name),
+                    (Expression<Func<TestModel[][], string>>)(model => model[i][3].Name),
+                    (Expression<Func<TestModel[][], string>>)(model => model[23][j].Name),
+                    (Expression<Func<TestModel[][], string>>)(model => model[i][j].Name),
+                    // Calls that aren't indexers.
+                    (Expression<Func<IList<TestModel>, string>>)(model => model.FirstOrDefault().Name),
+                    (Expression<Func<IList<TestModel>, string>>)(model => model.FirstOrDefault().SelectedCategory.CategoryName.MainCategory),
+                    (Expression<Func<IList<TestModel>, int>>)(model => model.FirstOrDefault().PreferredCategories.FirstOrDefault().CategoryId),
+                };
+            }
+        }
+
+        public static TheoryData<Expression, Expression> EquivalentExpressions
         {
             get
             {
@@ -167,7 +214,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
         }
 
-        public static IEnumerable<object[]> NonEquivalentExpressions
+        public static TheoryData<Expression, Expression> NonEquivalentExpressions
         {
             get
             {
@@ -253,7 +300,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         [Theory]
         [MemberData(nameof(IndexerExpressions))]
-        public void GetExpressionText_DoesNotCacheIndexerExpression(LambdaExpression expression)
+        [MemberData(nameof(UnsupportedExpressions))]
+        public void GetExpressionText_DoesNotCacheIndexerOrUnspportedExpression(LambdaExpression expression)
         {
             // Act - 1
             var text1 = ExpressionHelper.GetExpressionText(expression, _expressionTextCache);
