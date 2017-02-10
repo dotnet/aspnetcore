@@ -30,9 +30,9 @@ namespace ClientSample
             {
                 logger.LogInformation("Connecting to {0}", baseUrl);
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                using (var connection = await HubConnection.ConnectAsync(new Uri(baseUrl),
-                    new JsonNetInvocationAdapter(), transport, httpClient, loggerFactory))
+                using (var connection = new HubConnection(new Uri(baseUrl), new JsonNetInvocationAdapter(), loggerFactory))
                 {
+                    await connection.StartAsync(transport, httpClient);
                     logger.LogInformation("Connected to {0}", baseUrl);
 
                     var cts = new CancellationTokenSource();

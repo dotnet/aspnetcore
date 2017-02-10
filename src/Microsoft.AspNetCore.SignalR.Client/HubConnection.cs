@@ -33,15 +33,52 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private int _nextId = 0;
 
-        private HubConnection(Connection connection, IInvocationAdapter adapter, ILogger logger)
+        public event Action Connected
         {
-            _binder = new HubBinder(this);
-            _connection = connection;
-            _adapter = adapter;
-            _logger = logger;
+            add { _connection.Connected += value; }
+            remove { _connection.Connected -= value; }
+        }
 
-            // TODO HIGH: Need to subscribe to events before starting connection. Requires converting HubConnection
+        public event Action<Exception> Closed
+        {
+            add { _connection.Closed += value; }
+            remove { _connection.Closed -= value; }
+        }
+
+        public HubConnection(Uri url, IInvocationAdapter adapter, ILoggerFactory loggerFactory)
+        {
+            // TODO: loggerFactory shouldn't be required
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            _binder = new HubBinder(this);
+            _connection = new Connection(url, loggerFactory);
+            _adapter = adapter;
+            _logger = loggerFactory.CreateLogger<HubConnection>();
+
             _connection.Received += OnDataReceived;
+            _connection.Closed += Shutdown;
+        }
+
+        public Task StartAsync() => StartAsync(null, null);
+        public Task StartAsync(HttpClient httpClient) => StartAsync(null, httpClient);
+        public Task StartAsync(ITransport transport) => StartAsync(transport, null);
+
+        public async Task StartAsync(ITransport transport, HttpClient httpClient)
+        {
+            await _connection.StartAsync(transport, httpClient);
+        }
+
+        public async Task StopAsync()
+        {
+            await _connection.StopAsync();
+        }
+
+        public void Dispose()
+        {
+            _connection.Dispose();
         }
 
         // TODO: Client return values/tasks?
@@ -59,7 +96,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public Task<object> Invoke(string methodName, Type returnType, params object[] args) => Invoke(methodName, returnType, CancellationToken.None, args);
         public async Task<object> Invoke(string methodName, Type returnType, CancellationToken cancellationToken, params object[] args)
         {
-            // TODO: we should reject calls to here after the connection is "done" (e.g. sending an invocation failed)
+            // TODO: we should reject calls to here after the connection is "done" or has not been started (e.g. sending an invocation failed)
 
             _logger.LogTrace("Preparing invocation of '{0}', with return type '{1}' and {2} args", methodName, returnType.AssemblyQualifiedName, args.Length);
 
@@ -97,31 +134,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _logger.LogInformation("Sending Invocation #{0}", descriptor.Id);
 
             // TODO: Format.Text - who, where and when decides about the format of outgoing messages
+            // TODO HIGH: Handle return value/Exception from SendAsync
             await _connection.SendAsync(ms.ToArray(), MessageType.Text, cancellationToken);
-
             _logger.LogInformation("Sending Invocation #{0} complete", descriptor.Id);
 
             // Return the completion task. It will be completed by ReceiveMessages when the response is received.
             return await irq.Completion.Task;
-        }
-
-        // TODO HIGH - need StopAsync
-
-        public void Dispose()
-        {
-            _connection.Dispose();
-        }
-
-        // TODO: Clean up the API here. Negotiation of format would be better than providing an adapter instance. Similarly, we should not require a logger factory
-        public static Task<HubConnection> ConnectAsync(Uri url, IInvocationAdapter adapter, ITransport transport, ILoggerFactory loggerFactory) => ConnectAsync(url, adapter, transport, new HttpClient(), loggerFactory);
-
-        public static async Task<HubConnection> ConnectAsync(Uri url, IInvocationAdapter adapter, ITransport transport, HttpClient httpClient, ILoggerFactory loggerFactory)
-        {
-            // Connect the underlying connection
-            var connection = new Connection(url, loggerFactory);
-            await connection.StartAsync(transport, httpClient);
-
-            return new HubConnection(connection, adapter, loggerFactory.CreateLogger<HubConnection>());
         }
 
         private async void OnDataReceived(byte[] data, MessageType messageType)
@@ -147,7 +165,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        // TODO HIGH!
         private void Shutdown(Exception ex = null)
         {
             _logger.LogTrace("Shutting down connection");

@@ -42,10 +42,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger = _loggerFactory.CreateLogger<Connection>();
         }
 
-        public Task StartAsync() => StartAsync(null, null);
-        public Task StartAsync(HttpClient httpClient) => StartAsync(null, httpClient);
+        public Task StartAsync() => StartAsync(transport: null, httpClient: null);
+        public Task StartAsync(HttpClient httpClient) => StartAsync(transport: null, httpClient: httpClient);
         public Task StartAsync(ITransport transport) => StartAsync(transport, null);
 
+        // TODO HIGH: Fix a race when the connection is being stopped/disposed when start has not finished running
         public async Task StartAsync(ITransport transport, HttpClient httpClient)
         {
             // TODO: make transport optional
@@ -124,8 +125,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
             var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
 
             _transportChannel = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            Input.Completion.ContinueWith(t =>
+
+            var ignore = Input.Completion.ContinueWith(t =>
             {
                 Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected);
 
@@ -136,7 +137,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     closedEventHandler(t.IsFaulted ? t.Exception.InnerException : null);
                 }
             });
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
             // Start the transport, giving it one end of the pipeline
             try
@@ -162,6 +162,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     {
                         using (message)
                         {
+                            // Do not "simplify" - events can be removed from a different thread
                             var receivedEventHandler = Received;
                             if (receivedEventHandler != null)
                             {
