@@ -25,6 +25,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
         private readonly ITagHelperResolver _tagHelperResolver;
         private readonly IServiceProvider _services;
         private readonly Workspace _workspace;
+        private readonly Action<Exception> _errorHandler;
 
         private DocumentViewModel _currentDocument;
         private DocumentInfoViewModel _currentDocumentInfo;
@@ -40,7 +41,8 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
             IRazorEngineAssemblyResolver assemblyResolver,
             IRazorEngineDirectiveResolver directiveResolver,
             ITagHelperResolver tagHelperResolver,
-            IRazorEngineDocumentGenerator documentGenerator)
+            IRazorEngineDocumentGenerator documentGenerator,
+            Action<Exception> errorHandler)
         {
             _services = services;
             _workspace = workspace;
@@ -48,6 +50,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
             _directiveResolver = directiveResolver;
             _tagHelperResolver = tagHelperResolver;
             _documentGenerator = documentGenerator;
+            _errorHandler = errorHandler;
 
             GenerateCommand = new RelayCommand<object>(ExecuteGenerate, CanExecuteGenerate);
             LoadCommand = new RelayCommand<object>(ExecuteLoad, CanExecuteLoad);
@@ -180,7 +183,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                _errorHandler.Invoke(ex);
             }
 
             IsLoading = false;
