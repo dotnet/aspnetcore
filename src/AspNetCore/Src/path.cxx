@@ -348,7 +348,7 @@ PATH::IsPathUnc(
 )
 {
     HRESULT hr = S_OK;
-    STACK_STRU( strTempPath, MAX_PATH );
+    STRU strTempPath;
 
     if ( pszPath == NULL || pfIsUnc == NULL )
     {

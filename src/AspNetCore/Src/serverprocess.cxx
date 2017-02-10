@@ -118,6 +118,7 @@ SERVER_PROCESS::StartProcess(
     LPCWSTR                 pszRootApplicationPath = NULL;
     BOOL                    fDebuggerAttachedToChildProcess = FALSE;
     STRU                    strFullProcessPath;
+    STRU                    struRelativePath;
     STRU                    struApplicationId;
     RPC_STATUS              rpcStatus;
     UUID                    logUuid;
@@ -131,9 +132,10 @@ SERVER_PROCESS::StartProcess(
     //
     DWORD                   dwActualProcessId = 0;
     WCHAR*                  pszPath = NULL;
-    WCHAR                   pszFullPath[_MAX_PATH];
+    WCHAR*                  pszFullPath = NULL;
     LPCWSTR                 apsz[1];
     PCWSTR                  pszAppPath = NULL;
+    DWORD                   dwBufferSize = 0;
 
     GetStartupInfoW(&startupInfo);
 
@@ -299,21 +301,24 @@ SERVER_PROCESS::StartProcess(
     if ((wcsstr(pszPath, L":") == NULL) && (wcsstr(pszPath, L"%") == NULL))
     {
         // let's check whether it is a relative path
-        WCHAR pszRelativePath[_MAX_PATH];
-
-        if (swprintf_s(pszRelativePath,
-            _MAX_PATH,
-            L"%s\\%s",
-            pszRootApplicationPath,
-            pszPath) == -1)
+        if (FAILED(hr = struRelativePath.Copy(pszRootApplicationPath)) ||
+            FAILED(hr = struRelativePath.Append(L"\\")) ||
+            FAILED(hr = struRelativePath.Append(pszPath)))
         {
-            hr = HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER);
+            goto Finished;
+        }
+
+        dwBufferSize = struRelativePath.QueryCCH() + 1;
+        pszFullPath = new WCHAR[dwBufferSize];
+        if (pszFullPath == NULL)
+        {
+            hr = E_OUTOFMEMORY;
             goto Finished;
         }
 
         if (_wfullpath(pszFullPath,
-            pszRelativePath,
-            _MAX_PATH) == NULL)
+            struRelativePath.QueryStr(),
+            dwBufferSize) == NULL)
         {
             hr = HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER);
             goto Finished;
@@ -826,6 +831,12 @@ Finished:
     {
         delete[] pszCommandLine;
         pszCommandLine = NULL;
+    }
+
+    if (pszFullPath != NULL)
+    {
+        delete[] pszFullPath;
+        pszFullPath = NULL;
     }
 
     if (FAILED(hr) || m_fReady == FALSE)
