@@ -42,11 +42,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                 var tokens = directive.Tokens.ToArray();
                 if (tokens.Length >= 1)
                 {
+                    document.Parent = directive;
                     return tokens[0].Content;
                 }
             }
 
-            if (document.DocumentKind == RazorPageDocumentClassifier.DocumentKind)
+            if (document.DocumentKind == RazorPageDocumentClassifier.RazorPageDocumentKind)
             {
                 return visitor.Class.Name;
             }
@@ -93,6 +94,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             public IList<DirectiveIRNode> InheritsDirectives { get; } = new List<DirectiveIRNode>();
 
             public IList<DirectiveIRNode> ModelDirectives { get; } = new List<DirectiveIRNode>();
+
+            public override void VisitDocument(DocumentIRNode node)
+            {
+                if (node.Parent != null)
+                {
+                    ModelDirectives.Add((DirectiveIRNode)node.Parent);
+                }
+                base.VisitDocument(node);
+            }
 
             public override void VisitClass(ClassDeclarationIRNode node)
             {

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 
         public DocumentIRNode Execute(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
-            if (irDocument.DocumentKind != RazorPageDocumentClassifier.DocumentKind)
+            if (irDocument.DocumentKind != RazorPageDocumentClassifier.RazorPageDocumentKind)
             {
                 return irDocument;
             }
