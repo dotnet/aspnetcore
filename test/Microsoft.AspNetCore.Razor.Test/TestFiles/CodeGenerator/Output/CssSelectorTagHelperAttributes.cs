@@ -8,23 +8,26 @@ namespace TestOutput
     {
         #line hidden
         #pragma warning disable 0414
-        private global::Microsoft.AspNetCore.Razor.TagHelperContent __tagHelperStringValueBuffer = null;
+        private string __tagHelperStringValueBuffer = null;
         #pragma warning restore 0414
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperExecutionContext __tagHelperExecutionContext = null;
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperRunner __tagHelperRunner = null;
-        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperScopeManager __tagHelperScopeManager = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelperScopeManager();
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelperScopeManager __tagHelperScopeManager = null;
         private global::TestNamespace.ATagHelper __TestNamespace_ATagHelper = null;
         private global::TestNamespace.CatchAllTagHelper __TestNamespace_CatchAllTagHelper = null;
-        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("href", new global::Microsoft.AspNetCore.Html.HtmlString("~/"));
-        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("href", new global::Microsoft.AspNetCore.Html.HtmlString("~/hello"));
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("href", new global::Microsoft.AspNetCore.Html.HtmlString("~/"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("href", new global::Microsoft.AspNetCore.Html.HtmlString("~/hello"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
         private global::TestNamespace.ATagHelperMultipleSelectors __TestNamespace_ATagHelperMultipleSelectors = null;
-        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_2 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("href", new global::Microsoft.AspNetCore.Html.HtmlString("~/?hello=world"));
-        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_3 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("href", new global::Microsoft.AspNetCore.Html.HtmlString("~/?hello=world@false"));
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_2 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("href", new global::Microsoft.AspNetCore.Html.HtmlString("~/?hello=world"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_3 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("href", new global::Microsoft.AspNetCore.Html.HtmlString("~/?hello=world@false"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
         private global::TestNamespace.InputTagHelper __TestNamespace_InputTagHelper = null;
         private global::TestNamespace.InputTagHelper2 __TestNamespace_InputTagHelper2 = null;
         private global::TestNamespace.CatchAllTagHelper2 __TestNamespace_CatchAllTagHelper2 = null;
-        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_4 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("value", new global::Microsoft.AspNetCore.Html.HtmlString("3 TagHelpers"));
-        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_5 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("value", new global::Microsoft.AspNetCore.Html.HtmlString("2 TagHelper"));
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_4 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", "text", global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_5 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("value", new global::Microsoft.AspNetCore.Html.HtmlString("3 TagHelpers"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_6 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", "texty", global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.SingleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_7 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", "checkbox", global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
+        private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_8 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("value", new global::Microsoft.AspNetCore.Html.HtmlString("2 TagHelper"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
         #line hidden
         public CssSelectorTagHelperAttributes()
         {
@@ -34,6 +37,7 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             __tagHelperRunner = __tagHelperRunner ?? new global::Microsoft.AspNetCore.Razor.Runtime.TagHelperRunner();
+            __tagHelperScopeManager = __tagHelperScopeManager ?? new global::Microsoft.AspNetCore.Razor.Runtime.TagHelperScopeManager(StartTagHelperWritingScope, EndTagHelperWritingScope);
             Instrumentation.BeginContext(30, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
@@ -42,7 +46,7 @@ namespace TestOutput
                 WriteLiteral("2 TagHelpers.");
                 Instrumentation.EndContext();
             }
-            , StartTagHelperWritingScope, EndTagHelperWritingScope);
+            );
             __TestNamespace_ATagHelper = CreateTagHelper<global::TestNamespace.ATagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_ATagHelper);
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
@@ -51,7 +55,7 @@ namespace TestOutput
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
-                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                await __tagHelperExecutionContext.SetOutputContentAsync();
             }
             Instrumentation.BeginContext(32, 30, false);
             Write(__tagHelperExecutionContext.Output);
@@ -65,14 +69,14 @@ namespace TestOutput
                 WriteLiteral("1 TagHelper.");
                 Instrumentation.EndContext();
             }
-            , StartTagHelperWritingScope, EndTagHelperWritingScope);
+            );
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
             __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_1);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
-                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                await __tagHelperExecutionContext.SetOutputContentAsync();
             }
             Instrumentation.BeginContext(64, 32, false);
             Write(__tagHelperExecutionContext.Output);
@@ -86,7 +90,7 @@ namespace TestOutput
                 WriteLiteral("2 TagHelpers");
                 Instrumentation.EndContext();
             }
-            , StartTagHelperWritingScope, EndTagHelperWritingScope);
+            );
             __TestNamespace_ATagHelperMultipleSelectors = CreateTagHelper<global::TestNamespace.ATagHelperMultipleSelectors>();
             __tagHelperExecutionContext.Add(__TestNamespace_ATagHelperMultipleSelectors);
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
@@ -95,7 +99,7 @@ namespace TestOutput
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
-                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                await __tagHelperExecutionContext.SetOutputContentAsync();
             }
             Instrumentation.BeginContext(98, 41, false);
             Write(__tagHelperExecutionContext.Output);
@@ -109,12 +113,12 @@ namespace TestOutput
                 WriteLiteral("2 TagHelpers");
                 Instrumentation.EndContext();
             }
-            , StartTagHelperWritingScope, EndTagHelperWritingScope);
+            );
             __TestNamespace_ATagHelperMultipleSelectors = CreateTagHelper<global::TestNamespace.ATagHelperMultipleSelectors>();
             __tagHelperExecutionContext.Add(__TestNamespace_ATagHelperMultipleSelectors);
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
-            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "href", 3);
+            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "href", 3, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             AddHtmlAttributeValue("", 150, "~/", 150, 2, true);
 #line 6 "CssSelectorTagHelperAttributes.cshtml"
 AddHtmlAttributeValue("", 152, false, 152, 6, false);
@@ -126,7 +130,7 @@ AddHtmlAttributeValue("", 152, false, 152, 6, false);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
-                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                await __tagHelperExecutionContext.SetOutputContentAsync();
             }
             Instrumentation.BeginContext(141, 47, false);
             Write(__tagHelperExecutionContext.Output);
@@ -140,10 +144,10 @@ AddHtmlAttributeValue("", 152, false, 152, 6, false);
                 WriteLiteral("1 TagHelper");
                 Instrumentation.EndContext();
             }
-            , StartTagHelperWritingScope, EndTagHelperWritingScope);
+            );
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
-            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "href", 2);
+            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "href", 2, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             AddHtmlAttributeValue("", 231, "~/", 231, 2, true);
 #line 8 "CssSelectorTagHelperAttributes.cshtml"
 AddHtmlAttributeValue("", 233, false, 233, 6, false);
@@ -154,7 +158,7 @@ AddHtmlAttributeValue("", 233, false, 233, 6, false);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
-                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                await __tagHelperExecutionContext.SetOutputContentAsync();
             }
             Instrumentation.BeginContext(223, 32, false);
             Write(__tagHelperExecutionContext.Output);
@@ -168,14 +172,14 @@ AddHtmlAttributeValue("", 233, false, 233, 6, false);
                 WriteLiteral("1 TagHelper");
                 Instrumentation.EndContext();
             }
-            , StartTagHelperWritingScope, EndTagHelperWritingScope);
+            );
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
             __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_3);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
-                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                await __tagHelperExecutionContext.SetOutputContentAsync();
             }
             Instrumentation.BeginContext(257, 46, false);
             Write(__tagHelperExecutionContext.Output);
@@ -189,10 +193,10 @@ AddHtmlAttributeValue("", 233, false, 233, 6, false);
                 WriteLiteral("1 TagHelper");
                 Instrumentation.EndContext();
             }
-            , StartTagHelperWritingScope, EndTagHelperWritingScope);
+            );
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
-            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "href", 2);
+            BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "href", 2, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.SingleQuotes);
             AddHtmlAttributeValue("", 314, "~/?hello=world", 314, 14, true);
 #line 10 "CssSelectorTagHelperAttributes.cshtml"
 AddHtmlAttributeValue(" ", 328, false, 329, 7, false);
@@ -203,7 +207,7 @@ AddHtmlAttributeValue(" ", 328, false, 329, 7, false);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
             {
-                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                await __tagHelperExecutionContext.SetOutputContentAsync();
             }
             Instrumentation.BeginContext(305, 47, false);
             Write(__tagHelperExecutionContext.Output);
@@ -214,17 +218,17 @@ AddHtmlAttributeValue(" ", 328, false, 329, 7, false);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
             }
-            , StartTagHelperWritingScope, EndTagHelperWritingScope);
+            );
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
             __TestNamespace_CatchAllTagHelper2 = CreateTagHelper<global::TestNamespace.CatchAllTagHelper2>();
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper2);
-            __TestNamespace_InputTagHelper.Type = "text";
-            __tagHelperExecutionContext.AddTagHelperAttribute("type", __TestNamespace_InputTagHelper.Type);
+            __TestNamespace_InputTagHelper.Type = (string)__tagHelperAttribute_4.Value;
+            __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_4);
             __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
-            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_4);
+            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_5);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(354, 42, false);
             Write(__tagHelperExecutionContext.Output);
@@ -235,14 +239,14 @@ AddHtmlAttributeValue(" ", 328, false, 329, 7, false);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
             }
-            , StartTagHelperWritingScope, EndTagHelperWritingScope);
+            );
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
             __TestNamespace_CatchAllTagHelper2 = CreateTagHelper<global::TestNamespace.CatchAllTagHelper2>();
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper2);
-            __TestNamespace_InputTagHelper2.Type = "texty";
-            __tagHelperExecutionContext.AddTagHelperAttribute("type", __TestNamespace_InputTagHelper2.Type);
-            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_4);
+            __TestNamespace_InputTagHelper2.Type = (string)__tagHelperAttribute_6.Value;
+            __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_6);
+            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_5);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(398, 43, false);
             Write(__tagHelperExecutionContext.Output);
@@ -253,14 +257,14 @@ AddHtmlAttributeValue(" ", 328, false, 329, 7, false);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
             }
-            , StartTagHelperWritingScope, EndTagHelperWritingScope);
+            );
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
             __TestNamespace_CatchAllTagHelper2 = CreateTagHelper<global::TestNamespace.CatchAllTagHelper2>();
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper2);
-            __TestNamespace_InputTagHelper2.Type = "checkbox";
-            __tagHelperExecutionContext.AddTagHelperAttribute("type", __TestNamespace_InputTagHelper2.Type);
-            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_5);
+            __TestNamespace_InputTagHelper2.Type = (string)__tagHelperAttribute_7.Value;
+            __tagHelperExecutionContext.AddTagHelperAttribute(__tagHelperAttribute_7);
+            __tagHelperExecutionContext.AddHtmlAttribute(__tagHelperAttribute_8);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(443, 45, false);
             Write(__tagHelperExecutionContext.Output);

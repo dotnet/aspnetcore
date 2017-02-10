@@ -1937,7 +1937,7 @@ namespace Microsoft.AspNetCore.Razor.Test.CodeGenerators
             RunTagHelperTest(testName, baseLineName, tagHelperDescriptors: tagHelperDescriptors);
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void TagHelpers_CssSelectorTagHelperAttributesGeneratesExpectedOutput()
         {
