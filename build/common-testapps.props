@@ -1,6 +1,5 @@
 <Project>
-  <PropertyGroup>
-  </PropertyGroup>
+  <Import Project="dependencies.props" />
 
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Sdk" Version="1.0.1-*" PrivateAssets="All" />
