@@ -197,6 +197,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                 // Notice we're not registering the InjectDirective.Pass here so we can run it on demand.
                 b.AddDirective(InjectDirective.Directive);
                 b.AddDirective(ModelDirective.Directive);
+
+                // HACK - Remove the DefaultDirectiveIRPass so it can't remove our directives.
+                IRazorEngineFeature badFeature = null;
+                foreach (var feature in b.Features)
+                {
+                    if (string.Equals("DefaultDirectiveIRPass", feature.GetType().Name, StringComparison.Ordinal))
+                    {
+                        badFeature = feature;
+                        break;
+                    }
+                }
+
+                b.Features.Remove(badFeature);
             });
         }
 

@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                 var tokens = directive.Tokens.ToArray();
                 if (tokens.Length >= 1)
                 {
-                    document.Parent = directive;
                     return tokens[0].Content;
                 }
             }
@@ -62,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             public RazorEngine Engine { get; set; }
 
             // Runs after the @inherits directive
-            public int Order => RazorIRPass.DefaultDirectiveClassifierOrder + 5;
+            public int Order => RazorIRPass.DirectiveClassifierOrder + 5;
 
             public DocumentIRNode Execute(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
             {
@@ -94,15 +93,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             public IList<DirectiveIRNode> InheritsDirectives { get; } = new List<DirectiveIRNode>();
 
             public IList<DirectiveIRNode> ModelDirectives { get; } = new List<DirectiveIRNode>();
-
-            public override void VisitDocument(DocumentIRNode node)
-            {
-                if (node.Parent != null)
-                {
-                    ModelDirectives.Add((DirectiveIRNode)node.Parent);
-                }
-                base.VisitDocument(node);
-            }
 
             public override void VisitClass(ClassDeclarationIRNode node)
             {
