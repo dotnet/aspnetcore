@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     /// <summary>
     /// Represents properties and methods that are needed in order to render a view that uses Razor syntax.
     /// </summary>
-    public abstract class RazorPageBase
+    public abstract class RazorPageBase : IRazorPage
     {
         private StringWriter _valueBuffer;
         private ITagHelperFactory _tagHelperFactory;
@@ -73,7 +73,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </summary>
         public dynamic ViewBag => ViewContext?.ViewBag;
 
+        /// <inheritdoc />
         public bool IsLayoutBeingRendered { get; set; }
+
+        /// <inheritdoc />
+        public IHtmlContent BodyContent { get; set; }
+
+        /// <inheritdoc />
+        public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; }
 
         protected virtual HtmlEncoder Encoder { get; set; }
 
@@ -713,6 +720,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return string.IsNullOrEmpty(prefix) &&
                 (value is bool && (bool)value);
         }
+
+        public abstract void EnsureRenderedBodyOrSections();
 
         private struct AttributeInfo
         {

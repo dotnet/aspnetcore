@@ -21,12 +21,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         private IUrlHelper _urlHelper;
         private PageArgumentBinder _binder;
 
-        /// <inheritdoc />
-        public IHtmlContent BodyContent { get; set; }
-
-        /// <inheritdoc />
-        public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; }
-
         /// <summary>
         /// The <see cref="PageContext"/>.
         /// </summary>
@@ -73,9 +67,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <inheritdoc />
-        public void EnsureRenderedBodyOrSections()
+        public override void EnsureRenderedBodyOrSections()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public override void BeginContext(int position, int length, bool isLiteral)

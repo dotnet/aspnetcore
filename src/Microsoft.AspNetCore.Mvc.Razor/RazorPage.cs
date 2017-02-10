@@ -18,12 +18,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     /// <summary>
     /// Represents properties and methods that are needed in order to render a view that uses Razor syntax.
     /// </summary>
-    public abstract class RazorPage : RazorPageBase, IRazorPage
+    public abstract class RazorPage : RazorPageBase
     {
         private readonly HashSet<string> _renderedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private bool _renderedBody;
         private bool _ignoreBody;
         private HashSet<string> _ignoredSections;
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RazorPage"/>.
+        /// </summary>
+        public RazorPage()
+        {
+
+        }
 
         /// <summary>
         /// Gets the <see cref="System.Text.Encodings.Web.HtmlEncoder"/> to use when this <see cref="RazorPage"/>
@@ -48,12 +56,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </summary>
         /// <remarks>Returns null if <see cref="ViewContext"/> is null.</remarks>
         public ITempDataDictionary TempData => ViewContext?.TempData;
-
-        /// <inheritdoc />
-        public IHtmlContent BodyContent { get; set; }
-
-        /// <inheritdoc />
-        public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; }
 
         protected override HtmlEncoder Encoder => HtmlEncoder;
 
@@ -289,7 +291,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public void EnsureRenderedBodyOrSections()
+        public override void EnsureRenderedBodyOrSections()
         {
             // a) all sections defined for this page are rendered.
             // b) if no sections are defined, then the body is rendered if it's available.
@@ -323,6 +325,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 throw new InvalidOperationException(message);
             }
         }
+
+        // Working around an issue with ApiCheck tool
+        /// <inheritdoc />
+        public override Task<HtmlString> FlushAsync() => base.FlushAsync();
 
         public override void BeginContext(int position, int length, bool isLiteral)
         {
