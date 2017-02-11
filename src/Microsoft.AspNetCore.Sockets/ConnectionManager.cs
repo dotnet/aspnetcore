@@ -87,7 +87,16 @@ namespace Microsoft.AspNetCore.Sockets
 
         private void Scan()
         {
-            lock (_executionLock)
+            // If we couldn't get the lock it means one of 2 things is true:
+            // - We're about to dispose so we don't care to run the scan callback anyways.
+            // - The previous Scan took long enough that the next scan tried to run in parallel
+            // In either case just do nothing and end the timer callback as soon as possible
+            if (!Monitor.TryEnter(_executionLock))
+            {
+                return;
+            }
+
+            try
             {
                 if (_disposed)
                 {
@@ -97,40 +106,40 @@ namespace Microsoft.AspNetCore.Sockets
                 // Pause the timer while we're running
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
 
-                try
+                // Scan the registered connections looking for ones that have timed out
+                foreach (var c in _connections)
                 {
-                    // Scan the registered connections looking for ones that have timed out
-                    foreach (var c in _connections)
+                    var status = ConnectionState.ConnectionStatus.Inactive;
+                    var lastSeenUtc = DateTimeOffset.UtcNow;
+
+                    try
                     {
-                        var status = ConnectionState.ConnectionStatus.Inactive;
-                        var lastSeenUtc = DateTimeOffset.UtcNow;
+                        c.Value.Lock.Wait();
 
-                        try
-                        {
-                            c.Value.Lock.Wait();
+                        // Capture the connection state
+                        status = c.Value.Status;
 
-                            // Capture the connection state
-                            status = c.Value.Status;
+                        lastSeenUtc = c.Value.LastSeenUtc;
+                    }
+                    finally
+                    {
+                        c.Value.Lock.Release();
+                    }
 
-                            lastSeenUtc = c.Value.LastSeenUtc;
-                        }
-                        finally
-                        {
-                            c.Value.Lock.Release();
-                        }
-
-                        // Once the decision has been made to to dispose we don't check the status again
-                        if (status == ConnectionState.ConnectionStatus.Inactive && (DateTimeOffset.UtcNow - lastSeenUtc).TotalSeconds > 5)
-                        {
-                            var ignore = DisposeAndRemoveAsync(c.Value);
-                        }
+                    // Once the decision has been made to to dispose we don't check the status again
+                    if (status == ConnectionState.ConnectionStatus.Inactive && (DateTimeOffset.UtcNow - lastSeenUtc).TotalSeconds > 5)
+                    {
+                        var ignore = DisposeAndRemoveAsync(c.Value);
                     }
                 }
-                finally
-                {
-                    // Resume once we finished processing all connections
-                    _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
-                }
+            }
+            finally
+            {
+                // Resume once we finished processing all connections
+                _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+
+                // Exit the lock now
+                Monitor.Exit(_executionLock);
             }
         }
 
