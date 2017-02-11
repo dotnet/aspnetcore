@@ -1,3 +1,4 @@
+import 'isomorphic-fetch';
 import { Aurelia } from 'aurelia-framework';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap';
