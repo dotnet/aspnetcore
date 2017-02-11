@@ -242,6 +242,20 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
+        /// Returns an <see cref="IdentityError"/> indicating a password does not meet the minimum number <paramref name="uniqueChars"/> of unique chars.
+        /// </summary>
+        /// <param name="uniqueChars">The number of different chars that must be used.</param>
+        /// <returns>An <see cref="IdentityError"/> indicating a password does not meet the minimum number <paramref name="uniqueChars"/> of unique chars.</returns>
+        public virtual IdentityError PasswordRequiresUniqueChars(int uniqueChars)
+        {
+            return new IdentityError
+            {
+                Code = nameof(PasswordRequiresUniqueChars),
+                Description = Resources.FormatPasswordRequiresUniqueChars(uniqueChars)
+            };
+        }
+
+        /// <summary>
         /// Returns an <see cref="IdentityError"/> indicating a password entered does not contain a non-alphanumeric character, which is required by the password policy.
         /// </summary>
         /// <returns>An <see cref="IdentityError"/> indicating a password entered does not contain a non-alphanumeric character.</returns>

@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.True(options.Password.RequireNonAlphanumeric);
             Assert.True(options.Password.RequireUppercase);
             Assert.Equal(6, options.Password.RequiredLength);
+            Assert.Equal(1, options.Password.RequiredUniqueChars);
 
             Assert.Equal("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+", options.User.AllowedUserNameCharacters);
             Assert.False(options.User.RequireUniqueEmail);
@@ -58,6 +59,7 @@ namespace Microsoft.AspNetCore.Identity.Test
                 {"identity:claimsidentity:securitystampclaimtype", securityStampClaimType},
                 {"identity:user:requireUniqueEmail", "true"},
                 {"identity:password:RequiredLength", "10"},
+                {"identity:password:RequiredUniqueChars", "5"},
                 {"identity:password:RequireNonAlphanumeric", "false"},
                 {"identity:password:RequireUpperCase", "false"},
                 {"identity:password:RequireDigit", "false"},
@@ -87,6 +89,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.False(options.Password.RequireNonAlphanumeric);
             Assert.False(options.Password.RequireUppercase);
             Assert.Equal(10, options.Password.RequiredLength);
+            Assert.Equal(5, options.Password.RequiredUniqueChars);
             Assert.False(options.Lockout.AllowedForNewUsers);
             Assert.Equal(1000, options.Lockout.MaxFailedAccessAttempts);
         }
@@ -129,6 +132,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.True(myOptions.Password.RequireDigit);
             Assert.True(myOptions.Password.RequireNonAlphanumeric);
             Assert.True(myOptions.Password.RequireUppercase);
+            Assert.Equal(1, myOptions.Password.RequiredUniqueChars);
             Assert.Equal(-1, myOptions.Password.RequiredLength);
         }
 

@@ -746,6 +746,22 @@ namespace Microsoft.AspNetCore.Identity
             return GetString("StoreNotIUserTwoFactorRecoveryCodeStore");
         }
 
+        /// <summary>
+        /// Passwords must use at least {0} different characters.
+        /// </summary>
+        internal static string PasswordRequiresUniqueChars
+        {
+            get { return GetString("PasswordRequiresUniqueChars"); }
+        }
+
+        /// <summary>
+        /// Passwords must use at least {0} different characters.
+        /// </summary>
+        internal static string FormatPasswordRequiresUniqueChars(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("PasswordRequiresUniqueChars"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

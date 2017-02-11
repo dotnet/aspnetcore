@@ -68,6 +68,10 @@ namespace Microsoft.AspNetCore.Identity
             {
                 errors.Add(Describer.PasswordRequiresUpper());
             }
+            if (options.RequiredUniqueChars >= 1 && password.Distinct().Count() < options.RequiredUniqueChars)
+            {
+                errors.Add(Describer.PasswordRequiresUniqueChars(options.RequiredUniqueChars));
+            }
             return
                 Task.FromResult(errors.Count == 0
                     ? IdentityResult.Success

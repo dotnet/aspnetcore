@@ -301,4 +301,8 @@
     <value>Store does not implement IUserTwoFactorRecoveryCodeStore&lt;User&gt;.</value>
     <comment>Error when the store does not implement this interface</comment>
   </data>
+  <data name="PasswordRequiresUniqueChars" xml:space="preserve">
+    <value>Passwords must use at least {0} different characters.</value>
+    <comment>Error message for passwords that are based on similar characters</comment>
+  </data>
 </root>
