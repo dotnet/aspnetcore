@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             // Determine size of string needed (length) and number of segments it contains (segmentCount). Put another
             // way, segmentCount tracks the number of times the loop below should iterate. This avoids adding ".model"
             // and / or an extra leading "." and then removing them after the loop. Other information collected in this
-            // first loop helps with length and segmentCount adjustments. containsIndexers is somewhat separate: If
+            // first loop helps with length and segmentCount adjustments. doNotCache is somewhat separate: If
             // true, expression strings are not cached for the expression.
             //
             // After the corrections below the first loop, length is usually exactly the size of the returned string.
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             // expressions multiple times or saving indexer strings can get expensive. Optimizing for the common case
             // of a collection (not a dictionary) with less than 100 elements. If that assumption proves to be
             // incorrect, the StringBuilder will be enlarged but hopefully just once.
-            var containsIndexers = false;
+            var doNotCache = false;
             var lastIsModel = false;
             var length = 0;
             var segmentCount = 0;
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                     case ExpressionType.Call:
                         // Will exit loop if at Method().Property or [i,j].Property. In that case (like [i].Property),
                         // don't cache and don't remove ".Model" (if that's .Property).
-                        containsIndexers = true;
+                        doNotCache = true;
                         lastIsModel = false;
 
                         var methodExpression = (MethodCallExpression)part;
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                     case ExpressionType.ArrayIndex:
                         var binaryExpression = (BinaryExpression)part;
 
-                        containsIndexers = true;
+                        doNotCache = true;
                         lastIsModel = false;
                         length += "[99]".Length;
                         part = binaryExpression.Left;
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             Debug.Assert(segmentCount >= 0);
             if (segmentCount == 0)
             {
-                Debug.Assert(!containsIndexers);
+                Debug.Assert(!doNotCache);
                 if (expressionTextCache != null)
                 {
                     expressionTextCache.Entries.TryAdd(expression, string.Empty);
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 switch (part.NodeType)
                 {
                     case ExpressionType.Call:
-                        Debug.Assert(containsIndexers);
+                        Debug.Assert(doNotCache);
                         var methodExpression = (MethodCallExpression)part;
 
                         InsertIndexerInvocationText(builder, methodExpression.Arguments.Single(), expression);
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                         break;
 
                     case ExpressionType.ArrayIndex:
-                        Debug.Assert(containsIndexers);
+                        Debug.Assert(doNotCache);
                         var binaryExpression = (BinaryExpression)part;
 
                         InsertIndexerInvocationText(builder, binaryExpression.Right, expression);
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             Debug.Assert(segmentCount == 0);
             expressionText = builder.ToString();
-            if (expressionTextCache != null && !containsIndexers)
+            if (expressionTextCache != null && !doNotCache)
             {
                 expressionTextCache.Entries.TryAdd(expression, expressionText);
             }
