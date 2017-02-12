@@ -3,7 +3,7 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
-    <TargetFramework>net451</TargetFramework>
+    <TargetFramework>net452</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +20,7 @@
     <PackageReference Include="xunit" Version="2.2.0-*" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
     <Reference Include="System.Net.Http.WebRequest" />
   </ItemGroup>
 
