@@ -22,7 +22,7 @@ const runWebpackInDevModeScripts = [
 ];
 
 const templates: { [key: string]: { dir: string, dotNetNewId: string, displayName: string, prepublish?: string[], forceInclusion?: RegExp } } = {
-    'angular-2': { dir: '../../templates/Angular2Spa/', dotNetNewId: 'Angular', displayName: 'Angular 2', prepublish: runWebpackInDevModeScripts, forceInclusion: /^(wwwroot|ClientApp)\/dist\// },
+    'angular': { dir: '../../templates/Angular2Spa/', dotNetNewId: 'Angular', displayName: 'Angular', prepublish: runWebpackInDevModeScripts, forceInclusion: /^(wwwroot|ClientApp)\/dist\// },
     'aurelia': { dir: '../../templates/AureliaSpa/', dotNetNewId: 'Aurelia', displayName: 'Aurelia' },
     'knockout': { dir: '../../templates/KnockoutSpa/', dotNetNewId: 'Knockout', displayName: 'Knockout.js' },
     'react-redux': { dir: '../../templates/ReactReduxSpa/', dotNetNewId: 'ReactRedux', displayName: 'React.js and Redux' },
