@@ -145,11 +145,12 @@ function buildDotNetNewNuGetPackage() {
         fs.writeFileSync(path.join(templateConfigDir, 'template.json'), JSON.stringify({
             author: 'Microsoft',
             classifications: ["Web", "MVC", "SPA"],
-            name: `MVC ASP.NET Core with ${templateConfig.displayName}`,
             groupIdentity: `Microsoft.AspNetCore.SpaTemplates.${templateConfig.dotNetNewId}`,
             identity: `Microsoft.AspNetCore.SpaTemplates.${templateConfig.dotNetNewId}.CSharp`,
+            name: `MVC ASP.NET Core with ${templateConfig.displayName}`,
+            preferNameDirectory: true,
+            primaryOutputs: [{ path: `${sourceProjectName}.csproj` }],
             shortName: `${templateConfig.dotNetNewId.toLowerCase()}`,
-            tags: { language: 'C#', type: 'project' },
             sourceName: sourceProjectName,
             sources: [{
                 source: './',
@@ -168,7 +169,7 @@ function buildDotNetNewNuGetPackage() {
                     defaultValue: 'microsoft/dotnet:1.1.0-sdk-msbuild'
                 }
             },
-            preferNameDirectory: true
+            tags: { language: 'C#', type: 'project' },
         }, null, 2));
 
         fs.writeFileSync(path.join(templateConfigDir, 'dotnetcli.host.json'), JSON.stringify({
