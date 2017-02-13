@@ -139,12 +139,14 @@ function buildDotNetNewNuGetPackage() {
         { from: /\s*<OutputPath.*?<\/OutputPath>/g, to: '' },
     ];
     _.forEach(templates, (templateConfig, templateName) => {
-        const templateOutputDir = path.join(outputRoot, 'templates', templateName);
-        const templateOutputProjectDir = path.join(templateOutputDir, sourceProjectName);
-        writeTemplate(templateConfig.dir, templateOutputProjectDir, contentReplacements, filenameReplacements, templateConfig.forceInclusion);
+        const templateOutputDir = path.join(outputRoot, 'Content', templateName);
+        writeTemplate(templateConfig.dir, templateOutputDir, contentReplacements, filenameReplacements, templateConfig.forceInclusion);
 
-        // Add a .netnew.json file
-        fs.writeFileSync(path.join(templateOutputDir, '.netnew.json'), JSON.stringify({
+        // Add the .template.config dir and its contents
+        const templateConfigDir = path.join(templateOutputDir, '.template.config');
+        mkdirp.sync(templateConfigDir);
+
+        fs.writeFileSync(path.join(templateConfigDir, 'template.json'), JSON.stringify({
             author: 'Microsoft',
             classifications: [ 'Standard>>Quick Starts' ],
             name: `ASP.NET Core SPA with ${templateConfig.displayName}`,
@@ -154,6 +156,10 @@ function buildDotNetNewNuGetPackage() {
             tags: { language: 'C#' },
             guids: [ projectGuid ],
             sourceName: sourceProjectName
+        }, null, 2));
+
+        fs.writeFileSync(path.join(templateConfigDir, 'dotnetcli.host.json'), JSON.stringify({
+            symbolInfo: {}
         }, null, 2));
     });
 

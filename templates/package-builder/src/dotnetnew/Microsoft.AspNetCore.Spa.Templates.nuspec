@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>Microsoft.AspNetCore.Spa.Templates</id>
         <version>{version}</version>
-        <title>Class Library and Console Application Templates for .NET Core</title>
+        <description>Single Page Application templates for ASP.NET Core</description>
         <authors>Microsoft</authors>
-        <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>My package description.</description>
-        <dependencies>
-            <group targetFramework=".NETCoreApp,Version=v1.0">
-                <dependency id="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" version="1.0.0" />
-            </group>
-        </dependencies>
+        <language>en-US</language>
+        <projectUrl>https://github.com/aspnet/javascriptservices</projectUrl>
+        <licenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</licenseUrl>
+        <packageTypes>
+            <packageType name="Template" />
+        </packageTypes>
     </metadata>
-    <files>
-        <file src="templates/**" />
-    </files>
 </package>
