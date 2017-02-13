@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Evolution.CodeGeneration;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
@@ -29,6 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             Assert.Equal("test_directive", directive.Name);
         }
 
+        [Fact]
         public void AddDirective_NoFeature_CreatesFeature()
         {
             // Arrange
@@ -44,6 +46,51 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             var directive = Assert.Single(actual.Directives);
             Assert.Equal("test_directive", directive.Name);
+        }
+
+        [Fact]
+        public void AddTargetExtensions_ExistingFeature_UsesFeature()
+        {
+            // Arrange
+            var extension = new MyTargetExtension();
+
+            var expected = new DefaultRazorTargetExtensionFeature();
+            var engine = RazorEngine.CreateEmpty(b =>
+            {
+                b.Features.Add(expected);
+
+                // Act
+                b.AddTargetExtension(extension);
+            });
+
+            // Assert
+            var actual = Assert.Single(engine.Features.OfType<IRazorTargetExtensionFeature>());
+            Assert.Same(expected, actual);
+
+            Assert.Same(extension, Assert.Single(actual.TargetExtensions));
+        }
+
+        [Fact]
+        public void AddTargetExtensions_NoFeature_CreatesFeature()
+        {
+            // Arrange
+            var extension = new MyTargetExtension();
+
+            var engine = RazorEngine.CreateEmpty(b =>
+            {
+                // Act
+                b.AddTargetExtension(extension);
+            });
+
+            // Assert
+            var actual = Assert.Single(engine.Features.OfType<IRazorTargetExtensionFeature>());
+            Assert.IsType<DefaultRazorTargetExtensionFeature>(actual);
+
+            Assert.Same(extension, Assert.Single(actual.TargetExtensions));
+        }
+
+        private class MyTargetExtension : IRuntimeTargetExtension
+        {
         }
     }
 }

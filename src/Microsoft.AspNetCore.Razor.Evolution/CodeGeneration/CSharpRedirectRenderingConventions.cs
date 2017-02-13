@@ -7,22 +7,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 {
     internal class CSharpRedirectRenderingConventions : CSharpRenderingConventions
     {
-        private readonly string _redirectWriter;
-
         public CSharpRedirectRenderingConventions(string redirectWriter, CSharpCodeWriter writer) 
             : base(writer)
         {
-            _redirectWriter = redirectWriter;
+            RedirectWriter = redirectWriter;
         }
 
-        public override string StartWriteMethod => "WriteTo(" + _redirectWriter + ", " /* ORIGINAL: WriteToMethodName */;
+        public string RedirectWriter { get; }
 
-        public override string StartWriteLiteralMethod => "WriteLiteralTo(" + _redirectWriter + ", " /* ORIGINAL: WriteLiteralToMethodName */;
+        public override string StartWriteMethod => "WriteTo(" + RedirectWriter + ", " /* ORIGINAL: WriteToMethodName */;
 
-        public override string StartBeginWriteAttributeMethod => "BeginWriteAttributeTo(" + _redirectWriter + ", " /* ORIGINAL: BeginWriteAttributeToMethodName */;
+        public override string StartWriteLiteralMethod => "WriteLiteralTo(" + RedirectWriter + ", " /* ORIGINAL: WriteLiteralToMethodName */;
 
-        public override string StartWriteAttributeValueMethod => "WriteAttributeValueTo(" + _redirectWriter + ", " /* ORIGINAL: WriteAttributeValueToMethodName */;
+        public override string StartBeginWriteAttributeMethod => "BeginWriteAttributeTo(" + RedirectWriter + ", " /* ORIGINAL: BeginWriteAttributeToMethodName */;
 
-        public override string StartEndWriteAttributeMethod => "EndWriteAttributeTo(" + _redirectWriter /* ORIGINAL: EndWriteAttributeToMethodName */;
+        public override string StartWriteAttributeValueMethod => "WriteAttributeValueTo(" + RedirectWriter + ", " /* ORIGINAL: WriteAttributeValueToMethodName */;
+
+        public override string StartEndWriteAttributeMethod => "EndWriteAttributeTo(" + RedirectWriter /* ORIGINAL: EndWriteAttributeToMethodName */;
     }
 }

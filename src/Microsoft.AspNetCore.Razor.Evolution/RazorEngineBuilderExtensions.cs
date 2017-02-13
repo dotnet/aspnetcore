@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Evolution.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             if (builder == null)
             {
-                throw new ArgumentNullException(nameof(directive));
+                throw new ArgumentNullException(nameof(builder));
             }
 
             if (directive == null)
@@ -22,6 +23,24 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             var directiveFeature = GetDirectiveFeature(builder);
             directiveFeature.Directives.Add(directive);
+
+            return builder;
+        }
+
+        public static IRazorEngineBuilder AddTargetExtension(this IRazorEngineBuilder builder, IRuntimeTargetExtension extension)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (extension == null)
+            {
+                throw new ArgumentNullException(nameof(extension));
+            }
+
+            var targetExtensionFeature = GetTargetExtensionFeature(builder);
+            targetExtensionFeature.TargetExtensions.Add(extension);
 
             return builder;
         }
@@ -36,6 +55,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             }
 
             return directiveFeature;
+        }
+
+        private static IRazorTargetExtensionFeature GetTargetExtensionFeature(IRazorEngineBuilder builder)
+        {
+            var targetExtensionFeature = builder.Features.OfType<IRazorTargetExtensionFeature>().FirstOrDefault();
+            if (targetExtensionFeature == null)
+            {
+                targetExtensionFeature = new DefaultRazorTargetExtensionFeature();
+                builder.Features.Add(targetExtensionFeature);
+            }
+
+            return targetExtensionFeature;
         }
     }
 }

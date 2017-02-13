@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             VisitDefault(node);
         }
 
-        public virtual void VisitTemplate(TemplateIRNode node)
+        public virtual void VisitExtension(ExtensionIRNode node)
         {
             VisitDefault(node);
         }

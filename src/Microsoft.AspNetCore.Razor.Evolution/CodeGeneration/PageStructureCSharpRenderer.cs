@@ -9,10 +9,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
     internal class PageStructureCSharpRenderer : RazorIRNodeWalker
     {
         protected readonly CSharpRenderingContext Context;
+        protected readonly RuntimeTarget Target;
 
-        public PageStructureCSharpRenderer(CSharpRenderingContext context)
+        public PageStructureCSharpRenderer(RuntimeTarget target, CSharpRenderingContext context)
         {
             Context = context;
+            Target = target;
         }
 
         public override void VisitNamespace(NamespaceDeclarationIRNode node)
@@ -105,6 +107,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             {
                 VisitDefault(node);
             }
+        }
+
+        public override void VisitExtension(ExtensionIRNode node)
+        {
+            node.WriteNode(Target, Context);
         }
 
         protected static void RenderExpressionInline(RazorIRNode node, CSharpRenderingContext context)

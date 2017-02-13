@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Evolution.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
@@ -56,6 +57,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             builder.Phases.Add(new DefaultRazorIROptimizationPhase());
             builder.Phases.Add(new DefaultRazorCSharpLoweringPhase());
 
+            // General extensibility
+            builder.Features.Add(new DefaultRazorDirectiveFeature());
+            builder.Features.Add(new DefaultRazorTargetExtensionFeature());
+
             // Syntax Tree passes
             builder.Features.Add(new DefaultDirectiveSyntaxTreePass());
             builder.Features.Add(new HtmlNodeOptimizationPass());
@@ -65,6 +70,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             builder.Features.Add(new DefaultDocumentClassifierPass());
             builder.Features.Add(new DefaultDirectiveIRPass());
             builder.Features.Add(new DirectiveRemovalIROptimizationPass());
+
+            // Default Runtime Targets
+            builder.AddTargetExtension(new TemplateTargetExtension());
         }
 
         internal static void AddRuntimeDefaults(IRazorEngineBuilder builder)

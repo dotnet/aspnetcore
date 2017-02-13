@@ -3,10 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Evolution.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
-    public class TemplateIRNode : RazorIRNode
+    public class TemplateIRNode : ExtensionIRNode
     {
         public override IList<RazorIRNode> Children { get; } = new List<RazorIRNode>();
 
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            visitor.VisitTemplate(this);
+            AcceptExtensionNode<TemplateIRNode>(this, visitor);
         }
 
         public override TResult Accept<TResult>(RazorIRNodeVisitor<TResult> visitor)
@@ -31,7 +32,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            return visitor.VisitTemplate(this);
+            return AcceptExtensionNode<TemplateIRNode, TResult>(this, visitor);
+        }
+
+        internal override void WriteNode(RuntimeTarget target, CSharpRenderingContext context)
+        {
+            var extension = target.GetExtension<ITemplateTargetExtension>();
+            extension.WriteTemplate(context, this);
         }
     }
 }

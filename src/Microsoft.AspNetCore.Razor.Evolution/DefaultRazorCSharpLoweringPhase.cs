@@ -56,6 +56,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             }
 
             var renderer = target.CreateRenderer(renderingContext);
+            renderingContext.RenderChildren = renderer.VisitDefault;
+
             renderer.VisitDocument(irDocument);
 
             var combinedErrors = syntaxTree.Diagnostics.Concat(renderingContext.ErrorSink.Errors).ToList();

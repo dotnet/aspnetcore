@@ -2,17 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Evolution.CodeGeneration;
 
-namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
+namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    public interface IRuntimeTargetBuilder
+    public interface IRazorTargetExtensionFeature : IRazorEngineFeature
     {
-        RazorCodeDocument CodeDocument { get; }
-
-        RazorParserOptions Options { get; }
-
         ICollection<IRuntimeTargetExtension> TargetExtensions { get; }
-
-        RuntimeTarget Build();
     }
 }

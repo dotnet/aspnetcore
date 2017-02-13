@@ -9,7 +9,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 {
     internal class DesignTimeCSharpRenderer : PageStructureCSharpRenderer
     {
-        public DesignTimeCSharpRenderer(CSharpRenderingContext context) : base(context)
+        public DesignTimeCSharpRenderer(RuntimeTarget target, CSharpRenderingContext context)
+            : base(target, context)
         {
         }
 
@@ -148,27 +149,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 Context.Writer.SetIndent(originalIndent);
             }
             Context.Writer.WriteLine("))();");
-        }
-
-        public override void VisitTemplate(TemplateIRNode node)
-        {
-            const string ItemParameterName = "item";
-            const string TemplateWriterName = "__razor_template_writer";
-
-            Context.Writer
-                .Write(ItemParameterName).Write(" => ")
-                .WriteStartNewObject("Microsoft.AspNetCore.Mvc.Razor.HelperResult" /* ORIGINAL: TemplateTypeName */);
-
-            var initialRenderingConventions = Context.RenderingConventions;
-            var redirectConventions = new CSharpRedirectRenderingConventions(TemplateWriterName, Context.Writer);
-            Context.RenderingConventions = redirectConventions;
-            using (Context.Writer.BuildAsyncLambda(endLine: false, parameterNames: TemplateWriterName))
-            {
-                VisitDefault(node);
-            }
-            Context.RenderingConventions = initialRenderingConventions;
-
-            Context.Writer.WriteEndMethodInvocation(endLine: false);
         }
 
         public override void VisitTagHelper(TagHelperIRNode node)

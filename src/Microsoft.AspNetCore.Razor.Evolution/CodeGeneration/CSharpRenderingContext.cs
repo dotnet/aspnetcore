@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Evolution.Legacy;
+using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 {
@@ -43,5 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
         public RazorParserOptions Options { get; set; }
 
         public TagHelperRenderingContext TagHelperRenderingContext { get; set; }
+
+        public Action<RazorIRNode> RenderChildren { get; set; }
     }
 }

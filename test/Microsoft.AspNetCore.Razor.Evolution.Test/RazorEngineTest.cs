@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Moq;
 using Xunit;
+using Microsoft.AspNetCore.Razor.Evolution.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
@@ -132,10 +133,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 p => Assert.Same(phases[1], p));
         }
 
+        private static void AssertDefaultTargetExtensions(RazorEngine engine)
+        {
+            var feature = engine.Features.OfType<IRazorTargetExtensionFeature>().FirstOrDefault();
+            Assert.NotNull(feature);
+
+            Assert.Collection(
+                feature.TargetExtensions,
+                f => Assert.IsType<TemplateTargetExtension>(f));
+        }
+
         private static void AssertDefaultRuntimeFeatures(IEnumerable<IRazorEngineFeature> features)
         {
             Assert.Collection(
                 features,
+                feature => Assert.IsType<DefaultRazorDirectiveFeature>(feature),
+                feature => Assert.IsType<DefaultRazorTargetExtensionFeature>(feature),
                 feature => Assert.IsType<DefaultDirectiveSyntaxTreePass>(feature),
                 feature => Assert.IsType<HtmlNodeOptimizationPass>(feature),
                 feature => Assert.IsType<TagHelperBinderSyntaxTreePass>(feature),
@@ -162,6 +175,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             Assert.Collection(
                 features,
+                feature => Assert.IsType<DefaultRazorDirectiveFeature>(feature),
+                feature => Assert.IsType<DefaultRazorTargetExtensionFeature>(feature),
                 feature => Assert.IsType<DefaultDirectiveSyntaxTreePass>(feature),
                 feature => Assert.IsType<HtmlNodeOptimizationPass>(feature),
                 feature => Assert.IsType<TagHelperBinderSyntaxTreePass>(feature),

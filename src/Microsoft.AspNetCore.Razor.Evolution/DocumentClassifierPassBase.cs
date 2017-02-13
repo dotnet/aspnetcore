@@ -2,14 +2,26 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Evolution.CodeGeneration;
+using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
     public abstract class DocumentClassifierPassBase : RazorIRPassBase, IRazorDocumentClassifierPass
     {
+        private static readonly IRuntimeTargetExtension[] EmptyExtensionArray = new IRuntimeTargetExtension[0];
+
         protected abstract string DocumentKind { get; }
+
+        protected IRuntimeTargetExtension[] TargetExtensions { get; private set; }
+
+        protected override void OnIntialized()
+        {
+            var feature = Engine.Features.OfType<IRazorTargetExtensionFeature>();
+
+            TargetExtensions = feature.FirstOrDefault()?.TargetExtensions.ToArray() ?? EmptyExtensionArray;
+        }
 
         public sealed override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
@@ -82,10 +94,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         private RuntimeTarget CreateTarget(RazorCodeDocument codeDocument, RazorParserOptions options)
         {
-            return RuntimeTarget.CreateDefault(codeDocument, options, (builder) => ConfigureTarget(codeDocument, builder));
+            return RuntimeTarget.CreateDefault(codeDocument, options, (builder) =>
+            {
+                for (var i = 0; i < TargetExtensions.Length; i++)
+                {
+                    builder.TargetExtensions.Add(TargetExtensions[i]);
+                }
+
+                ConfigureTarget(builder);
+            });
         }
 
-        protected virtual void ConfigureTarget(RazorCodeDocument codeDocument, IRuntimeTargetBuilder builder)
+        protected virtual void ConfigureTarget(IRuntimeTargetBuilder builder)
         {
             // Intentionally empty.
         }

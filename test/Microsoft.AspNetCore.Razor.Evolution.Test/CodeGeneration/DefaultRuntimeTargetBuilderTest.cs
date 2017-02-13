@@ -16,11 +16,31 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
             var builder = new DefaultRuntimeTargetBuilder(codeDocument, options);
 
+            var extensions = new IRuntimeTargetExtension[]
+            {
+                new MyExtension1(),
+                new MyExtension2(),
+            };
+            
+            for (var i = 0; i < extensions.Length; i++)
+            {
+                builder.TargetExtensions.Add(extensions[i]);
+            }
+
             // Act
-            var target = builder.Build();
+            var result = builder.Build();
 
             // Assert
-            Assert.IsType<DefaultRuntimeTarget>(target);
+            var target = Assert.IsType<DefaultRuntimeTarget>(result);
+            Assert.Equal(extensions, target.Extensions);
+        }
+
+        private class MyExtension1 : IRuntimeTargetExtension
+        {
+        }
+
+        private class MyExtension2 : IRuntimeTargetExtension
+        {
         }
     }
 }

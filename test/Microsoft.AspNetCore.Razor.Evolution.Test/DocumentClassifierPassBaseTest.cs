@@ -3,6 +3,8 @@
 
 
 using System;
+using System.Linq;
+using Microsoft.AspNetCore.Razor.Evolution.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 using Xunit;
 using static Microsoft.AspNetCore.Razor.Evolution.Intermediate.RazorIRAssert;
@@ -53,6 +55,41 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Assert
             Assert.Null(irDocument.DocumentKind);
             NoChildren(irDocument);
+        }
+
+        [Fact]
+        public void Execute_Match_AddsGlobalTargetExtensions()
+        {
+            // Arrange
+            var irDocument = new DocumentIRNode()
+            {
+                Options = RazorParserOptions.CreateDefaultOptions(),
+            };
+
+            var expected = new IRuntimeTargetExtension[]
+            {
+                new MyExtension1(),
+                new MyExtension2(),
+            };
+
+            var pass = new TestDocumentClassifierPass();
+            pass.Engine = RazorEngine.CreateEmpty(b =>
+            {
+                for (var i = 0; i < expected.Length; i++)
+                {
+                    b.AddTargetExtension(expected[i]);
+                }
+            });
+
+            IRuntimeTargetExtension[] extensions = null;
+
+            pass.RuntimeTargetCallback = (builder) => extensions = builder.TargetExtensions.ToArray();
+
+            // Act
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
+
+            // Assert
+            Assert.Equal(expected, extensions);
         }
 
         [Fact]
@@ -228,6 +265,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             public bool ShouldMatch { get; set; } = true;
 
+            public Action<IRuntimeTargetBuilder> RuntimeTargetCallback { get; set; }
+
             public string Namespace { get; set;  }
 
             public string Class { get; set; }
@@ -251,6 +290,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 @class.Name = Class;
                 @method.Name = Method;
             }
+
+            protected override void ConfigureTarget(IRuntimeTargetBuilder builder)
+            {
+                RuntimeTargetCallback?.Invoke(builder);
+            }
+        }
+
+        private class MyExtension1 : IRuntimeTargetExtension
+        {
+        }
+
+        private class MyExtension2 : IRuntimeTargetExtension
+        {
         }
     }
 }
