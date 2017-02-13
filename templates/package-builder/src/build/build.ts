@@ -193,6 +193,8 @@ function buildDotNetNewNuGetPackage() {
 
     // Clean up
     rimraf.sync('./tmp');
+
+    return glob.sync(path.join(outputRoot, './*.nupkg'))[0];
 }
 
 function runAllPrepublishScripts() {
@@ -226,7 +228,10 @@ rimraf.sync(distDir);
 mkdirp.sync(artifactsDir);
 runAllPrepublishScripts();
 buildYeomanNpmPackage(yeomanOutputRoot);
-buildDotNetNewNuGetPackage();
+const dotNetNewNupkgPath = buildDotNetNewNuGetPackage();
+
+// Move the .nupkg file to the artifacts dir
+fs.renameSync(dotNetNewNupkgPath, path.join(artifactsDir, path.basename(dotNetNewNupkgPath)));
 
 // Finally, create a .tar.gz file containing the built generator-aspnetcore-spa.
 // The CI system can treat this as the final built artifact.
