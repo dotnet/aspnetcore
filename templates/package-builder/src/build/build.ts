@@ -12,22 +12,24 @@ const isWindows = /^win/.test(process.platform);
 const textFileExtensions = ['.gitignore', 'template_gitignore', '.config', '.cs', '.cshtml', '.csproj', 'Dockerfile', '.html', '.js', '.json', '.jsx', '.md', '.nuspec', '.ts', '.tsx', '.xproj'];
 const yeomanGeneratorSource = './src/yeoman';
 
-// For the Angular 2 template, we want to bundle prebuilt dist dev-mode files, because the VS template can't auto-run
+// To support the "dotnet new" templates, we want to bundle prebuilt dist dev-mode files, because "dotnet new" can't auto-run
 // webpack on project creation. Note that these script entries are *not* the same as the project's usual prepublish
 // scripts, because here we want dev-mode builds (e.g., to support HMR), not prod-mode builds.
-const runWebpackInDevModeScripts = [
+const commonTemplatePrepublishSteps = [
     'npm install',
     'node node_modules/webpack/bin/webpack.js --config webpack.config.vendor.js',
     'node node_modules/webpack/bin/webpack.js'
 ];
+const commonForceInclusionRegex = /^(wwwroot|ClientApp)\/dist\//; // Files to be included in template, even though gitignored
 
 const templates: { [key: string]: { dir: string, dotNetNewId: string, displayName: string, prepublish?: string[], forceInclusion?: RegExp } } = {
-    'angular': { dir: '../../templates/Angular2Spa/', dotNetNewId: 'Angular', displayName: 'Angular', prepublish: runWebpackInDevModeScripts, forceInclusion: /^(wwwroot|ClientApp)\/dist\// },
+    'angular': { dir: '../../templates/Angular2Spa/', dotNetNewId: 'Angular', displayName: 'Angular' },
     'aurelia': { dir: '../../templates/AureliaSpa/', dotNetNewId: 'Aurelia', displayName: 'Aurelia' },
     'knockout': { dir: '../../templates/KnockoutSpa/', dotNetNewId: 'Knockout', displayName: 'Knockout.js' },
     'react-redux': { dir: '../../templates/ReactReduxSpa/', dotNetNewId: 'ReactRedux', displayName: 'React.js and Redux' },
     'react': { dir: '../../templates/ReactSpa/', dotNetNewId: 'React', displayName: 'React.js' }
 };
+
 
 function isTextFile(filename: string): boolean {
     return textFileExtensions.indexOf(path.extname(filename).toLowerCase()) >= 0
@@ -108,7 +110,7 @@ function buildYeomanNpmPackage(outputRoot: string) {
     ];
     _.forEach(templates, (templateConfig, templateName) => {
         const outputDir = path.join(outputTemplatesRoot, templateName);
-        writeTemplate(templateConfig.dir, outputDir, contentReplacements, filenameReplacements, templateConfig.forceInclusion);
+        writeTemplate(templateConfig.dir, outputDir, contentReplacements, filenameReplacements, commonForceInclusionRegex);
     });
 
     // Also copy the generator files (that's the compiled .js files, plus all other non-.ts files)
@@ -134,7 +136,7 @@ function buildDotNetNewNuGetPackage() {
     const contentReplacements = [];
     _.forEach(templates, (templateConfig, templateName) => {
         const templateOutputDir = path.join(outputRoot, 'Content', templateName);
-        writeTemplate(templateConfig.dir, templateOutputDir, contentReplacements, filenameReplacements, templateConfig.forceInclusion);
+        writeTemplate(templateConfig.dir, templateOutputDir, contentReplacements, filenameReplacements, commonForceInclusionRegex);
 
         // Add the .template.config dir and its contents
         const templateConfigDir = path.join(templateOutputDir, '.template.config');
@@ -152,7 +154,7 @@ function buildDotNetNewNuGetPackage() {
             sources: [{
                 source: './',
                 target: './',
-                exclude: ['.deployment', '.template.config/**', 'project.json', '*.xproj']
+                exclude: ['.deployment', '.template.config/**', 'project.json', '*.xproj', '**/_placeholder.txt']
             }],
             symbols: {
                 sdkVersion: {
@@ -196,6 +198,11 @@ function buildDotNetNewNuGetPackage() {
 function runAllPrepublishScripts() {
     Object.getOwnPropertyNames(templates).forEach(templateKey => {
         const templateInfo = templates[templateKey];
+
+        // First run standard prepublish steps
+        runScripts(templateInfo.dir, commonTemplatePrepublishSteps);
+
+        // Second, run any template-specific prepublish steps
         if (templateInfo.prepublish) {
             runScripts(templateInfo.dir, templateInfo.prepublish);
         }
