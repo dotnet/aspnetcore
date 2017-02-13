@@ -8,7 +8,7 @@ using System.IO;
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 {
     // Copied from https://github.com/dotnet/cli/blob/rel/1.0.0/src/Microsoft.DotNet.ProjectModel.Workspaces/SnkUtils.cs
-    public static class SnkUtils
+    internal static class SnkUtils
     {
         const byte PUBLICKEYBLOB = 0x06;
         const byte PRIVATEKEYBLOB = 0x07;

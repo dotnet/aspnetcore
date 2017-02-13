@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
 
-        [Theory(Skip = "MVC #5736")]
+        [Theory]
         [MemberData(nameof(SupportedFlavorsTheoryData))]
         public async Task Precompilation_RunsConfiguredCompilationCallbacks(RuntimeFlavor flavor)
         {
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             }
         }
 
-        [Theory(Skip = "MVC #5736")]
+        [Theory]
         [MemberData(nameof(SupportedFlavorsTheoryData))]
         public async Task Precompilation_UsesConfiguredParseOptions(RuntimeFlavor flavor)
         {

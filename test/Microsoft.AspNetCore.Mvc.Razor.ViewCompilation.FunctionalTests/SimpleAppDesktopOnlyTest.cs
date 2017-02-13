@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public ApplicationTestFixture Fixture { get; }
 
-        [ConditionalFact(Skip = "MVC #5736")]
+        [ConditionalFact]
         [OSSkipConditionAttribute(OperatingSystems.Linux)]
         [OSSkipConditionAttribute(OperatingSystems.MacOSX)]
         public async Task Precompilation_WorksForSimpleApps()

@@ -6,7 +6,7 @@ using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 {
-    public class CompilationOptions
+    internal class CompilationOptions
     {
         public static readonly string ConfigureCompilationTypeTemplate = "--configure-compilation-type";
         public static readonly string ContentRootTemplate = "--content-root";

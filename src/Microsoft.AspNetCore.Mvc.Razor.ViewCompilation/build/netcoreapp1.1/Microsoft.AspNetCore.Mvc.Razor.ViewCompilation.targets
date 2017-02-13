@@ -14,7 +14,7 @@
     <PropertyGroup>
       <ExecArgs>--runtimeconfig &quot;$(ProjectRuntimeConfigFilePath)&quot;</ExecArgs>
       <ExecArgs>$(ExecArgs) --depsfile &quot;$(ProjectDepsFilePath)&quot;</ExecArgs>
-      <ExecArgs>$(ExecArgs) &quot;$(MSBuildThisFileDirectory)$(MSBuildThisFileName).dll&quot;</ExecArgs>
+      <ExecArgs>$(ExecArgs) &quot;$(MSBuildThisFileDirectory)../../lib/netcoreapp1.1/$(MSBuildThisFileName).dll&quot;</ExecArgs>
       <ExecArgs>$(ExecArgs) @&quot;$(_MvcRazorResponseFilePath)&quot;</ExecArgs>
     </PropertyGroup>
 

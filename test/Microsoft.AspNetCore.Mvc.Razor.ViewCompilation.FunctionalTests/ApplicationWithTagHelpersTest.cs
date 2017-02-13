@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             }
         }
 
-        [Theory(Skip = "MVC #5736")]
+        [Theory]
         [MemberData(nameof(ApplicationWithTagHelpersData))]
         public async Task Precompilation_WorksForViewsThatUseTagHelpers(string url, RuntimeFlavor flavor)
         {

@@ -19,7 +19,7 @@ using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 {
-    public class PrecompileRunCommand
+    internal class PrecompileRunCommand
     {
         private static readonly ParallelOptions ParalellOptions = new ParallelOptions
         {

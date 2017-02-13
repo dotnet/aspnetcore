@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 {
-    public class MvcServiceProvider
+    internal class MvcServiceProvider
     {
         private readonly string _projectPath;
         private readonly string _contentRoot;

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 {
-    public class Program
+    internal class Program
     {
         private readonly static Type ProgramType = typeof(Program);
 

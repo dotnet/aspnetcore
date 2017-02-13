@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
 {
-    public static class DebugHelper
+    internal static class DebugHelper
     {
         public static void HandleDebugSwitch(ref string[] args)
         {

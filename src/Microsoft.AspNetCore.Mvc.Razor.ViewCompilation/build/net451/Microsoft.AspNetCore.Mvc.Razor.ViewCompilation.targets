@@ -17,17 +17,11 @@
       <FilesToCopy Include="$(OutputPath)$(AssemblyName).exe.config">
         <Destination>$(OutputPath)$(MSBuildThisFileName)-x86.exe.config</Destination>
       </FilesToCopy>
-      <FilesToCopy Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName)-x86.exe">
-        <Destination>$(OutputPath)$(MSBuildThisFileName)-x86.exe</Destination>
-      </FilesToCopy>
     </ItemGroup>
 
     <ItemGroup Condition="'$(PlatformTarget)'!='x86'">
       <FilesToCopy Include="$(OutputPath)$(AssemblyName).exe.config" Condition="">
         <Destination>$(OutputPath)$(MSBuildThisFileName).exe.config</Destination>
-      </FilesToCopy>
-      <FilesToCopy Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).exe">
-        <Destination>$(OutputPath)$(MSBuildThisFileName).exe</Destination>
       </FilesToCopy>
     </ItemGroup>
 
