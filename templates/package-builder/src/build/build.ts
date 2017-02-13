@@ -128,16 +128,10 @@ function buildDotNetNewNuGetPackage() {
     const sourceProjectName = 'WebApplicationBasic';
     const projectGuid = '00000000-0000-0000-0000-000000000000';
     const filenameReplacements = [
-        // TODO: For dotnetnew templates, switch to csproj. No need for SDK choice as it can be Preview3+ only.
-        { from: /.*\.xproj$/, to: `${sourceProjectName}.xproj` },
+        { from: /.*\.csproj$/, to: `${sourceProjectName}.csproj` },
         { from: /\btemplate_gitignore$/, to: '.gitignore' }
     ];
-    const contentReplacements = [
-        { from: /<ProjectGuid>[0-9a-f\-]{36}<\/ProjectGuid>/g, to: `<ProjectGuid>${projectGuid}</ProjectGuid>` },
-        { from: /<RootNamespace>.*?<\/RootNamespace>/g, to: `<RootNamespace>${sourceProjectName}</RootNamespace>`},
-        { from: /\s*<BaseIntermediateOutputPath.*?<\/BaseIntermediateOutputPath>/g, to: '' },
-        { from: /\s*<OutputPath.*?<\/OutputPath>/g, to: '' },
-    ];
+    const contentReplacements = [];
     _.forEach(templates, (templateConfig, templateName) => {
         const templateOutputDir = path.join(outputRoot, 'Content', templateName);
         writeTemplate(templateConfig.dir, templateOutputDir, contentReplacements, filenameReplacements, templateConfig.forceInclusion);
@@ -148,14 +142,15 @@ function buildDotNetNewNuGetPackage() {
 
         fs.writeFileSync(path.join(templateConfigDir, 'template.json'), JSON.stringify({
             author: 'Microsoft',
-            classifications: [ 'Standard>>Quick Starts' ],
-            name: `ASP.NET Core SPA with ${templateConfig.displayName}`,
-            groupIdentity: `Microsoft.AspNetCore.Spa.${templateConfig.dotNetNewId}`,
-            identity: `Microsoft.AspNetCore.Spa.${templateConfig.dotNetNewId}`,
-            shortName: `aspnetcorespa-${templateConfig.dotNetNewId.toLowerCase()}`,
-            tags: { language: 'C#' },
-            guids: [ projectGuid ],
-            sourceName: sourceProjectName
+            classifications: ["Web", "MVC", "SPA"],
+            name: `MVC ASP.NET Core with ${templateConfig.displayName}`,
+            groupIdentity: `Microsoft.AspNetCore.SpaTemplates.${templateConfig.dotNetNewId}`,
+            identity: `Microsoft.AspNetCore.SpaTemplates.${templateConfig.dotNetNewId}.CSharp`,
+            shortName: `${templateConfig.dotNetNewId.toLowerCase()}`,
+            tags: { language: 'C#', type: 'project' },
+            sourceName: sourceProjectName,
+            preferNameDirectory: true,
+            symbols: {}
         }, null, 2));
 
         fs.writeFileSync(path.join(templateConfigDir, 'dotnetcli.host.json'), JSON.stringify({
