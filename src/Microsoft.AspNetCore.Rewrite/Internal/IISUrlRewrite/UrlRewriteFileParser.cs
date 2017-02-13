@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Rewrite.Internal.UrlActions;
+using Microsoft.AspNetCore.Rewrite.Internal.UrlMatches;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 {
@@ -45,17 +46,17 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 
             foreach (var rule in rules.Elements(RewriteTags.Rule))
             {
-                var builder = new UrlRewriteRuleBuilder();
-                ParseRuleAttributes(rule, builder, global);
+                var builder = new UrlRewriteRuleBuilder { Global = global };
+                ParseRuleAttributes(rule, builder);
 
                 if (builder.Enabled)
                 {
-                    result.Add(builder.Build(global));
+                    result.Add(builder.Build());
                 }
             }
         }
 
-        private void ParseRuleAttributes(XElement rule, UrlRewriteRuleBuilder builder, bool global)
+        private void ParseRuleAttributes(XElement rule, UrlRewriteRuleBuilder builder)
         {
             builder.Name = rule.Attribute(RewriteTags.Name)?.Value;
 
@@ -84,8 +85,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             }
 
             ParseMatch(match, builder, patternSyntax);
-            ParseConditions(rule.Element(RewriteTags.Conditions), builder, patternSyntax, global);
-            ParseUrlAction(action, builder, stopProcessing, global);
+            ParseConditions(rule.Element(RewriteTags.Conditions), builder, patternSyntax);
+            ParseUrlAction(action, builder, stopProcessing);
         }
 
         private void ParseMatch(XElement match, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
@@ -101,7 +102,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             builder.AddUrlMatch(parsedInputString, ignoreCase, negate, patternSyntax);
         }
 
-        private void ParseConditions(XElement conditions, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax, bool global)
+        private void ParseConditions(XElement conditions, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
         {
             if (conditions == null)
             {
@@ -110,32 +111,76 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 
             var grouping = ParseEnum(conditions, RewriteTags.LogicalGrouping, LogicalGrouping.MatchAll);
             var trackAllCaptures = ParseBool(conditions, RewriteTags.TrackAllCaptures, defaultValue: false);
-            builder.AddUrlConditions(grouping, trackAllCaptures);
+            builder.ConfigureConditionBehavior(grouping, trackAllCaptures);
 
             foreach (var cond in conditions.Elements(RewriteTags.Add))
             {
-                ParseCondition(cond, builder, patternSyntax, trackAllCaptures, global);
+                ParseCondition(cond, builder, patternSyntax);
             }
         }
 
-        private void ParseCondition(XElement condition, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax, bool trackAllCaptures, bool global)
+        private void ParseCondition(XElement conditionElement, UrlRewriteRuleBuilder builder, PatternSyntax patternSyntax)
         {
-            var ignoreCase = ParseBool(condition, RewriteTags.IgnoreCase, defaultValue: true);
-            var negate = ParseBool(condition, RewriteTags.Negate, defaultValue: false);
-            var matchType = ParseEnum(condition, RewriteTags.MatchType, MatchType.Pattern);
-            var parsedInputString = condition.Attribute(RewriteTags.Input)?.Value;
+            var ignoreCase = ParseBool(conditionElement, RewriteTags.IgnoreCase, defaultValue: true);
+            var negate = ParseBool(conditionElement, RewriteTags.Negate, defaultValue: false);
+            var matchType = ParseEnum(conditionElement, RewriteTags.MatchType, MatchType.Pattern);
+            var parsedInputString = conditionElement.Attribute(RewriteTags.Input)?.Value;
 
             if (parsedInputString == null)
             {
-                throw new InvalidUrlRewriteFormatException(condition, "Conditions must have an input attribute");
+                throw new InvalidUrlRewriteFormatException(conditionElement, "Conditions must have an input attribute");
             }
 
-            var parsedPatternString = condition.Attribute(RewriteTags.Pattern)?.Value;
-            var input = _inputParser.ParseInputString(parsedInputString, global);
-            builder.AddUrlCondition(input, parsedPatternString, patternSyntax, matchType, ignoreCase, negate, trackAllCaptures);
+            var parsedPatternString = conditionElement.Attribute(RewriteTags.Pattern)?.Value;
+            Condition condition;
+
+            switch (patternSyntax)
+            {
+                case PatternSyntax.ECMAScript:
+                {
+                    switch (matchType)
+                    {
+                        case MatchType.Pattern:
+                        {
+                            if (string.IsNullOrEmpty(parsedPatternString))
+                            {
+                                throw new FormatException("Match does not have an associated pattern attribute in condition");
+                            }
+                            condition = new UriMatchCondition(_inputParser, parsedInputString, parsedPatternString, builder.UriMatchPart, ignoreCase, negate);
+                            break;
+                        }
+                        case MatchType.IsDirectory:
+                        {
+                            condition = new Condition { Input = _inputParser.ParseInputString(parsedInputString, builder.UriMatchPart), Match = new IsDirectoryMatch(negate) };
+                            break;
+                        }
+                        case MatchType.IsFile:
+                        {
+                            condition = new Condition { Input = _inputParser.ParseInputString(parsedInputString, builder.UriMatchPart), Match = new IsFileMatch(negate) };
+                            break;
+                        }
+                        default:
+                            throw new FormatException("Unrecognized matchType");
+                    }
+                    break;
+                }
+                case PatternSyntax.Wildcard:
+                    throw new NotSupportedException("Wildcard syntax is not supported");
+                case PatternSyntax.ExactMatch:
+                    if (string.IsNullOrEmpty(parsedPatternString))
+                    {
+                        throw new FormatException("Match does not have an associated pattern attribute in condition");
+                    }
+                    condition = new Condition { Input = _inputParser.ParseInputString(parsedInputString, builder.UriMatchPart), Match = new ExactMatch(ignoreCase, parsedPatternString, negate) };
+                    break;
+                default:
+                    throw new FormatException("Unrecognized pattern syntax");
+            }
+
+            builder.AddUrlCondition(condition);
         }
 
-        private void ParseUrlAction(XElement urlAction, UrlRewriteRuleBuilder builder, bool stopProcessing, bool global)
+        private void ParseUrlAction(XElement urlAction, UrlRewriteRuleBuilder builder, bool stopProcessing)
         {
             var actionType = ParseEnum(urlAction, RewriteTags.Type, ActionType.None);
             UrlAction action;
@@ -156,7 +201,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                         }
                     }
 
-                    var urlPattern = _inputParser.ParseInputString(url, global);
+                    var urlPattern = _inputParser.ParseInputString(url, builder.UriMatchPart);
                     var appendQuery = ParseBool(urlAction, RewriteTags.AppendQueryString, defaultValue: true);
 
                     if (actionType == ActionType.Rewrite)

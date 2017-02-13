@@ -3,9 +3,9 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Rewrite.Internal
+namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
 {
-    public static class ConditionHelper
+    public static class ConditionEvaluator
     {
         public static MatchResults Evaluate(IEnumerable<Condition> conditions, RewriteContext context, BackReferenceCollection backReferences)
         {
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
                     return condResult;
                 }
 
-                if (condResult.Success && trackAllCaptures && prevBackReferences!= null)
+                if (condResult.Success && trackAllCaptures && prevBackReferences != null)
                 {
                     prevBackReferences.Add(currentBackReferences);
                     currentBackReferences = prevBackReferences;
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
                 prevBackReferences = currentBackReferences;
             }
 
-            return new MatchResults { BackReferences = prevBackReferences, Success = condResult.Success }; ;
+            return new MatchResults { BackReferences = prevBackReferences, Success = condResult.Success };
         }
     }
 }

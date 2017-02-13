@@ -14,21 +14,21 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 
         public string Name { get; set; }
         public bool Enabled { get; set; }
+        public bool Global { get; set; }
+        public UriMatchPart UriMatchPart => Global ? UriMatchPart.Full : UriMatchPart.Path;
 
         private UrlMatch _initialMatch;
-        private IList<Condition> _conditions;
+        private ConditionCollection _conditions;
         private UrlAction _action;
-        private bool _matchAny;
-        private bool _trackAllCaptures;
 
-        public IISUrlRewriteRule Build(bool global)
+        public IISUrlRewriteRule Build()
         {
             if (_initialMatch == null || _action == null)
             {
                 throw new InvalidOperationException("Cannot create UrlRewriteRule without action and match");
             }
 
-            return new IISUrlRewriteRule(Name, _initialMatch, _conditions, _action, _trackAllCaptures, global);
+            return new IISUrlRewriteRule(Name, _initialMatch, _conditions, _action, Global);
         }
 
         public void AddUrlAction(UrlAction action)
@@ -66,70 +66,31 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
             }
         }
 
-        public void AddUrlCondition(Pattern input, string pattern, PatternSyntax patternSyntax, MatchType matchType, bool ignoreCase, bool negate, bool trackAllCaptures)
+        public void ConfigureConditionBehavior(LogicalGrouping logicalGrouping, bool trackAllCaptures)
         {
-            // If there are no conditions specified
-            if (_conditions == null)
-            {
-                AddUrlConditions(LogicalGrouping.MatchAll, trackAllCaptures);
-            }
-
-            switch (patternSyntax)
-            {
-                case PatternSyntax.ECMAScript:
-                    {
-                        switch (matchType)
-                        {
-                            case MatchType.Pattern:
-                                {
-                                    if (string.IsNullOrEmpty(pattern))
-                                    {
-                                        throw new FormatException("Match does not have an associated pattern attribute in condition");
-                                    }
-
-                                    var regex = new Regex(
-                                        pattern,
-                                        ignoreCase ? RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase :
-                                            RegexOptions.CultureInvariant | RegexOptions.Compiled,
-                                        RegexTimeout);
-
-                                    _conditions.Add(new Condition { Input = input, Match = new RegexMatch(regex, negate), OrNext = _matchAny });
-                                    break;
-                                }
-                            case MatchType.IsDirectory:
-                                {
-                                    _conditions.Add(new Condition { Input = input, Match = new IsDirectoryMatch(negate), OrNext = _matchAny });
-                                    break;
-                                }
-                            case MatchType.IsFile:
-                                {
-                                    _conditions.Add(new Condition { Input = input, Match = new IsFileMatch(negate), OrNext = _matchAny });
-                                    break;
-                                }
-                            default:
-                                throw new FormatException("Unrecognized matchType");
-                        }
-                        break;
-                    }
-                case PatternSyntax.Wildcard:
-                    throw new NotSupportedException("Wildcard syntax is not supported");
-                case PatternSyntax.ExactMatch:
-                    if (pattern == null)
-                    {
-                        throw new FormatException("Match does not have an associated pattern attribute in condition");
-                    }
-                    _conditions.Add(new Condition { Input = input, Match = new ExactMatch(ignoreCase, pattern, negate), OrNext = _matchAny });
-                    break;
-                default:
-                    throw new FormatException("Unrecognized pattern syntax");
-            }
+            _conditions = new ConditionCollection(logicalGrouping, trackAllCaptures);
         }
 
-        public void AddUrlConditions(LogicalGrouping logicalGrouping, bool trackAllCaptures)
+        public void AddUrlCondition(Condition condition)
         {
-            _conditions = new List<Condition>();
-            _matchAny = logicalGrouping == LogicalGrouping.MatchAny;
-            _trackAllCaptures = trackAllCaptures;
+            if (_conditions == null)
+            {
+                throw new InvalidOperationException($"You must first configure condition behavior by calling {nameof(ConfigureConditionBehavior)}");
+            }
+            if (condition == null)
+            {
+                throw new ArgumentNullException(nameof(condition));
+            }
+            _conditions.Add(condition);
+        }
+
+        public void AddUrlConditions(IEnumerable<Condition> conditions)
+        {
+            if (_conditions == null)
+            {
+                throw new InvalidOperationException($"You must first configure condition behavior by calling {nameof(ConfigureConditionBehavior)}");
+            }
+            _conditions.AddConditions(conditions);
         }
     }
 }

@@ -22,7 +22,6 @@ namespace RewriteSample
                 .AddApacheModRewrite(env.ContentRootFileProvider, "Rewrite.txt");
 
             app.UseRewriter(options);
-
             app.Run(context => context.Response.WriteAsync($"Rewritten Url: {context.Request.Path + context.Request.QueryString}"));
         }
 

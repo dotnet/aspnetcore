@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         public void InputParser_ParseLiteralString()
         {
             var testString = "hello/hey/what";
-            var result = new InputParser().ParseInputString(testString, global: false);
+            var result = new InputParser().ParseInputString(testString, UriMatchPart.Path);
             Assert.Equal(1, result.PatternSegments.Count);
         }
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [InlineData("foo/", 1)]
         public void InputParser_ParseStringWithBackReference(string testString, int expected)
         {
-            var result = new InputParser().ParseInputString(testString, global: false);
+            var result = new InputParser().ParseInputString(testString, UriMatchPart.Path);
             Assert.Equal(expected, result.PatternSegments.Count);
         }
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [InlineData("hey/{R:1}/{C:1}", "hey/foo/foo")]
         public void EvaluateBackReferenceRule(string testString, string expected)
         {
-            var middle = new InputParser().ParseInputString(testString, global: false);
+            var middle = new InputParser().ParseInputString(testString, UriMatchPart.Path);
             var result = middle.Evaluate(CreateTestRewriteContext(), CreateTestRuleBackReferences(), CreateTestCondBackReferences());
             Assert.Equal(expected, result);
         }
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [InlineData("hey/ToLower:/what", "hey/ToLower:/what")]
         public void EvaluatToLowerRule(string testString, string expected)
         {
-            var middle = new InputParser().ParseInputString(testString, global: false);
+            var middle = new InputParser().ParseInputString(testString, UriMatchPart.Path);
             var result = middle.Evaluate(CreateTestRewriteContext(), CreateTestRuleBackReferences(), CreateTestCondBackReferences());
             Assert.Equal(expected, result);
         }
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [InlineData("hey/{UrlEncode:<hey>}", "hey/%3Chey%3E")]
         public void EvaluatUriEncodeRule(string testString, string expected)
         {
-            var middle = new InputParser().ParseInputString(testString, global: false);
+            var middle = new InputParser().ParseInputString(testString, UriMatchPart.Path);
             var result = middle.Evaluate(CreateTestRewriteContext(), CreateTestRuleBackReferences(), CreateTestCondBackReferences());
             Assert.Equal(expected, result);
         }
@@ -88,13 +88,13 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [InlineData("{HTTPS")]
         public void FormatExceptionsOnBadSyntax(string testString)
         {
-            Assert.Throws<FormatException>(() => new InputParser().ParseInputString(testString, global: false));
+            Assert.Throws<FormatException>(() => new InputParser().ParseInputString(testString, UriMatchPart.Path));
         }
 
         [Fact]
         public void Should_throw_FormatException_if_no_rewrite_maps_are_defined()
         {
-            Assert.Throws<FormatException>(() => new InputParser(null).ParseInputString("{apiMap:{R:1}}", global: false));
+            Assert.Throws<FormatException>(() => new InputParser(null).ParseInputString("{apiMap:{R:1}}", UriMatchPart.Path));
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             const string undefinedMapName = "apiMap";
             var map = new IISRewriteMap(definedMapName);
             var maps = new IISRewriteMapCollection { map };
-            Assert.Throws<FormatException>(() => new InputParser(maps).ParseInputString($"{{{undefinedMapName}:{{R:1}}}}", global: false));
+            Assert.Throws<FormatException>(() => new InputParser(maps).ParseInputString($"{{{undefinedMapName}:{{R:1}}}}", UriMatchPart.Path));
         }
 
         [Fact]
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var maps = new IISRewriteMapCollection { map };
 
             var inputString = $"{{{expectedMapName}:{{R:1}}}}";
-            var pattern = new InputParser(maps).ParseInputString(inputString, global: false);
+            var pattern = new InputParser(maps).ParseInputString(inputString, UriMatchPart.Path);
             Assert.Equal(1, pattern.PatternSegments.Count);
 
             var segment = pattern.PatternSegments.Single();

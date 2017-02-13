@@ -14,10 +14,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
         /// </summary>
         /// <param name="serverVariable">The server variable</param>
         /// <param name="context">The parser context which is utilized when an exception is thrown</param>
-        /// <param name="global">Indicates if the rule being parsed is a global rule</param>
+        /// <param name="uriMatchPart">Indicates whether the full URI or the path should be evaluated for URL segments</param>
         /// <exception cref="FormatException">Thrown when the server variable is unknown</exception>
         /// <returns>The matching <see cref="PatternSegment"/></returns>
-        public static PatternSegment FindServerVariable(string serverVariable, ParserContext context, bool global)
+        public static PatternSegment FindServerVariable(string serverVariable, ParserContext context, UriMatchPart uriMatchPart)
         {
             switch (serverVariable)
             {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                 case "HTTP_CONNECTION":
                     return new HeaderSegment(HeaderNames.Connection);
                 case "HTTP_URL":
-                    return global ? (PatternSegment)new GlobalRuleUrlSegment() : (PatternSegment)new UrlSegment();
+                    return new UrlSegment(uriMatchPart);
                 case "HTTPS":
                     return new IsHttpsUrlSegment();
                 case "LOCAL_ADDR":
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                 case "REQUEST_FILENAME":
                     return new RequestFileNameSegment();
                 case "REQUEST_URI":
-                    return global ? (PatternSegment)new GlobalRuleUrlSegment() : (PatternSegment)new UrlSegment();
+                    return new UrlSegment(uriMatchPart);
                 default:
                     throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(serverVariable, context.Index));
             }

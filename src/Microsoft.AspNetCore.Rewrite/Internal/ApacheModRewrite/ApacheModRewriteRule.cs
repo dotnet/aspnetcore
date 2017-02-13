@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
             BackReferenceCollection condBackReferences = null;
             if (Conditions != null)
             {
-                var condResult = ConditionHelper.Evaluate(Conditions, context, initMatchRes.BackReferences);
+                var condResult = ConditionEvaluator.Evaluate(Conditions, context, initMatchRes.BackReferences);
                 if (!condResult.Success)
                 {
                     context.Logger?.ModRewriteDidNotMatchRule();
