@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task InvokeAction_InvokesExceptionFilter_ShortCircuit_ExceptionNull()
+        public async Task InvokeAction_InvokesExceptionFilter_ShortCircuit_ExceptionNull_WithoutResult()
         {
             // Arrange
             var filter1 = new Mock<IExceptionFilter>(MockBehavior.Strict);
@@ -194,7 +194,47 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task InvokeAction_InvokesExceptionFilter_ShortCircuit_ExceptionHandled()
+        public async Task InvokeAction_InvokesExceptionFilter_ShortCircuit_ExceptionNull_WithResult()
+        {
+            // Arrange
+            var result = new Mock<IActionResult>(MockBehavior.Strict);
+            result
+                .Setup(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()))
+                .Returns(Task.FromResult(true))
+                .Verifiable();
+
+            var filter1 = new Mock<IExceptionFilter>(MockBehavior.Strict);
+
+            var filter2 = new Mock<IExceptionFilter>(MockBehavior.Strict);
+            filter2
+                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
+                .Callback<ExceptionContext>(context =>
+                {
+                    context.Result = result.Object;
+                    context.Exception = null;
+                })
+                .Verifiable();
+
+            // Result filters are never used when an exception bubbles up to exception filters.
+            var resultFilter = new Mock<IResultFilter>(MockBehavior.Strict);
+
+            var invoker = CreateInvoker(
+                new IFilterMetadata[] { filter1.Object, filter2.Object, resultFilter.Object },
+                actionThrows: true);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            filter2.Verify(
+                f => f.OnException(It.IsAny<ExceptionContext>()),
+                Times.Once());
+
+            result.Verify(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesExceptionFilter_ShortCircuit_ExceptionHandled_WithoutResult()
         {
             // Arrange
             var filter1 = new Mock<IExceptionFilter>(MockBehavior.Strict);
@@ -220,7 +260,47 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task InvokeAction_InvokesAsyncExceptionFilter_ShortCircuit_ExceptionNull()
+        public async Task InvokeAction_InvokesExceptionFilter_ShortCircuit_ExceptionHandled_WithResult()
+        {
+            // Arrange
+            var result = new Mock<IActionResult>(MockBehavior.Strict);
+            result
+                .Setup(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()))
+                .Returns(Task.FromResult(true))
+                .Verifiable();
+
+            var filter1 = new Mock<IExceptionFilter>(MockBehavior.Strict);
+
+            var filter2 = new Mock<IExceptionFilter>(MockBehavior.Strict);
+            filter2
+                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
+                .Callback<ExceptionContext>(context =>
+                {
+                    context.Result = result.Object;
+                    context.ExceptionHandled = true;
+                })
+                .Verifiable();
+
+            // Result filters are never used when an exception bubbles up to exception filters.
+            var resultFilter = new Mock<IResultFilter>(MockBehavior.Strict);
+
+            var invoker = CreateInvoker(
+                new IFilterMetadata[] { filter1.Object, filter2.Object, resultFilter.Object },
+                actionThrows: true);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            filter2.Verify(
+                f => f.OnException(It.IsAny<ExceptionContext>()),
+                Times.Once());
+
+            result.Verify(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesAsyncExceptionFilter_ShortCircuit_ExceptionNull_WithoutResult()
         {
             // Arrange
             var filter1 = new Mock<IExceptionFilter>(MockBehavior.Strict);
@@ -230,7 +310,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .Setup(f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()))
                 .Callback<ExceptionContext>(context =>
                 {
-                    filter2.ToString();
                     context.Exception = null;
                 })
                 .Returns<ExceptionContext>((context) => Task.FromResult(true))
@@ -249,7 +328,48 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public async Task InvokeAction_InvokesAsyncExceptionFilter_ShortCircuit_ExceptionHandled()
+        public async Task InvokeAction_InvokesAsyncExceptionFilter_ShortCircuit_ExceptionNull_WithResult()
+        {
+            // Arrange
+            var result = new Mock<IActionResult>(MockBehavior.Strict);
+            result
+                .Setup(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()))
+                .Returns(Task.FromResult(true))
+                .Verifiable();
+
+            var filter1 = new Mock<IExceptionFilter>(MockBehavior.Strict);
+            var filter2 = new Mock<IAsyncExceptionFilter>(MockBehavior.Strict);
+
+            filter2
+                .Setup(f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()))
+                .Callback<ExceptionContext>(context =>
+                {
+                    context.Exception = null;
+                    context.Result = result.Object;
+                })
+                .Returns<ExceptionContext>((context) => Task.FromResult(true))
+                .Verifiable();
+
+            // Result filters are never used when an exception bubbles up to exception filters.
+            var resultFilter = new Mock<IResultFilter>(MockBehavior.Strict);
+
+            var invoker = CreateInvoker(
+                new IFilterMetadata[] { filter1.Object, filter2.Object, resultFilter.Object },
+                actionThrows: true);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            filter2.Verify(
+                f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()),
+                Times.Once());
+
+            result.Verify(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesAsyncExceptionFilter_ShortCircuit_ExceptionHandled_WithoutResult()
         {
             // Arrange
             var filter1 = new Mock<IExceptionFilter>(MockBehavior.Strict);
@@ -273,6 +393,88 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             filter2.Verify(
                 f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()),
                 Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesAsyncExceptionFilter_ShortCircuit_ExceptionHandled_WithResult()
+        {
+            // Arrange
+            var result = new Mock<IActionResult>(MockBehavior.Strict);
+            result
+                .Setup(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()))
+                .Returns(Task.FromResult(true))
+                .Verifiable();
+
+            var filter1 = new Mock<IExceptionFilter>(MockBehavior.Strict);
+            var filter2 = new Mock<IAsyncExceptionFilter>(MockBehavior.Strict);
+
+            filter2
+                .Setup(f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()))
+                .Callback<ExceptionContext>(context =>
+                {
+                    context.ExceptionHandled = true;
+                    context.Result = result.Object;
+                })
+                .Returns<ExceptionContext>((context) => Task.FromResult(true))
+                .Verifiable();
+
+            // Result filters are never used when an exception bubbles up to exception filters.
+            var resultFilter = new Mock<IResultFilter>(MockBehavior.Strict);
+
+            var invoker = CreateInvoker(
+                new IFilterMetadata[] { filter1.Object, filter2.Object, resultFilter.Object },
+                actionThrows: true);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            filter2.Verify(
+                f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()),
+                Times.Once());
+
+            result.Verify(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesAsyncExceptionFilter_SettingResultDoesNotShortCircuit()
+        {
+            // Arrange
+            var result = new Mock<IActionResult>(MockBehavior.Strict);
+            result
+                .Setup(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()))
+                .Returns<ActionContext>((context) => Task.FromResult(true))
+                .Verifiable();
+
+            var filter1 = new Mock<IAsyncExceptionFilter>(MockBehavior.Strict);
+            filter1
+                .Setup(f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()))
+                .Callback<ExceptionContext>(context =>
+                {
+                    context.Result = result.Object;
+                })
+                .Returns<ExceptionContext>((context) => Task.FromResult(true))
+                .Verifiable();
+
+            var filter2 = new Mock<IExceptionFilter>(MockBehavior.Strict);
+            filter2
+                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
+                .Callback<ExceptionContext>(c => { }) // Does nothing, we just want to verify that it was called.
+                .Verifiable();
+
+            var resultFilter = new Mock<IResultFilter>(MockBehavior.Strict);
+
+            var invoker = CreateInvoker(
+                new IFilterMetadata[] { filter1.Object, filter2.Object, resultFilter.Object },
+                actionThrows: true);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            filter1.Verify(f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()), Times.Once());
+            filter2.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Once());
+            result.Verify(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
         }
 
         [Fact]
@@ -318,6 +520,43 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             filter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Once());
+            result.Verify(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_InvokesExceptionFilter_SettingResultDoesNotShortCircuit()
+        {
+            // Arrange
+            var result = new Mock<IActionResult>(MockBehavior.Strict);
+            result
+                .Setup(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()))
+                .Returns<ActionContext>((context) => Task.FromResult(true))
+                .Verifiable();
+
+            var filter1 = new Mock<IExceptionFilter>(MockBehavior.Strict);
+            filter1
+                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
+                .Callback<ExceptionContext>(c => c.Result = result.Object)
+                .Verifiable();
+
+            var filter2 = new Mock<IExceptionFilter>(MockBehavior.Strict);
+            filter2
+                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
+                .Callback<ExceptionContext>(c => { }) // Does nothing, we just want to verify that it was called.
+                .Verifiable();
+
+            var resultFilter = new Mock<IResultFilter>(MockBehavior.Strict);
+
+            var invoker = CreateInvoker(
+                new IFilterMetadata[] { filter1.Object, filter2.Object, resultFilter.Object },
+                actionThrows: true);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            filter1.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Once());
+            filter2.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Once());
             result.Verify(r => r.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
         }
 

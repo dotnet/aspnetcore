@@ -168,6 +168,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                         if (exceptionContext.Exception == null || exceptionContext.ExceptionHandled)
                         {
+                            // We don't need to do anthing to trigger a short circuit. If there's another
+                            // exception filter on the stack it will check the same set of conditions
+                            // and then just skip itself.
                             _logger.ExceptionFilterShortCircuited(filter);
                         }
 
@@ -205,6 +208,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                             if (exceptionContext.Exception == null || exceptionContext.ExceptionHandled)
                             {
+                                // We don't need to do anthing to trigger a short circuit. If there's another
+                                // exception filter on the stack it will check the same set of conditions
+                                // and then just skip itself.
                                 _logger.ExceptionFilterShortCircuited(filter);
                             }
                         }
@@ -217,10 +223,22 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         goto case State.ActionBegin;
                     }
 
-                case State.ExceptionShortCircuit:
+                case State.ExceptionHandled:
                     {
+                        // We arrive in this state when an exception happened, but was handled by exception filters
+                        // either by setting ExceptionHandled, or nulling out the Exception or setting a result
+                        // on the ExceptionContext.
+                        //
+                        // We need to execute the result (if any) and then exit gracefully which unwinding Resource 
+                        // filters.
+
                         Debug.Assert(state != null);
                         Debug.Assert(_exceptionContext != null);
+
+                        if (_exceptionContext.Result == null)
+                        {
+                            _exceptionContext.Result = new EmptyResult();
+                        }
 
                         if (scope == Scope.Resource)
                         {
@@ -250,12 +268,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                         if (exceptionContext != null)
                         {
-                            if (exceptionContext.Result != null && !exceptionContext.ExceptionHandled)
+                            if (exceptionContext.Result != null ||
+                                exceptionContext.Exception == null ||
+                                exceptionContext.ExceptionHandled)
                             {
-                                goto case State.ExceptionShortCircuit;
+                                goto case State.ExceptionHandled;
                             }
 
                             Rethrow(exceptionContext);
+                            Debug.Fail("unreachable");
                         }
 
                         goto case State.ResultBegin;
@@ -970,7 +991,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ExceptionSyncBegin,
             ExceptionSyncEnd,
             ExceptionInside,
-            ExceptionShortCircuit,
+            ExceptionHandled,
             ExceptionEnd,
             ActionBegin,
             ActionNext,
