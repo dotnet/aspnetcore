@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 
             var irDocument = CreateIRDocument(engine, codeDocument);
 
-            var expectedVCTHName = "AspNetCore.Generated_test.__Generated__TagCloudViewComponentTagHelper";
+            var expectedVCTHName = "AspNetCore.test_cshtml.__Generated__TagCloudViewComponentTagHelper";
 
             // Act
             pass.Execute(codeDocument, irDocument);
@@ -179,7 +179,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
 
             var irDocument = CreateIRDocument(engine, codeDocument);
 
-            var expectedVCTHName = "AspNetCore.Generated_test.__Generated__TagCloudViewComponentTagHelper";
+            var expectedVCTHName = "AspNetCore.test_cshtml.__Generated__TagCloudViewComponentTagHelper";
 
             // Act
             pass.Execute(codeDocument, irDocument);
@@ -268,7 +268,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
             var irDocument = CreateIRDocument(engine, codeDocument);
 
             var expectedTagHelperName = "PTestTagHelper";
-            var expectedVCTHName = "AspNetCore.Generated_test.__Generated__TagCloudViewComponentTagHelper";
+            var expectedVCTHName = "AspNetCore.test_cshtml.__Generated__TagCloudViewComponentTagHelper";
 
             // Act
             pass.Execute(codeDocument, irDocument);

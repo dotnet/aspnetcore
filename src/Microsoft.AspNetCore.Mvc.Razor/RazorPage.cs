@@ -5,11 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Security.Claims;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
@@ -30,34 +27,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </summary>
         public RazorPage()
         {
-
         }
-
-        /// <summary>
-        /// Gets the <see cref="System.Text.Encodings.Web.HtmlEncoder"/> to use when this <see cref="RazorPage"/>
-        /// handles non-<see cref="IHtmlContent"/> C# expressions.
-        /// </summary>
-        [RazorInject]
-        public HtmlEncoder HtmlEncoder { get; set; }
-
-        /// <summary>
-        /// Gets or sets a <see cref="DiagnosticSource.DiagnosticSource"/> instance used to instrument the page execution.
-        /// </summary>
-        [RazorInject]
-        public DiagnosticSource DiagnosticSource { get; set; }
-
-        /// <summary>
-        /// Gets the <see cref="ClaimsPrincipal"/> of the current logged in user.
-        /// </summary>
-        public virtual ClaimsPrincipal User => Context?.User;
 
         /// <summary>
         /// Gets the <see cref="ITempDataDictionary"/> from the <see cref="ViewContext"/>.
         /// </summary>
         /// <remarks>Returns null if <see cref="ViewContext"/> is null.</remarks>
         public ITempDataDictionary TempData => ViewContext?.TempData;
-
-        protected override HtmlEncoder Encoder => HtmlEncoder;
 
         /// <summary>
         /// Format an error message about using an indexer when the tag helper property is <c>null</c>.

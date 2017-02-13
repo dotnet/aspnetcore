@@ -26,23 +26,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         public PageContext PageContext { get; set; }
 
-        /// <summary>
-        /// Gets or sets a <see cref="System.Diagnostics.DiagnosticSource"/> instance used to instrument the page execution.
-        /// </summary>
-        [RazorInject]
-        public DiagnosticSource DiagnosticSource { get; set; }
-
-        /// <summary>
-        /// Gets the <see cref="System.Text.Encodings.Web.HtmlEncoder"/> to use when this <see cref="RazorPage"/>
-        /// handles non-<see cref="IHtmlContent"/> C# expressions.
-        /// </summary>
-        [RazorInject]
-        public HtmlEncoder HtmlEncoder
-        {
-            get { return Encoder; }
-            set { Encoder = value; }
-        }
-
         public PageArgumentBinder Binder
         {
             get

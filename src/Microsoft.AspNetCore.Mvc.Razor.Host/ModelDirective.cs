@@ -68,20 +68,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                 var visitor = new Visitor();
                 var modelType = GetModelType(irDocument, visitor);
 
-                var baseType = visitor.Class.BaseType;
+                var baseType = visitor.Class?.BaseType?.Replace("<TModel>", "<" + modelType + ">");
                 for (var i = visitor.InheritsDirectives.Count - 1; i >= 0; i--)
                 {
                     var directive = visitor.InheritsDirectives[i];
                     var tokens = directive.Tokens.ToArray();
                     if (tokens.Length >= 1)
                     {
-                        baseType = tokens[0].Content;
+                        baseType = tokens[0].Content.Replace("<TModel>", "<" + modelType + ">");
+                        tokens[0].Content = baseType;
                         break;
                     }
                 }
 
-                visitor.Class.BaseType = baseType.Replace("<TModel>", "<" + modelType + ">");
-
+                visitor.Class.BaseType = baseType;
                 return irDocument;
             }
         }

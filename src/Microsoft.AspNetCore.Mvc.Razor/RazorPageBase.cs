@@ -5,11 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
@@ -82,7 +84,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <inheritdoc />
         public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; }
 
-        protected virtual HtmlEncoder Encoder { get; set; }
+        /// <summary>
+        /// Gets or sets a <see cref="System.Diagnostics.DiagnosticSource"/> instance used to instrument the page execution.
+        /// </summary>
+        [RazorInject]
+        public DiagnosticSource DiagnosticSource { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="System.Text.Encodings.Web.HtmlEncoder"/> to use when this <see cref="RazorPage"/>
+        /// handles non-<see cref="IHtmlContent"/> C# expressions.
+        /// </summary>
+        [RazorInject]
+        public HtmlEncoder HtmlEncoder { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="ClaimsPrincipal"/> of the current logged in user.
+        /// </summary>
+        public virtual ClaimsPrincipal User => Context?.User;
 
         protected Stack<TagHelperScopeInfo> TagHelperScopes { get; } = new Stack<TagHelperScopeInfo>();
 
@@ -143,12 +161,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public void StartTagHelperWritingScope(HtmlEncoder encoder)
         {
             var buffer = new ViewBuffer(BufferScope, Path, ViewBuffer.TagHelperPageSize);
-            TagHelperScopes.Push(new TagHelperScopeInfo(buffer, Encoder, ViewContext.Writer));
+            TagHelperScopes.Push(new TagHelperScopeInfo(buffer, HtmlEncoder, ViewContext.Writer));
 
             // If passed an HtmlEncoder, override the property.
             if (encoder != null)
             {
-                Encoder = encoder;
+                HtmlEncoder = encoder;
             }
 
             // We need to replace the ViewContext's Writer to ensure that all content (including content written
@@ -162,6 +180,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <returns>The buffered <see cref="TagHelperContent"/>.</returns>
         public TagHelperContent EndTagHelperWritingScope()
         {
+            if (TagHelperScopes.Count == 0)
+            {
+                throw new InvalidOperationException(Resources.RazorPage_ThereIsNoActiveWritingScopeToEnd);
+            }
+
             var scopeInfo = TagHelperScopes.Pop();
 
             // Get the content written during the current scope.
@@ -169,7 +192,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             tagHelperContent.AppendHtml(scopeInfo.Buffer);
 
             // Restore previous scope.
-            Encoder = scopeInfo.Encoder;
+            HtmlEncoder = scopeInfo.HtmlEncoder;
             ViewContext.Writer = scopeInfo.Writer;
 
             return tagHelperContent;
@@ -187,6 +210,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </remarks>
         public void BeginWriteTagHelperAttribute()
         {
+            if (_pageWriter != null)
+            {
+                throw new InvalidOperationException(Resources.RazorPage_NestingAttributeWritingScopesNotSupported);
+            }
+
             _pageWriter = ViewContext.Writer;
 
             if (_valueBuffer == null)
@@ -210,6 +238,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </remarks>
         public string EndWriteTagHelperAttribute()
         {
+            if (_pageWriter == null)
+            {
+                throw new InvalidOperationException(Resources.RazorPage_ThereIsNoActiveWritingScopeToEnd);
+            }
+
             var content = _valueBuffer.ToString();
             _valueBuffer.GetStringBuilder().Clear();
 
@@ -290,7 +323,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 throw new ArgumentNullException(nameof(writer));
             }
 
-            WriteTo(writer, Encoder, value);
+            WriteTo(writer, HtmlEncoder, value);
         }
 
         /// <summary>
@@ -366,7 +399,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 throw new ArgumentNullException(nameof(writer));
             }
 
-            WriteTo(writer, Encoder, value);
+            WriteTo(writer, HtmlEncoder, value);
         }
 
         private static void WriteTo(TextWriter writer, HtmlEncoder encoder, string value)
@@ -643,7 +676,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             if (TagHelperScopes.Count > 0)
             {
                 throw new InvalidOperationException(
-                    "Resources.FormatRazorPage_CannotFlushWhileInAWritingScope(nameof(FlushAsync), Path))");
+                    Resources.FormatRazorPage_CannotFlushWhileInAWritingScope(nameof(FlushAsync), Path));
             }
 
             // Calls to Flush are allowed if the page does not specify a Layout or if it is executing a section in the
@@ -790,13 +823,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             public TagHelperScopeInfo(ViewBuffer buffer, HtmlEncoder encoder, TextWriter writer)
             {
                 Buffer = buffer;
-                Encoder = encoder;
+                HtmlEncoder = encoder;
                 Writer = writer;
             }
 
             public ViewBuffer Buffer { get; }
 
-            public HtmlEncoder Encoder { get; }
+            public HtmlEncoder HtmlEncoder { get; }
 
             public TextWriter Writer { get; }
         }
