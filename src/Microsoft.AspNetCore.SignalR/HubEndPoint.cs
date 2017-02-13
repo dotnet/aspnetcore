@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -251,7 +252,7 @@ namespace Microsoft.AspNetCore.SignalR
                 Id = invocationDescriptor.Id
             };
 
-            var methodInfo = descriptor.MethodInfo;
+            var methodExecutor = descriptor.MethodExecutor;
 
             using (var scope = _serviceScopeFactory.CreateScope())
             {
@@ -262,21 +263,24 @@ namespace Microsoft.AspNetCore.SignalR
                 {
                     InitializeHub(hub, connection);
 
-                    var result = methodInfo.Invoke(hub, invocationDescriptor.Arguments);
-                    var resultTask = result as Task;
-                    if (resultTask != null)
+                    object result = null;
+                    if (methodExecutor.IsMethodAsync)
                     {
-                        await resultTask;
-                        if (methodInfo.ReturnType.GetTypeInfo().IsGenericType)
+                        if (methodExecutor.TaskGenericType == null)
                         {
-                            var property = resultTask.GetType().GetProperty("Result");
-                            invocationResult.Result = property?.GetValue(resultTask);
+                            await (Task)methodExecutor.Execute(hub, invocationDescriptor.Arguments);
+                        }
+                        else
+                        {
+                            result = await methodExecutor.ExecuteAsync(hub, invocationDescriptor.Arguments);
                         }
                     }
                     else
                     {
-                        invocationResult.Result = result;
+                        result = methodExecutor.Execute(hub, invocationDescriptor.Arguments);
                     }
+
+                    invocationResult.Result = result;
                 }
                 catch (TargetInvocationException ex)
                 {
@@ -306,9 +310,9 @@ namespace Microsoft.AspNetCore.SignalR
 
         private void DiscoverHubMethods()
         {
-            var type = typeof(THub);
+            var typeInfo = typeof(THub).GetTypeInfo();
 
-            foreach (var methodInfo in type.GetTypeInfo().DeclaredMethods.Where(m => IsHubMethod(m)))
+            foreach (var methodInfo in typeInfo.DeclaredMethods.Where(m => IsHubMethod(m)))
             {
                 var methodName = methodInfo.Name;
 
@@ -317,7 +321,8 @@ namespace Microsoft.AspNetCore.SignalR
                     throw new NotSupportedException($"Duplicate definitions of '{methodInfo.Name}'. Overloading is not supported.");
                 }
 
-                _methods[methodName] = new HubMethodDescriptor(methodInfo);
+                var executor = ObjectMethodExecutor.Create(methodInfo, typeInfo);
+                _methods[methodName] = new HubMethodDescriptor(executor);
 
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
@@ -362,13 +367,13 @@ namespace Microsoft.AspNetCore.SignalR
         // REVIEW: We can decide to move this out of here if we want pluggable hub discovery
         private class HubMethodDescriptor
         {
-            public HubMethodDescriptor(MethodInfo methodInfo)
+            public HubMethodDescriptor(ObjectMethodExecutor methodExecutor)
             {
-                MethodInfo = methodInfo;
-                ParameterTypes = methodInfo.GetParameters().Select(p => p.ParameterType).ToArray();
+                MethodExecutor = methodExecutor;
+                ParameterTypes = methodExecutor.ActionParameters.Select(p => p.ParameterType).ToArray();
             }
 
-            public MethodInfo MethodInfo { get; }
+            public ObjectMethodExecutor MethodExecutor { get; }
 
             public Type[] ParameterTypes { get; }
         }
