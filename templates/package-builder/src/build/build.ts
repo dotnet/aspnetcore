@@ -149,8 +149,24 @@ function buildDotNetNewNuGetPackage() {
             shortName: `${templateConfig.dotNetNewId.toLowerCase()}`,
             tags: { language: 'C#', type: 'project' },
             sourceName: sourceProjectName,
-            preferNameDirectory: true,
-            symbols: {}
+            sources: [{
+                source: './',
+                target: './',
+                exclude: ['.deployment', '.template.config/**', 'project.json', '*.xproj']
+            }],
+            symbols: {
+                sdkVersion: {
+                    type: 'bind',
+                    binding: 'dotnet-cli-version',
+                    replaces: '1.0.0-preview2-1-003177'
+                },
+                dockerBaseImage: {
+                    type: 'parameter',
+                    replaces: 'microsoft/dotnet:1.1.0-sdk-projectjson',
+                    defaultValue: 'microsoft/dotnet:1.1.0-sdk-msbuild'
+                }
+            },
+            preferNameDirectory: true
         }, null, 2));
 
         fs.writeFileSync(path.join(templateConfigDir, 'dotnetcli.host.json'), JSON.stringify({
