@@ -25,6 +25,9 @@ build_script:
 artifacts:
   - path: templates\package-builder\dist\artifacts\generator-aspnetcore-spa.tar.gz
     name: generator-aspnetcore-spa
+  - path: templates\package-builder\dist\artifacts\*.nupkg
+    name: Microsoft.AspNetCore.SpaTemplates
+    type: NuGetPackage
 #  - build.cmd verify
 clone_depth: 1
 test_script:
