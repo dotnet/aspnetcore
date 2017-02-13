@@ -44,8 +44,7 @@ interface TemplateConfig {
 }
 
 const templates: TemplateConfig[] = [
-    { value: 'angular-2', rootDir: 'angular-2', name: 'Angular 2.0.2', tests: true, mapFilenames: { '^package\\-[\\d\\.]+.json$': false } },
-    { value: 'angular-245', rootDir: 'angular-2', name: 'Angular 2.4.5 (experimental)', tests: true, mapFilenames: { '^package.json$': false, '^package\\-2\\.4\\.5.json$': 'package.json' } },
+    { value: 'angular', rootDir: 'angular', name: 'Angular', tests: true },
     { value: 'aurelia', rootDir: 'aurelia', name: 'Aurelia', tests: false },
     { value: 'knockout', rootDir: 'knockout', name: 'Knockout', tests: false },
     { value: 'react', rootDir: 'react', name: 'React', tests: false },
