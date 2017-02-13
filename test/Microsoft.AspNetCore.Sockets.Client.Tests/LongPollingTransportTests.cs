@@ -12,6 +12,7 @@ using Moq;
 using Moq.Protected;
 using Xunit;
 using Microsoft.AspNetCore.Sockets.Internal;
+using Microsoft.AspNetCore.SignalR.Tests.Common;
 
 namespace Microsoft.AspNetCore.Sockets.Client.Tests
 {
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 Assert.False(transportActiveTask.IsCompleted);
             }
 
-            Assert.Equal(transportActiveTask, await Task.WhenAny(Task.Delay(1000), transportActiveTask));
+            await transportActiveTask.OrTimeout();
         }
 
         [Fact]
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 var channelConnection = new ChannelConnection<Message>(connectionToTransport, transportToConnection);
                 await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
 
-                Assert.Equal(longPollingTransport.Running, await Task.WhenAny(Task.Delay(1000), longPollingTransport.Running));
+                await longPollingTransport.Running.OrTimeout();
                 Assert.True(transportToConnection.In.Completion.IsCompleted);
             }
         }
@@ -92,8 +93,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 var channelConnection = new ChannelConnection<Message>(connectionToTransport, transportToConnection);
                 await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
 
-                Assert.Equal(longPollingTransport.Running, await Task.WhenAny(Task.Delay(1000), longPollingTransport.Running));
-                var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await transportToConnection.In.Completion);
+                var exception = 
+                    await Assert.ThrowsAsync<HttpRequestException>(async () => await transportToConnection.In.Completion.OrTimeout());
                 Assert.Contains(" 500 ", exception.Message);
             }
         }
@@ -123,13 +124,10 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
                 await connectionToTransport.Out.WriteAsync(new Message());
 
-                Assert.Equal(longPollingTransport.Running, await Task.WhenAny(Task.Delay(1000), longPollingTransport.Running));
-
-                await Assert.ThrowsAsync<HttpRequestException>(async () => await longPollingTransport.Running);
+                await Assert.ThrowsAsync<HttpRequestException>(async () => await longPollingTransport.Running.OrTimeout());
 
                 // The channel needs to be drained for the Completion task to be completed
-                Message message;
-                while (transportToConnection.In.TryRead(out message))
+                while (transportToConnection.In.TryRead(out Message message))
                 {
                     message.Dispose();
                 }
@@ -161,8 +159,10 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
                 connectionToTransport.Out.Complete();
 
-                Assert.Equal(longPollingTransport.Running, await Task.WhenAny(Task.Delay(1000), longPollingTransport.Running));
-                Assert.Equal(connectionToTransport.In.Completion, await Task.WhenAny(Task.Delay(1000), connectionToTransport.In.Completion));
+                await longPollingTransport.Running.OrTimeout();
+
+                await longPollingTransport.Running.OrTimeout();
+                await connectionToTransport.In.Completion.OrTimeout();
             }
         }
     }

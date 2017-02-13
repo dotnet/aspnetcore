@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Moq;
 using Xunit;
+using Microsoft.AspNetCore.SignalR.Tests.Common;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {

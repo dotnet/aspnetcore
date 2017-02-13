@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
 using Xunit;
+using Microsoft.AspNetCore.SignalR.Tests.Common;
 
 namespace Microsoft.AspNetCore.Sockets.Client.Tests
 {
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                     Assert.Equal(connectionUrl, connection.Url);
                 }
 
-                Assert.Equal(longPollingTransport.Running, await Task.WhenAny(Task.Delay(1000), longPollingTransport.Running));
+                await longPollingTransport.Running.OrTimeout();
             }
         }
 
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
                 await connection.StopAsync();
 
-                Assert.Equal(longPollingTransport.Running, await Task.WhenAny(Task.Delay(1000), longPollingTransport.Running));
+                await longPollingTransport.Running.OrTimeout();
             }
         }
 
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                     Assert.False(longPollingTransport.Running.IsCompleted);
                 }
 
-                Assert.Equal(longPollingTransport.Running, await Task.WhenAny(Task.Delay(1000), longPollingTransport.Running));
+                await longPollingTransport.Running.OrTimeout();
             }
         }
 
@@ -113,8 +114,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 var data = new byte[] { 1, 1, 2, 3, 5, 8 };
                 await connection.SendAsync(data, Format.Binary);
 
-                Assert.Equal(sendTcs.Task, await Task.WhenAny(Task.Delay(1000), sendTcs.Task));
-                Assert.Equal(data, sendTcs.Task.Result);
+                Assert.Equal(data, await sendTcs.Task.OrTimeout());
             }
         }
 

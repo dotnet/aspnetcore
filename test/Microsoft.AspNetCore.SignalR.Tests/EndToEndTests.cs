@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 
 using ClientConnection = Microsoft.AspNetCore.Sockets.Client.Connection;
+using Microsoft.AspNetCore.SignalR.Tests.Common;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {

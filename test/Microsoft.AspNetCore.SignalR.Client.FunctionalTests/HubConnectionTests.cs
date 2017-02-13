@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -117,9 +118,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     });
 
                     await connection.Invoke<Task>("CallEcho", originalMessage);
-                    var completed = await Task.WhenAny(Task.Delay(2000), tcs.Task);
-                    Assert.True(completed == tcs.Task, "Receive timed out!");
-                    Assert.Equal(originalMessage, tcs.Task.Result);
+
+                    Assert.Equal(originalMessage, await tcs.Task.OrTimeout());
                 }
             }
         }
