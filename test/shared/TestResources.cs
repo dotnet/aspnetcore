@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Testing
     public static class TestResources
     {
         private static readonly string _testCertificatePath =
-#if NET451
+#if NET452
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "testCert.pfx");
 #else
             Path.Combine(AppContext.BaseDirectory, "testCert.pfx");

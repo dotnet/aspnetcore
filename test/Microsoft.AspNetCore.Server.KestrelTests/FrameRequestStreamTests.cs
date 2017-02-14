@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await Assert.ThrowsAsync<NotSupportedException>(() => stream.WriteAsync(new byte[1], 0, 1));
         }
 
-#if NET451
+#if NET452
         [Fact]
         public void BeginWriteThrows()
         {
