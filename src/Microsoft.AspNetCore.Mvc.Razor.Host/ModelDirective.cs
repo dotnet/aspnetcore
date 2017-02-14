@@ -56,14 +56,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             }
         }
 
-        internal class Pass : IRazorIRPass
+        internal class Pass : RazorIRPassBase, IRazorDirectiveClassifierPass
         {
-            public RazorEngine Engine { get; set; }
-
             // Runs after the @inherits directive
-            public int Order => RazorIRPass.DirectiveClassifierOrder + 5;
+            public override int Order => 5;
 
-            public DocumentIRNode Execute(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+            public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
             {
                 var visitor = new Visitor();
                 var modelType = GetModelType(irDocument, visitor);
@@ -82,7 +80,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                 }
 
                 visitor.Class.BaseType = baseType;
-                return irDocument;
             }
         }
 

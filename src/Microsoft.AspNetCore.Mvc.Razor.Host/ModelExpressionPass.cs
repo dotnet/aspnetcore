@@ -8,18 +8,12 @@ using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Host
 {
-    public class ModelExpressionPass : IRazorIRPass
+    public class ModelExpressionPass : RazorIRPassBase, IRazorIROptimizationPass
     {
-        public RazorEngine Engine { get; set; }
-
-        public int Order => RazorIRPass.LoweringOrder;
-
-        public DocumentIRNode Execute(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             var visitor = new Visitor();
             visitor.Visit(irDocument);
-
-            return irDocument;
         }
 
         private class Visitor : RazorIRNodeWalker

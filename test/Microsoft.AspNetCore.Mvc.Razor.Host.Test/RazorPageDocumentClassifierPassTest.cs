@@ -233,11 +233,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 
         private static DocumentIRNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
         {
-            var phases = engine.Phases.TakeWhile(p => !(p is IRazorIRPhase));
-
-            foreach (var phase in phases)
+            for (var i = 0; i < engine.Phases.Count; i++)
             {
+                var phase = engine.Phases[i];
                 phase.Execute(codeDocument);
+
+                if (phase is IRazorIRLoweringPhase)
+                {
+                    break;
+                }
             }
 
             return codeDocument.GetIRDocument();

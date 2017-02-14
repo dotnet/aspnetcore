@@ -20,13 +20,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             return builder;
         }
 
-        internal class Pass : IRazorIRPass
+        internal class Pass : RazorIRPassBase, IRazorDirectiveClassifierPass
         {
-            public RazorEngine Engine { get; set; }
-
-            public int Order => RazorIRPass.DirectiveClassifierOrder;
-
-            public DocumentIRNode Execute(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+            public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
             {
                 var visitor = new Visitor();
                 visitor.Visit(irDocument);
@@ -62,8 +58,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 
                     visitor.Class.Children.Add(member);
                 }
-
-                return irDocument;
             }
         }
 
@@ -89,7 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                 {
                     Directives.Add(node);
                 }
-                }
             }
         }
+    }
 }

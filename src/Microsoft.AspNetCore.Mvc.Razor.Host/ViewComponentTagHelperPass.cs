@@ -11,13 +11,9 @@ using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Host
 {
-    public class ViewComponentTagHelperPass : IRazorIRPass
+    public class ViewComponentTagHelperPass : RazorIRPassBase, IRazorIROptimizationPass
     {
-        public RazorEngine Engine { get; set; }
-
-        public int Order => RazorIRPass.LoweringOrder;
-
-        public DocumentIRNode Execute(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             var visitor = new Visitor();
             visitor.Visit(irDocument);
@@ -25,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             if (visitor.Class == null || visitor.TagHelpers.Count == 0)
             {
                 // Nothing to do, bail.
-                return irDocument;
+                return;
             }
 
             foreach (var tagHelper in visitor.TagHelpers)
@@ -42,8 +38,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             {
                 RewriteCreateNode(visitor.Namespace, visitor.Class, createNode);
             }
-
-            return irDocument;
         }
 
         private void GenerateVCTHClass(ClassDeclarationIRNode @class, TagHelperDescriptor tagHelper)

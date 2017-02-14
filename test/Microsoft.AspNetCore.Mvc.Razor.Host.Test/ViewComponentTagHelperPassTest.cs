@@ -187,12 +187,12 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
             // Assert
             var tagHelper = FindTagHelperNode(irDocument);
             Assert.Equal(expectedVCTHName, Assert.IsType<CreateTagHelperIRNode>(tagHelper.Children[1]).TagHelperTypeName);
-            Assert.IsType<AddPreallocatedTagHelperHtmlAttributeIRNode>(tagHelper.Children[2]);
+            Assert.IsType<AddTagHelperHtmlAttributeIRNode>(tagHelper.Children[2]);
 
             var @class = FindClassNode(irDocument);
-            Assert.Equal(4, @class.Children.Count);
+            Assert.Equal(3, @class.Children.Count);
 
-            var vcthClass = Assert.IsType<CSharpStatementIRNode>(@class.Children[3]);
+            var vcthClass = Assert.IsType<CSharpStatementIRNode>(@class.Children[2]);
             Assert.Equal(@"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
 public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
 {
@@ -339,7 +339,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
                 var phase = engine.Phases[i];
                 phase.Execute(codeDocument);
 
-                if (phase is IRazorIRPhase)
+                if (phase is IRazorDirectiveClassifierPhase)
                 {
                     break;
                 }

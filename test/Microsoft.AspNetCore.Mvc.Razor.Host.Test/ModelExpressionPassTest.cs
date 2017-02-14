@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                 var phase = engine.Phases[i];
                 phase.Execute(codeDocument);
 
-                if (phase is IRazorIRPhase)
+                if (phase is IRazorDirectiveClassifierPhase)
                 {
                     break;
                 }

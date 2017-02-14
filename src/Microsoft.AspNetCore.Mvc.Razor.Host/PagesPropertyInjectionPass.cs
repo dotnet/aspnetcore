@@ -6,17 +6,13 @@ using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Host
 {
-    public class PagesPropertyInjectionPass : IRazorIRPass
+    public class PagesPropertyInjectionPass : RazorIRPassBase, IRazorIROptimizationPass
     {
-        public RazorEngine Engine { get; set; }
-
-        public int Order => RazorIRPass.LoweringOrder;
-
-        public DocumentIRNode Execute(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
             if (irDocument.DocumentKind != RazorPageDocumentClassifierPass.RazorPageDocumentKind)
             {
-                return irDocument;
+                return;
             }
 
             var modelType = ModelDirective.GetModelType(irDocument);
@@ -39,8 +35,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 
             @class.Children.Add(vddProperty);
             @class.Children.Add(modelProperty);
-
-            return irDocument;
         }
 
         private class Visitor : RazorIRNodeWalker
