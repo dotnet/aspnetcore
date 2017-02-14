@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             Assert.Equal(expectedData, memoryStream.ToArray());
         }
 
-#if NET451
+#if NET452
         [Fact]
         public async Task DoesNotFlush_UnderlyingStream_OnClosingWriter()
         {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             Assert.Equal(0, stream.FlushAsyncCallCount);
         }
 
-#if NET451
+#if NET452
         [Fact]
         public async Task DoesNotClose_UnderlyingStream_OnDisposingWriter()
         {
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             await writer.WriteAsync(new string('a', byteLength));
 
             // Act
-#if NET451
+#if NET452
             writer.Close();
 #else
             writer.Dispose();
@@ -502,7 +502,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
                 return base.WriteAsync(buffer, offset, count, cancellationToken);
             }
 
-#if NET451
+#if NET452
             public override void Close()
             {
                 CloseCallCount++;

@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Http
             contextFactory.Dispose(context);
         }
 
-#if NET451
+#if NET452
         private static void DomainFunc()
         {
             var accessor = new HttpContextAccessor();
