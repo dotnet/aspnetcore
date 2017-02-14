@@ -8,7 +8,7 @@ Install `Microsoft.DotNet.Watcher.Tools` as a `DotNetCliToolReference` to your p
 
 ```xml
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="1.0.0-msbuild2-final" />
+    <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="1.0.0-msbuild3-final" />
   </ItemGroup>
 ```
 
