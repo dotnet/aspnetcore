@@ -13,21 +13,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     {
         private static readonly Lazy<bool> _ipv6Supported = new Lazy<bool>(CanBindToIPv6Address);
 
-        public bool IsMet
-        {
-            get
-            {
-                return _ipv6Supported.Value;
-            }
-        }
+        public bool IsMet => _ipv6Supported.Value;
 
-        public string SkipReason
-        {
-            get
-            {
-                return "IPv6 not supported on the host.";
-            }
-        }
+        public string SkipReason => "IPv6 not supported on the host.";
 
         private static bool CanBindToIPv6Address()
         {
