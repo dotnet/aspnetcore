@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests
@@ -460,6 +461,34 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 exception.Message);
         }
 
+        [Fact]
+        public async Task ActionParameter_CustomModelBinder_CanCreateModels_ForParameterlessConstructorTypes()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(binderProvider: new CustomComplexTypeModelBinderProvider());
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "prefix",
+                ParameterType = typeof(ClassWithNoDefaultConstructor)
+            };
+            var testContext = ModelBindingTestHelper.GetTestContext();
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            // Model
+            Assert.NotNull(modelBindingResult.Model);
+            var boundModel = Assert.IsType<ClassWithNoDefaultConstructor>(modelBindingResult.Model);
+            Assert.Equal(100, boundModel.Id);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+        }
+
         private struct PointStruct
         {
             public PointStruct(double x, double y)
@@ -479,8 +508,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private class ClassWithNoDefaultConstructor
         {
-            public ClassWithNoDefaultConstructor(int id) { }
+            public ClassWithNoDefaultConstructor(int id)
+            {
+                Id = id;
+            }
             public string City { get; set; }
+            public int Id { get; }
         }
 
         private abstract class AbstractClassWithNoDefaultConstructor
@@ -560,6 +593,35 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
+            }
+        }
+
+        // By default the ComplexTypeModelBinder fails to construct models for types with no parameterless constructor,
+        // but a developer could change this behavior by overridng CreateModel
+        private class CustomComplexTypeModelBinder : ComplexTypeModelBinder
+        {
+            public CustomComplexTypeModelBinder(IDictionary<ModelMetadata, IModelBinder> propertyBinders)
+                : base(propertyBinders)
+            {
+            }
+
+            protected override object CreateModel(ModelBindingContext bindingContext)
+            {
+                Assert.Equal(typeof(ClassWithNoDefaultConstructor), bindingContext.ModelType);
+                return new ClassWithNoDefaultConstructor(100);
+            }
+        }
+
+        private class CustomComplexTypeModelBinderProvider : IModelBinderProvider
+        {
+            public IModelBinder GetBinder(ModelBinderProviderContext context)
+            {
+                var propertyBinders = new Dictionary<ModelMetadata, IModelBinder>();
+                foreach (var property in context.Metadata.Properties)
+                {
+                    propertyBinders.Add(property, context.CreateBinder(property));
+                }
+                return new CustomComplexTypeModelBinder(propertyBinders);
             }
         }
     }

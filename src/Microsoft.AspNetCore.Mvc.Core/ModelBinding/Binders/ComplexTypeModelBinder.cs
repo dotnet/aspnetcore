@@ -48,28 +48,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 return TaskCache.CompletedTask;
             }
 
-            // The following check causes the ComplexTypeModelBinder to NOT participate in binding structs as 
-            // reflection does not provide information about the implicit parameterless constructor for a struct.
-            // This binder would eventually fail to construct an instance of the struct as the Linq's NewExpression
-            // compile fails to construct it.
-            var modelTypeInfo = bindingContext.ModelType.GetTypeInfo();
-            if (bindingContext.Model == null &&
-                (modelTypeInfo.IsAbstract ||
-                modelTypeInfo.GetConstructor(Type.EmptyTypes) == null))
-            {
-                if (bindingContext.IsTopLevelObject)
-                {
-                    throw new InvalidOperationException(
-                        Resources.FormatComplexTypeModelBinder_NoParameterlessConstructor_TopLevelObject(modelTypeInfo.FullName));
-                }
-
-                throw new InvalidOperationException(
-                    Resources.FormatComplexTypeModelBinder_NoParameterlessConstructor_ForProperty(
-                        modelTypeInfo.FullName,
-                        bindingContext.ModelName,
-                        bindingContext.ModelMetadata.ContainerType.FullName));
-            }
-
             // Perf: separated to avoid allocating a state machine when we don't
             // need to go async.
             return BindModelCoreAsync(bindingContext);
@@ -345,13 +323,32 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // application developer should know that this was an invalid type to try to bind to.
             if (_modelCreator == null)
             {
+                // The following check causes the ComplexTypeModelBinder to NOT participate in binding structs as 
+                // reflection does not provide information about the implicit parameterless constructor for a struct.
+                // This binder would eventually fail to construct an instance of the struct as the Linq's NewExpression
+                // compile fails to construct it.
+                var modelTypeInfo = bindingContext.ModelType.GetTypeInfo();
+                if (modelTypeInfo.IsAbstract || modelTypeInfo.GetConstructor(Type.EmptyTypes) == null)
+                {
+                    if (bindingContext.IsTopLevelObject)
+                    {
+                        throw new InvalidOperationException(
+                            Resources.FormatComplexTypeModelBinder_NoParameterlessConstructor_TopLevelObject(modelTypeInfo.FullName));
+                    }
+
+                    throw new InvalidOperationException(
+                        Resources.FormatComplexTypeModelBinder_NoParameterlessConstructor_ForProperty(
+                            modelTypeInfo.FullName,
+                            bindingContext.ModelName,
+                            bindingContext.ModelMetadata.ContainerType.FullName));
+                }
+
                 _modelCreator = Expression
                     .Lambda<Func<object>>(Expression.New(bindingContext.ModelType))
                     .Compile();
             }
 
             return _modelCreator();
-
         }
 
         /// <summary>
