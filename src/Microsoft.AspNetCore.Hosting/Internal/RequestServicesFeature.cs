@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,18 +10,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 {
     public class RequestServicesFeature : IServiceProvidersFeature, IDisposable
     {
-        private IServiceScopeFactory _scopeFactory;
+        private readonly IServiceScopeFactory _scopeFactory;
         private IServiceProvider _requestServices;
         private IServiceScope _scope;
         private bool _requestServicesSet;
 
         public RequestServicesFeature(IServiceScopeFactory scopeFactory)
         {
-            if (scopeFactory == null)
-            {
-                throw new ArgumentNullException(nameof(scopeFactory));
-            }
-
+            Debug.Assert(scopeFactory != null);
             _scopeFactory = scopeFactory;
         }
 
