@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             ".TagHelpers.DocumentedTagHelper.RemarksProperty\" />";
 
         private static readonly string BaseDir =
-#if NET451
+#if NET452
             AppDomain.CurrentDomain.BaseDirectory;
 #else
             AppContext.BaseDirectory;

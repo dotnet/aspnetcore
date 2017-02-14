@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
     public class XmlDocumentationProviderTest
     {
         private static readonly string BaseDir =
-#if NET451
+#if NET452
             AppDomain.CurrentDomain.BaseDirectory;
 #else
             AppContext.BaseDirectory;

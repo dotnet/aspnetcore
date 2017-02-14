@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-#if NET451
+#if NET452
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 #else
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
         private static string FindTestProjectRoot()
         {
-#if NET451
+#if NET452
             var currentDirectory = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
 #else
             var currentDirectory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -50,14 +50,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         private static readonly bool GenerateBaselines = false;
 #endif
 
-#if !NET451
+#if !NET452
         private static readonly AsyncLocal<string> _filename = new AsyncLocal<string>();
 #endif
 
         // Used by the test framework to set the 'base' name for test files.
         public static string Filename
         {
-#if NET451
+#if NET452
             get
             {
                 var handle = (ObjectHandle)CallContext.LogicalGetData("IntegrationTestBase_Filename");
