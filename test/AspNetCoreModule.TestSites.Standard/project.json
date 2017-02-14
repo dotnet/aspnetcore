@@ -1,0 +1,46 @@
+{
+  "dependencies": {
+    "Microsoft.AspNetCore.WebSockets.Server": "0.1.0-rc2-final",
+    "Microsoft.AspNetCore.Diagnostics": "1.0.1-*",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.1-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.1-*",
+    "Microsoft.AspNetCore.Server.WebListener": "1.0.1-*",
+    "Microsoft.AspNetCore.Server.Kestrel.Https": "1.0.1-*",
+    "Microsoft.AspNetCore.ResponseCompression": "*",
+    "Microsoft.AspNetCore.ResponseCaching": "*",
+    "Microsoft.AspNetCore.StaticFiles": "*",
+    "Microsoft.Extensions.Configuration.CommandLine": "1.0.1-*",
+    "Microsoft.Extensions.Logging.Console": "1.0.1-*"
+  },
+
+  "buildOptions": {
+    "emitEntryPoint": true,
+    "copyToOutput": [
+    ]
+  },
+
+  "publishOptions": {
+    "include": [
+      "web.config"
+    ]
+  },
+
+  "frameworks": {
+    "netcoreapp1.1": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.1-*",
+          "type": "platform"
+        }
+      }
+    }
+  },
+
+  "tools": {
+    "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.0.0-preview2-final"
+  },
+
+  "scripts": {
+    "postpublish": [ "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%" ]
+  }
+}

@@ -12,12 +12,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IISLib", "src\IISLib\IISLib
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{02F461DC-5166-4E88-AAD5-CF110016A647}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AspNetCoreModule.Test", "test\AspNetCoreModule.Test\AspNetCoreModule.Test.xproj", "{4DDA7560-AA29-4161-A5EA-A7E8F3997321}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2097C03C-E2F7-4396-B3BC-4335F1B87B5E}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FDD2EDF8-1B62-4978-9815-9D95260B8B91}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AspnetCoreModule.TestSites.Standard", "test\AspNetCoreModule.TestSites.Standard\AspnetCoreModule.TestSites.Standard.xproj", "{030225D8-4EE8-47E5-B692-2A96B3B51A38}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,6 +53,30 @@ Global
 		{4787A64F-9A3E-4867-A55A-70CB4B2B2FFE}.Release|Win32.Build.0 = Release|Win32
 		{4787A64F-9A3E-4867-A55A-70CB4B2B2FFE}.Release|x64.ActiveCfg = Release|Win32
 		{4787A64F-9A3E-4867-A55A-70CB4B2B2FFE}.Release|x64.Build.0 = Release|Win32
+		{4DDA7560-AA29-4161-A5EA-A7E8F3997321}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DDA7560-AA29-4161-A5EA-A7E8F3997321}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DDA7560-AA29-4161-A5EA-A7E8F3997321}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{4DDA7560-AA29-4161-A5EA-A7E8F3997321}.Debug|Win32.Build.0 = Debug|Any CPU
+		{4DDA7560-AA29-4161-A5EA-A7E8F3997321}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4DDA7560-AA29-4161-A5EA-A7E8F3997321}.Debug|x64.Build.0 = Debug|Any CPU
+		{4DDA7560-AA29-4161-A5EA-A7E8F3997321}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DDA7560-AA29-4161-A5EA-A7E8F3997321}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DDA7560-AA29-4161-A5EA-A7E8F3997321}.Release|Win32.ActiveCfg = Release|Any CPU
+		{4DDA7560-AA29-4161-A5EA-A7E8F3997321}.Release|Win32.Build.0 = Release|Any CPU
+		{4DDA7560-AA29-4161-A5EA-A7E8F3997321}.Release|x64.ActiveCfg = Release|Any CPU
+		{4DDA7560-AA29-4161-A5EA-A7E8F3997321}.Release|x64.Build.0 = Release|Any CPU
+		{030225D8-4EE8-47E5-B692-2A96B3B51A38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{030225D8-4EE8-47E5-B692-2A96B3B51A38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{030225D8-4EE8-47E5-B692-2A96B3B51A38}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{030225D8-4EE8-47E5-B692-2A96B3B51A38}.Debug|Win32.Build.0 = Debug|Any CPU
+		{030225D8-4EE8-47E5-B692-2A96B3B51A38}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{030225D8-4EE8-47E5-B692-2A96B3B51A38}.Debug|x64.Build.0 = Debug|Any CPU
+		{030225D8-4EE8-47E5-B692-2A96B3B51A38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{030225D8-4EE8-47E5-B692-2A96B3B51A38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{030225D8-4EE8-47E5-B692-2A96B3B51A38}.Release|Win32.ActiveCfg = Release|Any CPU
+		{030225D8-4EE8-47E5-B692-2A96B3B51A38}.Release|Win32.Build.0 = Release|Any CPU
+		{030225D8-4EE8-47E5-B692-2A96B3B51A38}.Release|x64.ActiveCfg = Release|Any CPU
+		{030225D8-4EE8-47E5-B692-2A96B3B51A38}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -56,5 +84,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{439824F9-1455-4CC4-BD79-B44FA0A16552} = {FDD2EDF8-1B62-4978-9815-9D95260B8B91}
 		{4787A64F-9A3E-4867-A55A-70CB4B2B2FFE} = {FDD2EDF8-1B62-4978-9815-9D95260B8B91}
+		{4DDA7560-AA29-4161-A5EA-A7E8F3997321} = {02F461DC-5166-4E88-AAD5-CF110016A647}
+		{030225D8-4EE8-47E5-B692-2A96B3B51A38} = {02F461DC-5166-4E88-AAD5-CF110016A647}
 	EndGlobalSection
 EndGlobal

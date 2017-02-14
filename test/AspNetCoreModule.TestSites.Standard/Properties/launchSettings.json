@@ -1,0 +1,26 @@
+{
+  "iisSettings": {
+    "windowsAuthentication": true,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:39982/",
+      "sslPort": 0
+    }
+  },
+  "profiles": {
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ANCMTestStartupClassName": "StartupCompression",
+        "ASPNET_ENVIRONMENT": "HelloWorld"
+      }
+    },
+    "web": {
+      "commandName": "web",
+      "environmentVariables": {
+        "ASPNET_ENVIRONMENT": "HelloWorld"
+      }
+    }
+  }
+}
