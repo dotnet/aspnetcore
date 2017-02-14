@@ -21,9 +21,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             ClassDeclarationIRNode @class, 
             RazorMethodDeclarationIRNode method)
         {
+            var filePath = codeDocument.GetRelativePath() ?? codeDocument.Source.Filename;
+
             base.OnDocumentStructureCreated(codeDocument, @namespace, @class, method);
-            @class.Name = ClassName.GetClassNameFromPath(codeDocument.Source.Filename);
-            @class.BaseType = "Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>";
+            @class.Name = ClassName.GetClassNameFromPath(filePath);
+            @class.BaseType = "global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>";
             @class.AccessModifier = "public";
             @namespace.Content = "AspNetCore";
             method.Name = "ExecuteAsync";

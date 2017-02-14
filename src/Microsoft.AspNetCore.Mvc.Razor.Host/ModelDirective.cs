@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                 }
             }
 
-            if (document.DocumentKind == RazorPageDocumentClassifier.RazorPageDocumentKind)
+            if (document.DocumentKind == RazorPageDocumentClassifierPass.RazorPageDocumentKind)
             {
                 return visitor.Class.Name;
             }

@@ -124,7 +124,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 }
             }
 
-            return RazorCodeDocument.Create(source, imports);
+            var codeDocument = RazorCodeDocument.Create(source, imports);
+            codeDocument.SetRelativePath(relativePath);
+            return codeDocument;
         }
 
         public virtual RazorCSharpDocument ProcessCodeDocument(RazorCodeDocument codeDocument)

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Host
 {
-    public class RazorPageDocumentClassifier : DocumentClassifierPassBase
+    public class RazorPageDocumentClassifierPass : DocumentClassifierPassBase
     {
         public static readonly string RazorPageDocumentKind = "mvc.1.0.razor-page";
 
@@ -19,11 +19,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             return PageDirective.TryGetRouteTemplate(irDocument, out routePrefix);
         }
 
-        protected override void OnDocumentStructureCreated(RazorCodeDocument codeDocument, NamespaceDeclarationIRNode @namespace, ClassDeclarationIRNode @class, RazorMethodDeclarationIRNode method)
+        protected override void OnDocumentStructureCreated(
+            RazorCodeDocument codeDocument,
+            NamespaceDeclarationIRNode @namespace,
+            ClassDeclarationIRNode @class,
+            RazorMethodDeclarationIRNode method)
         {
+            var filePath = codeDocument.GetRelativePath() ?? codeDocument.Source.Filename;
+
             base.OnDocumentStructureCreated(codeDocument, @namespace, @class, method);
-            @class.BaseType = "Microsoft.AspNetCore.Mvc.RazorPages.Page";
-            @class.Name = ClassName.GetClassNameFromPath(codeDocument.Source.Filename);
+            @class.BaseType = "global::Microsoft.AspNetCore.Mvc.RazorPages.Page";
+            @class.Name = ClassName.GetClassNameFromPath(filePath);
             @class.AccessModifier = "public";
             @namespace.Content = "AspNetCore";
             method.Name = "ExecuteAsync";
