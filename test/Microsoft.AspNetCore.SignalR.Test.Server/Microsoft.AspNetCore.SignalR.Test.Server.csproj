@@ -20,10 +20,26 @@
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.2.0-*" />
   </ItemGroup>
 
-  <Target Name="BuildTSClient" BeforeTargets="BeforeBuild">
+  <Target Name="NpmInstall">
     <Exec Command="npm install" />
-    <Exec Command="npm run gulp -- --gulpfile $(MSBuildProjectDirectory)/gulpfile.js copy-jasmine" />
-    <Exec Command="npm run gulp -- --gulpfile $(MSBuildProjectDirectory)/../../src/Microsoft.AspNetCore.SignalR.Client.TS/gulpfile.js bundle-client --bundleOutDir $(MSBuildProjectDirectory)/wwwroot/lib/signalr-client/" />
+  </Target>
+
+  <Target Name="CopyJasmine" BeforeTargets="BeforeBuild" DependsOnTargets="NpmInstall">
+      <ItemGroup>
+        <JasmineFiles Include="../../node_modules/jasmine-core/lib/jasmine-core/*.js" />
+        <JasmineFiles Include="../../node_modules/jasmine-core/lib/jasmine-core/*.css" />
+      </ItemGroup>
+      <Copy SourceFiles="@(JasmineFiles)" DestinationFolder="$(MSBuildProjectDirectory)/wwwroot/lib/jasmine" />
+  </Target>
+
+  <Target Name="BuildTSClient" BeforeTargets="BeforeBuild" DependsOnTargets="NpmInstall">
+    <PropertyGroup>
+      <SignalRClientDistPath>..\..\dist\browser\signalr-client.js</SignalRClientDistPath>
+      <SignalRClientTargetFolder>$(MSBuildProjectDirectory)/wwwroot/lib/signalr-client/</SignalRClientTargetFolder>
+      <SignalRClientTargetPath>$(MSBuildProjectDirectory)/wwwroot/lib/signalr-client/signalr-client.js</SignalRClientTargetPath>
+    </PropertyGroup>
+    <Copy Condition="Exists('$(SignalRClientDistPath)')" SourceFiles="$(SignalRClientDistPath)" DestinationFolder="$(SignalRClientTargetFolder)"/>
+    <Exec Condition="!Exists('$(SignalRClientDistPath)')" Command="npm run gulp -- --gulpfile $(MSBuildProjectDirectory)/../../src/Microsoft.AspNetCore.SignalR.Client.TS/gulpfile.js bundle-client --bundleOutDir $(SignalRClientTargetFolder)" />
   </Target>
 
 </Project>
