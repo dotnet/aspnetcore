@@ -505,7 +505,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
-#if NET451 // Flush not supported, compression disabled
+#if NET452 // Flush not supported, compression disabled
             Assert.NotNull(response.Headers.GetValues(HeaderNames.ContentMD5));
             Assert.Empty(response.Content.Headers.ContentEncoding);
 #elif NETCOREAPP1_1 // Flush supported, compression enabled
@@ -570,7 +570,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
-#if NET451 // Flush not supported, compression disabled
+#if NET452 // Flush not supported, compression disabled
             Assert.NotNull(response.Headers.GetValues(HeaderNames.ContentMD5));
             Assert.Empty(response.Content.Headers.ContentEncoding);
 #elif NETCOREAPP1_1 // Flush supported, compression enabled
