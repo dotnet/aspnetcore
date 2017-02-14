@@ -42,6 +42,18 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>The <see cref="IApplicationBuilder"/> instance.</returns>
         public static IApplicationBuilder UseMiddleware(this IApplicationBuilder app, Type middleware, params object[] args)
         {
+            if (typeof(IMiddleware).GetTypeInfo().IsAssignableFrom(middleware.GetTypeInfo()))
+            {
+                // IMiddleware doesn't support passing args directly since it's 
+                // activated from the container
+                if (args.Length > 0)
+                {
+                    throw new NotSupportedException(Resources.FormatException_UseMiddlewareExplicitArgumentsNotSupported(typeof(IMiddleware)));
+                }
+
+                return UseMiddlewareInterface(app, middleware);
+            }
+
             var applicationServices = app.ApplicationServices;
             return app.Use(next =>
             {
@@ -89,6 +101,38 @@ namespace Microsoft.AspNetCore.Builder
                     }
 
                     return factory(instance, context, serviceProvider);
+                };
+            });
+        }
+
+        private static IApplicationBuilder UseMiddlewareInterface(IApplicationBuilder app, Type middlewareType)
+        {
+            return app.Use(next =>
+            {
+                return async context =>
+                {
+                    var middlewareFactory = (IMiddlewareFactory)context.RequestServices.GetService(typeof(IMiddlewareFactory));
+                    if (middlewareFactory == null)
+                    {
+                        // No middleware factory
+                        throw new InvalidOperationException(Resources.FormatException_UseMiddlewareNoMiddlewareFactory(typeof(IMiddlewareFactory)));
+                    }
+
+                    var middleware = middlewareFactory.Create(middlewareType);
+                    if (middleware == null)
+                    {
+                        // The factory returned null, it's a broken implementation
+                        throw new InvalidOperationException(Resources.FormatException_UseMiddlewareUnableToCreateMiddleware(middlewareFactory.GetType(), middlewareType));
+                    }
+
+                    try
+                    {
+                        await middleware.Invoke(context, next);
+                    }
+                    finally
+                    {
+                        middlewareFactory.Release(middleware);
+                    }
                 };
             });
         }

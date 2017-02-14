@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Builder.Internal;
@@ -83,13 +84,129 @@ namespace Microsoft.AspNetCore.Http
             var exception = Assert.Throws<NotSupportedException>(() => builder.Build());
         }
 
+        [Fact]
+        public void UseMiddlewareWithIMiddlewareThrowsIfParametersSpecified()
+        {
+            var mockServiceProvider = new DummyServiceProvider();
+            var builder = new ApplicationBuilder(mockServiceProvider);
+            var exception = Assert.Throws<NotSupportedException>(() => builder.UseMiddleware(typeof(Middleware), "arg"));
+            Assert.Equal(Resources.FormatException_UseMiddlewareExplicitArgumentsNotSupported(typeof(IMiddleware)), exception.Message);
+        }
+
+        [Fact]
+        public async Task UseMiddlewareWithIMiddlewareThrowsIfNoIMiddlewareFactoryRegistered()
+        {
+            var mockServiceProvider = new DummyServiceProvider();
+            var builder = new ApplicationBuilder(mockServiceProvider);
+            builder.UseMiddleware(typeof(Middleware));
+            var app = builder.Build();
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                var context = new DefaultHttpContext();
+                var sp = new DummyServiceProvider();
+                context.RequestServices = sp;
+                await app(context);
+            });
+            Assert.Equal(Resources.FormatException_UseMiddlewareNoMiddlewareFactory(typeof(IMiddlewareFactory)), exception.Message);
+        }
+
+        [Fact]
+        public async Task UseMiddlewareWithIMiddlewareThrowsIfMiddlewareFactoryCreateReturnsNull()
+        {
+            var mockServiceProvider = new DummyServiceProvider();
+            var builder = new ApplicationBuilder(mockServiceProvider);
+            builder.UseMiddleware(typeof(Middleware));
+            var app = builder.Build();
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                var context = new DefaultHttpContext();
+                var sp = new DummyServiceProvider();
+                sp.AddService(typeof(IMiddlewareFactory), new BadMiddlewareFactory());
+                context.RequestServices = sp;
+                await app(context);
+            });
+
+            Assert.Equal(Resources.FormatException_UseMiddlewareUnableToCreateMiddleware(typeof(BadMiddlewareFactory), typeof(Middleware)), exception.Message);
+        }
+
+        [Fact]
+        public async Task UseMiddlewareWithIMiddlewareWorks()
+        {
+            var mockServiceProvider = new DummyServiceProvider();
+            var builder = new ApplicationBuilder(mockServiceProvider);
+            builder.UseMiddleware(typeof(Middleware));
+            var app = builder.Build();
+            var context = new DefaultHttpContext();
+            var sp = new DummyServiceProvider();
+            var middlewareFactory = new BasicMiddlewareFactory();
+            sp.AddService(typeof(IMiddlewareFactory), middlewareFactory);
+            context.RequestServices = sp;
+            await app(context);
+            Assert.Equal(true, context.Items["before"]);
+            Assert.Equal(true, context.Items["after"]);
+            Assert.NotNull(middlewareFactory.Created);
+            Assert.NotNull(middlewareFactory.Released);
+            Assert.IsType(typeof(Middleware), middlewareFactory.Created);
+            Assert.IsType(typeof(Middleware), middlewareFactory.Released);
+            Assert.Same(middlewareFactory.Created, middlewareFactory.Released);
+        }
+
+        public class Middleware : IMiddleware
+        {
+            public async Task Invoke(HttpContext context, RequestDelegate next)
+            {
+                context.Items["before"] = true;
+                await next(context);
+                context.Items["after"] = true;
+            }
+        }
+
+        public class BasicMiddlewareFactory : IMiddlewareFactory
+        {
+            public IMiddleware Created { get; private set; }
+            public IMiddleware Released { get; private set; }
+
+            public IMiddleware Create(Type middlewareType)
+            {
+                Created = Activator.CreateInstance(middlewareType) as IMiddleware;
+                return Created;
+            }
+
+            public void Release(IMiddleware middleware)
+            {
+                Released = middleware;
+            }
+        }
+
+        public class BadMiddlewareFactory : IMiddlewareFactory
+        {
+            public IMiddleware Create(Type middlewareType)
+            {
+                return null;
+            }
+
+            public void Release(IMiddleware middleware)
+            {
+
+            }
+        }
+
         private class DummyServiceProvider : IServiceProvider
         {
+            private Dictionary<Type, object> _services = new Dictionary<Type, object>();
+
+            public void AddService(Type type, object value) => _services[type] = value;
+
             public object GetService(Type serviceType)
             {
                 if (serviceType == typeof(IServiceProvider))
                 {
                     return this;
+                }
+
+                if (_services.TryGetValue(serviceType, out object value))
+                {
+                    return value;
                 }
                 return null;
             }

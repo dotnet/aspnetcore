@@ -154,6 +154,54 @@ namespace Microsoft.AspNetCore.Http.Abstractions
             return GetString("Exception_PortMustBeGreaterThanZero");
         }
 
+        /// <summary>
+        /// No service for type '{0}' has been registered.
+        /// </summary>
+        internal static string Exception_UseMiddlewareNoMiddlewareFactory
+        {
+            get { return GetString("Exception_UseMiddlewareNoMiddlewareFactory"); }
+        }
+
+        /// <summary>
+        /// No service for type '{0}' has been registered.
+        /// </summary>
+        internal static string FormatException_UseMiddlewareNoMiddlewareFactory(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_UseMiddlewareNoMiddlewareFactory"), p0);
+        }
+
+        /// <summary>
+        /// '{0}' failed to create middleware of type '{1}'.
+        /// </summary>
+        internal static string Exception_UseMiddlewareUnableToCreateMiddleware
+        {
+            get { return GetString("Exception_UseMiddlewareUnableToCreateMiddleware"); }
+        }
+
+        /// <summary>
+        /// '{0}' failed to create middleware of type '{1}'.
+        /// </summary>
+        internal static string FormatException_UseMiddlewareUnableToCreateMiddleware(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_UseMiddlewareUnableToCreateMiddleware"), p0, p1);
+        }
+
+        /// <summary>
+        /// Types that implement '{0}' do not support explicit arguments.
+        /// </summary>
+        internal static string Exception_UseMiddlewareExplicitArgumentsNotSupported
+        {
+            get { return GetString("Exception_UseMiddlewareExplicitArgumentsNotSupported"); }
+        }
+
+        /// <summary>
+        /// Types that implement '{0}' do not support explicit arguments.
+        /// </summary>
+        internal static string FormatException_UseMiddlewareExplicitArgumentsNotSupported(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_UseMiddlewareExplicitArgumentsNotSupported"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

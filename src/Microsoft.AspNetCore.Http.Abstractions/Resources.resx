@@ -144,4 +144,13 @@
   <data name="Exception_PortMustBeGreaterThanZero" xml:space="preserve">
     <value>The value must be greater than zero.</value>
   </data>
+  <data name="Exception_UseMiddlewareNoMiddlewareFactory" xml:space="preserve">
+    <value>No service for type '{0}' has been registered.</value>
+  </data>
+  <data name="Exception_UseMiddlewareUnableToCreateMiddleware" xml:space="preserve">
+    <value>'{0}' failed to create middleware of type '{1}'.</value>
+  </data>
+  <data name="Exception_UseMiddlewareExplicitArgumentsNotSupported" xml:space="preserve">
+    <value>Types that implement '{0}' do not support explicit arguments.</value>
+  </data>
 </root>
