@@ -9,7 +9,8 @@
         "removeComments": false,
         "noImplicitAny": true,
         "suppressImplicitAnyIndexErrors": true,
-        "outDir": "../../artifacts/lib/signalr-client-modules"
+        "outDir": "../../dist/src",
+        "declaration": true
     },
     "include": [
         "./**/*",

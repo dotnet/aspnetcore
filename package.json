@@ -1,8 +1,9 @@
 {
-  "name": "signalr-core",
-  "version": "1.0.0",
+  "name": "signalr-client",
+  "version": "0.1.0-alpha",
   "description": "ASP.NET Core SignalR",
-  "main": "index.js",
+  "main": "dist/src/index.js",
+  "typings": "dist/src/index.d.ts",
   "directories": {
     "test": "test"
   },

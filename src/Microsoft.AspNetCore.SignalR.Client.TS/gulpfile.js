@@ -22,7 +22,7 @@ gulp.task('browserify-client', ['compile-ts-client'], () => {
     return browserify(clientOutDir + '/HubConnection.js', {standalone: 'signalR'})
         .bundle()
         .pipe(source('signalr-client.js'))
-        .pipe(gulp.dest(clientOutDir + '/../signalr-client-bundle'));
+        .pipe(gulp.dest(clientOutDir + '/../browser'));
 });
 
 gulp.task('build-ts-client', ['clean', 'compile-ts-client', 'browserify-client']);
@@ -32,7 +32,7 @@ gulp.task('bundle-client', ['build-ts-client'], () => {
         console.log('Use \'--bundleOutDir\' option to specify the target file for the bundled client.');
     }
     else {
-        return gulp.src(clientOutDir + '/../signalr-client-bundle/signalr-client.js')
+        return gulp.src(clientOutDir + '/../browser/signalr-client.js')
             .pipe(gulp.dest(argv.bundleOutDir));
     }
 });

@@ -40,3 +40,4 @@ site.min.css
 .idea/
 .vscode/
 signalr-client/
+dist/
