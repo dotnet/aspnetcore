@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 try
                 {
-#if NET451
+#if NET452
                     return !string.IsNullOrEmpty(System.DirectoryServices.ActiveDirectory.Domain.GetComputerDomain().Name);
 #endif
                 }

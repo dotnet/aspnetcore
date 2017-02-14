@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private async Task<string> SendRequestAsync(string uri, 
             X509Certificate cert = null)
         {
-#if NET451
+#if NET452
             var handler = new WebRequestHandler();
 #else
             var handler = new WinHttpHandler();
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private async Task<string> SendRequestAsync(string uri, string upload)
         {
-#if NET451
+#if NET452
             var handler = new WebRequestHandler();
 #else
             var handler = new WinHttpHandler();

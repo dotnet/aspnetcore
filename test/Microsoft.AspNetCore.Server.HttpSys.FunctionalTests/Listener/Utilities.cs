@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         {
             var win8Version = new Version(6, 2);
 
-#if NET451
+#if NET452
             IsWin8orLater = (Environment.OSVersion.Version >= win8Version);
 #else
             IsWin8orLater = (new Version(RuntimeEnvironment.OperatingSystemVersion) >= win8Version);

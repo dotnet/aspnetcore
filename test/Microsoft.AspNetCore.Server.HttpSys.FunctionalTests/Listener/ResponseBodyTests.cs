@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["Content-lenGth"] = " 30 ";
                 var stream = context.Response.Body;
-#if NET451
+#if NET452
                 stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
 #else
                 await stream.WriteAsync(new byte[10], 0, 10);
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#if NET451
+#if NET452
                 // .NET 4.5 HttpClient automatically retries a request if it does not get a response.
                 context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 cts = new CancellationTokenSource();
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#if NET451
+#if NET452
                 // .NET 4.5 HttpClient automatically retries a request if it does not get a response.
                 context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 cts = new CancellationTokenSource();
