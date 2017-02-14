@@ -214,6 +214,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             services.AddTransient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
             services.AddTransient<IHttpContextFactory, HttpContextFactory>();
+            services.AddScoped<IMiddlewareFactory, MiddlewareFactory>();
             services.AddOptions();
 
             // Conjure up a RequestServices
