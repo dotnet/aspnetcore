@@ -4,7 +4,6 @@
     <TargetFrameworks>net451;netcoreapp1.1</TargetFrameworks>
     <RuntimeIdentifier Condition=" '$(TargetFramework)' != 'netcoreapp1.1' ">win7-x64</RuntimeIdentifier>
     <OutputType>Exe</OutputType>
-    <NetCoreAppImplicitPackageVersion>1.2.0-*</NetCoreAppImplicitPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
