@@ -6,6 +6,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -29,7 +30,10 @@ namespace Microsoft.AspNetCore.Hosting
             return hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName)
                               .ConfigureServices(services =>
                               {
-                                  services.AddSingleton<IStartup>(new DelegateStartup(configureApp));
+                                  services.AddSingleton<IStartup>(sp =>
+                                  {
+                                      return new DelegateStartup(sp.GetRequiredService<IServiceProviderFactory<IServiceCollection>>(), configureApp);
+                                  });
                               });
         }
 
@@ -71,6 +75,22 @@ namespace Microsoft.AspNetCore.Hosting
         public static IWebHostBuilder UseStartup<TStartup>(this IWebHostBuilder hostBuilder) where TStartup : class
         {
             return hostBuilder.UseStartup(typeof(TStartup));
+        }
+
+        /// <summary>
+        /// Configures the default service provider
+        /// </summary>
+        /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
+        /// <param name="configure">A callback used to configure the <see cref="ServiceProviderOptions"/> for the default <see cref="IServiceProvider"/>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public static IWebHostBuilder UseDefaultServiceProvider(this IWebHostBuilder hostBuilder, Action<ServiceProviderOptions> configure)
+        {
+            return hostBuilder.ConfigureServices(services =>
+            {
+                var options = new ServiceProviderOptions();
+                configure(options);
+                services.Replace(ServiceDescriptor.Singleton<IServiceProviderFactory<IServiceCollection>>(new DefaultServiceProviderFactory(options)));
+            });
         }
     }
 }

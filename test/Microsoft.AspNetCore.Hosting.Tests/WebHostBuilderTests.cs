@@ -158,6 +158,28 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
+        public void ConfigureDefaultServiceProvider()
+        {
+            var hostBuilder = new WebHostBuilder()
+                .UseServer(new TestServer())
+                .ConfigureServices(s =>
+                {
+                    s.AddTransient<ServiceD>();
+                    s.AddScoped<ServiceC>();
+                })
+                .Configure(app =>
+                {
+                    app.ApplicationServices.GetRequiredService<ServiceC>();
+                })
+                .UseDefaultServiceProvider(options =>
+                {
+                    options.ValidateScopes = true;
+                });
+
+            Assert.Throws<InvalidOperationException>(() => hostBuilder.Build());
+        }
+
+        [Fact]
         public void UseLoggerFactoryHonored()
         {
             var loggerFactory = new LoggerFactory();
@@ -619,6 +641,19 @@ namespace Microsoft.AspNetCore.Hosting
                     application.DisposeContext(httpContext, null);
                 };
             }
+        }
+
+        private class ServiceC
+        {
+            public ServiceC(ServiceD serviceD)
+            {
+
+            }
+        }
+
+        private class ServiceD
+        {
+
         }
 
         private class ServiceA
