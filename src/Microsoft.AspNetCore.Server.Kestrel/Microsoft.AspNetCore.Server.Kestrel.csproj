@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\build\common.props" />
 
@@ -12,18 +12,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Libuv" Version="1.10.0-*" />
+    <PackageReference Include="Libuv" Version="$(LibUvVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.2.0-*" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.4.0-*" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.4.0-*" />
     <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="System.Numerics.Vectors" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Diagnostics.Process" Version="4.4.0-*" />
-    <PackageReference Include="System.Threading.Thread" Version="4.4.0-*" />
-    <PackageReference Include="System.Threading.ThreadPool" Version="4.4.0-*" />
+    <PackageReference Include="System.Diagnostics.Process" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Threading.Thread" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Threading.ThreadPool" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <CoreFxVersion>4.3.0</CoreFxVersion>
+    <LibUvVersion>1.9.1</LibUvVersion>
+  </PropertyGroup>
+</Project>

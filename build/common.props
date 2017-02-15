@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="dependencies.props" />
   <Import Project="..\version.props" />
 
   <PropertyGroup>
@@ -8,8 +9,6 @@
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
-    <NetCoreAppImplicitPackageVersion>1.2.0-*</NetCoreAppImplicitPackageVersion>
-    <NetStandardImplicitPackageVersion>1.6.2-*</NetStandardImplicitPackageVersion>
     <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
   </PropertyGroup>
 

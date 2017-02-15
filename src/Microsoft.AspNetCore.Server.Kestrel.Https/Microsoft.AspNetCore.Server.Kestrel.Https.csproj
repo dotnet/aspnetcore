@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\build\common.props" />
 
@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Net.Security" Version="4.4.0-*" />
+    <PackageReference Include="System.Net.Security" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
