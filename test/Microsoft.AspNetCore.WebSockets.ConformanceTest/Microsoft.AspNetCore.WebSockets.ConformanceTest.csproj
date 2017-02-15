@@ -13,7 +13,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
-    <PackageReference Include="System.Diagnostics.FileVersionInfo" Version="4.4.0-*" />
+    <PackageReference Include="System.Diagnostics.FileVersionInfo" Version="$(CoreFxVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
     <PackageReference Include="xunit" Version="2.2.0-*" />
   </ItemGroup>
