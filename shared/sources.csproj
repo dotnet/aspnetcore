@@ -1,5 +1,5 @@
 ﻿<!-- this is a dummy project to workaround https://github.com/NuGet/Home/issues/4254 -->
-<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\build\common.props" />
 
   <PropertyGroup>
