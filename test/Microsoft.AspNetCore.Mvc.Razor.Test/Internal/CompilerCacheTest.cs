@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.Extensions.FileProviders;
 using Moq;
 using Xunit;
@@ -17,18 +19,30 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     {
         private const string ViewPath = "/Views/Home/Index.cshtml";
         private const string PrecompiledViewsPath = "/Views/Home/Precompiled.cshtml";
+        private static readonly string[] _viewImportsPath = new[]
+        {
+            "/Views/Home/_ViewImports.cshtml",
+            "/Views/_ViewImports.cshtml",
+            "/_ViewImports.cshtml",
+        };
         private readonly IDictionary<string, Type> _precompiledViews = new Dictionary<string, Type>
         {
             { PrecompiledViewsPath, typeof(PreCompile) }
         };
 
-        public static TheoryData ViewImportsPaths =>
-            new TheoryData<string>
+        public static TheoryData ViewImportsPaths
+        {
+            get
             {
-                "/Views/Home/_ViewImports.cshtml",
-                "/Views/_ViewImports.cshtml",
-                "/_ViewImports.cshtml",
-            };
+                var theoryData = new TheoryData<string>();
+                foreach (var path in _viewImportsPath)
+                {
+                    theoryData.Add(path);
+                }
+
+                return theoryData;
+            }
+        }
 
         [Fact]
         public void GetOrAdd_ReturnsFileNotFoundResult_IfFileIsNotFoundInFileSystem()
@@ -36,9 +50,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             // Arrange
             var fileProvider = new TestFileProvider();
             var cache = new CompilerCache(fileProvider);
+            var compilerCacheContext = new CompilerCacheContext(
+                new NotFoundProjectItem("", "/path"),
+                Enumerable.Empty<RazorProjectItem>(),
+                _ => throw new Exception("Shouldn't be called."));
 
             // Act
-            var result = cache.GetOrAdd("/some/path", ThrowsIfCalled);
+            var result = cache.GetOrAdd("/some/path", _ => compilerCacheContext);
 
             // Assert
             Assert.False(result.Success);
@@ -54,12 +72,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var expected = new CompilationResult(typeof(TestView));
 
             // Act
-            var result = cache.GetOrAdd(ViewPath, _ => expected);
+            var result = cache.GetOrAdd(ViewPath, CreateContextFactory(expected));
 
             // Assert
             Assert.True(result.Success);
-            Assert.IsType<TestView>(result.PageFactory());
-            Assert.Same(ViewPath, result.PageFactory().Path);
+            Assert.Equal(typeof(TestView), result.CompiledType);
+            Assert.Equal(ViewPath, result.RelativePath);
         }
 
         [Theory]
@@ -77,17 +95,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var expected = new CompilationResult(typeof(TestView));
 
             // Act - 1
-            var result1 = cache.GetOrAdd(@"Areas\Finances\Views\Home\Index.cshtml", _ => expected);
+            var result1 = cache.GetOrAdd(@"Areas\Finances\Views\Home\Index.cshtml", CreateContextFactory(expected));
 
             // Assert - 1
-            Assert.IsType<TestView>(result1.PageFactory());
+            Assert.Equal(typeof(TestView), result1.CompiledType);
 
             // Act - 2
             var result2 = cache.GetOrAdd(relativePath, ThrowsIfCalled);
 
             // Assert - 2
-            Assert.IsType<TestView>(result2.PageFactory());
-            Assert.Same(result1.PageFactory, result2.PageFactory);
+            Assert.Equal(typeof(TestView), result2.CompiledType);
         }
 
         [Fact]
@@ -95,22 +112,27 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            fileProvider.AddFile(ViewPath, "some content");
+            var fileInfo = fileProvider.AddFile(ViewPath, "some content");
             var cache = new CompilerCache(fileProvider);
             var expected = new CompilationResult(typeof(TestView));
+            var projectItem = new DefaultRazorProjectItem(fileInfo, "", ViewPath);
+            var cacheContext = new CompilerCacheContext(projectItem, Enumerable.Empty<RazorProjectItem>(), _ => expected);
 
             // Act 1
-            var result1 = cache.GetOrAdd(ViewPath, _ => expected);
+            var result1 = cache.GetOrAdd(ViewPath, _ => cacheContext);
 
             // Assert 1
             Assert.True(result1.Success);
-            Assert.IsType<TestView>(result1.PageFactory());
+            Assert.Equal(typeof(TestView), result1.CompiledType);
 
             // Act 2
             // Delete the file from the file system and set it's expiration token.
-            fileProvider.DeleteFile(ViewPath);
+            cacheContext = new CompilerCacheContext(
+                new NotFoundProjectItem("", ViewPath),
+                Enumerable.Empty<RazorProjectItem>(),
+                _ => throw new Exception("Shouldn't be called."));
             fileProvider.GetChangeToken(ViewPath).HasChanged = true;
-            var result2 = cache.GetOrAdd(ViewPath, ThrowsIfCalled);
+            var result2 = cache.GetOrAdd(ViewPath, _ => cacheContext);
 
             // Assert 2
             Assert.False(result2.Success);
@@ -127,11 +149,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var expected2 = new CompilationResult(typeof(DifferentView));
 
             // Act 1
-            var result1 = cache.GetOrAdd(ViewPath, _ => expected1);
+            var result1 = cache.GetOrAdd(ViewPath, CreateContextFactory(expected1));
 
             // Assert 1
             Assert.True(result1.Success);
-            Assert.IsType<TestView>(result1.PageFactory());
+            Assert.Equal(typeof(TestView), result1.CompiledType);
 
             // Act 2
             // Verify we're getting cached results.
@@ -139,15 +161,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             // Assert 2
             Assert.True(result2.Success);
-            Assert.IsType<TestView>(result2.PageFactory());
+            Assert.Equal(typeof(TestView), result1.CompiledType);
 
             // Act 3
             fileProvider.GetChangeToken(ViewPath).HasChanged = true;
-            var result3 = cache.GetOrAdd(ViewPath, _ => expected2);
+            var result3 = cache.GetOrAdd(ViewPath, CreateContextFactory(expected2));
 
             // Assert 3
             Assert.True(result3.Success);
-            Assert.IsType<DifferentView>(result3.PageFactory());
+            Assert.Equal(typeof(DifferentView), result3.CompiledType);
         }
 
         [Theory]
@@ -162,11 +184,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var expected2 = new CompilationResult(typeof(DifferentView));
 
             // Act 1
-            var result1 = cache.GetOrAdd(ViewPath, _ => expected1);
+            var result1 = cache.GetOrAdd(ViewPath, CreateContextFactory(expected1));
 
             // Assert 1
             Assert.True(result1.Success);
-            Assert.IsType<TestView>(result1.PageFactory());
+            Assert.Equal(typeof(TestView), result1.CompiledType);
 
             // Act 2
             // Verify we're getting cached results.
@@ -174,15 +196,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             // Assert 2
             Assert.True(result2.Success);
-            Assert.IsType<TestView>(result2.PageFactory());
+            Assert.Equal(typeof(TestView), result1.CompiledType);
 
             // Act 3
             fileProvider.GetChangeToken(globalImportPath).HasChanged = true;
-            var result3 = cache.GetOrAdd(ViewPath, _ => expected2);
+            var result3 = cache.GetOrAdd(ViewPath, CreateContextFactory(expected2));
 
             // Assert 2
             Assert.True(result3.Success);
-            Assert.IsType<DifferentView>(result3.PageFactory());
+            Assert.Equal(typeof(DifferentView), result3.CompiledType);
         }
 
         [Fact]
@@ -196,19 +218,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var expected = new CompilationResult(typeof(TestView));
 
             // Act 1
-            var result1 = cache.GetOrAdd(ViewPath, _ => expected);
+            var result1 = cache.GetOrAdd(ViewPath, CreateContextFactory(expected));
 
             // Assert 1
             Assert.True(result1.Success);
-            Assert.IsType<TestView>(result1.PageFactory());
+            Assert.Equal(typeof(TestView), result1.CompiledType);
 
             // Act 2
             var result2 = cache.GetOrAdd(ViewPath, ThrowsIfCalled);
 
             // Assert 2
             Assert.True(result2.Success);
-            Assert.IsType<TestView>(result2.PageFactory());
-            mockFileProvider.Verify(v => v.GetFileInfo(ViewPath), Times.Once());
         }
 
         [Fact]
@@ -223,8 +243,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             // Assert
             Assert.True(result.Success);
-            Assert.IsType<PreCompile>(result.PageFactory());
-            Assert.Same(PrecompiledViewsPath, result.PageFactory().Path);
+            Assert.Equal(typeof(PreCompile), result.CompiledType);
+            Assert.Same(PrecompiledViewsPath, result.RelativePath);
         }
 
         [Fact]
@@ -242,7 +262,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             // Assert
             Assert.True(result.Success);
             Assert.True(result.IsPrecompiled);
-            Assert.IsType<PreCompile>(result.PageFactory());
+            Assert.Equal(typeof(PreCompile), result.CompiledType);
         }
 
         [Theory]
@@ -260,11 +280,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             // Assert
             Assert.True(result.Success);
-            Assert.IsType<PreCompile>(result.PageFactory());
+            Assert.Equal(typeof(PreCompile), result.CompiledType);
         }
 
         [Fact]
-        public void GetOrAdd_ReturnsRuntimeCompiledAndPrecompiledViews()
+        public void GetOrAdd_ReturnsRuntimeCompiled()
         {
             // Arrange
             var fileProvider = new TestFileProvider();
@@ -273,24 +293,32 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var expected = new CompilationResult(typeof(TestView));
 
             // Act 1
-            var result1 = cache.GetOrAdd(ViewPath, _ => expected);
+            var result1 = cache.GetOrAdd(ViewPath, CreateContextFactory(expected));
 
             // Assert 1
-            Assert.IsType<TestView>(result1.PageFactory());
+            Assert.Equal(typeof(TestView), result1.CompiledType);
 
             // Act 2
             var result2 = cache.GetOrAdd(ViewPath, ThrowsIfCalled);
 
             // Assert 2
             Assert.True(result2.Success);
-            Assert.IsType<TestView>(result2.PageFactory());
+            Assert.Equal(typeof(TestView), result2.CompiledType);
+        }
 
-            // Act 3
-            var result3 = cache.GetOrAdd(PrecompiledViewsPath, ThrowsIfCalled);
+        [Fact]
+        public void GetOrAdd_ReturnsPrecompiledViews()
+        {
+            // Arrange
+            var fileProvider = new TestFileProvider();
+            var cache = new CompilerCache(fileProvider, _precompiledViews);
+            var expected = new CompilationResult(typeof(TestView));
 
-            // Assert 3
-            Assert.True(result2.Success);
-            Assert.IsType<PreCompile>(result3.PageFactory());
+            // Act
+            var result1 = cache.GetOrAdd(PrecompiledViewsPath, ThrowsIfCalled);
+
+            // Assert
+            Assert.Equal(typeof(PreCompile), result1.CompiledType);
         }
 
         [Theory]
@@ -314,8 +342,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var result = cache.GetOrAdd(relativePath, ThrowsIfCalled);
 
             // Assert
-            Assert.IsType<PreCompile>(result.PageFactory());
-            Assert.Same(viewPath, result.PageFactory().Path);
+            Assert.Equal(typeof(PreCompile), result.CompiledType);
+            Assert.Equal(viewPath, result.RelativePath);
         }
 
         [Theory]
@@ -337,7 +365,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var result = cache.GetOrAdd("/Areas/Finances/Views/Home/Index.cshtml", ThrowsIfCalled);
 
             // Assert
-            Assert.IsType<PreCompile>(result.PageFactory());
+            Assert.Equal(typeof(PreCompile), result.CompiledType);
         }
 
         [Fact]
@@ -354,42 +382,55 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var compilingOne = false;
             var compilingTwo = false;
 
+            Func<CompilerCacheContext, CompilationResult> compile1 = _ =>
+            {
+                compilingOne = true;
+
+                // Event 2
+                Assert.True(resetEvent1.WaitOne(waitDuration));
+
+                // Event 3
+                Assert.True(resetEvent2.Set());
+
+                // Event 6
+                Assert.True(resetEvent1.WaitOne(waitDuration));
+
+                Assert.True(compilingTwo);
+                return new CompilationResult(typeof(TestView));
+            };
+
+            Func<CompilerCacheContext, CompilationResult> compile2 = _ =>
+            {
+                compilingTwo = true;
+
+                // Event 4
+                Assert.True(resetEvent2.WaitOne(waitDuration));
+
+                // Event 5
+                Assert.True(resetEvent1.Set());
+
+                Assert.True(compilingOne);
+                return new CompilationResult(typeof(DifferentView));
+            };
+
+
             // Act
             var task1 = Task.Run(() =>
             {
-                return cache.GetOrAdd("/Views/Home/Index.cshtml", file =>
+                return cache.GetOrAdd("/Views/Home/Index.cshtml", path =>
                 {
-                    compilingOne = true;
-
-                    // Event 2
-                    resetEvent1.WaitOne(waitDuration);
-
-                    // Event 3
-                    resetEvent2.Set();
-
-                    // Event 6
-                    resetEvent1.WaitOne(waitDuration);
-
-                    Assert.True(compilingTwo);
-                    return new CompilationResult(typeof(TestView));
+                    var projectItem = new DefaultRazorProjectItem(new TestFileInfo(), "", path);
+                    return new CompilerCacheContext(projectItem, Enumerable.Empty<RazorProjectItem>(), compile1);
                 });
             });
 
             var task2 = Task.Run(() =>
             {
                 // Event 4
-                return cache.GetOrAdd("/Views/Home/About.cshtml", file =>
+                return cache.GetOrAdd("/Views/Home/About.cshtml", path =>
                 {
-                    compilingTwo = true;
-
-                    // Event 4
-                    resetEvent2.WaitOne(waitDuration);
-
-                    // Event 5
-                    resetEvent1.Set();
-
-                    Assert.True(compilingOne);
-                    return new CompilationResult(typeof(DifferentView));
+                    var projectItem = new DefaultRazorProjectItem(new TestFileInfo(), "", path);
+                    return new CompilerCacheContext(projectItem, Enumerable.Empty<RazorProjectItem>(), compile2);
                 });
             });
 
@@ -416,24 +457,30 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var resetEvent2 = new ManualResetEvent(initialState: false);
             var cache = new CompilerCache(fileProvider);
 
+            Func<CompilerCacheContext, CompilationResult> compile = _ =>
+            {
+                // Event 2
+                resetEvent1.WaitOne(waitDuration);
+
+                // Event 3
+                resetEvent2.Set();
+                return new CompilationResult(typeof(TestView));
+            };
+
             // Act
             var task1 = Task.Run(() =>
             {
-                return cache.GetOrAdd(ViewPath, file =>
+                return cache.GetOrAdd(ViewPath, path =>
                 {
-                    // Event 2
-                    resetEvent1.WaitOne(waitDuration);
-
-                    // Event 3
-                    resetEvent2.Set();
-                    return new CompilationResult(typeof(TestView));
+                    var projectItem = new DefaultRazorProjectItem(new TestFileInfo(), "", path);
+                    return new CompilerCacheContext(projectItem, Enumerable.Empty<RazorProjectItem>(), compile);
                 });
             });
 
             var task2 = Task.Run(() =>
             {
                 // Event 4
-                resetEvent2.WaitOne(waitDuration);
+                Assert.True(resetEvent2.WaitOne(waitDuration));
                 return cache.GetOrAdd(ViewPath, ThrowsIfCalled);
             });
 
@@ -444,7 +491,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             // Assert
             var result1 = task1.Result;
             var result2 = task2.Result;
-            Assert.Same(result1.PageFactory, result2.PageFactory);
+            Assert.Same(result1.CompiledType, result2.CompiledType);
         }
 
         [Fact]
@@ -475,7 +522,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             // Act and Assert - 1
             var actual = Assert.Throws<InvalidTimeZoneException>(() =>
-                cache.GetOrAdd(ViewPath, _ => { throw exception; }));
+                cache.GetOrAdd(ViewPath, _ => ThrowsIfCalled(ViewPath, exception)));
             Assert.Same(exception, actual);
 
             // Act and Assert - 2
@@ -489,6 +536,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             // Arrange
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(ViewPath, "some content");
+            var changeToken = fileProvider.AddChangeToken(ViewPath);
             var cache = new CompilerCache(fileProvider);
 
             // Act and Assert - 1
@@ -496,11 +544,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 cache.GetOrAdd(ViewPath, _ => { throw new InvalidTimeZoneException(); }));
 
             // Act - 2
-            fileProvider.GetChangeToken(ViewPath).HasChanged = true;
-            var result = cache.GetOrAdd(ViewPath, _ => new CompilationResult(typeof(TestView)));
+            changeToken.HasChanged = true;
+            var result = cache.GetOrAdd(ViewPath, CreateContextFactory(new CompilationResult(typeof(TestView))));
 
             // Assert - 2
-            Assert.IsType<TestView>(result.PageFactory());
+            Assert.Same(typeof(TestView), result.CompiledType);
         }
 
         [Fact]
@@ -512,15 +560,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var cache = new CompilerCache(fileProvider);
             var diagnosticMessages = new[]
             {
-                new AspNetCore.Diagnostics.DiagnosticMessage("message", "message", ViewPath, 1, 1, 1, 1)
+                new DiagnosticMessage("message", "message", ViewPath, 1, 1, 1, 1)
             };
             var compilationResult = new CompilationResult(new[]
             {
                 new CompilationFailure(ViewPath, "some content", "compiled content", diagnosticMessages)
             });
+            var context = CreateContextFactory(compilationResult);
 
             // Act and Assert - 1
-            var ex = Assert.Throws<CompilationFailedException>(() => cache.GetOrAdd(ViewPath, _ => compilationResult));
+            var ex = Assert.Throws<CompilationFailedException>(() => cache.GetOrAdd(ViewPath, context));
             Assert.Same(compilationResult.CompilationFailures, ex.CompilationFailures);
 
             // Act and Assert - 2
@@ -552,9 +601,38 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             }
         }
 
-        private CompilationResult ThrowsIfCalled(RelativeFileInfo file)
+        private CompilerCacheContext ThrowsIfCalled(string path) =>
+            ThrowsIfCalled(path, new Exception("Shouldn't be called"));
+
+        private CompilerCacheContext ThrowsIfCalled(string path, Exception exception)
         {
-            throw new Exception("Shouldn't be called");
+            exception = exception ?? new Exception("Shouldn't be called");
+            var projectItem = new DefaultRazorProjectItem(new TestFileInfo(), "", path);
+
+            return new CompilerCacheContext(
+                projectItem,
+                Enumerable.Empty<RazorProjectItem>(),
+                 _ => throw exception);
+        }
+
+        private Func<string, CompilerCacheContext> CreateContextFactory(CompilationResult compile)
+        {
+            return path => CreateCacheContext(compile, path);
+        }
+
+        private CompilerCacheContext CreateCacheContext(CompilationResult compile, string path = ViewPath)
+        {
+            var projectItem = new DefaultRazorProjectItem(new TestFileInfo(), "", path);
+
+            var imports = new List<RazorProjectItem>();
+            foreach (var importFilePath in _viewImportsPath)
+            {
+                var importProjectItem = new DefaultRazorProjectItem(new TestFileInfo(), "", importFilePath);
+
+                imports.Add(importProjectItem);
+            }
+
+            return new CompilerCacheContext(projectItem, imports, _ => compile);
         }
     }
 }

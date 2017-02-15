@@ -11,6 +11,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -30,6 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     public class RazorViewEngine : IRazorViewEngine
     {
         public static readonly string ViewExtension = ".cshtml";
+        private const string ViewStartFileName = "_ViewStart.cshtml";
 
         private const string ControllerKey = "controller";
         private const string AreaKey = "area";
@@ -42,6 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private readonly HtmlEncoder _htmlEncoder;
         private readonly ILogger _logger;
         private readonly RazorViewEngineOptions _options;
+        private readonly RazorProject _razorProject;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RazorViewEngine" />.
@@ -51,6 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             IRazorPageActivator pageActivator,
             HtmlEncoder htmlEncoder,
             IOptions<RazorViewEngineOptions> optionsAccessor,
+            RazorProject razorProject,
             ILoggerFactory loggerFactory)
         {
             _options = optionsAccessor.Value;
@@ -73,6 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             _pageActivator = pageActivator;
             _htmlEncoder = htmlEncoder;
             _logger = loggerFactory.CreateLogger<RazorViewEngine>();
+            _razorProject = razorProject;
             ViewLookupCache = new MemoryCache(new MemoryCacheOptions
             {
                 CompactOnMemoryPressure = false
@@ -483,10 +488,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             string path,
             HashSet<IChangeToken> expirationTokens)
         {
+            var applicationRelativePath = MakePathApplicationRelative(path);
             var viewStartPages = new List<ViewLocationCacheItem>();
-            foreach (var viewStartPath in ViewHierarchyUtility.GetViewStartLocations(path))
+
+            foreach (var viewStartProjectItem in _razorProject.FindHierarchicalItems(applicationRelativePath, ViewStartFileName))
             {
-                var result = _pageFactory.CreateFactory(viewStartPath);
+                var result = _pageFactory.CreateFactory(viewStartProjectItem.Path);
                 if (result.ExpirationTokens != null)
                 {
                     for (var i = 0; i < result.ExpirationTokens.Count; i++)
@@ -500,7 +507,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     // Populate the viewStartPages list so that _ViewStarts appear in the order the need to be
                     // executed (closest last, furthest first). This is the reverse order in which
                     // ViewHierarchyUtility.GetViewStartLocations returns _ViewStarts.
-                    viewStartPages.Insert(0, new ViewLocationCacheItem(result.RazorPageFactory, viewStartPath));
+                    viewStartPages.Insert(0, new ViewLocationCacheItem(result.RazorPageFactory, viewStartProjectItem.Path));
                 }
             }
 
@@ -531,6 +538,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             Debug.Assert(!string.IsNullOrEmpty(name));
             return name[0] == '~' || name[0] == '/';
+        }
+
+        private string MakePathApplicationRelative(string path)
+        {
+            Debug.Assert(!string.IsNullOrEmpty(path));
+            if (path[0] == '~')
+            {
+                path = path.Substring(1);
+            }
+
+            if (path[0] != '/')
+            {
+                path = '/' + path;
+            }
+
+            return path;
         }
 
         private static bool IsRelativePath(string name)

@@ -126,9 +126,6 @@
   <data name="FlushPointCannotBeInvoked" xml:space="preserve">
     <value>'{0}' cannot be invoked when a Layout page is set to be executed.</value>
   </data>
-  <data name="Instrumentation_WriterMustBeBufferedTextWriter" xml:space="preserve">
-    <value>The {0} returned by '{1}' must be an instance of '{2}'.</value>
-  </data>
   <data name="LayoutCannotBeLocated" xml:space="preserve">
     <value>The layout view '{0}' could not be located. The following locations were searched:{1}</value>
   </data>
@@ -174,18 +171,6 @@
   <data name="ViewContextMustBeSet" xml:space="preserve">
     <value>'{0} must be set to access '{1}'.</value>
   </data>
-  <data name="ViewLocationCache_KeyMustBeString" xml:space="preserve">
-    <value>'{0}' must be a {1} that is generated as result of the call to '{2}'.</value>
-  </data>
-  <data name="ViewMustBeContextualized" xml:space="preserve">
-    <value>The '{0}' method must be called before '{1}' can be invoked.</value>
-  </data>
-  <data name="RazorHash_UnsupportedHashAlgorithm" xml:space="preserve">
-    <value>Unsupported hash algorithm.</value>
-  </data>
-  <data name="RazorFileInfoCollection_ResourceCouldNotBeFound" xml:space="preserve">
-    <value>The resource '{0}' specified by '{1}' could not be found.</value>
-  </data>
   <data name="GeneratedCodeFileName" xml:space="preserve">
     <value>Generated Code</value>
   </data>
@@ -214,5 +199,8 @@
   </data>
   <data name="RazorProject_PathMustStartWithForwardSlash" xml:space="preserve">
     <value>Path must begin with a forward slash '/'.</value>
+  </data>
+  <data name="PropertyMustBeSet" xml:space="preserve">
+    <value>The property '{0}' of '{1}' must not be null.</value>
   </data>
 </root>

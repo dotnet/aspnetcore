@@ -59,22 +59,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <summary>
-        /// The {0} returned by '{1}' must be an instance of '{2}'.
-        /// </summary>
-        internal static string Instrumentation_WriterMustBeBufferedTextWriter
-        {
-            get { return GetString("Instrumentation_WriterMustBeBufferedTextWriter"); }
-        }
-
-        /// <summary>
-        /// The {0} returned by '{1}' must be an instance of '{2}'.
-        /// </summary>
-        internal static string FormatInstrumentation_WriterMustBeBufferedTextWriter(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Instrumentation_WriterMustBeBufferedTextWriter"), p0, p1, p2);
-        }
-
-        /// <summary>
         /// The layout view '{0}' could not be located. The following locations were searched:{1}
         /// </summary>
         internal static string LayoutCannotBeLocated
@@ -315,70 +299,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <summary>
-        /// '{0}' must be a {1} that is generated as result of the call to '{2}'.
-        /// </summary>
-        internal static string ViewLocationCache_KeyMustBeString
-        {
-            get { return GetString("ViewLocationCache_KeyMustBeString"); }
-        }
-
-        /// <summary>
-        /// '{0}' must be a {1} that is generated as result of the call to '{2}'.
-        /// </summary>
-        internal static string FormatViewLocationCache_KeyMustBeString(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewLocationCache_KeyMustBeString"), p0, p1, p2);
-        }
-
-        /// <summary>
-        /// The '{0}' method must be called before '{1}' can be invoked.
-        /// </summary>
-        internal static string ViewMustBeContextualized
-        {
-            get { return GetString("ViewMustBeContextualized"); }
-        }
-
-        /// <summary>
-        /// The '{0}' method must be called before '{1}' can be invoked.
-        /// </summary>
-        internal static string FormatViewMustBeContextualized(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewMustBeContextualized"), p0, p1);
-        }
-
-        /// <summary>
-        /// Unsupported hash algorithm.
-        /// </summary>
-        internal static string RazorHash_UnsupportedHashAlgorithm
-        {
-            get { return GetString("RazorHash_UnsupportedHashAlgorithm"); }
-        }
-
-        /// <summary>
-        /// Unsupported hash algorithm.
-        /// </summary>
-        internal static string FormatRazorHash_UnsupportedHashAlgorithm()
-        {
-            return GetString("RazorHash_UnsupportedHashAlgorithm");
-        }
-
-        /// <summary>
-        /// The resource '{0}' specified by '{1}' could not be found.
-        /// </summary>
-        internal static string RazorFileInfoCollection_ResourceCouldNotBeFound
-        {
-            get { return GetString("RazorFileInfoCollection_ResourceCouldNotBeFound"); }
-        }
-
-        /// <summary>
-        /// The resource '{0}' specified by '{1}' could not be found.
-        /// </summary>
-        internal static string FormatRazorFileInfoCollection_ResourceCouldNotBeFound(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("RazorFileInfoCollection_ResourceCouldNotBeFound"), p0, p1);
-        }
-
-        /// <summary>
         /// Generated Code
         /// </summary>
         internal static string GeneratedCodeFileName
@@ -524,6 +444,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         internal static string FormatRazorProject_PathMustStartWithForwardSlash()
         {
             return GetString("RazorProject_PathMustStartWithForwardSlash");
+        }
+
+        /// <summary>
+        /// The property '{0}' of '{1}' must not be null.
+        /// </summary>
+        internal static string PropertyMustBeSet
+        {
+            get { return GetString("PropertyMustBeSet"); }
+        }
+
+        /// <summary>
+        /// The property '{0}' of '{1}' must not be null.
+        /// </summary>
+        internal static string FormatPropertyMustBeSet(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("PropertyMustBeSet"), p0, p1);
         }
 
         private static string GetString(string name, params string[] formatterNames)

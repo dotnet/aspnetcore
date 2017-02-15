@@ -14,7 +14,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private const string RazorFileExtension = ".cshtml";
         private readonly IFileProvider _provider;
 
-        public DefaultRazorProject(IFileProvider provider)
+        public DefaultRazorProject(IRazorViewEngineFileProviderAccessor accessor)
+            : this(accessor.FileProvider)
+        {
+        }
+
+        // Internal for unit testing
+        internal DefaultRazorProject(IFileProvider provider)
         {
             _provider = provider;
         }

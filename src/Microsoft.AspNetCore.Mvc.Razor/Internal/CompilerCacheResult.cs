@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.Extensions.Primitives;
@@ -18,21 +16,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     {
         /// <summary>
         /// Initializes a new instance of <see cref="CompilerCacheResult"/> with the specified
-        /// <see cref="Compilation.CompilationResult"/>.
+        /// <see cref="CompilationResult"/>.
         /// </summary>
         /// <param name="relativePath">Path of the view file relative to the application base.</param>
-        /// <param name="compilationResult">The <see cref="Compilation.CompilationResult"/>.</param>
-        public CompilerCacheResult(string relativePath, CompilationResult compilationResult)
-            : this(relativePath, compilationResult, EmptyArray<IChangeToken>.Instance)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="CompilerCacheResult"/> with the specified
-        /// <see cref="Compilation.CompilationResult"/>.
-        /// </summary>
-        /// <param name="relativePath">Path of the view file relative to the application base.</param>
-        /// <param name="compilationResult">The <see cref="Compilation.CompilationResult"/>.</param>
+        /// <param name="compilationResult">The <see cref="CompilationResult"/>.</param>
         /// <param name="isPrecompiled"><c>true</c> if the view is precompiled, <c>false</c> otherwise.</param>
         public CompilerCacheResult(string relativePath, CompilationResult compilationResult, bool isPrecompiled)
             : this(relativePath, compilationResult, EmptyArray<IChangeToken>.Instance)
@@ -42,10 +29,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         /// <summary>
         /// Initializes a new instance of <see cref="CompilerCacheResult"/> with the specified
-        /// <see cref="Compilation.CompilationResult"/>.
+        /// <see cref="CompilationResult"/>.
         /// </summary>
         /// <param name="relativePath">Path of the view file relative to the application base.</param>
-        /// <param name="compilationResult">The <see cref="Compilation.CompilationResult"/>.</param>
+        /// <param name="compilationResult">The <see cref="CompilationResult"/>.</param>
         /// <param name="expirationTokens">One or more <see cref="IChangeToken"/> instances that indicate when
         /// this result has expired.</param>
         public CompilerCacheResult(string relativePath, CompilationResult compilationResult, IList<IChangeToken> expirationTokens)
@@ -55,18 +42,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 throw new ArgumentNullException(nameof(expirationTokens));
             }
 
+            RelativePath = relativePath;
+            CompiledType = compilationResult.CompiledType;
             ExpirationTokens = expirationTokens;
-            var compiledType = compilationResult.CompiledType;
-
-            var newExpression = Expression.New(compiledType);
-
-            var pathProperty = compiledType.GetProperty(nameof(IRazorPage.Path));
-
-            var propertyBindExpression = Expression.Bind(pathProperty, Expression.Constant(relativePath));
-            var objectInitializeExpression = Expression.MemberInit(newExpression, propertyBindExpression);
-            PageFactory = Expression
-                .Lambda<Func<IRazorPage>>(objectInitializeExpression)
-                .Compile();
             IsPrecompiled = false;
         }
 
@@ -74,9 +52,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// Initializes a new instance of <see cref="CompilerCacheResult"/> for a file that could not be
         /// found in the file system.
         /// </summary>
+        /// <param name="relativePath">Path of the view file relative to the application base.</param>
         /// <param name="expirationTokens">One or more <see cref="IChangeToken"/> instances that indicate when
         /// this result has expired.</param>
-        public CompilerCacheResult(IList<IChangeToken> expirationTokens)
+        public CompilerCacheResult(string relativePath, IList<IChangeToken> expirationTokens)
         {
             if (expirationTokens == null)
             {
@@ -84,7 +63,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             }
 
             ExpirationTokens = expirationTokens;
-            PageFactory = null;
+            RelativePath = null;
+            CompiledType = null;
             IsPrecompiled = false;
         }
 
@@ -96,12 +76,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         /// <summary>
         /// Gets a value that determines if the view was successfully found and compiled.
         /// </summary>
-        public bool Success => PageFactory != null;
+        public bool Success => CompiledType != null;
 
         /// <summary>
-        /// Gets a delegate that creates an instance of the <see cref="IRazorPage"/>.
+        /// Normalized relative path of the file.
         /// </summary>
-        public Func<IRazorPage> PageFactory { get; }
+        public string RelativePath { get; }
+
+        /// <summary>
+        /// The compiled <see cref="Type"/>.
+        /// </summary>
+        public Type CompiledType { get; }
 
         /// <summary>
         /// Gets a value that determines if the view is precompiled.

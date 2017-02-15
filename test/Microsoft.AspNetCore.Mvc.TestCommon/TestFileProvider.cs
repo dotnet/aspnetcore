@@ -74,6 +74,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
+        public virtual TestFileChangeToken AddChangeToken(string filter)
+        {
+            var changeToken = new TestFileChangeToken();
+            _fileTriggers[filter] = changeToken;
+
+            return changeToken;
+        }
+
         public virtual IChangeToken Watch(string filter)
         {
             TestFileChangeToken changeToken;

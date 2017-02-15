@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace RazorPageExecutionInstrumentationWebSite
@@ -16,7 +16,7 @@ namespace RazorPageExecutionInstrumentationWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             // Normalize line endings to avoid changes in instrumentation locations between systems.
-            services.AddTransient<IRazorCompilationService, TestRazorCompilationService>();
+            services.AddTransient<RazorProject, TestRazorProject>();
 
             // Add MVC services to the services container.
             services.AddMvc();

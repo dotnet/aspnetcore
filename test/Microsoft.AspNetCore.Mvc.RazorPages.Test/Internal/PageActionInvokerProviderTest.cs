@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile("/Home/Path1/_PageStart.cshtml", "content1");
             fileProvider.AddFile("/_PageStart.cshtml", "content2");
-            var defaultRazorProject = new DefaultRazorProject(fileProvider);
+            var defaultRazorProject = new TestRazorProject(fileProvider);
 
             var invokerProvider = CreateInvokerProvider(
                 loader.Object,
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             actionDescriptorProvider.Setup(p => p.ActionDescriptors).Returns(descriptorCollection);
             var razorPageFactoryProvider = new Mock<IRazorPageFactoryProvider>();
             var fileProvider = new TestFileProvider();
-            var defaultRazorProject = new DefaultRazorProject(fileProvider);
+            var defaultRazorProject = new TestRazorProject(fileProvider);
 
             var invokerProvider = CreateInvokerProvider(
                 loader.Object,
@@ -592,7 +592,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             fileProvider.AddFile("/Views/_PageStart.cshtml", "@page starts!");
             fileProvider.AddFile("/Views/Deeper/_PageStart.cshtml", "page content");
 
-            var razorProject = CreateRazorProject(fileProvider);
+            var razorProject = new TestRazorProject(fileProvider);
 
             var mock = new Mock<IRazorPageFactoryProvider>();
             mock.Setup(p => p.CreateFactory("/Views/Deeper/_PageStart.cshtml"))
@@ -642,8 +642,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // No files
             var fileProvider = new TestFileProvider();
-
-            var razorProject = CreateRazorProject(fileProvider);
+            var razorProject = new TestRazorProject(fileProvider);
 
             var invokerProvider = CreateInvokerProvider(
                 loader.Object,
@@ -668,11 +667,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             mock.Setup(p => p.CreateFactory(It.IsAny<string>()))
                 .Returns(new RazorPageFactoryResult(() => null, new List<IChangeToken>()));
             return mock.Object;
-        }
-
-        private RazorProject CreateRazorProject(IFileProvider fileProvider)
-        {
-            return new DefaultRazorProject(fileProvider);
         }
 
         private static CompiledPageActionDescriptor CreateCompiledPageActionDescriptor(

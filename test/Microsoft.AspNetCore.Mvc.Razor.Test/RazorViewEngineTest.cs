@@ -7,8 +7,10 @@ using System.Threading;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Caching.Memory;
@@ -855,7 +857,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
                .Setup(p => p.CreateFactory("/Views/_ViewStart.cshtml"))
                .Returns(new RazorPageFactoryResult(() => viewStart, new IChangeToken[0]));
 
-            var viewEngine = CreateViewEngine(pageFactory.Object);
+            var fileProvider = new TestFileProvider();
+            var razorProject = new DefaultRazorProject(fileProvider);
+            var viewEngine = CreateViewEngine(pageFactory.Object, razorProject: razorProject);
             var context = GetActionContext(_controllerTestContext);
 
             // Act 1
@@ -1302,6 +1306,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
                 Mock.Of<IRazorPageActivator>(),
                 new HtmlTestEncoder(),
                 GetOptionsAccessor(expanders: null),
+                new DefaultRazorProject(new TestFileProvider()),
                 loggerFactory);
 
             // Act
@@ -1615,10 +1620,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
 
         private TestableRazorViewEngine CreateViewEngine(
             IRazorPageFactoryProvider pageFactory = null,
-            IEnumerable<IViewLocationExpander> expanders = null)
+            IEnumerable<IViewLocationExpander> expanders = null,
+            RazorProject razorProject = null)
         {
             pageFactory = pageFactory ?? Mock.Of<IRazorPageFactoryProvider>();
-            return new TestableRazorViewEngine(pageFactory, GetOptionsAccessor(expanders));
+            if (razorProject == null)
+            {
+                razorProject = new DefaultRazorProject(new TestFileProvider());
+            }
+            return new TestableRazorViewEngine(pageFactory, GetOptionsAccessor(expanders), razorProject);
         }
 
         private static IOptions<RazorViewEngineOptions> GetOptionsAccessor(
@@ -1707,7 +1717,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
             public TestableRazorViewEngine(
                 IRazorPageFactoryProvider pageFactory,
                 IOptions<RazorViewEngineOptions> optionsAccessor)
-                : base(pageFactory, Mock.Of<IRazorPageActivator>(), new HtmlTestEncoder(), optionsAccessor, NullLoggerFactory.Instance)
+                : this(pageFactory, optionsAccessor, new DefaultRazorProject(new TestFileProvider()))
+            {
+            }
+
+            public TestableRazorViewEngine(
+                IRazorPageFactoryProvider pageFactory,
+                IOptions<RazorViewEngineOptions> optionsAccessor,
+                RazorProject razorProject)
+                : base(pageFactory, Mock.Of<IRazorPageActivator>(), new HtmlTestEncoder(), optionsAccessor, razorProject, NullLoggerFactory.Instance)
             {
             }
 
