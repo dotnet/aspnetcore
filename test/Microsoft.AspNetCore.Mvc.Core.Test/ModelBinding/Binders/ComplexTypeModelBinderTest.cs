@@ -6,12 +6,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -347,6 +346,52 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Assert
             Assert.IsType<Person>(model);
+        }
+
+        [Fact]
+        public void CreateModel_ForStructModelType_AsTopLevelObject_ThrowsException()
+        {
+            // Arrange
+            var bindingContext = new DefaultModelBindingContext
+            {
+                ModelMetadata = GetMetadataForType(typeof(PointStruct)),
+                IsTopLevelObject = true
+            };
+            var binder = CreateBinder(bindingContext.ModelMetadata);
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => binder.CreateModelPublic(bindingContext));
+            Assert.Equal(
+                string.Format(
+                    "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
+                    "value types and must have a parameterless constructor.",
+                    typeof(PointStruct).FullName),
+                exception.Message);
+        }
+
+        [Fact]
+        public void CreateModel_ForStructModelType_AsProperty_ThrowsException()
+        {
+            // Arrange
+            var bindingContext = new DefaultModelBindingContext
+            {
+                ModelMetadata = GetMetadataForProperty(typeof(Location), nameof(Location.Point)),
+                ModelName = nameof(Location.Point),
+                IsTopLevelObject = false
+            };
+            var binder = CreateBinder(bindingContext.ModelMetadata);
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => binder.CreateModelPublic(bindingContext));
+            Assert.Equal(
+                string.Format(
+                    "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
+                    "value types and must have a parameterless constructor. Alternatively, set the '{1}' property to" +
+                    " a non-null value in the '{2}' constructor.",
+                    typeof(PointStruct).FullName,
+                    nameof(Location.Point),
+                    typeof(Location).FullName),
+                exception.Message);
         }
 
         [Fact]
@@ -758,7 +803,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var model = new Person();
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
-            
+
             var metadata = GetMetadataForType(typeof(Person));
             var propertyMetadata = metadata.Properties[nameof(model.PropertyWithDefaultValue)];
 
@@ -780,7 +825,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var model = new Person();
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
-            
+
             var metadata = GetMetadataForType(typeof(Person));
             var propertyMetadata = metadata.Properties[nameof(model.PropertyWithInitializedValue)];
 
@@ -804,7 +849,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var model = new Person();
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
-            
+
             var metadata = GetMetadataForType(typeof(Person));
             var propertyMetadata = metadata.Properties[nameof(model.PropertyWithInitializedValueAndDefault)];
 
@@ -828,7 +873,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var model = new Person();
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
-            
+
             var metadata = GetMetadataForType(typeof(Person));
             var propertyMetadata = metadata.Properties[nameof(model.NonUpdateableProperty)];
 
@@ -917,7 +962,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var model = new Person();
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
-            
+
             var metadata = GetMetadataForType(typeof(Person));
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.DateOfBirth)];
 
@@ -943,7 +988,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             };
 
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
-            
+
             var metadata = GetMetadataForType(typeof(Person));
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.DateOfDeath)];
 
@@ -967,7 +1012,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var model = new ModelWhosePropertySetterThrows();
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
             bindingContext.ModelName = "foo";
-            
+
             var metadata = GetMetadataForType(typeof(ModelWhosePropertySetterThrows));
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.NameNoAttribute)];
 
@@ -1034,6 +1079,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private static ModelMetadata GetMetadataForProperty(Type type, string propertyName)
         {
             return _metadataProvider.GetMetadataForProperty(type, propertyName);
+        }
+
+        private class Location
+        {
+            public PointStruct Point { get; set; }
+        }
+
+        private struct PointStruct
+        {
+            public PointStruct(double x, double y)
+            {
+                X = x;
+                Y = y;
+            }
+            public double X { get; }
+            public double Y { get; }
         }
 
         private class BindingOptionalProperty
