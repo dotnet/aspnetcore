@@ -36,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
-    <PackageReference Include="System.Net.WebSockets.Client" Version="4.4.0-*" />
+    <PackageReference Include="System.Net.WebSockets.Client" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
   <ItemGroup>

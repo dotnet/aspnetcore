@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.WebSockets.Internal
         private HttpContext _context;
         private IHttpUpgradeFeature _upgradeFeature;
         private ILogger _logger;
-        private readonly PipelineFactory _factory;
+        private readonly PipeFactory _factory;
 
         public bool IsWebSocketRequest
         {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.WebSockets.Internal
             }
         }
 
-        public WebSocketConnectionFeature(HttpContext context, PipelineFactory factory, IHttpUpgradeFeature upgradeFeature, ILoggerFactory loggerFactory)
+        public WebSocketConnectionFeature(HttpContext context, PipeFactory factory, IHttpUpgradeFeature upgradeFeature, ILoggerFactory loggerFactory)
         {
             _factory = factory;
             _context = context;

@@ -173,13 +173,13 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
 
             private static async Task<byte[]> RunSendTest(Func<WebSocketConnection, Task> producer, WebSocketOptions options)
             {
-                using (var factory = new PipelineFactory())
+                using (var factory = new PipeFactory())
                 {
                     var outbound = factory.Create();
                     var inbound = factory.Create();
 
                     Task executeTask;
-                    using (var connection = new WebSocketConnection(inbound, outbound, options))
+                    using (var connection = new WebSocketConnection(inbound.Reader, outbound.Writer, options))
                     {
                         executeTask = connection.ExecuteAsync(f =>
                         {
@@ -187,23 +187,23 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
                             return TaskCache.CompletedTask;
                         });
                         await producer(connection).OrTimeout();
-                        inbound.CompleteWriter();
+                        inbound.Writer.Complete();
                         await executeTask.OrTimeout();
                     }
 
-                    var data = (await outbound.ReadToEndAsync()).ToArray();
-                    inbound.CompleteReader();
+                    var data = (await outbound.Reader.ReadToEndAsync()).ToArray();
+                    inbound.Reader.Complete();
                     CompleteChannels(outbound);
                     return data;
                 }
             }
 
-            private static void CompleteChannels(params Pipe[] readerWriters)
+            private static void CompleteChannels(params IPipe[] readerWriters)
             {
                 foreach (var readerWriter in readerWriters)
                 {
-                    readerWriter.CompleteReader();
-                    readerWriter.CompleteWriter();
+                    readerWriter.Reader.Complete();
+                    readerWriter.Writer.Complete();
                 }
             }
         }

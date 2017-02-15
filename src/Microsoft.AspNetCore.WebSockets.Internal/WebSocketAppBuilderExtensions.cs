@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.Builder
         public static void UseWebSocketConnections(this IApplicationBuilder app)
         {
             // Only the GC can clean up this channel factory :(
-            app.UseWebSocketConnections(new PipelineFactory(), new WebSocketConnectionOptions());
+            app.UseWebSocketConnections(new PipeFactory(), new WebSocketConnectionOptions());
         }
 
-        public static void UseWebSocketConnections(this IApplicationBuilder app, PipelineFactory factory)
+        public static void UseWebSocketConnections(this IApplicationBuilder app, PipeFactory factory)
         {
             if (factory == null)
             {
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Builder
             app.UseWebSocketConnections(factory, new WebSocketConnectionOptions());
         }
 
-        public static void UseWebSocketConnections(this IApplicationBuilder app, PipelineFactory factory, WebSocketConnectionOptions options)
+        public static void UseWebSocketConnections(this IApplicationBuilder app, PipeFactory factory, WebSocketConnectionOptions options)
         {
             if (factory == null)
             {

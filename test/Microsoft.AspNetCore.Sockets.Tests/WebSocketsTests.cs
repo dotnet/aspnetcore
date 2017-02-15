@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
             var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
 
-            using (var factory = new PipelineFactory())
+            using (var factory = new PipeFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
                 var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
             var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
 
-            using (var factory = new PipelineFactory())
+            using (var factory = new PipeFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
                 var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
             var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
 
-            using (var factory = new PipelineFactory())
+            using (var factory = new PipeFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
                 var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
             var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
 
-            using (var factory = new PipelineFactory())
+            using (var factory = new PipeFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
                 var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
             var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
 
-            using (var factory = new PipelineFactory())
+            using (var factory = new PipeFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
                 var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
             var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
 
-            using (var factory = new PipelineFactory())
+            using (var factory = new PipeFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
                 var ws = new WebSocketsTransport(transportSide, new LoggerFactory());
@@ -295,7 +295,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportSide = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
             var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
 
-            using (var factory = new PipelineFactory())
+            using (var factory = new PipeFactory())
             using (var pair = WebSocketPair.Create(factory))
             {
                 var ws = new WebSocketsTransport(transportSide, new LoggerFactory());

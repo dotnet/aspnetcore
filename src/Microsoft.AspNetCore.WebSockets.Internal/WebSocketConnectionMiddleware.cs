@@ -12,12 +12,12 @@ namespace Microsoft.AspNetCore.WebSockets.Internal
 {
     public class WebSocketConnectionMiddleware
     {
-        private readonly PipelineFactory _factory;
+        private readonly PipeFactory _factory;
         private readonly ILoggerFactory _loggerFactory;
         private readonly RequestDelegate _next;
         private readonly WebSocketConnectionOptions _options;
 
-        public WebSocketConnectionMiddleware(RequestDelegate next, PipelineFactory factory, WebSocketConnectionOptions options, ILoggerFactory loggerFactory)
+        public WebSocketConnectionMiddleware(RequestDelegate next, PipeFactory factory, WebSocketConnectionOptions options, ILoggerFactory loggerFactory)
         {
             if (next == null)
             {

@@ -11,16 +11,16 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
         private static readonly WebSocketOptions DefaultServerOptions = new WebSocketOptions().WithAllFramesPassedThrough().WithRandomMasking(); 
         private static readonly WebSocketOptions DefaultClientOptions = new WebSocketOptions().WithAllFramesPassedThrough(); 
 
-        private PipelineFactory _factory;
+        private PipeFactory _factory;
         private readonly bool _ownFactory;
 
-        public Pipe ServerToClient { get; }
-        public Pipe ClientToServer { get; }
+        public IPipe ServerToClient { get; }
+        public IPipe ClientToServer { get; }
 
         public IWebSocketConnection ClientSocket { get; }
         public IWebSocketConnection ServerSocket { get; }
 
-        public WebSocketPair(bool ownFactory, PipelineFactory factory, Pipe serverToClient, Pipe clientToServer, IWebSocketConnection clientSocket, IWebSocketConnection serverSocket)
+        public WebSocketPair(bool ownFactory, PipeFactory factory, IPipe serverToClient, IPipe clientToServer, IWebSocketConnection clientSocket, IWebSocketConnection serverSocket)
         {
             _ownFactory = ownFactory;
             _factory = factory;
@@ -30,19 +30,19 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
             ServerSocket = serverSocket;
         }
 
-        public static WebSocketPair Create() => Create(new PipelineFactory(), DefaultServerOptions, DefaultClientOptions, ownFactory: true);
-        public static WebSocketPair Create(PipelineFactory factory) => Create(factory, DefaultServerOptions, DefaultClientOptions, ownFactory: false);
-        public static WebSocketPair Create(WebSocketOptions serverOptions, WebSocketOptions clientOptions) => Create(new PipelineFactory(), serverOptions, clientOptions, ownFactory: true);
-        public static WebSocketPair Create(PipelineFactory factory, WebSocketOptions serverOptions, WebSocketOptions clientOptions) => Create(factory, serverOptions, clientOptions, ownFactory: false);
+        public static WebSocketPair Create() => Create(new PipeFactory(), DefaultServerOptions, DefaultClientOptions, ownFactory: true);
+        public static WebSocketPair Create(PipeFactory factory) => Create(factory, DefaultServerOptions, DefaultClientOptions, ownFactory: false);
+        public static WebSocketPair Create(WebSocketOptions serverOptions, WebSocketOptions clientOptions) => Create(new PipeFactory(), serverOptions, clientOptions, ownFactory: true);
+        public static WebSocketPair Create(PipeFactory factory, WebSocketOptions serverOptions, WebSocketOptions clientOptions) => Create(factory, serverOptions, clientOptions, ownFactory: false);
 
-        private static WebSocketPair Create(PipelineFactory factory, WebSocketOptions serverOptions, WebSocketOptions clientOptions, bool ownFactory)
+        private static WebSocketPair Create(PipeFactory factory, WebSocketOptions serverOptions, WebSocketOptions clientOptions, bool ownFactory)
         {
             // Create channels
             var serverToClient = factory.Create();
             var clientToServer = factory.Create();
 
-            var serverSocket = new WebSocketConnection(clientToServer, serverToClient, options: serverOptions);
-            var clientSocket = new WebSocketConnection(serverToClient, clientToServer, options: clientOptions);
+            var serverSocket = new WebSocketConnection(clientToServer.Reader, serverToClient.Writer, options: serverOptions);
+            var clientSocket = new WebSocketConnection(serverToClient.Reader, clientToServer.Writer, options: clientOptions);
 
             return new WebSocketPair(ownFactory, factory, serverToClient, clientToServer, clientSocket, serverSocket);
         }
@@ -60,7 +60,7 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
 
         public void TerminateFromClient(Exception ex = null)
         {
-            ClientToServer.CompleteWriter(ex);
+            ClientToServer.Writer.Complete(ex);
         }
     }
 }

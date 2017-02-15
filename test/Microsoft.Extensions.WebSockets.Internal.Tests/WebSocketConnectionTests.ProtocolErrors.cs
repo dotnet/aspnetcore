@@ -233,7 +233,7 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
                     var server = pair.ServerSocket.ExecuteAndCaptureFramesAsync();
 
                     // Act
-                    await pair.ClientToServer.WriteAsync(rawFrame);
+                    await pair.ClientToServer.Writer.WriteAsync(rawFrame);
 
                     // Server should terminate
                     var clientSummary = await client.OrTimeout();

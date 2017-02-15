@@ -6,7 +6,6 @@
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <!-- TODO remove when https://github.com/dotnet/sdk/issues/396 is resolved -->
     <RuntimeIdentifier Condition=" '$(TargetFramework)' != 'netcoreapp1.1' ">win7-x64</RuntimeIdentifier>
-    <RuntimeFrameworkVersion>1.2.0-*</RuntimeFrameworkVersion>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 

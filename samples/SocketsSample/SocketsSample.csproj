@@ -9,7 +9,6 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <OutputType>Exe</OutputType>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">$(PackageTargetFallback);portable-net45+win8+wp8+wpa81</PackageTargetFallback>
-    <RuntimeFrameworkVersion>1.2.0-*</RuntimeFrameworkVersion>
 
     <!-- We don't want dotnet pack to try packing a sample -->
     <IsPackable>false</IsPackable>

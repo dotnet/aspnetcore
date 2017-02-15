@@ -7,13 +7,13 @@ using System.IO.Pipelines;
 
 namespace Microsoft.Extensions.WebSockets.Internal
 {
-    public static class PipelineReaderExtensions
+    public static class PipeReaderExtensions
     {
-        public static ValueTask<ReadResult> ReadAtLeastAsync(this IPipelineReader input, int minimumRequiredBytes) => ReadAtLeastAsync(input, minimumRequiredBytes, CancellationToken.None);
+        public static ValueTask<ReadResult> ReadAtLeastAsync(this IPipeReader input, int minimumRequiredBytes) => ReadAtLeastAsync(input, minimumRequiredBytes, CancellationToken.None);
 
         // TODO: Pull this up to Channels. We should be able to do it there without allocating a Task<T> in any case (rather than here where we can avoid allocation
         // only if the buffer is already ready and has enough data)
-        public static ValueTask<ReadResult> ReadAtLeastAsync(this IPipelineReader input, int minimumRequiredBytes, CancellationToken cancellationToken)
+        public static ValueTask<ReadResult> ReadAtLeastAsync(this IPipeReader input, int minimumRequiredBytes, CancellationToken cancellationToken)
         {
             var awaiter = input.ReadAsync(/* cancellationToken */);
 
@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.WebSockets.Internal
             return new ValueTask<ReadResult>(ReadAtLeastSlowAsync(awaiter, input, minimumRequiredBytes, cancellationToken));
         }
 
-        private static async Task<ReadResult> ReadAtLeastSlowAsync(ReadableBufferAwaitable awaitable, IPipelineReader input, int minimumRequiredBytes, CancellationToken cancellationToken)
+        private static async Task<ReadResult> ReadAtLeastSlowAsync(ReadableBufferAwaitable awaitable, IPipeReader input, int minimumRequiredBytes, CancellationToken cancellationToken)
         {
             var result = await awaitable;
             while (!result.IsCompleted && result.Buffer.Length < minimumRequiredBytes)

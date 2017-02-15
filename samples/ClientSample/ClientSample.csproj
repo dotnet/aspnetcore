@@ -5,7 +5,6 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <OutputType>Exe</OutputType>
-    <RuntimeFrameworkVersion>1.2.0-*</RuntimeFrameworkVersion>
 
     <!-- We don't want dotnet pack to try packing a sample -->
     <IsPackable>false</IsPackable>
@@ -13,7 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Client\Microsoft.AspNetCore.SignalR.Client.csproj" />
-    <PackageReference Include="System.Net.WebSockets.Client" Version="4.4.0-*" />
+    <PackageReference Include="System.Net.WebSockets.Client" Version="$(CoreFxVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="1.2.0-*" />
   </ItemGroup>

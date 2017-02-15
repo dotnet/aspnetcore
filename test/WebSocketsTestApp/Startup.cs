@@ -20,11 +20,11 @@ namespace WebSocketsTestApp
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<PipelineFactory>();
+            services.AddSingleton<PipeFactory>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, PipelineFactory pipelineFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, PipeFactory PipeFactory)
         {
             loggerFactory.AddConsole(LogLevel.Debug);
 
@@ -33,7 +33,7 @@ namespace WebSocketsTestApp
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseWebSocketConnections(pipelineFactory);
+            app.UseWebSocketConnections(PipeFactory);
 
             app.Use(async (context, next) =>
             {

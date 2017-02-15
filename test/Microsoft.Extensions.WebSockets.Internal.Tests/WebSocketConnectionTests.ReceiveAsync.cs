@@ -1,12 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.SignalR.Tests.Common;
 using System;
 using System.IO.Pipelines;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Xunit;
 
 namespace Microsoft.Extensions.WebSockets.Internal.Tests
@@ -193,9 +193,9 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
             }
         }
 
-        private static async Task<WebSocketConnectionSummary> RunReceiveTest(Func<IPipelineWriter, CancellationToken, Task> producer)
+        private static async Task<WebSocketConnectionSummary> RunReceiveTest(Func<IPipeWriter, CancellationToken, Task> producer)
         {
-            using (var factory = new PipelineFactory())
+            using (var factory = new PipeFactory())
             {
                 var outbound = factory.Create();
                 var inbound = factory.Create();
@@ -204,13 +204,13 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
 
                 var producerTask = Task.Run(async () =>
                 {
-                    await producer(inbound, timeoutToken).OrTimeout();
-                    inbound.CompleteWriter();
+                    await producer(inbound.Writer, timeoutToken).OrTimeout();
+                    inbound.Writer.Complete();
                 }, timeoutToken);
 
                 var consumerTask = Task.Run(async () =>
                 {
-                    var connection = new WebSocketConnection(inbound, outbound, options: new WebSocketOptions().WithAllFramesPassedThrough());
+                    var connection = new WebSocketConnection(inbound.Reader, outbound.Writer, options: new WebSocketOptions().WithAllFramesPassedThrough());
                     using (timeoutToken.Register(() => connection.Dispose()))
                     using (connection)
                     {

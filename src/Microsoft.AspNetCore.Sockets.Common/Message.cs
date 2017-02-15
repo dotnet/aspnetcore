@@ -3,8 +3,6 @@
 
 using System;
 using System.IO.Pipelines;
-using System.Text;
-using System.Text.Formatting;
 
 namespace Microsoft.AspNetCore.Sockets
 {
