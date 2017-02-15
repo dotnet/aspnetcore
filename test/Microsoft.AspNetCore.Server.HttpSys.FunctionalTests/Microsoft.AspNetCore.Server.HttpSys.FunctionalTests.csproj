@@ -17,8 +17,8 @@
     <Reference Include="System.Net.Http.WebRequest" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
-    <PackageReference Include="System.Net.Http.WinHttpHandler" Version="4.4.0-*" />
-    <PackageReference Include="System.Net.WebSockets.Client" Version="4.4.0-*" />
+    <PackageReference Include="System.Net.Http.WinHttpHandler" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Net.WebSockets.Client" Version="$(CoreFxVersion)" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />

@@ -15,7 +15,7 @@
     <PackageReference Include="Microsoft.Net.Http.Headers" Version="1.2.0-*" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Security.Principal.Windows" Version="4.4.0-*" />
-    <PackageReference Include="System.Threading.Overlapped" Version="4.4.0-*" />
+    <PackageReference Include="System.Security.Principal.Windows" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Threading.Overlapped" Version="$(CoreFxVersion)" />
   </ItemGroup>
 </Project>
