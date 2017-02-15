@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <CoreFxVersion>4.3.0</CoreFxVersion>
+    <SystemReflectionMetadataVersion>1.4.2</SystemReflectionMetadataVersion>
+  </PropertyGroup>
+</Project>
