@@ -48,7 +48,7 @@
       "version": "1.2.0-*",
       "type": "build"
     },
-    "NETStandard.Library": "1.6.2-*"
+    "NETStandard.Library": "1.6.1"
   },
   "frameworks": {
     "net451": {
@@ -56,7 +56,7 @@
     },
     "netstandard1.6": {
       "dependencies": {
-        "System.Runtime.Loader": "4.4.0-*"
+        "System.Runtime.Loader": "4.3.0"
       }
     }
   }

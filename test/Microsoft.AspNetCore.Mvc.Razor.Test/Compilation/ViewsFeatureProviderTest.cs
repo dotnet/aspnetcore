@@ -90,6 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             Assert.Empty(feature.Views);
         }
 
+#if !NETCOREAPP1_1
         [Fact]
         public void PopulateFeature_DoesNotFail_IfAssemblyHasEmptyLocation()
         {
@@ -106,6 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             // Assert
             Assert.Empty(feature.Views);
         }
+#endif
 
         private class TestableViewsFeatureProvider : ViewsFeatureProvider
         {
@@ -143,11 +145,29 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             }
         }
 
+#if !NETCOREAPP1_1
         private class AssemblyWithEmptyLocation : Assembly
         {
             public override string Location => string.Empty;
 
             public override string FullName => typeof(ViewsFeatureProviderTest).GetTypeInfo().Assembly.FullName;
+
+            public override IEnumerable<TypeInfo> DefinedTypes
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override IEnumerable<Module> Modules
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
         }
+#endif
     }
 }
