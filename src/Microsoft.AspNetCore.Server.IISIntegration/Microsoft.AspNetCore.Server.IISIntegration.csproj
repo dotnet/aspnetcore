@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Security.Principal.Windows" Version="4.4.0-*" />
+    <PackageReference Include="System.Security.Principal.Windows" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
