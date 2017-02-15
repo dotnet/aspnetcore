@@ -18,6 +18,7 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 syntaxTrees = new[] { syntaxTree };
             }
+
             var references = AppDomain.CurrentDomain
                 .GetAssemblies()
                 .Select(assembly => MetadataReference.CreateFromFile(assembly.Location));

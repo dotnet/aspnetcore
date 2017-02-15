@@ -40,6 +40,3 @@ k-standard-goals
         var vsixPath = Directory.EnumerateFiles(baseDirectory, "*.vsix", SearchOption.AllDirectories).First();
         File.Copy(vsixPath, Path.Combine(buildPath, Path.GetFileName(vsixPath)));
     }
-
-#pack-sources target='build-pack'
-    dotnet command='msbuild shared/sources.csproj "/t:Restore;PackAll" /v:n'
