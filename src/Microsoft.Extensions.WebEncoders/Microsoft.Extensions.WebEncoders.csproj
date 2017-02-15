@@ -15,7 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="1.2.0-*" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="4.4.0-*" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>

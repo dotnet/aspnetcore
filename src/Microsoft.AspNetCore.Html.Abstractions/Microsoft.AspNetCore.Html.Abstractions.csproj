@@ -15,7 +15,7 @@ Microsoft.AspNetCore.Html.IHtmlContent</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Text.Encodings.Web" Version="4.4.0-*" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
