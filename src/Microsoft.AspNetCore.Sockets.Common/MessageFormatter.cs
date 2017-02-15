@@ -18,14 +18,14 @@ namespace Microsoft.AspNetCore.Sockets
             }
             return format == MessageFormat.Text ?
                 TextMessageFormatter.TryFormatMessage(message, buffer, out bytesWritten) :
-                throw new NotImplementedException();
+                BinaryMessageFormatter.TryFormatMessage(message, buffer, out bytesWritten);
         }
 
         public static bool TryParseMessage(ReadOnlySpan<byte> buffer, MessageFormat format, out Message message, out int bytesConsumed)
         {
             return format == MessageFormat.Text ?
                 TextMessageFormatter.TryParseMessage(buffer, out message, out bytesConsumed) :
-                throw new NotImplementedException();
+                BinaryMessageFormatter.TryParseMessage(buffer, out message, out bytesConsumed);
         }
     }
 }

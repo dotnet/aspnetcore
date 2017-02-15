@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Sockets
         private const byte CloseTypeFlag = (byte)'C';
         private const byte ErrorTypeFlag = (byte)'E';
 
-        public static bool TryFormatMessage(Message message, Span<byte> buffer, out int bytesWritten)
+        internal static bool TryFormatMessage(Message message, Span<byte> buffer, out int bytesWritten)
         {
             // Calculate the length, it's the number of characters for text messages, but number of base64 characters for binary
             var length = message.Payload.Buffer.Length;
