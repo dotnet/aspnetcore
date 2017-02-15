@@ -1,5 +1,6 @@
-<Project ToolsVersion="15.0">
+<Project>
 
+  <Import Project="dependencies.props" />
   <Import Project="..\version.props" />
 
   <PropertyGroup>
@@ -10,8 +11,6 @@
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NetCoreAppImplicitPackageVersion>1.2.0-*</NetCoreAppImplicitPackageVersion>
-    <NetStandardImplicitPackageVersion>1.6.2-*</NetStandardImplicitPackageVersion>
     <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
   </PropertyGroup>
 
