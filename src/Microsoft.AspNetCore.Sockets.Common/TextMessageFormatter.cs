@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Sockets
                 // Encode the payload. For now, we make it an array and use the old-fashioned types because we need to mirror packages
                 // I've filed https://github.com/aspnet/SignalR/issues/192 to update this. -anurse
                 var payload = Convert.ToBase64String(message.Payload.Buffer.ToArray());
-                if (!TextEncoder.Utf8.TryEncodeString(payload, buffer, out int payloadWritten))
+                if (!TextEncoder.Utf8.TryEncode(payload, buffer, out int payloadWritten))
                 {
                     bytesWritten = 0;
                     return false;
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Sockets
             buffer = buffer.Slice(colonIndex);
 
             // Parse the length
-            if (!PrimitiveParser.TryParseInt32(lengthSpan, out var length, out var consumedByLength, EncodingData.InvariantUtf8) || consumedByLength < lengthSpan.Length)
+            if (!PrimitiveParser.TryParseInt32(lengthSpan, out var length, out var consumedByLength, encoding: EncodingData.InvariantUtf8) || consumedByLength < lengthSpan.Length)
             {
                 message = default(Message);
                 bytesConsumed = 0;
