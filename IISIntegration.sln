@@ -24,8 +24,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestSites", "test\TestSites\TestSites.csproj", "{F54715C3-88D8-49E3-A291-C13570FE81FC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IntegrationTesting", "..\Hosting\src\Microsoft.AspNetCore.Server.IntegrationTesting\Microsoft.AspNetCore.Server.IntegrationTesting.csproj", "{9AEB9FE7-C88C-40C1-9116-2EFAD73D4DF3}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -96,18 +94,6 @@ Global
 		{F54715C3-88D8-49E3-A291-C13570FE81FC}.Release|x64.Build.0 = Release|x64
 		{F54715C3-88D8-49E3-A291-C13570FE81FC}.Release|x86.ActiveCfg = Release|x86
 		{F54715C3-88D8-49E3-A291-C13570FE81FC}.Release|x86.Build.0 = Release|x86
-		{9AEB9FE7-C88C-40C1-9116-2EFAD73D4DF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9AEB9FE7-C88C-40C1-9116-2EFAD73D4DF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9AEB9FE7-C88C-40C1-9116-2EFAD73D4DF3}.Debug|x64.ActiveCfg = Debug|x64
-		{9AEB9FE7-C88C-40C1-9116-2EFAD73D4DF3}.Debug|x64.Build.0 = Debug|x64
-		{9AEB9FE7-C88C-40C1-9116-2EFAD73D4DF3}.Debug|x86.ActiveCfg = Debug|x86
-		{9AEB9FE7-C88C-40C1-9116-2EFAD73D4DF3}.Debug|x86.Build.0 = Debug|x86
-		{9AEB9FE7-C88C-40C1-9116-2EFAD73D4DF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9AEB9FE7-C88C-40C1-9116-2EFAD73D4DF3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9AEB9FE7-C88C-40C1-9116-2EFAD73D4DF3}.Release|x64.ActiveCfg = Release|x64
-		{9AEB9FE7-C88C-40C1-9116-2EFAD73D4DF3}.Release|x64.Build.0 = Release|x64
-		{9AEB9FE7-C88C-40C1-9116-2EFAD73D4DF3}.Release|x86.ActiveCfg = Release|x86
-		{9AEB9FE7-C88C-40C1-9116-2EFAD73D4DF3}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -118,6 +104,5 @@ Global
 		{7F2F50C7-610F-4B69-B945-CA283511A587} = {EF30B533-D715-421A-92B7-92FEF460AC9C}
 		{4106DB10-E09F-480E-9CE6-B39235512EE6} = {EF30B533-D715-421A-92B7-92FEF460AC9C}
 		{F54715C3-88D8-49E3-A291-C13570FE81FC} = {EF30B533-D715-421A-92B7-92FEF460AC9C}
-		{9AEB9FE7-C88C-40C1-9116-2EFAD73D4DF3} = {EF30B533-D715-421A-92B7-92FEF460AC9C}
 	EndGlobalSection
 EndGlobal
