@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.WebSockets.Internal.ConformanceTest.Autobahn
             var resp = await RetryHelper.RetryRequest(() =>
             {
                 return client.GetAsync(result.ApplicationBaseUri);
-            }, logger, result.HostShutdownToken, retryCount: 15); // High retry count because Travis macOS is slow
+            }, logger, result.HostShutdownToken); // High retry count because Travis macOS is slow
             resp.EnsureSuccessStatusCode();
 
             // Add to the current spec
