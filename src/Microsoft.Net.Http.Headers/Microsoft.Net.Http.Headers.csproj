@@ -10,7 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Primitives" Version="1.2.0-*" />
-    <PackageReference Include="System.Buffers" Version="4.4.0-*" />
-    <PackageReference Include="System.Diagnostics.Contracts" Version="4.4.0-*" />
+    <PackageReference Include="System.Buffers" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Diagnostics.Contracts" Version="$(CoreFxVersion)" />
   </ItemGroup>
 </Project>

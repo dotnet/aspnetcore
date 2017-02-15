@@ -16,10 +16,10 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <ProjectReference Include="..\Microsoft.AspNetCore.Http.Features\Microsoft.AspNetCore.Http.Features.csproj" />
     <PackageReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="1.2.0-*" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="4.4.0-*" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="$(CoreFxVersion)" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Globalization.Extensions" Version="4.4.0-*" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.4.0-*" />
+    <PackageReference Include="System.Globalization.Extensions" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="$(CoreFxVersion)" />
   </ItemGroup>
 </Project>

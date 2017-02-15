@@ -11,6 +11,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Net.Http.Headers\Microsoft.Net.Http.Headers.csproj" />
     <PackageReference Include="Microsoft.Extensions.WebEncoders.Sources" Version="1.2.0-*" PrivateAssets="All" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="4.4.0-*" />
+    <PackageReference Include="System.Text.Encodings.Web" Version="$(CoreFxVersion)" />
   </ItemGroup>
 </Project>
