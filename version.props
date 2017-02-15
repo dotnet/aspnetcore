@@ -1,5 +1,5 @@
 <!-- This file may be overwritten by automation. Only values allowed here are VersionPrefix and VersionSuffix.  -->
-<Project ToolsVersion="15.0">
+<Project>
   <PropertyGroup>
     <VersionPrefix>1.2.0</VersionPrefix>
     <VersionSuffix>preview1</VersionSuffix>
