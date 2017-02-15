@@ -17,6 +17,6 @@
     <PackageReference Include="xunit" Version="2.2.0-*" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Linq.Queryable" Version="4.4.0-*" />
+    <PackageReference Include="System.Linq.Queryable" Version="$(CoreFxVersion)" />
   </ItemGroup>
 </Project>
