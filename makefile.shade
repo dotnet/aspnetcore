@@ -894,9 +894,12 @@ functions
 
         static IList<IGrouping<int, string>> GetBuildGraph()
         {
-            var repositoryLookup = GetRepositoriesToBuild()
-                    .Select(RepoInfoFactory.Create)
-                    .ToList();
+            var repositoryLookup = new List<RepositoryInfo>();
+
+            Parallel.ForEach(GetRepositoriesToBuild(), repo =>
+                {
+                    repositoryLookup.Add(RepoInfoFactory.Create(repo));
+                });
 
             foreach (var info in repositoryLookup)
             {
