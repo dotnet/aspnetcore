@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 Debug.Assert((receiveResult.MessageType == WebSocketMessageType.Binary || receiveResult.MessageType == WebSocketMessageType.Text ), "Unexpected message type");
 
                 Message message;
-                var messageType = receiveResult.MessageType == WebSocketMessageType.Binary ? Format.Binary : Format.Text;
+                var messageType = receiveResult.MessageType == WebSocketMessageType.Binary ? MessageType.Binary : MessageType.Text;
                 if (incomingMessage.Count > 1)
                 {
                     var messageBuffer = new byte[totalBytes];
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         Buffer.BlockCopy(incomingMessage[i].Array, 0, messageBuffer, offset, incomingMessage[i].Count);
                         offset += incomingMessage[i].Count;
                     }
-                    
+
                     message = new Message(ReadableBuffer.Create(messageBuffer).Preserve(), messageType, receiveResult.EndOfMessage);
                 }
                 else
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         try
                         {
                             await _webSocket.SendAsync(new ArraySegment<byte>(message.Payload.Buffer.ToArray()),
-                            message.MessageFormat == Format.Text ? WebSocketMessageType.Text : WebSocketMessageType.Binary, true,
+                            message.Type == MessageType.Text ? WebSocketMessageType.Text : WebSocketMessageType.Binary, true,
                             cancellationToken);
                         }
                         catch (OperationCanceledException ex)
