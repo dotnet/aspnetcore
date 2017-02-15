@@ -45,6 +45,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             return builder;
         }
 
+        public static IRazorEngineBuilder SetBaseType(this IRazorEngineBuilder builder, string baseType)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            var configurationFeature = GetDefaultDocumentClassifierPassFeature(builder);
+            configurationFeature.ConfigureClass.Add((document, @class) => @class.BaseType = baseType);
+            return builder;
+        }
+
         private static IRazorDirectiveFeature GetDirectiveFeature(IRazorEngineBuilder builder)
         {
             var directiveFeature = builder.Features.OfType<IRazorDirectiveFeature>().FirstOrDefault();
@@ -67,6 +79,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             }
 
             return targetExtensionFeature;
+        }
+
+        private static DefaultDocumentClassifierPassFeature GetDefaultDocumentClassifierPassFeature(IRazorEngineBuilder builder)
+        {
+            var configurationFeature = builder.Features.OfType<DefaultDocumentClassifierPassFeature>().FirstOrDefault();
+            if (configurationFeature == null)
+            {
+                configurationFeature = new DefaultDocumentClassifierPassFeature();
+                builder.Features.Add(configurationFeature);
+            }
+
+            return configurationFeature;
         }
     }
 }

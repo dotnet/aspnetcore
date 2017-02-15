@@ -1,10 +1,10 @@
 Document - 
     Checksum - 
-    NamespaceDeclaration -  - 
+    NamespaceDeclaration -  - Razor
         UsingStatement -  - System
         UsingStatement -  - System.Threading.Tasks
-        ClassDeclaration -  -  -  -  - 
-            RazorMethodDeclaration -  -  -  -  - 
+        ClassDeclaration -  - public - Template -  - 
+            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [25] HtmlWithConditionalAttribute.cshtml) - <html>\n<body>\n    <span
                 HtmlAttribute - (25:2,9 [13] HtmlWithConditionalAttribute.cshtml) -  val=" - "
                     CSharpAttributeValue - (31:2,15 [6] HtmlWithConditionalAttribute.cshtml) - 

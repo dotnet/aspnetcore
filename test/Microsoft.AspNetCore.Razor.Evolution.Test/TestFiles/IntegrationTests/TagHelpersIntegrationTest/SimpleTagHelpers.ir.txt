@@ -1,13 +1,13 @@
 Document - 
     Checksum - 
-    NamespaceDeclaration -  - 
+    NamespaceDeclaration -  - Razor
         UsingStatement -  - System
         UsingStatement -  - System.Threading.Tasks
-        ClassDeclaration -  -  -  -  - 
+        ClassDeclaration -  - public - Template -  - 
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - value - Hello - HtmlAttributeValueStyle.SingleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - type - text - HtmlAttributeValueStyle.SingleQuotes
             DeclareTagHelperFields -  - InputTagHelper
-            RazorMethodDeclaration -  -  -  -  - 
+            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:1,0 [25] SimpleTagHelpers.cshtml) - <p>Hola</p>\n<form>\n    
                 TagHelper - (56:3,4 [35] SimpleTagHelpers.cshtml)
                     InitializeTagHelperStructure -  - input - TagMode.SelfClosing

@@ -3,9 +3,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Evolution.CodeGeneration;
 using Moq;
 using Xunit;
-using Microsoft.AspNetCore.Razor.Evolution.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
@@ -155,6 +155,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 feature => Assert.IsType<DefaultDocumentClassifierPass>(feature),
                 feature => Assert.IsType<DefaultDirectiveIRPass>(feature),
                 feature => Assert.IsType<DirectiveRemovalIROptimizationPass>(feature),
+                feature => Assert.IsType<DefaultDocumentClassifierPassFeature>(feature),
                 feature => Assert.IsType<RazorPreallocatedTagHelperAttributeOptimizationPass>(feature));
         }
 
@@ -183,6 +184,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 feature => Assert.IsType<DefaultDocumentClassifierPass>(feature),
                 feature => Assert.IsType<DefaultDirectiveIRPass>(feature),
                 feature => Assert.IsType<DirectiveRemovalIROptimizationPass>(feature),
+                feature => Assert.IsType<DefaultDocumentClassifierPassFeature>(feature),
                 feature => Assert.IsType<RazorEngine.ConfigureDesignTimeOptions>(feature),
                 feature => Assert.IsType<RazorDesignTimeIRPass>(feature));
         }

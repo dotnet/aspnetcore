@@ -1,8 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
@@ -15,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var emptyBasePath = "/";
             var path = "/foo/bar.cshtml";
-            var projectItem = new TestRazorProjectItem(emptyBasePath, path);
+            var projectItem = new TestRazorProjectItem(path, basePath: emptyBasePath);
 
             // Act
             var combinedPath = projectItem.CombinedPath;
@@ -31,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             // Arrange
             var path = "/foo/bar.cshtml";
-            var projectItem = new TestRazorProjectItem(basePath, path);
+            var projectItem = new TestRazorProjectItem(path, basePath: basePath);
 
             // Act
             var combinedPath = projectItem.CombinedPath;
@@ -46,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void Extension_ReturnsNullIfFileDoesNotHaveExtension(string path)
         {
             // Arrange
-            var projectItem = new TestRazorProjectItem("/views", path);
+            var projectItem = new TestRazorProjectItem(path, basePath: "/views");
 
             // Act
             var extension = projectItem.Extension;
@@ -62,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void Extension_ReturnsFileExtension(string path, string expected)
         {
             // Arrange
-            var projectItem = new TestRazorProjectItem("/views", path);
+            var projectItem = new TestRazorProjectItem(path, basePath: "/views");
 
             // Act
             var extension = projectItem.Extension;
@@ -77,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void FileName_ReturnsFileNameWithExtension(string path, string expected)
         {
             // Arrange
-            var projectItem = new TestRazorProjectItem("/", path);
+            var projectItem = new TestRazorProjectItem(path, basePath: "/");
 
             // Act
             var fileName = projectItem.Filename;
@@ -94,42 +92,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void PathWithoutExtension_ExcludesExtension(string path, string expected)
         {
             // Arrange
-            var projectItem = new TestRazorProjectItem("/", path);
+            var projectItem = new TestRazorProjectItem(path, basePath: "/");
 
             // Act
             var fileName = projectItem.PathWithoutExtension;
 
             // Assert
             Assert.Equal(expected, fileName);
-        }
-
-
-        private class TestRazorProjectItem : RazorProjectItem
-        {
-            public TestRazorProjectItem(string basePath, string path)
-            {
-                BasePath = basePath;
-                Path = path;
-            }
-
-            public override string BasePath { get; }
-
-            public override string Path { get; }
-
-            public override string PhysicalPath
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public override bool Exists => true;
-
-            public override Stream Read()
-            {
-                throw new NotImplementedException();
-            }
         }
     }
 }

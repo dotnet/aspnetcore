@@ -48,6 +48,25 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             return ReadFromInternal(stream, filename, encoding);
         }
 
+        public static RazorSourceDocument ReadFrom(RazorProjectItem projectItem)
+        {
+            if (projectItem == null)
+            {
+                throw new ArgumentNullException(nameof(projectItem));
+            }
+
+            var path = projectItem.PhysicalPath;
+            if (string.IsNullOrEmpty(path))
+            {
+                path = projectItem.Path;
+            }
+
+            using (var inputStream = projectItem.Read())
+            {
+                return ReadFrom(inputStream, path);
+            }
+        }
+
         private static RazorSourceDocument ReadFromInternal(Stream stream, string filename, Encoding encoding)
         {
             var streamLength = (int)stream.Length;

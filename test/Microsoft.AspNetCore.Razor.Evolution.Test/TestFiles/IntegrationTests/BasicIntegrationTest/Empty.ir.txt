@@ -1,7 +1,7 @@
 Document - 
     Checksum - 
-    NamespaceDeclaration -  - 
+    NamespaceDeclaration -  - Razor
         UsingStatement -  - System
         UsingStatement -  - System.Threading.Tasks
-        ClassDeclaration -  -  -  -  - 
-            RazorMethodDeclaration -  -  -  -  - 
+        ClassDeclaration -  - public - Template -  - 
+            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync

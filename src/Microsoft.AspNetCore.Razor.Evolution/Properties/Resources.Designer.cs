@@ -218,6 +218,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             return string.Format(CultureInfo.CurrentCulture, GetString("DocumentMissingTarget"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// The item '{0}' could not be found.
+        /// </summary>
+        internal static string RazorTemplateEngine_ItemCouldNotBeFound
+        {
+            get { return GetString("RazorTemplateEngine_ItemCouldNotBeFound"); }
+        }
+
+        /// <summary>
+        /// The item '{0}' could not be found.
+        /// </summary>
+        internal static string FormatRazorTemplateEngine_ItemCouldNotBeFound(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("RazorTemplateEngine_ItemCouldNotBeFound"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

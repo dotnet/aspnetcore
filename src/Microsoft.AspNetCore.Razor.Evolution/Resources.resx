@@ -156,4 +156,7 @@
   <data name="DocumentMissingTarget" xml:space="preserve">
     <value>The document of kind '{0}' does not have a '{1}'. The document classifier must set a value for '{2}'.</value>
   </data>
+  <data name="RazorTemplateEngine_ItemCouldNotBeFound" xml:space="preserve">
+    <value>The item '{0}' could not be found.</value>
+  </data>
 </root>

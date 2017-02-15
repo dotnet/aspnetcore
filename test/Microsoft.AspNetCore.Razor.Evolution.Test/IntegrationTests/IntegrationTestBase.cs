@@ -11,12 +11,9 @@ using System.Runtime.Remoting.Messaging;
 #else
 using System.Threading;
 #endif
-using System.Text;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using Xunit;
 using Xunit.Sdk;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 {
@@ -24,7 +21,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
     public abstract class IntegrationTestBase
     {
         private static readonly string ThisProjectName = typeof(IntializeTestFileAttribute).GetTypeInfo().Assembly.GetName().Name;
-        private static readonly string TestProjectRoot = FindTestProjectRoot();
 
         private static string FindTestProjectRoot()
         {
@@ -53,6 +49,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 #if !NET452
         private static readonly AsyncLocal<string> _filename = new AsyncLocal<string>();
 #endif
+
+        protected static string TestProjectRoot { get; } = FindTestProjectRoot();
+
 
         // Used by the test framework to set the 'base' name for test files.
         public static string Filename

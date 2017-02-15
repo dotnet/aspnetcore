@@ -1,10 +1,10 @@
 #pragma checksum "TestFiles/IntegrationTests/InstrumentationPassIntegrationTest/BasicTest.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "5898df8049fc1522f646a774050e93cbf5cafb84"
-namespace 
+namespace Razor
 {
     #line hidden
     using System;
     using System.Threading.Tasks;
-     class 
+    public class Template
     {
         private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_0 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("value", "Hello", global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
         private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("type", new global::Microsoft.AspNetCore.Html.HtmlString("text"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.SingleQuotes);
@@ -30,7 +30,7 @@ namespace
         private global::FormTagHelper __FormTagHelper = null;
         private global::InputTagHelper __InputTagHelper = null;
         #pragma warning disable 1998
-           ()
+        public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
             BeginContext(31, 28, true);
             WriteLiteral("<span someattr>Hola</span>\r\n");

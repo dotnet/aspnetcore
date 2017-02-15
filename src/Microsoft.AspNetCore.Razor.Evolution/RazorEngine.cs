@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Evolution.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
@@ -22,6 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             configure?.Invoke(builder);
             return builder.Build();
         }
+
 
         public static RazorEngine CreateDesignTime()
         {
@@ -73,6 +75,29 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             // Default Runtime Targets
             builder.AddTargetExtension(new TemplateTargetExtension());
+
+            // Default configuration
+            var configurationFeature = new DefaultDocumentClassifierPassFeature();
+            configurationFeature.ConfigureClass.Add((document, @class) =>
+            {
+                @class.Name = "Template";
+                @class.AccessModifier = "public";
+            });
+
+            configurationFeature.ConfigureNamespace.Add((document, @namespace) =>
+            {
+                @namespace.Content = "Razor";
+            });
+
+            configurationFeature.ConfigureMethod.Add((document, @method) =>
+            {
+                @method.Name = "ExecuteAsync";
+                @method.ReturnType = $"global::{typeof(Task).FullName}";
+                @method.AccessModifier = "public";
+                method.Modifiers = new[] { "async", "override" };
+            });
+
+            builder.Features.Add(configurationFeature);
         }
 
         internal static void AddRuntimeDefaults(IRazorEngineBuilder builder)

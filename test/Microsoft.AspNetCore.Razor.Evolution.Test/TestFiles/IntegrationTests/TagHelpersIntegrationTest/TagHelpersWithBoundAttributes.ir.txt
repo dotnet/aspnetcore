@@ -1,12 +1,12 @@
 Document - 
     Checksum - 
-    NamespaceDeclaration -  - 
+    NamespaceDeclaration -  - Razor
         UsingStatement -  - System
         UsingStatement -  - System.Threading.Tasks
-        ClassDeclaration -  -  -  -  - 
+        ClassDeclaration -  - public - Template -  - 
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - type - text - HtmlAttributeValueStyle.SingleQuotes
             DeclareTagHelperFields -  - InputTagHelper
-            RazorMethodDeclaration -  -  -  -  - 
+            RazorMethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:1,0 [12] TagHelpersWithBoundAttributes.cshtml) - <form>\n    
                 TagHelper - (43:2,4 [34] TagHelpersWithBoundAttributes.cshtml)
                     InitializeTagHelperStructure -  - input - TagMode.SelfClosing
