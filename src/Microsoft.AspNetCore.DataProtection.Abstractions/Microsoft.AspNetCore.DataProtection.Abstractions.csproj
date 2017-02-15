@@ -22,7 +22,7 @@ Microsoft.AspNetCore.DataProtection.IDataProtector</Description>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.ComponentModel" Version="4.4.0-*" />
+    <PackageReference Include="System.ComponentModel" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>

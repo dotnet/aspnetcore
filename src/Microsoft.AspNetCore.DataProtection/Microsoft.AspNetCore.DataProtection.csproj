@@ -31,9 +31,9 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="Microsoft.Win32.Registry" Version="4.4.0-*" />
-    <PackageReference Include="System.Security.Claims" Version="4.4.0-*" />
-    <PackageReference Include="System.Security.Principal.Windows" Version="4.4.0-*" />
+    <PackageReference Include="Microsoft.Win32.Registry" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Security.Claims" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Security.Principal.Windows" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
