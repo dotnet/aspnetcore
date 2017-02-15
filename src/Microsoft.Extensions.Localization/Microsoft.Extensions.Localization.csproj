@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Resources.Reader" Version="4.4.0-*" />
+    <PackageReference Include="System.Resources.Reader" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>

@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection;
 using LocalizationWebsite.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -42,7 +43,8 @@ namespace LocalizationWebsite
                 }
             });
 
-            var stringLocalizer = stringLocalizerFactory.Create("Test", location: typeof(LocalizationWebsite.StartupResourcesAtRootFolder).Assembly.GetName().Name);
+            var location = typeof(LocalizationWebsite.StartupResourcesAtRootFolder).GetTypeInfo().Assembly.GetName().Name;
+            var stringLocalizer = stringLocalizerFactory.Create("Test", location: location);
 
             app.Run(async (context) =>
             {

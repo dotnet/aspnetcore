@@ -43,7 +43,7 @@ namespace LocalizationWebsite
                 }
             });
 
-            var assemblyName = typeof(StartupResourcesInFolder).Assembly.GetName().Name;
+            var assemblyName = typeof(StartupResourcesInFolder).GetTypeInfo().Assembly.GetName().Name;
             var stringLocalizer = stringLocalizerFactory.Create("Test", assemblyName);
 
             app.Run(async (context) =>

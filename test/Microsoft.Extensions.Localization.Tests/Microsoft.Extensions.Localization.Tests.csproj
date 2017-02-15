@@ -16,8 +16,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
-    <PackageReference Include="System.Diagnostics.TraceSource" Version="4.4.0-*" />
-    <PackageReference Include="System.Resources.Writer" Version="4.4.0-*" />
+    <PackageReference Include="System.Resources.Writer" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
   <ItemGroup>
