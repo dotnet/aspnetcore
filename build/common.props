@@ -1,8 +1,8 @@
 <Project>
+  <Import Project="dependencies.props" />
   <Import Project="..\version.props" />
 
   <PropertyGroup>
-    <NetCoreAppImplicitPackageVersion>1.2.0-*</NetCoreAppImplicitPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
