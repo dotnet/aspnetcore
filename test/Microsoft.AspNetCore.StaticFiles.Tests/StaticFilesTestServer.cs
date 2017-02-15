@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.StaticFiles
     {
         public static TestServer Create(Action<IApplicationBuilder> configureApp, Action<IServiceCollection> configureServices = null)
         {
-            var contentRootNet451 = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+            var contentRootNet452 = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
                 "." : "../../../../test/Microsoft.AspNetCore.StaticFiles.Tests";
             Action<IServiceCollection> defaultConfigureServices = services => { };
             var configuration = new ConfigurationBuilder()
@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.StaticFiles
                 })
                 .Build();
             var builder = new WebHostBuilder()
-#if NET451
-                .UseContentRoot(contentRootNet451)
+#if NET452
+                .UseContentRoot(contentRootNet452)
 #endif
                 .UseConfiguration(configuration)
                 .Configure(configureApp)
