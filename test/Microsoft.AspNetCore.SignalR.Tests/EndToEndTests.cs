@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO.Pipelines;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
@@ -73,6 +73,55 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     Assert.True(await connection.ReceiveAsync(receiveData).OrTimeout());
                     Assert.Equal(message, Encoding.UTF8.GetString(receiveData.Data));
                 }
+            }
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
+        public async Task ConnectionCanSendAndReceiveSmallMessagesWebSocketsTransport()
+        {
+            const string message = "Major Key";
+            var baseUrl = _serverFixture.BaseUrl;
+            var loggerFactory = new LoggerFactory();
+
+            var transport = new WebSocketsTransport();
+            using (var connection = await ClientConnection.ConnectAsync(new Uri(baseUrl + "/echo/ws"), transport, loggerFactory))
+            {
+                await connection.SendAsync(Encoding.UTF8.GetBytes(message), Format.Text);
+
+                var receiveData = new ReceiveData();
+
+                Assert.True(await connection.ReceiveAsync(receiveData).OrTimeout());
+                Assert.Equal(message, Encoding.UTF8.GetString(receiveData.Data));
+            }
+        }
+
+        public static IEnumerable<object[]> MessageSizesData
+        {
+            get
+            {
+                yield return new object[] { new string('A', 5 * 1024)};
+                yield return new object[] { new string('A', 5 * 1024 * 1024 + 32)};
+            }
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
+        [MemberData(nameof(MessageSizesData))]
+        public async Task ConnectionCanSendAndReceiveDifferentMessageSizesWebSocketsTransport(string message)
+        {
+            var baseUrl = _serverFixture.BaseUrl;
+            var loggerFactory = new LoggerFactory();
+
+            var transport = new WebSocketsTransport();
+            using (var connection = await ClientConnection.ConnectAsync(new Uri(baseUrl + "/echo/ws"), transport, loggerFactory))
+            {
+                await connection.SendAsync(Encoding.UTF8.GetBytes(message), Format.Text);
+
+                var receiveData = new ReceiveData();
+
+                Assert.True(await connection.ReceiveAsync(receiveData).OrTimeout());
+                Assert.Equal(message, Encoding.UTF8.GetString(receiveData.Data));
             }
         }
     }
