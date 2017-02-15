@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             { CSharpSymbolType.GreaterThan, ">" },
             { CSharpSymbolType.GreaterThanEqual, ">=" },
             { CSharpSymbolType.RightShift, ">>" },
-            { CSharpSymbolType.RightShiftAssign, ">>>" },
+            { CSharpSymbolType.RightShiftAssign, ">>=" },
             { CSharpSymbolType.Hash, "#" },
             { CSharpSymbolType.Transition, "@" },
         };

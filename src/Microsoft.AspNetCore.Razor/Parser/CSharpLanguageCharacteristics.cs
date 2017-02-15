@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Parser
             { CSharpSymbolType.GreaterThan, ">" },
             { CSharpSymbolType.GreaterThanEqual, ">=" },
             { CSharpSymbolType.RightShift, ">>" },
-            { CSharpSymbolType.RightShiftAssign, ">>>" },
+            { CSharpSymbolType.RightShiftAssign, ">>=" },
             { CSharpSymbolType.Hash, "#" },
             { CSharpSymbolType.Transition, "@" },
         };
