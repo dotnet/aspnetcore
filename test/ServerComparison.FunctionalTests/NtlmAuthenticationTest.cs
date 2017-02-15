@@ -40,7 +40,8 @@ namespace ServerComparison.FunctionalTests
                     EnvironmentName = "NtlmAuthentication", // Will pick the Start class named 'StartupNtlmAuthentication'
                     ServerConfigTemplateContent = Helpers.GetConfigContent(serverType, "NtlmAuthentication.config", nginxConfig: null),
                     SiteName = "NtlmAuthenticationTestSite", // This is configured in the NtlmAuthentication.config
-                    ApplicationType = applicationType
+                    ApplicationType = applicationType,
+                    TargetFramework = "net452",
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
