@@ -50,15 +50,17 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             }
         }
 
-        [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Migration_request_default_path()
         {
             await Migration_request(useCustomPath: false);
         }
 
-        [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Migration_request_custom_path()
         {
             await Migration_request(useCustomPath: true);
@@ -187,8 +189,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             Assert.True(content.Length > 512);
         }
 
-        [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Exception_while_applying_migrations()
         {
             using (var database = SqlServerTestStore.CreateScratch())
