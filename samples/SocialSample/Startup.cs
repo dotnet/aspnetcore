@@ -112,7 +112,7 @@ namespace SocialSample
 
             // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
             // https://console.developers.google.com/project
-            app.UseGoogleAuthentication(new GoogleOptions
+            var googleOptions = new GoogleOptions
             {
                 ClientId = Configuration["google:clientid"],
                 ClientSecret = Configuration["google:clientsecret"],
@@ -126,11 +126,14 @@ namespace SocialSample
                         return Task.FromResult(0);
                     }
                 }
-            });
+            };
+            googleOptions.ClaimActions.MapJsonSubKey("urn:google:image", "image", "url");
+            googleOptions.ClaimActions.Remove(ClaimTypes.GivenName);
+            app.UseGoogleAuthentication(googleOptions);
 
             // You must first create an app with Twitter and add its key and Secret to your user-secrets.
             // https://apps.twitter.com/
-            app.UseTwitterAuthentication(new TwitterOptions
+            var twitterOptions = new TwitterOptions
             {
                 ConsumerKey = Configuration["twitter:consumerkey"],
                 ConsumerSecret = Configuration["twitter:consumersecret"],
@@ -140,12 +143,6 @@ namespace SocialSample
                 SaveTokens = true,
                 Events = new TwitterEvents()
                 {
-                    OnCreatingTicket = ctx =>
-                    {
-                        var profilePic = ctx.User.Value<string>("profile_image_url");
-                        ctx.Principal.Identities.First().AddClaim(new Claim("urn:twitter:profilepicture", profilePic, ClaimTypes.Uri, ctx.Options.ClaimsIssuer));
-                        return Task.FromResult(0);
-                    },
                     OnRemoteFailure = ctx =>
                     {
                         ctx.Response.Redirect("/error?FailureMessage=" + UrlEncoder.Default.Encode(ctx.Failure.Message));
@@ -153,7 +150,9 @@ namespace SocialSample
                         return Task.FromResult(0);
                     }
                 }
-            });
+            };
+            twitterOptions.ClaimActions.MapJsonKey("urn:twitter:profilepicture", "profile_image_url", ClaimTypes.Uri);
+            app.UseTwitterAuthentication(twitterOptions);
 
             /* Azure AD app model v2 has restrictions that prevent the use of plain HTTP for redirect URLs.
                Therefore, to authenticate through microsoft accounts, tryout the sample using the following URL:
@@ -200,7 +199,7 @@ namespace SocialSample
 
             // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
             // https://github.com/settings/applications/
-            app.UseOAuthAuthentication(new OAuthOptions
+            var githubOptions = new OAuthOptions
             {
                 AuthenticationScheme = "GitHub",
                 DisplayName = "Github",
@@ -227,48 +226,16 @@ namespace SocialSample
 
                         var user = JObject.Parse(await response.Content.ReadAsStringAsync());
 
-                        var identifier = user.Value<string>("id");
-                        if (!string.IsNullOrEmpty(identifier))
-                        {
-                            context.Identity.AddClaim(new Claim(
-                                ClaimTypes.NameIdentifier, identifier,
-                                ClaimValueTypes.String, context.Options.ClaimsIssuer));
-                        }
-
-                        var userName = user.Value<string>("login");
-                        if (!string.IsNullOrEmpty(userName))
-                        {
-                            context.Identity.AddClaim(new Claim(
-                                ClaimsIdentity.DefaultNameClaimType, userName,
-                                ClaimValueTypes.String, context.Options.ClaimsIssuer));
-                        }
-
-                        var name = user.Value<string>("name");
-                        if (!string.IsNullOrEmpty(name))
-                        {
-                            context.Identity.AddClaim(new Claim(
-                                "urn:github:name", name,
-                                ClaimValueTypes.String, context.Options.ClaimsIssuer));
-                        }
-
-                        var email = user.Value<string>("email");
-                        if (!string.IsNullOrEmpty(email))
-                        {
-                            context.Identity.AddClaim(new Claim(
-                                ClaimTypes.Email, email,
-                                ClaimValueTypes.Email, context.Options.ClaimsIssuer));
-                        }
-
-                        var link = user.Value<string>("url");
-                        if (!string.IsNullOrEmpty(link))
-                        {
-                            context.Identity.AddClaim(new Claim(
-                                "urn:github:url", link,
-                                ClaimValueTypes.String, context.Options.ClaimsIssuer));
-                        }
+                        context.RunClaimActions(user);
                     }
                 }
-            });
+            };
+            githubOptions.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
+            githubOptions.ClaimActions.MapJsonKey(ClaimTypes.Name, "login");
+            githubOptions.ClaimActions.MapJsonKey("urn:github:name", "name");
+            githubOptions.ClaimActions.MapJsonKey(ClaimTypes.Email, "email", ClaimValueTypes.Email);
+            githubOptions.ClaimActions.MapJsonKey("urn:github:url", "url");
+            app.UseOAuthAuthentication(githubOptions);
 
             // Choose an authentication type
             app.Map("/login", signoutApp =>
@@ -357,7 +324,7 @@ namespace SocialSample
                 }
 
                 await context.Response.WriteAsync("Tokens:<br>");
-                
+
                 await context.Response.WriteAsync("Access Token: " + await context.Authentication.GetTokenAsync("access_token") + "<br>");
                 await context.Response.WriteAsync("Refresh Token: " + await context.Authentication.GetTokenAsync("refresh_token") + "<br>");
                 await context.Response.WriteAsync("Token Type: " + await context.Authentication.GetTokenAsync("token_type") + "<br>");

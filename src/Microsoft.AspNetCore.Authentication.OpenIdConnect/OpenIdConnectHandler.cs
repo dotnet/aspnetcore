@@ -661,6 +661,14 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 {
                     return await GetUserInformationAsync(tokenEndpointResponse ?? authorizationResponse, jwt, ticket);
                 }
+                else
+                {
+                    var identity = (ClaimsIdentity)ticket.Principal.Identity;
+                    foreach (var action in Options.ClaimActions)
+                    {
+                        action.Run(null, identity, Options.ClaimsIssuer);
+                    }
+                }
 
                 return AuthenticateResult.Success(ticket);
             }
@@ -727,7 +735,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             // Error handling:
             // 1. If the response body can't be parsed as json, throws.
-            // 2. If the response's status code is not in 2XX range, throw OpenIdConnectProtocolException. If the body is correct parsed, 
+            // 2. If the response's status code is not in 2XX range, throw OpenIdConnectProtocolException. If the body is correct parsed,
             //    pass the error information from body to the exception.
             OpenIdConnectMessage message;
             try
@@ -809,28 +817,10 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             var identity = (ClaimsIdentity)ticket.Principal.Identity;
 
-            foreach (var claim in identity.Claims)
+            foreach (var action in Options.ClaimActions)
             {
-                // If this claimType is mapped by the JwtSeurityTokenHandler, then this property will be set
-                var shortClaimTypeName = claim.Properties.ContainsKey(JwtSecurityTokenHandler.ShortClaimTypeProperty) ?
-                    claim.Properties[JwtSecurityTokenHandler.ShortClaimTypeProperty] : string.Empty;
-
-                // checking if claim in the identity (generated from id_token) has the same type as a claim retrieved from userinfo endpoint
-                JToken value;
-                var isClaimIncluded = user.TryGetValue(claim.Type, out value) || user.TryGetValue(shortClaimTypeName, out value);
-
-                // if a same claim exists (matching both type and value) both in id_token identity and userinfo response, remove the json entry from the userinfo response
-                if (isClaimIncluded && claim.Value.Equals(value.ToString(), StringComparison.Ordinal))
-                {
-                    if (!user.Remove(claim.Type))
-                    {
-                        user.Remove(shortClaimTypeName);
-                    }
-                }
+                action.Run(user, identity, Options.ClaimsIssuer);
             }
-
-            // adding remaining unique claims from userinfo endpoint to the identity
-            ClaimsHelper.AddClaimsToIdentity(user, identity, jwt.Issuer);
 
             return AuthenticateResult.Success(ticket);
         }
@@ -908,7 +898,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// </summary>
         /// <param name="nonce">the nonce that we are looking for.</param>
         /// <returns>echos 'nonce' if a cookie is found that matches, null otherwise.</returns>
-        /// <remarks>Examine <see cref="IRequestCookieCollection.Keys"/> of <see cref="HttpRequest.Cookies"/> that start with the prefix: 'OpenIdConnectAuthenticationDefaults.Nonce'. 
+        /// <remarks>Examine <see cref="IRequestCookieCollection.Keys"/> of <see cref="HttpRequest.Cookies"/> that start with the prefix: 'OpenIdConnectAuthenticationDefaults.Nonce'.
         /// <see cref="M:ISecureDataFormat{TData}.Unprotect"/> of <see cref="OpenIdConnectOptions.StringDataFormat"/> is used to obtain the actual 'nonce'. If the nonce is found, then <see cref="M:IResponseCookies.Delete"/> of <see cref="HttpResponse.Cookies"/> is called.</remarks>
         private string ReadNonceCookie(string nonce)
         {

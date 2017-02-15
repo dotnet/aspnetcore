@@ -653,11 +653,11 @@ namespace Microsoft.AspNetCore.Authentication.Google
                         Assert.Equal(context.AccessToken, "Test Access Token");
                         Assert.Equal(context.RefreshToken, "Test Refresh Token");
                         Assert.Equal(context.ExpiresIn, TimeSpan.FromSeconds(3600));
-                        Assert.Equal(GoogleHelper.GetEmail(context.User), "Test email");
-                        Assert.Equal(GoogleHelper.GetId(context.User), "Test User ID");
-                        Assert.Equal(GoogleHelper.GetName(context.User), "Test Name");
-                        Assert.Equal(GoogleHelper.GetFamilyName(context.User), "Test Family Name");
-                        Assert.Equal(GoogleHelper.GetGivenName(context.User), "Test Given Name");
+                        Assert.Equal(context.Identity.FindFirst(ClaimTypes.Email)?.Value, "Test email");
+                        Assert.Equal(context.Identity.FindFirst(ClaimTypes.NameIdentifier)?.Value, "Test User ID");
+                        Assert.Equal(context.Identity.FindFirst(ClaimTypes.Name)?.Value, "Test Name");
+                        Assert.Equal(context.Identity.FindFirst(ClaimTypes.Surname)?.Value, "Test Family Name");
+                        Assert.Equal(context.Identity.FindFirst(ClaimTypes.GivenName)?.Value, "Test Given Name");
                         return Task.FromResult(0);
                     }
                 },

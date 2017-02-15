@@ -144,5 +144,23 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// This property returns <c>null</c> when <see cref="Ticket"/> is <c>null</c>.
         /// </summary>
         public ClaimsIdentity Identity => Ticket?.Principal.Identity as ClaimsIdentity;
+
+        public void RunClaimActions()
+        {
+            RunClaimActions(User);
+        }
+
+        public void RunClaimActions(JObject userData)
+        {
+            if (userData == null)
+            {
+                throw new ArgumentNullException(nameof(userData));
+            }
+
+            foreach (var action in Options.ClaimActions)
+            {
+                action.Run(userData, Identity, Options.ClaimsIssuer);
+            }
+        }
     }
 }

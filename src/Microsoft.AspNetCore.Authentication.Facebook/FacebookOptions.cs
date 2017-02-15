@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Http;
 
@@ -30,6 +32,21 @@ namespace Microsoft.AspNetCore.Builder
             Fields.Add("email");
             Fields.Add("first_name");
             Fields.Add("last_name");
+
+            ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
+            ClaimActions.MapJsonSubKey("urn:facebook:age_range_min", "age_range", "min");
+            ClaimActions.MapJsonSubKey("urn:facebook:age_range_max", "age_range", "max");
+            ClaimActions.MapJsonKey(ClaimTypes.DateOfBirth, "birthday");
+            ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
+            ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
+            ClaimActions.MapJsonKey(ClaimTypes.GivenName, "first_name");
+            ClaimActions.MapJsonKey("urn:facebook:middle_name", "middle_name");
+            ClaimActions.MapJsonKey(ClaimTypes.Surname, "last_name");
+            ClaimActions.MapJsonKey(ClaimTypes.Gender, "gender");
+            ClaimActions.MapJsonKey("urn:facebook:link", "link");
+            ClaimActions.MapJsonSubKey("urn:facebook:location", "location", "name");
+            ClaimActions.MapJsonKey(ClaimTypes.Locality, "locale");
+            ClaimActions.MapJsonKey("urn:facebook:timezone", "timezone");
         }
 
         // Facebook uses a non-standard term for this field.

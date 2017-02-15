@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
@@ -55,6 +57,30 @@ namespace Microsoft.AspNetCore.Builder
             Events = new OpenIdConnectEvents();
             Scope.Add("openid");
             Scope.Add("profile");
+
+            ClaimActions.DeleteClaim("nonce");
+            ClaimActions.DeleteClaim("aud");
+            ClaimActions.DeleteClaim("azp");
+            ClaimActions.DeleteClaim("acr");
+            ClaimActions.DeleteClaim("amr");
+            ClaimActions.DeleteClaim("iss");
+            ClaimActions.DeleteClaim("iat");
+            ClaimActions.DeleteClaim("nbf");
+            ClaimActions.DeleteClaim("exp");
+            ClaimActions.DeleteClaim("at_hash");
+            ClaimActions.DeleteClaim("c_hash");
+            ClaimActions.DeleteClaim("auth_time");
+            ClaimActions.DeleteClaim("ipaddr");
+            ClaimActions.DeleteClaim("platf");
+            ClaimActions.DeleteClaim("ver");
+
+            // http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+            ClaimActions.MapUniqueJsonKey("sub", "sub");
+            ClaimActions.MapUniqueJsonKey("name", "name");
+            ClaimActions.MapUniqueJsonKey("given_name", "given_name");
+            ClaimActions.MapUniqueJsonKey("family_name", "family_name");
+            ClaimActions.MapUniqueJsonKey("profile", "profile");
+            ClaimActions.MapUniqueJsonKey("email", "email");
         }
 
         /// <summary>
@@ -91,6 +117,11 @@ namespace Microsoft.AspNetCore.Builder
         public bool GetClaimsFromUserInfoEndpoint { get; set; }
 
         /// <summary>
+        /// A collection of claim actions used to select values from the json user data and create Claims.
+        /// </summary>
+        public ClaimActionCollection ClaimActions { get; } = new ClaimActionCollection();
+
+        /// <summary>
         /// Gets or sets if HTTPS is required for the metadata address or authority.
         /// The default is true. This should be disabled only in development environments.
         /// </summary>
@@ -112,7 +143,7 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Gets or sets the <see cref="OpenIdConnectProtocolValidator"/> that is used to ensure that the 'id_token' received
-        /// is valid per: http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation 
+        /// is valid per: http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
         /// </summary>
         /// <exception cref="ArgumentNullException">if 'value' is null.</exception>
         public OpenIdConnectProtocolValidator ProtocolValidator { get; set; } = new OpenIdConnectProtocolValidator()

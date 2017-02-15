@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.ComponentModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OAuth;
+using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Http.Authentication;
 
 namespace Microsoft.AspNetCore.Builder
@@ -54,6 +54,11 @@ namespace Microsoft.AspNetCore.Builder
             get { return (IOAuthEvents)base.Events; }
             set { base.Events = value; }
         }
+
+        /// <summary>
+        /// A collection of claim actions used to select values from the json user data and create Claims.
+        /// </summary>
+        public ClaimActionCollection ClaimActions { get; } = new ClaimActionCollection();
 
         /// <summary>
         /// Gets the list of permissions to request.

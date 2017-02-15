@@ -108,6 +108,11 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(
             ClaimsIdentity identity, AuthenticationProperties properties, AccessToken token, JObject user)
         {
+            foreach (var action in Options.ClaimActions)
+            {
+                action.Run(user, identity, Options.ClaimsIssuer);
+            }
+
             var context = new TwitterCreatingTicketContext(Context, Options, token.UserId, token.ScreenName, token.Token, token.TokenSecret, user)
             {
                 Principal = new ClaimsPrincipal(identity),
@@ -354,12 +359,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             var responseText = await response.Content.ReadAsStringAsync();
 
             var result = JObject.Parse(responseText);
-
-            var email = result.Value<string>("email");
-            if (!string.IsNullOrEmpty(email))
-            {
-                identity.AddClaim(new Claim(ClaimTypes.Email, email, ClaimValueTypes.Email, Options.ClaimsIssuer));
-            }
 
             return result;
         }
