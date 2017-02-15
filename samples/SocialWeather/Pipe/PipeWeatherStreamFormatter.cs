@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -26,7 +26,7 @@ namespace SocialWeather.Pipe
             Weather weather = (Weather)(-1);
             string zipCode = tokens.Length > 3 ? tokens[3] : string.Empty;
 
-            if(tokens.Length == 0 || !int.TryParse(tokens[0], out temperature))
+            if (tokens.Length == 0 || !int.TryParse(tokens[0], out temperature))
             {
                 temperature = int.MinValue;
             }

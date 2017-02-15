@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             }
 
             // Create a Message for the frame
-            var message = new Message(frame.Payload.Preserve(), effectiveOpcode == WebSocketOpcode.Binary ? Format.Binary : Format.Text, frame.EndOfMessage);
+            var message = new Message(frame.Payload.Preserve(), effectiveOpcode == WebSocketOpcode.Binary ? MessageType.Binary : MessageType.Text, frame.EndOfMessage);
 
             // Write the message to the channel
             return _application.Output.WriteAsync(message);
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                         {
                             try
                             {
-                                var opcode = message.MessageFormat == Format.Binary ?
+                                var opcode = message.Type == MessageType.Binary ?
                                     WebSocketOpcode.Binary :
                                     WebSocketOpcode.Text;
 

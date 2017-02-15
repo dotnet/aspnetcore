@@ -1,7 +1,6 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26127.0
+VisualStudioVersion = 15.0.26208.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{DA69F624-5398-4884-87E4-B816698CDE65}"
 EndProject
@@ -57,6 +56,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Client.FunctionalTests", "test\Microsoft.AspNetCore.SignalR.Client.FunctionalTests\Microsoft.AspNetCore.SignalR.Client.FunctionalTests.csproj", "{455B68D2-C5B6-4BF4-A685-964B07AFAAF8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Sockets.Common", "src\Microsoft.AspNetCore.Sockets.Common\Microsoft.AspNetCore.Sockets.Common.csproj", "{F3EFFD9F-DD85-48A2-9B11-83A133ECC099}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Sockets.Common.Tests", "test\Microsoft.AspNetCore.Sockets.Common.Tests\Microsoft.AspNetCore.Sockets.Common.Tests.csproj", "{B0D32729-48AA-4841-B52A-2A61B60EED61}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -152,6 +153,10 @@ Global
 		{F3EFFD9F-DD85-48A2-9B11-83A133ECC099}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F3EFFD9F-DD85-48A2-9B11-83A133ECC099}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F3EFFD9F-DD85-48A2-9B11-83A133ECC099}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0D32729-48AA-4841-B52A-2A61B60EED61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0D32729-48AA-4841-B52A-2A61B60EED61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0D32729-48AA-4841-B52A-2A61B60EED61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0D32729-48AA-4841-B52A-2A61B60EED61}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -179,5 +184,6 @@ Global
 		{354335AB-CEE9-4434-A641-78058F6EFE56} = {DA69F624-5398-4884-87E4-B816698CDE65}
 		{455B68D2-C5B6-4BF4-A685-964B07AFAAF8} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
 		{F3EFFD9F-DD85-48A2-9B11-83A133ECC099} = {DA69F624-5398-4884-87E4-B816698CDE65}
+		{B0D32729-48AA-4841-B52A-2A61B60EED61} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
 	EndGlobalSection
 EndGlobal

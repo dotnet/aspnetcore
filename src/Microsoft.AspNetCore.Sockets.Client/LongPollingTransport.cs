@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     {
                         var ms = new MemoryStream();
                         await response.Content.CopyToAsync(ms);
-                        var message = new Message(ReadableBuffer.Create(ms.ToArray()).Preserve(), Format.Text);
+                        var message = new Message(ReadableBuffer.Create(ms.ToArray()).Preserve(), MessageType.Text);
 
                         while (await _application.Output.WaitToWriteAsync(cancellationToken))
                         {

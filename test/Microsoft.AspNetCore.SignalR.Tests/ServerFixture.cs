@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 _loggerFactory.AddConsole();
             }
-            if(Debugger.IsAttached)
+            if (Debugger.IsAttached)
             {
                 _loggerFactory.AddDebug();
             }
@@ -67,10 +67,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var t = Task.Run(() => host.Start());
             Console.WriteLine("Starting test server...");
             lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
-            if(!lifetime.ApplicationStarted.WaitHandle.WaitOne(TimeSpan.FromSeconds(1)))
+            if (!lifetime.ApplicationStarted.WaitHandle.WaitOne(TimeSpan.FromSeconds(1)))
             {
                 // t probably faulted
-                if(t.IsFaulted)
+                if (t.IsFaulted)
                 {
                     throw t.Exception.InnerException;
                 }

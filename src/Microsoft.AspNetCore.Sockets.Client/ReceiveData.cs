@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
     {
         public byte[] Data { get; set; }
 
-        public Format Format { get; set; }
+        public MessageType MessageType { get; set; }
     }
 }

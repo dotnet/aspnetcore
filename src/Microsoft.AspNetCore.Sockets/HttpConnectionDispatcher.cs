@@ -221,8 +221,8 @@ namespace Microsoft.AspNetCore.Sockets
         {
             var format =
                 string.Equals(context.Request.Query["format"], "binary", StringComparison.OrdinalIgnoreCase)
-                    ? Format.Binary
-                    : Format.Text;
+                    ? MessageType.Binary
+                    : MessageType.Text;
 
             var state = _manager.CreateConnection();
             state.Connection.User = context.User;
@@ -327,8 +327,8 @@ namespace Microsoft.AspNetCore.Sockets
 
             var format =
                 string.Equals(context.Request.Query["format"], "binary", StringComparison.OrdinalIgnoreCase)
-                    ? Format.Binary
-                    : Format.Text;
+                    ? MessageType.Binary
+                    : MessageType.Text;
 
             var message = new Message(
                 ReadableBuffer.Create(buffer).Preserve(),

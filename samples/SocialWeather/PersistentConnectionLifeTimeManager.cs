@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,7 +39,7 @@ namespace SocialWeather
                 var ms = new MemoryStream();
                 await formatter.WriteAsync(data, ms);
                 var buffer = ReadableBuffer.Create(ms.ToArray()).Preserve();
-                await connection.Transport.Output.WriteAsync(new Message(buffer, Format.Binary, endOfMessage: true));
+                await connection.Transport.Output.WriteAsync(new Message(buffer, MessageType.Binary, endOfMessage: true));
             }
         }
 

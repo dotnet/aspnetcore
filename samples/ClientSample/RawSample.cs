@@ -61,7 +61,7 @@ namespace ClientSample
                 var line = Console.ReadLine();
                 logger.LogInformation("Sending: {0}", line);
 
-                await connection.SendAsync(Encoding.UTF8.GetBytes("Hello World"), Format.Text);
+                await connection.SendAsync(Encoding.UTF8.GetBytes("Hello World"), MessageType.Text);
             }
             logger.LogInformation("Send loop terminated");
         }

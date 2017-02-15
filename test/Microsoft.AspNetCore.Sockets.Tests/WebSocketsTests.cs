@@ -18,9 +18,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
     public class WebSocketsTests
     {
         [Theory]
-        [InlineData(Format.Text, WebSocketOpcode.Text)]
-        [InlineData(Format.Binary, WebSocketOpcode.Binary)]
-        public async Task ReceivedFramesAreWrittenToChannel(Format format, WebSocketOpcode opcode)
+        [InlineData(MessageType.Text, WebSocketOpcode.Text)]
+        [InlineData(MessageType.Binary, WebSocketOpcode.Binary)]
+        public async Task ReceivedFramesAreWrittenToChannel(MessageType format, WebSocketOpcode opcode)
         {
             var transportToApplication = Channel.CreateUnbounded<Message>();
             var applicationToTransport = Channel.CreateUnbounded<Message>();
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 using (var message = await applicationSide.Input.In.ReadAsync())
                 {
                     Assert.True(message.EndOfMessage);
-                    Assert.Equal(format, message.MessageFormat);
+                    Assert.Equal(format, message.Type);
                     Assert.Equal("Hello", Encoding.UTF8.GetString(message.Payload.Buffer.ToArray()));
                 }
 
@@ -66,9 +66,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         }
 
         [Theory]
-        [InlineData(Format.Text, WebSocketOpcode.Text)]
-        [InlineData(Format.Binary, WebSocketOpcode.Binary)]
-        public async Task MultiFrameMessagesArePropagatedToTheChannel(Format format, WebSocketOpcode opcode)
+        [InlineData(MessageType.Text, WebSocketOpcode.Text)]
+        [InlineData(MessageType.Binary, WebSocketOpcode.Binary)]
+        public async Task MultiFrameMessagesArePropagatedToTheChannel(MessageType format, WebSocketOpcode opcode)
         {
             var transportToApplication = Channel.CreateUnbounded<Message>();
             var applicationToTransport = Channel.CreateUnbounded<Message>();
@@ -101,14 +101,14 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 using (var message1 = await applicationSide.Input.In.ReadAsync())
                 {
                     Assert.False(message1.EndOfMessage);
-                    Assert.Equal(format, message1.MessageFormat);
+                    Assert.Equal(format, message1.Type);
                     Assert.Equal("Hello", Encoding.UTF8.GetString(message1.Payload.Buffer.ToArray()));
                 }
 
                 using (var message2 = await applicationSide.Input.In.ReadAsync())
                 {
                     Assert.True(message2.EndOfMessage);
-                    Assert.Equal(format, message2.MessageFormat);
+                    Assert.Equal(format, message2.Type);
                     Assert.Equal("World", Encoding.UTF8.GetString(message2.Payload.Buffer.ToArray()));
                 }
 
@@ -125,9 +125,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         }
 
         [Theory]
-        [InlineData(Format.Text, WebSocketOpcode.Text)]
-        [InlineData(Format.Binary, WebSocketOpcode.Binary)]
-        public async Task IncompleteMessagesAreWrittenAsMultiFrameWebSocketMessages(Format format, WebSocketOpcode opcode)
+        [InlineData(MessageType.Text, WebSocketOpcode.Text)]
+        [InlineData(MessageType.Binary, WebSocketOpcode.Binary)]
+        public async Task IncompleteMessagesAreWrittenAsMultiFrameWebSocketMessages(MessageType format, WebSocketOpcode opcode)
         {
             var transportToApplication = Channel.CreateUnbounded<Message>();
             var applicationToTransport = Channel.CreateUnbounded<Message>();
@@ -173,9 +173,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         }
 
         [Theory]
-        [InlineData(Format.Text, WebSocketOpcode.Text)]
-        [InlineData(Format.Binary, WebSocketOpcode.Binary)]
-        public async Task DataWrittenToOutputPipelineAreSentAsFrames(Format format, WebSocketOpcode opcode)
+        [InlineData(MessageType.Text, WebSocketOpcode.Text)]
+        [InlineData(MessageType.Binary, WebSocketOpcode.Binary)]
+        public async Task DataWrittenToOutputPipelineAreSentAsFrames(MessageType format, WebSocketOpcode opcode)
         {
             var transportToApplication = Channel.CreateUnbounded<Message>();
             var applicationToTransport = Channel.CreateUnbounded<Message>();
@@ -214,9 +214,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         }
 
         [Theory]
-        [InlineData(Format.Text, WebSocketOpcode.Text)]
-        [InlineData(Format.Binary, WebSocketOpcode.Binary)]
-        public async Task FrameReceivedAfterServerCloseSent(Format format, WebSocketOpcode opcode)
+        [InlineData(MessageType.Text, WebSocketOpcode.Text)]
+        [InlineData(MessageType.Binary, WebSocketOpcode.Binary)]
+        public async Task FrameReceivedAfterServerCloseSent(MessageType format, WebSocketOpcode opcode)
         {
             var transportToApplication = Channel.CreateUnbounded<Message>();
             var applicationToTransport = Channel.CreateUnbounded<Message>();
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 using (var message = await applicationSide.Input.In.ReadAsync())
                 {
                     Assert.True(message.EndOfMessage);
-                    Assert.Equal(format, message.MessageFormat);
+                    Assert.Equal(format, message.Type);
                     Assert.Equal("Hello", Encoding.UTF8.GetString(message.Payload.Buffer.ToArray()));
                 }
 

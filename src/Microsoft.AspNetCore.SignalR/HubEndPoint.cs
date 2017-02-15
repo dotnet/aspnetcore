@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.SignalR
             await invocationAdapter.WriteMessageAsync(result, outStream);
 
             var buffer = ReadableBuffer.Create(outStream.ToArray()).Preserve();
-            var outMessage = new Message(buffer, Format.Text, endOfMessage: true);
+            var outMessage = new Message(buffer, MessageType.Text, endOfMessage: true);
 
             while (await connection.Transport.Output.WaitToWriteAsync())
             {

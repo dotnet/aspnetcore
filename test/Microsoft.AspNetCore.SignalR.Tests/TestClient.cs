@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             stream);
 
             var buffer = ReadableBuffer.Create(stream.ToArray()).Preserve();
-            await Application.Output.WriteAsync(new Message(buffer, Format.Binary, endOfMessage: true));
+            await Application.Output.WriteAsync(new Message(buffer, MessageType.Binary, endOfMessage: true));
         }
 
         public async Task<T> Read<T>() where T : InvocationMessage

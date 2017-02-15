@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -29,7 +29,7 @@ namespace SocketsSample.EndPoints
                         using (message)
                         {
                             // We can avoid the copy here but we'll deal with that later
-                            await Broadcast(message.Payload.Buffer, message.MessageFormat, message.EndOfMessage);
+                            await Broadcast(message.Payload.Buffer, message.Type, message.EndOfMessage);
                         }
                     }
                 }
@@ -44,10 +44,10 @@ namespace SocketsSample.EndPoints
 
         private Task Broadcast(string text)
         {
-            return Broadcast(ReadableBuffer.Create(Encoding.UTF8.GetBytes(text)), Format.Text, endOfMessage: true);
+            return Broadcast(ReadableBuffer.Create(Encoding.UTF8.GetBytes(text)), MessageType.Text, endOfMessage: true);
         }
 
-        private Task Broadcast(ReadableBuffer payload, Format format, bool endOfMessage)
+        private Task Broadcast(ReadableBuffer payload, MessageType format, bool endOfMessage)
         {
             var tasks = new List<Task>(Connections.Count);
 

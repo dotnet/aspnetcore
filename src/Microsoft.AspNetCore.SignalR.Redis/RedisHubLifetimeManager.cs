@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
         private async Task WriteAsync(Connection connection, byte[] data)
         {
             var buffer = ReadableBuffer.Create(data).Preserve();
-            var message = new Message(buffer, Format.Text, endOfMessage: true);
+            var message = new Message(buffer, MessageType.Text, endOfMessage: true);
 
             while (await connection.Transport.Output.WaitToWriteAsync())
             {

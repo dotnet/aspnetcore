@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             await channel.Out.WriteAsync(new Message(
                 ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello World")).Preserve(),
-                Format.Text,
+                MessageType.Text,
                 endOfMessage: true));
 
             Assert.True(channel.Out.TryComplete());

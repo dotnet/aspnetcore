@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _logger.LogInformation("Sending Invocation #{0}", descriptor.Id);
 
             // TODO: Format.Text - who, where and when decides about the format of outgoing messages
-            await _connection.SendAsync(ms.ToArray(), Format.Text, cancellationToken);
+            await _connection.SendAsync(ms.ToArray(), MessageType.Text, cancellationToken);
 
             _logger.LogInformation("Sending Invocation #{0} complete", descriptor.Id);
 
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 ReceiveData receiveData = new ReceiveData();
                 while (await _connection.ReceiveAsync(receiveData, cancellationToken))
                 {
-                    var message 
+                    var message
                         = await _adapter.ReadMessageAsync(new MemoryStream(receiveData.Data), _binder, cancellationToken);
 
                     switch (message)

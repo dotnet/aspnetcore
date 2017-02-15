@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.IO.Pipelines" Version="0.1.0-*" />
+    <PackageReference Include="System.Text.Primitives" Version="0.1.0-*" />
     <PackageReference Include="System.Threading.Tasks.Channels" Version="0.1.0-*" />
   </ItemGroup>
 

@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             using (var connection = await Connection.ConnectAsync(new Uri("http://fakeuri.org/"), longPollingTransport, httpClient))
             {
                 var data = new byte[] { 1, 1, 2, 3, 5, 8 };
-                await connection.SendAsync(data, Format.Binary);
+                await connection.SendAsync(data, MessageType.Binary);
 
                 Assert.Equal(data, await sendTcs.Task.OrTimeout());
             }
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             using (var connection = await Connection.ConnectAsync(new Uri("http://fakeuri.org/"), longPollingTransport, httpClient))
             {
                 await connection.StopAsync();
-                Assert.False(await connection.SendAsync(new byte[] { 1, 1, 3, 5, 8 }, Format.Binary));
+                Assert.False(await connection.SendAsync(new byte[] { 1, 1, 3, 5, 8 }, MessageType.Binary));
             }
         }
 
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 allowPollTcs.TrySetResult(null);
                 await Assert.ThrowsAsync<HttpRequestException>(async () => await receiveTask);
 
-                Assert.False(await connection.SendAsync(new byte[] { 1, 1, 3, 5, 8 }, Format.Binary));
+                Assert.False(await connection.SendAsync(new byte[] { 1, 1, 3, 5, 8 }, MessageType.Binary));
             }
         }
 

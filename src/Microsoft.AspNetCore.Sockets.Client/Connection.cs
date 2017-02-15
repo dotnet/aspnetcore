@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     {
                         using (message)
                         {
-                            receiveData.Format = message.MessageFormat;
+                            receiveData.MessageType = message.Type;
                             receiveData.Data = message.Payload.Buffer.ToArray();
                             return true;
                         }
@@ -80,14 +80,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
             return false;
         }
 
-        public Task<bool> SendAsync(byte[] data, Format format)
+        public Task<bool> SendAsync(byte[] data, MessageType type)
         {
-            return SendAsync(data, format, CancellationToken.None);
+            return SendAsync(data, type, CancellationToken.None);
         }
 
-        public async Task<bool> SendAsync(byte[] data, Format format, CancellationToken cancellationToken)
+        public async Task<bool> SendAsync(byte[] data, MessageType type, CancellationToken cancellationToken)
         {
-            var message = new Message(ReadableBuffer.Create(data).Preserve(), format);
+            var message = new Message(ReadableBuffer.Create(data).Preserve(), type);
 
             while (await Output.WaitToWriteAsync(cancellationToken))
             {
