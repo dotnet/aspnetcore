@@ -5,11 +5,17 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp1.1</TargetFrameworks>
     <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="1.2.0-*" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <StartWorkingDirectory>$(MSBuildThisFileDirectory)..\..\src\Microsoft.AspNetCore.Server.Kestrel\Internal\Http</StartWorkingDirectory>
+    <StartArguments>FrameHeaders.Generated.cs Frame.Generated.cs</StartArguments>
+  </PropertyGroup>
 
 </Project>

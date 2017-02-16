@@ -1,0 +1,5 @@
+<Project>
+  <Target Name="CodeGen">
+    <Exec Command="dotnet run" WorkingDirectory="$(MSBuildThisFileDirectory)..\tools\CodeGenerator\" />
+  </Target>
+</Project>

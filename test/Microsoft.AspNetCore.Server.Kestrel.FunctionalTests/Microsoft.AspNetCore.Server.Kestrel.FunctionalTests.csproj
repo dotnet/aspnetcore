@@ -6,7 +6,7 @@
     <TargetFrameworks>netcoreapp1.1;net452</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp1.1</TargetFrameworks>
     <!-- TODO remove rid when https://github.com/dotnet/sdk/issues/396 is resolved -->
-    <RuntimeIdentifier Condition="'$(TargetFramework)'!='netcoreapp1.1'">win7-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(TargetFramework)' != 'netcoreapp1.1'">win7-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,15 +16,18 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.Kestrel.Https\Microsoft.AspNetCore.Server.Kestrel.Https.csproj" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
-    <PackageReference Include="xunit" Version="2.2.0-*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.AspNetCore.Testing" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.CodeCoverage" Version="1.0.2" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
     <PackageReference Include="Moq" Version="4.6.36-*" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
-    <PackageReference Include="Microsoft.CodeCoverage" Version="1.0.2" PrivateAssets="All" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
+    <PackageReference Include="xunit" Version="2.2.0-*" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
@@ -35,13 +38,14 @@
     <PackageReference Include="System.Net.NetworkInformation" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
-  <Target Condition="'$(OS)' == 'Unix'" Name="RunUname" BeforeTargets="CoreCompile">
-    <Exec Command="uname" ConsoleToMSBuild="true">
-      <Output TaskParameter="ConsoleOutput" PropertyName="Uname" />
-    </Exec>
+  <Target Name="DefinePlatformConstants" BeforeTargets="CoreCompile">
+    <GetOSPlatform>
+      <!-- Returns {Linux, macOS, Windows} -->
+      <Output TaskParameter="PlatformName" PropertyName="OSPlatform" />
+    </GetOSPlatform>
 
-    <PropertyGroup Condition="'$(Uname)' == 'Darwin'">
-      <DefineConstants>$(DefineConstants);DARWIN</DefineConstants>
+    <PropertyGroup>
+      <DefineConstants>$(DefineConstants);$(OSPlatform.ToUpperInvariant())</DefineConstants>
     </PropertyGroup>
   </Target>
 

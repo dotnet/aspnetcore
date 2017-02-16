@@ -1,10 +1,13 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
+namespace CodeGenerator
 {
     // This project can output the Class library as a NuGet Package.
     // To enable this option, right-click on the project and select the Properties menu item. In the Build tab select "Produce outputs on build".
@@ -20,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
             return condition ? formatter() : "";
         }
 
-        static string AppendSwitch(IEnumerable<IGrouping<int, KnownHeader>> values, string className) => 
+        static string AppendSwitch(IEnumerable<IGrouping<int, KnownHeader>> values, string className) =>
              $@"var pUL = (ulong*)pUB;
                 var pUI = (uint*)pUB;
                 var pUS = (ushort*)pUB;
@@ -73,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
             public string TestNotBit() => $"(_bits & {1L << Index}L) == 0";
             public string SetBit() => $"_bits |= {1L << Index}L";
             public string ClearBit() => $"_bits &= ~{1L << Index}L";
-            
+
             public string EqualIgnoreCaseBytes()
             {
                 var result = "";
@@ -530,10 +533,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     }}
                     else ")}
                     {{
-                        var valueCount = _headers._{header.Identifier}.Count; 
-                        for (var i = 0; i < valueCount; i++) 
+                        var valueCount = _headers._{header.Identifier}.Count;
+                        for (var i = 0; i < valueCount; i++)
                         {{
-                            var value = _headers._{header.Identifier}[i]; 
+                            var value = _headers._{header.Identifier}[i];
                             if (value != null)
                             {{
                                 output.CopyFrom(_headerBytes, {header.BytesOffset}, {header.BytesCount});
@@ -571,7 +574,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 AppendNonPrimaryHeaders(ptr, keyOffset, keyLength, value);
             }}
         }}
-        
+
         private unsafe void AppendNonPrimaryHeaders(byte* pKeyBytes, int keyOffset, int keyLength, string value)
         {{
                 var pUB = pKeyBytes;
