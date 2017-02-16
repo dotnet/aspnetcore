@@ -15,7 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="1.1.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="1.2.0-*" />
   </ItemGroup>
 
 </Project>
