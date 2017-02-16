@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
 
             ApplicationPath = applicationPath;
+            ApplicationName = new DirectoryInfo(ApplicationPath).Name;
             ServerType = serverType;
             RuntimeFlavor = runtimeFlavor;
             EnvironmentVariables.Add(new KeyValuePair<string, string>("ASPNETCORE_DETAILEDERRORS", "true"));
@@ -68,6 +69,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         public string SiteName { get; set; }
 
         public string ApplicationPath { get; }
+
+        /// <summary>
+        /// Gets or sets the name of the application. This is used to execute the application when deployed.
+        /// Defaults to the file name of <see cref="ApplicationPath"/>.
+        /// </summary>
+        public string ApplicationName { get; set; }
 
         public string TargetFramework { get; set; }
 

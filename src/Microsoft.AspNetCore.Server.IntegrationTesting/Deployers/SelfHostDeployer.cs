@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 var executableExtension =
                     DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? ".exe" :
                     DeploymentParameters.ApplicationType == ApplicationType.Portable ? ".dll" : "";
-                var executable = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, new DirectoryInfo(DeploymentParameters.ApplicationPath).Name + executableExtension);
+                var executable = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, DeploymentParameters.ApplicationName + executableExtension);
 
                 if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
