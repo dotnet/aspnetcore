@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.AspNetCore.Routing;
 using Xunit;
 
@@ -59,6 +60,41 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(string.Empty, (string)result);
+        }
+
+        [Fact]
+        public void GetValue_ReturnsValue_WithDefaultCulture()
+        {
+            // Arrange
+            var values = new RouteValueDictionary(new Dictionary<string, object>
+            {
+                { "test-key", "test-value"}
+            });
+            var provider = new RouteValueProvider(BindingSource.Query, values);
+
+            // Act
+            var result = provider.GetValue("test-key");
+
+            // Assert
+            Assert.Equal(CultureInfo.InvariantCulture, result.Culture);
+        }
+
+        [Fact]
+        public void GetValue_ReturnsValue_WithCulture()
+        {
+            // Arrange
+            var values = new RouteValueDictionary(new Dictionary<string, object>
+            {
+                { "test-key", "test-value"}
+            });
+            var culture = new CultureInfo("fr-FR");
+            var provider = new RouteValueProvider(BindingSource.Query, values, culture);
+
+            // Act
+            var result = provider.GetValue("test-key");
+
+            // Assert
+            Assert.Equal(new CultureInfo("fr-FR"), result.Culture);
         }
 
         [Theory]
