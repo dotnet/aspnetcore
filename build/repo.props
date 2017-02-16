@@ -1,5 +1,6 @@
 <Project>
   <ItemGroup>
     <ExcludeFromTest Include="$(RepositoryRoot)test\TestSites\*.csproj" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests\*.csproj" Condition="'$(OS)' != 'Windows_NT'" />
   </ItemGroup>
 </Project>
