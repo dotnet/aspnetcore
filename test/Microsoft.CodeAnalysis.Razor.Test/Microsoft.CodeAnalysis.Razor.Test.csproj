@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\build\common.props" />
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.1;net46</TargetFrameworks>
+    <TargetFrameworks>netcoreapp1.1;net452</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp1.1</TargetFrameworks>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**\*</DefaultItemExcludes>
     <PreserveCompilationContext>true</PreserveCompilationContext>
@@ -11,6 +11,7 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="TestFiles\**\*" />
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.Razor\Microsoft.CodeAnalysis.Razor.csproj" />

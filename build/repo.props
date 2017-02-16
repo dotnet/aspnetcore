@@ -1,7 +1,0 @@
-<Project>
-  <ItemGroup>
-    <!-- TODO re-enable tests on .NET Core when we upgrade to 2.0. This project started using 2.0 API but we had to drop temporarily to .NET Core 1.1 -->
-    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.CodeAnalysis.Razor.Test\*.csproj" Condition="'$(OS)' != 'Windows_NT'"/>
-    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Razor.Evolution.Test\*.csproj" Condition="'$(OS)' != 'Windows_NT'" />
-  </ItemGroup>
-</Project>

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -23,13 +24,13 @@ namespace Microsoft.CodeAnalysis.Razor
                 syntaxTrees = new[] { syntaxTree };
             }
 
-            var assemblyName = new AssemblyName(typeof(TestCompilation).GetTypeInfo().Assembly.GetName().Name);
-            var dependencyContext = DependencyContext.Load(Assembly.Load(assemblyName));
+            var currentAssembly = typeof(TestCompilation).GetTypeInfo().Assembly;
+            var dependencyContext = DependencyContext.Load(currentAssembly);
 
             var references = dependencyContext.CompileLibraries.SelectMany(l => l.ResolveReferencePaths())
                 .Select(assemblyPath => MetadataReference.CreateFromFile(assemblyPath));
-
             var compilation = CSharpCompilation.Create("TestAssembly", syntaxTrees, references);
+
             EnsureValidCompilation(compilation);
 
             return compilation;
