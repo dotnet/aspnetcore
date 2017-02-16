@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Sockets.Client
 {
-    public interface ITransport : IDisposable
+    public interface ITransport
     {
         Task StartAsync(Uri url, IChannelConnection<Message> application);
         Task StopAsync();

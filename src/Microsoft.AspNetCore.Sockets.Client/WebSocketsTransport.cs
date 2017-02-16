@@ -42,8 +42,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 throw new ArgumentNullException(nameof(application));
             }
-
+            
             _application = application;
+
             await Connect(url);
             var sendTask = SendMessages(url, _cancellationToken);
             var receiveTask = ReceiveMessages(url, _cancellationToken);
@@ -154,14 +155,19 @@ namespace Microsoft.AspNetCore.Sockets.Client
             await _webSocket.ConnectAsync(uriBuilder.Uri, _cancellationToken);
         }
 
-        public void Dispose()
-        {
-            _webSocket.Dispose();
-        }
-
         public async Task StopAsync()
         {
             await _webSocket.CloseAsync(WebSocketCloseStatus.Empty, null, _cancellationToken);
+            _webSocket.Dispose();
+
+            try
+            {
+                await Running;
+            }
+            catch
+            {
+                // exceptions have been handled in the Running task continuation by closing the channel with the exception
+            }
         }
     }
 }

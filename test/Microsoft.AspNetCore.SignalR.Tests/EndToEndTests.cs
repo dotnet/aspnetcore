@@ -64,11 +64,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var httpClient = new HttpClient())
             {
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                using (var connection = new ClientConnection(new Uri(baseUrl + "/echo"), loggerFactory))
+                var connection = new ClientConnection(new Uri(baseUrl + "/echo"), loggerFactory);
+                try
                 {
                     var receiveTcs = new TaskCompletionSource<string>();
                     connection.Received += (data, format) => receiveTcs.TrySetResult(Encoding.UTF8.GetString(data));
-                    connection.Closed += e => 
+                    connection.Closed += e =>
                         {
                             if (e != null)
                             {
@@ -87,8 +88,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var receiveData = new ReceiveData();
 
                     Assert.Equal(message, await receiveTcs.Task.OrTimeout());
-
-                    await connection.StopAsync();
+                }
+                finally
+                {
+                    await connection.DisposeAsync();
                 }
             }
         }
@@ -111,7 +114,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var loggerFactory = new LoggerFactory();
 
             var transport = new WebSocketsTransport();
-            using (var connection = new ClientConnection(new Uri(baseUrl + "/echo/ws"), loggerFactory))
+            var connection = new ClientConnection(new Uri(baseUrl + "/echo/ws"), loggerFactory);
+            try
             {
                 var receiveTcs = new TaskCompletionSource<byte[]>();
                 connection.Received += (data, messageType) => receiveTcs.SetResult(data);
@@ -124,8 +128,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var receivedData = await receiveTcs.Task.OrTimeout();
                 Assert.Equal(message, Encoding.UTF8.GetString(receivedData));
-
-                await connection.StopAsync();
+            }
+            finally
+            {
+                await connection.DisposeAsync();
             }
         }
     }

@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
-    public class HubConnection : IDisposable
+    public class HubConnection
     {
         private readonly ILogger _logger;
         private readonly Connection _connection;
@@ -71,14 +71,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
             await _connection.StartAsync(transport, httpClient);
         }
 
-        public async Task StopAsync()
+        public async Task DisposeAsync()
         {
-            await _connection.StopAsync();
-        }
-
-        public void Dispose()
-        {
-            _connection.Dispose();
+            await _connection.DisposeAsync();
         }
 
         // TODO: Client return values/tasks?

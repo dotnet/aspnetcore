@@ -51,13 +51,18 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             using (var httpClient = _testServer.CreateClient())
             {
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                using (var connection = new HubConnection(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), loggerFactory))
+                var connection = new HubConnection(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), loggerFactory);
+                try
                 {
                     await connection.StartAsync(transport, httpClient);
 
                     var result = await connection.Invoke<string>("HelloWorld");
 
                     Assert.Equal("Hello World!", result);
+                }
+                finally
+                {
+                    await connection.DisposeAsync();
                 }
             }
         }
@@ -71,13 +76,18 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             using (var httpClient = _testServer.CreateClient())
             {
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                using (var connection = new HubConnection(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), loggerFactory))
+                var connection = new HubConnection(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), loggerFactory);
+                try
                 {
                     await connection.StartAsync(transport, httpClient);
 
                     var result = await connection.Invoke<string>("Echo", originalMessage);
 
                     Assert.Equal(originalMessage, result);
+                }
+                finally
+                {
+                    await connection.DisposeAsync();
                 }
             }
         }
@@ -91,13 +101,18 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             using (var httpClient = _testServer.CreateClient())
             {
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                using (var connection = new HubConnection(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), loggerFactory))
+                var connection = new HubConnection(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), loggerFactory);
+                try
                 {
                     await connection.StartAsync(transport, httpClient);
 
                     var result = await connection.Invoke<string>("echo", originalMessage);
 
                     Assert.Equal(originalMessage, result);
+                }
+                finally
+                {
+                    await connection.DisposeAsync();
                 }
             }
         }
@@ -111,7 +126,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             using (var httpClient = _testServer.CreateClient())
             {
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                using (var connection = new HubConnection(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), loggerFactory))
+                var connection = new HubConnection(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), loggerFactory);
+                try
                 {
                     await connection.StartAsync(transport, httpClient);
 
@@ -125,6 +141,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     Assert.Equal(originalMessage, await tcs.Task.OrTimeout());
                 }
+                finally
+                {
+                    await connection.DisposeAsync();
+                }
             }
         }
 
@@ -136,7 +156,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             using (var httpClient = _testServer.CreateClient())
             {
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                using (var connection = new HubConnection(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), loggerFactory))
+                var connection = new HubConnection(new Uri("http://test/hubs"), new JsonNetInvocationAdapter(), loggerFactory);
+                try
                 {
                     await connection.StartAsync(transport, httpClient);
 
@@ -144,6 +165,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                         async () => await connection.Invoke<object>("!@#$%"));
 
                     Assert.Equal(ex.Message, "Unknown hub method '!@#$%'");
+                }
+                finally
+                {
+                    await connection.DisposeAsync();
                 }
             }
         }

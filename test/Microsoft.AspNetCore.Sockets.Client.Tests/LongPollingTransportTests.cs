@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
     public class LongPollingTransportTests
     {
         [Fact]
-        public async Task LongPollingTransportStopsPollAndSendLoopsWhenTransportDisposed()
+        public async Task LongPollingTransportStopsPollAndSendLoopsWhenTransportStopped()
         {
             var mockHttpHandler = new Mock<HttpMessageHandler>();
             mockHttpHandler.Protected()
@@ -33,19 +33,27 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             Task transportActiveTask;
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
             {
-                var connectionToTransport = Channel.CreateUnbounded<Message>();
-                var transportToConnection = Channel.CreateUnbounded<Message>();
-                var channelConnection = new ChannelConnection<Message>(connectionToTransport, transportToConnection);
-                await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
+                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
 
-                transportActiveTask = longPollingTransport.Running;
+                try
+                {
+                    var connectionToTransport = Channel.CreateUnbounded<Message>();
+                    var transportToConnection = Channel.CreateUnbounded<Message>();
+                    var channelConnection = new ChannelConnection<Message>(connectionToTransport, transportToConnection);
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
 
-                Assert.False(transportActiveTask.IsCompleted);
+                    transportActiveTask = longPollingTransport.Running;
+
+                    Assert.False(transportActiveTask.IsCompleted);
+                }
+                finally
+                {
+                    await longPollingTransport.StopAsync();
+                }
+
+                await transportActiveTask.OrTimeout();
             }
-
-            await transportActiveTask.OrTimeout();
         }
 
         [Fact]
@@ -61,15 +69,23 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
             {
-                var connectionToTransport = Channel.CreateUnbounded<Message>();
-                var transportToConnection = Channel.CreateUnbounded<Message>();
-                var channelConnection = new ChannelConnection<Message>(connectionToTransport, transportToConnection);
-                await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
 
-                await longPollingTransport.Running.OrTimeout();
-                Assert.True(transportToConnection.In.Completion.IsCompleted);
+                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
+                try
+                {
+                    var connectionToTransport = Channel.CreateUnbounded<Message>();
+                    var transportToConnection = Channel.CreateUnbounded<Message>();
+                    var channelConnection = new ChannelConnection<Message>(connectionToTransport, transportToConnection);
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
+
+                    await longPollingTransport.Running.OrTimeout();
+                    Assert.True(transportToConnection.In.Completion.IsCompleted);
+                }
+                finally
+                {
+                    await longPollingTransport.StopAsync();
+                }
             }
         }
 
@@ -86,16 +102,23 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
             {
-                var connectionToTransport = Channel.CreateUnbounded<Message>();
-                var transportToConnection = Channel.CreateUnbounded<Message>();
-                var channelConnection = new ChannelConnection<Message>(connectionToTransport, transportToConnection);
-                await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
+                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
+                try
+                {
+                    var connectionToTransport = Channel.CreateUnbounded<Message>();
+                    var transportToConnection = Channel.CreateUnbounded<Message>();
+                    var channelConnection = new ChannelConnection<Message>(connectionToTransport, transportToConnection);
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
 
-                var exception = 
-                    await Assert.ThrowsAsync<HttpRequestException>(async () => await transportToConnection.In.Completion.OrTimeout());
-                Assert.Contains(" 500 ", exception.Message);
+                    var exception =
+                        await Assert.ThrowsAsync<HttpRequestException>(async () => await transportToConnection.In.Completion.OrTimeout());
+                    Assert.Contains(" 500 ", exception.Message);
+                }
+                finally
+                {
+                    await longPollingTransport.StopAsync();
+                }
             }
         }
 
@@ -115,25 +138,32 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
             {
-                var connectionToTransport = Channel.CreateUnbounded<Message>();
-                var transportToConnection = Channel.CreateUnbounded<Message>();
-                var channelConnection = new ChannelConnection<Message>(connectionToTransport, transportToConnection);
-                await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
-
-                await connectionToTransport.Out.WriteAsync(new Message());
-
-                await Assert.ThrowsAsync<HttpRequestException>(async () => await longPollingTransport.Running.OrTimeout());
-
-                // The channel needs to be drained for the Completion task to be completed
-                while (transportToConnection.In.TryRead(out Message message))
+                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
+                try
                 {
-                    message.Dispose();
-                }
+                    var connectionToTransport = Channel.CreateUnbounded<Message>();
+                    var transportToConnection = Channel.CreateUnbounded<Message>();
+                    var channelConnection = new ChannelConnection<Message>(connectionToTransport, transportToConnection);
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
 
-                var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await transportToConnection.In.Completion);
-                Assert.Contains(" 500 ", exception.Message);
+                    await connectionToTransport.Out.WriteAsync(new Message());
+
+                    await Assert.ThrowsAsync<HttpRequestException>(async () => await longPollingTransport.Running.OrTimeout());
+
+                    // The channel needs to be drained for the Completion task to be completed
+                    while (transportToConnection.In.TryRead(out Message message))
+                    {
+                        message.Dispose();
+                    }
+
+                    var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await transportToConnection.In.Completion);
+                    Assert.Contains(" 500 ", exception.Message);
+                }
+                finally
+                {
+                    await longPollingTransport.StopAsync();
+                }
             }
         }
 
@@ -150,19 +180,26 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory()))
             {
-                var connectionToTransport = Channel.CreateUnbounded<Message>();
-                var transportToConnection = Channel.CreateUnbounded<Message>();
-                var channelConnection = new ChannelConnection<Message>(connectionToTransport, transportToConnection);
-                await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
+                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
+                try
+                {
+                    var connectionToTransport = Channel.CreateUnbounded<Message>();
+                    var transportToConnection = Channel.CreateUnbounded<Message>();
+                    var channelConnection = new ChannelConnection<Message>(connectionToTransport, transportToConnection);
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
 
-                connectionToTransport.Out.Complete();
+                    connectionToTransport.Out.Complete();
 
-                await longPollingTransport.Running.OrTimeout();
+                    await longPollingTransport.Running.OrTimeout();
 
-                await longPollingTransport.Running.OrTimeout();
-                await connectionToTransport.In.Completion.OrTimeout();
+                    await longPollingTransport.Running.OrTimeout();
+                    await connectionToTransport.In.Completion.OrTimeout();
+                }
+                finally
+                {
+                    await longPollingTransport.StopAsync();
+                }
             }
         }
     }

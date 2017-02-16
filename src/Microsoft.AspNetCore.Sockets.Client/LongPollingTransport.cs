@@ -42,7 +42,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _poller = Poll(Utils.AppendPath(url, "poll"), _transportCts.Token);
             _sender = SendMessages(Utils.AppendPath(url, "send"), _transportCts.Token);
 
-            Running = Task.WhenAll(_sender, _poller).ContinueWith(t => {
+            Running = Task.WhenAll(_sender, _poller).ContinueWith(t =>
+            {
                 _application.Output.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
                 return t;
             }).Unwrap();
@@ -53,12 +54,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
         public async Task StopAsync()
         {
             _transportCts.Cancel();
-            await Running;
-        }
-
-        public void Dispose()
-        {
-            _transportCts.Cancel();
+            try
+            {
+                await Running;
+            }
+            catch
+            {
+                // exceptions have been handled in the Running task continuation by closing the channel with the exception
+            }
         }
 
         private async Task Poll(Uri pollUrl, CancellationToken cancellationToken)

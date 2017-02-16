@@ -30,7 +30,8 @@ namespace ClientSample
             {
                 logger.LogInformation("Connecting to {0}", baseUrl);
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                using (var connection = new HubConnection(new Uri(baseUrl), new JsonNetInvocationAdapter(), loggerFactory))
+                var connection = new HubConnection(new Uri(baseUrl), new JsonNetInvocationAdapter(), loggerFactory);
+                try
                 {
                     await connection.StartAsync(transport, httpClient);
                     logger.LogInformation("Connected to {0}", baseUrl);
@@ -57,6 +58,10 @@ namespace ClientSample
 
                         await connection.Invoke<object>("Send", line);
                     }
+                }
+                finally
+                {
+                    await connection.DisposeAsync();
                 }
             }
         }

@@ -30,7 +30,8 @@ namespace ClientSample
             {
                 logger.LogInformation("Connecting to {0}", baseUrl);
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                using (var connection = new Connection(new Uri(baseUrl), loggerFactory))
+                var connection = new Connection(new Uri(baseUrl), loggerFactory);
+                try
                 {
                     var cts = new CancellationTokenSource();
                     connection.Received += (data, format) => logger.LogInformation($"Received: {Encoding.UTF8.GetString(data)}");
@@ -48,8 +49,10 @@ namespace ClientSample
                     };
 
                     await StartSending(loggerFactory.CreateLogger("SendLoop"), connection, cts.Token).ContinueWith(_ => cts.Cancel());
-
-                    await connection.StopAsync();
+                }
+                finally
+                {
+                    await connection.DisposeAsync();
                 }
             }
         }
