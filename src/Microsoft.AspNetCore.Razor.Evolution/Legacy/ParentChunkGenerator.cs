@@ -9,8 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public static readonly IParentChunkGenerator Null = new NullParentChunkGenerator();
 
-        public abstract void AcceptStart(ParserVisitor visitor, Block block);
-        public abstract void AcceptEnd(ParserVisitor visitor, Block block);
+        public abstract void Accept(ParserVisitor visitor, Block block);
 
         public virtual void GenerateStartParentChunk(Block target, ChunkGeneratorContext context)
         {
@@ -46,12 +45,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 return "None";
             }
 
-            public void AcceptStart(ParserVisitor visitor, Block block)
+            public void Accept(ParserVisitor visitor, Block block)
             {
-            }
-
-            public void AcceptEnd(ParserVisitor visitor, Block block)
-            {
+                for (var i = 0; i < block.Children.Count; i++)
+                {
+                    block.Children[i].Accept(visitor);
+                }
             }
         }
     }

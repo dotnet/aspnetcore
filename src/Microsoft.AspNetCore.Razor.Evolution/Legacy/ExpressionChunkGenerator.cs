@@ -29,14 +29,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             visitor.VisitExpressionSpan(this, span);
         }
 
-        public void AcceptStart(ParserVisitor visitor, Block block)
+        public void Accept(ParserVisitor visitor, Block block)
         {
-            visitor.VisitStartExpressionBlock(this, block);
-        }
-
-        public void AcceptEnd(ParserVisitor visitor, Block block)
-        {
-            visitor.VisitEndExpressionBlock(this, block);
+            visitor.VisitExpressionBlock(this, block);
         }
 
         public override string ToString()

@@ -23,14 +23,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public SourceLocation ValueStart { get; }
 
-        public override void AcceptStart(ParserVisitor visitor, Block block)
+        public override void Accept(ParserVisitor visitor, Block block)
         {
-            visitor.VisitStartDynamicAttributeBlock(this, block);
-        }
-
-        public override void AcceptEnd(ParserVisitor visitor, Block block)
-        {
-            visitor.VisitEndDynamicAttributeBlock(this, block);
+            visitor.VisitDynamicAttributeBlock(this, block);
         }
 
         public override void GenerateStartParentChunk(Block target, ChunkGeneratorContext context)

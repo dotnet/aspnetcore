@@ -17,15 +17,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         public DirectiveDescriptor Descriptor { get; }
 
-        public override void AcceptStart(ParserVisitor visitor, Block block)
+        public override void Accept(ParserVisitor visitor, Block block)
         {
-            visitor.VisitStartDirectiveBlock(this, block);
+            visitor.VisitDirectiveBlock(this, block);
         }
 
-        public override void AcceptEnd(ParserVisitor visitor, Block block)
-        {
-            visitor.VisitEndDirectiveBlock(this, block);
-        }
         public override bool Equals(object obj)
         {
             var other = obj as DirectiveChunkGenerator;

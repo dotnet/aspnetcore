@@ -5,14 +5,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
     internal class RazorCommentChunkGenerator : ParentChunkGenerator
     {
-        public override void AcceptStart(ParserVisitor visitor, Block block)
+        public override void Accept(ParserVisitor visitor, Block block)
         {
-            visitor.VisitStartCommentBlock(this, block);
-        }
-
-        public override void AcceptEnd(ParserVisitor visitor, Block block)
-        {
-            visitor.VisitEndCommentBlock(this, block);
+            visitor.VisitCommentBlock(this, block);
         }
     }
 }

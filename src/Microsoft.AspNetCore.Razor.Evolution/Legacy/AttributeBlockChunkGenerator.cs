@@ -36,14 +36,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             //context.ChunkTreeBuilder.EndParentChunk();
         }
 
-        public override void AcceptStart(ParserVisitor visitor, Block block)
+        public override void Accept(ParserVisitor visitor, Block block)
         {
-            visitor.VisitStartAttributeBlock(this, block);
-        }
-
-        public override void AcceptEnd(ParserVisitor visitor, Block block)
-        {
-            visitor.VisitEndAttributeBlock(this, block);
+            visitor.VisitAttributeBlock(this, block);
         }
 
         public override string ToString()

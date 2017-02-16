@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
     {
         void GenerateStartParentChunk(Block target, ChunkGeneratorContext context);
         void GenerateEndParentChunk(Block target, ChunkGeneratorContext context);
-        void AcceptStart(ParserVisitor visitor, Block block);
-        void AcceptEnd(ParserVisitor visitor, Block block);
+
+        void Accept(ParserVisitor visitor, Block block);
     }
 }

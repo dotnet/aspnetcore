@@ -96,30 +96,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 }
             }
 
-            public override void VisitDirectiveToken(DirectiveTokenChunkGenerator chunkGenerator, Span span)
-            {
-                _builder.Add(new DirectiveTokenIRNode()
-                {
-                    Content = span.Content,
-                    Descriptor = chunkGenerator.Descriptor,
-                    Source = BuildSourceSpanFromNode(span),
-                });
-            }
-
-            public override void VisitStartDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
-            {
-                _builder.Push(new DirectiveIRNode()
-                {
-                    Name = chunkGenerator.Descriptor.Name,
-                    Descriptor = chunkGenerator.Descriptor,
-                });
-            }
-
-            public override void VisitEndDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
-            {
-                _builder.Pop();
-            }
-
             public override void VisitAddTagHelperSpan(AddTagHelperChunkGenerator chunkGenerator, Span span)
             {
                 _builder.Push(new DirectiveIRNode()
@@ -211,25 +187,32 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 if (_insideLineDirective)
                 {
-                    base.VisitDirectiveToken(chunkGenerator, span);
+                    _builder.Add(new DirectiveTokenIRNode()
+                    {
+                        Content = span.Content,
+                        Descriptor = chunkGenerator.Descriptor,
+                        Source = BuildSourceSpanFromNode(span),
+                    });
                 }
             }
 
-            public override void VisitStartDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
+            public override void VisitDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
             {
                 if (chunkGenerator.Descriptor.Kind == DirectiveDescriptorKind.SingleLine)
                 {
                     _insideLineDirective = true;
-                    base.VisitStartDirectiveBlock(chunkGenerator, block);
-                }
-            }
 
-            public override void VisitEndDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
-            {
-                if (_insideLineDirective)
-                {
+                    _builder.Push(new DirectiveIRNode()
+                    {
+                        Name = chunkGenerator.Descriptor.Name,
+                        Descriptor = chunkGenerator.Descriptor,
+                    });
+
+                    base.VisitDirectiveBlock(chunkGenerator, block);
+
+                    _builder.Pop();
+
                     _insideLineDirective = false;
-                    base.VisitEndDirectiveBlock(chunkGenerator, block);
                 }
             }
         }
@@ -243,12 +226,35 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
             }
 
+            public override void VisitDirectiveToken(DirectiveTokenChunkGenerator chunkGenerator, Span span)
+            {
+                _builder.Add(new DirectiveTokenIRNode()
+                {
+                    Content = span.Content,
+                    Descriptor = chunkGenerator.Descriptor,
+                    Source = BuildSourceSpanFromNode(span),
+                });
+            }
+
+            public override void VisitDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
+            {
+                _builder.Push(new DirectiveIRNode()
+                {
+                    Name = chunkGenerator.Descriptor.Name,
+                    Descriptor = chunkGenerator.Descriptor,
+                });
+
+                VisitDefault(block);
+
+                _builder.Pop();
+            }
+
             // Example
             // <input` checked="hello-world @false"`/>
             //  Name=checked
             //  Prefix= checked="
             //  Suffix="
-            public override void VisitStartAttributeBlock(AttributeBlockChunkGenerator chunkGenerator, Block block)
+            public override void VisitAttributeBlock(AttributeBlockChunkGenerator chunkGenerator, Block block)
             {
                 _builder.Push(new HtmlAttributeIRNode()
                 {
@@ -257,10 +263,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     Suffix = chunkGenerator.Suffix,
                     Source = BuildSourceSpanFromNode(block),
                 });
-            }
 
-            public override void VisitEndAttributeBlock(AttributeBlockChunkGenerator chunkGenerator, Block block)
-            {
+                VisitDefault(block);
+
                 _builder.Pop();
             }
 
@@ -268,17 +273,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // <input checked="hello-world `@false`"/>
             //  Prefix= (space)
             //  Children will contain a token for @false.
-            public override void VisitStartDynamicAttributeBlock(DynamicAttributeBlockChunkGenerator chunkGenerator, Block block)
+            public override void VisitDynamicAttributeBlock(DynamicAttributeBlockChunkGenerator chunkGenerator, Block block)
             {
                 _builder.Push(new CSharpAttributeValueIRNode()
                 {
                     Prefix = chunkGenerator.Prefix,
                     Source = BuildSourceSpanFromNode(block),
                 });
-            }
 
-            public override void VisitEndDynamicAttributeBlock(DynamicAttributeBlockChunkGenerator chunkGenerator, Block block)
-            {
+                VisitDefault(block);
+
                 _builder.Pop();
             }
 
@@ -292,14 +296,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 });
             }
 
-            public override void VisitStartTemplateBlock(TemplateBlockChunkGenerator chunkGenerator, Block block)
+            public override void VisitTemplateBlock(TemplateBlockChunkGenerator chunkGenerator, Block block)
             {
-                _builder.Push(new TemplateIRNode());
-            }
+                var templateNode = new TemplateIRNode();
+                _builder.Push(templateNode);
 
-            public override void VisitEndTemplateBlock(TemplateBlockChunkGenerator chunkGenerator, Block block)
-            {
-                var templateNode = _builder.Pop();
+                VisitDefault(block);
+
+                _builder.Pop();
+                
                 if (templateNode.Children.Count > 0)
                 {
                     var sourceRangeStart = templateNode
@@ -327,14 +332,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             //      @DateTime.@*This is a comment*@Now
             //
             // We need to capture this in the IR so that we can give each piece the correct source mappings
-            public override void VisitStartExpressionBlock(ExpressionChunkGenerator chunkGenerator, Block block)
+            public override void VisitExpressionBlock(ExpressionChunkGenerator chunkGenerator, Block block)
             {
-                _builder.Push(new CSharpExpressionIRNode());
-            }
+                var expressionNode = new CSharpExpressionIRNode();
+                _builder.Push(expressionNode);
 
-            public override void VisitEndExpressionBlock(ExpressionChunkGenerator chunkGenerator, Block block)
-            {
-                var expressionNode = _builder.Pop();
+                VisitDefault(block);
+
+                _builder.Pop();
 
                 if (expressionNode.Children.Count > 0)
                 {
@@ -445,7 +450,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 }
             }
 
-            public override void VisitStartTagHelperBlock(TagHelperChunkGenerator chunkGenerator, Block block)
+            public override void VisitTagHelperBlock(TagHelperChunkGenerator chunkGenerator, Block block)
             {
                 var tagHelperBlock = block as TagHelperBlock;
                 if (tagHelperBlock == null)
@@ -471,15 +476,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     TagName = tagName,
                     TagMode = tagHelperBlock.TagMode
                 });
-            }
 
-            public override void VisitEndTagHelperBlock(TagHelperChunkGenerator chunkGenerator, Block block)
-            {
-                var tagHelperBlock = block as TagHelperBlock;
-                if (tagHelperBlock == null)
-                {
-                    return;
-                }
+                VisitDefault(block);
 
                 _builder.Pop(); // Pop InitializeTagHelperStructureIRNode
 

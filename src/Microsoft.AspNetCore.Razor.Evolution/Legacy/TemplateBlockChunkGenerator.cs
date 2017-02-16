@@ -5,14 +5,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
     internal class TemplateBlockChunkGenerator : ParentChunkGenerator
     {
-        public override void AcceptStart(ParserVisitor visitor, Block block)
+        public override void Accept(ParserVisitor visitor, Block block)
         {
-            visitor.VisitStartTemplateBlock(this, block);
-        }
-
-        public override void AcceptEnd(ParserVisitor visitor, Block block)
-        {
-            visitor.VisitEndTemplateBlock(this, block);
+            visitor.VisitTemplateBlock(this, block);
         }
 
         public override void GenerateStartParentChunk(Block target, ChunkGeneratorContext context)

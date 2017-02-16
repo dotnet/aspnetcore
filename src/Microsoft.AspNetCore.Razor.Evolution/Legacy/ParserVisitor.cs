@@ -5,31 +5,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
     internal abstract class ParserVisitor
     {
-        public virtual void VisitBlock(Block block)
+        protected virtual void VisitDefault(Block block)
         {
-            VisitStartBlock(block);
-
             for (var i = 0; i < block.Children.Count; i++)
             {
                 block.Children[i].Accept(this);
             }
-
-            VisitEndBlock(block);
         }
 
-        public virtual void VisitStartBlock(Block block)
+        public virtual void VisitBlock(Block block)
         {
             if (block.ChunkGenerator != null)
             {
-                block.ChunkGenerator.AcceptStart(this, block);
-            }
-        }
-
-        public virtual void VisitEndBlock(Block block)
-        {
-            if (block.ChunkGenerator != null)
-            {
-                block.ChunkGenerator.AcceptEnd(this, block);
+                block.ChunkGenerator.Accept(this, block);
             }
         }
 
@@ -41,28 +29,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
         }
 
-        public virtual void VisitStartDynamicAttributeBlock(DynamicAttributeBlockChunkGenerator chunkGenerator, Block block)
+        public virtual void VisitDynamicAttributeBlock(DynamicAttributeBlockChunkGenerator chunkGenerator, Block block)
         {
+            VisitDefault(block);
         }
 
-        public virtual void VisitEndDynamicAttributeBlock(DynamicAttributeBlockChunkGenerator chunkGenerator, Block block)
+        public virtual void VisitExpressionBlock(ExpressionChunkGenerator chunkGenerator, Block block)
         {
+            VisitDefault(block);
         }
 
-        public virtual void VisitStartExpressionBlock(ExpressionChunkGenerator chunkGenerator, Block block)
+        public virtual void VisitAttributeBlock(AttributeBlockChunkGenerator chunkGenerator, Block block)
         {
-        }
-
-        public virtual void VisitEndExpressionBlock(ExpressionChunkGenerator chunkGenerator, Block block)
-        {
-        }
-
-        public virtual void VisitStartAttributeBlock(AttributeBlockChunkGenerator chunkGenerator, Block block)
-        {
-        }
-
-        public virtual void VisitEndAttributeBlock(AttributeBlockChunkGenerator chunkGenerator, Block block)
-        {
+            VisitDefault(block);
         }
 
         public virtual void VisitExpressionSpan(ExpressionChunkGenerator chunkGenerator, Span span)
@@ -89,36 +68,24 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
         }
 
-        public virtual void VisitEndTemplateBlock(TemplateBlockChunkGenerator chunkGenerator, Block block)
+        public virtual void VisitDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
         {
+            VisitDefault(block);
         }
 
-        public virtual void VisitStartDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
+        public virtual void VisitTemplateBlock(TemplateBlockChunkGenerator chunkGenerator, Block block)
         {
+            VisitDefault(block);
         }
 
-        public virtual void VisitEndDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
+        public virtual void VisitCommentBlock(RazorCommentChunkGenerator chunkGenerator, Block block)
         {
+            VisitDefault(block);
         }
 
-        public virtual void VisitStartTemplateBlock(TemplateBlockChunkGenerator chunkGenerator, Block block)
+        public virtual void VisitTagHelperBlock(TagHelperChunkGenerator chunkGenerator, Block block)
         {
-        }
-
-        public virtual void VisitEndCommentBlock(RazorCommentChunkGenerator chunkGenerator, Block block)
-        {
-        }
-
-        public virtual void VisitStartCommentBlock(RazorCommentChunkGenerator chunkGenerator, Block block)
-        {
-        }
-
-        public virtual void VisitStartTagHelperBlock(TagHelperChunkGenerator chunkGenerator, Block block)
-        {
-        }
-
-        public virtual void VisitEndTagHelperBlock(TagHelperChunkGenerator chunkGenerator, Block block)
-        {
+            VisitDefault(block);
         }
 
         public virtual void VisitAddTagHelperSpan(AddTagHelperChunkGenerator chunkGenerator, Span span)

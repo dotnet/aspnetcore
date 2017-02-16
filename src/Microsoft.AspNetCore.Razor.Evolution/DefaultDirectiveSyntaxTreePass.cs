@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 tree.Root.Accept(this);
             }
 
-            public override void VisitStartDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
+            public override void VisitDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
             {
                 if (_nestedLevel > 0)
                 {
@@ -51,10 +51,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 }
 
                 _nestedLevel++;
-            }
 
-            public override void VisitEndDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
-            {
+                VisitDefault(block);
+
                 _nestedLevel--;
             }
         }
