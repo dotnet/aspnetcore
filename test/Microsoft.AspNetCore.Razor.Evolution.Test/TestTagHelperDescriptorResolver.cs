@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         public List<TagHelperDescriptor> TagHelpers { get; } = new List<TagHelperDescriptor>();
 
-        public IEnumerable<TagHelperDescriptor> Resolve(ErrorSink errorSink)
+        public IEnumerable<TagHelperDescriptor> Resolve(IList<RazorDiagnostic> errors)
         {
             return TagHelpers;
         }

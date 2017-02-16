@@ -883,7 +883,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             var result = ParseCodeBlock(document, descriptors, designTime: false);
 
-            EvaluateResults(result, expected, expectedErrors);
+            EvaluateResults(result, expected, expectedErrors.Select(error => RazorDiagnostic.Create(error)).ToList());
         }
     }
 }

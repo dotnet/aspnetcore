@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
@@ -47,7 +48,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             markupParser.ParseDocument();
             
             var root = context.Builder.Build();
-            var diagnostics = context.ErrorSink.Errors;
+
+            // Temporary code while we're still using legacy diagnostics in the SyntaxTree.
+            var diagnostics = context.ErrorSink.Errors.Select(error => RazorDiagnostic.Create(error));
+
             return RazorSyntaxTree.Create(root, source, diagnostics, Options);
         }
     }

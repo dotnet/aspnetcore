@@ -80,18 +80,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
             var document = RazorCodeDocument.Create(TestRazorSourceDocument.Create("@!!!"));
 
+            var expected = RazorDiagnostic.Create(new RazorError(
+                LegacyResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("!"),
+                new SourceLocation(1, 0, 1),
+                length: 1));
+
             // Act
             engine.Process(document);
 
             // Assert
             var csharpDocument = document.GetCSharpDocument();
             var error = Assert.Single(csharpDocument.Diagnostics);
-            Assert.Equal(
-                new RazorError(
-                    LegacyResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("!"),
-                    new SourceLocation(1, 0, 1),
-                    length: 1),
-                error);
+            Assert.Equal(expected, error);
         }
 
         [Fact]
@@ -102,18 +102,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
             var document = RazorCodeDocument.Create(TestRazorSourceDocument.Create("@{"));
 
+            var expected = RazorDiagnostic.Create(new RazorError(
+                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(LegacyResources.BlockName_Code, "}", "{"),
+                new SourceLocation(1, 0, 1),
+                length: 1));
+
             // Act
             engine.Process(document);
 
             // Assert
             var csharpDocument = document.GetCSharpDocument();
             var error = Assert.Single(csharpDocument.Diagnostics);
-            Assert.Equal(
-                new RazorError(
-                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(LegacyResources.BlockName_Code, "}", "{"),
-                    new SourceLocation(1, 0, 1),
-                    length: 1),
-                error);
+            Assert.Equal(expected, error);
         }
     }
 }

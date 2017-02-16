@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         internal static RazorSyntaxTree Create(
             Block root,
             RazorSourceDocument source,
-            IEnumerable<RazorError> diagnostics,
+            IEnumerable<RazorDiagnostic> diagnostics,
             RazorParserOptions options)
         {
             if (root == null)
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return new DefaultRazorSyntaxTree(root, source, new List<RazorError>(diagnostics), options);
+            return new DefaultRazorSyntaxTree(root, source, new List<RazorDiagnostic>(diagnostics), options);
         }
 
         public static RazorSyntaxTree Parse(RazorSourceDocument source)
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             return parser.Parse(source);
         }
 
-        internal abstract IReadOnlyList<RazorError> Diagnostics { get; }
+        public abstract IReadOnlyList<RazorDiagnostic> Diagnostics { get; }
 
         public abstract RazorParserOptions Options { get; }
 

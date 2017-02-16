@@ -43,7 +43,7 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 _referenceFeature = referenceFeature;
             }
-            public IEnumerable<TagHelperDescriptor> Resolve(ErrorSink errorSink)
+            public IEnumerable<TagHelperDescriptor> Resolve(IList<RazorDiagnostic> errors)
             {
                 var compilation = CSharpCompilation.Create("__TagHelpers", references: _referenceFeature.References);
                 return TagHelpers.GetTagHelpers(compilation);

@@ -10,6 +10,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
     /// </summary>
     public interface ITagHelperDescriptorResolver
     {
-        IEnumerable<TagHelperDescriptor> Resolve(ErrorSink errorSink);
+        IEnumerable<TagHelperDescriptor> Resolve(IList<RazorDiagnostic> errors);
     }
 }

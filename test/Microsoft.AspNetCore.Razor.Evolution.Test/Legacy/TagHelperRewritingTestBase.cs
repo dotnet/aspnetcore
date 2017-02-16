@@ -64,12 +64,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var parseTreeRewriter = new TagHelperParseTreeRewriter(provider);
             var actualTree = parseTreeRewriter.Rewrite(syntaxTree.Root, errorSink);
 
-            var allErrors = syntaxTree.Diagnostics.Concat(errorSink.Errors);
+            var allErrors = syntaxTree.Diagnostics.Concat(errorSink.Errors.Select(error => RazorDiagnostic.Create(error)));
             var actualErrors = allErrors
-                .OrderBy(error => error.Location.AbsoluteIndex)
+                .OrderBy(error => error.Span.AbsoluteIndex)
                 .ToList();
 
-            EvaluateRazorErrors(actualErrors, expectedErrors.ToList());
+            EvaluateRazorErrors(actualErrors, expectedErrors.Select(error => RazorDiagnostic.Create(error)).ToList());
             EvaluateParseTree(actualTree, expectedOutput);
         }
     }

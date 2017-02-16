@@ -1,8 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using System;
+using System.Linq;
+using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
@@ -49,6 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     new SourceLocation(41 + Environment.NewLine.Length * 4, 4, 4),
                     length: 8),
             };
+            var expectedDiagnostics = expectedErrors.Select(error => RazorDiagnostic.Create(error));
             var engine = RazorEngine.Create();
             var pass = new DefaultDirectiveSyntaxTreePass()
             {
@@ -72,7 +74,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Assert
             Assert.Empty(originalTree.Diagnostics);
             Assert.NotSame(originalTree, outputTree);
-            Assert.Equal(expectedErrors, outputTree.Diagnostics);
+            Assert.Equal(expectedDiagnostics, outputTree.Diagnostics);
         }
 
         [Fact]
@@ -90,6 +92,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     new SourceLocation(41 + Environment.NewLine.Length * 4, 4, 4),
                     length: 8),
             };
+            var expectedDiagnostics = expectedErrors.Select(error => RazorDiagnostic.Create(error)).ToList();
             var engine = RazorEngine.Create();
             var pass = new DefaultDirectiveSyntaxTreePass()
             {
@@ -109,7 +112,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var erroredOriginalTree = RazorSyntaxTree.Create(
                 originalTree.Root, 
                 originalTree.Source, 
-                new[] { expectedErrors[0] }, 
+                new[] { expectedDiagnostics[0] }, 
                 originalTree.Options);
 
             // Act
@@ -118,7 +121,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Assert
             Assert.Empty(originalTree.Diagnostics);
             Assert.NotSame(originalTree, outputTree);
-            Assert.Equal(expectedErrors, outputTree.Diagnostics);
+            Assert.Equal(expectedDiagnostics, outputTree.Diagnostics);
         }
     }
 }

@@ -20,7 +20,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             if (errorSink.Errors.Count > 0)
             {
-                var combinedErrors = syntaxTree.Diagnostics.Concat(errorSink.Errors).ToList();
+                // Temporary code while we're still using legacy diagnostics in the SyntaxTree.
+                var errors = errorSink.Errors.Select(error => RazorDiagnostic.Create(error));
+
+                var combinedErrors = syntaxTree.Diagnostics.Concat(errors);
                 syntaxTree = RazorSyntaxTree.Create(syntaxTree.Root, syntaxTree.Source, combinedErrors, syntaxTree.Options);
             }
 

@@ -45,35 +45,36 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             
             visitor.VisitBlock(syntaxTree.Root);
 
+            var errorList = new List<RazorDiagnostic>();
+            var descriptors = (IReadOnlyList<TagHelperDescriptor>)resolver.Resolve(errorList).ToList();
+
             var errorSink = new ErrorSink();
             var directives = visitor.Directives;
-            var descriptors = (IReadOnlyList<TagHelperDescriptor>)resolver.Resolve(errorSink).ToList();
-
             descriptors = ProcessDirectives(directives, descriptors, errorSink);
+
+            var root = syntaxTree.Root;
 
             if (descriptors.Count == 0)
             {
-                // No TagHelpers, add any errors if we have them.
-                if (errorSink.Errors.Count > 0)
+                if (errorSink.Errors.Count == 0 && errorList.Count == 0)
                 {
-                    var errors = CombineErrors(syntaxTree.Diagnostics, errorSink.Errors);
-                    return RazorSyntaxTree.Create(syntaxTree.Root, syntaxTree.Source, errors, syntaxTree.Options);
+                    // No TagHelpers and errors, no op.
+                    return syntaxTree;
                 }
-
-                return syntaxTree;
+            }
+            else
+            { 
+                var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+                var rewriter = new TagHelperParseTreeRewriter(descriptorProvider);
+                root = rewriter.Rewrite(root, errorSink);
             }
 
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
-            var rewriter = new TagHelperParseTreeRewriter(descriptorProvider);
-            var rewrittenRoot = rewriter.Rewrite(syntaxTree.Root, errorSink);
-            var diagnostics = syntaxTree.Diagnostics;
+            // Temporary code while we're still using legacy diagnostics in the SyntaxTree.
+            errorList.AddRange(errorSink.Errors.Select(error => RazorDiagnostic.Create(error)));
 
-            if (errorSink.Errors.Count > 0)
-            {
-                diagnostics = CombineErrors(diagnostics, errorSink.Errors);
-            }
+            var diagnostics = CombineErrors(syntaxTree.Diagnostics, errorList);
 
-            var newSyntaxTree = RazorSyntaxTree.Create(rewrittenRoot, syntaxTree.Source, diagnostics, syntaxTree.Options);
+            var newSyntaxTree = RazorSyntaxTree.Create(root, syntaxTree.Source, diagnostics, syntaxTree.Options);
             return newSyntaxTree;
         }
 
@@ -299,9 +300,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             return normalizeEmptyStringLength;
         }
 
-        private IReadOnlyList<RazorError> CombineErrors(IReadOnlyList<RazorError> errors1, IReadOnlyList<RazorError> errors2)
+        private IReadOnlyList<RazorDiagnostic> CombineErrors(IReadOnlyList<RazorDiagnostic> errors1, IReadOnlyList<RazorDiagnostic> errors2)
         {
-            var combinedErrors = new List<RazorError>(errors1.Count + errors2.Count);
+            var combinedErrors = new List<RazorDiagnostic>(errors1.Count + errors2.Count);
             combinedErrors.AddRange(errors1);
             combinedErrors.AddRange(errors2);
 

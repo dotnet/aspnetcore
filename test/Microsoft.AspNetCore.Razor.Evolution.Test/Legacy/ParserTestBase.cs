@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 parser.ParseBlock();
 
                 var root = context.Builder.Build();
-                var diagnostics = context.ErrorSink.Errors;
+                var diagnostics = context.ErrorSink.Errors?.Select(error => RazorDiagnostic.Create(error));
                 var options = RazorParserOptions.CreateDefaultOptions();
                 options.DesignTimeMode = designTime;
 
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 parser.ParseBlock();
 
                 var root = context.Builder.Build();
-                var diagnostics = context.ErrorSink.Errors;
+                var diagnostics = context.ErrorSink.Errors?.Select(error => RazorDiagnostic.Create(error));
 
                 var options = RazorParserOptions.CreateDefaultOptions();
                 options.DesignTimeMode = designTime;
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             if (!ReferenceEquals(expected, IgnoreOutput))
             {
-                EvaluateResults(result, expected, expectedErrors);
+                EvaluateResults(result, expected, expectedErrors?.Select(error => RazorDiagnostic.Create(error)).ToList());
             }
         }
 
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             if (!ReferenceEquals(expected, IgnoreOutput))
             {
-                EvaluateResults(result, expected, expectedErrors);
+                EvaluateResults(result, expected, expectedErrors?.Select(error => RazorDiagnostic.Create(error)).ToList());
             }
         }
 
@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             if (!ReferenceEquals(expected, IgnoreOutput))
             {
-                EvaluateResults(result, expected, expectedErrors);
+                EvaluateResults(result, expected, expectedErrors?.Select(error => RazorDiagnostic.Create(error)).ToList());
             }
         }
 
@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             EvaluateResults(result, expectedRoot, null);
         }
 
-        internal static void EvaluateResults(RazorSyntaxTree result, Block expectedRoot, IList<RazorError> expectedErrors)
+        internal static void EvaluateResults(RazorSyntaxTree result, Block expectedRoot, IList<RazorDiagnostic> expectedErrors)
         {
             EvaluateParseTree(result.Root, expectedRoot);
             EvaluateRazorErrors(result.Diagnostics, expectedErrors);
@@ -494,7 +494,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             collector.AddError("{0} - FAILED :: Actual: << Null >>", expected);
         }
 
-        internal static void EvaluateRazorErrors(IEnumerable<RazorError> actualErrors, IList<RazorError> expectedErrors)
+        internal static void EvaluateRazorErrors(IEnumerable<RazorDiagnostic> actualErrors, IList<RazorDiagnostic> expectedErrors)
         {
             var realCount = actualErrors.Count();
 
@@ -517,7 +517,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             WriteTraceLine("Expected Errors were raised:" + Environment.NewLine + FormatErrors(expectedErrors));
         }
 
-        internal static string FormatErrors(IEnumerable<RazorError> errors)
+        internal static string FormatErrors(IEnumerable<RazorDiagnostic> errors)
         {
             if (errors == null)
             {
@@ -525,9 +525,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             }
 
             var builder = new StringBuilder();
-            foreach (RazorError err in errors)
+            foreach (var error in errors)
             {
-                builder.AppendFormat("\t{0}", err);
+                builder.AppendFormat("\t{0}", error);
                 builder.AppendLine();
             }
             return builder.ToString();

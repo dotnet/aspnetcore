@@ -492,9 +492,9 @@ namespace Microsoft.AspNetCore.Razor.Test.Framework
             }
 
             var builder = new StringBuilder();
-            foreach (RazorError err in errors)
+            foreach (var error in errors)
             {
-                builder.AppendFormat("\t{0}", err);
+                builder.AppendFormat("\t{0}", error);
                 builder.AppendLine();
             }
             return builder.ToString();

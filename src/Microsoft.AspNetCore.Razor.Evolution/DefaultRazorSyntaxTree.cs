@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public DefaultRazorSyntaxTree(
             Block root,
             RazorSourceDocument source,
-            IReadOnlyList<RazorError> diagnostics,
+            IReadOnlyList<RazorDiagnostic> diagnostics,
             RazorParserOptions options)
         {
             Root = root;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             Options = options;
         }
 
-        internal override IReadOnlyList<RazorError> Diagnostics { get; }
+        public override IReadOnlyList<RazorDiagnostic> Diagnostics { get; }
 
         public override RazorParserOptions Options { get; }
 

@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Evolution.CodeGeneration;
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
+using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
@@ -60,12 +61,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             renderer.VisitDocument(irDocument);
 
-            var combinedErrors = syntaxTree.Diagnostics.Concat(renderingContext.ErrorSink.Errors).ToList();
+            var diagnostics = new List<RazorDiagnostic>();
+            diagnostics.AddRange(syntaxTree.Diagnostics);
+
+            // Temporary code while we're still using legacy diagnostics in the SyntaxTree.
+            diagnostics.AddRange(renderingContext.ErrorSink.Errors.Select(error => RazorDiagnostic.Create(error)));
+
             var csharpDocument = new RazorCSharpDocument()
             {
                 GeneratedCode = renderingContext.Writer.GenerateCode(),
                 LineMappings = renderingContext.LineMappings,
-                Diagnostics = combinedErrors
+                Diagnostics = diagnostics
             };
 
             codeDocument.SetCSharpDocument(csharpDocument);

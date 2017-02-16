@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         string IFormattable.ToString(string ignore, IFormatProvider formatProvider)
         {
             // Our indices are 0-based, but we we want to print them as 1-based.
-            return string.Format($"{Span.FilePath}({Span.LineIndex + 1},{Span.CharacterIndex + 1}): {Severity} {Id}: {GetMessage(formatProvider)}");
+            return $"{Span.FilePath}({Span.LineIndex + 1},{Span.CharacterIndex + 1}): {Severity} {Id}: {GetMessage(formatProvider)}";
         }
     }
 }

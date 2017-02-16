@@ -275,10 +275,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
 
-            var expectedError = new RazorError(
-                Resources.FormatTagHelperAssemblyCouldNotBeResolved("TestAssembly"),
-                new SourceLocation(Environment.NewLine.Length + 17, 1, 1),
-                length: 12);
+            var expectedError = RazorDiagnostic.Create(
+                new RazorError(
+                    Resources.FormatTagHelperAssemblyCouldNotBeResolved("TestAssembly"),
+                    new SourceLocation(Environment.NewLine.Length + 17, 1, 1),
+                    length: 12));
 
             // Act
             var outputTree = pass.Execute(codeDocument, originalTree);
@@ -294,7 +295,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void Execute_RecreatesSyntaxTreeOnResolverErrors()
         {
             // Arrange
-            var resolverError = new RazorError("Test error", new SourceLocation(19, 1, 17), length: 12);
+            var resolverError = RazorDiagnostic.Create(new RazorError("Test error", new SourceLocation(19, 1, 17), length: 12));
             var engine = RazorEngine.Create(builder =>
             {
                 var resolver = new ErrorLoggingTagHelperDescriptorResolver(resolverError);
@@ -310,7 +311,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
 
-            var initialError = new RazorError("Initial test error", SourceLocation.Zero, length: 1);
+            var initialError = RazorDiagnostic.Create(new RazorError("Initial test error", SourceLocation.Zero, length: 1));
             var erroredOriginalTree = RazorSyntaxTree.Create(
                 originalTree.Root,
                 originalTree.Source,
@@ -362,11 +363,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
 
-            var initialError = new RazorError("Initial test error", SourceLocation.Zero, length: 1);
-            var expectedRewritingError = new RazorError(
-                LegacyResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper("form"),
-                new SourceLocation(Environment.NewLine.Length * 2 + 30, 2, 1),
-                length: 4);
+            var initialError = RazorDiagnostic.Create(new RazorError("Initial test error", SourceLocation.Zero, length: 1));
+            var expectedRewritingError = RazorDiagnostic.Create(
+                new RazorError(
+                    LegacyResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper("form"),
+                    new SourceLocation(Environment.NewLine.Length * 2 + 30, 2, 1),
+                    length: 4));
 
             var erroredOriginalTree = RazorSyntaxTree.Create(originalTree.Root, originalTree.Source, new[] { initialError }, originalTree.Options);
 
@@ -1357,16 +1359,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         private class ErrorLoggingTagHelperDescriptorResolver : ITagHelperDescriptorResolver
         {
-            private readonly RazorError _error;
+            private readonly RazorDiagnostic _error;
 
-            public ErrorLoggingTagHelperDescriptorResolver(RazorError error)
+            public ErrorLoggingTagHelperDescriptorResolver(RazorDiagnostic error)
             {
                 _error = error;
             }
 
-            public IEnumerable<TagHelperDescriptor> Resolve(ErrorSink errorSink)
+            public IEnumerable<TagHelperDescriptor> Resolve(IList<RazorDiagnostic> errors)
             {
-                errorSink.OnError(_error);
+                errors.Add(_error);
 
                 return new[] { new TagHelperDescriptor() { AssemblyName = "TestAssembly" } };
             }

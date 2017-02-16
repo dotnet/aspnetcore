@@ -12,6 +12,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         public IReadOnlyList<LineMapping> LineMappings { get; set; }
 
-        public IReadOnlyList<RazorError> Diagnostics { get; set; }
+        public IReadOnlyList<RazorDiagnostic> Diagnostics { get; set; }
     }
 }
