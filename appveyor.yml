@@ -6,7 +6,6 @@ branches:
     - release
     - dev
     - /^(.*\/)?ci-.*$/
-    - /^feature\//
 build_script:
   - build.cmd --quiet verify
 clone_depth: 1
