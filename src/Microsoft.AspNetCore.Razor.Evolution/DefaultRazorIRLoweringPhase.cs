@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 using Microsoft.AspNetCore.Razor.Evolution.Legacy;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
@@ -176,16 +177,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 _builder.Pop();
             }
 
-            protected SourceSpan BuildSourceSpanFromNode(SyntaxTreeNode node)
+            protected SourceSpan? BuildSourceSpanFromNode(SyntaxTreeNode node)
             {
                 var location = node.Start;
-                var sourceRange = new SourceSpan(
+                if (location == SourceLocation.Undefined)
+                {
+                    return null;
+                }
+
+                var span = new SourceSpan(
                     node.Start.FilePath ?? Filename,
                     node.Start.AbsoluteIndex,
                     node.Start.LineIndex,
                     node.Start.CharacterIndex,
                     node.Length);
-                return sourceRange;
+                return span;
             }
         }
 
@@ -227,7 +233,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 }
             }
         }
-        
+
         private class MainSourceVisitor : LoweringVisitor
         {
             private DeclareTagHelperFieldsIRNode _tagHelperFields;
@@ -399,27 +405,43 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 if (currentChildren.Count > 0 && currentChildren[currentChildren.Count - 1] is HtmlContentIRNode)
                 {
                     var existingHtmlContent = (HtmlContentIRNode)currentChildren[currentChildren.Count - 1];
-                    existingHtmlContent.Content = string.Concat(existingHtmlContent.Content, span.Content);
 
-                    if (existingHtmlContent.Source != null)
+                    var source = BuildSourceSpanFromNode(span);
+                    if (existingHtmlContent.Source == null && source == null)
                     {
-                        var contentLength = existingHtmlContent.Source.Value.Length + span.Content.Length;
+                        Combine(existingHtmlContent, span);
+                        return;
+                    }
 
-                        existingHtmlContent.Source = new SourceSpan(
-                            existingHtmlContent.Source.Value.FilePath ?? Filename,
-                            existingHtmlContent.Source.Value.AbsoluteIndex,
-                            existingHtmlContent.Source.Value.LineIndex,
-                            existingHtmlContent.Source.Value.CharacterIndex,
-                            contentLength);
+                    if (source != null &&
+                        existingHtmlContent.Source != null &&
+                        existingHtmlContent.Source.Value.FilePath == source.Value.FilePath &&
+                        existingHtmlContent.Source.Value.AbsoluteIndex + existingHtmlContent.Source.Value.Length == source.Value.AbsoluteIndex)
+                    {
+                        Combine(existingHtmlContent, span);
+                        return;
                     }
                 }
-                else
+
+                _builder.Add(new HtmlContentIRNode()
                 {
-                    _builder.Add(new HtmlContentIRNode()
-                    {
-                        Content = span.Content,
-                        Source = BuildSourceSpanFromNode(span),
-                    });
+                    Content = span.Content,
+                    Source = BuildSourceSpanFromNode(span),
+                });
+            }
+            private void Combine(HtmlContentIRNode node, Span span)
+            {
+                node.Content = node.Content + span.Content;
+                if (node.Source != null)
+                {
+                    Debug.Assert(node.Source.Value.FilePath != null);
+
+                    node.Source = new SourceSpan(
+                        node.Source.Value.FilePath,
+                        node.Source.Value.AbsoluteIndex,
+                        node.Source.Value.LineIndex,
+                        node.Source.Value.CharacterIndex,
+                        node.Content.Length);
                 }
             }
 

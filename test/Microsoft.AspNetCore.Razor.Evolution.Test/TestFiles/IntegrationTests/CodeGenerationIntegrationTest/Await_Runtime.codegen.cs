@@ -27,7 +27,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 
 #line default
 #line hidden
-            WriteLiteral("</p>\r\n    <p>Basic Asynchronous Statement Nested:  <b>");
+            WriteLiteral("</p>\r\n    <p>Basic Asynchronous Statement Nested: ");
+            WriteLiteral(" <b>");
 #line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml"
                                              Write(await Foo());
 
@@ -70,7 +71,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 
 #line default
 #line hidden
-            WriteLiteral("</p>\r\n    <p>Advanced Asynchronous Statement Nested:  <b>");
+            WriteLiteral("</p>\r\n    <p>Advanced Asynchronous Statement Nested: ");
+            WriteLiteral(" <b>");
 #line 24 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml"
                                                 Write(await Foo(boolValue: false));
 

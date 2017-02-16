@@ -29,13 +29,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
-            WriteLiteral("\r\n<div class=\"randomNonTagHelperAttribute\">\r\n    <p class=\"Hello World\" ");
+            WriteLiteral("\r\n<");
+            WriteLiteral("div class=\"randomNonTagHelperAttribute\">\r\n    <");
+            WriteLiteral("p class=\"Hello World\" ");
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EscapedTagHelpers.cshtml"
                        Write(DateTime.Now);
 
 #line default
 #line hidden
-            WriteLiteral(">\r\n        <input type=\"text\" />\r\n        <em>Not a TagHelper: </em> ");
+            WriteLiteral(">\r\n        <");
+            WriteLiteral("input type=\"text\" />\r\n        <");
+            WriteLiteral("em>Not a TagHelper: </");
+            WriteLiteral("em> ");
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
             }
             );
@@ -66,7 +71,9 @@ __TestNamespace_InputTagHelper2.Checked = true;
             }
             Write(__tagHelperExecutionContext.Output);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            WriteLiteral("\r\n    </p>\r\n</div>");
+            WriteLiteral("\r\n    </");
+            WriteLiteral("p>\r\n</");
+            WriteLiteral("div>");
         }
         #pragma warning restore 1998
     }

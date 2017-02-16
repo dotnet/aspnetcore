@@ -115,7 +115,8 @@ WriteTo(__razor_template_writer, item);
 
 #line default
 #line hidden
-    WriteLiteralTo(__razor_template_writer, "        <ul>\r\n            <li>Child Items... ?</li>\r\n        </ul>\r\n    </li>");
+    WriteLiteralTo(__razor_template_writer, "        <ul>\r\n            <li>Child Items... ?</li>\r\n");
+    WriteLiteralTo(__razor_template_writer, "        </ul>\r\n    </li>");
 }
 )));
 

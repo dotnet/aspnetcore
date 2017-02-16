@@ -26,7 +26,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 
 #line default
 #line hidden
-            WriteLiteral("    Hello, World\r\n    <p>Hello, World</p>\r\n");
+            WriteLiteral("    ");
+            WriteLiteral("Hello, World\r\n    <p>Hello, World</p>\r\n");
             WriteLiteral("\r\n");
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Instrumented.cshtml"
  while(i <= 10) {

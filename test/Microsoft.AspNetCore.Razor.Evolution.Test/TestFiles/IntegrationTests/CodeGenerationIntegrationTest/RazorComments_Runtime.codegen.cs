@@ -9,7 +9,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
-            WriteLiteral("\r\n<p>This should  be shown</p>\r\n\r\n");
+            WriteLiteral("\r\n<p>This should ");
+            WriteLiteral(" be shown</p>\r\n\r\n");
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml"
                                        
     Exception foo = 
