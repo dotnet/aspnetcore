@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,12 +14,22 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     {
         public async Task<RazorEngineDocument> GenerateDocumentAsync(Workspace workspace, Project project, string filename, string text, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var client = await RazorLanguageServiceClientFactory.CreateAsync(workspace, cancellationToken);
-
-            using (var session = await client.CreateSessionAsync(project.Solution))
+            try
             {
-                var document = await session.InvokeAsync<RazorEngineDocument>("GenerateDocumentAsync", new object[] { project.Id.Id, "Foo", filename, text }).ConfigureAwait(false);
-                return document;
+                var client = await RazorLanguageServiceClientFactory.CreateAsync(workspace, cancellationToken);
+
+                using (var session = await client.CreateSessionAsync(project.Solution))
+                {
+                    var document = await session.InvokeAsync<RazorEngineDocument>("GenerateDocumentAsync", new object[] { project.Id.Id, "Foo", filename, text }).ConfigureAwait(false);
+                    return document;
+                }
+            }
+            catch (Exception exception)
+            {
+                throw new RazorLanguageServiceException(
+                    typeof(DefaultRazorEngineDocumentGenerator).FullName,
+                    nameof(GenerateDocumentAsync),
+                    exception);
             }
         }
     }

@@ -15,15 +15,20 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     {
         public async Task<IEnumerable<RazorEngineAssembly>> GetRazorEngineAssembliesAsync(Project project)
         {
-            var compilation = await project.GetCompilationAsync().ConfigureAwait(false);
-            var assemblies = GetRazorCustomizationAssemblies(compilation);
-
-            if (assemblies.Count == 0)
+            try
             {
-                Console.WriteLine();
-            }
+                var compilation = await project.GetCompilationAsync().ConfigureAwait(false);
+                var assemblies = GetRazorCustomizationAssemblies(compilation);
 
-            return assemblies;
+                return assemblies;
+            }
+            catch (Exception exception)
+            {
+                throw new RazorLanguageServiceException(
+                    typeof(DefaultRazorEngineAssemblyResolver).FullName,
+                    nameof(GetRazorEngineAssembliesAsync),
+                    exception);
+            }
         }
 
         private static List<RazorEngineAssembly> GetRazorCustomizationAssemblies(Compilation compilation)
