@@ -1,0 +1,6 @@
+<Project>
+  <ItemGroup>
+    <ExcludeFromTest Include="$(RepositoryRoot)test\LocalizationWebsite\*.csproj" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Resources*\*.csproj" />
+  </ItemGroup>
+</Project>
