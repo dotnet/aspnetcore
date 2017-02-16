@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 #else
-        private readonly AsyncLocal<ActionContext> _storage = new AsyncLocal<ActionContext>();
+        private static readonly AsyncLocal<ActionContext> _storage = new AsyncLocal<ActionContext>();
 
         public ActionContext ActionContext
         {
