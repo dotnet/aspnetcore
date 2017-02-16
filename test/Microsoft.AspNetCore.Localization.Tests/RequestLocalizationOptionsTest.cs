@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Localization.Tests
         {
             // Arrange
             var explicitCulture = new CultureInfo("fr-FR");
-#if NET451
+#if NET452
             Thread.CurrentThread.CurrentCulture = explicitCulture;
             Thread.CurrentThread.CurrentUICulture = explicitCulture;
 #else
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Localization.Tests
         {
             // Arrange
             var explicitCulture = new CultureInfo("fr-FR");
-#if NET451
+#if NET452
             Thread.CurrentThread.CurrentCulture = explicitCulture;
             Thread.CurrentThread.CurrentUICulture = explicitCulture;
 #else
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Localization.Tests
 
         public void Dispose()
         {
-#if NET451
+#if NET452
             Thread.CurrentThread.CurrentCulture = _initialCulture;
             Thread.CurrentThread.CurrentUICulture = _initialUICulture;
 #else

@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = environmentName,
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.1"
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net452" : "netcoreapp1.1"
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
