@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.Owin.Security.Interop.Test\*.csproj" Condition="'$(OS)' != 'Windows_NT'"/>
+  </ItemGroup>
+</Project>
