@@ -1,0 +1,6 @@
+<Project>
+  <ItemGroup>
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.SignalR.Test.Server\*.csproj" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\WebSocketsTestApp\*.csproj" />
+  </ItemGroup>
+</Project>
