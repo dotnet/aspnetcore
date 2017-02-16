@@ -130,7 +130,8 @@ namespace MusicStore.Controllers
             var genre = genres.SingleOrDefault(g => g.GenreId == viewModel.GenreId);
             Assert.NotNull(genre);
             Assert.NotNull(genre.Albums.SingleOrDefault(a => a.AlbumId == albumId));
-            Assert.Null(viewModel.Artist);
+            Assert.NotNull(viewModel.Artist);
+            Assert.Equal(1, viewModel.ArtistId);
 
             var cachedAlbum = cache.Get<Album>("album_1");
             Assert.NotNull(cachedAlbum);
@@ -139,10 +140,16 @@ namespace MusicStore.Controllers
 
         private static Genre[] CreateTestGenres(int numberOfGenres, int numberOfAlbums, DbContext dbContext)
         {
+            var artist = new Artist();
+            artist.ArtistId = 1;
+            artist.Name = "Artist1";
+
             var albums = Enumerable.Range(1, numberOfAlbums * numberOfGenres).Select(n =>
                   new Album()
                   {
                       AlbumId = n,
+                      Artist = artist,
+                      ArtistId = artist.ArtistId
                   }).ToList();
 
             var generes = Enumerable.Range(1, numberOfGenres).Select(n =>
@@ -150,9 +157,18 @@ namespace MusicStore.Controllers
                  {
                      Albums = albums.Where(i => i.AlbumId % numberOfGenres == n - 1).ToList(),
                      GenreId = n,
+                     Name = "Genre " + n
+                 });
+
+            var artis = Enumerable.Range(1, numberOfGenres).Select(n =>
+                 new Genre()
+                 {
+                     Albums = albums.Where(i => i.AlbumId % numberOfGenres == n - 1).ToList(),
+                     GenreId = n,
                      Name = "Genre " + n,
                  });
 
+            dbContext.Add(artist);
             dbContext.AddRange(albums);
             dbContext.AddRange(generes);
             dbContext.SaveChanges();
