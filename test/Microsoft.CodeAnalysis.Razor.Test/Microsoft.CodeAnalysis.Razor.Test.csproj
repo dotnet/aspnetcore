@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\build\common.props" />
   <PropertyGroup>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <!-- TODO re-enable tests on .NET Core when we upgrade to 2.0. This project started using 2.0 API but we had to drop temporarily to .NET Core 1.1 -->
-    <TargetFramework>net452</TargetFramework>
+    <TargetFrameworks>netcoreapp1.1;net46</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp1.1</TargetFrameworks>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**\*</DefaultItemExcludes>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
     <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
@@ -19,6 +18,7 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Runtime\Microsoft.AspNetCore.Razor.Runtime.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor\Microsoft.AspNetCore.Razor.csproj" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="1.3.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="1.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
     <PackageReference Include="xunit" Version="2.2.0-*" />

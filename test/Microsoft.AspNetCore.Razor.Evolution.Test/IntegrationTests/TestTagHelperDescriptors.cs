@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 {

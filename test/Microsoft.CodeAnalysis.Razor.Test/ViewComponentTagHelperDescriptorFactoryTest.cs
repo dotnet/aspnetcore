@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.CodeAnalysis.Razor.Workspaces.Test;
 using Microsoft.CodeAnalysis.Razor.Workspaces.Test.Comparers;
@@ -22,7 +23,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             {
                 TagName = "vc:string-parameter",
                 TypeName = "__Generated__StringParameterViewComponentTagHelper",
-                AssemblyName = typeof(StringParameterViewComponent).Assembly.GetName().Name,
+                AssemblyName = typeof(StringParameterViewComponent).GetTypeInfo().Assembly.GetName().Name,
                 Attributes = new List<TagHelperAttributeDescriptor>
                 {
                     new TagHelperAttributeDescriptor
@@ -70,7 +71,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             {
                 TagName = "vc:various-parameter",
                 TypeName = "__Generated__VariousParameterViewComponentTagHelper",
-                AssemblyName = typeof(VariousParameterViewComponent).Assembly.GetName().Name,
+                AssemblyName = typeof(VariousParameterViewComponent).GetTypeInfo().Assembly.GetName().Name,
                 Attributes = new List<TagHelperAttributeDescriptor>
                 {
                     new TagHelperAttributeDescriptor
@@ -133,7 +134,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             {
                 TagName = "vc:generic-parameter",
                 TypeName = "__Generated__GenericParameterViewComponentTagHelper",
-                AssemblyName = typeof(GenericParameterViewComponent).Assembly.GetName().Name,
+                AssemblyName = typeof(GenericParameterViewComponent).GetTypeInfo().Assembly.GetName().Name,
                 Attributes = new List<TagHelperAttributeDescriptor>
                 {
                     new TagHelperAttributeDescriptor

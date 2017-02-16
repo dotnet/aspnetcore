@@ -2098,11 +2098,11 @@ public class DynamicTestTagHelper : {typeof(AspNetCore.Razor.TagHelpers.TagHelpe
         {
             // Arrange
             var errorSink = new ErrorSink();
-            var objectAssemblyName = typeof(object).GetTypeInfo().Assembly.GetName().Name;
+            var objectAssemblyName = typeof(Enumerable).GetTypeInfo().Assembly.GetName().Name;
             var expectedDescriptor =
-                CreateTagHelperDescriptor("object", "System.Object", objectAssemblyName);
+                CreateTagHelperDescriptor("enumerable", "System.Linq.Enumerable", objectAssemblyName);
             var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
-            var typeSymbol = Compilation.GetTypeByMetadataName(typeof(object).FullName);
+            var typeSymbol = Compilation.GetTypeByMetadataName(typeof(Enumerable).FullName);
 
             // Act
             var descriptors = factory.CreateDescriptors(typeSymbol, errorSink);

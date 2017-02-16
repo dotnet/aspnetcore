@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var diagnostic = new DefaultRazorDiagnostic(descriptor, span, new object[] { 1.3m });
 
             // Act
-            var result = diagnostic.GetMessage(CultureInfo.GetCultureInfo("fr-FR"));
+            var result = diagnostic.GetMessage(new CultureInfo("fr-FR"));
 
             // Assert
             Assert.Equal("this is an 1,3", result);
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var diagnostic = new DefaultRazorDiagnostic(descriptor, span, new object[] { 1.3m });
 
             // Act
-            var result = ((IFormattable)diagnostic).ToString("ignored", CultureInfo.GetCultureInfo("fr-FR"));
+            var result = ((IFormattable)diagnostic).ToString("ignored", new CultureInfo("fr-FR"));
 
             // Assert
             Assert.Equal("test.cs(2,9): Error RZ0000: this is an 1,3", result);
