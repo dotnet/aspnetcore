@@ -44,13 +44,12 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public Task StartAsync() => StartAsync(transport: null, httpClient: null);
         public Task StartAsync(HttpClient httpClient) => StartAsync(transport: null, httpClient: httpClient);
-        public Task StartAsync(ITransport transport) => StartAsync(transport, null);
+        public Task StartAsync(ITransport transport) => StartAsync(transport: transport, httpClient: null);
 
         // TODO HIGH: Fix a race when the connection is being stopped/disposed when start has not finished running
         public async Task StartAsync(ITransport transport, HttpClient httpClient)
         {
-            // TODO: make transport optional
-            _transport = transport ?? throw new ArgumentNullException(nameof(transport));
+            _transport = transport ?? new WebSocketsTransport(_loggerFactory);
 
             if (Interlocked.CompareExchange(ref _connectionState, ConnectionState.Connecting, ConnectionState.Initial)
                 != ConnectionState.Initial)
