@@ -19,6 +19,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             VisitDefault(node);
         }
 
+        public virtual void VisitToken(RazorIRToken node)
+        {
+            VisitDefault(node);
+        }
+
         public virtual void VisitDirectiveToken(DirectiveTokenIRNode node)
         {
             VisitDefault(node);
