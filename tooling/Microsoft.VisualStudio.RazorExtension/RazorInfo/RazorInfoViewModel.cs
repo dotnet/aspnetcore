@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.LanguageServices.Razor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TextManager.Interop;
+using System.IO;
 
 namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 {
@@ -169,7 +170,14 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
                 var assemblies = await _assemblyResolver.GetRazorEngineAssembliesAsync(project);
 
                 var directives = await _directiveResolver.GetRazorEngineDirectivesAsync(_workspace, project);
-                var resolutionResult = await _tagHelperResolver.GetTagHelpersAsync(project);
+                var assemblyFilters = project.MetadataReferences
+                    .Select(reference => reference.Display)
+                    .Select(filter => Path.GetFileNameWithoutExtension(filter));
+                var projectFilters = project.AllProjectReferences.Select(filter => solution.GetProject(filter.ProjectId).AssemblyName);
+                var tagHelperAssemblyFilters = assemblyFilters
+                    .Concat(projectFilters)
+                    .Concat(new[] { project.AssemblyName });
+                var resolutionResult = await _tagHelperResolver.GetTagHelpersAsync(project, tagHelperAssemblyFilters);
 
                 var files = GetCshtmlDocuments(project);
 

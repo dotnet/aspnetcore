@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.AspNetCore.Razor.Evolution.Legacy;
+using System.Linq;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
@@ -17,12 +18,12 @@ namespace Microsoft.CodeAnalysis.Razor
 
         public bool DesignTime { get; }
 
-        public override TagHelperResolutionResult GetTagHelpers(Compilation compilation)
+        public override TagHelperResolutionResult GetTagHelpers(Compilation compilation, IEnumerable<string> assemblyNameFilters)
         {
             var descriptors = new List<TagHelperDescriptor>();
             var errors = new ErrorSink();
 
-            VisitTagHelpers(compilation, descriptors, errors);
+            VisitTagHelpers(compilation, assemblyNameFilters, descriptors, errors);
             VisitViewComponents(compilation, descriptors, errors);
 
             var diagnostics = new List<RazorDiagnostic>();
@@ -36,7 +37,7 @@ namespace Microsoft.CodeAnalysis.Razor
             return resolutionResult;
         }
 
-        private void VisitTagHelpers(Compilation compilation, List<TagHelperDescriptor> results, ErrorSink errors)
+        private void VisitTagHelpers(Compilation compilation, IEnumerable<string> assemblyNameFilters, List<TagHelperDescriptor> results, ErrorSink errors)
         {
             var types = new List<INamedTypeSymbol>();
             var visitor = TagHelperTypeVisitor.Create(compilation, types);
@@ -47,12 +48,15 @@ namespace Microsoft.CodeAnalysis.Razor
 
             foreach (var type in types)
             {
-                var descriptors = factory.CreateDescriptors(type, errors);
-                results.AddRange(descriptors);
+                if (assemblyNameFilters.Contains(type.ContainingAssembly.Identity.Name))
+                {
+                    var descriptors = factory.CreateDescriptors(type, errors);
+                    results.AddRange(descriptors);
+                }
             }
         }
 
-        private void VisitViewComponents(Compilation compilation, List<TagHelperDescriptor> results, ErrorSink errors)
+        private void VisitViewComponents(Compilation compilation, IEnumerable<string> assemblyNameFilters, List<TagHelperDescriptor> results, ErrorSink errors)
         {
             var types = new List<INamedTypeSymbol>();
             var visitor = ViewComponentTypeVisitor.Create(compilation, types);
@@ -65,9 +69,12 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 try
                 {
-                    var descriptor = factory.CreateDescriptor(type);
+                    if (assemblyNameFilters.Contains(type.ContainingAssembly.Identity.Name))
+                    {
+                        var descriptor = factory.CreateDescriptor(type);
 
-                    results.Add(descriptor);
+                        results.Add(descriptor);
+                    }
                 }
                 catch (Exception ex)
                 {

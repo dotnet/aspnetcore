@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 
@@ -18,7 +17,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         [Import]
         public VisualStudioWorkspace Workspace { get; set; }
 
-        public async Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project)
+        public async Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project, IEnumerable<string> assemblyNameFilters)
         {
             try
             {
@@ -27,13 +26,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 {
                     // The OOP host is turned off, so let's do this in process.
                     var resolver = new CodeAnalysis.Razor.DefaultTagHelperResolver(designTime: true);
-                    var result =  await resolver.GetTagHelpersAsync(project, CancellationToken.None).ConfigureAwait(false);
+                    var result =  await resolver.GetTagHelpersAsync(project, assemblyNameFilters, CancellationToken.None).ConfigureAwait(false);
                     return result;
                 }
 
                 using (var session = await client.CreateSessionAsync(project.Solution))
                 {
-                    var result = await session.InvokeAsync<TagHelperResolutionResult>("GetTagHelpersAsync", new object[] { project.Id.Id, "Foo", }).ConfigureAwait(false);
+                    var result = await session.InvokeAsync<TagHelperResolutionResult>("GetTagHelpersAsync", new object[] { project.Id.Id, "Foo", assemblyNameFilters, }).ConfigureAwait(false);
                     return result;
                 }
             }
