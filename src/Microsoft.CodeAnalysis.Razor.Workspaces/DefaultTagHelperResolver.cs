@@ -17,15 +17,23 @@ namespace Microsoft.CodeAnalysis.Razor
 
         public bool DesignTime { get; }
 
-        public override IReadOnlyList<TagHelperDescriptor> GetTagHelpers(Compilation compilation)
+        public override TagHelperResolutionResult GetTagHelpers(Compilation compilation)
         {
-            var results = new List<TagHelperDescriptor>();
+            var descriptors = new List<TagHelperDescriptor>();
             var errors = new ErrorSink();
 
-            VisitTagHelpers(compilation, results, errors);
-            VisitViewComponents(compilation, results, errors);
+            VisitTagHelpers(compilation, descriptors, errors);
+            VisitViewComponents(compilation, descriptors, errors);
 
-            return results;
+            var diagnostics = new List<RazorDiagnostic>();
+            for (var i = 0; i < errors.Errors.Count; i++)
+            {
+                var diagnostic = RazorDiagnostic.Create(errors.Errors[i]);
+                diagnostics.Add(diagnostic);
+            }
+            var resolutionResult = new TagHelperResolutionResult(descriptors, diagnostics);
+
+            return resolutionResult;
         }
 
         private void VisitTagHelpers(Compilation compilation, List<TagHelperDescriptor> results, ErrorSink errors)

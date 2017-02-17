@@ -169,7 +169,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
                 var assemblies = await _assemblyResolver.GetRazorEngineAssembliesAsync(project);
 
                 var directives = await _directiveResolver.GetRazorEngineDirectivesAsync(_workspace, project);
-                var tagHelpers = await _tagHelperResolver.GetTagHelpersAsync(project);
+                var resolutionResult = await _tagHelperResolver.GetTagHelpersAsync(project);
 
                 var files = GetCshtmlDocuments(project);
 
@@ -178,7 +178,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
                     Assemblies = new ObservableCollection<AssemblyViewModel>(assemblies.Select(a => new AssemblyViewModel(a))),
                     Directives = new ObservableCollection<DirectiveViewModel>(directives.Select(d => new DirectiveViewModel(d))),
                     Documents = new ObservableCollection<DocumentViewModel>(documents.Select(d => new DocumentViewModel(d))),
-                    TagHelpers = new ObservableCollection<TagHelperViewModel>(tagHelpers.Select(t => new TagHelperViewModel(t))),
+                    TagHelpers = new ObservableCollection<TagHelperViewModel>(resolutionResult.Descriptors.Select(t => new TagHelperViewModel(t))),
                 };
             }
             catch (Exception ex)

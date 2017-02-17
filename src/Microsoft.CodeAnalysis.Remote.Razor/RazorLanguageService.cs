@@ -20,7 +20,7 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
         {
         }
 
-        public async Task<IEnumerable<TagHelperDescriptor>> GetTagHelpersAsync(Guid projectIdBytes, string projectDebugName, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<TagHelperResolutionResult> GetTagHelpersAsync(Guid projectIdBytes, string projectDebugName, CancellationToken cancellationToken = default(CancellationToken))
         {
             var projectId = ProjectId.CreateFromSerialized(projectIdBytes, projectDebugName);
 
@@ -28,9 +28,9 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
             var project = solution.GetProject(projectId);
 
             var resolver = new DefaultTagHelperResolver(designTime: true);
-            var results = await resolver.GetTagHelpersAsync(project, cancellationToken).ConfigureAwait(false);
+            var result = await resolver.GetTagHelpersAsync(project, cancellationToken).ConfigureAwait(false);
 
-            return results;
+            return result;
         }
 
         public Task<IEnumerable<DirectiveDescriptor>> GetDirectivesAsync(Guid projectIdBytes, string projectDebugName, CancellationToken cancellationToken = default(CancellationToken))
