@@ -121,6 +121,8 @@ namespace Microsoft.Net.Http.Headers
             CheckValidParse(" t", new StringWithQualityHeaderValue("t"));
             CheckValidParse("t;q=0.", new StringWithQualityHeaderValue("t", 0));
             CheckValidParse("t;q=1.", new StringWithQualityHeaderValue("t", 1));
+            CheckValidParse("t;q=1.000", new StringWithQualityHeaderValue("t", 1));
+            CheckValidParse("t;q=0.12345678", new StringWithQualityHeaderValue("t", 0.12345678));
             CheckValidParse("t ;  q  =   0", new StringWithQualityHeaderValue("t", 0));
             CheckValidParse("iso-8859-5", new StringWithQualityHeaderValue("iso-8859-5"));
             CheckValidParse("unicode-1-1; q=0.8", new StringWithQualityHeaderValue("unicode-1-1", 0.8));
@@ -154,6 +156,11 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("t;q=a")]
         [InlineData("t;qa")]
         [InlineData("t;q1")]
+        [InlineData("integer_part_too_long;q=01")]
+        [InlineData("integer_part_too_long;q=01.0")]
+        [InlineData("decimal_part_too_long;q=0.123456789")]
+        [InlineData("decimal_part_too_long;q=0.123456789 ")]
+        [InlineData("no_integer_part;q=.1")]
         public void Parse_SetOfInvalidValueStrings_Throws(string input)
         {
             Assert.Throws<FormatException>(() => StringWithQualityHeaderValue.Parse(input));

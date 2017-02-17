@@ -204,21 +204,7 @@ namespace Microsoft.Net.Http.Headers
                 return false;
             }
 
-            int qualityLength = HttpRuleParser.GetNumberLength(input, current, true);
-
-            if (qualityLength == 0)
-            {
-                return false;
-            }
-
-            double quality;
-            if (!double.TryParse(input.Substring(current, qualityLength), NumberStyles.AllowDecimalPoint,
-                NumberFormatInfo.InvariantInfo, out quality))
-            {
-                return false;
-            }
-
-            if ((quality < 0) || (quality > 1))
+            if (!HeaderUtilities.TryParseQualityDouble(input, current, out var quality, out var qualityLength))
             {
                 return false;
             }

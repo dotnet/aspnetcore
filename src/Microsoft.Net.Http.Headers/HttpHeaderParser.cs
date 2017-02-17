@@ -61,13 +61,14 @@ namespace Microsoft.Net.Http.Headers
             // If a parser returns an empty list, it means there was no value, but that's valid (e.g. "Accept: "). The caller
             // can ignore the value.
             parsedValues = null;
-            var results = new List<T>();
+            List<T> results = null;
             if (values == null)
             {
                 return false;
             }
-            foreach (var value in values)
+            for (var i = 0; i < values.Count; i++)
             {
+                var value = values[i];
                 int index = 0;
 
                 while (!string.IsNullOrEmpty(value) && index < value.Length)
@@ -78,6 +79,10 @@ namespace Microsoft.Net.Http.Headers
                         // The entry may not contain an actual value, like " , "
                         if (output != null)
                         {
+                            if (results == null)
+                            {
+                                results = new List<T>();    // Allocate it only when used 
+                            }
                             results.Add(output);
                         }
                     }
@@ -92,7 +97,7 @@ namespace Microsoft.Net.Http.Headers
                     }
                 }
             }
-            if (results.Count > 0)
+            if (results != null)
             {
                 parsedValues = results;
                 return true;
