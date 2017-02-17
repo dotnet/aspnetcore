@@ -2,8 +2,10 @@
 
   <Import Project="..\..\build\common.props" />
 
-  <PropertyGroup>    
-    <TargetFrameworks>netcoreapp1.1</TargetFrameworks>
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <!--<TargetFrameworks>netcoreapp1.1;net46</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp1.1</TargetFrameworks>-->
     <!-- TODO remove when https://github.com/Microsoft/vstest/issues/428 is resolved -->
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
