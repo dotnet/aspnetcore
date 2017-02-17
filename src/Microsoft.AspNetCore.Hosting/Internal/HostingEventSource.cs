@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics.Tracing;
-using Microsoft.AspNetCore.Http;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
 {
@@ -38,12 +38,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             WriteEvent(3, method, path);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(4, Level = EventLevel.Informational)]
         public void RequestStop()
         {
             WriteEvent(4);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(5, Level = EventLevel.Error)]
         public void UnhandledException()
         {
