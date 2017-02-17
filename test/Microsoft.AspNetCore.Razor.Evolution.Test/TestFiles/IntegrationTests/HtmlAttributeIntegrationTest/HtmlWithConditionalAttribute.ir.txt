@@ -9,5 +9,5 @@ Document -
                 HtmlAttribute - (25:2,9 [13] HtmlWithConditionalAttribute.cshtml) -  val=" - "
                     CSharpAttributeValue - (31:2,15 [6] HtmlWithConditionalAttribute.cshtml) - 
                         CSharpExpression - (32:2,16 [5] HtmlWithConditionalAttribute.cshtml)
-                            CSharpToken - (32:2,16 [5] HtmlWithConditionalAttribute.cshtml) - Hello
+                            RazorIRToken - (32:2,16 [5] HtmlWithConditionalAttribute.cshtml) - CSharp - Hello
                 HtmlContent - (38:2,22 [22] HtmlWithConditionalAttribute.cshtml) -  />\n</body>\n</html>"

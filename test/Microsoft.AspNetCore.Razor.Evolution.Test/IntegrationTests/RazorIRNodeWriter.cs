@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -38,11 +37,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         }
 
         public override void VisitCSharpStatement(CSharpStatementIRNode node)
-        {
-            WriteContentNode(node, node.Content);
-        }
-
-        public override void VisitCSharpToken(CSharpTokenIRNode node)
         {
             WriteContentNode(node, node.Content);
         }

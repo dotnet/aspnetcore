@@ -50,11 +50,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             return VisitDefault(node);
         }
 
-        public virtual TResult VisitCSharpToken(CSharpTokenIRNode node)
-        {
-            return VisitDefault(node);
-        }
-
         public virtual TResult VisitHtmlAttributeValue(HtmlAttributeValueIRNode node)
         {
             return VisitDefault(node);

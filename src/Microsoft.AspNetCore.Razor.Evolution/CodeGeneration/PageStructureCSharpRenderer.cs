@@ -116,9 +116,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         protected static void RenderExpressionInline(RazorIRNode node, CSharpRenderingContext context)
         {
-            if (node is CSharpTokenIRNode)
+            if (node is RazorIRToken token && token.IsCSharp)
             {
-                context.Writer.Write(((CSharpTokenIRNode)node).Content);
+                context.Writer.Write(token.Content);
             }
             else
             {

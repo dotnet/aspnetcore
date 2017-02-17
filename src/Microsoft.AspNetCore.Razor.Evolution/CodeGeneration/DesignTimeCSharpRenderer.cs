@@ -14,11 +14,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
         {
         }
 
-        public override void VisitCSharpToken(CSharpTokenIRNode node)
-        {
-            Context.Writer.Write(node.Content);
-        }
-
         public override void VisitCSharpExpression(CSharpExpressionIRNode node)
         {
             if (node.Children.Count == 0)
@@ -38,14 +33,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
                     for (var i = 0; i < node.Children.Count; i++)
                     {
-                        var childNode = node.Children[i];
-
-                        if (childNode is CSharpTokenIRNode)
+                        var token = node.Children[i] as RazorIRToken;
+                        if (token != null && token.IsCSharp)
                         {
-                            AddLineMappingFor(childNode);
+                            AddLineMappingFor(token);
+                            Context.Writer.Write(token.Content);
                         }
-
-                        childNode.Accept(this);
+                        else
+                        {
+                            // There may be something else inside the expression like a Template or another extension node.
+                            Visit(node.Children[i]);
+                        }
                     }
 
                     Context.Writer.WriteLine(";");
@@ -278,9 +276,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         private void AddLineMappingFor(RazorIRNode node)
         {
-            var sourceLocation = node.Source.Value;
-            var generatedLocation = new SourceSpan(Context.Writer.GetCurrentSourceLocation(), sourceLocation.Length);
-            var lineMapping = new LineMapping(sourceLocation, generatedLocation);
+            if (node.Source == null)
+            {
+                return;
+            }
+
+            var source = node.Source.Value;
+            
+            var generatedLocation = new SourceSpan(Context.Writer.GetCurrentSourceLocation(), source.Length);
+            var lineMapping = new LineMapping(source, generatedLocation);
 
             Context.LineMappings.Add(lineMapping);
         }
@@ -305,14 +309,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
                 Context.Writer.Write(((HtmlContentIRNode)node).Content);
             }
-            else if (node is CSharpTokenIRNode)
+            else if (node is RazorIRToken token && token.IsCSharp)
             {
                 if (node.Source != null)
                 {
                     AddLineMappingFor(node);
                 }
 
-                Context.Writer.Write(((CSharpTokenIRNode)node).Content);
+                Context.Writer.Write(token.Content);
             }
             else if (node is CSharpStatementIRNode)
             {

@@ -13,7 +13,7 @@ Document -
                     CreateTagHelper -  - InputTagHelper
                     SetTagHelperProperty - (56:2,17 [6] TagHelpersWithBoundAttributes.cshtml) - bound - FooProp - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - (57:2,18 [5] TagHelpersWithBoundAttributes.cshtml)
-                            CSharpToken - (57:2,18 [5] TagHelpersWithBoundAttributes.cshtml) - Hello
+                            RazorIRToken - (57:2,18 [5] TagHelpersWithBoundAttributes.cshtml) - CSharp - Hello
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
                     ExecuteTagHelpers - 
                 HtmlContent - (77:2,38 [9] TagHelpersWithBoundAttributes.cshtml) - \n</form>

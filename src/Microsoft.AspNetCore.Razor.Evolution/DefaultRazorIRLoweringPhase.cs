@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             ThrowForMissingDependency(syntaxTree);
 
             var builder = RazorIRBuilder.Document();
-            
+
             var document = (DocumentIRNode)builder.Current;
             document.Options = syntaxTree.Options;
 
@@ -58,11 +58,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             var visitor = new MainSourceVisitor(document, builder, namespaces)
             {
-                 Filename = syntaxTree.Source.Filename,
+                Filename = syntaxTree.Source.Filename,
             };
 
             visitor.VisitBlock(syntaxTree.Root);
-            
+
             codeDocument.SetIRDocument(document);
         }
 
@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 VisitDefault(block);
 
                 _builder.Pop();
-                
+
                 if (templateNode.Children.Count > 0)
                 {
                     var sourceRangeStart = templateNode
@@ -376,9 +376,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     }
                 }
 
-                _builder.Add(new CSharpTokenIRNode()
+                _builder.Add(new RazorIRToken()
                 {
                     Content = span.Content,
+                    Kind = RazorIRToken.TokenKind.CSharp,
                     Source = BuildSourceSpanFromNode(span),
                 });
             }

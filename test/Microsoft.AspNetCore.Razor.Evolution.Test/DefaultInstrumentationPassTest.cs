@@ -67,9 +67,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 Source = CreateSource(2),
             });
-            builder.Add(new CSharpTokenIRNode()
+            builder.Add(new RazorIRToken()
             {
                 Content = "Hi",
+                Kind = RazorIRToken.TokenKind.CSharp,
             });
 
             var irDocument = (DocumentIRNode)builder.Build();
@@ -93,9 +94,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var builder = RazorIRBuilder.Document();
             builder.Push(new CSharpExpressionIRNode());
-            builder.Add(new CSharpTokenIRNode()
+            builder.Add(new RazorIRToken()
             {
                 Content = "Hi",
+                Kind = RazorIRToken.TokenKind.CSharp,
             });
 
             var irDocument = (DocumentIRNode)builder.Build();
@@ -128,9 +130,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Source = CreateSource(5)
             });
 
-            builder.Add(new CSharpTokenIRNode()
+            builder.Add(new RazorIRToken()
             {
                 Content = "Hi",
+                Kind = RazorIRToken.TokenKind.CSharp,
             });
 
             var irDocument = (DocumentIRNode)builder.Build();
@@ -175,9 +178,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 Source = CreateSource(5)
             });
 
-            builder.Add(new CSharpTokenIRNode()
+            builder.Add(new RazorIRToken()
             {
                 Content = "Hi",
+                Kind = RazorIRToken.TokenKind.CSharp,
             });
 
             var irDocument = (DocumentIRNode)builder.Build();

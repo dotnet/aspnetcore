@@ -7,5 +7,5 @@ Document -
             RazorMethodDeclaration -  -  -  -  - 
                 HtmlContent - (0:0,0 [36] HtmlWithDataDashAttribute.cshtml) - <html>\n<body>\n    <span data-val="
                 CSharpExpression - (37:2,21 [5] HtmlWithDataDashAttribute.cshtml)
-                    CSharpToken - (37:2,21 [5] HtmlWithDataDashAttribute.cshtml) - Hello
+                    RazorIRToken - (37:2,21 [5] HtmlWithDataDashAttribute.cshtml) - CSharp - Hello
                 HtmlContent - (42:2,26 [23] HtmlWithDataDashAttribute.cshtml) - " />\n</body>\n</html>"

@@ -32,11 +32,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             }
         }
 
-        public override void VisitCSharpToken(CSharpTokenIRNode node)
-        {
-            Context.Writer.Write(node.Content);
-        }
-
         public override void VisitHtml(HtmlContentIRNode node)
         {
             const int MaxStringLiteralLength = 1024;
@@ -78,7 +73,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
             Context.Writer.Write(Context.RenderingConventions.StartWriteMethod);
 
-            VisitDefault(node);
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                if (node.Children[i] is RazorIRToken token && token.IsCSharp)
+                {
+                    Context.Writer.Write(token.Content);
+                }
+                else
+                {
+                    // There may be something else inside the expression like a Template or another extension node.
+                    Visit(node.Children[i]);
+                }
+            }
 
             Context.Writer.WriteEndMethodInvocation();
 
@@ -651,9 +657,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             {
                 Context.Writer.Write(((HtmlContentIRNode)node).Content);
             }
-            else if (node is CSharpTokenIRNode)
+            else if (node is RazorIRToken token && token.IsCSharp)
             {
-                Context.Writer.Write(((CSharpTokenIRNode)node).Content);
+                Context.Writer.Write(token.Content);
             }
             else if (node is CSharpStatementIRNode)
             {

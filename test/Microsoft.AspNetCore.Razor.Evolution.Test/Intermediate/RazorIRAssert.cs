@@ -203,7 +203,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 var content = new StringBuilder();
                 for (var i = 0; i < cSharp.Children.Count; i++)
                 {
-                    content.Append(((CSharpTokenIRNode)cSharp.Children[i]).Content);
+                    var token = Assert.IsType<RazorIRToken>(cSharp.Children[i]);
+                    Assert.Equal(RazorIRToken.TokenKind.CSharp, token.Kind);
+                    content.Append(token.Content);
                 }
 
                 Assert.Equal(expected, content.ToString());

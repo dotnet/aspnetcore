@@ -14,7 +14,7 @@ Document -
                 CSharpStatement -  - EndContext();
                 CSharpStatement -  - BeginContext(61, 7, false);
                 CSharpExpression - (61:2,2 [7] BasicTest.cshtml)
-                    CSharpToken - (61:2,2 [7] BasicTest.cshtml) - "Hello"
+                    RazorIRToken - (61:2,2 [7] BasicTest.cshtml) - CSharp - "Hello"
                 CSharpStatement -  - EndContext();
                 CSharpStatement -  - BeginContext(69, 2, true);
                 HtmlContent - (69:2,10 [2] BasicTest.cshtml) - \n
@@ -30,7 +30,7 @@ Document -
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - value - FooProp
                             SetTagHelperProperty - (121:4,28 [13] BasicTest.cshtml) - date - BarProp - HtmlAttributeValueStyle.DoubleQuotes
                                 CSharpExpression - (122:4,29 [12] BasicTest.cshtml)
-                                    CSharpToken - (122:4,29 [12] BasicTest.cshtml) - DateTime.Now
+                                    RazorIRToken - (122:4,29 [12] BasicTest.cshtml) - CSharp - DateTime.Now
                             AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
                             CSharpStatement -  - BeginContext(97, 52, false);
                             ExecuteTagHelpers - 

@@ -61,6 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
             // Assert
             AssertIRMatchesBaseline(document.GetIRDocument());
+
             var csharpDocument = document.GetCSharpDocument();
             AssertCSharpDocumentMatchesBaseline(csharpDocument);
             Assert.Empty(csharpDocument.Diagnostics);
