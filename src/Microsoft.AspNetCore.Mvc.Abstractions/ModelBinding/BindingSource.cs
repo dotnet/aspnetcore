@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -85,6 +86,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Resources.BindingSource_Services,
             isGreedy: true,
             isFromRequest: false);
+
+        /// <summary>
+        /// A <see cref="BindingSource"/> for special parameter types that are not user input.
+        /// </summary>
+        public static readonly BindingSource Special = new BindingSource(
+            "Special",
+            Resources.BindingSource_Special,
+            isGreedy: true,
+            isFromRequest: false);
+
+        /// <summary>
+        /// A <see cref="BindingSource"/> for <see cref="IFormFile"/> and <see cref="IFormCollection"/>.
+        /// </summary>
+        public static readonly BindingSource FormFile = new BindingSource(
+            "FormFile",
+            Resources.BindingSource_FormFile,
+            isGreedy: true,
+            isFromRequest: true);
 
         /// <summary>
         /// Creates a new <see cref="BindingSource"/>.

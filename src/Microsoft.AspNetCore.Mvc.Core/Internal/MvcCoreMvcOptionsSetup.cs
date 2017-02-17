@@ -79,6 +79,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             options.ModelMetadataDetailsProviders.Add(new DefaultBindingMetadataProvider());
             options.ModelMetadataDetailsProviders.Add(new DefaultValidationMetadataProvider());
 
+            options.ModelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(CancellationToken), BindingSource.Special));
+            options.ModelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(IFormFile), BindingSource.FormFile));
+            options.ModelMetadataDetailsProviders.Add(new BindingSourceMetadataProvider(typeof(IFormCollection), BindingSource.FormFile));
+
             // Set up validators
             options.ModelValidatorProviders.Add(new DefaultModelValidatorProvider());
 

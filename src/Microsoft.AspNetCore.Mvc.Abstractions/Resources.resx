@@ -168,4 +168,10 @@
   <data name="BindingSource_MustBeGreedy" xml:space="preserve">
     <value>The provided binding source '{0}' is not a greedy data source. '{1}' only supports greedy data sources.</value>
   </data>
+  <data name="BindingSource_Special" xml:space="preserve">
+    <value>Special</value>
+  </data>
+  <data name="BindingSource_FormFile" xml:space="preserve">
+    <value>FormFile</value>
+  </data>
 </root>
