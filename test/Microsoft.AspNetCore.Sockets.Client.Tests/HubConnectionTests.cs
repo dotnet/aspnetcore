@@ -108,8 +108,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 Assert.Equal("Cannot invoke methods on disposed connections.", exception.Message);
         }
 
-        // TODO: If HubConnection takes (I)Connection we could just tests if events are wired up
-
         [Fact]
         public async Task HubConnectionConnectedEventRaisedWhenTheClientIsConnected()
         {
@@ -166,6 +164,63 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 Assert.Null(await closedEventTcs.Task.OrTimeout());
             }
+        }
+
+        [Fact]
+        public async Task CannotCallInvokeOnClosedHubConnection()
+        {
+            var mockConnection = new Mock<IConnection>();
+            mockConnection
+                .Setup(m => m.DisposeAsync())
+                .Callback(() => mockConnection.Raise(c => c.Closed += null, (Exception)null))
+                .Returns(Task.FromResult<object>(null));
+
+            var hubConnection = new HubConnection(mockConnection.Object, Mock.Of<IInvocationAdapter>(), new LoggerFactory());
+
+            await hubConnection.StartAsync(Mock.Of<ITransport>());
+            await hubConnection.DisposeAsync();
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                async () => await hubConnection.Invoke("test", typeof(int)));
+
+            Assert.Equal("Connection has been terminated.", exception.Message);
+        }
+
+        [Fact]
+        public async Task PendingInvocationsAreCancelledWhenConnectionClosesCleanly()
+        {
+            var mockConnection = new Mock<IConnection>();
+            mockConnection
+                .Setup(m => m.DisposeAsync())
+                .Callback(() => mockConnection.Raise(c => c.Closed += null, (Exception)null))
+                .Returns(Task.FromResult<object>(null));
+
+            var hubConnection = new HubConnection(mockConnection.Object, Mock.Of<IInvocationAdapter>(), new LoggerFactory());
+
+            await hubConnection.StartAsync(Mock.Of<ITransport>());
+            var invokeTask = hubConnection.Invoke("testMethod", typeof(int));
+            await hubConnection.DisposeAsync();
+
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await invokeTask);
+        }
+
+        [Fact]
+        public async Task PendingInvocationsAreTerminatedWithExceptionWhenConnectionClosesDueToError()
+        {
+            var exception = new InvalidOperationException();
+            var mockConnection = new Mock<IConnection>();
+            mockConnection
+                .Setup(m => m.DisposeAsync())
+                .Callback(() => mockConnection.Raise(c => c.Closed += null, exception))
+                .Returns(Task.FromResult<object>(null));
+
+            var hubConnection = new HubConnection(mockConnection.Object, Mock.Of<IInvocationAdapter>(), new LoggerFactory());
+
+            await hubConnection.StartAsync(Mock.Of<ITransport>());
+            var invokeTask = hubConnection.Invoke("testMethod", typeof(int));
+            await hubConnection.DisposeAsync();
+
+            var thrown = await Assert.ThrowsAsync(exception.GetType(), async () => await invokeTask);
+            Assert.Same(exception, thrown);
         }
     }
 }

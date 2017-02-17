@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 if (_connectionActive.IsCancellationRequested)
                 {
-                    throw new InvalidOperationException("Connection has been terminated");
+                    throw new InvalidOperationException("Connection has been terminated.");
                 }
                 _pendingCalls.Add(descriptor.Id, irq);
             }
@@ -185,11 +185,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 {
                     if (ex != null)
                     {
-                        call.Completion.TrySetCanceled();
+                        call.Completion.TrySetException(ex);
                     }
                     else
                     {
-                        call.Completion.TrySetException(ex);
+                        call.Completion.TrySetCanceled();
                     }
                 }
                 _pendingCalls.Clear();
