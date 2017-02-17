@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using Xunit;
-using ErrorSink = Microsoft.AspNetCore.Razor.Evolution.Legacy.ErrorSink;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Host
 {
@@ -415,7 +414,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
 
             public TagHelperDescriptor[] TagHelpers { get; }
 
-            public IEnumerable<TagHelperDescriptor> Resolve(ErrorSink errorSink)
+            public IEnumerable<TagHelperDescriptor> Resolve(IList<RazorDiagnostic> errors)
             {
                 return TagHelpers;
             }

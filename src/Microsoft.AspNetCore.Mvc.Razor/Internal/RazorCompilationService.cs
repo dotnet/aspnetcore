@@ -139,13 +139,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         // Internal for unit testing
         public CompilationResult GetCompilationFailedResult(
             string relativePath,
-            IEnumerable<Microsoft.AspNetCore.Razor.Evolution.Legacy.RazorError> errors)
+            IEnumerable<RazorDiagnostic> errors)
         {
             // If a SourceLocation does not specify a file path, assume it is produced
             // from parsing the current file.
             var messageGroups = errors
                 .GroupBy(razorError =>
-                razorError.Location.FilePath ?? relativePath,
+                razorError.Span.FilePath ?? relativePath,
                 StringComparer.Ordinal);
 
             var failures = new List<CompilationFailure>();
@@ -165,18 +165,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         }
 
         private DiagnosticMessage CreateDiagnosticMessage(
-            Microsoft.AspNetCore.Razor.Evolution.Legacy.RazorError error,
+            RazorDiagnostic error,
             string filePath)
         {
-            var location = error.Location;
+            var sourceSpan = error.Span;
             return new DiagnosticMessage(
-                message: error.Message,
-                formattedMessage: $"{error} ({location.LineIndex},{location.CharacterIndex}) {error.Message}",
+                message: error.GetMessage(),
+                formattedMessage: $"{error} ({sourceSpan.LineIndex},{sourceSpan.CharacterIndex}) {error.GetMessage()}",
                 filePath: filePath,
-                startLine: error.Location.LineIndex + 1,
-                startColumn: error.Location.CharacterIndex,
-                endLine: error.Location.LineIndex + 1,
-                endColumn: error.Location.CharacterIndex + error.Length);
+                startLine: sourceSpan.LineIndex + 1,
+                startColumn: sourceSpan.CharacterIndex,
+                endLine: sourceSpan.LineIndex + 1,
+                endColumn: sourceSpan.CharacterIndex + sourceSpan.Length);
         }
 
         private string ReadFileContentsSafely(string relativePath)

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Razor.Evolution;
-using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
@@ -39,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 {
                     document.SetCSharpDocument(new RazorCSharpDocument()
                     {
-                        Diagnostics = new List<RazorError>()
+                        Diagnostics = new List<RazorDiagnostic>()
                     });
 
                     Assert.Equal(viewPath, document.Source.Filename);  // Assert if source file name is the root relative path
@@ -78,9 +77,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 {
                     document.SetCSharpDocument(new RazorCSharpDocument()
                     {
-                        Diagnostics = new List<RazorError>()
+                        Diagnostics = new List<RazorDiagnostic>()
                         {
-                            new RazorError("some message", 1, 1, 1, 1)
+                            GetRazorDiagnostic("some message", new SourceLocation(1, 1, 1), length: 1)
                         }
                     });
                 }).Verifiable();
@@ -128,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 {
                     document.SetCSharpDocument(new RazorCSharpDocument()
                     {
-                        Diagnostics = new List<RazorError>()
+                        Diagnostics = new List<RazorDiagnostic>()
                     });
                 });
 
@@ -165,10 +164,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 NullLoggerFactory.Instance);
             var errors = new[]
             {
-                new RazorError("message-1", new SourceLocation(1, 2, 17), length: 1),
-                new RazorError("message-2", new SourceLocation(viewPath, 1, 4, 6), 7),
-                new RazorError { Message = "message-3" },
-                new RazorError("message-4", new SourceLocation(viewImportsPath, 1, 3, 8), 4),
+                GetRazorDiagnostic("message-1", new SourceLocation(1, 2, 17), length: 1),
+                GetRazorDiagnostic("message-2", new SourceLocation(viewPath, 1, 4, 6), length: 7),
+                GetRazorDiagnostic("message-3", SourceLocation.Undefined, length: -1),
+                GetRazorDiagnostic("message-4", new SourceLocation(viewImportsPath, 1, 3, 8), length: 4),
             };
 
             // Act
@@ -184,7 +183,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     Assert.Collection(failure.Messages,
                         message =>
                         {
-                            Assert.Equal(errors[0].Message, message.Message);
+                            Assert.Equal(errors[0].GetMessage(), message.Message);
                             Assert.Equal(viewPath, message.SourceFilePath);
                             Assert.Equal(3, message.StartLine);
                             Assert.Equal(17, message.StartColumn);
@@ -193,7 +192,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                         },
                         message =>
                         {
-                            Assert.Equal(errors[1].Message, message.Message);
+                            Assert.Equal(errors[1].GetMessage(), message.Message);
                             Assert.Equal(viewPath, message.SourceFilePath);
                             Assert.Equal(5, message.StartLine);
                             Assert.Equal(6, message.StartColumn);
@@ -202,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                         },
                         message =>
                         {
-                            Assert.Equal(errors[2].Message, message.Message);
+                            Assert.Equal(errors[2].GetMessage(), message.Message);
                             Assert.Equal(viewPath, message.SourceFilePath);
                             Assert.Equal(0, message.StartLine);
                             Assert.Equal(-1, message.StartColumn);
@@ -217,7 +216,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     Assert.Collection(failure.Messages,
                         message =>
                         {
-                            Assert.Equal(errors[3].Message, message.Message);
+                            Assert.Equal(errors[3].GetMessage(), message.Message);
                             Assert.Equal(viewImportsPath, message.SourceFilePath);
                             Assert.Equal(4, message.StartLine);
                             Assert.Equal(8, message.StartColumn);
@@ -234,6 +233,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 .Returns(fileProvider ?? new TestFileProvider());
 
             return options.Object;
+        }
+
+        private static RazorDiagnostic GetRazorDiagnostic(string message, SourceLocation sourceLocation, int length)
+        {
+            var diagnosticDescriptor = new RazorDiagnosticDescriptor("test-id", () => message, RazorDiagnosticSeverity.Error);
+            var sourceSpan = new SourceSpan(sourceLocation, length);
+
+            return RazorDiagnostic.Create(diagnosticDescriptor, sourceSpan);
         }
     }
 }
