@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 throw new ArgumentNullException(nameof(application));
             }
-            
+
             _application = application;
 
             await Connect(url);

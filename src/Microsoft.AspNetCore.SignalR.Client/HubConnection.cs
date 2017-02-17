@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
     public class HubConnection
     {
         private readonly ILogger _logger;
-        private readonly Connection _connection;
+        private readonly IConnection _connection;
         private readonly IInvocationAdapter _adapter;
         private readonly HubBinder _binder;
 
@@ -46,6 +46,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
         }
 
         public HubConnection(Uri url, IInvocationAdapter adapter, ILoggerFactory loggerFactory)
+            : this(new Connection(url, loggerFactory), adapter, loggerFactory)
+        { }
+
+        public HubConnection(IConnection connection, IInvocationAdapter adapter, ILoggerFactory loggerFactory)
         {
             // TODO: loggerFactory shouldn't be required
             if (loggerFactory == null)
@@ -53,8 +57,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
+            if (connection == null)
+            {
+                throw new ArgumentNullException(nameof(connection));
+            }
+
+            _connection = connection;
+
             _binder = new HubBinder(this);
-            _connection = new Connection(url, loggerFactory);
             _adapter = adapter;
             _logger = loggerFactory.CreateLogger<HubConnection>();
 

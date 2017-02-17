@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public void CannotCreateHubConnectionWithNullUrl()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new HubConnection(null, Mock.Of<IInvocationAdapter>(), Mock.Of<ILoggerFactory>()));
+                () => new HubConnection((Uri)null, Mock.Of<IInvocationAdapter>(), Mock.Of<ILoggerFactory>()));
             Assert.Equal("url", exception.ParamName);
         }
 
