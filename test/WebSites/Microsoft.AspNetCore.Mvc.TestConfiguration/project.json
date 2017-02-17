@@ -8,7 +8,7 @@
     "NETStandard.Library": "1.6.1"
   },
   "frameworks": {
-    "net451": {},
+    "net452": {},
     "netstandard1.3": {}
   }
 }

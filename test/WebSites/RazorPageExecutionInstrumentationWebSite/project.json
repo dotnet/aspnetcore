@@ -14,7 +14,7 @@
     "Microsoft.Extensions.DiagnosticAdapter": "1.2.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net452": {},
     "netcoreapp1.1": {
       "dependencies": {
         "Microsoft.NETCore.App": {

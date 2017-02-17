@@ -32,6 +32,6 @@
         "System.Diagnostics.TraceSource": "4.3.0"
       }
     },
-    "net451": {}
+    "net452": {}
   }
 }

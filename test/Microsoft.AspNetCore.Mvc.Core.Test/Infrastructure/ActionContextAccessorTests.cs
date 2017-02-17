@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
-#if NET451
+#if NET452
     public class ActionContextAccessorTests
     {
         private static void DomainFunc()

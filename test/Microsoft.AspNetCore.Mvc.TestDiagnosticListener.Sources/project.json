@@ -1,7 +1,7 @@
 {
   "shared": "**/*.cs",
   "frameworks": {
-    "net451": {},
+    "net452": {},
     "netstandard1.3": {
       "dependencies": {
         "NETStandard.Library": "1.6.1"

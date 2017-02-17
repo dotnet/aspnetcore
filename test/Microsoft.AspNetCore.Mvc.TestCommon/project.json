@@ -4,7 +4,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "frameworks": {
-    "net451": {},
+    "net452": {},
     "netstandard1.6": {
       "dependencies": {
         "System.ComponentModel.Annotations": "4.3.0"

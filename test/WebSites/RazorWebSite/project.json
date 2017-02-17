@@ -24,10 +24,10 @@
     "Microsoft.Extensions.FileProviders.Embedded": "1.2.0-*"
   },
   "frameworks": {
-    "net451": {
+    "net452": {
       "buildOptions": {
         "define": [
-          "NET451_CUSTOM_DEFINE"
+          "NET452_CUSTOM_DEFINE"
         ]
       }
     },

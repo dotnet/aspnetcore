@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // The desktop CLR does not correctly read the stack trace from portable PDBs. However generating full pdbs
             // is only supported on machines with CLSID_CorSymWriter available. On desktop, we'll skip this test on 
             // machines without this component.
-#if NET451
+#if NET452
             if (!SymbolsUtility.SupportsFullPdbGeneration())
             {
                 return;

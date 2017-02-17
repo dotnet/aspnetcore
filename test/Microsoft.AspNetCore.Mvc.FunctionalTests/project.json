@@ -96,6 +96,6 @@
       },
       "imports": "portable-net451+win8"
     },
-    "net451": {}
+    "net452": {}
   }
 }

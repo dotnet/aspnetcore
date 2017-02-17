@@ -7,22 +7,22 @@ namespace RazorWebSite
     {
         public string ExecuteOperation()
         {
-#if NET451 || DNX451
-            return "This method is running from NET451";
+#if NET452
+            return "This method is running from NET452";
 #elif NETCOREAPP1_1
             return "This method is running from NETCOREAPP1_1";
 #endif
         }
 
-#if NET451_CUSTOM_DEFINE
-        public string ExecuteNet451Operation()
+#if NET452_CUSTOM_DEFINE
+        public string ExecuteNet452Operation()
         {
-            return "This method is only defined in NET451";
+            return "This method is only defined in NET452";
         }
 #endif
 
 #if NETCOREAPP1_1_CUSTOM_DEFINE
-        public string ExecuteNetCoreApp1_0Operation()
+        public string ExecuteNetCoreApp1_1Operation()
         {
             return "This method is only defined in NETCOREAPP1_1";
         }
