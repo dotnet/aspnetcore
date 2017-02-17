@@ -65,7 +65,10 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
             var viewModel = new RazorInfoViewModel(this, _workspace, _assemblyResolver, _directiveResolver, _tagHelperResolver, _documentGenerator, OnException);
             foreach (var project in solution.Projects)
             {
-                viewModel.Projects.Add(new ProjectViewModel(project));
+                if (project.Language == LanguageNames.CSharp)
+                {
+                    viewModel.Projects.Add(new ProjectViewModel(project));
+                }
             }
 
             ((RazorInfoToolWindowControl)this.Content).DataContext = viewModel;
