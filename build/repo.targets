@@ -1,0 +1,7 @@
+<Project>
+  <Target Name="TestNano" DependsOnTargets="Restore">
+    <MSBuild Targets="VSTest"
+             Projects="$(MSBuildThisFileDirectory)..\test\E2ETests\E2ETests.csproj"
+             Properties="Configuration=$(Configuration);VSTestLogger=trx;VSTestTestCaseFilter=E2ETests=NanoServer" />
+  </Target>
+</Project>
