@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private void ScheduleWrite()
         {
-            _thread.Post(state => ((SocketOutput)state).WriteAllPending(), this);
+            _thread.Post(state => state.WriteAllPending(), this);
         }
 
         // This is called on the libuv event loop

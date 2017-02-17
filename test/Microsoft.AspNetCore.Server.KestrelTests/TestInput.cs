@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
+using System.Text;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,12 +13,14 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
+using MemoryPool = Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure.MemoryPool;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     class TestInput : IConnectionControl, IFrameControl, IDisposable
     {
         private MemoryPool _memoryPool;
+        private PipeFactory _pipelineFactory;
 
         public TestInput()
         {
@@ -41,18 +45,19 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             FrameContext.ConnectionContext.ListenerContext.ServiceContext.Log = trace;
 
             _memoryPool = new MemoryPool();
-            FrameContext.Input = new SocketInput(_memoryPool, ltp);
+            _pipelineFactory = new PipeFactory();
+            FrameContext.Input = _pipelineFactory.Create();;
         }
 
         public Frame FrameContext { get; set; }
 
         public void Add(string text, bool fin = false)
         {
-            var data = System.Text.Encoding.ASCII.GetBytes(text);
-            FrameContext.Input.IncomingData(data, 0, data.Length);
+            var data = Encoding.ASCII.GetBytes(text);
+            FrameContext.Input.Writer.WriteAsync(data).Wait();
             if (fin)
             {
-                FrameContext.Input.IncomingFin();
+                FrameContext.Input.Writer.Complete();
             }
         }
 
@@ -116,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         public void Dispose()
         {
-            FrameContext.Input.Dispose();
+            _pipelineFactory.Dispose();
             _memoryPool.Dispose();
         }
     }

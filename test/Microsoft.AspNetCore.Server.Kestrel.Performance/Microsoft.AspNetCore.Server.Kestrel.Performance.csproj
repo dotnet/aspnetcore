@@ -15,7 +15,6 @@
     <Compile Include="..\shared\TestKestrelTrace.cs" />
     <Compile Include="..\shared\MockConnection.cs" />
     <Compile Include="..\shared\MockSocketOutput.cs" />
-    <Compile Include="..\shared\SocketInputExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

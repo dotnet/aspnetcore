@@ -18,6 +18,10 @@
     <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" />
     <PackageReference Include="System.Numerics.Vectors" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(CoreFxVersion)" />
+    
+    <PackageReference Include="System.IO.Pipelines" Version="0.1.0-*" />
+    <PackageReference Include="System.IO.Pipelines.Text.Primitives" Version="0.1.0-*" />
+    <PackageReference Include="System.Text.Encodings.Web.Utf8" Version="0.1.0-*" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">

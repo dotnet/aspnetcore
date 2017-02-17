@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var client = new HttpClient())
                 {
-                    var response = await client.GetAsync($"http://localhost:{host.GetPort()}/");
+                    var response = await client.GetAsync($"http://127.0.0.1:{host.GetPort()}/");
                     response.EnsureSuccessStatusCode();
                     var responseBody = await response.Content.ReadAsStreamAsync();
 
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var client = new HttpClient())
                 {
-                    var response = await client.GetAsync($"http://localhost:{host.GetPort()}/");
+                    var response = await client.GetAsync($"http://127.0.0.1:{host.GetPort()}/");
                     response.EnsureSuccessStatusCode();
 
                     var headers = response.Headers;
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var client = new HttpClient())
                 {
-                    var response = await client.GetAsync($"http://localhost:{host.GetPort()}/");
+                    var response = await client.GetAsync($"http://127.0.0.1:{host.GetPort()}/");
 
                     Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
                     Assert.False(onStartingCalled);
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var client = new HttpClient())
                 {
-                    var response = await client.GetAsync($"http://localhost:{host.GetPort()}/");
+                    var response = await client.GetAsync($"http://127.0.0.1:{host.GetPort()}/");
 
                     // Despite the error, the response had already started
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);

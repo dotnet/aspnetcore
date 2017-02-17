@@ -3,11 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Xunit;
+using MemoryPool = Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure.MemoryPool;
+using MemoryPoolBlock = Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure.MemoryPoolBlock;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
@@ -68,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public void MemorySeek(string raw, string search, char expectResult, int expectIndex)
         {
             var block = _pool.Lease();
-            var chars = raw.ToCharArray().Select(c => (byte) c).ToArray();
+            var chars = raw.ToCharArray().Select(c => (byte)c).ToArray();
             Buffer.BlockCopy(chars, 0, block.Array, block.Start, chars.Length);
             block.End += chars.Length;
 
@@ -150,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             head = blocks[0].GetIterator();
             for (var i = 0; i < 64; ++i)
             {
-                Assert.True(head.Put((byte) i), $"Fail to put data at {i}.");
+                Assert.True(head.Put((byte)i), $"Fail to put data at {i}.");
             }
 
             // Can't put anything by the end
@@ -167,7 +170,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             // Arrange
             var block = _pool.Lease();
-            var bytes = new byte[] {0, 1, 2, 3, 4, 5, 6, 7};
+            var bytes = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 };
             Buffer.BlockCopy(bytes, 0, block.Array, block.Start, bytes.Length);
             block.End += bytes.Length;
             var scan = block.GetIterator();
@@ -177,7 +180,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var result = scan.PeekArraySegment();
 
             // Assert
-            Assert.Equal(new byte[] {0, 1, 2, 3, 4, 5, 6, 7}, result);
+            Assert.Equal(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, result);
             Assert.Equal(originalIndex, scan.Index);
 
             _pool.Return(block);
@@ -195,7 +198,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             // Arrange
             var block = _pool.Lease();
-            var bytes = new byte[] {0, 1, 2, 3, 4, 5, 6, 7};
+            var bytes = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 };
             Buffer.BlockCopy(bytes, 0, block.Array, block.Start, bytes.Length);
             block.End += bytes.Length;
             block.Start = block.End;
@@ -559,50 +562,63 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public void GetsKnownMethod(string input, bool expectedResult, string expectedKnownString)
         {
             // Arrange
-            var block = _pool.Lease();
-            var chars = input.ToCharArray().Select(c => (byte)c).ToArray();
-            Buffer.BlockCopy(chars, 0, block.Array, block.Start, chars.Length);
-            block.End += chars.Length;
-            var begin = block.GetIterator();
-            string knownString;
+            var block = ReadableBuffer.Create(Encoding.ASCII.GetBytes(input));
 
             // Act
-            var result = begin.GetKnownMethod(out knownString);
-
+            string knownString;
+            var result = block.GetKnownMethod(out knownString);
             // Assert
             Assert.Equal(expectedResult, result);
             Assert.Equal(expectedKnownString, knownString);
+        }
 
+
+        [Theory]
+        [InlineData("CONNECT / HTTP/1.1", true, "CONNECT")]
+        [InlineData("DELETE / HTTP/1.1", true, "DELETE")]
+        [InlineData("GET / HTTP/1.1", true, "GET")]
+        [InlineData("HEAD / HTTP/1.1", true, "HEAD")]
+        [InlineData("PATCH / HTTP/1.1", true, "PATCH")]
+        [InlineData("POST / HTTP/1.1", true, "POST")]
+        [InlineData("PUT / HTTP/1.1", true, "PUT")]
+        [InlineData("OPTIONS / HTTP/1.1", true, "OPTIONS")]
+        [InlineData("TRACE / HTTP/1.1", true, "TRACE")]
+        [InlineData("GET/ HTTP/1.1", false, null)]
+        [InlineData("get / HTTP/1.1", false, null)]
+        [InlineData("GOT / HTTP/1.1", false, null)]
+        [InlineData("ABC / HTTP/1.1", false, null)]
+        [InlineData("PO / HTTP/1.1", false, null)]
+        [InlineData("PO ST / HTTP/1.1", false, null)]
+        [InlineData("short ", false, null)]
+        public void GetsKnownMethodOnBoundary(string input, bool expectedResult, string expectedKnownString)
+        {
             // Test at boundary
             var maxSplit = Math.Min(input.Length, 8);
-            var nextBlock = _pool.Lease();
 
             for (var split = 0; split <= maxSplit; split++)
             {
-                // Arrange
-                block.Reset();
-                nextBlock.Reset();
+                using (var pipelineFactory = new PipeFactory())
+                {
+                    // Arrange
+                    var pipe = pipelineFactory.Create();
+                    var buffer = pipe.Writer.Alloc();
+                    var block1Input = input.Substring(0, split);
+                    var block2Input = input.Substring(split);
+                    buffer.Append(ReadableBuffer.Create(Encoding.ASCII.GetBytes(block1Input)));
+                    buffer.Append(ReadableBuffer.Create(Encoding.ASCII.GetBytes(block2Input)));
+                    buffer.FlushAsync().GetAwaiter().GetResult();
 
-                Buffer.BlockCopy(chars, 0, block.Array, block.Start, split);
-                Buffer.BlockCopy(chars, split, nextBlock.Array, nextBlock.Start, chars.Length - split);
+                    var readResult = pipe.Reader.ReadAsync().GetAwaiter().GetResult();
 
-                block.End += split;
-                nextBlock.End += chars.Length - split;
-                block.Next = nextBlock;
+                    // Act
+                    string boundaryKnownString;
+                    var boundaryResult = readResult.Buffer.GetKnownMethod(out boundaryKnownString);
 
-                var boundaryBegin = block.GetIterator();
-                string boundaryKnownString;
-
-                // Act
-                var boundaryResult = boundaryBegin.GetKnownMethod(out boundaryKnownString);
-
-                // Assert
-                Assert.Equal(expectedResult, boundaryResult);
-                Assert.Equal(expectedKnownString, boundaryKnownString);
+                    // Assert
+                    Assert.Equal(expectedResult, boundaryResult);
+                    Assert.Equal(expectedKnownString, boundaryKnownString);
+                }
             }
-
-            _pool.Return(block);
-            _pool.Return(nextBlock);
         }
 
         [Theory]
@@ -615,49 +631,52 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public void GetsKnownVersion(string input, bool expectedResult, string expectedKnownString)
         {
             // Arrange
-            var block = _pool.Lease();
-            var chars = input.ToCharArray().Select(c => (byte)c).ToArray();
-            Buffer.BlockCopy(chars, 0, block.Array, block.Start, chars.Length);
-            block.End += chars.Length;
-            var begin = block.GetIterator();
-            string knownString;
+            var block = ReadableBuffer.Create(Encoding.ASCII.GetBytes(input));
 
             // Act
-            var result = begin.GetKnownVersion(out knownString);
+            string knownString;
+            var result = block.GetKnownVersion(out knownString);
             // Assert
             Assert.Equal(expectedResult, result);
             Assert.Equal(expectedKnownString, knownString);
+        }
 
+        [Theory]
+        [InlineData("HTTP/1.0\r", true, MemoryPoolIteratorExtensions.Http10Version)]
+        [InlineData("HTTP/1.1\r", true, MemoryPoolIteratorExtensions.Http11Version)]
+        [InlineData("HTTP/3.0\r", false, null)]
+        [InlineData("http/1.0\r", false, null)]
+        [InlineData("http/1.1\r", false, null)]
+        [InlineData("short ", false, null)]
+        public void GetsKnownVersionOnBoundary(string input, bool expectedResult, string expectedKnownString)
+        {
             // Test at boundary
             var maxSplit = Math.Min(input.Length, 9);
-            var nextBlock = _pool.Lease();
 
             for (var split = 0; split <= maxSplit; split++)
             {
-                // Arrange
-                block.Reset();
-                nextBlock.Reset();
+                using (var pipelineFactory = new PipeFactory())
+                {
+                    // Arrange
+                    var pipe = pipelineFactory.Create();
+                    var buffer = pipe.Writer.Alloc();
+                    var block1Input = input.Substring(0, split);
+                    var block2Input = input.Substring(split);
+                    buffer.Append(ReadableBuffer.Create(Encoding.ASCII.GetBytes(block1Input)));
+                    buffer.Append(ReadableBuffer.Create(Encoding.ASCII.GetBytes(block2Input)));
+                    buffer.FlushAsync().GetAwaiter().GetResult();
 
-                Buffer.BlockCopy(chars, 0, block.Array, block.Start, split);
-                Buffer.BlockCopy(chars, split, nextBlock.Array, nextBlock.Start, chars.Length - split);
+                    var readResult = pipe.Reader.ReadAsync().GetAwaiter().GetResult();
 
-                block.End += split;
-                nextBlock.End += chars.Length - split;
-                block.Next = nextBlock;
+                    // Act
+                    string boundaryKnownString;
+                    var boundaryResult = readResult.Buffer.GetKnownVersion(out boundaryKnownString);
 
-                var boundaryBegin = block.GetIterator();
-                string boundaryKnownString;
-
-                // Act
-                var boundaryResult = boundaryBegin.GetKnownVersion(out boundaryKnownString);
-
-                // Assert
-                Assert.Equal(expectedResult, boundaryResult);
-                Assert.Equal(expectedKnownString, boundaryKnownString);
+                    // Assert
+                    Assert.Equal(expectedResult, boundaryResult);
+                    Assert.Equal(expectedKnownString, boundaryKnownString);
+                }
             }
-
-            _pool.Return(block);
-            _pool.Return(nextBlock);
         }
 
         [Theory]
@@ -681,36 +700,23 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [InlineData("HTTP/1.1\r", "")]
         public void KnownVersionCanBeReadAtAnyBlockBoundary(string block1Input, string block2Input)
         {
-            MemoryPoolBlock block1 = null;
-            MemoryPoolBlock block2 = null;
-
-            try
+            using (var pipelineFactory = new PipeFactory())
             {
                 // Arrange
-                var chars1 = block1Input.ToCharArray().Select(c => (byte)c).ToArray();
-                var chars2 = block2Input.ToCharArray().Select(c => (byte)c).ToArray();
-                block1 = _pool.Lease();
-                block2 = _pool.Lease();
-                Buffer.BlockCopy(chars1, 0, block1.Array, block1.Start, chars1.Length);
-                Buffer.BlockCopy(chars2, 0, block2.Array, block2.Start, chars2.Length);
-                block1.End += chars1.Length;
-                block2.End += chars2.Length;
-                block1.Next = block2;
-                var iterator = block1.GetIterator();
+                var pipe = pipelineFactory.Create();
+                var buffer = pipe.Writer.Alloc();
+                buffer.Append(ReadableBuffer.Create(Encoding.ASCII.GetBytes(block1Input)));
+                buffer.Append(ReadableBuffer.Create(Encoding.ASCII.GetBytes(block2Input)));
+                buffer.FlushAsync().GetAwaiter().GetResult();
 
+                var readResult = pipe.Reader.ReadAsync().GetAwaiter().GetResult();
                 // Act
                 string knownVersion;
-                var result = iterator.GetKnownVersion(out knownVersion);
+                var result = readResult.Buffer.GetKnownVersion(out knownVersion);
 
                 // Assert
                 Assert.True(result);
                 Assert.Equal("HTTP/1.1", knownVersion);
-            }
-            finally
-            {
-                // Cleanup
-                if (block1 != null) _pool.Return(block1);
-                if (block2 != null) _pool.Return(block2);
             }
         }
 
@@ -740,7 +746,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 // Arrange
 
                 block = _pool.Lease();
-                var chars = input.ToString().ToCharArray().Select(c => (byte)c).ToArray();
+                var chars = input.ToString().ToCharArray().Select(c => (byte) c).ToArray();
                 Buffer.BlockCopy(chars, 0, block.Array, block.Start, chars.Length);
                 block.End += chars.Length;
                 var scan = block.GetIterator();
@@ -974,7 +980,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void EmptyIteratorBehaviourIsValid()
         {
-            const byte byteCr = (byte) '\n';
+            const byte byteCr = (byte)'\n';
             ulong longValue;
             var end = default(MemoryPoolIterator);
 
@@ -1194,16 +1200,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             try
             {
                 // Arrange
-                block = _pool.Lease();
-                var chars = input.ToCharArray().Select(c => (byte)c).ToArray();
-                Buffer.BlockCopy(chars, 0, block.Array, block.Start, chars.Length);
-                block.End += chars.Length;
-                var start = block.GetIterator();
-                var end = start;
-                end.Skip(input.Length);
+                var buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes(input));
 
                 // Act
-                var result = start.GetAsciiStringEscaped(end, maxChars);
+                var result = buffer.Start.GetAsciiStringEscaped(buffer.End, maxChars);
 
                 // Assert
                 Assert.Equal(expected, result);
@@ -1294,28 +1294,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }
         }
 
-        private delegate bool GetKnownString(MemoryPoolIterator iter, out string result);
+        private delegate bool GetKnownString(ReadableBuffer iter, out string result);
 
         private void TestKnownStringsInterning(string input, string expected, GetKnownString action)
         {
-            // Arrange
-            var chars = input.ToCharArray().Select(c => (byte)c).ToArray();
-            var block1 = _pool.Lease();
-            var block2 = _pool.Lease();
-            Buffer.BlockCopy(chars, 0, block1.Array, block1.Start, chars.Length);
-            Buffer.BlockCopy(chars, 0, block2.Array, block2.Start, chars.Length);
-            block1.End += chars.Length;
-            block2.End += chars.Length;
-            var begin1 = block1.GetIterator();
-            var begin2 = block2.GetIterator();
-
             // Act
             string knownString1, knownString2;
-            var result1 = action(begin1, out knownString1);
-            var result2 = action(begin2, out knownString2);
-
-            _pool.Return(block1);
-            _pool.Return(block2);
+            var result1 = action(ReadableBuffer.Create(Encoding.ASCII.GetBytes(input)), out knownString1);
+            var result2 = action(ReadableBuffer.Create(Encoding.ASCII.GetBytes(input)), out knownString2);
 
             // Assert
             Assert.True(result1);

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -282,24 +283,29 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 // so no need to bounds check in this test.
                 var socketInput = input.FrameContext.Input;
                 var bytes = Encoding.ASCII.GetBytes(data[0]);
-                var block = socketInput.IncomingStart();
-                Buffer.BlockCopy(bytes, 0, block.Array, block.End, bytes.Length);
-                socketInput.IncomingComplete(bytes.Length, null);
+                var buffer = socketInput.Writer.Alloc(2048);
+                ArraySegment<byte> block;
+                Assert.True(buffer.Memory.TryGetArray(out block));
+                Buffer.BlockCopy(bytes, 0, block.Array, block.Offset, bytes.Length);
+                buffer.Advance(bytes.Length);
+                await buffer.FlushAsync();
 
                 // Verify the block passed to WriteAsync is the same one incoming data was written into.
                 Assert.Same(block.Array, await writeTcs.Task);
 
                 writeTcs = new TaskCompletionSource<byte[]>();
                 bytes = Encoding.ASCII.GetBytes(data[1]);
-                block = socketInput.IncomingStart();
-                Buffer.BlockCopy(bytes, 0, block.Array, block.End, bytes.Length);
-                socketInput.IncomingComplete(bytes.Length, null);
+                buffer = socketInput.Writer.Alloc(2048);
+                Assert.True(buffer.Memory.TryGetArray(out block));
+                Buffer.BlockCopy(bytes, 0, block.Array, block.Offset, bytes.Length);
+                buffer.Advance(bytes.Length);
+                await buffer.FlushAsync();
 
                 Assert.Same(block.Array, await writeTcs.Task);
 
                 if (headers.HeaderConnection == "close")
                 {
-                    socketInput.IncomingFin();
+                    socketInput.Writer.Complete();
                 }
 
                 await copyToAsyncTask;

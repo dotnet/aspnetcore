@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -12,18 +13,17 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 using Microsoft.Extensions.Logging;
+using MemoryPool = Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure.MemoryPool;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 {
     /// <summary>
     /// Summary description for KestrelThread
     /// </summary>
-    public class KestrelThread
+    public class KestrelThread: IScheduler
     {
         public const long HeartbeatMilliseconds = 1000;
 
-        private static readonly Action<object, object> _postCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
-        private static readonly Action<object, object> _postAsyncCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
         private static readonly Libuv.uv_walk_cb _heartbeatWalkCallback = (ptr, arg) =>
         {
             var streamHandle = UvMemory.FromIntPtr<UvHandle>(ptr) as UvStreamHandle;
@@ -78,10 +78,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             QueueCloseHandle = PostCloseHandle;
             QueueCloseAsyncHandle = EnqueueCloseHandle;
             Memory = new MemoryPool();
+            PipelineFactory = new PipeFactory();
             WriteReqPool = new WriteReqPool(this, _log);
             ConnectionManager = new ConnectionManager(this, _threadPool);
         }
-
         // For testing
         internal KestrelThread(KestrelEngine engine, int maxLoops)
             : this(engine)
@@ -92,6 +92,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
         public UvLoopHandle Loop { get { return _loop; } }
 
         public MemoryPool Memory { get; }
+
+        public PipeFactory PipelineFactory { get; }
 
         public ConnectionManager ConnectionManager { get; }
 
@@ -180,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
                 var result = await WaitAsync(PostAsync(state =>
                 {
-                    var listener = (KestrelThread)state;
+                    var listener = state;
                     listener.WriteReqPool.Dispose();
                 },
                 this), _shutdownTimeout).ConfigureAwait(false);
@@ -193,6 +195,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             finally
             {
                 Memory.Dispose();
+                PipelineFactory.Dispose();
             }
         }
 
@@ -224,13 +227,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             _loop.Stop();
         }
 
-        public void Post(Action<object> callback, object state)
+        public void Post<T>(Action<T> callback, T state)
         {
             lock (_workSync)
             {
                 _workAdding.Enqueue(new Work
                 {
-                    CallbackAdapter = _postCallbackAdapter,
+                    CallbackAdapter = CallbackAdapter<T>.PostCallbackAdapter,
                     Callback = callback,
                     State = state
                 });
@@ -240,17 +243,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
         private void Post(Action<KestrelThread> callback)
         {
-            Post(thread => callback((KestrelThread)thread), this);
+            Post(callback, this);
         }
 
-        public Task PostAsync(Action<object> callback, object state)
+        public Task PostAsync<T>(Action<T> callback, T state)
         {
             var tcs = new TaskCompletionSource<object>();
             lock (_workSync)
             {
                 _workAdding.Enqueue(new Work
                 {
-                    CallbackAdapter = _postAsyncCallbackAdapter,
+                    CallbackAdapter = CallbackAdapter<T>.PostAsyncCallbackAdapter,
                     Callback = callback,
                     State = state,
                     Completion = tcs
@@ -439,6 +442,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             return await Task.WhenAny(task, Task.Delay(timeout)).ConfigureAwait(false) == task;
         }
 
+        public void Schedule(Action action)
+        {
+            Post(state => state(), action);
+        }
+
         private struct Work
         {
             public Action<object, object> CallbackAdapter;
@@ -452,5 +460,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             public Action<IntPtr> Callback;
             public IntPtr Handle;
         }
+
+        private class CallbackAdapter<T>
+        {
+            public static readonly Action<object, object> PostCallbackAdapter = (callback, state) => ((Action<T>)callback).Invoke((T)state);
+            public static readonly Action<object, object> PostAsyncCallbackAdapter = (callback, state) => ((Action<T>)callback).Invoke((T)state);
+        }
+
     }
 }

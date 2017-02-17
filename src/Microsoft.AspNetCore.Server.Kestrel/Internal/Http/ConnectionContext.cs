@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public ListenerContext ListenerContext { get; set; }
 
-        public SocketInput Input { get; set; }
+        public IPipe Input { get; set; }
 
         public ISocketOutput Output { get; set; }
 

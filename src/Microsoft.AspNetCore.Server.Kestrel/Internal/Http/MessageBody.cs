@@ -3,10 +3,10 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
@@ -215,9 +215,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         private void ConsumedBytes(int count)
         {
-            var scan = _context.Input.ConsumingStart();
-            scan.Skip(count);
-            _context.Input.ConsumingComplete(scan, scan);
+            var scan = _context.Input.Reader.ReadAsync().GetResult().Buffer;
+            var consumed = scan.Move(scan.Start, count);
+            _context.Input.Reader.Advance(consumed, consumed);
 
             OnConsumedBytes(count);
         }
@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             protected override ValueTask<ArraySegment<byte>> PeekAsync(CancellationToken cancellationToken)
             {
-                return _context.Input.PeekAsync();
+                return _context.Input.Reader.PeekAsync();
             }
         }
 
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     return new ValueTask<ArraySegment<byte>>();
                 }
 
-                var task = _context.Input.PeekAsync();
+                var task = _context.Input.Reader.PeekAsync();
 
                 if (task.IsCompleted)
                 {
@@ -413,7 +413,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             // byte consts don't have a data type annotation so we pre-cast it
             private const byte ByteCR = (byte)'\r';
 
-            private readonly SocketInput _input;
+            private readonly IPipeReader _input;
             private readonly FrameRequestHeaders _requestHeaders;
             private int _inputLength;
 
@@ -423,7 +423,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 : base(context)
             {
                 RequestKeepAlive = keepAlive;
-                _input = _context.Input;
+                _input = _context.Input.Reader;
                 _requestHeaders = headers;
             }
 
@@ -443,45 +443,71 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {
                     while (_mode == Mode.Prefix)
                     {
-                        var fin = _input.CheckFinOrThrow();
+                        var result = await _input.ReadAsync();
+                        var buffer = result.Buffer;
+                        var consumed = default(ReadCursor);
+                        var examined = default(ReadCursor);
 
-                        ParseChunkedPrefix();
+                        try
+                        {
+                            ParseChunkedPrefix(buffer, out consumed, out examined);
+                        }
+                        finally
+                        {
+                            _input.Advance(consumed, examined);
+                        }
 
                         if (_mode != Mode.Prefix)
                         {
                             break;
                         }
-                        else if (fin)
+                        else if (result.IsCompleted)
                         {
                             _context.RejectRequest(RequestRejectionReason.ChunkedRequestIncomplete);
                         }
 
-                        await _input;
                     }
 
                     while (_mode == Mode.Extension)
                     {
-                        var fin = _input.CheckFinOrThrow();
+                        var result = await _input.ReadAsync();
+                        var buffer = result.Buffer;
+                        var consumed = default(ReadCursor);
+                        var examined = default(ReadCursor);
 
-                        ParseExtension();
+                        try
+                        {
+                            ParseExtension(buffer, out consumed, out examined);
+                        }
+                        finally
+                        {
+                            _input.Advance(consumed, examined);
+                        }
 
                         if (_mode != Mode.Extension)
                         {
                             break;
                         }
-                        else if (fin)
+                        else if (result.IsCompleted)
                         {
                             _context.RejectRequest(RequestRejectionReason.ChunkedRequestIncomplete);
                         }
 
-                        await _input;
                     }
 
                     while (_mode == Mode.Data)
                     {
-                        var fin = _input.CheckFinOrThrow();
-
-                        var segment = PeekChunkedData();
+                        var result = await _input.ReadAsync();
+                        var buffer = result.Buffer;
+                        ArraySegment<byte> segment;
+                        try
+                        {
+                            segment = PeekChunkedData(buffer);
+                        }
+                        finally
+                        {
+                            _input.Advance(buffer.Start, buffer.Start);
+                        }
 
                         if (segment.Count != 0)
                         {
@@ -491,195 +517,214 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         {
                             break;
                         }
-                        else if (fin)
+                        else if (result.IsCompleted)
                         {
                             _context.RejectRequest(RequestRejectionReason.ChunkedRequestIncomplete);
                         }
-
-                        await _input;
                     }
 
                     while (_mode == Mode.Suffix)
                     {
-                        var fin = _input.CheckFinOrThrow();
+                        var result = await _input.ReadAsync();
+                        var buffer = result.Buffer;
+                        var consumed = default(ReadCursor);
+                        var examined = default(ReadCursor);
 
-                        ParseChunkedSuffix();
+                        try
+                        {
+                            ParseChunkedSuffix(buffer, out consumed, out examined);
+                        }
+                        finally
+                        {
+                            _input.Advance(consumed, examined);
+                        }
 
                         if (_mode != Mode.Suffix)
                         {
                             break;
                         }
-                        else if (fin)
+                        else if (result.IsCompleted)
                         {
                             _context.RejectRequest(RequestRejectionReason.ChunkedRequestIncomplete);
                         }
-
-                        await _input;
                     }
                 }
 
                 // Chunks finished, parse trailers
                 while (_mode == Mode.Trailer)
                 {
-                    var fin = _input.CheckFinOrThrow();
+                    var result = await _input.ReadAsync();
+                    var buffer = result.Buffer;
+                    var consumed = default(ReadCursor);
+                    var examined = default(ReadCursor);
 
-                    ParseChunkedTrailer();
+                    try
+                    {
+                        ParseChunkedTrailer(buffer, out consumed, out examined);
+                    }
+                    finally
+                    {
+                        _input.Advance(consumed, examined);
+                    }
 
                     if (_mode != Mode.Trailer)
                     {
                         break;
                     }
-                    else if (fin)
+                    else if (result.IsCompleted)
                     {
                         _context.RejectRequest(RequestRejectionReason.ChunkedRequestIncomplete);
                     }
 
-                    await _input;
                 }
 
                 if (_mode == Mode.TrailerHeaders)
                 {
-                    while (!_context.TakeMessageHeaders(_input, _requestHeaders))
+                    while (true)
                     {
-                        if (_input.CheckFinOrThrow())
+                        var result = await _input.ReadAsync();
+                        var buffer = result.Buffer;
+
+                        if (buffer.IsEmpty && result.IsCompleted)
                         {
-                            if (_context.TakeMessageHeaders(_input, _requestHeaders))
+                            _context.RejectRequest(RequestRejectionReason.ChunkedRequestIncomplete);
+                        }
+
+                        var consumed = default(ReadCursor);
+                        var examined = default(ReadCursor);
+
+                        try
+                        {
+                            if (_context.TakeMessageHeaders(buffer, _requestHeaders, out consumed, out examined))
                             {
                                 break;
                             }
-                            else
-                            {
-                                _context.RejectRequest(RequestRejectionReason.ChunkedRequestIncomplete);
-                            }
                         }
-
-                        await _input;
+                        finally
+                        {
+                            _input.Advance(consumed, examined);
+                        }
                     }
-
                     _mode = Mode.Complete;
                 }
 
                 return default(ArraySegment<byte>);
             }
 
-            private void ParseChunkedPrefix()
+            private void ParseChunkedPrefix(ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
             {
-                var scan = _input.ConsumingStart();
-                var consumed = scan;
-                try
+                consumed = buffer.Start;
+                examined = buffer.Start;
+                var reader = new ReadableBufferReader(buffer);
+                var ch1 = reader.Take();
+                var ch2 = reader.Take();
+
+                if (ch1 == -1 || ch2 == -1)
                 {
-                    var ch1 = scan.Take();
-                    var ch2 = scan.Take();
-                    if (ch1 == -1 || ch2 == -1)
+                    examined = reader.Cursor;
+                    return;
+                }
+
+                var chunkSize = CalculateChunkSize(ch1, 0);
+                ch1 = ch2;
+
+                do
+                {
+                    if (ch1 == ';')
                     {
+                        consumed = reader.Cursor;
+                        examined = reader.Cursor;
+
+                        _inputLength = chunkSize;
+                        _mode = Mode.Extension;
                         return;
                     }
 
-                    var chunkSize = CalculateChunkSize(ch1, 0);
+                    ch2 = reader.Take();
+                    if (ch2 == -1)
+                    {
+                        examined = reader.Cursor;
+                        return;
+                    }
+
+                    if (ch1 == '\r' && ch2 == '\n')
+                    {
+                        consumed = reader.Cursor;
+                        examined = reader.Cursor;
+
+                        _inputLength = chunkSize;
+
+                        if (chunkSize > 0)
+                        {
+                            _mode = Mode.Data;
+                        }
+                        else
+                        {
+                            _mode = Mode.Trailer;
+                        }
+
+                        return;
+                    }
+
+                    chunkSize = CalculateChunkSize(ch1, chunkSize);
                     ch1 = ch2;
-
-                    do
-                    {
-                        if (ch1 == ';')
-                        {
-                            consumed = scan;
-
-                            _inputLength = chunkSize;
-                            _mode = Mode.Extension;
-                            return;
-                        }
-
-                        ch2 = scan.Take();
-                        if (ch2 == -1)
-                        {
-                            return;
-                        }
-
-                        if (ch1 == '\r' && ch2 == '\n')
-                        {
-                            consumed = scan;
-                            _inputLength = chunkSize;
-
-                            if (chunkSize > 0)
-                            {
-                                _mode = Mode.Data;
-                            }
-                            else
-                            {
-                                _mode = Mode.Trailer;
-                            }
-
-                            return;
-                        }
-
-                        chunkSize = CalculateChunkSize(ch1, chunkSize);
-                        ch1 = ch2;
-                    } while (ch1 != -1);
-                }
-                finally
-                {
-                    _input.ConsumingComplete(consumed, scan);
-                }
+                } while (ch1 != -1);
             }
 
-            private void ParseExtension()
+            private void ParseExtension(ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
             {
-                var scan = _input.ConsumingStart();
-                var consumed = scan;
-                try
+                // Chunk-extensions not currently parsed
+                // Just drain the data
+                consumed = buffer.Start;
+                examined = buffer.Start;
+                do
                 {
-                    // Chunk-extensions not currently parsed
-                    // Just drain the data
-                    do
+                    ReadCursor extensionCursor;
+                    if (ReadCursorOperations.Seek(buffer.Start, buffer.End, out extensionCursor, ByteCR) == -1)
                     {
-                        if (scan.Seek(ByteCR) == -1)
-                        {
-                            // End marker not found yet
-                            consumed = scan;
-                            return;
-                        };
+                        // End marker not found yet
+                        examined = buffer.End;
+                        return;
+                    };
 
-                        var ch1 = scan.Take();
-                        var ch2 = scan.Take();
+                    var sufixBuffer = buffer.Slice(extensionCursor);
+                    if (sufixBuffer.Length < 2)
+                    {
+                        examined = buffer.End;
+                        return;
+                    }
 
-                        if (ch2 == '\n')
+                    sufixBuffer = sufixBuffer.Slice(0, 2);
+                    var sufixSpan = sufixBuffer.ToSpan();
+
+
+                    if (sufixSpan[1] == '\n')
+                    {
+                        consumed = sufixBuffer.End;
+                        examined = sufixBuffer.End;
+                        if (_inputLength > 0)
                         {
-                            consumed = scan;
-                            if (_inputLength > 0)
-                            {
-                                _mode = Mode.Data;
-                            }
-                            else
-                            {
-                                _mode = Mode.Trailer;
-                            }
+                            _mode = Mode.Data;
                         }
-                        else if (ch2 == -1)
+                        else
                         {
-                            return;
+                            _mode = Mode.Trailer;
                         }
-                    } while (_mode == Mode.Extension);
-                }
-                finally
-                {
-                    _input.ConsumingComplete(consumed, scan);
-                }
+                    }
+                } while (_mode == Mode.Extension);
             }
 
-            private ArraySegment<byte> PeekChunkedData()
+            private ArraySegment<byte> PeekChunkedData(ReadableBuffer buffer)
             {
                 if (_inputLength == 0)
                 {
                     _mode = Mode.Suffix;
                     return default(ArraySegment<byte>);
                 }
+                var segment = buffer.First.GetArray();
 
-                var scan = _input.ConsumingStart();
-                var segment = scan.PeekArraySegment();
                 int actual = Math.Min(segment.Count, _inputLength);
                 // Nothing is consumed yet. ConsumedBytes(int) will move the iterator.
-                _input.ConsumingComplete(scan, scan);
-
                 if (actual == segment.Count)
                 {
                     return segment;
@@ -690,60 +735,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
             }
 
-            private void ParseChunkedSuffix()
+            private void ParseChunkedSuffix(ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
             {
-                var scan = _input.ConsumingStart();
-                var consumed = scan;
-                try
+                consumed = buffer.Start;
+                examined = buffer.Start;
+
+                if (buffer.Length < 2)
                 {
-                    var ch1 = scan.Take();
-                    var ch2 = scan.Take();
-                    if (ch1 == -1 || ch2 == -1)
-                    {
-                        return;
-                    }
-                    else if (ch1 == '\r' && ch2 == '\n')
-                    {
-                        consumed = scan;
-                        _mode = Mode.Prefix;
-                    }
-                    else
-                    {
-                        _context.RejectRequest(RequestRejectionReason.BadChunkSuffix);
-                    }
+                    examined = buffer.End;
+                    return;
                 }
-                finally
+
+                var sufixBuffer = buffer.Slice(0, 2);
+                var sufixSpan = sufixBuffer.ToSpan();
+                if (sufixSpan[0] == '\r' && sufixSpan[1] == '\n')
                 {
-                    _input.ConsumingComplete(consumed, scan);
+                    consumed = sufixBuffer.End;
+                    examined = sufixBuffer.End;
+                    _mode = Mode.Prefix;
+                }
+                else
+                {
+                    _context.RejectRequest(RequestRejectionReason.BadChunkSuffix);
                 }
             }
 
-            private void ParseChunkedTrailer()
+            private void ParseChunkedTrailer(ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
             {
-                var scan = _input.ConsumingStart();
-                var consumed = scan;
-                try
-                {
-                    var ch1 = scan.Take();
-                    var ch2 = scan.Take();
+                consumed = buffer.Start;
+                examined = buffer.Start;
 
-                    if (ch1 == -1 || ch2 == -1)
-                    {
-                        return;
-                    }
-                    else if (ch1 == '\r' && ch2 == '\n')
-                    {
-                        consumed = scan;
-                        _mode = Mode.Complete;
-                    }
-                    else
-                    {
-                        _mode = Mode.TrailerHeaders;
-                    }
-                }
-                finally
+                if (buffer.Length < 2)
                 {
-                    _input.ConsumingComplete(consumed, scan);
+                    examined = buffer.End;
+                    return;
+                }
+
+                var trailerBuffer = buffer.Slice(0, 2);
+                var trailerSpan = trailerBuffer.ToSpan();
+
+                if (trailerSpan[0] == '\r' && trailerSpan[1] == '\n')
+                {
+                    consumed = trailerBuffer.End;
+                    examined = trailerBuffer.End;
+                    _mode = Mode.Complete;
+                }
+                else
+                {
+                    _mode = Mode.TrailerHeaders;
                 }
             }
 

@@ -5,10 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipelines;
+using System.IO.Pipelines.Text.Primitives;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Encodings.Web.Utf8;
+using System.Text.Utf8;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -95,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         }
 
         public ConnectionContext ConnectionContext { get; }
-        public SocketInput Input { get; set; }
+        public IPipe Input { get; set; }
         public ISocketOutput Output { get; set; }
         public IEnumerable<IAdaptedConnection> AdaptedConnections { get; set; }
 
@@ -386,13 +390,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public void Start()
         {
             Reset();
-            _requestProcessingTask =
-                Task.Factory.StartNew(
-                    (o) => ((Frame)o).RequestProcessingAsync(),
-                    this,
-                    default(CancellationToken),
-                    TaskCreationOptions.DenyChildAttach,
-                    TaskScheduler.Default).Unwrap();
+            _requestProcessingTask = RequestProcessingAsync();
             _frameStartedTcs.SetResult(null);
         }
 
@@ -986,216 +984,204 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             Output.ProducingComplete(end);
         }
 
-        public RequestLineStatus TakeStartLine(SocketInput input)
+        public bool TakeStartLine(ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
         {
-            const int MaxInvalidRequestLineChars = 32;
+            var start = buffer.Start;
+            var end = buffer.Start;
 
-            var scan = input.ConsumingStart();
-            var start = scan;
-            var consumed = scan;
-            var end = scan;
+            examined = buffer.End;
+            consumed = buffer.Start;
 
-            try
+            if (_requestProcessingStatus == RequestProcessingStatus.RequestPending)
             {
-                // We may hit this when the client has stopped sending data but
-                // the connection hasn't closed yet, and therefore Frame.Stop()
-                // hasn't been called yet.
-                if (scan.Peek() == -1)
+                ConnectionControl.ResetTimeout(_requestHeadersTimeoutMilliseconds, TimeoutAction.SendTimeoutResponse);
+            }
+
+            _requestProcessingStatus = RequestProcessingStatus.RequestStarted;
+
+            var limitedBuffer = buffer;
+            if (buffer.Length >= ServerOptions.Limits.MaxRequestLineSize)
+            {
+                limitedBuffer = buffer.Slice(0, ServerOptions.Limits.MaxRequestLineSize);
+            }
+            if (ReadCursorOperations.Seek(limitedBuffer.Start, limitedBuffer.End, out end, ByteLF) == -1)
+            {
+                if (limitedBuffer.Length == ServerOptions.Limits.MaxRequestLineSize)
                 {
-                    return RequestLineStatus.Empty;
-                }
-
-                if (_requestProcessingStatus == RequestProcessingStatus.RequestPending)
-                {
-                    ConnectionControl.ResetTimeout(_requestHeadersTimeoutMilliseconds, TimeoutAction.SendTimeoutResponse);
-                }
-
-                _requestProcessingStatus = RequestProcessingStatus.RequestStarted;
-
-                int bytesScanned;
-                if (end.Seek(ByteLF, out bytesScanned, ServerOptions.Limits.MaxRequestLineSize) == -1)
-                {
-                    if (bytesScanned >= ServerOptions.Limits.MaxRequestLineSize)
-                    {
-                        RejectRequest(RequestRejectionReason.RequestLineTooLong);
-                    }
-                    else
-                    {
-                        return RequestLineStatus.Incomplete;
-                    }
-                }
-                end.Take();
-
-                string method;
-                var begin = scan;
-                if (!begin.GetKnownMethod(out method))
-                {
-                    if (scan.Seek(ByteSpace, ref end) == -1)
-                    {
-                        RejectRequest(RequestRejectionReason.InvalidRequestLine,
-                            Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxInvalidRequestLineChars) : string.Empty);
-                    }
-
-                    method = begin.GetAsciiString(ref scan);
-
-                    if (method == null)
-                    {
-                        RejectRequest(RequestRejectionReason.InvalidRequestLine,
-                            Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxInvalidRequestLineChars) : string.Empty);
-                    }
-
-                    // Note: We're not in the fast path any more (GetKnownMethod should have handled any HTTP Method we're aware of)
-                    // So we can be a tiny bit slower and more careful here.
-                    for (int i = 0; i < method.Length; i++)
-                    {
-                        if (!IsValidTokenChar(method[i]))
-                        {
-                            RejectRequest(RequestRejectionReason.InvalidRequestLine,
-                                Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxInvalidRequestLineChars) : string.Empty);
-                        }
-                    }
+                    RejectRequest(RequestRejectionReason.RequestLineTooLong);
                 }
                 else
                 {
-                    scan.Skip(method.Length);
+                    return false;
+                }
+            }
+
+            end = buffer.Move(end, 1);
+            ReadCursor methodEnd;
+            string method;
+            if (!buffer.GetKnownMethod(out method))
+            {
+                if (ReadCursorOperations.Seek(buffer.Start, end, out methodEnd, ByteSpace) == -1)
+                {
+                    RejectRequestLine(start, end);
                 }
 
-                scan.Take();
-                begin = scan;
-                var needDecode = false;
-                var chFound = scan.Seek(ByteSpace, ByteQuestionMark, BytePercentage, ref end);
+                method = buffer.Slice(buffer.Start, methodEnd).GetAsciiString();
+
+                if (method == null)
+                {
+                    RejectRequestLine(start, end);
+                }
+
+                // Note: We're not in the fast path any more (GetKnownMethod should have handled any HTTP Method we're aware of)
+                // So we can be a tiny bit slower and more careful here.
+                for (int i = 0; i < method.Length; i++)
+                {
+                    if (!IsValidTokenChar(method[i]))
+                    {
+                        RejectRequestLine(start, end);
+                    }
+                }
+            }
+            else
+            {
+                methodEnd = buffer.Slice(method.Length).Start;
+            }
+
+            var needDecode = false;
+            ReadCursor pathEnd;
+
+            var pathBegin = buffer.Move(methodEnd, 1);
+
+            var chFound = ReadCursorOperations.Seek(pathBegin, end, out pathEnd, ByteSpace, ByteQuestionMark, BytePercentage);
+            if (chFound == -1)
+            {
+                RejectRequestLine(start, end);
+            }
+            else if (chFound == BytePercentage)
+            {
+                needDecode = true;
+                chFound = ReadCursorOperations.Seek(pathBegin, end, out pathEnd, ByteSpace, ByteQuestionMark);
                 if (chFound == -1)
                 {
-                    RejectRequest(RequestRejectionReason.InvalidRequestLine,
-                        Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxInvalidRequestLineChars) : string.Empty);
+                    RejectRequestLine(start, end);
                 }
-                else if (chFound == BytePercentage)
-                {
-                    needDecode = true;
-                    chFound = scan.Seek(ByteSpace, ByteQuestionMark, ref end);
-                    if (chFound == -1)
-                    {
-                        RejectRequest(RequestRejectionReason.InvalidRequestLine,
-                            Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxInvalidRequestLineChars) : string.Empty);
-                    }
-                }
+            };
 
-                var pathBegin = begin;
-                var pathEnd = scan;
-
-                var queryString = "";
-                if (chFound == ByteQuestionMark)
-                {
-                    begin = scan;
-                    if (scan.Seek(ByteSpace, ref end) == -1)
-                    {
-                        RejectRequest(RequestRejectionReason.InvalidRequestLine,
-                            Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxInvalidRequestLineChars) : string.Empty);
-                    }
-                    queryString = begin.GetAsciiString(ref scan);
-                }
-
-                var queryEnd = scan;
-
-                if (pathBegin.Peek() == ByteSpace)
-                {
-                    RejectRequest(RequestRejectionReason.InvalidRequestLine,
-                        Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxInvalidRequestLineChars) : string.Empty);
-                }
-
-                scan.Take();
-                begin = scan;
-                if (scan.Seek(ByteCR, ref end) == -1)
-                {
-                    RejectRequest(RequestRejectionReason.InvalidRequestLine,
-                        Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxInvalidRequestLineChars) : string.Empty);
-                }
-
-                string httpVersion;
-                if (!begin.GetKnownVersion(out httpVersion))
-                {
-                    httpVersion = begin.GetAsciiStringEscaped(scan, 9);
-
-                    if (httpVersion == string.Empty)
-                    {
-                        RejectRequest(RequestRejectionReason.InvalidRequestLine,
-                            Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxInvalidRequestLineChars) : string.Empty);
-                    }
-                    else
-                    {
-                        RejectRequest(RequestRejectionReason.UnrecognizedHTTPVersion, httpVersion);
-                    }
-                }
-
-                scan.Take(); // consume CR
-                if (scan.Take() != ByteLF)
-                {
-                    RejectRequest(RequestRejectionReason.InvalidRequestLine,
-                        Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxInvalidRequestLineChars) : string.Empty);
-                }
-
-                // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
-                // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
-                // then encoded/escaped to ASCII  https://www.ietf.org/rfc/rfc3987.txt "Mapping of IRIs to URIs"
-                string requestUrlPath;
-                string rawTarget;
-                if (needDecode)
-                {
-                    // Read raw target before mutating memory.
-                    rawTarget = pathBegin.GetAsciiString(ref queryEnd);
-
-                    // URI was encoded, unescape and then parse as utf8
-                    pathEnd = UrlPathDecoder.Unescape(pathBegin, pathEnd);
-                    requestUrlPath = pathBegin.GetUtf8String(ref pathEnd);
-                }
-                else
-                {
-                    // URI wasn't encoded, parse as ASCII
-                    requestUrlPath = pathBegin.GetAsciiString(ref pathEnd);
-
-                    if (queryString.Length == 0)
-                    {
-                        // No need to allocate an extra string if the path didn't need
-                        // decoding and there's no query string following it.
-                        rawTarget = requestUrlPath;
-                    }
-                    else
-                    {
-                        rawTarget = pathBegin.GetAsciiString(ref queryEnd);
-                    }
-                }
-
-                var normalizedTarget = PathNormalizer.RemoveDotSegments(requestUrlPath);
-
-                consumed = scan;
-                Method = method;
-                QueryString = queryString;
-                RawTarget = rawTarget;
-                HttpVersion = httpVersion;
-
-                bool caseMatches;
-                if (RequestUrlStartsWithPathBase(normalizedTarget, out caseMatches))
-                {
-                    PathBase = caseMatches ? _pathBase : normalizedTarget.Substring(0, _pathBase.Length);
-                    Path = normalizedTarget.Substring(_pathBase.Length);
-                }
-                else if (rawTarget[0] == '/') // check rawTarget since normalizedTarget can be "" or "/" after dot segment removal
-                {
-                    Path = normalizedTarget;
-                }
-                else
-                {
-                    Path = string.Empty;
-                    PathBase = string.Empty;
-                    QueryString = string.Empty;
-                }
-
-                return RequestLineStatus.Done;
-            }
-            finally
+            var queryString = "";
+            ReadCursor queryEnd = pathEnd;
+            if (chFound == ByteQuestionMark)
             {
-                input.ConsumingComplete(consumed, end);
+                if (ReadCursorOperations.Seek(pathEnd, end, out queryEnd, ByteSpace) == -1)
+                {
+                    RejectRequestLine(start, end);
+                }
+                queryString = buffer.Slice(pathEnd, queryEnd).GetAsciiString();
             }
+
+            // No path
+            if (pathBegin == pathEnd)
+            {
+                RejectRequestLine(start, end);
+            }
+
+            ReadCursor versionEnd;
+            if (ReadCursorOperations.Seek(queryEnd, end, out versionEnd, ByteCR) == -1)
+            {
+                RejectRequestLine(start, end);
+            }
+
+            string httpVersion;
+            var versionBuffer = buffer.Slice(queryEnd, end).Slice(1);
+            if (!versionBuffer.GetKnownVersion(out httpVersion))
+            {
+                httpVersion = versionBuffer.Start.GetAsciiStringEscaped(versionEnd, 9);
+
+                if (httpVersion == string.Empty)
+                {
+                    RejectRequestLine(start, end);
+                }
+                else
+                {
+                    RejectRequest(RequestRejectionReason.UnrecognizedHTTPVersion, httpVersion);
+                }
+            }
+
+            var lineEnd = buffer.Slice(versionEnd, 2).ToSpan();
+            if (lineEnd[1] != ByteLF)
+            {
+                RejectRequestLine(start, end);
+            }
+
+            var pathBuffer = buffer.Slice(pathBegin, pathEnd);
+            var targetBuffer = buffer.Slice(pathBegin, queryEnd);
+
+            // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
+            // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
+            // then encoded/escaped to ASCII  https://www.ietf.org/rfc/rfc3987.txt "Mapping of IRIs to URIs"
+            string requestUrlPath;
+            string rawTarget;
+            if (needDecode)
+            {
+                // Read raw target before mutating memory.
+                rawTarget = targetBuffer.GetAsciiString() ?? string.Empty;
+
+                // URI was encoded, unescape and then parse as utf8
+                var pathSpan = pathBuffer.ToSpan();
+                int pathLength = UrlEncoder.Decode(pathSpan, pathSpan);
+                requestUrlPath = new Utf8String(pathSpan.Slice(0, pathLength)).ToString();
+            }
+            else
+            {
+                // URI wasn't encoded, parse as ASCII
+                requestUrlPath = pathBuffer.GetAsciiString() ?? string.Empty;
+
+                if (queryString.Length == 0)
+                {
+                    // No need to allocate an extra string if the path didn't need
+                    // decoding and there's no query string following it.
+                    rawTarget = requestUrlPath;
+                }
+                else
+                {
+                    rawTarget = targetBuffer.GetAsciiString() ?? string.Empty;
+                }
+            }
+
+            var normalizedTarget = PathNormalizer.RemoveDotSegments(requestUrlPath);
+
+            consumed = end;
+            examined = end;
+            Method = method;
+            QueryString = queryString;
+            RawTarget = rawTarget;
+            HttpVersion = httpVersion;
+
+            bool caseMatches;
+            if (RequestUrlStartsWithPathBase(normalizedTarget, out caseMatches))
+            {
+                PathBase = caseMatches ? _pathBase : normalizedTarget.Substring(0, _pathBase.Length);
+                Path = normalizedTarget.Substring(_pathBase.Length);
+            }
+            else if (rawTarget[0] == '/') // check rawTarget since normalizedTarget can be "" or "/" after dot segment removal
+            {
+                Path = normalizedTarget;
+            }
+            else
+            {
+                Path = string.Empty;
+                PathBase = string.Empty;
+                QueryString = string.Empty;
+            }
+
+            return true;
+        }
+
+        private void RejectRequestLine(ReadCursor start, ReadCursor end)
+        {
+            const int MaxRequestLineError = 32;
+            RejectRequest(RequestRejectionReason.InvalidRequestLine,
+                           Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxRequestLineError) : string.Empty);
         }
 
         private static bool IsValidTokenChar(char c)
@@ -1255,34 +1241,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return true;
         }
 
-        public bool TakeMessageHeaders(SocketInput input, FrameRequestHeaders requestHeaders)
+        public bool TakeMessageHeaders(ReadableBuffer buffer, FrameRequestHeaders requestHeaders, out ReadCursor consumed, out ReadCursor examined)
         {
-            var scan = input.ConsumingStart();
-            var consumed = scan;
-            var end = scan;
-            try
+            consumed = buffer.Start;
+            examined = buffer.End;
+
+            while (true)
             {
-                while (!end.IsEnd)
+                var headersEnd = buffer.Slice(0, Math.Min(buffer.Length, 2));
+                var headersEndSpan = headersEnd.ToSpan();
+
+                if (headersEndSpan.Length == 0)
                 {
-                    var ch = end.Peek();
-                    if (ch == -1)
-                    {
-                        return false;
-                    }
-                    else if (ch == ByteCR)
+                    return false;
+                }
+                else
+                {
+                    var ch = headersEndSpan[0];
+                    if (ch == ByteCR)
                     {
                         // Check for final CRLF.
-                        end.Take();
-                        ch = end.Take();
-
-                        if (ch == -1)
+                        if (headersEndSpan.Length < 2)
                         {
                             return false;
                         }
-                        else if (ch == ByteLF)
+                        else if (headersEndSpan[1] == ByteLF)
                         {
+                            consumed = headersEnd.End;
+                            examined = consumed;
                             ConnectionControl.CancelTimeout();
-                            consumed = end;
                             return true;
                         }
 
@@ -1293,129 +1280,113 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     {
                         RejectRequest(RequestRejectionReason.HeaderLineMustNotStartWithWhitespace);
                     }
+                }
 
-                    // If we've parsed the max allowed numbers of headers and we're starting a new
-                    // one, we've gone over the limit.
-                    if (_requestHeadersParsed == ServerOptions.Limits.MaxRequestHeaderCount)
+                // If we've parsed the max allowed numbers of headers and we're starting a new
+                // one, we've gone over the limit.
+                if (_requestHeadersParsed == ServerOptions.Limits.MaxRequestHeaderCount)
+                {
+                    RejectRequest(RequestRejectionReason.TooManyHeaders);
+                }
+
+                ReadCursor lineEnd;
+                var limitedBuffer = buffer;
+                if (buffer.Length >= _remainingRequestHeadersBytesAllowed)
+                {
+                    limitedBuffer = buffer.Slice(0, _remainingRequestHeadersBytesAllowed);
+                }
+                if (ReadCursorOperations.Seek(limitedBuffer.Start, limitedBuffer.End, out lineEnd, ByteLF) == -1)
+                {
+                    if (limitedBuffer.Length == _remainingRequestHeadersBytesAllowed)
                     {
-                        RejectRequest(RequestRejectionReason.TooManyHeaders);
+                        RejectRequest(RequestRejectionReason.HeadersExceedMaxTotalSize);
                     }
-
-                    int bytesScanned;
-                    if (end.Seek(ByteLF, out bytesScanned, _remainingRequestHeadersBytesAllowed) == -1)
-                    {
-                        if (bytesScanned >= _remainingRequestHeadersBytesAllowed)
-                        {
-                            RejectRequest(RequestRejectionReason.HeadersExceedMaxTotalSize);
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-
-                    var beginName = scan;
-                    if (scan.Seek(ByteColon, ref end) == -1)
-                    {
-                        RejectRequest(RequestRejectionReason.NoColonCharacterFoundInHeaderLine);
-                    }
-                    var endName = scan;
-
-                    scan.Take();
-
-                    var validateName = beginName;
-                    if (validateName.Seek(ByteSpace, ByteTab, ref endName) != -1)
-                    {
-                        RejectRequest(RequestRejectionReason.WhitespaceIsNotAllowedInHeaderName);
-                    }
-
-                    var beginValue = scan;
-                    ch = scan.Take();
-
-                    while (ch == ByteSpace || ch == ByteTab)
-                    {
-                        beginValue = scan;
-                        ch = scan.Take();
-                    }
-
-                    scan = beginValue;
-                    if (scan.Seek(ByteCR, ref end) == -1)
-                    {
-                        RejectRequest(RequestRejectionReason.MissingCRInHeaderLine);
-                    }
-
-                    scan.Take(); // we know this is '\r'
-                    ch = scan.Take(); // expecting '\n'
-                    end = scan;
-
-                    if (ch != ByteLF)
-                    {
-                        RejectRequest(RequestRejectionReason.HeaderValueMustNotContainCR);
-                    }
-
-                    var next = scan.Peek();
-                    if (next == -1)
+                    else
                     {
                         return false;
                     }
-                    else if (next == ByteSpace || next == ByteTab)
-                    {
-                        // From https://tools.ietf.org/html/rfc7230#section-3.2.4:
-                        //
-                        // Historically, HTTP header field values could be extended over
-                        // multiple lines by preceding each extra line with at least one space
-                        // or horizontal tab (obs-fold).  This specification deprecates such
-                        // line folding except within the message/http media type
-                        // (Section 8.3.1).  A sender MUST NOT generate a message that includes
-                        // line folding (i.e., that has any field-value that contains a match to
-                        // the obs-fold rule) unless the message is intended for packaging
-                        // within the message/http media type.
-                        //
-                        // A server that receives an obs-fold in a request message that is not
-                        // within a message/http container MUST either reject the message by
-                        // sending a 400 (Bad Request), preferably with a representation
-                        // explaining that obsolete line folding is unacceptable, or replace
-                        // each received obs-fold with one or more SP octets prior to
-                        // interpreting the field value or forwarding the message downstream.
-                        RejectRequest(RequestRejectionReason.HeaderValueLineFoldingNotSupported);
-                    }
-
-                    // Trim trailing whitespace from header value by repeatedly advancing to next
-                    // whitespace or CR.
-                    //
-                    // - If CR is found, this is the end of the header value.
-                    // - If whitespace is found, this is the _tentative_ end of the header value.
-                    //   If non-whitespace is found after it and it's not CR, seek again to the next
-                    //   whitespace or CR for a new (possibly tentative) end of value.
-                    var ws = beginValue;
-                    var endValue = scan;
-                    do
-                    {
-                        ws.Seek(ByteSpace, ByteTab, ByteCR);
-                        endValue = ws;
-
-                        ch = ws.Take();
-                        while (ch == ByteSpace || ch == ByteTab)
-                        {
-                            ch = ws.Take();
-                        }
-                    } while (ch != ByteCR);
-
-                    var name = beginName.GetArraySegment(endName);
-                    var value = beginValue.GetAsciiString(ref endValue);
-
-                    consumed = scan;
-                    requestHeaders.Append(name.Array, name.Offset, name.Count, value);
-
-                    _remainingRequestHeadersBytesAllowed -= bytesScanned;
-                    _requestHeadersParsed++;
                 }
 
-                return false;
-            }
-            finally
-            {
-                input.ConsumingComplete(consumed, end);
+                var beginName = buffer.Start;
+                ReadCursor endName;
+                if (ReadCursorOperations.Seek(buffer.Start, lineEnd, out endName, ByteColon) == -1)
+                {
+                    RejectRequest(RequestRejectionReason.NoColonCharacterFoundInHeaderLine);
+                }
+
+                ReadCursor whitespace;
+                if (ReadCursorOperations.Seek(beginName, endName, out whitespace, ByteTab, ByteSpace) != -1)
+                {
+                    RejectRequest(RequestRejectionReason.WhitespaceIsNotAllowedInHeaderName);
+                }
+
+                ReadCursor endValue;
+                if (ReadCursorOperations.Seek(beginName, lineEnd, out endValue, ByteCR) == -1)
+                {
+                    RejectRequest(RequestRejectionReason.MissingCRInHeaderLine);
+                }
+
+                var lineSufix = buffer.Slice(endValue);
+                if (lineSufix.Length < 3)
+                {
+                    return false;
+                }
+                lineSufix = lineSufix.Slice(0, 3); // \r\n\r
+                var lineSufixSpan = lineSufix.ToSpan();
+                // This check and MissingCRInHeaderLine is a bit backwards, we should do it at once instead of having another seek
+                if (lineSufixSpan[1] != ByteLF)
+                {
+                    RejectRequest(RequestRejectionReason.HeaderValueMustNotContainCR);
+                }
+
+                var next = lineSufixSpan[2];
+                if (next == ByteSpace || next == ByteTab)
+                {
+                    // From https://tools.ietf.org/html/rfc7230#section-3.2.4:
+                    //
+                    // Historically, HTTP header field values could be extended over
+                    // multiple lines by preceding each extra line with at least one space
+                    // or horizontal tab (obs-fold).  This specification deprecates such
+                    // line folding except within the message/http media type
+                    // (Section 8.3.1).  A sender MUST NOT generate a message that includes
+                    // line folding (i.e., that has any field-value that contains a match to
+                    // the obs-fold rule) unless the message is intended for packaging
+                    // within the message/http media type.
+                    //
+                    // A server that receives an obs-fold in a request message that is not
+                    // within a message/http container MUST either reject the message by
+                    // sending a 400 (Bad Request), preferably with a representation
+                    // explaining that obsolete line folding is unacceptable, or replace
+                    // each received obs-fold with one or more SP octets prior to
+                    // interpreting the field value or forwarding the message downstream.
+                    RejectRequest(RequestRejectionReason.HeaderValueLineFoldingNotSupported);
+                }
+
+                // Trim trailing whitespace from header value by repeatedly advancing to next
+                // whitespace or CR.
+                //
+                // - If CR is found, this is the end of the header value.
+                // - If whitespace is found, this is the _tentative_ end of the header value.
+                //   If non-whitespace is found after it and it's not CR, seek again to the next
+                //   whitespace or CR for a new (possibly tentative) end of value.
+
+                var nameBuffer = buffer.Slice(beginName, endName);
+
+                // TODO: TrimStart and TrimEnd are pretty slow
+                var valueBuffer = buffer.Slice(endName, endValue).Slice(1).TrimStart().TrimEnd();
+
+                var name = nameBuffer.ToArraySegment();
+                var value = valueBuffer.GetAsciiString();
+
+                lineEnd = limitedBuffer.Move(lineEnd, 1);
+
+                // TODO: bad
+                _remainingRequestHeadersBytesAllowed -= buffer.Slice(0, lineEnd).Length;
+                _requestHeadersParsed++;
+
+                requestHeaders.Append(name.Array, name.Offset, name.Count, value);
+                buffer = buffer.Slice(lineEnd);
+                consumed = buffer.Start;
             }
         }
 

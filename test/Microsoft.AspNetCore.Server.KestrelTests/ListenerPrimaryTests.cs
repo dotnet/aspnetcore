@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                             }
                         },
                         null);
-                }, null);
+                }, (object)null);
 
                 await connectTcs.Task;
 
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
                 Assert.Equal("Secondary", await HttpClientSlim.GetStringAsync(address));
 
-                await kestrelThreadPrimary.PostAsync(_ => pipe.Dispose(), null);
+                await kestrelThreadPrimary.PostAsync(_ => pipe.Dispose(), (object)null);
 
                 // Wait up to 10 seconds for error to be logged
                 for (var i = 0; i < 10 && primaryTrace.Logger.TotalErrorsLogged == 0; i++)

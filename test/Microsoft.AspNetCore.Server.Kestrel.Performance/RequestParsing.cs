@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Text;
 using BenchmarkDotNet.Attributes;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using MemoryPool = Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure.MemoryPool;
 using RequestLineStatus = Microsoft.AspNetCore.Server.Kestrel.Internal.Http.Frame.RequestLineStatus;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
@@ -21,14 +23,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private const string plaintextRequest = "GET /plaintext HTTP/1.1\r\nHost: www.example.com\r\n\r\n";
 
-        private const string liveaspnetRequest = "GET https://live.asp.net/ HTTP/1.1\r\n" + 
-            "Host: live.asp.net\r\n" + 
-            "Connection: keep-alive\r\n" + 
-            "Upgrade-Insecure-Requests: 1\r\n" + 
-            "User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36\r\n" + 
-            "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\n" + 
-            "DNT: 1\r\n" + 
-            "Accept-Encoding: gzip, deflate, sdch, br\r\n" + 
+        private const string liveaspnetRequest = "GET https://live.asp.net/ HTTP/1.1\r\n" +
+            "Host: live.asp.net\r\n" +
+            "Connection: keep-alive\r\n" +
+            "Upgrade-Insecure-Requests: 1\r\n" +
+            "User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36\r\n" +
+            "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\r\n" +
+            "DNT: 1\r\n" +
+            "Accept-Encoding: gzip, deflate, sdch, br\r\n" +
             "Accept-Language: en-US,en;q=0.8\r\n" +
             "Cookie: __unam=7a67379-1s65dc575c4-6d778abe-1; omniID=9519gfde_3347_4762_8762_df51458c8ec2\r\n\r\n";
 
@@ -48,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             "Cookie: prov=20629ccd-8b0f-e8ef-2935-cd26609fc0bc; __qca=P0-1591065732-1479167353442; _ga=GA1.2.1298898376.1479167354; _gat=1; sgt=id=9519gfde_3347_4762_8762_df51458c8ec2; acct=t=why-is-%e0%a5%a7%e0%a5%a8%e0%a5%a9-numeric&s=why-is-%e0%a5%a7%e0%a5%a8%e0%a5%a9-numeric\r\n\r\n";
 
         private static readonly byte[] _plaintextPipelinedRequests = Encoding.ASCII.GetBytes(string.Concat(Enumerable.Repeat(plaintextRequest, Pipelining)));
-        private static readonly byte[] _plaintextRequest  = Encoding.ASCII.GetBytes(plaintextRequest);
+        private static readonly byte[] _plaintextRequest = Encoding.ASCII.GetBytes(plaintextRequest);
 
         private static readonly byte[] _liveaspnentPipelinedRequests = Encoding.ASCII.GetBytes(string.Concat(Enumerable.Repeat(liveaspnetRequest, Pipelining)));
         private static readonly byte[] _liveaspnentRequest = Encoding.ASCII.GetBytes(liveaspnetRequest);
@@ -56,19 +58,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private static readonly byte[] _unicodePipelinedRequests = Encoding.ASCII.GetBytes(string.Concat(Enumerable.Repeat(unicodeRequest, Pipelining)));
         private static readonly byte[] _unicodeRequest = Encoding.ASCII.GetBytes(unicodeRequest);
 
-        private KestrelTrace Trace;
-        private LoggingThreadPool ThreadPool;
-        private MemoryPool MemoryPool;
-        private SocketInput SocketInput;
-        private Frame<object> Frame;
-
         [Benchmark(Baseline = true, OperationsPerInvoke = InnerLoopCount)]
         public void ParsePlaintext()
         {
             for (var i = 0; i < InnerLoopCount; i++)
             {
                 InsertData(_plaintextRequest);
-
                 ParseData();
             }
         }
@@ -79,7 +74,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             for (var i = 0; i < InnerLoopCount; i++)
             {
                 InsertData(_plaintextPipelinedRequests);
-
                 ParseData();
             }
         }
@@ -90,7 +84,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             for (var i = 0; i < InnerLoopCount; i++)
             {
                 InsertData(_liveaspnentRequest);
-
                 ParseData();
             }
         }
@@ -101,7 +94,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             for (var i = 0; i < InnerLoopCount; i++)
             {
                 InsertData(_liveaspnentPipelinedRequests);
-
                 ParseData();
             }
         }
@@ -112,7 +104,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             for (var i = 0; i < InnerLoopCount; i++)
             {
                 InsertData(_unicodeRequest);
-
                 ParseData();
             }
         }
@@ -123,34 +114,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             for (var i = 0; i < InnerLoopCount; i++)
             {
                 InsertData(_unicodePipelinedRequests);
-
                 ParseData();
             }
         }
 
-        private void InsertData(byte[] dataBytes)
+        private void InsertData(byte[] bytes)
         {
-            SocketInput.IncomingData(dataBytes, 0, dataBytes.Length);
+            // There should not be any backpressure and task completes immediately
+            Pipe.Writer.WriteAsync(bytes).GetAwaiter().GetResult();
         }
 
         private void ParseData()
         {
-            while (SocketInput.GetAwaiter().IsCompleted)
+            do
             {
+                var awaitable = Pipe.Reader.ReadAsync();
+                if (!awaitable.IsCompleted)
+                {
+                    // No more data
+                    return;
+                }
+
+                var result = awaitable.GetAwaiter().GetResult();
+                var readableBuffer = result.Buffer;
+
                 Frame.Reset();
 
-                if (Frame.TakeStartLine(SocketInput) != RequestLineStatus.Done)
+                ReadCursor consumed;
+                ReadCursor examined;
+                if (!Frame.TakeStartLine(readableBuffer, out consumed, out examined))
                 {
                     ThrowInvalidStartLine();
                 }
+                Pipe.Reader.Advance(consumed, examined);
+
+                result = Pipe.Reader.ReadAsync().GetAwaiter().GetResult();
+                readableBuffer = result.Buffer;
 
                 Frame.InitializeHeaders();
 
-                if (!Frame.TakeMessageHeaders(SocketInput, (FrameRequestHeaders) Frame.RequestHeaders))
+                if (!Frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)Frame.RequestHeaders, out consumed, out examined))
                 {
                     ThrowInvalidMessageHeaders();
                 }
+                Pipe.Reader.Advance(consumed, examined);
             }
+            while(true);
         }
 
         private void ThrowInvalidStartLine()
@@ -166,23 +175,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [Setup]
         public void Setup()
         {
-            Trace = new KestrelTrace(new TestKestrelTrace());
-            ThreadPool = new LoggingThreadPool(Trace);
-            MemoryPool = new MemoryPool();
-            SocketInput = new SocketInput(MemoryPool, ThreadPool);
-
             var connectionContext = new MockConnection(new KestrelServerOptions());
-            connectionContext.Input = SocketInput;
-
             Frame = new Frame<object>(application: null, context: connectionContext);
+            PipelineFactory = new PipeFactory();
+            Pipe = PipelineFactory.Create();
         }
 
-        [Cleanup]
-        public void Cleanup()
-        {
-            SocketInput.IncomingFin();
-            SocketInput.Dispose();
-            MemoryPool.Dispose();
-        }
+        public IPipe Pipe { get; set; }
+
+        public Frame<object> Frame { get; set; }
+
+        public PipeFactory PipelineFactory { get; set; }
     }
 }

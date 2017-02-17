@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -88,9 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private TestFrame<object> MakeFrame()
         {
-            var ltp = new LoggingThreadPool(Mock.Of<IKestrelTrace>());
-            var pool = new MemoryPool();
-            var socketInput = new SocketInput(pool, ltp);
+            var socketInput = new PipeFactory().Create();
 
             var serviceContext = new ServiceContext
             {

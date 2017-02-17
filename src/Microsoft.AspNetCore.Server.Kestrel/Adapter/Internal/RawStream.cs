@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
@@ -12,12 +13,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
 {
     public class RawStream : Stream
     {
-        private readonly SocketInput _input;
+        private readonly IPipeReader _input;
         private readonly ISocketOutput _output;
 
-        private Task<int> _cachedTask = TaskCache<int>.DefaultCompletedTask;
-
-        public RawStream(SocketInput input, ISocketOutput output)
+        public RawStream(IPipeReader input, ISocketOutput output)
         {
             _input = input;
             _output = output;
@@ -68,23 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            var task = ReadAsync(new ArraySegment<byte>(buffer, offset, count));
-
-            if (task.IsCompletedSuccessfully)
-            {
-                if (_cachedTask.Result != task.Result)
-                {
-                    // Needs .AsTask to match Stream's Async method return types
-                    _cachedTask = task.AsTask();
-                }
-            }
-            else
-            {
-                // Needs .AsTask to match Stream's Async method return types
-                _cachedTask = task.AsTask();
-            }
-
-            return _cachedTask;
+            return ReadAsync(new ArraySegment<byte>(buffer, offset, count));
         }
 
         public override void Write(byte[] buffer, int offset, int count)
@@ -125,10 +108,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
             return _output.FlushAsync(cancellationToken);
         }
 
-
-        private ValueTask<int> ReadAsync(ArraySegment<byte> buffer)
+        private async Task<int> ReadAsync(ArraySegment<byte> buffer)
         {
-            return _input.ReadAsync(buffer.Array, buffer.Offset, buffer.Count);
+            while (true)
+            {
+                var result = await _input.ReadAsync();
+                var readableBuffer = result.Buffer;
+                try
+                {
+                    if (!readableBuffer.IsEmpty)
+                    {
+                        var count = Math.Min(readableBuffer.Length, buffer.Count);
+                        readableBuffer = readableBuffer.Slice(0, count);
+                        readableBuffer.CopyTo(buffer);
+                        return count;
+                    }
+                    else if (result.IsCompleted || result.IsCancelled)
+                    {
+                        return 0;
+                    }
+                }
+                finally
+                {
+                    _input.Advance(readableBuffer.End, readableBuffer.End);
+                }
+            }
         }
 
 #if NET451

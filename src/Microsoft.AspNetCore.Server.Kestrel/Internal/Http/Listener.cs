@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             Thread.Post(state =>
             {
-                var tcs2 = (TaskCompletionSource<int>) state;
+                var tcs2 = state;
                 try
                 {
                     var listener = ((Listener) tcs2.Task.AsyncState);

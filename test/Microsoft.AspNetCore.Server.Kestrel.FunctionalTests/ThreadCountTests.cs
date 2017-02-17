@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     var requestTasks = new List<Task<string>>();
                     for (int i = 0; i < 20; i++)
                     {
-                        var requestTask = client.GetStringAsync($"http://localhost:{host.GetPort()}/");
+                        var requestTask = client.GetStringAsync($"http://127.0.0.1:{host.GetPort()}/");
                         requestTasks.Add(requestTask);
                     }
 

@@ -60,7 +60,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                             {
                                 for (var i = 0; i < received; i++)
                                 {
-                                    Assert.Equal((byte)((total + i) % 256), receivedBytes[i]);
+                                    // Do not use Assert.Equal here, it is to slow for this hot path
+                                    Assert.True((byte)((total + i) % 256) == receivedBytes[i], "Data received is incorrect");
                                 }
                             }
 
@@ -143,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 client.DefaultRequestHeaders.Connection.Clear();
                 client.DefaultRequestHeaders.Connection.Add("close");
 
-                var response = await client.GetAsync($"http://localhost:{host.GetPort()}/");
+                var response = await client.GetAsync($"http://127.0.0.1:{host.GetPort()}/");
                 response.EnsureSuccessStatusCode();
             }
         }

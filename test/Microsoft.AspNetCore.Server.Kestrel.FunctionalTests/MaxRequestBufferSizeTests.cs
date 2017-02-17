@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [MemberData("LargeUploadData")]
+        [MemberData(nameof(LargeUploadData))]
         public async Task LargeUpload(long? maxRequestBufferSize, bool ssl, bool expectPause)
         {
             // Parameters

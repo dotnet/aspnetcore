@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Networking;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
@@ -40,5 +41,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     throw new InvalidOperationException();
             }
         }
+
+        public PipeOptions LibuvPipeOptions => new PipeOptions
+        {
+            ReaderScheduler = TaskRunScheduler.Default,
+            WriterScheduler = Thread,
+            MaximumSizeHigh = ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
+            MaximumSizeLow = ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0
+        };
+
+        public PipeOptions AdaptedPipeOptions => new PipeOptions
+        {
+            ReaderScheduler = InlineScheduler.Default,
+            WriterScheduler = InlineScheduler.Default,
+            MaximumSizeHigh = ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
+            MaximumSizeLow = ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0
+        };
     }
 }

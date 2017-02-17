@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             var tcs = new TaskCompletionSource<object>();
 
-            _thread.Post(state => action((ConnectionManager)state, tcs), this);
+            _thread.Post(state => action(state, tcs), this);
 
             return await Task.WhenAny(tcs.Task, Task.Delay(timeout)).ConfigureAwait(false) == tcs.Task;
         }

@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -31,66 +32,95 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         /// </summary>
         public override async Task RequestProcessingAsync()
         {
-            var requestLineStatus = RequestLineStatus.Empty;
+            var requestLineStatus = default(RequestLineStatus);
 
             try
             {
                 while (!_requestProcessingStopping)
                 {
+                    // If writer completes with an error Input.ReadAsyncDispatched would throw and
+                    // this would not be reset to empty. But it's required by ECONNRESET check lower in the method.
+                    requestLineStatus = RequestLineStatus.Empty;
+
                     ConnectionControl.SetTimeout(_keepAliveMilliseconds, TimeoutAction.CloseConnection);
 
                     while (!_requestProcessingStopping)
                     {
-                        requestLineStatus = TakeStartLine(Input);
+                        var result = await Input.Reader.ReadAsync();
+                        var examined = result.Buffer.End;
+                        var consumed = result.Buffer.End;
+
+                        try
+                        {
+                            if (!result.Buffer.IsEmpty)
+                            {
+                                requestLineStatus = TakeStartLine(result.Buffer, out consumed, out examined)
+                                    ? RequestLineStatus.Done : RequestLineStatus.Incomplete;
+                            }
+                            else
+                            {
+                                requestLineStatus = RequestLineStatus.Empty;
+                            }
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            throw BadHttpRequestException.GetException(RequestRejectionReason.InvalidRequestLine);
+                        }
+                        finally
+                        {
+                            Input.Reader.Advance(consumed, examined);
+                        }
 
                         if (requestLineStatus == RequestLineStatus.Done)
                         {
                             break;
                         }
 
-                        if (Input.CheckFinOrThrow())
+                        if (result.IsCompleted)
                         {
-                            // We need to attempt to consume start lines and headers even after
-                            // SocketInput.RemoteIntakeFin is set to true to ensure we don't close a
-                            // connection without giving the application a chance to respond to a request
-                            // sent immediately before the a FIN from the client.
-                            requestLineStatus = TakeStartLine(Input);
-
                             if (requestLineStatus == RequestLineStatus.Empty)
                             {
                                 return;
                             }
 
-                            if (requestLineStatus != RequestLineStatus.Done)
-                            {
-                                RejectRequest(RequestRejectionReason.InvalidRequestLine, requestLineStatus.ToString());
-                            }
-
-                            break;
+                            RejectRequest(RequestRejectionReason.InvalidRequestLine, requestLineStatus.ToString());
                         }
-
-                        await Input;
                     }
 
                     InitializeHeaders();
 
-                    while (!_requestProcessingStopping && !TakeMessageHeaders(Input, FrameRequestHeaders))
+                    while (!_requestProcessingStopping)
                     {
-                        if (Input.CheckFinOrThrow())
-                        {
-                            // We need to attempt to consume start lines and headers even after
-                            // SocketInput.RemoteIntakeFin is set to true to ensure we don't close a
-                            // connection without giving the application a chance to respond to a request
-                            // sent immediately before the a FIN from the client.
-                            if (!TakeMessageHeaders(Input, FrameRequestHeaders))
-                            {
-                                RejectRequest(RequestRejectionReason.MalformedRequestInvalidHeaders);
-                            }
 
+                        var result = await Input.Reader.ReadAsync();
+                        var examined = result.Buffer.End;
+                        var consumed = result.Buffer.End;
+
+                        bool headersDone;
+
+                        try
+                        {
+                            headersDone = TakeMessageHeaders(result.Buffer, FrameRequestHeaders, out consumed,
+                                out examined);
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            throw BadHttpRequestException.GetException(RequestRejectionReason.MalformedRequestInvalidHeaders);
+                        }
+                        finally
+                        {
+                            Input.Reader.Advance(consumed, examined);
+                        }
+
+                        if (headersDone)
+                        {
                             break;
                         }
 
-                        await Input;
+                        if (result.IsCompleted)
+                        {
+                            RejectRequest(RequestRejectionReason.MalformedRequestInvalidHeaders);
+                        }
                     }
 
                     if (!_requestProcessingStopping)
@@ -216,6 +246,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 try
                 {
+                    Input.Reader.Complete();
                     // If _requestAborted is set, the connection has already been closed.
                     if (Volatile.Read(ref _requestAborted) == 0)
                     {

@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             DispatchPipe = new UvPipeHandle(Log);
 
             var tcs = new TaskCompletionSource<int>(this);
-            Thread.Post(state => StartCallback((TaskCompletionSource<int>)state), tcs);
+            Thread.Post(StartCallback, tcs);
             return tcs.Task;
         }
 

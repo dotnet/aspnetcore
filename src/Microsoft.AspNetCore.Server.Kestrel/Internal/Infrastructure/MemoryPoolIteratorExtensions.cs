@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -69,19 +70,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
         }
 
-        public static string GetAsciiStringEscaped(this MemoryPoolIterator start, MemoryPoolIterator end, int maxChars)
+        public static string GetAsciiStringEscaped(this ReadCursor start, ReadCursor end, int maxChars)
         {
             var sb = new StringBuilder();
-            var scan = start;
+            var reader = new ReadableBufferReader(start, end);
 
-            while (maxChars > 0 && (scan.Block != end.Block || scan.Index != end.Index))
+            while (maxChars > 0 && !reader.End)
             {
-                var ch = scan.Take();
-                sb.Append(ch < 0x20 || ch >= 0x7F ? $"<0x{ch.ToString("X2")}>" : ((char)ch).ToString());
+                var ch = reader.Take();
+                sb.Append(ch < 0x20 || ch >= 0x7F ? $"<0x{ch:X2}>" : ((char)ch).ToString());
                 maxChars--;
             }
 
-            if (scan.Block != end.Block || scan.Index != end.Index)
+            if (!reader.End)
             {
                 sb.Append("...");
             }
@@ -130,16 +131,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         /// <param name="knownMethod">A reference to a pre-allocated known string, if the input matches any.</param>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool GetKnownMethod(this MemoryPoolIterator begin, out string knownMethod)
+        public static bool GetKnownMethod(this ReadableBuffer begin, out string knownMethod)
         {
             knownMethod = null;
-
-            ulong value;
-            if (!begin.TryPeekLong(out value))
+            if (begin.Length < sizeof(ulong))
             {
                 return false;
             }
 
+            ulong value = begin.ReadLittleEndian<ulong>();
             if ((value & _mask4Chars) == _httpGetMethodLong)
             {
                 knownMethod = HttpMethods.Get;
@@ -171,16 +171,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         /// <param name="knownVersion">A reference to a pre-allocated known string, if the input matches any.</param>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool GetKnownVersion(this MemoryPoolIterator begin, out string knownVersion)
+        public static bool GetKnownVersion(this ReadableBuffer begin, out string knownVersion)
         {
             knownVersion = null;
 
-            ulong value;
-            if (!begin.TryPeekLong(out value))
+            if (begin.Length < sizeof(ulong))
             {
                 return false;
             }
 
+            var value = begin.ReadLittleEndian<ulong>();
             if (value == _http11VersionLong)
             {
                 knownVersion = Http11Version;
@@ -192,9 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
             if (knownVersion != null)
             {
-                begin.Skip(knownVersion.Length);
-
-                if (begin.Peek() != '\r')
+                if (begin.Slice(sizeof(ulong)).Peek() != '\r')
                 {
                     knownVersion = null;
                 }

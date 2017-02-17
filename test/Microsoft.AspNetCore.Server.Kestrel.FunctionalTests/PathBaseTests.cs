@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -87,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var client = new HttpClient())
                 {
-                    var response = await client.GetAsync($"http://localhost:{host.GetPort()}{requestPath}");
+                    var response = await client.GetAsync($"http://127.0.0.1:{host.GetPort()}{requestPath}");
                     response.EnsureSuccessStatusCode();
 
                     var responseText = await response.Content.ReadAsStringAsync();

@@ -3,37 +3,40 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
+using MemoryPool = Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure.MemoryPool;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
 {
     public class AdaptedPipeline : IDisposable
     {
+        private const int MinAllocBufferSize = 2048;
+
         private readonly Stream _filteredStream;
 
         public AdaptedPipeline(
             string connectionId,
             Stream filteredStream,
+            IPipe pipe,
             MemoryPool memory,
-            IKestrelTrace logger,
-            IThreadPool threadPool,
-            IBufferSizeControl bufferSizeControl)
+            IKestrelTrace logger)
         {
-            SocketInput = new SocketInput(memory, threadPool, bufferSizeControl);
-            SocketOutput = new StreamSocketOutput(connectionId, filteredStream, memory, logger);
+            Input = pipe;
+            Output = new StreamSocketOutput(connectionId, filteredStream, memory, logger);
 
             _filteredStream = filteredStream;
         }
 
-        public SocketInput SocketInput { get; }
+        public IPipe Input { get; }
 
-        public ISocketOutput SocketOutput { get; }
+        public ISocketOutput Output { get; }
 
         public void Dispose()
         {
-            SocketInput.Dispose();
+            Input.Writer.Complete();
         }
 
         public async Task ReadInputAsync()
@@ -42,21 +45,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
 
             do
             {
-                var block = SocketInput.IncomingStart();
+                var block = Input.Writer.Alloc(MinAllocBufferSize);
 
                 try
                 {
-                    var count = block.Data.Offset + block.Data.Count - block.End;
-                    bytesRead = await _filteredStream.ReadAsync(block.Array, block.End, count);
+                    var array = block.Memory.GetArray();
+                    try
+                    {
+                        bytesRead = await _filteredStream.ReadAsync(array.Array, array.Offset, array.Count);
+                        block.Advance(bytesRead);
+                    }
+                    finally
+                    {
+                        await block.FlushAsync();
+                    }
                 }
                 catch (Exception ex)
                 {
-                    SocketInput.IncomingComplete(0, ex);
+                    Input.Writer.Complete(ex);
                     throw;
                 }
-
-                SocketInput.IncomingComplete(bytesRead, error: null);
             } while (bytesRead != 0);
+
+            Input.Writer.Complete();
         }
     }
 }

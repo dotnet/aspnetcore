@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Adapter;
@@ -18,6 +19,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
     public class Connection : ConnectionContext, IConnectionControl
     {
+        private const int MinAllocBufferSize = 2048;
+
         // Base32 encoding - in ascii sort order for easy text based sorting
         private static readonly string _encode32Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 
@@ -40,11 +43,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private Task _readInputTask;
 
         private TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>();
-        private BufferSizeControl _bufferSizeControl;
 
         private long _lastTimestamp;
         private long _timeoutTimestamp = long.MaxValue;
         private TimeoutAction _timeoutAction;
+        private WritableBuffer? _currentWritableBuffer;
 
         public Connection(ListenerContext context, UvStreamHandle socket) : base(context)
         {
@@ -55,12 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             ConnectionId = GenerateConnectionId(Interlocked.Increment(ref _lastConnectionId));
 
-            if (ServerOptions.Limits.MaxRequestBufferSize.HasValue)
-            {
-                _bufferSizeControl = new BufferSizeControl(ServerOptions.Limits.MaxRequestBufferSize.Value, this);
-            }
-
-            Input = new SocketInput(Thread.Memory, ThreadPool, _bufferSizeControl);
+            Input = Thread.PipelineFactory.Create(ListenerContext.LibuvPipeOptions);
             Output = new SocketOutput(Thread, _socket, this, ConnectionId, Log, ThreadPool);
 
             var tcpHandle = _socket as UvTcpHandle;
@@ -92,6 +90,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             // Start socket prior to applying the ConnectionAdapter
             _socket.ReadStart(_allocCallback, _readCallback, this);
 
+            // Dispatch to a thread pool so if the first read completes synchronously
+            // we won't be on IO thread
+            try
+            {
+                ThreadPool.UnsafeRun(state => ((Connection)state).StartFrame(), this);
+            }
+            catch (Exception e)
+            {
+                Log.LogError(0, e, "Connection.StartFrame");
+                throw;
+            }
+        }
+
+        private void StartFrame()
+        {
             if (_connectionAdapters.Count == 0)
             {
                 _frame.Start();
@@ -107,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         public Task StopAsync()
         {
             _frame.StopAsync();
-            _frame.Input.CompleteAwaiting();
+            _frame.Input.Reader.CancelPendingRead();
 
             return _socketClosedTcs.Task;
         }
@@ -138,11 +151,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         var connection2 = (Connection)state2;
                         connection2._filteredStream.Dispose();
                         connection2._adaptedPipeline.Dispose();
+                        Input.Reader.Complete();
                     }, connection);
                 }
             }, this);
 
-            Input.Dispose();
+            Input.Writer.Complete(new TaskCanceledException("The request was aborted"));
             _socketClosedTcs.TrySetResult(null);
         }
 
@@ -168,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             try
             {
-                var rawStream = new RawStream(Input, Output);
+                var rawStream = new RawStream(Input.Reader, Output);
                 var adapterContext = new ConnectionAdapterContext(rawStream);
                 var adaptedConnections = new IAdaptedConnection[_connectionAdapters.Count];
 
@@ -182,11 +196,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 if (adapterContext.ConnectionStream != rawStream)
                 {
                     _filteredStream = adapterContext.ConnectionStream;
-                    _adaptedPipeline = new AdaptedPipeline(ConnectionId, adapterContext.ConnectionStream,
-                        Thread.Memory, Log, ThreadPool, _bufferSizeControl);
+                    _adaptedPipeline = new AdaptedPipeline(
+                        ConnectionId,
+                        adapterContext.ConnectionStream,
+                        Thread.PipelineFactory.Create(ListenerContext.AdaptedPipeOptions),
+                        Thread.Memory,
+                        Log);
 
-                    _frame.Input = _adaptedPipeline.SocketInput;
-                    _frame.Output = _adaptedPipeline.SocketOutput;
+                    _frame.Input = _adaptedPipeline.Input;
+                    _frame.Output = _adaptedPipeline.Output;
 
                     // Don't attempt to read input if connection has already closed.
                     // This can happen if a client opens a connection and immediately closes it.
@@ -201,6 +219,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             catch (Exception ex)
             {
                 Log.LogError(0, ex, $"Uncaught exception from the {nameof(IConnectionAdapter.OnConnectionAsync)} method of an {nameof(IConnectionAdapter)}.");
+                Input.Reader.Complete();
                 ConnectionControl.End(ProduceEndType.SocketDisconnect);
             }
         }
@@ -210,13 +229,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return ((Connection)state).OnAlloc(handle, suggestedSize);
         }
 
-        private Libuv.uv_buf_t OnAlloc(UvStreamHandle handle, int suggestedSize)
+        private unsafe Libuv.uv_buf_t OnAlloc(UvStreamHandle handle, int suggestedSize)
         {
-            var result = Input.IncomingStart();
+            Debug.Assert(_currentWritableBuffer == null);
+            var currentWritableBuffer = Input.Writer.Alloc(MinAllocBufferSize);
+            _currentWritableBuffer = currentWritableBuffer;
+            void* dataPtr;
+            var tryGetPointer = currentWritableBuffer.Memory.TryGetPointer(out dataPtr);
+            Debug.Assert(tryGetPointer);
 
             return handle.Libuv.buf_init(
-                result.DataArrayPtr + result.End,
-                result.Data.Offset + result.Data.Count - result.End);
+                (IntPtr)dataPtr,
+                currentWritableBuffer.Memory.Length);
         }
 
         private static void ReadCallback(UvStreamHandle handle, int status, object state)
@@ -224,19 +248,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             ((Connection)state).OnRead(handle, status);
         }
 
-        private void OnRead(UvStreamHandle handle, int status)
+        private async void OnRead(UvStreamHandle handle, int status)
         {
-            if (status == 0)
-            {
-                // A zero status does not indicate an error or connection end. It indicates
-                // there is no data to be read right now.
-                // See the note at http://docs.libuv.org/en/v1.x/stream.html#c.uv_read_cb.
-                // We need to clean up whatever was allocated by OnAlloc.
-                Input.IncomingDeferred();
-                return;
-            }
-
-            var normalRead = status > 0;
+            var normalRead = status >= 0;
             var normalDone = status == Constants.EOF;
             var errorDone = !(normalDone || normalRead);
             var readCount = normalRead ? status : 0;
@@ -256,6 +270,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
 
             IOException error = null;
+            WritableBufferAwaitable? flushTask = null;
             if (errorDone)
             {
                 Exception uvError;
@@ -272,13 +287,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
 
                 error = new IOException(uvError.Message, uvError);
+                _currentWritableBuffer?.Commit();
+            }
+            else
+            {
+                Debug.Assert(_currentWritableBuffer != null);
+
+                var currentWritableBuffer = _currentWritableBuffer.Value;
+                currentWritableBuffer.Advance(readCount);
+                flushTask = currentWritableBuffer.FlushAsync();
             }
 
-            Input.IncomingComplete(readCount, error);
+            _currentWritableBuffer = null;
+            if (flushTask?.IsCompleted == false)
+            {
+                OnPausePosted();
+                if (await flushTask.Value)
+                {
+                    OnResumePosted();
+                }
+            }
 
             if (!normalRead)
             {
-                AbortAsync(error);
+                Input.Writer.Complete(error);
+                var ignore = AbortAsync(error);
             }
         }
 
@@ -289,7 +322,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             // Even though this method is called on the event loop already,
             // post anyway so the ReadStop() call doesn't get reordered
             // relative to the ReadStart() call made in Resume().
-            Thread.Post(state => ((Connection)state).OnPausePosted(), this);
+            Thread.Post(state => state.OnPausePosted(), this);
         }
 
         void IConnectionControl.Resume()
@@ -297,7 +330,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             Log.ConnectionResume(ConnectionId);
 
             // This is called from the consuming thread.
-            Thread.Post(state => ((Connection)state).OnResumePosted(), this);
+            Thread.Post(state => state.OnResumePosted(), this);
         }
 
         private void OnPausePosted()
@@ -316,14 +349,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 try
                 {
-                   _socket.ReadStart(_allocCallback, _readCallback, this);
+                    _socket.ReadStart(_allocCallback, _readCallback, this);
                 }
                 catch (UvException)
                 {
                     // ReadStart() can throw a UvException in some cases (e.g. socket is no longer connected).
                     // This should be treated the same as OnRead() seeing a "normalDone" condition.
                     Log.ConnectionReadFin(ConnectionId);
-                    Input.IncomingComplete(0, null);
+                    Input.Writer.Complete();
                 }
             }
         }
