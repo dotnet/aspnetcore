@@ -24,7 +24,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var errors = new ErrorSink();
 
             VisitTagHelpers(compilation, assemblyNameFilters, descriptors, errors);
-            VisitViewComponents(compilation, descriptors, errors);
+            VisitViewComponents(compilation, assemblyNameFilters, descriptors, errors);
 
             var diagnostics = new List<RazorDiagnostic>();
             for (var i = 0; i < errors.Errors.Count; i++)
