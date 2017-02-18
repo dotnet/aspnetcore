@@ -151,9 +151,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     string.Equals(CS0246, g.Id, StringComparison.OrdinalIgnoreCase)))
                 {
                     additionalMessage = Resources.FormatCompilation_DependencyContextIsNotSpecified(
-                        "preserveCompilationContext",
-                        "buildOptions",
-                        "project.json");
+                        "PreserveCompilationContext",
+                        "csproj");
                 }
 
                 var compilationFailure = new CompilationFailure(

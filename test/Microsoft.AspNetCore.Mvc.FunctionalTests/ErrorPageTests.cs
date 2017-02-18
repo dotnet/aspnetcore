@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
     {
         private static readonly string PreserveCompilationContextMessage = HtmlEncoder.Default.Encode(
             "One or more compilation references are missing. Possible causes include a missing " +
-            "'preserveCompilationContext' property under 'buildOptions' in the application's project.json.");
+            "'PreserveCompilationContext' property in the application's 'csproj' file.");
         public ErrorPageTests(MvcTestFixture<ErrorPageMiddlewareWebSite.Startup> fixture)
         {
             Client = fixture.Client;
