@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 {
     public interface ITransport
     {
-        Task StartAsync(Uri url, IChannelConnection<Message> application);
+        Task StartAsync(Uri url, IChannelConnection<SendMessage, Message> application);
         Task StopAsync();
     }
 }

@@ -30,8 +30,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var transportToApplication = Channel.CreateUnbounded<Message>();
             var applicationToTransport = Channel.CreateUnbounded<Message>();
 
-            Application = ChannelConnection.Create(input: applicationToTransport, output: transportToApplication);
-            var transport = ChannelConnection.Create(input: transportToApplication, output: applicationToTransport);
+            Application = ChannelConnection.Create<Message>(input: applicationToTransport, output: transportToApplication);
+            var transport = ChannelConnection.Create<Message>(input: transportToApplication, output: applicationToTransport);
 
             Connection = new Connection(Guid.NewGuid().ToString(), transport);
             Connection.Metadata["formatType"] = format;

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
     public class WebSocketsTransport : ITransport
     {
         private ClientWebSocket _webSocket = new ClientWebSocket();
-        private IChannelConnection<Message> _application;
+        private IChannelConnection<SendMessage, Message> _application;
         private CancellationToken _cancellationToken = new CancellationToken();
         private readonly ILogger _logger;
 
@@ -26,12 +26,12 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public WebSocketsTransport(ILoggerFactory loggerFactory)
         {
-            _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger("WebSocketsTransport");
+            _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger(nameof(WebSocketsTransport));
         }
 
         public Task Running { get; private set; } = Task.CompletedTask;
 
-        public async Task StartAsync(Uri url, IChannelConnection<Message> application)
+        public async Task StartAsync(Uri url, IChannelConnection<SendMessage, Message> application)
         {
             if (url == null)
             {
@@ -121,20 +121,28 @@ namespace Microsoft.AspNetCore.Sockets.Client
         {
             while (await _application.Input.WaitToReadAsync(cancellationToken))
             {
-                Message message;
-                while (_application.Input.TryRead(out message))
+                while (_application.Input.TryRead(out SendMessage message))
                 {
                     try
                     {
                         await _webSocket.SendAsync(new ArraySegment<byte>(message.Payload),
                         message.Type == MessageType.Text ? WebSocketMessageType.Text : WebSocketMessageType.Binary, true,
                         cancellationToken);
+                        message.SendResult.SetResult(null);
                     }
                     catch (OperationCanceledException ex)
                     {
                         _logger?.LogError(ex.Message);
+                        message.SendResult.SetCanceled();
                         await _webSocket.CloseAsync(WebSocketCloseStatus.Empty, null, _cancellationToken);
                         break;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger?.LogError(ex.Message);
+                        message.SendResult.SetException(ex);
+                        await _webSocket.CloseAsync(WebSocketCloseStatus.Empty, null, _cancellationToken);
+                        throw;
                     }
                 }
             }

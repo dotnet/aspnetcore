@@ -16,14 +16,15 @@ namespace Microsoft.AspNetCore.Sockets.Client
     {
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
+
         private volatile int _connectionState = ConnectionState.Initial;
-        private volatile IChannelConnection<Message> _transportChannel;
+        private volatile IChannelConnection<Message, SendMessage> _transportChannel;
         private volatile ITransport _transport;
         private volatile Task _receiveLoopTask;
         private volatile Task _startTask = Task.CompletedTask;
 
         private ReadableChannel<Message> Input => _transportChannel.Input;
-        private WritableChannel<Message> Output => _transportChannel.Output;
+        private WritableChannel<SendMessage> Output => _transportChannel.Output;
 
         public Uri Url { get; }
 
@@ -146,11 +147,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         private async Task StartTransport(Uri connectUrl)
         {
-            var applicationToTransport = Channel.CreateUnbounded<Message>();
+            var applicationToTransport = Channel.CreateUnbounded<SendMessage>();
             var transportToApplication = Channel.CreateUnbounded<Message>();
-            var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
+            var applicationSide = new ChannelConnection<SendMessage, Message>(applicationToTransport, transportToApplication);
 
-            _transportChannel = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
+            _transportChannel = new ChannelConnection<Message, SendMessage>(transportToApplication, applicationToTransport);
 
             // Start the transport, giving it one end of the pipeline
             try
@@ -194,12 +195,12 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger.LogTrace("Ending receive loop");
         }
 
-        public Task<bool> SendAsync(byte[] data, MessageType type)
+        public Task SendAsync(byte[] data, MessageType type)
         {
             return SendAsync(data, type, CancellationToken.None);
         }
 
-        public async Task<bool> SendAsync(byte[] data, MessageType type, CancellationToken cancellationToken)
+        public async Task SendAsync(byte[] data, MessageType type, CancellationToken cancellationToken)
         {
             if (data == null)
             {
@@ -208,20 +209,25 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             if (_connectionState != ConnectionState.Connected)
             {
-                return false;
+                throw new InvalidOperationException(
+                    "Cannot send messages when the connection is not in the Connected state.");
             }
 
-            var message = new Message(data, type);
+            // TaskCreationOptions.RunContinuationsAsynchronously ensures that continuations awaiting
+            // SendAsync (i.e. user's code) are not running on the same thread as the code that sets
+            // TaskCompletionSource result. This way we prevent from user's code blocking our channel
+            // send loop.
+            var sendTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var message = new SendMessage(data, type, sendTcs);
 
             while (await Output.WaitToWriteAsync(cancellationToken))
             {
                 if (Output.TryWrite(message))
                 {
-                    return true;
+                    await sendTcs.Task;
+                    break;
                 }
             }
-
-            return false;
         }
 
         public async Task DisposeAsync()

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
-        private IChannelConnection<Message> _application;
+        private IChannelConnection<SendMessage, Message> _application;
         private Task _sender;
         private Task _poller;
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
         }
 
-        public Task StartAsync(Uri url, IChannelConnection<Message> application)
+        public Task StartAsync(Uri url, IChannelConnection<SendMessage, Message> application)
         {
             _application = application;
 
@@ -145,12 +145,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         private async Task SendMessages(Uri sendUrl, CancellationToken cancellationToken)
         {
+            TaskCompletionSource<object> sendTcs = null;
             try
             {
                 while (await _application.Input.WaitToReadAsync(cancellationToken))
                 {
-                    while (!cancellationToken.IsCancellationRequested && _application.Input.TryRead(out Message message))
+                    while (!cancellationToken.IsCancellationRequested && _application.Input.TryRead(out SendMessage message))
                     {
+                        sendTcs = message.SendResult;
                         var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
                         request.Headers.UserAgent.Add(DefaultUserAgentHeader);
 
@@ -161,16 +163,19 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                         var response = await _httpClient.SendAsync(request);
                         response.EnsureSuccessStatusCode();
+                        sendTcs.SetResult(null);
                     }
                 }
             }
             catch (OperationCanceledException)
             {
                 // transport is being closed
+                sendTcs?.TrySetCanceled();
             }
             catch (Exception ex)
             {
                 _logger.LogError("Error while sending to '{0}': {1}", sendUrl, ex);
+                sendTcs?.TrySetException(ex);
                 throw;
             }
             finally

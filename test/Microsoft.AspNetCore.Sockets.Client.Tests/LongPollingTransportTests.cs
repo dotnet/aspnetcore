@@ -38,9 +38,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
                 try
                 {
-                    var connectionToTransport = Channel.CreateUnbounded<Message>();
+                    var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
                     var transportToConnection = Channel.CreateUnbounded<Message>();
-                    var channelConnection = new ChannelConnection<Message>(connectionToTransport, transportToConnection);
+                    var channelConnection = new ChannelConnection<SendMessage, Message>(connectionToTransport, transportToConnection);
                     await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
 
                     transportActiveTask = longPollingTransport.Running;
@@ -74,9 +74,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
                 try
                 {
-                    var connectionToTransport = Channel.CreateUnbounded<Message>();
+                    var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
                     var transportToConnection = Channel.CreateUnbounded<Message>();
-                    var channelConnection = new ChannelConnection<Message>(connectionToTransport, transportToConnection);
+                    var channelConnection = new ChannelConnection<SendMessage, Message>(connectionToTransport, transportToConnection);
                     await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
 
                     await longPollingTransport.Running.OrTimeout();
@@ -106,9 +106,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
                 try
                 {
-                    var connectionToTransport = Channel.CreateUnbounded<Message>();
+                    var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
                     var transportToConnection = Channel.CreateUnbounded<Message>();
-                    var channelConnection = new ChannelConnection<Message>(connectionToTransport, transportToConnection);
+                    var channelConnection = new ChannelConnection<SendMessage, Message>(connectionToTransport, transportToConnection);
                     await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
 
                     var exception =
@@ -142,12 +142,12 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
                 try
                 {
-                    var connectionToTransport = Channel.CreateUnbounded<Message>();
+                    var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
                     var transportToConnection = Channel.CreateUnbounded<Message>();
-                    var channelConnection = new ChannelConnection<Message>(connectionToTransport, transportToConnection);
+                    var channelConnection = new ChannelConnection<SendMessage, Message>(connectionToTransport, transportToConnection);
                     await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
 
-                    await connectionToTransport.Out.WriteAsync(new Message());
+                    await connectionToTransport.Out.WriteAsync(new SendMessage());
 
                     await Assert.ThrowsAsync<HttpRequestException>(async () => await longPollingTransport.Running.OrTimeout());
 
@@ -183,9 +183,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
                 try
                 {
-                    var connectionToTransport = Channel.CreateUnbounded<Message>();
+                    var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
                     var transportToConnection = Channel.CreateUnbounded<Message>();
-                    var channelConnection = new ChannelConnection<Message>(connectionToTransport, transportToConnection);
+                    var channelConnection = new ChannelConnection<SendMessage, Message>(connectionToTransport, transportToConnection);
                     await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
 
                     connectionToTransport.Out.Complete();
