@@ -27,8 +27,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                     var expression = new CSharpExpressionIRNode();
                     var builder = RazorIRBuilder.Create(expression);
 
-                    builder.Add(new CSharpTokenIRNode()
+                    builder.Add(new RazorIRToken()
                     {
+                        Kind = RazorIRToken.TokenKind.CSharp,
                         Content = "ModelExpressionProvider.CreateModelExpression(ViewData, __model => ",
                     });
 
@@ -40,13 +41,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                         // https://github.com/aspnet/Razor/issues/963
                         var original = ((HtmlContentIRNode)node.Children[0]);
 
-                        builder.Add(new CSharpTokenIRNode()
+                        builder.Add(new RazorIRToken()
                         {
+                            Kind = RazorIRToken.TokenKind.CSharp,
                             Content = "__model."
                         });
 
-                        builder.Add(new CSharpTokenIRNode()
+                        builder.Add(new RazorIRToken()
                         {
+                            Kind = RazorIRToken.TokenKind.CSharp,
                             Content = original.Content,
                             Source = original.Source,
                         });
@@ -60,8 +63,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                             {
                                 for (var j = 0; j < nestedExpression.Children.Count; j++)
                                 {
-                                    var cSharpToken = nestedExpression.Children[j] as CSharpTokenIRNode;
-                                    if (cSharpToken != null)
+                                    var cSharpToken = nestedExpression.Children[j] as RazorIRToken;
+                                    if (cSharpToken != null && cSharpToken.Kind == RazorIRToken.TokenKind.CSharp)
                                     {
                                         builder.Add(cSharpToken);
                                     }
@@ -75,8 +78,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                             var html = node.Children[i] as HtmlContentIRNode;
                             if (html != null)
                             {
-                                builder.Add(new CSharpTokenIRNode()
+                                builder.Add(new RazorIRToken()
                                 {
+                                    Kind = RazorIRToken.TokenKind.CSharp,
                                     Content = html.Content,
                                     Source = html.Source,
                                 });
@@ -84,8 +88,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
                         }
                     }
 
-                    builder.Add(new CSharpTokenIRNode()
+                    builder.Add(new RazorIRToken()
                     {
+                        Kind = RazorIRToken.TokenKind.CSharp,
                         Content = ")",
                     });
 

@@ -107,7 +107,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             var expression = Assert.IsType<CSharpExpressionIRNode>(Assert.Single(setProperty.Children));
             Assert.Equal("ModelExpressionProvider.CreateModelExpression(ViewData, __model => __model.Bar)", GetCSharpContent(expression));
 
-            var originalNode = Assert.IsType<CSharpTokenIRNode>(expression.Children[2]);
+            var originalNode = Assert.IsType<RazorIRToken>(expression.Children[2]);
+            Assert.Equal(RazorIRToken.TokenKind.CSharp, originalNode.Kind);
             Assert.Equal("Bar", originalNode.Content);
             Assert.Equal(new SourceSpan("test.cshtml", 51, 1, 8, 3), originalNode.Source.Value);
         }
@@ -158,7 +159,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             var expression = Assert.IsType<CSharpExpressionIRNode>(Assert.Single(setProperty.Children));
             Assert.Equal("ModelExpressionProvider.CreateModelExpression(ViewData, __model => Bar)", GetCSharpContent(expression));
 
-            var originalNode = Assert.IsType<CSharpTokenIRNode>(expression.Children[1]);
+            var originalNode = Assert.IsType<RazorIRToken>(expression.Children[1]);
+            Assert.Equal(RazorIRToken.TokenKind.CSharp, originalNode.Kind);
             Assert.Equal("Bar", originalNode.Content);
             Assert.Equal(new SourceSpan("test.cshtml", 52, 1, 9, 3), originalNode.Source.Value);
         }
@@ -212,8 +214,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             var builder = new StringBuilder();
             for (var i = 0; i < node.Children.Count; i++)
             {
-                var child = node.Children[i] as CSharpTokenIRNode;
-                builder.Append(child.Content);
+                var child = node.Children[i] as RazorIRToken;
+                if (child.Kind == RazorIRToken.TokenKind.CSharp)
+                {
+                    builder.Append(child.Content);
+                }
             }
 
             return builder.ToString();

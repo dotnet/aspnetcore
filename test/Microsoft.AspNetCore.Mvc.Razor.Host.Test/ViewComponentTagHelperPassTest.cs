@@ -366,8 +366,11 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
             var builder = new StringBuilder();
             for (var i = 0; i < node.Children.Count; i++)
             {
-                var child = node.Children[i] as CSharpTokenIRNode;
-                builder.Append(child.Content);
+                var child = node.Children[i] as RazorIRToken;
+                if (child.Kind == RazorIRToken.TokenKind.CSharp)
+                {
+                    builder.Append(child.Content);
+                }
             }
 
             return builder.ToString();
