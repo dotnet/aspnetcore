@@ -1509,6 +1509,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -1527,6 +1528,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
