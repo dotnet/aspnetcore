@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
                     success = false;
                     foreach (var error in result.CSharpDocument.Diagnostics)
                     {
-                        Application.Error.WriteLine($"{result.ViewFileInfo.FullPath} ({error.Location.LineIndex}): {error.Message}");
+                        Application.Error.WriteLine($"{result.ViewFileInfo.FullPath} ({error.Span.LineIndex}): {error.GetMessage()}");
                     }
                 }
             }
