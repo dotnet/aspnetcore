@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// An filter that skips antiforgery token validation.
+    /// A filter that skips antiforgery token validation.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class IgnoreAntiforgeryTokenAttribute : Attribute, IAntiforgeryPolicy, IOrderedFilter
