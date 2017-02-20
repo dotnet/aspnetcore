@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Sockets
 
             // Write the length as a string
             int written = 0;
-            if (!length.TryFormat(buffer, out int lengthLen, default(TextFormat), EncodingData.InvariantUtf8))
+            if (!length.TryFormat(buffer, out int lengthLen, default(TextFormat), TextEncoder.Utf8))
             {
                 bytesWritten = 0;
                 return false;
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Sockets
             buffer = buffer.Slice(colonIndex);
 
             // Parse the length
-            if (!PrimitiveParser.TryParseInt32(lengthSpan, out var length, out var consumedByLength, encoding: EncodingData.InvariantUtf8) || consumedByLength < lengthSpan.Length)
+            if (!PrimitiveParser.TryParseInt32(lengthSpan, out var length, out var consumedByLength, encoder: TextEncoder.Utf8) || consumedByLength < lengthSpan.Length)
             {
                 message = default(Message);
                 bytesConsumed = 0;
