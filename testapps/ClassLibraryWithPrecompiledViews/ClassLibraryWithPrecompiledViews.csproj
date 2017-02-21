@@ -2,10 +2,8 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'RazorViewCompilation.sln'))\build\common-testapps.props" />
   <PropertyGroup>
     <Version>1.0.0-z$([System.DateTime]::UtcNow.Ticks)</Version>
-    <TargetFrameworks>netcoreapp1.1;net451</TargetFrameworks>
-    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
     <OutputType>Exe</OutputType>
-    <RuntimeIdentifier Condition="!$(TargetFramework.StartsWith('netcoreapp'))">win7-x64</RuntimeIdentifier>
     <MvcRazorOutputPath Condition="'$(TargetFramework)'!=''">obj\precompiled\$(TargetFramework)</MvcRazorOutputPath>
   </PropertyGroup>
 

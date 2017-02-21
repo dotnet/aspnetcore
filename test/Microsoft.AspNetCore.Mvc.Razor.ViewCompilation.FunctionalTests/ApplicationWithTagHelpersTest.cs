@@ -1,11 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
@@ -19,27 +16,24 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public ApplicationTestFixture Fixture { get; }
 
-        public static IEnumerable<object[]> ApplicationWithTagHelpersData
+        public static TheoryData ApplicationWithTagHelpersData
         {
             get
             {
-                var urls = new[]
+                return new TheoryData<string>
                 {
                     "ClassLibraryTagHelper",
                     "LocalTagHelper",
-                    "NuGetPackageTagHelper",
                 };
-
-                return Enumerable.Zip(urls, RuntimeFlavors.SupportedFlavors, (a, b) => new object[] { a, b });
             }
         }
 
         [Theory]
         [MemberData(nameof(ApplicationWithTagHelpersData))]
-        public async Task Precompilation_WorksForViewsThatUseTagHelpers(string url, RuntimeFlavor flavor)
+        public async Task Precompilation_WorksForViewsThatUseTagHelpers(string url)
         {
             // Arrange
-            using (var deployer = Fixture.CreateDeployment(flavor))
+            using (var deployer = Fixture.CreateDeployment())
             {
                 var deploymentResult = deployer.Deploy();
 

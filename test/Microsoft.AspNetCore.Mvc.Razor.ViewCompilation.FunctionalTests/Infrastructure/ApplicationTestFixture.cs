@@ -37,16 +37,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public ILogger Logger { get; private set; }
 
-        public IApplicationDeployer CreateDeployment(RuntimeFlavor flavor)
+        public IApplicationDeployer CreateDeployment()
         {
-            PrepareForDeployment(flavor);
-            var deploymentParameters = GetDeploymentParameters(flavor);
+            PrepareForDeployment();
+            var deploymentParameters = GetDeploymentParameters();
             return ApplicationDeployerFactory.Create(deploymentParameters, Logger);
         }
 
-        public virtual void PrepareForDeployment(RuntimeFlavor flavor)
+        public virtual void PrepareForDeployment()
         {
-            Logger = CreateLogger(flavor);
+            Logger = CreateLogger();
 
             if (!_isRestored)
             {
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             }
         }
 
-        public virtual DeploymentParameters GetDeploymentParameters(RuntimeFlavor flavor)
+        public virtual DeploymentParameters GetDeploymentParameters()
         {
             var tempRestoreDirectoryEnvironment = new KeyValuePair<string, string>(
                 NuGetPackagesEnvironmentKey,
@@ -72,11 +72,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             var deploymentParameters = new DeploymentParameters(
                 ApplicationPath,
                 ServerType.Kestrel,
-                flavor,
+                RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64)
             {
                 PublishApplicationBeforeDeployment = true,
-                TargetFramework = flavor == RuntimeFlavor.Clr ? "net451" : "netcoreapp1.1",
+#if NETCOREAPP1_1
+                TargetFramework = "netcoreapp1.1",
+#else
+#error the target framework needs to be updated.
+#endif
                 Configuration = "Release",
                 EnvironmentVariables =
                 {
@@ -95,11 +99,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             return deploymentParameters;
         }
 
-        protected virtual ILogger CreateLogger(RuntimeFlavor flavor)
+        protected virtual ILogger CreateLogger()
         {
             return new LoggerFactory()
                 .AddConsole()
-                .CreateLogger($"{ApplicationName}:{flavor}");
+                .CreateLogger($"{ApplicationName}");
         }
 
         protected virtual void Restore()

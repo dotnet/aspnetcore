@@ -23,8 +23,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{87FEE984
 		build\common.props = build\common.props
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86", "tools\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86.csproj", "{9F47A520-7DAB-409D-81C8-AD351562A1A5}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,10 +41,6 @@ Global
 		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9F47A520-7DAB-409D-81C8-AD351562A1A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9F47A520-7DAB-409D-81C8-AD351562A1A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9F47A520-7DAB-409D-81C8-AD351562A1A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9F47A520-7DAB-409D-81C8-AD351562A1A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -55,6 +49,5 @@ Global
 		{4339FC9B-AEC6-442A-B413-A41555ED76C7} = {02F7AA35-91AF-491E-9F0E-03CFAF86C720}
 		{46C9A4B2-8B1C-451B-B670-C194901D66AC} = {0398AFFF-505E-4283-89DA-BBD9D28B53DB}
 		{E0D75B4E-839F-4F80-9B1F-B33F616BCC5F} = {0398AFFF-505E-4283-89DA-BBD9D28B53DB}
-		{9F47A520-7DAB-409D-81C8-AD351562A1A5} = {02F7AA35-91AF-491E-9F0E-03CFAF86C720}
 	EndGlobalSection
 EndGlobal

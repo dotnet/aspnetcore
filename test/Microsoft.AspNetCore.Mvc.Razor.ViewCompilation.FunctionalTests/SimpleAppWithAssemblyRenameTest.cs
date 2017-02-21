@@ -7,23 +7,20 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 {
-    public class SimpleAppWithAssemblyRenameTest : IClassFixture<SimpleAppWithAssemblyRenameTest.SimpleAppWithAssemblyRenameTestFixture>
+    public class SimpleAppWithAssemblyRenameTest : IClassFixture<SimpleAppWithAssemblyRenameTest.TestFixture>
     {
-        public SimpleAppWithAssemblyRenameTest(SimpleAppWithAssemblyRenameTestFixture fixture)
+        public SimpleAppWithAssemblyRenameTest(TestFixture fixture)
         {
             Fixture = fixture;
         }
 
         public ApplicationTestFixture Fixture { get; }
 
-        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
-
-        [Theory]
-        [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public async Task Precompilation_WorksForSimpleApps(RuntimeFlavor flavor)
+        [Fact]
+        public async Task Precompilation_WorksForSimpleApps()
         {
             // Arrange
-            using (var deployer = Fixture.CreateDeployment(flavor))
+            using (var deployer = Fixture.CreateDeployment())
             {
                 var deploymentResult = deployer.Deploy();
 
@@ -37,16 +34,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             }
         }
 
-        public class SimpleAppWithAssemblyRenameTestFixture : ApplicationTestFixture
+        public class TestFixture : ApplicationTestFixture
         {
-            public SimpleAppWithAssemblyRenameTestFixture()
+            public TestFixture()
                 : base("SimpleAppWithAssemblyRename")
             {
             }
 
-            public override DeploymentParameters GetDeploymentParameters(RuntimeFlavor flavor)
+            public override DeploymentParameters GetDeploymentParameters()
             {
-                var parameters = base.GetDeploymentParameters(flavor);
+                var parameters = base.GetDeploymentParameters();
                 parameters.ApplicationName = "NewAssemblyName";
                 return parameters;
             }

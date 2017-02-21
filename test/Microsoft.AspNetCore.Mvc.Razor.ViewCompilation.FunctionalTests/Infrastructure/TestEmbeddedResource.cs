@@ -54,6 +54,5 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
                 return streamReader.ReadToEnd().Replace("\r", "").Replace("\n", "\r\n");
             }
         }
-
     }
 }

@@ -1,10 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
@@ -18,14 +15,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public ApplicationTestFixture Fixture { get; }
 
-        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
-
-        [Theory]
-        [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public async Task PrecompiledAssembliesUseSameStrongNameAsApplication(RuntimeFlavor flavor)
+        [Fact]
+        public async Task PrecompiledAssembliesUseSameStrongNameAsApplication()
         {
             // Arrange
-            using (var deployer = Fixture.CreateDeployment(flavor))
+            using (var deployer = Fixture.CreateDeployment())
             {
                 var deploymentResult = deployer.Deploy();
 

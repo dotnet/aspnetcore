@@ -17,14 +17,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public ApplicationTestFixture Fixture { get; }
 
-        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
-
-        [Theory]
-        [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public void Precompilation_PreventsRefAssembliesFromBeingPublished(RuntimeFlavor flavor)
+        [Fact]
+        public void Precompilation_PreventsRefAssembliesFromBeingPublished()
         {
             // Arrange
-            using (var deployer = Fixture.CreateDeployment(flavor))
+            using (var deployer = Fixture.CreateDeployment())
             {
                 // Act
                 var deploymentResult = deployer.Deploy();
@@ -34,13 +31,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             }
         }
 
-        [Theory]
-        [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public void PublishingWithOption_AllowsPublishingRefAssemblies(RuntimeFlavor flavor)
+        [Fact]
+        public void PublishingWithOption_AllowsPublishingRefAssemblies()
         {
             // Arrange
-            Fixture.PrepareForDeployment(flavor);
-            var deploymentParameters = Fixture.GetDeploymentParameters(flavor);
+            Fixture.PrepareForDeployment();
+            var deploymentParameters = Fixture.GetDeploymentParameters();
             deploymentParameters.PublishEnvironmentVariables.Add(
                 new KeyValuePair<string, string>("MvcRazorExcludeRefAssembliesFromPublish", "false"));
 

@@ -20,11 +20,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public ApplicationWithParseErrorsFixture Fixture { get; }
 
-        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
-
-        [Theory]
-        [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public void PublishingPrintsParseErrors(RuntimeFlavor flavor)
+        [Fact]
+        public void PublishingPrintsParseErrors()
         {
             var indexPath = Path.Combine(Fixture.ApplicationPath, "Views", "Home", "Index.cshtml");
             var viewImportsPath = Path.Combine(Fixture.ApplicationPath, "Views", "Home", "About.cshtml");
@@ -34,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
                 viewImportsPath + " (1): A space or line break was encountered after the \"@\" character.  Only valid identifiers, keywords, comments, \"(\" and \"{\" are valid at the start of a code block and they must occur immediately following \"@\" with no space in between.",
 
             };
-            using (var deployer = Fixture.CreateDeployment(flavor))
+            using (var deployer = Fixture.CreateDeployment())
             {
                 // Act & Assert
                 Assert.Throws<Exception>(() => deployer.Deploy());
@@ -49,7 +46,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             }
         }
 
-
         public class ApplicationWithParseErrorsFixture : ApplicationTestFixture
         {
             public ApplicationWithParseErrorsFixture()
@@ -59,9 +55,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
             public TestSink TestSink { get; } = new TestSink();
 
-            protected override ILogger CreateLogger(RuntimeFlavor flavor)
+            protected override ILogger CreateLogger()
             {
-                return new TestLoggerFactory(TestSink, enabled: true).CreateLogger($"{ApplicationName}:{flavor}");
+                return new TestLoggerFactory(TestSink, enabled: true).CreateLogger($"{ApplicationName}");
             }
         }
     }

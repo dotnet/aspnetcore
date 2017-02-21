@@ -8,8 +8,6 @@ namespace ApplicationWithTagHelpers.Controllers
 
         public IActionResult LocalTagHelper() => View();
 
-        public IActionResult NuGetPackageTagHelper() => View();
-
         public IActionResult About() => Content("About content");
     }
 }

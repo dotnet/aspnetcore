@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
@@ -23,11 +21,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
 
         public ApplicationTestFixture Fixture { get; }
 
-        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
-
-        [Theory]
-        [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public async Task Precompilation_CanEmbedViewSourcesAsResources(RuntimeFlavor flavor)
+        [Fact]
+        public async Task Precompilation_CanEmbedViewSourcesAsResources()
         {
             // Arrange
             var expectedViews = new[]
@@ -37,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
                 "/Views/Home/Index.cshtml",
             };
             var expectedText = "Hello Index!";
-            using (var deployer = Fixture.CreateDeployment(flavor))
+            using (var deployer = Fixture.CreateDeployment())
             {
                 var deploymentResult = deployer.Deploy();
                 var assemblyPath = Path.Combine(

@@ -18,14 +18,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public ApplicationTestFixture Fixture { get; }
 
-        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
-
-        [Theory]
-        [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public async Task Precompilation_WorksForSimpleApps(RuntimeFlavor flavor)
+        [Fact]
+        public async Task Precompilation_WorksForSimpleApps()
         {
             // Arrange
-            using (var deployer = Fixture.CreateDeployment(flavor))
+            using (var deployer = Fixture.CreateDeployment())
             {
                 var deploymentResult = deployer.Deploy();
 

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Server.IntegrationTesting;
 using System;
 using System.IO;
 using System.Linq;
@@ -22,14 +21,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
 
         public ApplicationTestFixture Fixture { get; }
 
-        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
-
-        [Theory]
-        [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public async Task ApplicationWithCustomInputFiles_Works(RuntimeFlavor flavor)
+        [Fact]
+        public async Task ApplicationWithCustomInputFiles_Works()
         {
             var expectedText = "Hello Index!";
-            using (var deployer = Fixture.CreateDeployment(flavor))
+            using (var deployer = Fixture.CreateDeployment())
             {
                 // Arrange
                 var deploymentResult = deployer.Deploy();
@@ -44,9 +40,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
             }
         }
 
-        [Theory]
-        [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public async Task MvcRazorFilesToCompile_OverridesTheFilesToBeCompiled(RuntimeFlavor flavor)
+        [Fact]
+        public async Task MvcRazorFilesToCompile_OverridesTheFilesToBeCompiled()
         {
             // Arrange
             var expectedViews = new[]
@@ -55,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
                 "/Views/Home/Index.cshtml",
             };
 
-            using (var deployer = Fixture.CreateDeployment(flavor))
+            using (var deployer = Fixture.CreateDeployment())
             {
                 var deploymentResult = deployer.Deploy();
 
@@ -71,9 +66,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
             }
         }
 
-        [Theory]
-        [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public void MvcRazorFilesToCompile_SpecificallyDoesNotPublishFilesToBeCompiled(RuntimeFlavor flavor)
+        [Fact]
+        public void MvcRazorFilesToCompile_SpecificallyDoesNotPublishFilesToBeCompiled()
         {
             // Arrange
             var viewsNotPublished = new[]
@@ -87,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests
                 "NotIncluded.cshtml",
             };
 
-            using (var deployer = Fixture.CreateDeployment(flavor))
+            using (var deployer = Fixture.CreateDeployment())
             {
                 var deploymentResult = deployer.Deploy();
                 var viewsDirectory = Path.Combine(deploymentResult.ContentRoot, "Views", "Home");

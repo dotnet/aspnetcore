@@ -1,18 +1,4 @@
 {
-    "adx": {
-        "rules": [
-            "DefaultCompositeRule"
-        ],
-        "packages": {
-            "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation": {
-                "exclusions": {
-                    "DOC_MISSING": {
-                        "lib/netcoreapp1.1/Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.dll": "Not a class library. Docs not required for CLI tools"
-                    }
-                }
-            }
-        }
-    },
     "Default": {
         "rules": [
             "DefaultCompositeRule"

@@ -17,14 +17,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
 
         public ApplicationTestFixture Fixture { get; }
 
-        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
-
-        [Theory]
-        [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public async Task Precompilation_WorksForViewsUsingRelativePath(RuntimeFlavor flavor)
+        [Fact]
+        public async Task Precompilation_WorksForViewsUsingRelativePath()
         {
             // Arrange
-            using (var deployer = Fixture.CreateDeployment(flavor))
+            using (var deployer = Fixture.CreateDeployment())
             {
                 var deploymentResult = deployer.Deploy();
 
@@ -38,12 +35,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation
             }
         }
 
-        [Theory]
-        [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public async Task Precompilation_WorksForViewsUsingDirectoryTraversal(RuntimeFlavor flavor)
+        [Fact]
+        public async Task Precompilation_WorksForViewsUsingDirectoryTraversal()
         {
             // Arrange
-            using (var deployer = Fixture.CreateDeployment(flavor))
+            using (var deployer = Fixture.CreateDeployment())
             {
                 var deploymentResult = deployer.Deploy();
 

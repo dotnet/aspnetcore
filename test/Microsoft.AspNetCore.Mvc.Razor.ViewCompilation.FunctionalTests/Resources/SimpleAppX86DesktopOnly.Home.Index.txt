@@ -1,1 +1,0 @@
-AspNetCore._Views_Home_Index_cshtml, SimpleAppX86DesktopOnly.PrecompiledViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null

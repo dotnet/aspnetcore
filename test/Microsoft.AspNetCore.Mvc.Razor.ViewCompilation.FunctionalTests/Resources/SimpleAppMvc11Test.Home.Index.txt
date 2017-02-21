@@ -1,3 +1,0 @@
-Hello from Index: AspNetCore._Views_Home_Index_cshtml, SimpleAppMvc11.PrecompiledViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-
-AspNetCore._Views_Shared__Layout_cshtml, SimpleAppMvc11.PrecompiledViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
