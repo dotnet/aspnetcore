@@ -167,7 +167,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             var actionDescriptor = (PageActionDescriptor)context.ActionContext.ActionDescriptor;
             var compiledType = _loader.Load(actionDescriptor).GetTypeInfo();
+
+            // If a model type wasn't set in code then the model property's type will be the same
+            // as the compiled type.
             var modelType = compiledType.GetProperty(ModelPropertyName)?.PropertyType.GetTypeInfo();
+            if (modelType == compiledType)
+            {
+                modelType = null;
+            }
 
             var compiledActionDescriptor = new CompiledPageActionDescriptor(actionDescriptor)
             {
@@ -180,16 +187,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             Func<PageContext, object> modelFactory = null;
             Action<PageContext, object> modelReleaser = null;
-            if (modelType != null)
+            if (modelType == null)
             {
+                PopulateHandlerMethodDescriptors(compiledType, compiledActionDescriptor);
+            }
+            else
+            {
+                PopulateHandlerMethodDescriptors(modelType, compiledActionDescriptor);
+
                 modelFactory = _modelFactoryProvider.CreateModelFactory(compiledActionDescriptor);
                 modelReleaser = _modelFactoryProvider.CreateModelDisposer(compiledActionDescriptor);
-
-                if (modelType != compiledType)
-                {
-                    // If the model and page type are different discover handler methods on the model as well.
-                    PopulateHandlerMethodDescriptors(modelType, compiledActionDescriptor);
-                }
             }
 
             var pageStartFactories = GetPageStartFactories(compiledActionDescriptor);

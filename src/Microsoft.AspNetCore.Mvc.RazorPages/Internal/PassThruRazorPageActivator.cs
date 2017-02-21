@@ -24,7 +24,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 var pageContext = (PageContext)context;
                 var vddType = typeof(ViewDataDictionary<>);
-                vddType = vddType.MakeGenericType(pageContext.ActionDescriptor.ModelTypeInfo.AsType());
+
+                var modelTypeInfo = pageContext.ActionDescriptor.ModelTypeInfo ?? pageContext.ActionDescriptor.PageTypeInfo;
+
+
+                vddType = vddType.MakeGenericType(modelTypeInfo.AsType());
 
                 context.ViewData = (ViewDataDictionary)Activator.CreateInstance(vddType, context.ViewData);
             }
