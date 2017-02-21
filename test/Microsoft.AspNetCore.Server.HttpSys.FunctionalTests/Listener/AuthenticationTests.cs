@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             }
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [SkipOffDomain]
         public async Task AuthTypes_RequireKerberosAuth_Success()
         {
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             }
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [SkipOffDomain]
         public async Task MultipleAuthTypes_KerberosAllowAnonymousButSpecify401_ChallengesAdded()
         {
