@@ -442,6 +442,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     dataset.Add($"http://[{ip}]:0/", GetTestUrls);
                 }
 
+                // There may be no addresses with scope IDs and we need at least one data item in the
+                // collection, otherwise xUnit fails the test run because a theory has no data.
+                dataset.Add("http://[::1]:0", GetTestUrls);
+
                 return dataset;
             }
         }
