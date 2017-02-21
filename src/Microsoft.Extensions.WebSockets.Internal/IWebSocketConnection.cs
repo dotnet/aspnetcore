@@ -64,6 +64,11 @@ namespace Microsoft.Extensions.WebSockets.Internal
         /// <param name="state">A state parameter that will be passed to each invocation of <paramref name="messageHandler"/></param>
         /// <returns>A <see cref="Task{WebSocketCloseResult}"/> that will complete when the client has sent a close frame, or the connection has been terminated</returns>
         Task<WebSocketCloseResult> ExecuteAsync(Func<WebSocketFrame, object, Task> messageHandler, object state);
+
+        /// <summary>
+        /// Forcibly terminates the socket, cleaning up the necessary resources.
+        /// </summary>
+        void Abort();
     }
 
     public static class WebSocketConnectionExtensions

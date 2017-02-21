@@ -12,8 +12,7 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
 {
     public partial class WebSocketConnectionTests
     {
-        // Skipping tests after failures caused by updating to newer Pipelines
-        private class ProtocolErrors
+        public class ProtocolErrors
         {
             [Theory]
             [InlineData(new byte[] { 0x11, 0x00 })]

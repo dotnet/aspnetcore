@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             {
                 if (receiving.IsCanceled || receiving.IsFaulted)
                 {
-                    // The receiver faulted or cancelled. This means the client is probably broken. Just propagate the exception and exit
+                    // The receiver faulted or cancelled. This means the socket is probably broken. Abort the socket and propagate the exception
                     receiving.GetAwaiter().GetResult();
 
                     // Should never get here because GetResult above will throw

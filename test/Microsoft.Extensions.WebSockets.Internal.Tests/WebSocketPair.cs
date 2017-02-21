@@ -8,8 +8,8 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
 {
     internal class WebSocketPair : IDisposable
     {
-        private static readonly WebSocketOptions DefaultServerOptions = new WebSocketOptions().WithAllFramesPassedThrough().WithRandomMasking(); 
-        private static readonly WebSocketOptions DefaultClientOptions = new WebSocketOptions().WithAllFramesPassedThrough(); 
+        private static readonly WebSocketOptions DefaultServerOptions = new WebSocketOptions().WithAllFramesPassedThrough().WithRandomMasking();
+        private static readonly WebSocketOptions DefaultClientOptions = new WebSocketOptions().WithAllFramesPassedThrough();
 
         private PipeFactory _factory;
         private readonly bool _ownFactory;

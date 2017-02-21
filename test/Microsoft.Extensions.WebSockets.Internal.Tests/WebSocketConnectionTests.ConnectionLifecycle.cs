@@ -65,7 +65,7 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
                 }
             }
 
-            [Fact(Skip="Fails after updating to new Pipelines")]
+            [Fact]
             public async Task AbnormalTerminationOfInboundChannelCausesExecuteToThrow()
             {
                 using (var pair = WebSocketPair.Create())

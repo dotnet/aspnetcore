@@ -13,8 +13,7 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
 {
     public partial class WebSocketConnectionTests
     {
-        // Skipping tests after failures caused by updating to newer Pipelines
-        private class TheSendAsyncMethod
+        public class TheSendAsyncMethod
         {
             // No auto-pinging for us!
             private readonly static WebSocketOptions DefaultTestOptions = new WebSocketOptions().WithAllFramesPassedThrough();
@@ -179,20 +178,18 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
                     var outbound = factory.Create();
                     var inbound = factory.Create();
 
-                    Task executeTask;
                     using (var connection = new WebSocketConnection(inbound.Reader, outbound.Writer, options))
                     {
-                        executeTask = connection.ExecuteAsync(f =>
-                        {
-                            Assert.False(true, "Did not expect to receive any messages");
-                            return TaskCache.CompletedTask;
-                        });
+                        var executeTask = connection.ExecuteAndCaptureFramesAsync();
                         await producer(connection).OrTimeout();
+                        connection.Abort();
                         inbound.Writer.Complete();
                         await executeTask.OrTimeout();
                     }
 
-                    var data = (await outbound.Reader.ReadToEndAsync()).ToArray();
+                    var buffer = await outbound.Reader.ReadToEndAsync();
+                    var data = buffer.ToArray();
+                    outbound.Reader.Advance(buffer.End);
                     inbound.Reader.Complete();
                     CompleteChannels(outbound);
                     return data;

@@ -6,6 +6,7 @@ using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
+using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.AspNetCore.Sockets.Transports;
 using Microsoft.Extensions.Logging;
@@ -258,7 +259,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             }
         }
 
-        [Fact(Skip="Fails after updating to new Pipelines")]
+        [Fact]
         public async Task TransportFailsWhenClientDisconnectsAbnormally()
         {
             var transportToApplication = Channel.CreateUnbounded<Message>();
@@ -286,7 +287,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             }
         }
 
-        [Fact(Skip="Fails after updating to new Pipelines")]
+        [Fact]
         public async Task ClientReceivesInternalServerErrorWhenTheApplicationFails()
         {
             var transportToApplication = Channel.CreateUnbounded<Message>();
@@ -313,6 +314,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 // Close from the client
                 await pair.ClientSocket.CloseAsync(WebSocketCloseStatus.NormalClosure);
+
+                await transport.OrTimeout();
             }
         }
     }

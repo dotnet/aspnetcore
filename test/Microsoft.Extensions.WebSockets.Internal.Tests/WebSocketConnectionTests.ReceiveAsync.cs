@@ -13,8 +13,7 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
 {
     public partial class WebSocketConnectionTests
     {
-        // Skipping tests after failures caused by updating to newer Pipelines
-        private class TheReceiveAsyncMethod
+        public class TheReceiveAsyncMethod
         {
             [Theory]
             [InlineData(new byte[] { 0x81, 0x00 }, "", true)]
