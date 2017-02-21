@@ -10,6 +10,7 @@ import configureStore from './configureStore';
 export default createServerRenderer(params => {
     return new Promise<RenderResult>((resolve, reject) => {
         // Match the incoming request against the list of client-side routes
+        const store = configureStore();
         match({ routes, location: params.location }, (error, redirectLocation, renderProps: any) => {
             if (error) {
                 throw error;
@@ -27,7 +28,6 @@ export default createServerRenderer(params => {
             }
 
             // Build an instance of the application
-            const store = configureStore();
             const app = (
                 <Provider store={ store }>
                     <RouterContext {...renderProps} />
