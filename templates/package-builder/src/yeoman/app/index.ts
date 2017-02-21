@@ -58,13 +58,11 @@ const templates: TemplateConfig[] = [
 const sdkChoices = [{
     value: '1.0.0-preview2-1-003177',   // Current released version
     name: 'project.json' + chalk.gray(' (compatible with .NET Core tooling preview 2 and Visual Studio 2015)'),
-    includeFiles: [/^project.json$/, /\.xproj$/, /_placeholder.txt$/, /\.deployment$/],
-    dockerBaseImage: 'microsoft/dotnet:1.1.0-sdk-projectjson'
+    includeFiles: [/^project.json$/, /\.xproj$/, /_placeholder.txt$/, /\.deployment$/]
 }, {
     value: '1.0.0-preview3-004056',     // Version that ships with VS2017RC
     name: '.csproj' + chalk.gray('      (compatible with .NET Core tooling preview 3 and Visual Studio 2017)'),
-    includeFiles: [/\.csproj$/],
-    dockerBaseImage: 'microsoft/dotnet:1.1.0-sdk-msbuild'
+    includeFiles: [/\.csproj$/]
 }];
 
 class MyGenerator extends yeoman.Base {
@@ -123,7 +121,6 @@ class MyGenerator extends yeoman.Base {
                 this._answers.projectGuid = this.options['projectguid'] || uuid.v4();
 
                 const chosenSdk = sdkChoices.filter(sdk => sdk.value === this._answers.sdkVersion)[0];
-                this._answers.dockerBaseImage = chosenSdk.dockerBaseImage;
 
                 done();
             });

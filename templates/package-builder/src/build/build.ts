@@ -95,9 +95,6 @@ function buildYeomanNpmPackage(outputRoot: string) {
         { from: /.*\.csproj$/, to: 'tokenreplace-namePascalCase.csproj' }
     ];
     const contentReplacements = [
-        // Dockerfile items
-        { from: /FROM microsoft\/dotnet:1.1.0-sdk-projectjson/g, to: 'FROM <%= dockerBaseImage %>' },
-
         // .xproj items
         { from: /\bWebApplicationBasic\b/g, to: '<%= namePascalCase %>' },
         { from: /<ProjectGuid>[0-9a-f\-]{36}<\/ProjectGuid>/g, to: '<ProjectGuid><%= projectGuid %></ProjectGuid>' },
@@ -162,11 +159,6 @@ function buildDotNetNewNuGetPackage() {
                     type: 'bind',
                     binding: 'dotnet-cli-version',
                     replaces: '1.0.0-preview2-1-003177'
-                },
-                dockerBaseImage: {
-                    type: 'parameter',
-                    replaces: 'microsoft/dotnet:1.1.0-sdk-projectjson',
-                    defaultValue: 'microsoft/dotnet:1.1.0-sdk-msbuild'
                 }
             },
             tags: { language: 'C#', type: 'project' },
