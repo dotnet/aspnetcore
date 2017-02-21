@@ -129,6 +129,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Ra
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.RazorPages.Test", "test\Microsoft.AspNetCore.Mvc.RazorPages.Test\Microsoft.AspNetCore.Mvc.RazorPages.Test.xproj", "{0AB46520-F441-4E01-B444-08F4D23F8B1B}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorPagesWebSite", "test\WebSites\RazorPagesWebSite\RazorPagesWebSite.xproj", "{4BA6EC9A-B6D9-41F2-BFDA-D82B22D80352}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -769,6 +771,18 @@ Global
 		{0AB46520-F441-4E01-B444-08F4D23F8B1B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{0AB46520-F441-4E01-B444-08F4D23F8B1B}.Release|x86.ActiveCfg = Release|Any CPU
 		{0AB46520-F441-4E01-B444-08F4D23F8B1B}.Release|x86.Build.0 = Release|Any CPU
+		{4BA6EC9A-B6D9-41F2-BFDA-D82B22D80352}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BA6EC9A-B6D9-41F2-BFDA-D82B22D80352}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BA6EC9A-B6D9-41F2-BFDA-D82B22D80352}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{4BA6EC9A-B6D9-41F2-BFDA-D82B22D80352}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{4BA6EC9A-B6D9-41F2-BFDA-D82B22D80352}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4BA6EC9A-B6D9-41F2-BFDA-D82B22D80352}.Debug|x86.Build.0 = Debug|Any CPU
+		{4BA6EC9A-B6D9-41F2-BFDA-D82B22D80352}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BA6EC9A-B6D9-41F2-BFDA-D82B22D80352}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BA6EC9A-B6D9-41F2-BFDA-D82B22D80352}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4BA6EC9A-B6D9-41F2-BFDA-D82B22D80352}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{4BA6EC9A-B6D9-41F2-BFDA-D82B22D80352}.Release|x86.ActiveCfg = Release|Any CPU
+		{4BA6EC9A-B6D9-41F2-BFDA-D82B22D80352}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -832,5 +846,6 @@ Global
 		{D28CAC79-7004-4B69-993B-EDEB4653BFA8} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{CF322BE1-E1FE-4CFD-8FCA-16A14B905D53} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
 		{0AB46520-F441-4E01-B444-08F4D23F8B1B} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
+		{4BA6EC9A-B6D9-41F2-BFDA-D82B22D80352} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 	EndGlobalSection
 EndGlobal

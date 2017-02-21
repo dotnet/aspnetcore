@@ -60,6 +60,9 @@
     "RazorPageExecutionInstrumentationWebSite": {
       "target": "project"
     },
+    "RazorPagesWebSite": {
+      "target": "project"
+    },
     "RazorWebSite": {
       "target": "project"
     },
