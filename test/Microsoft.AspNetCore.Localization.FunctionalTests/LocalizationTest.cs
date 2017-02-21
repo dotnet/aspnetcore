@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
     {
         private static readonly string _applicationPath = Path.Combine("test", "LocalizationWebsite");
 
-        [Fact(Skip = "https://github.com/aspnet/Localization/issues/310")]
+        [Fact]
         public Task Localization_CustomCulture_AllOS()
         {
             var testRunner = new TestRunner(_applicationPath);
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 "kr10.00");
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Localization/issues/310")]
+        [Fact]
         public Task Localization_ResourcesInClassLibrary_ReturnLocalizedValue_AllOS()
         {
             var testRunner = new TestRunner(_applicationPath);
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 "Bonjour from ResourcesClassLibraryNoAttribute Bonjour from ResourcesClassLibraryNoAttribute Bonjour from ResourcesClassLibraryWithAttribute Bonjour from ResourcesClassLibraryWithAttribute");
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Localization/issues/310")]
+        [Fact]
         public Task Localization_ResourcesInFolder_ReturnLocalizedValue_AllOS()
         {
             var testRunner = new TestRunner(_applicationPath);
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Localization/issues/310")]
+        [Fact]
         public Task Localization_ResourcesInFolder_ReturnLocalizedValue_WithCultureFallback_AllOS()
         {
             var testRunner = new TestRunner(_applicationPath);
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Localization/issues/310")]
+        [Fact]
         public Task Localization_ResourcesInFolder_ReturnNonLocalizedValue_CultureHierarchyTooDeep_AllOS()
         {
             var testRunner = new TestRunner(_applicationPath);
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 "Hello Hello Hello");
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Localization/issues/310")]
+        [Fact]
         public Task Localization_ResourcesAtRootFolder_ReturnLocalizedValue_AllOS()
         {
             var testRunner = new TestRunner(_applicationPath);

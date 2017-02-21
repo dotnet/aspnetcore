@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 "<h1>Bonjour</h1>");
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Localization/issues/310")]
+        [Fact]
         public Task RunSite_AnyOS()
         {
             var testRunner = new TestRunner(_applicationPath);
