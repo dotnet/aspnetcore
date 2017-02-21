@@ -22,8 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 .With(RunStrategy.Throughput)
                 .WithLaunchCount(3)
                 .WithWarmupCount(5)
-                .WithTargetCount(10)
-                .With(new MsBuildToolchain()));
+                .WithTargetCount(10));
         }
     }
 }

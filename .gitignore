@@ -33,3 +33,4 @@ runtimes/
 launchSettings.json
 BenchmarkDotNet.Artifacts/
 BDN.Generated/
+binaries/
