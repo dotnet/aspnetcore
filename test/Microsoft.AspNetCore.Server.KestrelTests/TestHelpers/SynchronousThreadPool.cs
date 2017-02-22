@@ -34,5 +34,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
         {
             action(state);
         }
+
+        public void Schedule(Action action)
+        {
+            action();
+        }
     }
 }

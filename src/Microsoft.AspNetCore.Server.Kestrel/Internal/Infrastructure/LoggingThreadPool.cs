@@ -112,5 +112,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 }
             }, tcs);
         }
+
+        public void Schedule(Action action)
+        {
+            Run(action);
+        }
     }
 }
