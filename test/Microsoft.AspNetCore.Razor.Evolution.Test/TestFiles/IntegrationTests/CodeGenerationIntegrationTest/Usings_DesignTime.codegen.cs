@@ -3,11 +3,31 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
     #line hidden
     using System;
     using System.Threading.Tasks;
-    using System.IO;
-    using Foo = System.Text.Encoding;
-    using static System;
-    using static System.Console;
-    using static global::System.Text.Encoding;
+#line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
+using System.IO;
+
+#line default
+#line hidden
+#line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
+using Foo = System.Text.Encoding;
+
+#line default
+#line hidden
+#line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
+using static System;
+
+#line default
+#line hidden
+#line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
+using static System.Console;
+
+#line default
+#line hidden
+#line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
+using static global::System.Text.Encoding;
+
+#line default
+#line hidden
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Usings_DesignTime
     {
         #pragma warning disable 219

@@ -1,0 +1,26 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InlineBlocks_DesignTime -  - 
+            DirectiveTokenHelper - 
+                CSharpStatement -  - #pragma warning disable 219
+                CSharpStatement -  - private void __RazorDirectiveTokenHelpers__() {
+                DirectiveToken - (9:0,9 [4] InlineBlocks.cshtml) - Link
+                CSharpStatement -  - }
+                CSharpStatement -  - #pragma warning restore 219
+            CSharpStatement -  - private static System.Object __o = null;
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpStatement -  - DefineSection("Link", async (__razor_section_writer) => {
+                CSharpStatement -  - });
+                HtmlContent - (13:0,13 [23] InlineBlocks.cshtml) - (string link) {\n    <a
+                HtmlAttribute - (36:1,6 [59] InlineBlocks.cshtml) -  href=" - "
+                    CSharpAttributeValue - (43:1,13 [51] InlineBlocks.cshtml) - 
+                        CSharpStatement - (44:1,14 [19] InlineBlocks.cshtml) - if(link != null) { 
+                        CSharpExpression - (64:1,34 [4] InlineBlocks.cshtml)
+                            RazorIRToken - (64:1,34 [4] InlineBlocks.cshtml) - CSharp - link
+                        CSharpStatement - (68:1,38 [10] InlineBlocks.cshtml) -  } else { 
+                        HtmlContent - (84:1,54 [1] InlineBlocks.cshtml) - #
+                        CSharpStatement - (92:1,62 [2] InlineBlocks.cshtml) -  }
+                HtmlContent - (95:1,65 [6] InlineBlocks.cshtml) -  />\n}

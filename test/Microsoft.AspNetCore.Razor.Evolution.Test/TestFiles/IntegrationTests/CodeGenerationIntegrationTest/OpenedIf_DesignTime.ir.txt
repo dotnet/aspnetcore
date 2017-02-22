@@ -1,0 +1,19 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_OpenedIf_DesignTime -  - 
+            DirectiveTokenHelper - 
+                CSharpStatement -  - #pragma warning disable 219
+                CSharpStatement -  - private void __RazorDirectiveTokenHelpers__() {
+                CSharpStatement -  - }
+                CSharpStatement -  - #pragma warning restore 219
+            CSharpStatement -  - private static System.Object __o = null;
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (0:0,0 [16] OpenedIf.cshtml) - <html>\n<body>\n
+                CSharpStatement - (17:2,1 [14] OpenedIf.cshtml) - if (true) { \n
+                HtmlContent - (31:3,0 [7] OpenedIf.cshtml) - </body>
+                CSharpStatement - (38:3,7 [2] OpenedIf.cshtml) - \n
+                HtmlContent - (40:4,0 [7] OpenedIf.cshtml) - </html>
+                CSharpStatement - (47:4,7 [0] OpenedIf.cshtml) - 

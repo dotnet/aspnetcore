@@ -1,0 +1,15 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ImplicitExpressionAtEOF_DesignTime -  - 
+            DirectiveTokenHelper - 
+                CSharpStatement -  - #pragma warning disable 219
+                CSharpStatement -  - private void __RazorDirectiveTokenHelpers__() {
+                CSharpStatement -  - }
+                CSharpStatement -  - #pragma warning restore 219
+            CSharpStatement -  - private static System.Object __o = null;
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (0:0,0 [18] ImplicitExpressionAtEOF.cshtml) - This is markup\n\n
+                CSharpExpression - 

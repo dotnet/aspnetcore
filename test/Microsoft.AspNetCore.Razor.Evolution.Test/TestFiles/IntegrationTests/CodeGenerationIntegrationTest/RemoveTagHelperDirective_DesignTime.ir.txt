@@ -1,0 +1,15 @@
+Document - 
+    Checksum - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
+        UsingStatement -  - System
+        UsingStatement -  - System.Threading.Tasks
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RemoveTagHelperDirective_DesignTime -  - 
+            DirectiveTokenHelper - 
+                CSharpStatement -  - #pragma warning disable 219
+                CSharpStatement -  - private void __RazorDirectiveTokenHelpers__() {
+                DirectiveToken - (17:0,17 [15] RemoveTagHelperDirective.cshtml) - *, TestAssembly
+                CSharpStatement -  - }
+                CSharpStatement -  - #pragma warning restore 219
+            CSharpStatement -  - private static System.Object __o = null;
+            RazorMethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (32:0,32 [2] RemoveTagHelperDirective.cshtml) - \n

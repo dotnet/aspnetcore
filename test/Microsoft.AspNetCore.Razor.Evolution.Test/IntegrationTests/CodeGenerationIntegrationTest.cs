@@ -15,6 +15,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
     {
         #region Runtime
         [Fact]
+        public void BasicImports_Runtime()
+        {
+            // Arrange
+            var engine = RazorEngine.Create(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
+        }
+
+        [Fact]
         public void UnfinishedExpressionInCode_Runtime()
         {
             // Arrange
@@ -25,6 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -39,6 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -53,6 +70,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -67,6 +85,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -81,6 +100,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -95,6 +115,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -109,6 +130,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -123,6 +145,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -137,6 +160,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -151,6 +175,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -165,6 +190,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -179,6 +205,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -193,6 +220,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -207,6 +235,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -221,6 +250,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -235,6 +265,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -249,6 +280,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -263,6 +295,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -277,6 +310,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -291,6 +325,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -305,6 +340,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -319,6 +355,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -333,6 +370,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -347,6 +385,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -361,6 +400,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -375,6 +415,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -389,6 +430,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -403,6 +445,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -417,6 +460,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -431,6 +475,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -445,6 +490,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -459,6 +505,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -473,6 +520,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -487,6 +535,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -501,6 +550,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -515,6 +565,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -529,6 +580,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -543,6 +595,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
@@ -731,6 +784,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
         #region DesignTime
         [Fact]
+        public void BasicImports_DesignTime()
+        {
+            // Arrange
+            var engine = RazorEngine.CreateDesignTime(builder => builder.Features.Add(new ApiSetsIRTestAdapter()));
+            var document = CreateCodeDocument();
+
+            // Act
+            engine.Process(document);
+
+            // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertDesignTimeDocumentMatchBaseline(document);
+        }
+
+        [Fact]
         public void UnfinishedExpressionInCode_DesignTime()
         {
             // Arrange
@@ -741,6 +809,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -755,6 +824,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -769,6 +839,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -783,6 +854,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -797,6 +869,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -811,6 +884,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -825,6 +899,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -839,6 +914,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -853,6 +929,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -867,6 +944,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -881,6 +959,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -895,6 +974,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -909,6 +989,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -923,6 +1004,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -937,6 +1019,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -951,6 +1034,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -965,6 +1049,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -979,6 +1064,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -993,6 +1079,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1007,6 +1094,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1021,6 +1109,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1035,6 +1124,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1049,6 +1139,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1063,6 +1154,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1077,6 +1169,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1091,6 +1184,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1105,6 +1199,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1119,6 +1214,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1133,6 +1229,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1147,6 +1244,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1161,6 +1259,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1175,6 +1274,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1189,6 +1289,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1203,6 +1304,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1217,6 +1319,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1231,6 +1334,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1245,6 +1349,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1259,6 +1364,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1273,6 +1379,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1287,6 +1394,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1301,6 +1409,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             engine.Process(document);
 
             // Assert
+            AssertIRMatchesBaseline(document.GetIRDocument());
             AssertDesignTimeDocumentMatchBaseline(document);
         }
 
@@ -1482,8 +1591,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                 throw new XunitException($"The resource {sourceFilename} was not found.");
             }
 
+            var imports = new List<RazorSourceDocument>();
+            while (true)
+            {
+                var importsFilename = Path.ChangeExtension(normalizedFileName + "_Imports" + imports.Count.ToString(), ".cshtml");
+                if (!TestFile.Create(importsFilename).Exists())
+                {
+                    break;
+                }
+
+                imports.Add(
+                    TestRazorSourceDocument.CreateResource(importsFilename, encoding: null, normalizeNewLines: true));
+            }
+
             var codeDocument = RazorCodeDocument.Create(
-                TestRazorSourceDocument.CreateResource(sourceFilename, encoding: null, normalizeNewLines: true));
+                TestRazorSourceDocument.CreateResource(sourceFilename, encoding: null, normalizeNewLines: true), imports);
 
             // This will ensure that we're not putting any randomly generated data in a baseline.
             codeDocument.Items[DefaultRazorCSharpLoweringPhase.SuppressUniqueIds] = "test";

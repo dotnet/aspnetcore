@@ -93,7 +93,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         public override void VisitUsingStatement(UsingStatementIRNode node)
         {
-            Context.Writer.WriteUsing(node.Content);
+            if (node.Source.HasValue)
+            {
+                using (new LinePragmaWriter(Context.Writer, node.Source.Value))
+                {
+                    Context.Writer.WriteUsing(node.Content);
+                }
+            }
+            else
+            {
+                Context.Writer.WriteUsing(node.Content);
+            }
         }
 
         public override void VisitHtmlAttribute(HtmlAttributeIRNode node)
