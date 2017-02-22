@@ -123,7 +123,6 @@ namespace Microsoft.Extensions.WebSockets.Internal.Tests
                     // Verify we can't restart the connection or send a message
                     await Assert.ThrowsAsync<ObjectDisposedException>(async () => await pair.ServerSocket.ExecuteAsync(f => { }));
                     await Assert.ThrowsAsync<ObjectDisposedException>(async () => await pair.ClientSocket.SendAsync(CreateTextFrame("Nope")));
-                    await Assert.ThrowsAsync<ObjectDisposedException>(async () => await pair.ClientSocket.CloseAsync(new WebSocketCloseResult(WebSocketCloseStatus.NormalClosure)));
                 }
             }
 

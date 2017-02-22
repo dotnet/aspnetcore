@@ -198,7 +198,8 @@ namespace Microsoft.Extensions.WebSockets.Internal
         {
             if (State == WebSocketConnectionState.Closed)
             {
-                throw new ObjectDisposedException(nameof(WebSocketConnection));
+                // Already closed
+                return;
             }
             else if (State == WebSocketConnectionState.Created)
             {
