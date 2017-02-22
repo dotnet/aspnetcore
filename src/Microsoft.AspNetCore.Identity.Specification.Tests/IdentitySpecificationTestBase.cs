@@ -2215,6 +2215,33 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             var email = await manager.GetUserNameAsync(user) + "@diddly.bop";
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, email));
+            Assert.False(await manager.IsEmailConfirmedAsync(user));
+            var stamp = await manager.GetSecurityStampAsync(user);
+            var newEmail = await manager.GetUserNameAsync(user) + "@en.vec";
+            var token1 = await manager.GenerateChangeEmailTokenAsync(user, newEmail);
+            IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, "another@email.com"));
+            Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
+            IdentityResultAssert.IsFailure(await manager.ChangeEmailAsync(user, newEmail, token1));
+            Assert.False(await manager.IsEmailConfirmedAsync(user));
+            Assert.Equal(await manager.GetEmailAsync(user), "another@email.com");
+        }
+
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Fact]
+        public async Task ChangeEmailTokensFailsAfterEmailChanged()
+        {
+            if (ShouldSkipDbTests())
+            {
+                return;
+            }
+            var manager = CreateManager();
+            var user = CreateTestUser("foouser");
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            var email = await manager.GetUserNameAsync(user) + "@diddly.bop";
+            IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, email));
             string oldEmail = email;
             Assert.False(await manager.IsEmailConfirmedAsync(user));
             var stamp = await manager.GetSecurityStampAsync(user);
