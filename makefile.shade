@@ -817,6 +817,7 @@ functions
                 "Mvc",
                 "MvcPrecompilation",
                 "Identity",
+                "IdentityService",
                 "Scaffolding",
                 "SignalR",
                 "BrowserLink",
