@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         protected void AddEnvironmentVariablesToProcess(ProcessStartInfo startInfo, List<KeyValuePair<string, string>> environmentVariables)
         {
             var environment =
-#if NET451
+#if NET452
                 startInfo.EnvironmentVariables;
 #else
                 startInfo.Environment;
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
         }
 
-#if NET451
+#if NET452
         protected void SetEnvironmentVariable(System.Collections.Specialized.StringDictionary environment, string name, string value)
         {
 #else

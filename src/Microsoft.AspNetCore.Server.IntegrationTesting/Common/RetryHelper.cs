@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     else
                     {
                         if (exception is HttpRequestException
-#if NET451
+#if NET452
                         || exception is System.Net.WebException
 #endif
                         )

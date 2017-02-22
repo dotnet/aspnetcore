@@ -5,7 +5,7 @@
   <PropertyGroup>
     <Description>ASP.NET Core helpers to deploy applications to IIS Express, IIS, WebListener and Kestrel for testing.</Description>
     <VersionPrefix>0.3.0</VersionPrefix>
-    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <TargetFrameworks>net452;netstandard1.3</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;testing</PackageTags>
@@ -26,7 +26,7 @@
     <PackageReference Include="Microsoft.NETCore.Windows.ApiSets" Version="1.0.1" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
     <PackageReference Include="Microsoft.Web.Administration" Version="7.0.0" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />

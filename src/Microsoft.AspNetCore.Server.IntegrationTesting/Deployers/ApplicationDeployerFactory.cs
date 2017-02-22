@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             {
                 case ServerType.IISExpress:
                     return new IISExpressDeployer(deploymentParameters, logger);
-#if NET451
+#if NET452
                 case ServerType.IIS:
                     return new IISDeployer(deploymentParameters, logger);
 #endif
