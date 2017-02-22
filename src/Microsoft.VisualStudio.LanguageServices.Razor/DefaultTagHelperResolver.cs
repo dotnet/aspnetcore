@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Composition;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 
@@ -33,6 +35,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 using (var session = await client.CreateSessionAsync(project.Solution))
                 {
                     var result = await session.InvokeAsync<TagHelperResolutionResult>("GetTagHelpersAsync", new object[] { project.Id.Id, "Foo", assemblyNameFilters, }).ConfigureAwait(false);
+
+                    // Per https://github.com/dotnet/roslyn/issues/12770 - there's currently no support for documentation in the OOP host
+                    // until that's available we add the documentation on the VS side by looking up each symbol again.
+                    var compilation = await project.GetCompilationAsync().ConfigureAwait(false);
+                    AddXmlDocumentation(compilation, result.Descriptors);
+
                     return result;
                 }
             }
@@ -42,6 +50,44 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     typeof(DefaultTagHelperResolver).FullName,
                     nameof(GetTagHelpersAsync),
                     exception);
+            }
+        }
+
+        private void AddXmlDocumentation(Compilation compilation, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        {
+            for (var i = 0; i < tagHelpers.Count; i++)
+            {
+                var tagHelper = tagHelpers[i];
+                tagHelper.DesignTimeDescriptor = tagHelper.DesignTimeDescriptor ?? new TagHelperDesignTimeDescriptor();
+
+                var symbol = compilation.GetTypeByMetadataName(tagHelper.TypeName);
+                if (symbol != null)
+                {
+                    var xml = symbol.GetDocumentationCommentXml();
+                    if (!string.IsNullOrEmpty(xml))
+                    {
+                        var documentation = new XmlMemberDocumentation(xml);
+                        tagHelper.DesignTimeDescriptor.Summary = documentation.GetSummary();
+                        tagHelper.DesignTimeDescriptor.Remarks = documentation.GetRemarks();
+                    }
+
+                    foreach (var attribute in tagHelper.Attributes)
+                    {
+                        attribute.DesignTimeDescriptor = attribute.DesignTimeDescriptor ?? new TagHelperAttributeDesignTimeDescriptor();
+
+                        var attributeSymbol = symbol.GetMembers(attribute.PropertyName).FirstOrDefault();
+                        if (attributeSymbol != null)
+                        {
+                            xml = attributeSymbol.GetDocumentationCommentXml();
+                            if (!string.IsNullOrEmpty(xml))
+                            {
+                                var documentation = new XmlMemberDocumentation(xml);
+                                tagHelper.DesignTimeDescriptor.Summary = documentation.GetSummary();
+                                tagHelper.DesignTimeDescriptor.Remarks = documentation.GetRemarks();
+                            }
+                        }
+                    }
+                }
             }
         }
     }

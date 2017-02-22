@@ -23,9 +23,8 @@ namespace Microsoft.CodeAnalysis.Razor
             }
 
             // the structure of the XML is defined by: https://msdn.microsoft.com/en-us/library/fsbx0t7x.aspx
-            // we expect the root node of the content we are passed to always be 'member'.
+            // we expect the root node of the content we are passed to always be 'member' or 'doc'.
             _element = XElement.Parse(content);
-            Debug.Assert(_element.Name == "member");
         }
 
         /// <summary>

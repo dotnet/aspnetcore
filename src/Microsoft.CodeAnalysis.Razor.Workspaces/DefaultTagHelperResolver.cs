@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.AspNetCore.Razor.Evolution.Legacy;
-using System.Linq;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
