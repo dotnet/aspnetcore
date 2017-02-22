@@ -50,12 +50,18 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out ignored);
                     mockLibuv.ReadCallback(socket.InternalGetHandle(), 0, ref ignored);
                     
-                    var readAwaitable = connection.Input.Reader.ReadAsync();
-                    
-                    var result = readAwaitable.GetResult();
-                    Assert.False(result.IsCompleted);
                 }, (object)null);
 
+                // Wait until ProcessRequestAsync runs
+                // TODO: Remove when we get non dispatching support
+                await Task.Delay(1000);
+
+                await context.Thread.PostAsync(_ =>
+                {
+                    var readAwaitable = connection.Input.Reader.ReadAsync();
+
+                    Assert.False(readAwaitable.IsCompleted);
+                }, (object)null);
                 connection.ConnectionControl.End(ProduceEndType.SocketDisconnect);
             }
         }
