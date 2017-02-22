@@ -457,7 +457,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsFailure(await manager.CreateAsync(user), _errorDescriber.InvalidEmail(email));
         }
 
-#if NET451
+#if NET452
         /// <summary>
         /// Test.
         /// </summary>
