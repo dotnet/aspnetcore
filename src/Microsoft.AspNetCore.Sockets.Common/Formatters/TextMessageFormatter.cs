@@ -19,10 +19,10 @@ namespace Microsoft.AspNetCore.Sockets.Formatters
         internal static bool TryFormatMessage(Message message, Span<byte> buffer, out int bytesWritten)
         {
             // Calculate the length, it's the number of characters for text messages, but number of base64 characters for binary
-            var length = message.Payload.Buffer.Length;
+            var length = message.Payload.Length;
             if (message.Type == MessageType.Binary)
             {
-                length = (int)(4 * Math.Ceiling(((double)message.Payload.Buffer.Length / 3)));
+                length = (int)(4 * Math.Ceiling(((double)message.Payload.Length / 3)));
             }
 
             // Write the length as a string
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Sockets.Formatters
             {
                 // Encode the payload. For now, we make it an array and use the old-fashioned types because we need to mirror packages
                 // I've filed https://github.com/aspnet/SignalR/issues/192 to update this. -anurse
-                var payload = Convert.ToBase64String(message.Payload.Buffer.ToArray());
+                var payload = Convert.ToBase64String(message.Payload);
                 if (!TextEncoder.Utf8.TryEncode(payload, buffer, out int payloadWritten))
                 {
                     bytesWritten = 0;
@@ -69,14 +69,14 @@ namespace Microsoft.AspNetCore.Sockets.Formatters
             }
             else
             {
-                if (buffer.Length < message.Payload.Buffer.Length)
+                if (buffer.Length < message.Payload.Length)
                 {
                     bytesWritten = 0;
                     return false;
                 }
-                message.Payload.Buffer.CopyTo(buffer.Slice(0, message.Payload.Buffer.Length));
-                written += message.Payload.Buffer.Length;
-                buffer = buffer.Slice(message.Payload.Buffer.Length);
+                message.Payload.CopyTo(buffer.Slice(0, message.Payload.Length));
+                written += message.Payload.Length;
+                buffer = buffer.Slice(message.Payload.Length);
             }
 
             // Terminator
@@ -165,14 +165,13 @@ namespace Microsoft.AspNetCore.Sockets.Formatters
 
             // Parse the payload. For now, we make it an array and use the old-fashioned types.
             // I've filed https://github.com/aspnet/SignalR/issues/192 to update this. -anurse
-            var payloadArray = payloadBuffer.ToArray();
-            PreservedBuffer payload;
+            var payload = payloadBuffer.ToArray();
             if (messageType == MessageType.Binary)
             {
                 byte[] decoded;
                 try
                 {
-                    var str = Encoding.UTF8.GetString(payloadArray);
+                    var str = Encoding.UTF8.GetString(payload);
                     decoded = Convert.FromBase64String(str);
                 }
                 catch
@@ -182,11 +181,7 @@ namespace Microsoft.AspNetCore.Sockets.Formatters
                     bytesConsumed = 0;
                     return false;
                 }
-                payload = ReadableBuffer.Create(decoded).Preserve();
-            }
-            else
-            {
-                payload = ReadableBuffer.Create(payloadArray).Preserve();
+                payload = decoded;
             }
 
             // Verify the trailer

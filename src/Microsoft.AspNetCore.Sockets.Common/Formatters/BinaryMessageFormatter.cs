@@ -17,14 +17,14 @@ namespace Microsoft.AspNetCore.Sockets.Formatters
         internal static bool TryFormatMessage(Message message, Span<byte> buffer, out int bytesWritten)
         {
             // We can check the size needed right up front!
-            var sizeNeeded = sizeof(long) + 1 + message.Payload.Buffer.Length;
+            var sizeNeeded = sizeof(long) + 1 + message.Payload.Length;
             if (buffer.Length < sizeNeeded)
             {
                 bytesWritten = 0;
                 return false;
             }
 
-            buffer.WriteBigEndian((long)message.Payload.Buffer.Length);
+            buffer.WriteBigEndian((long)message.Payload.Length);
             if (!TryFormatType(message.Type, buffer.Slice(sizeof(long), 1)))
             {
                 bytesWritten = 0;
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Sockets.Formatters
 
             buffer = buffer.Slice(sizeof(long) + 1);
 
-            message.Payload.Buffer.CopyTo(buffer);
+            message.Payload.CopyTo(buffer);
             bytesWritten = sizeNeeded;
             return true;
         }
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Sockets.Formatters
             var buf = new byte[length];
             buffer.Slice(sizeof(long) + 1, length).CopyTo(buf);
 
-            message = new Message(ReadableBuffer.Create(buf).Preserve(), messageType, endOfMessage: true);
+            message = new Message(buf, messageType, endOfMessage: true);
             bytesConsumed = sizeof(long) + 1 + length;
             return true;
         }

@@ -277,8 +277,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
         private async Task WriteAsync(Connection connection, byte[] data)
         {
-            var buffer = ReadableBuffer.Create(data).Preserve();
-            var message = new Message(buffer, MessageType.Text, endOfMessage: true);
+            var message = new Message(data, MessageType.Text, endOfMessage: true);
 
             while (await connection.Transport.Output.WaitToWriteAsync())
             {

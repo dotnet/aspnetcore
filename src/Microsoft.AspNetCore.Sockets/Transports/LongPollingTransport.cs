@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -37,12 +37,9 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                 Message message;
                 if (_application.TryRead(out message))
                 {
-                    using (message)
-                    {
-                        _logger.LogDebug("Writing {0} byte message to response", message.Payload.Buffer.Length);
-                        context.Response.ContentLength = message.Payload.Buffer.Length;
-                        await message.Payload.Buffer.CopyToAsync(context.Response.Body);
-                    }
+                    _logger.LogDebug("Writing {0} byte message to response", message.Payload.Length);
+                    context.Response.ContentLength = message.Payload.Length;
+                    await context.Response.Body.WriteAsync(message.Payload, 0, message.Payload.Length);
                 }
             }
             catch (OperationCanceledException)

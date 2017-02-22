@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var task = dispatcher.ExecuteAsync<TestEndPoint>("", context);
 
-            var buffer = ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello World")).Preserve();
+            var buffer = Encoding.UTF8.GetBytes("Hello World");
 
             // Write to the transport so the poll yields
             await state.Connection.Transport.Output.WriteAsync(new Message(buffer, MessageType.Text, endOfMessage: true));
@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var task = dispatcher.ExecuteAsync<BlockingEndPoint>("", context);
 
-            var buffer = ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello World")).Preserve();
+            var buffer = Encoding.UTF8.GetBytes("Hello World");
 
             // Write to the application
             await state.Application.Output.WriteAsync(new Message(buffer, MessageType.Text, endOfMessage: true));
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var task = dispatcher.ExecuteAsync<BlockingEndPoint>("", context);
 
-            var buffer = ReadableBuffer.Create(Encoding.UTF8.GetBytes("Hello World")).Preserve();
+            var buffer = Encoding.UTF8.GetBytes("Hello World");
 
             // Write to the application
             await state.Application.Output.WriteAsync(new Message(buffer, MessageType.Text, endOfMessage: true));

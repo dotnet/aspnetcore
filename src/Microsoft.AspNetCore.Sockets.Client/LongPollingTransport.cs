@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     {
                         var ms = new MemoryStream();
                         await response.Content.CopyToAsync(ms);
-                        var message = new Message(ReadableBuffer.Create(ms.ToArray()).Preserve(), MessageType.Text);
+                        var message = new Message(ms.ToArray(), MessageType.Text);
 
                         while (await _application.Output.WaitToWriteAsync(cancellationToken))
                         {
@@ -121,15 +121,16 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 {
                     while (!cancellationToken.IsCancellationRequested && _application.Input.TryRead(out Message message))
                     {
-                        using (message)
-                        {
-                            var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
-                            request.Headers.UserAgent.Add(DefaultUserAgentHeader);
-                            request.Content = new ReadableBufferContent(message.Payload.Buffer);
+                        var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
+                        request.Headers.UserAgent.Add(DefaultUserAgentHeader);
 
-                            var response = await _httpClient.SendAsync(request);
-                            response.EnsureSuccessStatusCode();
+                        if (message.Payload != null && message.Payload.Length > 0)
+                        {
+                            request.Content = new ByteArrayContent(message.Payload);
                         }
+
+                        var response = await _httpClient.SendAsync(request);
+                        response.EnsureSuccessStatusCode();
                     }
                 }
             }

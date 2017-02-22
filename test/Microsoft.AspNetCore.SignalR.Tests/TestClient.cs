@@ -63,8 +63,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             },
             stream);
 
-            var buffer = ReadableBuffer.Create(stream.ToArray()).Preserve();
-            await Application.Output.WriteAsync(new Message(buffer, MessageType.Binary, endOfMessage: true));
+            await Application.Output.WriteAsync(new Message(stream.ToArray(), MessageType.Binary, endOfMessage: true));
         }
 
         public async Task<T> Read<T>() where T : InvocationMessage
@@ -87,11 +86,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Message message;
             if (Application.Input.TryRead(out message))
             {
-                using (message)
-                {
-                    var value = await _adapter.ReadMessageAsync(new MemoryStream(message.Payload.Buffer.ToArray()), _binder);
-                    return value as T;
-                }
+                var value = await _adapter.ReadMessageAsync(new MemoryStream(message.Payload), _binder);
+                return value as T;
             }
 
             return null;

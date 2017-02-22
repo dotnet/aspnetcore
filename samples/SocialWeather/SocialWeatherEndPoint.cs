@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
@@ -39,7 +39,7 @@ namespace SocialWeather
             {
                 Message message = await connection.Transport.Input.ReadAsync();
                 var stream = new MemoryStream();
-                await message.Payload.Buffer.CopyToAsync(stream);
+                await stream.WriteAsync(message.Payload, 0, message.Payload.Length);
                 WeatherReport weatherReport = await formatter.ReadAsync(stream);
                 await _lifetimeManager.SendToAllAsync(weatherReport);
             }

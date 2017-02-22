@@ -151,17 +151,13 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 while (await connection.Transport.Input.WaitToReadAsync(cts.Token))
                 {
-                    Message incomingMessage;
-                    while (connection.Transport.Input.TryRead(out incomingMessage))
+                    while (connection.Transport.Input.TryRead(out var incomingMessage))
                     {
                         InvocationDescriptor invocationDescriptor;
-                        using (incomingMessage)
-                        {
-                            var inputStream = new MemoryStream(incomingMessage.Payload.Buffer.ToArray());
+                        var inputStream = new MemoryStream(incomingMessage.Payload);
 
-                            // TODO: Handle receiving InvocationResultDescriptor
-                            invocationDescriptor = await invocationAdapter.ReadMessageAsync(inputStream, this) as InvocationDescriptor;
-                        }
+                        // TODO: Handle receiving InvocationResultDescriptor
+                        invocationDescriptor = await invocationAdapter.ReadMessageAsync(inputStream, this) as InvocationDescriptor;
 
                         // Is there a better way of detecting that a connection was closed?
                         if (invocationDescriptor == null)
@@ -233,8 +229,7 @@ namespace Microsoft.AspNetCore.SignalR
             var outStream = new MemoryStream();
             await invocationAdapter.WriteMessageAsync(result, outStream);
 
-            var buffer = ReadableBuffer.Create(outStream.ToArray()).Preserve();
-            var outMessage = new Message(buffer, MessageType.Text, endOfMessage: true);
+            var outMessage = new Message(outStream.ToArray(), MessageType.Text, endOfMessage: true);
 
             while (await connection.Transport.Output.WaitToWriteAsync())
             {

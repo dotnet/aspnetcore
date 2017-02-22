@@ -51,7 +51,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             // TODO: Handle TCP connection errors
             // https://github.com/SignalR/SignalR/blob/1fba14fa3437e24c204dfaf8a18db3fce8acad3c/src/Microsoft.AspNet.SignalR.Core/Owin/WebSockets/WebSocketHandler.cs#L248-L251
-            Running = Task.WhenAll(sendTask, receiveTask).ContinueWith(t => {
+            Running = Task.WhenAll(sendTask, receiveTask).ContinueWith(t =>
+            {
                 _application.Output.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
                 return t;
             }).Unwrap();
@@ -71,7 +72,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                     //Exceptions are handled above where the send and receive tasks are being run.
                     receiveResult = await _webSocket.ReceiveAsync(buffer, cancellationToken);
-                    if(receiveResult.MessageType == WebSocketMessageType.Close)
+                    if (receiveResult.MessageType == WebSocketMessageType.Close)
                     {
                         _application.Output.Complete();
                         return;
@@ -82,7 +83,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 } while (!receiveResult.EndOfMessage);
 
                 //Making sure the message type is either text or binary
-                Debug.Assert((receiveResult.MessageType == WebSocketMessageType.Binary || receiveResult.MessageType == WebSocketMessageType.Text ), "Unexpected message type");
+                Debug.Assert((receiveResult.MessageType == WebSocketMessageType.Binary || receiveResult.MessageType == WebSocketMessageType.Text), "Unexpected message type");
 
                 Message message;
                 var messageType = receiveResult.MessageType == WebSocketMessageType.Binary ? MessageType.Binary : MessageType.Text;
@@ -90,17 +91,19 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 {
                     var messageBuffer = new byte[totalBytes];
                     var offset = 0;
-                    for (var i = 0 ; i < incomingMessage.Count; i++)
+                    for (var i = 0; i < incomingMessage.Count; i++)
                     {
                         Buffer.BlockCopy(incomingMessage[i].Array, 0, messageBuffer, offset, incomingMessage[i].Count);
                         offset += incomingMessage[i].Count;
                     }
 
-                    message = new Message(ReadableBuffer.Create(messageBuffer).Preserve(), messageType, receiveResult.EndOfMessage);
+                    message = new Message(messageBuffer, messageType, receiveResult.EndOfMessage);
                 }
                 else
                 {
-                    message = new Message(ReadableBuffer.Create(incomingMessage[0].Array, incomingMessage[0].Offset, incomingMessage[0].Count).Preserve(), messageType, receiveResult.EndOfMessage);
+                    var buffer = new byte[incomingMessage[0].Count];
+                    Buffer.BlockCopy(incomingMessage[0].Array, incomingMessage[0].Offset, buffer, 0, incomingMessage[0].Count);
+                    message = new Message(buffer, messageType, receiveResult.EndOfMessage);
                 }
 
                 while (await _application.Output.WaitToWriteAsync(cancellationToken))
@@ -121,20 +124,17 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 Message message;
                 while (_application.Input.TryRead(out message))
                 {
-                    using (message)
+                    try
                     {
-                        try
-                        {
-                            await _webSocket.SendAsync(new ArraySegment<byte>(message.Payload.Buffer.ToArray()),
-                            message.Type == MessageType.Text ? WebSocketMessageType.Text : WebSocketMessageType.Binary, true,
-                            cancellationToken);
-                        }
-                        catch (OperationCanceledException ex)
-                        {
-                            _logger?.LogError(ex.Message);
-                            await _webSocket.CloseAsync(WebSocketCloseStatus.Empty, null, _cancellationToken);
-                            break;
-                        }
+                        await _webSocket.SendAsync(new ArraySegment<byte>(message.Payload),
+                        message.Type == MessageType.Text ? WebSocketMessageType.Text : WebSocketMessageType.Binary, true,
+                        cancellationToken);
+                    }
+                    catch (OperationCanceledException ex)
+                    {
+                        _logger?.LogError(ex.Message);
+                        await _webSocket.CloseAsync(WebSocketCloseStatus.Empty, null, _cancellationToken);
+                        break;
                     }
                 }
             }

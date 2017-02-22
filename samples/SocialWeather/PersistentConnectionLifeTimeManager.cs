@@ -38,8 +38,7 @@ namespace SocialWeather
                 var formatter = _formatterResolver.GetFormatter<T>(connection.Metadata.Get<string>("formatType"));
                 var ms = new MemoryStream();
                 await formatter.WriteAsync(data, ms);
-                var buffer = ReadableBuffer.Create(ms.ToArray()).Preserve();
-                await connection.Transport.Output.WriteAsync(new Message(buffer, MessageType.Binary, endOfMessage: true));
+                await connection.Transport.Output.WriteAsync(new Message(ms.ToArray(), MessageType.Binary, endOfMessage: true));
             }
         }
 

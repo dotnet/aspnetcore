@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO.Pipelines;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Sockets.Formatters
@@ -47,7 +46,7 @@ namespace Microsoft.AspNetCore.Sockets.Formatters
             buffer = buffer.Slice(Newline.Length);
 
             // Write the payload
-            if (!TryFormatPayload(message.Payload.Buffer, message.Type, buffer, out var writtenForPayload))
+            if (!TryFormatPayload(message.Payload, message.Type, buffer, out var writtenForPayload))
             {
                 bytesWritten = 0;
                 return false;
@@ -65,7 +64,7 @@ namespace Microsoft.AspNetCore.Sockets.Formatters
             return true;
         }
 
-        private static bool TryFormatPayload(ReadableBuffer payload, MessageType type, Span<byte> buffer, out int bytesWritten)
+        private static bool TryFormatPayload(ReadOnlySpan<byte> payload, MessageType type, Span<byte> buffer, out int bytesWritten)
         {
             // Short-cut for empty payload
             if (payload.Length == 0)
@@ -98,27 +97,54 @@ namespace Microsoft.AspNetCore.Sockets.Formatters
             }
             else
             {
-                while (true)
+                // We can't just use while(payload.Length > 0) because we need to write a blank final "data: " line
+                // if the payload ends in a newline. For example, consider the following payload:
+                //   "Hello\n"
+                // It needs to be written as:
+                //   data: Hello\r\n
+                //   data: \r\n
+                //   \r\n
+                // Since we slice past the newline when we find it, after writing "Hello" in the previous example, we'll
+                // end up with an empty payload buffer, BUT we need to write it as an empty 'data:' line, so we need
+                // to use a condition that ensure the only time we stop writing is when we write the slice after the final
+                // newline.
+                var keepWriting = true;
+                while (keepWriting)
                 {
                     // Seek to the end of buffer or newline
-                    var sliced = payload.TrySliceTo(LineFeed, out var slice, out var cursor);
+                    var sliceEnd = payload.IndexOf(LineFeed);
+                    var nextSliceStart = sliceEnd + 1;
+                    if (sliceEnd < 0)
+                    {
+                        sliceEnd = payload.Length;
+                        nextSliceStart = sliceEnd + 1;
 
-                    if (!TryFormatLine(sliced ? slice : payload, buffer, out var writtenByLine))
+                        // This is the last span
+                        keepWriting = false;
+                    }
+                    if (sliceEnd > 0 && payload[sliceEnd - 1] == '\r')
+                    {
+                        sliceEnd--;
+                    }
+
+                    var slice = payload.Slice(0, sliceEnd);
+
+                    if (nextSliceStart >= payload.Length)
+                    {
+                        payload = Span<byte>.Empty;
+                    }
+                    else
+                    {
+                        payload = payload.Slice(nextSliceStart);
+                    }
+
+                    if (!TryFormatLine(slice, buffer, out var writtenByLine))
                     {
                         bytesWritten = 0;
                         return false;
                     }
                     buffer = buffer.Slice(writtenByLine);
                     writtenSoFar += writtenByLine;
-
-                    if (sliced)
-                    {
-                        payload = payload.Slice(payload.Move(cursor, 1));
-                    }
-                    else
-                    {
-                        break;
-                    }
                 }
             }
 
@@ -126,13 +152,13 @@ namespace Microsoft.AspNetCore.Sockets.Formatters
             return true;
         }
 
-        private static bool TryFormatLine(ReadableBuffer slice, Span<byte> buffer, out int bytesWritten)
+        private static bool TryFormatLine(ReadOnlySpan<byte> line, Span<byte> buffer, out int bytesWritten)
         {
             // We're going to write the whole thing. HOWEVER, if the last byte is a '\r', we want to truncate it
             // because it was the '\r' in a '\r\n' newline sequence
             // This won't require an additional byte in the buffer because after this line we have to write a newline sequence anyway.
             var writtenSoFar = 0;
-            if (buffer.Length < DataPrefix.Length + slice.Length)
+            if (buffer.Length < DataPrefix.Length + line.Length)
             {
                 bytesWritten = 0;
                 return false;
@@ -141,8 +167,8 @@ namespace Microsoft.AspNetCore.Sockets.Formatters
             writtenSoFar += DataPrefix.Length;
             buffer = buffer.Slice(DataPrefix.Length);
 
-            slice.CopyTo(buffer);
-            var sliceTo = slice.Length;
+            line.CopyTo(buffer);
+            var sliceTo = line.Length;
             if (sliceTo > 0 && buffer[sliceTo - 1] == '\r')
             {
                 sliceTo -= 1;

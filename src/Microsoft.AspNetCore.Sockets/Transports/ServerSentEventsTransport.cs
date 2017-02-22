@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -33,13 +33,9 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             {
                 while (await _application.WaitToReadAsync(token))
                 {
-                    Message message;
-                    while (_application.TryRead(out message))
+                    while (_application.TryRead(out var message))
                     {
-                        using (message)
-                        {
-                            await Send(context, message);
-                        }
+                        await Send(context, message);
                     }
                 }
             }
@@ -53,8 +49,8 @@ namespace Microsoft.AspNetCore.Sockets.Transports
         {
             // TODO: Pooled buffers
             // 8 = 6(data: ) + 2 (\n\n)
-            _logger.LogDebug("Sending {0} byte message to Server-Sent Events client", message.Payload.Buffer.Length);
-            var buffer = new byte[8 + message.Payload.Buffer.Length];
+            _logger.LogDebug("Sending {0} byte message to Server-Sent Events client", message.Payload.Length);
+            var buffer = new byte[8 + message.Payload.Length];
             var at = 0;
             buffer[at++] = (byte)'d';
             buffer[at++] = (byte)'a';
@@ -62,8 +58,8 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             buffer[at++] = (byte)'a';
             buffer[at++] = (byte)':';
             buffer[at++] = (byte)' ';
-            message.Payload.Buffer.CopyTo(new Span<byte>(buffer, at, message.Payload.Buffer.Length));
-            at += message.Payload.Buffer.Length;
+            message.Payload.CopyTo(new Span<byte>(buffer, at, message.Payload.Length));
+            at += message.Payload.Length;
             buffer[at++] = (byte)'\n';
             buffer[at++] = (byte)'\n';
             await context.Response.Body.WriteAsync(buffer, 0, at);

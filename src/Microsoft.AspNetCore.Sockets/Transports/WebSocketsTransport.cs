@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -137,7 +138,8 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             }
 
             // Create a Message for the frame
-            var message = new Message(frame.Payload.Preserve(), effectiveOpcode == WebSocketOpcode.Binary ? MessageType.Binary : MessageType.Text, frame.EndOfMessage);
+            // This has to copy the buffer :(.
+            var message = new Message(frame.Payload.ToArray(), effectiveOpcode == WebSocketOpcode.Binary ? MessageType.Binary : MessageType.Text, frame.EndOfMessage);
 
             // Write the message to the channel
             return _application.Output.WriteAsync(message);
@@ -160,31 +162,28 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                 Message message;
                 while (_application.Input.TryRead(out message))
                 {
-                    using (message)
+                    if (message.Payload.Length > 0)
                     {
-                        if (message.Payload.Buffer.Length > 0)
+                        try
                         {
-                            try
-                            {
-                                var opcode = message.Type == MessageType.Binary ?
-                                    WebSocketOpcode.Binary :
-                                    WebSocketOpcode.Text;
+                            var opcode = message.Type == MessageType.Binary ?
+                                WebSocketOpcode.Binary :
+                                WebSocketOpcode.Text;
 
-                                var frame = new WebSocketFrame(
-                                    endOfMessage: message.EndOfMessage,
-                                    opcode: _lastFrameIncomplete ? WebSocketOpcode.Continuation : opcode,
-                                    payload: message.Payload.Buffer);
+                            var frame = new WebSocketFrame(
+                                endOfMessage: message.EndOfMessage,
+                                opcode: _lastFrameIncomplete ? WebSocketOpcode.Continuation : opcode,
+                                payload: ReadableBuffer.Create(message.Payload));
 
-                                _lastFrameIncomplete = !message.EndOfMessage;
+                            _lastFrameIncomplete = !message.EndOfMessage;
 
-                                LogFrame("Sending", frame);
-                                await ws.SendAsync(frame);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError("Error writing frame to output: {0}", ex);
-                                break;
-                            }
+                            LogFrame("Sending", frame);
+                            await ws.SendAsync(frame);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError("Error writing frame to output: {0}", ex);
+                            break;
                         }
                     }
                 }

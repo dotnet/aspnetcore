@@ -159,14 +159,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 {
                     if (Input.TryRead(out Message message))
                     {
-                        using (message)
+                        // Do not "simplify" - events can be removed from a different thread
+                        var receivedEventHandler = Received;
+                        if (receivedEventHandler != null)
                         {
-                            // Do not "simplify" - events can be removed from a different thread
-                            var receivedEventHandler = Received;
-                            if (receivedEventHandler != null)
-                            {
-                                receivedEventHandler(message.Payload.Buffer.ToArray(), message.Type);
-                            }
+                            receivedEventHandler(message.Payload, message.Type);
                         }
                     }
                 }
@@ -199,7 +196,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 return false;
             }
 
-            var message = new Message(ReadableBuffer.Create(data).Preserve(), type);
+            var message = new Message(data, type);
 
             while (await Output.WaitToWriteAsync(cancellationToken))
             {
