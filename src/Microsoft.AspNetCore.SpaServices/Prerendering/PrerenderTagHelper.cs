@@ -129,6 +129,11 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
                 return;
             }
 
+            if (result.StatusCode.HasValue)
+            {
+                ViewContext.HttpContext.Response.StatusCode = result.StatusCode.Value;
+            }
+
             // It's some HTML to inject
             output.Content.SetHtmlContent(result.Html);
 

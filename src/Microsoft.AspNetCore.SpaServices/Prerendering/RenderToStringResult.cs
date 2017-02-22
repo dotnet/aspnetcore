@@ -25,5 +25,10 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
         /// to the SPA's routing configuration.
         /// </summary>
         public string RedirectUrl { get; set; }
+
+        /// <summary>
+        /// If set, specifies the HTTP status code that should be sent back with the server response.
+        /// </summary>
+        public int? StatusCode { get; set; }
     }
 }
