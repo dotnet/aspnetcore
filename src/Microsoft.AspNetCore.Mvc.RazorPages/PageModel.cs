@@ -44,6 +44,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         public ModelStateDictionary ModelState => PageContext.ModelState;
 
+        /// <summary>
+        /// Gets the <see cref="ITempDataDictionary"/> from the <see cref="PageContext"/>.
+        /// </summary>
+        /// <remarks>Returns null if <see cref="PageContext"/> is null.</remarks>
+        public ITempDataDictionary TempData => PageContext?.TempData;
+
         public ViewDataDictionary ViewData => PageContext?.ViewData;
 
         protected Task<T> BindAsync<T>(string name)

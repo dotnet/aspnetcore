@@ -2,13 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
@@ -48,6 +45,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 _binder = value;
             }
         }
+
+        /// <summary>
+        /// Gets the <see cref="ITempDataDictionary"/> from the <see cref="PageContext"/>.
+        /// </summary>
+        /// <remarks>Returns null if <see cref="PageContext"/> is null.</remarks>
+        public ITempDataDictionary TempData => PageContext?.TempData;
 
         /// <inheritdoc />
         public override void EnsureRenderedBodyOrSections()
@@ -90,5 +93,32 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             }
         }
 
+        /// <summary>
+        /// Creates a <see cref="RedirectResult"/> object that redirects to the specified <paramref name="url"/>.
+        /// </summary>
+        /// <param name="url">The URL to redirect to.</param>
+        /// <returns>The created <see cref="RedirectResult"/> for the response.</returns>
+        protected RedirectResult Redirect(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(url));
+            }
+
+            return new RedirectResult(url);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="PageViewResult"/> object that renders this page as a view to the response.
+        /// </summary>
+        /// <returns>The created <see cref="PageViewResult"/> object for the response.</returns>
+        /// <remarks>
+        /// Returning a <see cref="PageViewResult"/> from a page handler method is equivalent to returning void.
+        /// The view associated with the page will be executed.
+        /// </remarks>
+        protected PageViewResult View()
+        {
+            return new PageViewResult(this);
+        }
     }
 }

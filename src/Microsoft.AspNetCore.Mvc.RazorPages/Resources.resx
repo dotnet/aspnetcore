@@ -129,4 +129,7 @@
   <data name="PageViewResult_ContextIsInvalid" xml:space="preserve">
     <value>Argument '{0}' is not the same instance used to create '{1}'.</value>
   </data>
+  <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
+    <value>Value cannot be null or empty.</value>
+  </data>
 </root>

@@ -10,7 +10,7 @@ namespace RazorPagesWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddMvc().AddCookieTempDataProvider();
         }
 
         public void Configure(IApplicationBuilder app)

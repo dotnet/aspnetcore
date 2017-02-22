@@ -74,6 +74,22 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             return string.Format(CultureInfo.CurrentCulture, GetString("PageViewResult_ContextIsInvalid"), p0, p1);
         }
 
+        /// <summary>
+        /// Value cannot be null or empty.
+        /// </summary>
+        internal static string ArgumentCannotBeNullOrEmpty
+        {
+            get { return GetString("ArgumentCannotBeNullOrEmpty"); }
+        }
+
+        /// <summary>
+        /// Value cannot be null or empty.
+        /// </summary>
+        internal static string FormatArgumentCannotBeNullOrEmpty()
+        {
+            return GetString("ArgumentCannotBeNullOrEmpty");
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
