@@ -2204,7 +2204,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         /// <returns>Task</returns>
         [Fact]
-        public async Task ChangeEmailFailsWithWrongToken()
+        public async Task ChangeEmailTokensFailsAfterEmailChanged()
         {
             if (ShouldSkipDbTests())
             {
@@ -2231,7 +2231,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         /// <returns>Task</returns>
         [Fact]
-        public async Task ChangeEmailTokensFailsAfterEmailChanged()
+        public async Task ChangeEmailFailsWithWrongToken()
         {
             if (ShouldSkipDbTests())
             {
