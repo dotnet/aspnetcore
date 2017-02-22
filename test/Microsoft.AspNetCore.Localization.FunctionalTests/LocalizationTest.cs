@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 "http://localhost:5074",
                 "ResourcesInFolder",
                 "fr-FR",
-                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder Bonjour from Test in resources folder");
+                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
         }
 
         [ConditionalFact]
