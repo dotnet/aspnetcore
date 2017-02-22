@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
-            services.AddSingleton<TestEndPoint>();
+            services.AddEndPoint<TestEndPoint>();
             context.RequestServices = services.BuildServiceProvider();
             var ms = new MemoryStream();
             context.Request.Path = "/negotiate";
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.Response.Body = strm;
 
                 var services = new ServiceCollection();
-                services.AddSingleton<TestEndPoint>();
+                services.AddEndPoint<TestEndPoint>();
                 context.RequestServices = services.BuildServiceProvider();
                 context.Request.Path = path;
                 var values = new Dictionary<string, StringValues>();
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var context = new DefaultHttpContext();
                 context.Response.Body = strm;
                 var services = new ServiceCollection();
-                services.AddSingleton<TestEndPoint>();
+                services.AddEndPoint<TestEndPoint>();
                 context.RequestServices = services.BuildServiceProvider();
                 context.Request.Path = path;
 
@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         {
             var context = new DefaultHttpContext();
             var services = new ServiceCollection();
-            services.AddSingleton<TEndPoint>();
+            services.AddEndPoint<TEndPoint>();
             context.RequestServices = services.BuildServiceProvider();
             context.Request.Path = path;
             var values = new Dictionary<string, StringValues>();

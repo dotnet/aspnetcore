@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR
 {
@@ -21,9 +22,10 @@ namespace Microsoft.AspNetCore.SignalR
         public HubEndPoint(HubLifetimeManager<THub> lifetimeManager,
                            IHubContext<THub> hubContext,
                            InvocationAdapterRegistry registry,
+                           IOptions<EndPointOptions<HubEndPoint<THub, IClientProxy>>> endPointOptions,
                            ILogger<HubEndPoint<THub>> logger,
                            IServiceScopeFactory serviceScopeFactory)
-            : base(lifetimeManager, hubContext, registry, logger, serviceScopeFactory)
+            : base(lifetimeManager, hubContext, registry, endPointOptions, logger, serviceScopeFactory)
         {
         }
     }
@@ -41,6 +43,7 @@ namespace Microsoft.AspNetCore.SignalR
         public HubEndPoint(HubLifetimeManager<THub> lifetimeManager,
                            IHubContext<THub, TClient> hubContext,
                            InvocationAdapterRegistry registry,
+                           IOptions<EndPointOptions<HubEndPoint<THub, TClient>>> endPointOptions,
                            ILogger<HubEndPoint<THub, TClient>> logger,
                            IServiceScopeFactory serviceScopeFactory)
         {

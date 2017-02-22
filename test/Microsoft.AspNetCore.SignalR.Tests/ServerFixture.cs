@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 services.AddSockets();
                 services.AddSignalR();
-                services.AddSingleton<EchoEndPoint>();
+                services.AddEndPoint<EchoEndPoint>();
             }
 
             public void Configure(IApplicationBuilder app, IHostingEnvironment env)

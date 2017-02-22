@@ -17,7 +17,7 @@ namespace SocialWeather
         {
             services.AddRouting();
             services.AddSockets();
-            services.AddSingleton<SocialWeatherEndPoint>();
+            services.AddEndPoint<SocialWeatherEndPoint>();
             services.AddTransient<PersistentConnectionLifeTimeManager>();
             services.AddSingleton(typeof(JsonStreamFormatter<>), typeof(JsonStreamFormatter<>));
             services.AddSingleton<PipeWeatherStreamFormatter>();

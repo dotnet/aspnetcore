@@ -29,7 +29,7 @@ namespace SocketsSample
                     });
             // .AddRedis();
 
-            services.AddSingleton<MessagesEndPoint>();
+            services.AddEndPoint<MessagesEndPoint>();
             services.AddSingleton<ProtobufSerializer>();
         }
 
