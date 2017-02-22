@@ -68,14 +68,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Contains(expected, content);
         }
 
-        [Fact(Skip = "Razor #595")]
+        [Fact]
         public async Task CompilationFailuresFromViewImportsAreListed()
         {
             // Arrange
             var expectedMessage = "The type or namespace name &#x27;NamespaceDoesNotExist&#x27; could not be found ("
                 + "are you missing a using directive or an assembly reference?)";
             var expectedCompilationContent = "public class _Views_ErrorFromViewImports_Index_cshtml : "
-                + "Microsoft.AspNetCore.Mvc.Razor.RazorPage&lt;dynamic&gt;";
+                + "global::Microsoft.AspNetCore.Mvc.Razor.RazorPage&lt;dynamic&gt;";
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
 
             // Act
