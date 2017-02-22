@@ -5,7 +5,7 @@ using System;
 using System.IO.Pipelines;
 using System.Text;
 
-namespace Microsoft.AspNetCore.Sockets
+namespace Microsoft.AspNetCore.Sockets.Formatters
 {
     internal static class TextMessageFormatter
     {

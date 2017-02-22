@@ -5,9 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Text;
+using Microsoft.AspNetCore.Sockets.Tests;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Sockets.Tests
+namespace Microsoft.AspNetCore.Sockets.Formatters.Tests
 {
     public class TextMessageFormatterTests
     {
@@ -151,6 +152,27 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var buffer = Encoding.UTF8.GetBytes(encoded);
             Assert.False(MessageFormatter.TryParseMessage(buffer, MessageFormat.Text, out var message, out var consumed));
             Assert.Equal(0, consumed);
+        }
+
+        [Fact]
+        public void InsufficientWriteBufferSpace()
+        {
+            const int ExpectedSize = 9;
+            var message = MessageTestUtils.CreateMessage("Test", MessageType.Text);
+
+            byte[] buffer;
+            int bufferSize;
+            int written;
+            for (bufferSize = 0; bufferSize < 9; bufferSize++)
+            {
+                buffer = new byte[bufferSize];
+                Assert.False(MessageFormatter.TryFormatMessage(message, buffer, MessageFormat.Text, out written));
+                Assert.Equal(0, written);
+            }
+
+            buffer = new byte[bufferSize];
+            Assert.True(MessageFormatter.TryFormatMessage(message, buffer, MessageFormat.Text, out written));
+            Assert.Equal(ExpectedSize, written);
         }
     }
 }

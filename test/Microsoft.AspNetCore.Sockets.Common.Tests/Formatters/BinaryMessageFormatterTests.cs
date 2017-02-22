@@ -4,9 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.Sockets.Tests;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Sockets.Tests
+namespace Microsoft.AspNetCore.Sockets.Formatters.Tests
 {
     public partial class BinaryMessageFormatterTests
     {
@@ -166,6 +167,27 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         {
             Assert.False(MessageFormatter.TryParseMessage(encoded, MessageFormat.Binary, out var message, out var consumed));
             Assert.Equal(0, consumed);
+        }
+
+        [Fact]
+        public void InsufficientWriteBufferSpace()
+        {
+            const int ExpectedSize = 13;
+            var message = MessageTestUtils.CreateMessage("Test", MessageType.Text);
+
+            byte[] buffer;
+            int bufferSize;
+            int written;
+            for (bufferSize = 0; bufferSize < 13; bufferSize++)
+            {
+                buffer = new byte[bufferSize];
+                Assert.False(MessageFormatter.TryFormatMessage(message, buffer, MessageFormat.Binary, out written));
+                Assert.Equal(0, written);
+            }
+
+            buffer = new byte[bufferSize];
+            Assert.True(MessageFormatter.TryFormatMessage(message, buffer, MessageFormat.Binary, out written));
+            Assert.Equal(ExpectedSize, written);
         }
     }
 }

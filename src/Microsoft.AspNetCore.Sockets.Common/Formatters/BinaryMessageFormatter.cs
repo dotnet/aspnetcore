@@ -5,7 +5,7 @@ using System;
 using System.Binary;
 using System.IO.Pipelines;
 
-namespace Microsoft.AspNetCore.Sockets
+namespace Microsoft.AspNetCore.Sockets.Formatters
 {
     internal static class BinaryMessageFormatter
     {

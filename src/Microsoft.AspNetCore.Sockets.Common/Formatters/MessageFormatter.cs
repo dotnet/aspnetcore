@@ -1,9 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 
-namespace Microsoft.AspNetCore.Sockets
+namespace Microsoft.AspNetCore.Sockets.Formatters
 {
     public static class MessageFormatter
     {
@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Sockets
                 // giving it to us. Hence we throw, instead of returning false.
                 throw new InvalidOperationException("Cannot format message where endOfMessage is false using this format");
             }
+
             return format == MessageFormat.Text ?
                 TextMessageFormatter.TryFormatMessage(message, buffer, out bytesWritten) :
                 BinaryMessageFormatter.TryFormatMessage(message, buffer, out bytesWritten);
