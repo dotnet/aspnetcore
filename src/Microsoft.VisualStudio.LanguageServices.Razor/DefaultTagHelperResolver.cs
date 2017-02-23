@@ -28,26 +28,40 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         {
             try
             {
+                TagHelperResolutionResult result;
+
+                // We're being overly defensive here because the OOP host can return null for the client/session/operation
+                // when it's disconnected (user stops the process).
+                //
+                // This will change in the future to an easier to consume API but for VS RTM this is what we have.
                 var client = await RazorLanguageServiceClientFactory.CreateAsync(Workspace, CancellationToken.None);
-                if (client == null)
+                if (client != null)
                 {
-                    // The OOP host is turned off, so let's do this in process.
-                    var resolver = new CodeAnalysis.Razor.DefaultTagHelperResolver(designTime: true);
-                    var result =  await resolver.GetTagHelpersAsync(project, assemblyNameFilters, CancellationToken.None).ConfigureAwait(false);
-                    return result;
+                    using (var session = await client.CreateSessionAsync(project.Solution))
+                    {
+                        if (session != null)
+                        {
+                            result = await session.InvokeAsync<TagHelperResolutionResult>(
+                                "GetTagHelpersAsync",
+                                new object[] { project.Id.Id, "Foo", assemblyNameFilters, }).ConfigureAwait(false);
+
+                            if (result != null)
+                            {
+                                // Per https://github.com/dotnet/roslyn/issues/12770 - there's currently no support for documentation in the OOP host
+                                // until that's available we add the documentation on the VS side by looking up each symbol again.
+                                var compilation = await project.GetCompilationAsync().ConfigureAwait(false);
+                                AddXmlDocumentation(compilation, result.Descriptors);
+                                return result;
+                            }
+                        }
+
+                    }
                 }
 
-                using (var session = await client.CreateSessionAsync(project.Solution))
-                {
-                    var result = await session.InvokeAsync<TagHelperResolutionResult>("GetTagHelpersAsync", new object[] { project.Id.Id, "Foo", assemblyNameFilters, }).ConfigureAwait(false);
-
-                    // Per https://github.com/dotnet/roslyn/issues/12770 - there's currently no support for documentation in the OOP host
-                    // until that's available we add the documentation on the VS side by looking up each symbol again.
-                    var compilation = await project.GetCompilationAsync().ConfigureAwait(false);
-                    AddXmlDocumentation(compilation, result.Descriptors);
-
-                    return result;
-                }
+                // The OOP host is turned off, so let's do this in process.
+                var resolver = new CodeAnalysis.Razor.DefaultTagHelperResolver(designTime: true);
+                result = await resolver.GetTagHelpersAsync(project, assemblyNameFilters, CancellationToken.None).ConfigureAwait(false);
+                return result;
             }
             catch (Exception exception)
             {
