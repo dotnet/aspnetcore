@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [MemberData(nameof(LargeUploadData))]
-        public async Task LargeUpload(long? maxRequestBufferSize, bool ssl, bool expectPause)
+        public async Task LargeUpload(long? maxRequestBufferSize, bool connectionAdapter, bool expectPause)
         {
             // Parameters
             var data = new byte[_dataLength];
@@ -86,11 +86,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var clientFinishedSendingRequestBody = new ManualResetEvent(false);
             var lastBytesWritten = DateTime.MaxValue;
 
-            using (var host = StartWebHost(maxRequestBufferSize, data, ssl, startReadingRequestBody, clientFinishedSendingRequestBody))
+            using (var host = StartWebHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody))
             {
                 var port = host.GetPort();
                 using (var socket = CreateSocket(port))
-                using (var stream = await CreateStreamAsync(socket, ssl, host.GetHost(ssl)))
+                using (var stream = new NetworkStream(socket))
                 {
                     await WritePostRequestHeaders(stream, data.Length);
 
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private static IWebHost StartWebHost(long? maxRequestBufferSize, byte[] expectedBody, bool useSsl, ManualResetEvent startReadingRequestBody,
+        private static IWebHost StartWebHost(long? maxRequestBufferSize, byte[] expectedBody, bool useConnectionAdapter, ManualResetEvent startReadingRequestBody,
             ManualResetEvent clientFinishedSendingRequestBody)
         {
             var host = new WebHostBuilder()
@@ -173,9 +173,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
                     {
-                        if (useSsl)
+                        if (useConnectionAdapter)
                         {
-                            listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
+                            listenOptions.ConnectionAdapters.Add(new PassThroughConnectionAdapter());
                         }
                     });
 
@@ -249,23 +249,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await writer.WriteAsync("POST / HTTP/1.0\r\n");
                 await writer.WriteAsync($"Content-Length: {contentLength}\r\n");
                 await writer.WriteAsync("\r\n");
-            }
-        }
-
-        private static async Task<Stream> CreateStreamAsync(Socket socket, bool ssl, string targetHost)
-        {
-            var networkStream = new NetworkStream(socket);
-            if (ssl)
-            {
-                var sslStream = new SslStream(networkStream, leaveInnerStreamOpen: false,
-                    userCertificateValidationCallback: (a, b, c, d) => true);
-                await sslStream.AuthenticateAsClientAsync(targetHost, clientCertificates: null,
-                    enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12, checkCertificateRevocation: false);
-                return sslStream;
-            }
-            else
-            {
-                return networkStream;
             }
         }
     }

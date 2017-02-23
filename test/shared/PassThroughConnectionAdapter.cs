@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Adapter;
 using Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal;
 using Microsoft.AspNetCore.Testing;
 
-namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
+namespace Microsoft.AspNetCore.Testing
 {
     public class PassThroughConnectionAdapter : IConnectionAdapter
     {
