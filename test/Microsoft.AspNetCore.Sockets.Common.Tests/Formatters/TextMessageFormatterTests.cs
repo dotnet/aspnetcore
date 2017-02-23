@@ -39,6 +39,8 @@ namespace Microsoft.AspNetCore.Sockets.Formatters.Tests
         [Theory]
         [InlineData("0:B:;", new byte[0])]
         [InlineData("8:B:q83vEg==;", new byte[] { 0xAB, 0xCD, 0xEF, 0x12 })]
+        [InlineData("8:B:q83vEjQ=;", new byte[] { 0xAB, 0xCD, 0xEF, 0x12, 0x34 })]
+        [InlineData("8:B:q83vEjRW;", new byte[] { 0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56 })]
         public void WriteBinaryMessage(string encoded, byte[] payload)
         {
             var message = MessageTestUtils.CreateMessage(payload);
@@ -99,6 +101,8 @@ namespace Microsoft.AspNetCore.Sockets.Formatters.Tests
         [Theory]
         [InlineData("0:B:;", new byte[0])]
         [InlineData("8:B:q83vEg==;", new byte[] { 0xAB, 0xCD, 0xEF, 0x12 })]
+        [InlineData("8:B:q83vEjQ=;", new byte[] { 0xAB, 0xCD, 0xEF, 0x12, 0x34 })]
+        [InlineData("8:B:q83vEjRW;", new byte[] { 0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56 })]
         public void ReadBinaryMessage(string encoded, byte[] payload)
         {
             var buffer = Encoding.UTF8.GetBytes(encoded);
@@ -153,8 +157,32 @@ namespace Microsoft.AspNetCore.Sockets.Formatters.Tests
             Assert.Equal(0, consumed);
         }
 
+        [Theory]
+        [InlineData(new byte[] { 0xAB, 0xCD, 0xEF, 0x12 })]
+        [InlineData(new byte[] { 0xAB, 0xCD, 0xEF, 0x12, 0x34 })]
+        [InlineData(new byte[] { 0xAB, 0xCD, 0xEF, 0x12, 0x34, 0x56 })]
+        public void InsufficientWriteBufferSpaceBinary(byte[] payload)
+        {
+            const int ExpectedSize = 13;
+            var message = MessageTestUtils.CreateMessage(payload);
+
+            byte[] buffer;
+            int bufferSize;
+            int written;
+            for (bufferSize = 0; bufferSize < ExpectedSize; bufferSize++)
+            {
+                buffer = new byte[bufferSize];
+                Assert.False(MessageFormatter.TryFormatMessage(message, buffer, MessageFormat.Text, out written));
+                Assert.Equal(0, written);
+            }
+
+            buffer = new byte[bufferSize];
+            Assert.True(MessageFormatter.TryFormatMessage(message, buffer, MessageFormat.Text, out written));
+            Assert.Equal(ExpectedSize, written);
+        }
+
         [Fact]
-        public void InsufficientWriteBufferSpace()
+        public void InsufficientWriteBufferSpaceText()
         {
             const int ExpectedSize = 9;
             var message = MessageTestUtils.CreateMessage("Test", MessageType.Text);
@@ -162,7 +190,7 @@ namespace Microsoft.AspNetCore.Sockets.Formatters.Tests
             byte[] buffer;
             int bufferSize;
             int written;
-            for (bufferSize = 0; bufferSize < 9; bufferSize++)
+            for (bufferSize = 0; bufferSize < ExpectedSize; bufferSize++)
             {
                 buffer = new byte[bufferSize];
                 Assert.False(MessageFormatter.TryFormatMessage(message, buffer, MessageFormat.Text, out written));

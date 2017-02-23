@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text;
+using System.Binary;
 
 namespace Microsoft.AspNetCore.Sockets.Formatters
 {
@@ -76,9 +76,7 @@ namespace Microsoft.AspNetCore.Sockets.Formatters
             var writtenSoFar = 0;
             if (type == MessageType.Binary)
             {
-                // TODO: We're going to need to fix this as part of https://github.com/aspnet/SignalR/issues/192
-                var message = Convert.ToBase64String(payload.ToArray());
-                var encodedSize = DataPrefix.Length + Encoding.UTF8.GetByteCount(message) + Newline.Length;
+                var encodedSize = DataPrefix.Length + Base64.ComputeEncodedLength(payload.Length) + Newline.Length;
                 if (buffer.Length < encodedSize)
                 {
                     bytesWritten = 0;
@@ -87,9 +85,8 @@ namespace Microsoft.AspNetCore.Sockets.Formatters
                 DataPrefix.CopyTo(buffer);
                 buffer = buffer.Slice(DataPrefix.Length);
 
-                var array = Encoding.UTF8.GetBytes(message);
-                array.CopyTo(buffer);
-                buffer = buffer.Slice(array.Length);
+                var encodedLength = Base64.Encode(payload, buffer);
+                buffer = buffer.Slice(encodedLength);
 
                 Newline.CopyTo(buffer);
                 writtenSoFar += encodedSize;
