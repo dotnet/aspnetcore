@@ -447,7 +447,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <summary>
-        /// One or more compilation references are missing. Possible causes include a missing '{0}' property in the application's '{1}' file.
+        /// One or more compilation references are missing. Ensure that your project is referencing '{0}' and the '{1}' property is not set to false.
         /// </summary>
         internal static string Compilation_DependencyContextIsNotSpecified
         {
@@ -455,7 +455,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <summary>
-        /// One or more compilation references are missing. Possible causes include a missing '{0}' property in the application's '{1}' file.
+        /// One or more compilation references are missing. Ensure that your project is referencing '{0}' and the '{1}' property is not set to false.
         /// </summary>
         internal static string FormatCompilation_DependencyContextIsNotSpecified(object p0, object p1)
         {
