@@ -1,6 +1,6 @@
 {
   "name": "generator-aspnetcore-spa",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "description": "Single-Page App templates for ASP.NET Core",
   "author": "Microsoft",
   "license": "Apache-2.0",
