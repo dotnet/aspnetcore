@@ -90,6 +90,22 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             return GetString("ArgumentCannotBeNullOrEmpty");
         }
 
+        /// <summary>
+        /// Unsupported handler method type '{0}'.
+        /// </summary>
+        internal static string UnsupportedHandlerMethodType
+        {
+            get { return GetString("UnsupportedHandlerMethodType"); }
+        }
+
+        /// <summary>
+        /// Unsupported handler method type '{0}'.
+        /// </summary>
+        internal static string FormatUnsupportedHandlerMethodType(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("UnsupportedHandlerMethodType"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -132,4 +132,7 @@
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>Value cannot be null or empty.</value>
   </data>
+  <data name="UnsupportedHandlerMethodType" xml:space="preserve">
+    <value>Unsupported handler method return type '{0}'.</value>
+  </data>
 </root>

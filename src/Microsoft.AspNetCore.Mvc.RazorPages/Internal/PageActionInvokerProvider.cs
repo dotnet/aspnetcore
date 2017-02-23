@@ -239,6 +239,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     actionDescriptor.HandlerMethods.Add(new HandlerMethodDescriptor()
                     {
                         Method = method,
+                        Executor = ExecutorFactory.CreateExecutor(actionDescriptor, method),
                     });
                 }
             }

@@ -5,29 +5,31 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public static class ExecutorFactory
     {
-        public static Func<Page, object, Task<IActionResult>> Create(MethodInfo method)
+        public static Func<Page, object, Task<IActionResult>> CreateExecutor(
+            CompiledPageActionDescriptor actionDescriptor,
+            MethodInfo method)
         {
-            return new Executor()
+            if (actionDescriptor == null)
             {
-                Method = method,
-            }.Execute;
-        }
+                throw new ArgumentNullException(nameof(actionDescriptor));
+            }
 
-        private class Executor
-        {
-            public MethodInfo Method { get; set; }
-
-            public async Task<IActionResult> Execute(Page page, object model)
+            if (method == null)
             {
-                var handler = HandlerMethod.Create(Method);
+                throw new ArgumentNullException(nameof(method));
+            }
 
-                var receiver = Method.DeclaringType.IsAssignableFrom(page.GetType()) ? page : model;
+            var methodIsDeclaredOnPage = method.DeclaringType.GetTypeInfo().IsAssignableFrom(actionDescriptor.PageTypeInfo);
+            var handler = CreateHandlerMethod(method);
 
+            return async (page, model) =>
+            {
                 var arguments = new object[handler.Parameters.Length];
                 for (var i = 0; i < handler.Parameters.Length; i++)
                 {
@@ -39,68 +41,69 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                         parameter.Name);
                 }
 
+                var receiver = methodIsDeclaredOnPage ? page : model;
                 var result = await handler.Execute(receiver, arguments);
                 return result;
-            }
+            };
         }
 
-        private class HandlerParameter
+        private static HandlerMethod CreateHandlerMethod(MethodInfo method)
         {
-            public string Name { get; set; }
+            var methodParameters = method.GetParameters();
+            var parameters = new HandlerParameter[methodParameters.Length];
 
-            public Type Type { get; set; }
+            for (var i = 0; i < methodParameters.Length; i++)
+            {
+                var methodParameter = methodParameters[i];
+                object defaultValue = null;
+                if (methodParameter.HasDefaultValue)
+                {
+                    defaultValue = methodParameter.DefaultValue;
+                }
+                else if (methodParameter.ParameterType.GetTypeInfo().IsValueType)
+                {
+                    defaultValue = Activator.CreateInstance(methodParameter.ParameterType);
+                }
 
-            public object DefaultValue { get; set; }
+                parameters[i] = new HandlerParameter(methodParameter.Name, methodParameter.ParameterType, defaultValue);
+            }
+
+            var returnType = method.ReturnType;
+            var returnTypeInfo = method.ReturnType.GetTypeInfo();
+            if (returnType == typeof(void))
+            {
+                return new VoidHandlerMethod(parameters, method);
+            }
+            else if (typeof(IActionResult).IsAssignableFrom(returnType))
+            {
+                return new ActionResultHandlerMethod(parameters, method);
+            }
+            else if (returnType == typeof(Task))
+            {
+                return new NonGenericTaskHandlerMethod(parameters, method);
+            }
+            else
+            {
+                var taskType = ClosedGenericMatcher.ExtractGenericInterface(returnType, typeof(Task<>));
+                if (taskType != null && typeof(IActionResult).IsAssignableFrom(taskType.GenericTypeArguments[0]))
+                {
+                    return new GenericTaskHandlerMethod(parameters, method);
+                }
+            }
+
+            throw new InvalidOperationException(Resources.FormatUnsupportedHandlerMethodType(returnType));
         }
 
         private abstract class HandlerMethod
         {
-            public static HandlerMethod Create(MethodInfo method)
-            {
-                var methodParameters = method.GetParameters();
-                var parameters = new HandlerParameter[methodParameters.Length];
-
-                for (var i = 0; i < methodParameters.Length; i++)
-                {
-                    parameters[i] = new HandlerParameter()
-                    {
-                        DefaultValue = methodParameters[i].HasDefaultValue ? methodParameters[i].DefaultValue : null,
-                        Name = methodParameters[i].Name,
-                        Type = methodParameters[i].ParameterType,
-                    };
-                }
-
-                if (method.ReturnType == typeof(Task))
-                {
-                    return new NonGenericTaskHandlerMethod(parameters, method);
-                }
-                else if (method.ReturnType == typeof(void))
-                {
-                    return new VoidHandlerMethod(parameters, method);
-                }
-                else if (
-                    method.ReturnType.IsConstructedGenericType &&
-                    method.ReturnType.GetTypeInfo().GetGenericTypeDefinition() == typeof(Task<>) &&
-                    typeof(IActionResult).IsAssignableFrom(method.ReturnType.GetTypeInfo().GetGenericArguments()[0]))
-                {
-                    return new GenericTaskHandlerMethod(parameters, method);
-                }
-                else if (typeof(IActionResult).IsAssignableFrom(method.ReturnType))
-                {
-                    return new ActionResultHandlerMethod(parameters, method);
-                }
-                else
-                {
-                    throw new InvalidOperationException("unsupported handler method return type");
-                }
-            }
-
             protected static Expression[] Unpack(Expression arguments, HandlerParameter[] parameters)
             {
                 var unpackExpressions = new Expression[parameters.Length];
                 for (var i = 0; i < parameters.Length; i++)
                 {
-                    unpackExpressions[i] = Expression.Convert(Expression.ArrayIndex(arguments, Expression.Constant(i)), parameters[i].Type);
+                    unpackExpressions[i] = Expression.Convert(
+                        Expression.ArrayIndex(arguments, Expression.Constant(i)),
+                        parameters[i].Type);
                 }
 
                 return unpackExpressions;
@@ -178,7 +181,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             private static async Task<object> Convert<T>(object taskAsObject)
             {
                 var task = (Task<T>)taskAsObject;
-                return (object)await task;
+                return await task;
             }
         }
 
@@ -233,6 +236,22 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 return Task.FromResult(_thunk(receiver, arguments));
             }
+        }
+
+        private struct HandlerParameter
+        {
+            public HandlerParameter(string name, Type type, object defaultValue)
+            {
+                Name = name;
+                Type = type;
+                DefaultValue = defaultValue;
+            }
+
+            public string Name { get; }
+
+            public Type Type { get; }
+
+            public object DefaultValue { get; }
         }
     }
 }

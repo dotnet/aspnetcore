@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var handler = _selector.Select(_pageContext);
             if (handler != null)
             {
-                var executor = ExecutorFactory.Create(handler.Method);
+                var executor = handler.Executor;
                 result = await executor(_page, _model);
             }
 

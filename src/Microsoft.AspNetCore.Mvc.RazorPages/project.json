@@ -33,6 +33,10 @@
       "version": "1.2.0-*",
       "type": "build"
     },
+    "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
+      "version": "1.2.0-*",
+      "type": "build"
+    },
     "NETStandard.Library": "1.6.1"
   },
   "frameworks": {

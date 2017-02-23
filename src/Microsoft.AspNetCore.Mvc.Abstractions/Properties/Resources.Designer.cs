@@ -171,38 +171,6 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         }
 
         /// <summary>
-        /// Special
-        /// </summary>
-        internal static string BindingSource_Special
-        {
-            get { return GetString("BindingSource_Special"); }
-        }
-
-        /// <summary>
-        /// Special
-        /// </summary>
-        internal static string FormatBindingSource_Special()
-        {
-            return GetString("BindingSource_Special");
-        }
-
-        /// <summary>
-        /// FormFile
-        /// </summary>
-        internal static string BindingSource_FormFile
-        {
-            get { return GetString("BindingSource_FormFile"); }
-        }
-
-        /// <summary>
-        /// FormFile
-        /// </summary>
-        internal static string FormatBindingSource_FormFile()
-        {
-            return GetString("BindingSource_FormFile");
-        }
-
-        /// <summary>
         /// ModelBinding
         /// </summary>
         internal static string BindingSource_ModelBinding
@@ -312,6 +280,38 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         internal static string FormatBindingSource_MustBeGreedy(object p0, object p1)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("BindingSource_MustBeGreedy"), p0, p1);
+        }
+
+        /// <summary>
+        /// Special
+        /// </summary>
+        internal static string BindingSource_Special
+        {
+            get { return GetString("BindingSource_Special"); }
+        }
+
+        /// <summary>
+        /// Special
+        /// </summary>
+        internal static string FormatBindingSource_Special()
+        {
+            return GetString("BindingSource_Special");
+        }
+
+        /// <summary>
+        /// FormFile
+        /// </summary>
+        internal static string BindingSource_FormFile
+        {
+            get { return GetString("BindingSource_FormFile"); }
+        }
+
+        /// <summary>
+        /// FormFile
+        /// </summary>
+        internal static string FormatBindingSource_FormFile()
+        {
+            return GetString("BindingSource_FormFile");
         }
 
         private static string GetString(string name, params string[] formatterNames)

@@ -172,6 +172,51 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
+        public void OnProvidersExecuting_CachesExecutor()
+        {
+            // Arrange
+            var descriptor = new PageActionDescriptor
+            {
+                RelativePath = "/Home/Path1/File.cshtml",
+                ViewEnginePath = "/Home/Path1/File.cshtml",
+                FilterDescriptors = new FilterDescriptor[0],
+            };
+
+            var loader = new Mock<IPageLoader>();
+            loader.Setup(l => l.Load(It.IsAny<PageActionDescriptor>()))
+                .Returns(typeof(PageWithModel));
+            var descriptorCollection = new ActionDescriptorCollection(new[] { descriptor }, version: 1);
+            var actionDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
+            actionDescriptorProvider.Setup(p => p.ActionDescriptors).Returns(descriptorCollection);
+            var razorPageFactoryProvider = new Mock<IRazorPageFactoryProvider>();
+            var fileProvider = new TestFileProvider();
+            var defaultRazorProject = new DefaultRazorProject(fileProvider);
+
+            var invokerProvider = CreateInvokerProvider(
+                loader.Object,
+                actionDescriptorProvider.Object,
+                razorPageFactoryProvider: razorPageFactoryProvider.Object,
+                razorProject: defaultRazorProject);
+            var context = new ActionInvokerProviderContext(
+                new ActionContext(new DefaultHttpContext(), new RouteData(), descriptor));
+
+            // Act
+            invokerProvider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.NotNull(context.Result);
+            var actionInvoker = Assert.IsType<PageActionInvoker>(context.Result);
+            var actionDescriptor = actionInvoker.CacheEntry.ActionDescriptor;
+            Assert.Collection(actionDescriptor.HandlerMethods,
+                handlerDescriptor =>
+                {
+                    Assert.Equal(nameof(TestPageModel.OnGet), handlerDescriptor.Method.Name);
+                    Assert.NotNull(handlerDescriptor.Executor);
+                });
+        }
+
+
+        [Fact]
         public void OnProvidersExecuting_CachesEntries()
         {
             // Arrange
@@ -291,7 +336,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         private class PageWithModel
         {
-            public object Model { get; set; }
+            public TestPageModel Model { get; set; }
+        }
+
+        private class TestPageModel
+        {
+            public void OnGet()
+            {
+            }
         }
     }
 }
