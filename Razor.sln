@@ -19,7 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		NuGet.config = NuGet.config
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorPageGenerator", "src\RazorPageGenerator\RazorPageGenerator.csproj", "{7BE58880-36AD-4CD5-9E16-2A5AFEA790EF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorPageGenerator", "src\RazorPageGenerator\RazorPageGenerator.csproj", "{7BE58880-36AD-4CD5-9E16-2A5AFEA790EF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Evolution", "src\Microsoft.AspNetCore.Razor.Evolution\Microsoft.AspNetCore.Razor.Evolution.csproj", "{932F3C9C-A6C0-40D3-BA50-9309886242FC}"
 EndProject

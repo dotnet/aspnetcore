@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Evolution.CodeGeneration;
+using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
@@ -54,6 +55,48 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             var configurationFeature = GetDefaultDocumentClassifierPassFeature(builder);
             configurationFeature.ConfigureClass.Add((document, @class) => @class.BaseType = baseType);
+            return builder;
+        }
+
+        public static IRazorEngineBuilder SetClassName(this IRazorEngineBuilder builder, string className)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            ConfigureClass(builder, (document, @class) => @class.Name = className);
+            return builder;
+        }
+
+        public static IRazorEngineBuilder ConfigureClass(
+            this IRazorEngineBuilder builder, 
+            Action<RazorCodeDocument, ClassDeclarationIRNode> configureClass)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (configureClass == null)
+            {
+                throw new ArgumentNullException(nameof(configureClass));
+            }
+
+            var configurationFeature = GetDefaultDocumentClassifierPassFeature(builder);
+            configurationFeature.ConfigureClass.Add(configureClass);
+            return builder;
+        }
+
+        public static IRazorEngineBuilder SetNamespace(this IRazorEngineBuilder builder, string namespaceName)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            var configurationFeature = GetDefaultDocumentClassifierPassFeature(builder);
+            configurationFeature.ConfigureNamespace.Add((document, @namespace) => @namespace.Content = namespaceName);
             return builder;
         }
 
