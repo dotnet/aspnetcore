@@ -14,6 +14,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F8C12DD6-659D-405A-AA27-FB22AD92A010}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		build\common.props = build\common.props
 		NuGet.config = NuGet.config
 	EndProjectSection
