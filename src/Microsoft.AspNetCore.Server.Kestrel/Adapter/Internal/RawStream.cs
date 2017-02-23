@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Adapter.Internal
                         readableBuffer.CopyTo(buffer);
                         return count;
                     }
-                    else if (result.IsCompleted || result.IsCancelled)
+                    else if (result.IsCompleted)
                     {
                         return 0;
                     }

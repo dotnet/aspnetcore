@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                         return new ValueTask<ArraySegment<byte>>(data);
                     }
-                    else if (result.IsCompleted || result.IsCancelled)
+                    else if (result.IsCompleted)
                     {
                         return default(ValueTask<ArraySegment<byte>>);
                     }
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         var segment = result.Buffer.First;
                         return segment.GetArray();
                     }
-                    else if (result.IsCompleted || result.IsCancelled)
+                    else if (result.IsCompleted)
                     {
                         return default(ArraySegment<byte>);
                     }
