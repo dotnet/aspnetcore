@@ -40,7 +40,7 @@
     "rxjs": "^5.0.1",
     "style-loader": "^0.13.1",
     "to-string-loader": "^1.1.5",
-    "typescript": "^2.0.3",
+    "typescript": "^2.2.1",
     "url-loader": "^0.5.7",
     "webpack": "^2.2.0",
     "webpack-hot-middleware": "^2.12.2",

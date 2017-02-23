@@ -3,7 +3,6 @@
   "version": "0.0.0",
   "devDependencies": {
     "@types/history": "^2.0.39",
-    "@types/isomorphic-fetch": "0.0.31",
     "@types/react": "^0.14.38",
     "@types/react-dom": "^0.14.17",
     "@types/react-router": "^2.0.38",
@@ -26,7 +25,7 @@
     "react-dom": "^15.3.2",
     "react-router": "^2.8.1",
     "style-loader": "^0.13.1",
-    "typescript": "^2.0.3",
+    "typescript": "^2.2.1",
     "url-loader": "^0.5.7",
     "webpack": "^2.2.0",
     "webpack-hot-middleware": "^2.12.2"

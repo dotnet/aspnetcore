@@ -1,6 +1,6 @@
 {
   "name": "domain-task",
-  "version": "2.0.3",
+  "version": "3.0.0",
   "description": "Tracks outstanding operations for a logical thread of execution",
   "main": "index.js",
   "scripts": {
@@ -22,8 +22,7 @@
   },
   "devDependencies": {
     "@types/node": "^6.0.42",
-    "@types/whatwg-fetch": "0.0.31",
     "rimraf": "^2.5.4",
-    "typescript": "^2.0.0"
+    "typescript": "^2.2.1"
   }
 }

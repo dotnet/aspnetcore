@@ -10,7 +10,7 @@ function issueRequest(baseUrl: string, req: string | Request, init?: RequestInit
     if (baseUrl) {
         if (req instanceof Request) {
             const reqAsRequest = req as Request;
-            reqAsRequest.url = url.resolve(baseUrl, reqAsRequest.url);
+            (reqAsRequest as any).url = url.resolve(baseUrl, reqAsRequest.url);
         } else {
             req = url.resolve(baseUrl, req as string);
         }
