@@ -14,7 +14,9 @@ namespace Microsoft.VisualStudio.RazorExtension
     [Guid(RazorPackage.PackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     [ProvideMenuResource("Menus.ctmenu", 1)]
+#if RAZOR_EXTENSION_DEVELOPER_MODE
     [ProvideToolWindow(typeof(Microsoft.VisualStudio.RazorExtension.RazorInfo.RazorInfoToolWindow))]
+#endif
     public sealed class RazorPackage : Package
     {
         public const string PackageGuidString = "13b72f58-279e-49e0-a56d-296be02f0805";
@@ -37,7 +39,9 @@ namespace Microsoft.VisualStudio.RazorExtension
             var packageGuid = new Guid(CSharpPackageIdString);
             shell.LoadPackage(ref packageGuid, out package);
 
-            Microsoft.VisualStudio.RazorExtension.RazorInfo.RazorInfoToolWindowCommand.Initialize(this);
+#if RAZOR_EXTENSION_DEVELOPER_MODE
+            RazorInfo.RazorInfoToolWindowCommand.Initialize(this);
+#endif
         }
     }
 }

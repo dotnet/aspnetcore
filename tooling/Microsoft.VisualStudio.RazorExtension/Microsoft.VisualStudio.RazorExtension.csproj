@@ -40,7 +40,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;RAZOR_EXTENSION_DEVELOPER_MODE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -64,9 +64,6 @@
     <Compile Include="RazorInfo\ProjectViewModel.cs" />
     <Compile Include="RazorInfo\RazorInfoToolWindow.cs" />
     <Compile Include="RazorInfo\RazorInfoToolWindowCommand.cs" />
-    <Compile Include="RazorInfo\RazorInfoToolWindowControl.xaml.cs">
-      <DependentUpon>RazorInfoToolWindowControl.xaml</DependentUpon>
-    </Compile>
     <Compile Include="RazorInfo\RazorInfoViewModel.cs" />
     <Compile Include="RazorPackage.cs" />
     <Compile Include="RazorInfo\ProjectInfoViewModel.cs" />
@@ -314,24 +311,25 @@
     </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <VSCTCompile Include="RazorPackage.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>
     <Content Include="Resources\RazorInfoToolWindowCommand.png" />
     <Content Include="Resources\RazorPackage.ico" />
+    <Page Include="RazorInfo\RazorInfoToolWindowControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Compile Include="RazorInfo\RazorInfoToolWindowControl.xaml.cs">
+      <DependentUpon>RazorInfoToolWindowControl.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="VSPackage.resx">
       <MergeWithCTO>true</MergeWithCTO>
       <ManifestResourceName>VSPackage</ManifestResourceName>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="RazorInfo\RazorInfoToolWindowControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Evolution\Microsoft.AspNetCore.Razor.Evolution.csproj">
