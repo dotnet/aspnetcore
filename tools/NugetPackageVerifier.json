@@ -42,13 +42,6 @@
                         "*": "No package verification performed on the repo"
                     }
                 }
-            },
-            "Microsoft.VisualStudio.Web.BrowserLink.Loader": {
-                "Exclusions": {
-                    "NUSPEC_TAGS": {
-                        "*": "No package verification performed on the repo"
-                    }
-                }
             }
         }
     },
