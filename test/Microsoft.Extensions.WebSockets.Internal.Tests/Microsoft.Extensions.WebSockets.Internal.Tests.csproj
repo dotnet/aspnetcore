@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Extensions.WebSockets.Internal\Microsoft.Extensions.WebSockets.Internal.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
