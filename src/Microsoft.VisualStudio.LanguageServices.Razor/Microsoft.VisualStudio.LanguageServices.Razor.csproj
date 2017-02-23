@@ -22,6 +22,18 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.0.0-rc3-61306-01" />
     <PackageReference Include="Microsoft.VisualStudio.LanguageServices" Version="2.0.0-rc3-61306-01" />
     <PackageReference Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="2.0.0-rc3-61306-01" />
+    <PackageReference Include="Microsoft.VisualStudio.OLE.Interop" Version="7.10.6070" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.14.0" Version="14.3.25407" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Immutable.10.0" Version="10.0.30319" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Immutable.11.0" Version="11.0.50727" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Immutable.12.0" Version="12.0.21003" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Immutable.14.0" Version="14.3.25407" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6071" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.8.0" Version="8.0.50727" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.9.0" Version="9.0.30729" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.10.0" Version="10.0.30319" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.11.0" Version="11.0.61030" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30110" />
     <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.Razor.Workspaces\Microsoft.CodeAnalysis.Razor.Workspaces.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Evolution\Microsoft.AspNetCore.Razor.Evolution.csproj" />
   </ItemGroup>

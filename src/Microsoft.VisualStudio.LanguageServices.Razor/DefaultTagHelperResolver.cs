@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
@@ -18,6 +20,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     {
         [Import]
         public VisualStudioWorkspace Workspace { get; set; }
+
+        [Import]
+        public SVsServiceProvider Services { get; set; }
 
         public async Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project, IEnumerable<string> assemblyNameFilters)
         {
@@ -46,6 +51,16 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             }
             catch (Exception exception)
             {
+                var log = GetActivityLog();
+                if (log != null)
+                {
+                    var hr = log.LogEntry(
+                        (uint)__ACTIVITYLOG_ENTRYTYPE.ALE_ERROR,
+                        "Razor Language Services",
+                        $"Error discovering TagHelpers:{Environment.NewLine}{exception}");
+                    ErrorHandler.ThrowOnFailure(hr);
+                }
+
                 throw new RazorLanguageServiceException(
                     typeof(DefaultTagHelperResolver).FullName,
                     nameof(GetTagHelpersAsync),
@@ -89,6 +104,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     }
                 }
             }
+        }
+
+        private IVsActivityLog GetActivityLog()
+        {
+            var services = (IServiceProvider)Services;
+            return services.GetService(typeof(SVsActivityLog)) as IVsActivityLog;
         }
     }
 }
