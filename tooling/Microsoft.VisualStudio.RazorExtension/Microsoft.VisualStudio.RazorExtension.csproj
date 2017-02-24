@@ -27,6 +27,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.VisualStudio.RazorExtension</RootNamespace>
     <AssemblyName>Microsoft.VisualStudio.RazorExtension</AssemblyName>
+    <!--
+    We exclude some facade-only assemblies (i.e. assemblies without any implementation) from the VSIX using the SuppressFromVsix ItemGroup listed in this file.
+    The list is dependent on the framework being targeted. Changes to TargetFrameworkVersion would warrant rebuilding the SuppressFromVsix ItemGroup.
+    -->
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
@@ -376,6 +380,22 @@
       <IncludeOutputGroupsInVSIXLocalOnly>
       </IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <SuppressFromVsix Include="System.AppContext.dll" />
+    <SuppressFromVsix Include="System.Console.dll" />
+    <SuppressFromVsix Include="System.Diagnostics.FileVersionInfo.dll" />
+    <SuppressFromVsix Include="System.Diagnostics.StackTrace.dll" />
+    <SuppressFromVsix Include="System.IO.FileSystem.dll" />
+    <SuppressFromVsix Include="System.IO.FileSystem.Primitives.dll" />
+    <SuppressFromVsix Include="System.Security.Cryptography.Encoding.dll" />
+    <SuppressFromVsix Include="System.Security.Cryptography.Primitives.dll" />
+    <SuppressFromVsix Include="System.Security.Cryptography.X509Certificates.dll" />
+    <SuppressFromVsix Include="System.Text.Encoding.CodePages.dll" />
+    <SuppressFromVsix Include="System.Threading.Thread.dll" />
+    <SuppressFromVsix Include="System.Xml.ReaderWriter.dll" />
+    <SuppressFromVsix Include="System.Xml.XmlDocument.dll" />
+    <SuppressFromVsix Include="System.Xml.XPath.dll" />
   </ItemGroup>
   <!-- Workaround for https://github.com/dotnet/sdk/issues/433 -->
   <ItemGroup>
