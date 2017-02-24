@@ -13,8 +13,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.WebSockets.Internal\Microsoft.Extensions.WebSockets.Internal.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="1.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
 </Project>
