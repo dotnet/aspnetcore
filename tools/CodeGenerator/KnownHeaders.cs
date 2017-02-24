@@ -564,18 +564,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }}" : "")}")}
         }}" : "")}
         {(loop.ClassName == "FrameRequestHeaders" ? $@"
-        public unsafe void Append(byte[] keyBytes, int keyOffset, int keyLength, string value)
+        public unsafe void Append(byte* pKeyBytes, int keyLength, string value)
         {{
-            fixed (byte* ptr = &keyBytes[keyOffset])
-            {{
-                var pUB = ptr;
-                {AppendSwitch(loop.Headers.Where(h => h.PrimaryHeader).GroupBy(x => x.Name.Length), loop.ClassName)}
+            var pUB = pKeyBytes;
+            {AppendSwitch(loop.Headers.Where(h => h.PrimaryHeader).GroupBy(x => x.Name.Length), loop.ClassName)}
 
-                AppendNonPrimaryHeaders(ptr, keyOffset, keyLength, value);
-            }}
+            AppendNonPrimaryHeaders(pKeyBytes, keyLength, value);
         }}
 
-        private unsafe void AppendNonPrimaryHeaders(byte* pKeyBytes, int keyOffset, int keyLength, string value)
+        private unsafe void AppendNonPrimaryHeaders(byte* pKeyBytes, int keyLength, string value)
         {{
                 var pUB = pKeyBytes;
                 {AppendSwitch(loop.Headers.Where(h => !h.PrimaryHeader).GroupBy(x => x.Name.Length), loop.ClassName)}

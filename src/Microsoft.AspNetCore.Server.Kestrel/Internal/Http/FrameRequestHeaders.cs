@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -27,6 +28,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private void SetValueUnknown(string key, StringValues value)
         {
             Unknown[key] = value;
+        }
+
+        public unsafe void Append(Span<byte> name, string value)
+        {
+            fixed (byte* namePtr = &name.DangerousGetPinnableReference())
+            {
+                Append(namePtr, name.Length, value);
+            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

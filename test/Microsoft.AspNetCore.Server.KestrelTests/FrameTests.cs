@@ -611,7 +611,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeStartLine(readableBuffer, out consumed, out examined));
             _socketInput.Reader.Advance(consumed, examined);
 
-            Assert.Equal("Unrecognized HTTP version: HTTP/1.1a...", exception.Message);
+            Assert.Equal("Unrecognized HTTP version: HTTP/1.1ab", exception.Message);
             Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, exception.StatusCode);
         }
 
