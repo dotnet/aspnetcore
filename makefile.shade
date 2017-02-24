@@ -92,10 +92,24 @@ var buildTarget = "compile"
 
 #update
     @{
+        var errors = new List<string>();
         Parallel.ForEach(repositories, repo =>
         {
-            Git("pull --ff-only", repo);
+            try
+            {
+                Git("pull --ff-only", repo);
+            }
+            catch
+            {
+                errors.Add(repo);
+            }
         });
+
+        if (errors.Count > 0)
+        {
+            Log.Info("Failed to pull: " + string.Join(", ", errors));
+            throw new InvalidOperationException("update failed");
+        }
     }
 
 #sync-commits
@@ -562,13 +576,13 @@ var buildTarget = "compile"
 
 #git-clean description='REMOVE ALL CHANGES to the working directory'
     @{
-        Console.WriteLine("This runs `git clean -xfd` in all non-Universe repos.");
-        Console.WriteLine("This should REMOVE ALL CHANGES to the working directory.");
-        Console.Write("***** Are you sure? ***** (Y or anything else)? ");
-        if (Console.ReadLine() != "Y")
-        {
-            throw new Exception("git-clean cancelled");
-        }
+        // Console.WriteLine("This runs `git clean -xfd` in all non-Universe repos.");
+        // Console.WriteLine("This should REMOVE ALL CHANGES to the working directory.");
+        // Console.Write("***** Are you sure? ***** (Y or anything else)? ");
+        // if (Console.ReadLine() != "Y")
+        // {
+        //     throw new Exception("git-clean cancelled");
+        // }
         foreach(var repo in repositories)
         {
             GitClean(repo);

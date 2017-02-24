@@ -43,6 +43,7 @@ project.lock.json
 /HttpSysServer/
 /IISIntegration/
 /Identity/
+/IdentityService/
 /JsonPatch/
 /KestrelHttpServer/
 /Localization/
