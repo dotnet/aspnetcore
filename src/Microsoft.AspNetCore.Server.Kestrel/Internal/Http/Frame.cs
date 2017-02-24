@@ -997,16 +997,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             _requestProcessingStatus = RequestProcessingStatus.RequestStarted;
 
-            ReadableBuffer limitedBuffer;
+            var limitedBuffer = buffer;
             if (buffer.Length >= ServerOptions.Limits.MaxRequestLineSize)
             {
                 limitedBuffer = buffer.Slice(0, ServerOptions.Limits.MaxRequestLineSize);
             }
-            else
-            {
-                limitedBuffer = buffer;
-            }
-
             if (ReadCursorOperations.Seek(limitedBuffer.Start, limitedBuffer.End, out end, ByteLF) == -1)
             {
                 if (limitedBuffer.Length == ServerOptions.Limits.MaxRequestLineSize)
@@ -1019,46 +1014,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
             }
 
-            const int stackAllocLimit = 512;
-
-            // Move 1 byte past the \r
-            end = limitedBuffer.Move(end, 1);
-            var startLineBuffer = limitedBuffer.Slice(0, end);
-
-            Span<byte> span;
-
-            if (startLineBuffer.IsSingleSpan)
+            end = buffer.Move(end, 1);
+            ReadCursor methodEnd;
+            string method;
+            if (!buffer.GetKnownMethod(out method))
             {
-                // No copies, directly use the one and only span
-                span = startLineBuffer.ToSpan();
-            }
-            else if (startLineBuffer.Length < stackAllocLimit)
-            {
-                unsafe
-                {
-                    // Multiple buffers and < stackAllocLimit, copy into a stack buffer
-                    byte* stackBuffer = stackalloc byte[startLineBuffer.Length];
-                    span = new Span<byte>(stackBuffer, startLineBuffer.Length);
-                    startLineBuffer.CopyTo(span);
-                }
-            }
-            else
-            {
-                // We're not a single span here but we can use pooled arrays to avoid allocations in the rare case
-                span = new Span<byte>(new byte[startLineBuffer.Length]);
-                startLineBuffer.CopyTo(span);
-            }
-
-            var methodEnd = 0;
-            if (!span.GetKnownMethod(out string method))
-            {
-                methodEnd = span.IndexOf(ByteSpace);
-                if (methodEnd == -1)
+                if (ReadCursorOperations.Seek(buffer.Start, end, out methodEnd, ByteSpace) == -1)
                 {
                     RejectRequestLine(start, end);
                 }
 
-                method = span.Slice(0, methodEnd).GetAsciiString();
+                method = buffer.Slice(buffer.Start, methodEnd).GetAsciiString();
 
                 if (method == null)
                 {
@@ -1077,67 +1043,57 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
             else
             {
-                methodEnd += method.Length;
+                methodEnd = buffer.Slice(method.Length).Start;
             }
 
             var needDecode = false;
-            var pathBegin = methodEnd + 1;
-            var pathToEndSpan = span.Slice(pathBegin, span.Length - pathBegin);
-            pathBegin = 0;
+            ReadCursor pathEnd;
 
-            // TODO: IndexOfAny
-            var spaceIndex = pathToEndSpan.IndexOf(ByteSpace);
-            var questionMarkIndex = pathToEndSpan.IndexOf(ByteQuestionMark);
-            var percentageIndex = pathToEndSpan.IndexOf(BytePercentage);
+            var pathBegin = buffer.Move(methodEnd, 1);
 
-            var pathEnd = MinNonZero(spaceIndex, questionMarkIndex, percentageIndex);
-
-            if (spaceIndex == -1 && questionMarkIndex == -1 && percentageIndex == -1)
+            var chFound = ReadCursorOperations.Seek(pathBegin, end, out pathEnd, ByteSpace, ByteQuestionMark, BytePercentage);
+            if (chFound == -1)
             {
                 RejectRequestLine(start, end);
             }
-            else if (percentageIndex != -1)
+            else if (chFound == BytePercentage)
             {
                 needDecode = true;
-
-                pathEnd = MinNonZero(spaceIndex, questionMarkIndex);
-                if (questionMarkIndex == -1 && spaceIndex == -1)
+                chFound = ReadCursorOperations.Seek(pathBegin, end, out pathEnd, ByteSpace, ByteQuestionMark);
+                if (chFound == -1)
                 {
                     RejectRequestLine(start, end);
                 }
-            }
+            };
 
             var queryString = "";
-            var queryEnd = pathEnd;
-            if (questionMarkIndex != -1)
+            ReadCursor queryEnd = pathEnd;
+            if (chFound == ByteQuestionMark)
             {
-                queryEnd = spaceIndex;
-                if (spaceIndex == -1)
+                if (ReadCursorOperations.Seek(pathEnd, end, out queryEnd, ByteSpace) == -1)
                 {
                     RejectRequestLine(start, end);
                 }
-
-                queryString = pathToEndSpan.Slice(pathEnd, queryEnd - pathEnd).GetAsciiString();
+                queryString = buffer.Slice(pathEnd, queryEnd).GetAsciiString();
             }
 
+            // No path
             if (pathBegin == pathEnd)
             {
                 RejectRequestLine(start, end);
             }
 
-            var versionBegin = queryEnd + 1;
-            var versionToEndSpan = pathToEndSpan.Slice(versionBegin, pathToEndSpan.Length - versionBegin);
-            versionBegin = 0;
-            var versionEnd = versionToEndSpan.IndexOf(ByteCR);
-
-            if (versionEnd == -1)
+            ReadCursor versionEnd;
+            if (ReadCursorOperations.Seek(queryEnd, end, out versionEnd, ByteCR) == -1)
             {
                 RejectRequestLine(start, end);
             }
 
-            if (!versionToEndSpan.GetKnownVersion(out string httpVersion))
+            string httpVersion;
+            var versionBuffer = buffer.Slice(queryEnd, end).Slice(1);
+            if (!versionBuffer.GetKnownVersion(out httpVersion))
             {
-                httpVersion = versionToEndSpan.Slice(0, versionEnd).GetAsciiStringEscaped();
+                httpVersion = versionBuffer.Start.GetAsciiStringEscaped(versionEnd, 9);
 
                 if (httpVersion == string.Empty)
                 {
@@ -1149,13 +1105,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
             }
 
-            if (versionToEndSpan[versionEnd + 1] != ByteLF)
+            var lineEnd = buffer.Slice(versionEnd, 2).ToSpan();
+            if (lineEnd[1] != ByteLF)
             {
                 RejectRequestLine(start, end);
             }
 
-            var pathBuffer = pathToEndSpan.Slice(pathBegin, pathEnd);
-            var targetBuffer = pathToEndSpan.Slice(pathBegin, queryEnd);
+            var pathBuffer = buffer.Slice(pathBegin, pathEnd);
+            var targetBuffer = buffer.Slice(pathBegin, queryEnd);
 
             // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
             // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
@@ -1168,7 +1125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 rawTarget = targetBuffer.GetAsciiString() ?? string.Empty;
 
                 // URI was encoded, unescape and then parse as utf8
-                var pathSpan = pathBuffer;
+                var pathSpan = pathBuffer.ToSpan();
                 int pathLength = UrlEncoder.Decode(pathSpan, pathSpan);
                 requestUrlPath = new Utf8String(pathSpan.Slice(0, pathLength)).ToString();
             }
@@ -1216,21 +1173,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
 
             return true;
-        }
-
-        private int MinNonZero(int v1, int v2)
-        {
-            v1 = v1 == -1 ? int.MaxValue : v1;
-            v2 = v2 == -1 ? int.MaxValue : v2;
-            return Math.Min(v1, v2);
-        }
-
-        private int MinNonZero(int v1, int v2, int v3)
-        {
-            v1 = v1 == -1 ? int.MaxValue : v1;
-            v2 = v2 == -1 ? int.MaxValue : v2;
-            v3 = v3 == -1 ? int.MaxValue : v3;
-            return Math.Min(Math.Min(v1, v2), v3);
         }
 
         private void RejectRequestLine(ReadCursor start, ReadCursor end)
@@ -1302,41 +1244,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             consumed = buffer.Start;
             examined = buffer.End;
 
-            var bufferLength = buffer.Length;
-            var reader = new ReadableBufferReader(buffer);
-
             while (true)
             {
-                var start = reader;
-                int ch1 = reader.Take();
-                var ch2 = reader.Take();
+                var headersEnd = buffer.Slice(0, Math.Min(buffer.Length, 2));
+                var headersEndSpan = headersEnd.ToSpan();
 
-                if (ch1 == -1)
+                if (headersEndSpan.Length == 0)
                 {
                     return false;
                 }
-
-                if (ch1 == ByteCR)
+                else
                 {
-                    // Check for final CRLF.
-                    if (ch2 == -1)
+                    var ch = headersEndSpan[0];
+                    if (ch == ByteCR)
                     {
-                        return false;
-                    }
-                    else if (ch2 == ByteLF)
-                    {
-                        consumed = reader.Cursor;
-                        examined = consumed;
-                        ConnectionControl.CancelTimeout();
-                        return true;
-                    }
+                        // Check for final CRLF.
+                        if (headersEndSpan.Length < 2)
+                        {
+                            return false;
+                        }
+                        else if (headersEndSpan[1] == ByteLF)
+                        {
+                            consumed = headersEnd.End;
+                            examined = consumed;
+                            ConnectionControl.CancelTimeout();
+                            return true;
+                        }
 
-                    // Headers don't end in CRLF line.
-                    RejectRequest(RequestRejectionReason.HeadersCorruptedInvalidHeaderSequence);
-                }
-                else if (ch1 == ByteSpace || ch1 == ByteTab)
-                {
-                    RejectRequest(RequestRejectionReason.HeaderLineMustNotStartWithWhitespace);
+                        // Headers don't end in CRLF line.
+                        RejectRequest(RequestRejectionReason.HeadersCorruptedInvalidHeaderSequence);
+                    }
+                    else if (ch == ByteSpace || ch == ByteTab)
+                    {
+                        RejectRequest(RequestRejectionReason.HeaderLineMustNotStartWithWhitespace);
+                    }
                 }
 
                 // If we've parsed the max allowed numbers of headers and we're starting a new
@@ -1346,30 +1287,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     RejectRequest(RequestRejectionReason.TooManyHeaders);
                 }
 
-                // Reset the reader since we're not at the end of headers
-                reader = start;
-
-                // Now parse a single header
-                ReadableBuffer limitedBuffer;
-                var overLength = false;
-
-                if (bufferLength >= _remainingRequestHeadersBytesAllowed)
+                ReadCursor lineEnd;
+                var limitedBuffer = buffer;
+                if (buffer.Length >= _remainingRequestHeadersBytesAllowed)
                 {
-                    limitedBuffer = buffer.Slice(consumed, _remainingRequestHeadersBytesAllowed);
-
-                    // If we sliced it means the current buffer bigger than what we're 
-                    // allowed to look at
-                    overLength = true;
+                    limitedBuffer = buffer.Slice(0, _remainingRequestHeadersBytesAllowed);
                 }
-                else
+                if (ReadCursorOperations.Seek(limitedBuffer.Start, limitedBuffer.End, out lineEnd, ByteLF) == -1)
                 {
-                    limitedBuffer = buffer;
-                }
-
-                if (ReadCursorOperations.Seek(consumed, limitedBuffer.End, out var lineEnd, ByteLF) == -1)
-                {
-                    // We didn't find a \n in the current buffer and we had to slice it so it's an issue
-                    if (overLength)
+                    if (limitedBuffer.Length == _remainingRequestHeadersBytesAllowed)
                     {
                         RejectRequest(RequestRejectionReason.HeadersExceedMaxTotalSize);
                     }
@@ -1379,94 +1305,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     }
                 }
 
-                const int stackAllocLimit = 512;
-
-                if (lineEnd != limitedBuffer.End)
-                {
-                    lineEnd = limitedBuffer.Move(lineEnd, 1);
-                }
-
-                var headerBuffer = limitedBuffer.Slice(consumed, lineEnd);
-
-                Span<byte> span;
-                if (headerBuffer.IsSingleSpan)
-                {
-                    // No copies, directly use the one and only span
-                    span = headerBuffer.ToSpan();
-                }
-                else if (headerBuffer.Length < stackAllocLimit)
-                {
-                    unsafe
-                    {
-                        // Multiple buffers and < stackAllocLimit, copy into a stack buffer
-                        byte* stackBuffer = stackalloc byte[headerBuffer.Length];
-                        span = new Span<byte>(stackBuffer, headerBuffer.Length);
-                        headerBuffer.CopyTo(span);
-                    }
-                }
-                else
-                {
-                    // We're not a single span here but we can use pooled arrays to avoid allocations in the rare case
-                    span = new Span<byte>(new byte[headerBuffer.Length]);
-                    headerBuffer.CopyTo(span);
-                }
-
-                int endNameIndex = span.IndexOf(ByteColon);
-                if (endNameIndex == -1)
+                var beginName = buffer.Start;
+                ReadCursor endName;
+                if (ReadCursorOperations.Seek(buffer.Start, lineEnd, out endName, ByteColon) == -1)
                 {
                     RejectRequest(RequestRejectionReason.NoColonCharacterFoundInHeaderLine);
                 }
 
-                var nameBuffer = span.Slice(0, endNameIndex);
-                if (nameBuffer.IndexOf(ByteSpace) != -1 || nameBuffer.IndexOf(ByteTab) != -1)
+                ReadCursor whitespace;
+                if (ReadCursorOperations.Seek(beginName, endName, out whitespace, ByteTab, ByteSpace) != -1)
                 {
                     RejectRequest(RequestRejectionReason.WhitespaceIsNotAllowedInHeaderName);
                 }
 
-                int endValueIndex = span.IndexOf(ByteCR);
-                if (endValueIndex == -1)
+                ReadCursor endValue;
+                if (ReadCursorOperations.Seek(beginName, lineEnd, out endValue, ByteCR) == -1)
                 {
                     RejectRequest(RequestRejectionReason.MissingCRInHeaderLine);
                 }
 
-                var lineSuffix = span.Slice(endValueIndex);
-                if (lineSuffix.Length < 2)
+                var lineSufix = buffer.Slice(endValue);
+                if (lineSufix.Length < 3)
                 {
                     return false;
                 }
-
+                lineSufix = lineSufix.Slice(0, 3); // \r\n\r
+                var lineSufixSpan = lineSufix.ToSpan();
                 // This check and MissingCRInHeaderLine is a bit backwards, we should do it at once instead of having another seek
-                if (lineSuffix[1] != ByteLF)
+                if (lineSufixSpan[1] != ByteLF)
                 {
                     RejectRequest(RequestRejectionReason.HeaderValueMustNotContainCR);
                 }
 
-                // Trim trailing whitespace from header value by repeatedly advancing to next
-                // whitespace or CR.
-                //
-                // - If CR is found, this is the end of the header value.
-                // - If whitespace is found, this is the _tentative_ end of the header value.
-                //   If non-whitespace is found after it and it's not CR, seek again to the next
-                //   whitespace or CR for a new (possibly tentative) end of value.
-
-                var valueBuffer = span.Slice(endNameIndex + 1, endValueIndex - (endNameIndex + 1));
-
-                // TODO: Trim else where
-                var value = valueBuffer.GetAsciiString()?.Trim() ?? string.Empty;
-
-                var headerLineLength = span.Length;
-
-                // -1 so that we can re-check the extra \r
-                reader.Skip(headerLineLength);
-
-                var next = reader.Peek();
-
-                // We cant check for line continuations to reject everything we've done so far
-                if (next == -1)
-                {
-                    return false;
-                }
-
+                var next = lineSufixSpan[2];
                 if (next == ByteSpace || next == ByteTab)
                 {
                     // From https://tools.ietf.org/html/rfc7230#section-3.2.4:
@@ -1489,15 +1360,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     RejectRequest(RequestRejectionReason.HeaderValueLineFoldingNotSupported);
                 }
 
-                // Update the frame state only after we know there's no header line continuation
-                _remainingRequestHeadersBytesAllowed -= headerLineLength;
-                bufferLength -= headerLineLength;
+                // Trim trailing whitespace from header value by repeatedly advancing to next
+                // whitespace or CR.
+                //
+                // - If CR is found, this is the end of the header value.
+                // - If whitespace is found, this is the _tentative_ end of the header value.
+                //   If non-whitespace is found after it and it's not CR, seek again to the next
+                //   whitespace or CR for a new (possibly tentative) end of value.
 
+                var nameBuffer = buffer.Slice(beginName, endName);
+
+                // TODO: TrimStart and TrimEnd are pretty slow
+                var valueBuffer = buffer.Slice(endName, endValue).Slice(1).TrimStart().TrimEnd();
+
+                var name = nameBuffer.ToArraySegment();
+                var value = valueBuffer.GetAsciiString();
+
+                lineEnd = limitedBuffer.Move(lineEnd, 1);
+
+                // TODO: bad
+                _remainingRequestHeadersBytesAllowed -= buffer.Slice(0, lineEnd).Length;
                 _requestHeadersParsed++;
 
-                requestHeaders.Append(nameBuffer, value);
-
-                consumed = reader.Cursor;
+                requestHeaders.Append(name.Array, name.Offset, name.Count, value);
+                buffer = buffer.Slice(lineEnd);
+                consumed = buffer.Start;
             }
         }
 
