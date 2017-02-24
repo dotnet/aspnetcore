@@ -105,7 +105,7 @@ namespace Microsoft.Net.Http.Headers
 
             if (MaxAge.HasValue)
             {
-                maxAge = HeaderUtilities.FormatInt64((long)MaxAge.Value.TotalSeconds);
+                maxAge = HeaderUtilities.FormatNonNegativeInt64((long)MaxAge.Value.TotalSeconds);
                 length += SeparatorToken.Length + MaxAgeToken.Length + EqualsToken.Length + maxAge.Length;
             }
 
@@ -200,7 +200,7 @@ namespace Microsoft.Net.Http.Headers
 
             if (MaxAge.HasValue)
             {
-                AppendSegment(builder, MaxAgeToken, HeaderUtilities.FormatInt64((long)MaxAge.Value.TotalSeconds));
+                AppendSegment(builder, MaxAgeToken, HeaderUtilities.FormatNonNegativeInt64((long)MaxAge.Value.TotalSeconds));
             }
 
             if (Domain != null)
@@ -365,7 +365,7 @@ namespace Microsoft.Net.Http.Headers
                     }
                     var numberString = input.Substring(offset, itemLength);
                     long maxAge;
-                    if (!HeaderUtilities.TryParseInt64(numberString, out maxAge))
+                    if (!HeaderUtilities.TryParseNonNegativeInt64(numberString, out maxAge))
                     {
                         // Invalid expiration date, abort
                         return 0;

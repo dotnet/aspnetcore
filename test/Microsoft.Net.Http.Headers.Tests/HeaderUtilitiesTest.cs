@@ -87,15 +87,20 @@ namespace Microsoft.Net.Http.Headers
         [Theory]
         [InlineData(0)]
         [InlineData(1)]
-        [InlineData(-1)]
         [InlineData(1234567890)]
-        [InlineData(-1234567890)]
         [InlineData(long.MaxValue)]
-        [InlineData(long.MinValue)]
-        [InlineData(long.MinValue + 1)]
-        public void FormatInt64_MatchesToString(long value)
+        public void FormatNonNegativeInt64_MatchesToString(long value)
         {
-            Assert.Equal(value.ToString(CultureInfo.InvariantCulture), HeaderUtilities.FormatInt64(value));
+            Assert.Equal(value.ToString(CultureInfo.InvariantCulture), HeaderUtilities.FormatNonNegativeInt64(value));
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(-1234567890)]
+        [InlineData(long.MinValue)]
+        public void FormatNonNegativeInt64_Throws_ForNegativeValues(long value)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => HeaderUtilities.FormatNonNegativeInt64(value));
         }
 
         [Theory]
@@ -150,20 +155,20 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("a")]
         [InlineData("1.1")]
         [InlineData("9223372036854775808")] // long.MaxValue + 1
-        public void TryParseInt64_Fails(string valueString)
+        public void TryParseNonNegativeInt64_Fails(string valueString)
         {
             long value = 1;
-            Assert.False(HeaderUtilities.TryParseInt64(valueString, out value));
+            Assert.False(HeaderUtilities.TryParseNonNegativeInt64(valueString, out value));
             Assert.Equal(0, value);
         }
 
         [Theory]
         [InlineData("0", 0)]
         [InlineData("9223372036854775807", 9223372036854775807)] // long.MaxValue
-        public void TryParseInt64_Succeeds(string valueString, long expected)
+        public void TryParseNonNegativeInt64_Succeeds(string valueString, long expected)
         {
             long value = 1;
-            Assert.True(HeaderUtilities.TryParseInt64(valueString, out value));
+            Assert.True(HeaderUtilities.TryParseNonNegativeInt64(valueString, out value));
             Assert.Equal(expected, value);
         }
 
@@ -175,20 +180,20 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("1.1")]
         [InlineData("1,000")]
         [InlineData("2147483648")] // int.MaxValue + 1
-        public void TryParseInt32_Fails(string valueString)
+        public void TryParseNonNegativeInt32_Fails(string valueString)
         {
             int value = 1;
-            Assert.False(HeaderUtilities.TryParseInt32(valueString, out value));
+            Assert.False(HeaderUtilities.TryParseNonNegativeInt32(valueString, out value));
             Assert.Equal(0, value);
         }
 
         [Theory]
         [InlineData("0", 0)]
         [InlineData("2147483647", 2147483647)] // int.MaxValue
-        public void TryParseInt32_Succeeds(string valueString, long expected)
+        public void TryParseNonNegativeInt32_Succeeds(string valueString, long expected)
         {
             int value = 1;
-            Assert.True(HeaderUtilities.TryParseInt32(valueString, out value));
+            Assert.True(HeaderUtilities.TryParseNonNegativeInt32(valueString, out value));
             Assert.Equal(expected, value);
         }
     }

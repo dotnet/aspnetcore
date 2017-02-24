@@ -12,7 +12,7 @@ namespace Microsoft.Net.Http.Headers
 {
     public static class HeaderUtilities
     {
-        private static readonly int _int64MaxStringLength = 20;
+        private static readonly int _int64MaxStringLength = 19;
         private const string QualityName = "q";
         internal const string BytesUnit = "bytes";
 
@@ -269,7 +269,7 @@ namespace Microsoft.Net.Http.Headers
                     var tokenLength = HttpRuleParser.GetTokenLength(headerValues[i], current);
                     if (tokenLength == targetValue.Length
                         && string.Compare(headerValues[i], current, targetValue, 0, tokenLength, StringComparison.OrdinalIgnoreCase) == 0
-                        && TryParseInt64FromHeaderValue(current + tokenLength, headerValues[i], out seconds))
+                        && TryParseNonNegativeInt64FromHeaderValue(current + tokenLength, headerValues[i], out seconds))
                     {
                         // Token matches target value and seconds were parsed
                         value = TimeSpan.FromSeconds(seconds);
@@ -342,7 +342,7 @@ namespace Microsoft.Net.Http.Headers
             return false;
         }
 
-        private static unsafe bool TryParseInt64FromHeaderValue(int startIndex, string headerValue, out long result)
+        private static unsafe bool TryParseNonNegativeInt64FromHeaderValue(int startIndex, string headerValue, out long result)
         {
             // Trim leading whitespace
             startIndex += HttpRuleParser.GetWhitespaceLength(headerValue, startIndex);
@@ -359,7 +359,7 @@ namespace Microsoft.Net.Http.Headers
             startIndex += HttpRuleParser.GetWhitespaceLength(headerValue, startIndex);
 
             // Try parse the number
-            if (TryParseInt64(new StringSegment(headerValue, startIndex, HttpRuleParser.GetNumberLength(headerValue, startIndex, false)), out result))
+            if (TryParseNonNegativeInt64(new StringSegment(headerValue, startIndex, HttpRuleParser.GetNumberLength(headerValue, startIndex, false)), out result))
             {
                 return true;
             }
@@ -368,9 +368,9 @@ namespace Microsoft.Net.Http.Headers
             return false;
         }
 
-        internal static bool TryParseInt32(string value, out int result)
+        internal static bool TryParseNonNegativeInt32(string value, out int result)
         {
-            return TryParseInt32(new StringSegment(value), out result);
+            return TryParseNonNegativeInt32(new StringSegment(value), out result);
         }
 
         /// <summary>
@@ -388,12 +388,12 @@ namespace Microsoft.Net.Http.Headers
         /// result will be overwritten.
         /// </param>
         /// <returns><code>true</code> if parsing succeeded; otherwise, <code>false</code>.</returns>
-        public static bool TryParseInt64(string value, out long result)
+        public static bool TryParseNonNegativeInt64(string value, out long result)
         {
-            return TryParseInt64(new StringSegment(value), out result);
+            return TryParseNonNegativeInt64(new StringSegment(value), out result);
         }
 
-        internal static unsafe bool TryParseInt32(StringSegment value, out int result)
+        internal static unsafe bool TryParseNonNegativeInt32(StringSegment value, out int result)
         {
             if (string.IsNullOrEmpty(value.Buffer) || value.Length == 0)
             {
@@ -444,7 +444,7 @@ namespace Microsoft.Net.Http.Headers
         /// originally supplied in result will be overwritten.
         /// </param>
         /// <returns><code>true</code> if parsing succeeded; otherwise, <code>false</code>.</returns>
-        public static unsafe bool TryParseInt64(StringSegment value, out long result)
+        public static unsafe bool TryParseNonNegativeInt64(StringSegment value, out long result)
         {
             if (string.IsNullOrEmpty(value.Buffer) || value.Length == 0)
             {
@@ -481,31 +481,22 @@ namespace Microsoft.Net.Http.Headers
         }
 
         /// <summary>
-        /// Converts the signed 64-bit numeric value to its equivalent string representation.
+        /// Converts the non-negative 64-bit numeric value to its equivalent string representation.
         /// </summary>
         /// <param name="value">
         /// The number to convert.
         /// </param>
         /// <returns>
-        /// The string representation of the value of this instance, consisting of a minus sign if the value is
-        /// negative, and a sequence of digits ranging from 0 to 9 with no leading zeroes.
+        /// The string representation of the value of this instance, consisting of a sequence of digits ranging from 0 to 9 with no leading zeroes.
         /// </returns>
-        public unsafe static string FormatInt64(long value)
+        public unsafe static string FormatNonNegativeInt64(long value)
         {
-            var position = _int64MaxStringLength;
-            var negative = false;
-
             if (value < 0)
             {
-                // Not possible to compute absolute value of MinValue, return the exact string instead.
-                if (value == long.MinValue)
-                {
-                    return "-9223372036854775808";
-                }
-                negative = true;
-                value = -value;
+                throw new ArgumentOutOfRangeException(nameof(value), value, "The value to be formatted must be non-negative.");
             }
 
+            var position = _int64MaxStringLength;
             char* charBuffer = stackalloc char[_int64MaxStringLength];
 
             do
@@ -516,11 +507,6 @@ namespace Microsoft.Net.Http.Headers
                 value = quotient;
             }
             while (value != 0);
-
-            if (negative)
-            {
-                charBuffer[--position] = '-';
-            }
 
             return new string(charBuffer, position, _int64MaxStringLength - position);
         }

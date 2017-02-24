@@ -108,7 +108,7 @@ namespace Microsoft.Net.Http.Headers
                 if (sizeParameter != null)
                 {
                     var sizeString = sizeParameter.Value;
-                    if (HeaderUtilities.TryParseInt64(sizeString, out value))
+                    if (HeaderUtilities.TryParseNonNegativeInt64(sizeString, out value))
                     {
                         return value;
                     }

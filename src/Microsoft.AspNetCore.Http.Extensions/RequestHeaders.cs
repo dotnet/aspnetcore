@@ -97,11 +97,11 @@ namespace Microsoft.AspNetCore.Http.Headers
         {
             get
             {
-                return Headers.Get<long?>(HeaderNames.ContentLength);
+                return Headers.ContentLength;
             }
             set
             {
-                Headers.Set(HeaderNames.ContentLength, value.HasValue ? HeaderUtilities.FormatInt64(value.Value) : null);
+                Headers.ContentLength = value;
             }
         }
 

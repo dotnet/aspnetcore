@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Http
             { typeof(RangeHeaderValue), new Func<string, RangeHeaderValue>(value => { RangeHeaderValue result; return RangeHeaderValue.TryParse(value, out result) ? result : null; }) },
             { typeof(EntityTagHeaderValue), new Func<string, EntityTagHeaderValue>(value => { EntityTagHeaderValue result; return EntityTagHeaderValue.TryParse(value, out result) ? result : null; }) },
             { typeof(DateTimeOffset?), new Func<string, DateTimeOffset?>(value => { DateTimeOffset result; return HeaderUtilities.TryParseDate(value, out result) ? result : (DateTimeOffset?)null; }) },
-            { typeof(long?), new Func<string, long?>(value => { long result; return HeaderUtilities.TryParseInt64(value, out result) ? result : (long?)null; }) },
+            { typeof(long?), new Func<string, long?>(value => { long result; return HeaderUtilities.TryParseNonNegativeInt64(value, out result) ? result : (long?)null; }) },
         };
 
         private static IDictionary<Type, object> KnownListParsers = new Dictionary<Type, object>()

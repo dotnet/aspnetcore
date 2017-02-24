@@ -610,7 +610,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             int seconds;
-            if (!HeaderUtilities.TryParseInt32(nameValue.Value, out seconds))
+            if (!HeaderUtilities.TryParseNonNegativeInt32(nameValue.Value, out seconds))
             {
                 return false;
             }

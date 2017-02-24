@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Owin
 
                 if (rawValue.Length == 1 &&
                     !string.IsNullOrWhiteSpace(rawValue[0]) &&
-                    HeaderUtilities.TryParseInt64(new StringSegment(rawValue[0]).Trim(), out value))
+                    HeaderUtilities.TryParseNonNegativeInt64(new StringSegment(rawValue[0]).Trim(), out value))
                 {
                     return value;
                 }
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Owin
             {
                 if (value.HasValue)
                 {
-                    Inner[HeaderNames.ContentLength] = (StringValues)HeaderUtilities.FormatInt64(value.Value);
+                    Inner[HeaderNames.ContentLength] = (StringValues)HeaderUtilities.FormatNonNegativeInt64(value.Value);
                 }
                 else
                 {
