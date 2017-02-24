@@ -504,7 +504,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             }
         }
 
-        [ConditionalFact(Skip = "Tests hanging: https://github.com/aspnet/WebListener/issues/270")]
+        [ConditionalFact(Skip = "Tests hanging: https://github.com/aspnet/HttpSysServer/issues/270")]
         public async Task ResponseSendFileExceptions_ClientDisconnectsBeforeSecondSend_SendThrows()
         {
             string address;

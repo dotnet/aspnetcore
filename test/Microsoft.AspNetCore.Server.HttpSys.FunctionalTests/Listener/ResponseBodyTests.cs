@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             }
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/WebListener/issues/263")]
+        [ConditionalFact(Skip = "https://github.com/aspnet/HttpSysServer/issues/263")]
         public async Task ResponseBody_WriteContentLengthTooMuchWritten_Throws()
         {
             string address;
@@ -510,7 +510,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             }
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/WebListener/issues/263")]
+        [ConditionalFact(Skip = "https://github.com/aspnet/HttpSysServer/issues/263")]
         public async Task ResponseBodyWriteExceptions_ClientDisconnectsBeforeSecondWriteAsync_WriteThrows()
         {
             string address;

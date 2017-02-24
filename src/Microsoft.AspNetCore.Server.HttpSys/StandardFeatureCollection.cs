@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             { typeof(IHttpResponseFeature), _identityFunc },
             { typeof(IHttpSendFileFeature), _identityFunc },
             { typeof(ITlsConnectionFeature), ctx => ctx.GetTlsConnectionFeature() },
-            // { typeof(ITlsTokenBindingFeature), ctx => ctx.GetTlsTokenBindingFeature() }, TODO: https://github.com/aspnet/WebListener/issues/231
+            // { typeof(ITlsTokenBindingFeature), ctx => ctx.GetTlsTokenBindingFeature() }, TODO: https://github.com/aspnet/HttpSysServer/issues/231
             { typeof(IHttpBufferingFeature), _identityFunc },
             { typeof(IHttpRequestLifetimeFeature), _identityFunc },
             { typeof(IHttpUpgradeFeature), _identityFunc },

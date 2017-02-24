@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpResponseFeature,
         IHttpSendFileFeature,
         ITlsConnectionFeature,
-        // ITlsTokenBindingFeature, TODO: https://github.com/aspnet/WebListener/issues/231
+        // ITlsTokenBindingFeature, TODO: https://github.com/aspnet/HttpSysServer/issues/231
         IHttpBufferingFeature,
         IHttpRequestLifetimeFeature,
         IHttpAuthenticationFeature,
@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             return Request.IsHttps ? this : null;
         }
-        /* TODO: https://github.com/aspnet/WebListener/issues/231
+        /* TODO: https://github.com/aspnet/HttpSysServer/issues/231
         byte[] ITlsTokenBindingFeature.GetProvidedTokenBindingId() => Request.GetProvidedTokenBindingId();
 
         byte[] ITlsTokenBindingFeature.GetReferredTokenBindingId() => Request.GetReferredTokenBindingId();

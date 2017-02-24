@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     // A single write with the whole content-length. Http.Sys will set the content-length for us in this scenario.
                     // If we don't remove it then range requests served from cache will have two.
-                    // https://github.com/aspnet/WebListener/issues/167
+                    // https://github.com/aspnet/HttpSysServer/issues/167
                     ContentLength = null;
                 }
             }

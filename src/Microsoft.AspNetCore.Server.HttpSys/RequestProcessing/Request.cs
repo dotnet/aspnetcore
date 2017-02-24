@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private NativeRequestContext _nativeRequestContext;
 
         private X509Certificate2 _clientCert;
-        // TODO: https://github.com/aspnet/WebListener/issues/231
+        // TODO: https://github.com/aspnet/HttpSysServer/issues/231
         // private byte[] _providedTokenBindingId;
         // private byte[] _referredTokenBindingId;
 
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             User = nativeRequestContext.GetUser();
 
-            // GetTlsTokenBindingInfo(); TODO: https://github.com/aspnet/WebListener/issues/231
+            // GetTlsTokenBindingInfo(); TODO: https://github.com/aspnet/HttpSysServer/issues/231
 
             // Finished directly accessing the HTTP_REQUEST structure.
             _nativeRequestContext.ReleasePins();
