@@ -111,8 +111,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                             if (!string.IsNullOrEmpty(xml))
                             {
                                 var documentation = new XmlMemberDocumentation(xml);
-                                tagHelper.DesignTimeDescriptor.Summary = documentation.GetSummary();
-                                tagHelper.DesignTimeDescriptor.Remarks = documentation.GetRemarks();
+                                attribute.DesignTimeDescriptor.Summary = documentation.GetSummary();
+                                attribute.DesignTimeDescriptor.Remarks = documentation.GetRemarks();
                             }
                         }
                     }
