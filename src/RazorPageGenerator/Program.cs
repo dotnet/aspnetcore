@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -35,22 +34,21 @@ namespace RazorPageGenerator
                         @class.AccessModifier = "internal";
                     });
 
-                builder.Features.Add(new RemovePragamaChecksumFeature());
+                builder.Features.Add(new RemovePragmaChecksumFeature());
 
             });
 
             var viewDirectories = Directory.EnumerateDirectories(targetProjectDirectory, "Views", SearchOption.AllDirectories);
+            var razorProject = new FileSystemRazorProject(targetProjectDirectory);
+            var templateEngine = new RazorTemplateEngine(razorEngine, razorProject);
 
             var fileCount = 0;
             foreach (var viewDir in viewDirectories)
             {
                 Console.WriteLine();
                 Console.WriteLine("  Generating code files for views in {0}", viewDir);
-                var razorProject = new FileSystemRazorProject(viewDir);
-                var templateEngine = new RazorTemplateEngine(razorEngine, razorProject);
-
-
-                var cshtmlFiles = razorProject.EnumerateItems("");
+                var viewDirPath = viewDir.Substring(targetProjectDirectory.Length).Replace('\\', '/');
+                var cshtmlFiles = razorProject.EnumerateItems(viewDirPath).Cast<FileSystemRazorProjectItem>();
 
                 if (!cshtmlFiles.Any())
                 {
@@ -72,69 +70,37 @@ namespace RazorPageGenerator
             Console.WriteLine();
         }
 
-        private static void GenerateCodeFile(RazorTemplateEngine templateEngine, RazorProjectItem projectItem)
+        private static void GenerateCodeFile(RazorTemplateEngine templateEngine, FileSystemRazorProjectItem projectItem)
         {
-            var cSharpDocument = templateEngine.GenerateCode(projectItem);
+            var projectItemWrapper = new FileSystemRazorProjectItemWrapper(projectItem);
+            var cSharpDocument = templateEngine.GenerateCode(projectItemWrapper);
             if (cSharpDocument.Diagnostics.Any())
             {
                 var diagnostics = string.Join(Environment.NewLine, cSharpDocument.Diagnostics);
                 Console.WriteLine($"One or more parse errors encountered. This will not prevent the generator from continuing: {Environment.NewLine}{diagnostics}.");
             }
 
-            var generatedCodeFilePath = Path.ChangeExtension(
-                ((FileSystemRazorProjectItem)projectItem).FileInfo.FullName,
-                ".Designer.cs");
+            var generatedCodeFilePath = Path.ChangeExtension(projectItem.PhysicalPath, ".Designer.cs");
             File.WriteAllText(generatedCodeFilePath, cSharpDocument.GeneratedCode);
         }
 
-        private class FileSystemRazorProject : RazorProject
+        private class FileSystemRazorProjectItemWrapper : RazorProjectItem
         {
-            private readonly string _basePath;
+            private readonly FileSystemRazorProjectItem _source;
 
-            public FileSystemRazorProject(string basePath)
+            public FileSystemRazorProjectItemWrapper(FileSystemRazorProjectItem item)
             {
-                _basePath = basePath;
+                _source = item;
             }
 
-            public override IEnumerable<RazorProjectItem> EnumerateItems(string basePath)
-            {
-                return new DirectoryInfo(_basePath)
-                    .EnumerateFiles("*.cshtml", SearchOption.TopDirectoryOnly)
-                    .Select(file => GetItem(basePath, file));
-            }
+            public override string BasePath => _source.BasePath;
 
-            public override RazorProjectItem GetItem(string path) => throw new NotSupportedException();
-
-            private RazorProjectItem GetItem(string basePath, FileInfo file)
-            {
-                if (!file.Exists)
-                {
-                    throw new FileNotFoundException($"{file.FullName} does not exist.");
-                }
-
-                return new FileSystemRazorProjectItem(basePath, file);
-            }
-        }
-
-        private class FileSystemRazorProjectItem : RazorProjectItem
-        {
-            public FileSystemRazorProjectItem(string basePath, FileInfo fileInfo)
-            {
-                BasePath = basePath;
-                Path = fileInfo.Name;
-                FileInfo = fileInfo;
-            }
-
-            public FileInfo FileInfo { get; }
-
-            public override string BasePath { get; }
-
-            public override string Path { get; }
+            public override string Path => _source.Path;
 
             // Mask the full name since we don't want a developer's local file paths to be commited.
-            public override string PhysicalPath => FileInfo.Name;
+            public override string PhysicalPath => _source.Filename;
 
-            public override bool Exists => true;
+            public override bool Exists => _source.Exists;
 
             public override Stream Read()
             {
@@ -144,8 +110,8 @@ namespace RazorPageGenerator
 
             private string ProcessFileIncludes()
             {
-                var basePath = FileInfo.DirectoryName;
-                var cshtmlContent = File.ReadAllText(FileInfo.FullName);
+                var basePath = _source.File.DirectoryName;
+                var cshtmlContent = File.ReadAllText(_source.PhysicalPath);
 
                 var startMatch = "<%$ include: ";
                 var endMatch = " %>";
@@ -160,7 +126,7 @@ namespace RazorPageGenerator
                     var endIndex = cshtmlContent.IndexOf(endMatch, startIndex);
                     if (endIndex == -1)
                     {
-                        throw new InvalidOperationException($"Invalid include file format in {FileInfo.FullName}. Usage example: <%$ include: ErrorPage.js %>");
+                        throw new InvalidOperationException($"Invalid include file format in {_source.PhysicalPath}. Usage example: <%$ include: ErrorPage.js %>");
                     }
                     var includeFileName = cshtmlContent.Substring(startIndex + startMatch.Length, endIndex - (startIndex + startMatch.Length));
                     Console.WriteLine("      Inlining file {0}", includeFileName);

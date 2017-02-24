@@ -8,8 +8,17 @@ using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
+    /// <summary>
+    /// Extension methods to <see cref="IRazorEngineBuilder" />.
+    /// </summary>
     public static class RazorEngineBuilderExtensions
     {
+        /// <summary>
+        /// Adds the specified <see cref="DirectiveDescriptor"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IRazorEngineBuilder"/>.</param>
+        /// <param name="directive">The <see cref="DirectiveDescriptor"/> to add.</param>
+        /// <returns>The <see cref="IRazorEngineBuilder"/>.</returns>
         public static IRazorEngineBuilder AddDirective(this IRazorEngineBuilder builder, DirectiveDescriptor directive)
         {
             if (builder == null)
@@ -28,6 +37,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             return builder;
         }
 
+        /// <summary>
+        /// Adds the specified <see cref="IRuntimeTargetExtension"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IRazorEngineBuilder"/>.</param>
+        /// <param name="extension">The <see cref="IRuntimeTargetExtension"/> to add.</param>
+        /// <returns>The <see cref="IRazorEngineBuilder"/>.</returns>
         public static IRazorEngineBuilder AddTargetExtension(this IRazorEngineBuilder builder, IRuntimeTargetExtension extension)
         {
             if (builder == null)
@@ -46,6 +61,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             return builder;
         }
 
+        /// <summary>
+        /// Sets the base type for generated types.
+        /// </summary>
+        /// <param name="builder">The <see cref="IRazorEngineBuilder"/>.</param>
+        /// <param name="baseType">The name of the base type.</param>
+        /// <returns>The <see cref="IRazorEngineBuilder"/>.</returns>
         public static IRazorEngineBuilder SetBaseType(this IRazorEngineBuilder builder, string baseType)
         {
             if (builder == null)
@@ -58,17 +79,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             return builder;
         }
 
-        public static IRazorEngineBuilder SetClassName(this IRazorEngineBuilder builder, string className)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            ConfigureClass(builder, (document, @class) => @class.Name = className);
-            return builder;
-        }
-
+        /// <summary>
+        /// Registers a class configuration delegate that gets invoked during code generation.
+        /// </summary>
+        /// <param name="builder">The <see cref="IRazorEngineBuilder"/>.</param>
+        /// <param name="configureClass"><see cref="Action"/> invoked to configure 
+        /// <see cref="ClassDeclarationIRNode"/> during code generation.</param>
+        /// <returns>The <see cref="IRazorEngineBuilder"/>.</returns>
         public static IRazorEngineBuilder ConfigureClass(
             this IRazorEngineBuilder builder, 
             Action<RazorCodeDocument, ClassDeclarationIRNode> configureClass)
@@ -88,6 +105,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             return builder;
         }
 
+        /// <summary>
+        /// Sets the namespace for generated types.
+        /// </summary>
+        /// <param name="builder">The <see cref="IRazorEngineBuilder"/>.</param>
+        /// <param name="namespaceName">The name of the namespace.</param>
+        /// <returns>The <see cref="IRazorEngineBuilder"/>.</returns>
         public static IRazorEngineBuilder SetNamespace(this IRazorEngineBuilder builder, string namespaceName)
         {
             if (builder == null)

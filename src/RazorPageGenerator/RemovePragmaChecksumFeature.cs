@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace RazorPageGenerator
 {
-    class RemovePragamaChecksumFeature : RazorIRPassBase, IRazorIROptimizationPass
+    class RemovePragmaChecksumFeature : RazorIRPassBase, IRazorIROptimizationPass
     {
         public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {

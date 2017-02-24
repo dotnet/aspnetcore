@@ -49,5 +49,63 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             // Assert
             AssertCSharpDocumentMatchesBaseline(cSharpDocument);
         }
+
+        [Fact]
+        public void GenerateCodeWithConfigureClass()
+        {
+            // Arrange
+            var filePath = Path.Combine(TestProjectRoot, $"{Filename}.cshtml");
+            var content = File.ReadAllText(filePath);
+            var projectItem = new TestRazorProjectItem($"{Filename}.cshtml", "")
+            {
+                Content = content,
+            };
+            var project = new TestRazorProject(new[] { projectItem });
+            var razorEngine = RazorEngine.Create(engine =>
+            {
+                engine.ConfigureClass((document, @class) =>
+                {
+                    @class.Name = "MyClass";
+                    @class.AccessModifier = "protected internal";
+                });
+
+                engine.ConfigureClass((document, @class) =>
+                {
+                    @class.Interfaces = new[] { "global::System.IDisposable" };
+                    @class.BaseType = "CustomBaseType";
+                });
+            });
+            var templateEngine = new RazorTemplateEngine(razorEngine, project);
+
+            // Act
+            var cSharpDocument = templateEngine.GenerateCode(projectItem.Path);
+
+            // Assert
+            AssertCSharpDocumentMatchesBaseline(cSharpDocument);
+        }
+
+        [Fact]
+        public void GenerateCodeWithSetNamespace()
+        {
+            // Arrange
+            var filePath = Path.Combine(TestProjectRoot, $"{Filename}.cshtml");
+            var content = File.ReadAllText(filePath);
+            var projectItem = new TestRazorProjectItem($"{Filename}.cshtml", "")
+            {
+                Content = content,
+            };
+            var project = new TestRazorProject(new[] { projectItem });
+            var razorEngine = RazorEngine.Create(engine =>
+            {
+                engine.SetNamespace("MyApp.Razor.Views");
+            });
+            var templateEngine = new RazorTemplateEngine(razorEngine, project);
+
+            // Act
+            var cSharpDocument = templateEngine.GenerateCode(projectItem.Path);
+
+            // Assert
+            AssertCSharpDocumentMatchesBaseline(cSharpDocument);
+        }
     }
 }
