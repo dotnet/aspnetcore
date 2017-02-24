@@ -35,9 +35,12 @@ namespace Microsoft.AspNetCore.Sockets
 
         public async Task ExecuteAsync<TEndPoint>(string path, HttpContext context) where TEndPoint : EndPoint
         {
-            // Get the end point mapped to this http connection
-            var endpoint = (EndPoint)context.RequestServices.GetRequiredService<TEndPoint>();
             var options = context.RequestServices.GetRequiredService<IOptions<EndPointOptions<TEndPoint>>>().Value;
+            // TODO: Authorize attribute on EndPoint
+            if (!await AuthorizeHelper.AuthorizeAsync(context, options.Policy))
+            {
+                return;
+            }
 
             if (context.Request.Path.StartsWithSegments(path + "/negotiate"))
             {
@@ -49,6 +52,8 @@ namespace Microsoft.AspNetCore.Sockets
             }
             else
             {
+                // Get the end point mapped to this http connection
+                var endpoint = (EndPoint)context.RequestServices.GetRequiredService<TEndPoint>();
                 await ExecuteEndpointAsync(path, context, endpoint, options);
             }
         }
