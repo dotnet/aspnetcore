@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Resources;
 using Microsoft.Extensions.Localization.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Localization
 {
@@ -23,6 +24,7 @@ namespace Microsoft.Extensions.Localization
         private readonly ResourceManager _resourceManager;
         private readonly IResourceStringProvider _resourceStringProvider;
         private readonly string _resourceBaseName;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Creates a new <see cref="ResourceManagerStringLocalizer"/>.
@@ -31,16 +33,19 @@ namespace Microsoft.Extensions.Localization
         /// <param name="resourceAssembly">The <see cref="Assembly"/> that contains the strings as embedded resources.</param>
         /// <param name="baseName">The base name of the embedded resource that contains the strings.</param>
         /// <param name="resourceNamesCache">Cache of the list of strings for a given resource assembly name.</param>
+        /// <param name="logger">The <see cref="ILogger"/>.</param>
         public ResourceManagerStringLocalizer(
             ResourceManager resourceManager,
             Assembly resourceAssembly,
             string baseName,
-            IResourceNamesCache resourceNamesCache)
+            IResourceNamesCache resourceNamesCache,
+            ILogger logger)
             : this(
                 resourceManager,
                 new AssemblyWrapper(resourceAssembly),
                 baseName,
-                resourceNamesCache)
+                resourceNamesCache,
+                logger)
         {
         }
 
@@ -51,12 +56,14 @@ namespace Microsoft.Extensions.Localization
             ResourceManager resourceManager,
             AssemblyWrapper resourceAssemblyWrapper,
             string baseName,
-            IResourceNamesCache resourceNamesCache)
+            IResourceNamesCache resourceNamesCache,
+            ILogger logger)
             : this(
                   resourceManager,
                   new AssemblyResourceStringProvider(resourceNamesCache, resourceAssemblyWrapper, baseName),
                   baseName,
-                  resourceNamesCache)
+                  resourceNamesCache,
+                  logger)
         {
         }
 
@@ -67,7 +74,8 @@ namespace Microsoft.Extensions.Localization
             ResourceManager resourceManager,
             IResourceStringProvider resourceStringProvider,
             string baseName,
-            IResourceNamesCache resourceNamesCache)
+            IResourceNamesCache resourceNamesCache,
+            ILogger logger)
         {
             if (resourceManager == null)
             {
@@ -89,10 +97,16 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(resourceNamesCache));
             }
 
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             _resourceStringProvider = resourceStringProvider;
             _resourceManager = resourceManager;
             _resourceBaseName = baseName;
             _resourceNamesCache = resourceNamesCache;
+            _logger = logger;
         }
 
         /// <inheritdoc />
@@ -107,7 +121,7 @@ namespace Microsoft.Extensions.Localization
 
                 var value = GetStringSafely(name, null);
 
-                return new LocalizedString(name, value ?? name, resourceNotFound: value == null);
+                return new LocalizedString(name, value ?? name, resourceNotFound: value == null, searchedLocation: _resourceBaseName);
             }
         }
 
@@ -124,7 +138,7 @@ namespace Microsoft.Extensions.Localization
                 var format = GetStringSafely(name, null);
                 var value = string.Format(format ?? name, arguments);
 
-                return new LocalizedString(name, value, resourceNotFound: format == null);
+                return new LocalizedString(name, value, resourceNotFound: format == null, searchedLocation: _resourceBaseName);
             }
         }
 
@@ -140,13 +154,15 @@ namespace Microsoft.Extensions.Localization
                     _resourceManager,
                     _resourceStringProvider,
                     _resourceBaseName,
-                    _resourceNamesCache)
+                    _resourceNamesCache,
+                    _logger)
                 : new ResourceManagerWithCultureStringLocalizer(
                     _resourceManager,
                     _resourceStringProvider,
                     _resourceBaseName,
                     _resourceNamesCache,
-                    culture);
+                    culture,
+                    _logger);
         }
 
         /// <inheritdoc />
@@ -173,7 +189,7 @@ namespace Microsoft.Extensions.Localization
             foreach (var name in resourceNames)
             {
                 var value = GetStringSafely(name, culture);
-                yield return new LocalizedString(name, value ?? name, resourceNotFound: value == null);
+                yield return new LocalizedString(name, value ?? name, resourceNotFound: value == null, searchedLocation: _resourceBaseName);
             }
         }
 
@@ -191,7 +207,11 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(name));
             }
 
-            var cacheKey = $"name={name}&culture={(culture ?? CultureInfo.CurrentUICulture).Name}";
+            var keyCulture = culture ?? CultureInfo.CurrentUICulture;
+
+            var cacheKey = $"name={name}&culture={keyCulture.Name}";
+
+            _logger.SearchedLocation(name, _resourceBaseName, keyCulture);
 
             if (_missingManifestCache.ContainsKey(cacheKey))
             {

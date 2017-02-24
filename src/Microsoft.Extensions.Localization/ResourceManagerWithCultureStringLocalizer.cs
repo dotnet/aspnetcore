@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Resources;
 using Microsoft.Extensions.Localization.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Localization
 {
@@ -26,13 +27,15 @@ namespace Microsoft.Extensions.Localization
         /// <param name="baseName">The base name of the embedded resource that contains the strings.</param>
         /// <param name="resourceNamesCache">Cache of the list of strings for a given resource assembly name.</param>
         /// <param name="culture">The specific <see cref="CultureInfo"/> to use.</param>
+        /// <param name="logger">The <see cref="ILogger"/>.</param>
         internal ResourceManagerWithCultureStringLocalizer(
             ResourceManager resourceManager,
             IResourceStringProvider resourceStringProvider,
             string baseName,
             IResourceNamesCache resourceNamesCache,
-            CultureInfo culture)
-            : base(resourceManager, resourceStringProvider, baseName, resourceNamesCache)
+            CultureInfo culture,
+            ILogger logger)
+            : base(resourceManager, resourceStringProvider, baseName, resourceNamesCache, logger)
         {
             if (resourceManager == null)
             {
@@ -70,13 +73,15 @@ namespace Microsoft.Extensions.Localization
         /// <param name="baseName">The base name of the embedded resource that contains the strings.</param>
         /// <param name="resourceNamesCache">Cache of the list of strings for a given resource assembly name.</param>
         /// <param name="culture">The specific <see cref="CultureInfo"/> to use.</param>
+        /// <param name="logger">The <see cref="ILogger"/>.</param>
         public ResourceManagerWithCultureStringLocalizer(
             ResourceManager resourceManager,
             Assembly resourceAssembly,
             string baseName,
             IResourceNamesCache resourceNamesCache,
-            CultureInfo culture)
-            : base(resourceManager, resourceAssembly, baseName, resourceNamesCache)
+            CultureInfo culture,
+            ILogger logger)
+            : base(resourceManager, resourceAssembly, baseName, resourceNamesCache, logger)
         {
             if (resourceManager == null)
             {

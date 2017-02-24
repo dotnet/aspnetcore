@@ -9,7 +9,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Localization\Microsoft.Extensions.Localization.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
     <PackageReference Include="Moq" Version="4.6.36-*" />
     <PackageReference Include="xunit" Version="2.2.0-*" />

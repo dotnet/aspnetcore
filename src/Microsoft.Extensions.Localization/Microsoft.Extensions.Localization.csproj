@@ -15,6 +15,7 @@
     <ProjectReference Include="..\Microsoft.Extensions.Localization.Abstractions\Microsoft.Extensions.Localization.Abstractions.csproj" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.2.0-*" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">

@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Reflection;
 using System.Resources;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Localization
@@ -24,20 +25,30 @@ namespace Microsoft.Extensions.Localization
         private readonly ConcurrentDictionary<string, ResourceManagerStringLocalizer> _localizerCache =
             new ConcurrentDictionary<string, ResourceManagerStringLocalizer>();
         private readonly string _resourcesRelativePath;
+        private readonly ILoggerFactory _loggerFactory;
 
         /// <summary>
         /// Creates a new <see cref="ResourceManagerStringLocalizer"/>.
         /// </summary>
         /// <param name="localizationOptions">The <see cref="IOptions{LocalizationOptions}"/>.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public ResourceManagerStringLocalizerFactory(
-            IOptions<LocalizationOptions> localizationOptions)
+            IOptions<LocalizationOptions> localizationOptions,
+            ILoggerFactory loggerFactory)
         {
             if (localizationOptions == null)
             {
                 throw new ArgumentNullException(nameof(localizationOptions));
             }
 
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _resourcesRelativePath = localizationOptions.Value.ResourcesPath ?? string.Empty;
+            _loggerFactory = loggerFactory;
+
             if (!string.IsNullOrEmpty(_resourcesRelativePath))
             {
                 _resourcesRelativePath = _resourcesRelativePath.Replace(Path.AltDirectorySeparatorChar, '.')
@@ -180,7 +191,8 @@ namespace Microsoft.Extensions.Localization
                 new ResourceManager(baseName, assembly),
                 assembly,
                 baseName,
-                _resourceNamesCache);
+                _resourceNamesCache,
+                _loggerFactory.CreateLogger<ResourceManagerStringLocalizer>());
         }
 
         /// <summary>
