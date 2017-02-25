@@ -30,6 +30,11 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
         /// </summary>
         public bool ReactHotModuleReplacement { get; set; }
 
+        /// <summary> 
+        /// Specifies additional options to be passed to the Webpack Hot Middleware client 
+        /// </summary> 
+        public IDictionary<string, string> HotModuleReplacementClientOptions { get; set; } 
+
         /// <summary>
         /// Specifies the Webpack configuration file to be used. If not set, defaults to 'webpack.config.js'.
         /// </summary>

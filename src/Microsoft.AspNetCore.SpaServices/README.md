@@ -633,6 +633,21 @@ Webpack has built-in HMR support for various types of module, such as styles and
 
 This is [documented in detail on the Webpack site](https://webpack.github.io/docs/hot-module-replacement.html). Or to get a working HMR-enabled ASP.NET Core site with Angular 2, React, React+Redux, or Knockout, you can use the [aspnetcore-spa generator](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/).
 
+#### Passing options to the Webpack Hot Middleware client
+
+You can configure the [Webpack Hot Middleware client](https://github.com/glenjamin/webpack-hot-middleware#client)
+by modifying your `UseWebpackDevMiddleware` call to include `HotModuleReplacementClientOptions`:
+
+```csharp
+app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
+    HotModuleReplacement = true,
+    HotModuleReplacementClientOptions = new Dictionary<string, string> { 
+        { "reload", "true" }, 
+    },
+});
+```
+
+**Note**: The `path` option will be ignored, because it is controlled by the `HotModuleReplacementEndpoint` setting.
 
 ## Routing helper: MapSpaFallbackRoute
 
