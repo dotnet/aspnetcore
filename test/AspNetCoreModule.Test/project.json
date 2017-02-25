@@ -16,7 +16,8 @@
     "Microsoft.Extensions.Logging.Console": "1.2.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.2.0-*",
     "Microsoft.Net.Http.Headers": "1.1.0-*",
-    "xunit": "2.2.0-*"
+    "xunit": "2.2.0-*",
+    "System.Management.Automation.dll": "10.0.10586"
   },
   "frameworks": {
     "net451": {
@@ -28,7 +29,7 @@
         "System.Net.Http.WebRequest": "",
         "System.Runtime": "",
         "System.ServiceProcess": "",
-        "System.Xml": ""
+        "System.Xml": ""       
       }
     }
   }  

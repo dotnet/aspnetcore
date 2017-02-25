@@ -289,5 +289,28 @@ namespace AspNetCoreModule.Test
         {
             return DoCachingTest(appPoolBitness);
         }
+
+        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
+        [InlineData(IISConfigUtility.AppPoolBitness.noChange)]
+        public Task SendHTTPSRequestTest(IISConfigUtility.AppPoolBitness appPoolBitness)
+        {
+            return DoSendHTTPSRequestTest(appPoolBitness);
+        }
+
+        [EnvironmentVariableTestCondition("IIS_VARIATIONS_ENABLED")]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, true)]
+        [InlineData(IISConfigUtility.AppPoolBitness.noChange, true)]
+        [InlineData(IISConfigUtility.AppPoolBitness.noChange, false)]
+        public Task ClientCertificateMappingTest(IISConfigUtility.AppPoolBitness appPoolBitness, bool useHTTPSMiddleWare)
+        {
+            return DoClientCertificateMappingTest(appPoolBitness, useHTTPSMiddleWare);
+        }
     }
 }

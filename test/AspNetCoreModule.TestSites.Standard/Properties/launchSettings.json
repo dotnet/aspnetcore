@@ -4,15 +4,16 @@
     "anonymousAuthentication": true,
     "iisExpress": {
       "applicationUrl": "http://localhost:39982/",
-      "sslPort": 0
+      "sslPort": 44375
     }
   },
   "profiles": {
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
+      "launchUrl": "https://localhost:44375/",
       "environmentVariables": {
-        "ANCMTestStartupClassName": "StartupCompression",
+        "ANCMTestStartupClassName": "StartupHTTPS",
         "ASPNET_ENVIRONMENT": "HelloWorld"
       }
     },

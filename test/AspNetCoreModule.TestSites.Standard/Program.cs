@@ -2,16 +2,20 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Net.Http.Server;
 using System;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 
 namespace AspnetCoreModule.TestSites.Standard
 {
     public static class Program
     {
+        private static X509Certificate2 _x509Certificate2;
+
         public static void Main(string[] args)
         {
             var config = new ConfigurationBuilder()
@@ -22,7 +26,33 @@ namespace AspnetCoreModule.TestSites.Standard
             IWebHostBuilder builder = null;
             if (!string.IsNullOrEmpty(startUpClassString))
             {
-                if (startUpClassString == "StartupCompressionCaching")
+                if (startUpClassString == "StartupHTTPS")
+                {
+                    // load .\testresources\testcert.pfx
+                    string pfxPassword = "testPassword";
+                    if (File.Exists(@".\TestResources\testcert.pfx"))
+                    {
+                        _x509Certificate2 = new X509Certificate2(@".\TestResources\testcert.pfx", pfxPassword);                        
+                    }
+                    else
+                    {
+                        throw new Exception(@"Certificate file not found: .\TestResources\testcert.pfx of which password should " + pfxPassword);
+                    }
+
+                    builder = new WebHostBuilder()
+                        .UseConfiguration(config)
+                        .UseIISIntegration()
+                        .UseKestrel(options =>
+                        {
+                            HttpsConnectionFilterOptions httpsoptions = new HttpsConnectionFilterOptions();
+                            httpsoptions.ServerCertificate = _x509Certificate2;
+                            httpsoptions.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                            httpsoptions.CheckCertificateRevocation = false;
+                            options.UseHttps(httpsoptions);
+                        })
+                        .UseStartup<Startup>();
+                }
+                else if (startUpClassString == "StartupCompressionCaching")
                 {
                     builder = new WebHostBuilder()
                         .UseConfiguration(config)
@@ -111,8 +141,8 @@ namespace AspnetCoreModule.TestSites.Standard
             }
 
             var host = builder.Build();
-
             host.Run();
+            
             if (Startup.SleeptimeWhileClosing != 0)
             {
                 Thread.Sleep(Startup.SleeptimeWhileClosing);

@@ -66,6 +66,19 @@ namespace AspNetCoreModule.Test.Framework
             }
         }
 
+        public string _postFix = null;
+        public string PostFix
+        {
+            get
+            {
+                return _postFix;
+            }
+            set
+            {
+                _postFix = value;
+            }
+        }
+
         public int _tcpPort = 8080;
         public int TcpPort
         {
@@ -103,11 +116,12 @@ namespace AspNetCoreModule.Test.Framework
             //
             string siteRootPath = string.Empty;
             string siteName = string.Empty;
+            string postfix = string.Empty;
 
             // repeat three times until getting the valid temporary directory path
             for (int i = 0; i < 3; i++)
             {
-                string postfix = Path.GetRandomFileName();
+                postfix = Path.GetRandomFileName();
                 siteName = loggerPrefix.Replace(" ", "") + "_" + postfix;
                 siteRootPath = Path.Combine(Environment.ExpandEnvironmentVariables("%SystemDrive%") + @"\", "inetpub", "ANCMTest", siteName);
                 if (!Directory.Exists(siteRootPath))
@@ -174,6 +188,7 @@ namespace AspNetCoreModule.Test.Framework
             // Initialize member variables
             _hostName = "localhost";
             _siteName = siteName;
+            _postFix = postfix;
             _tcpPort = tcpPort;
 
             RootAppContext = new TestWebApplication("/", Path.Combine(siteRootPath, "WebSite1"), this);

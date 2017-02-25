@@ -4,8 +4,8 @@
 using AspNetCoreModule.Test.HttpClientHelper;
 using Microsoft.Web.Administration;
 using System;
+using System.Collections.ObjectModel;
 using System.IO;
-using System.Management;
 using System.ServiceProcess;
 using System.Threading;
 
@@ -255,6 +255,40 @@ namespace AspNetCoreModule.Test.Framework
                 anonymousAuthenticationSection["enabled"] = false;
                 ConfigurationSection windowsAuthenticationSection = config.GetSection("system.webServer/security/authentication/windowsAuthentication", siteName);
                 windowsAuthenticationSection["enabled"] = true;
+
+                serverManager.CommitChanges();
+            }
+        }
+
+        public void EnableOneToOneClientCertificateMapping(string siteName, string userName, string password, string publicKey)
+        {
+            TestUtility.LogInformation("Enable one-to-one client certificate mapping authentication : " + siteName);
+            using (ServerManager serverManager = GetServerManager())
+            {
+                Configuration config = serverManager.GetApplicationHostConfiguration();
+                
+                ConfigurationSection iisClientCertificateMappingAuthenticationSection = config.GetSection("system.webServer/security/authentication/iisClientCertificateMappingAuthentication", siteName);
+
+                // enable iisClientCertificateMappingAuthentication 
+                ConfigurationElementCollection oneToOneMappingsCollection = iisClientCertificateMappingAuthenticationSection.GetCollection("oneToOneMappings");
+                iisClientCertificateMappingAuthenticationSection["enabled"] = true;
+
+                // add a new oneToOne mapping collection item
+                ConfigurationElement addElement = oneToOneMappingsCollection.CreateElement("add");
+                addElement["userName"] = userName;
+                addElement["password"] = password;
+                addElement["certificate"] = publicKey;
+                oneToOneMappingsCollection.Add(addElement);
+
+                // set sslFlags with SslNegotiateCert
+                ConfigurationSection accessSection = config.GetSection("system.webServer/security/access", siteName);
+                accessSection["sslFlags"] = "Ssl, SslNegotiateCert, SslRequireCert";
+
+                // disable other authentication to avoid any noise affected by other authentications
+                ConfigurationSection anonymousAuthenticationSection = config.GetSection("system.webServer/security/authentication/anonymousAuthentication", siteName);
+                anonymousAuthenticationSection["enabled"] = false;
+                ConfigurationSection windowsAuthenticationSection = config.GetSection("system.webServer/security/authentication/windowsAuthentication", siteName);
+                windowsAuthenticationSection["enabled"] = false;
 
                 serverManager.CommitChanges();
             }
@@ -924,14 +958,205 @@ namespace AspNetCoreModule.Test.Framework
             }
         }
 
-        public void AddBindingToSite(string siteName, string Ip, int Port, string host)
+        public string CreateSelfSignedCertificateWithMakeCert(string subjectName, string issuerName = null, string extendedKeyUsage = null)
+        {
+            string makecertExeFilePath = "makecert.exe";
+            var makecertExeFilePaths = new string[]
+            {
+                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), "Windows Kits", "8.1", "bin", "x64", "makecert.exe"),
+                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Windows Kits", "8.1", "bin", "x86", "makecert.exe"),
+                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), "Windows Kits", "8.0", "bin", "x64", "makecert.exe"),
+                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Windows Kits", "8.0", "bin", "x86", "makecert.exe"),
+                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%"), "Windows SKDs", "Windows", "v7.1A", "bin", "x64", "makecert.exe"),
+                Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Windows SKDs", "Windows", "v7.1A", "bin", "makecert.exe")
+            };
+
+            foreach (string item in makecertExeFilePaths)
+            {
+                if (File.Exists(item))
+                {
+                    makecertExeFilePath = item;
+                    break;
+                }
+            }
+            
+            string parameter;
+            string targetSSLStore = string.Empty;
+            if (issuerName == null)
+            {
+                // if issuer Name is null, you are going to create a root level certificate
+                parameter = "-r -pe -n \"CN = " + subjectName + "\" -b 12/22/2013 -e 12/23/2020 -ss root -sr localmachine -len 2048 -a sha256";
+                targetSSLStore = @"Cert:\LocalMachine\Root"; // => -ss root -sr localmachine
+            }
+            else
+            {
+                // if issuer Name is *not* null, you are going to create a child evel certificate from the given issuer certificate
+                switch (extendedKeyUsage)
+                {
+                    // for web server certificate
+                    case "1.3.6.1.5.5.7.3.1":
+                        parameter = "-pe -n \"CN=" + subjectName + "\" -b 12/22/2013 -e 12/23/" + (System.DateTime.Now.Year + 10).ToString() + "  -eku " + extendedKeyUsage + " -is root -ir localmachine -in \"" + issuerName + "\" -len 2048 -ss my -sr localmachine -a sha256";
+                        targetSSLStore = @"Cert:\LocalMachine\My";  // => -ss my -sr localmachine
+                        break;
+
+                    // for client authentication
+                    case "1.3.6.1.5.5.7.3.2":
+                        parameter = "-pe -n \"CN=" + subjectName + "\" -eku " + extendedKeyUsage + " -is root -ir localmachine -in \"" + issuerName + "\" -ss my -sr currentuser -len 2048 -a sha256";
+                        targetSSLStore = @"Cert:\CurrentUser\My"; // => -ss my -sr currentuser
+                        break;
+
+                    default:
+                        throw new NotImplementedException(extendedKeyUsage);
+                }
+            }
+            try
+            {
+                TestUtility.RunCommand(makecertExeFilePath, parameter);
+            }
+            catch (Exception ex)
+            {
+                TestUtility.LogInformation("Failed to run makecert.exe. Makecert.exe is installed with Visual Studio or SDK. Please make sure setting PATH environment to include the directory path of the makecert.exe file");
+                throw ex;
+            }
+
+            string toolsPath = Path.Combine(InitializeTestMachine.GetSolutionDirectory(), "tools");
+            string powershellScript = Path.Combine(toolsPath, "certificate.ps1")
+                + " -Command Get-CertificateThumbPrint" + 
+                " -Subject " + subjectName +                
+                " -TargetSSLStore \"" + targetSSLStore + "\"";
+
+            if (issuerName != null)
+            {
+                powershellScript += " -IssuerName " + issuerName;
+            }
+
+            string output = TestUtility.RunPowershellScript(powershellScript);
+            if (output.Length != 40)
+            {
+                throw new System.ApplicationException("Failed to create a certificate, output: " + output);
+            }
+            return output;
+        }
+
+        public string CreateSelfSignedCertificate(string subjectName)
+        {
+            string toolsPath = Path.Combine(InitializeTestMachine.GetSolutionDirectory(), "tools");
+            string powershellScript = Path.Combine(toolsPath, "certificate.ps1") 
+                + " -Command Create-SelfSignedCertificate" 
+                + " -Subject " + subjectName;
+
+            string output = TestUtility.RunPowershellScript(powershellScript);
+            if (output.Length != 40)
+            {
+                throw new System.ApplicationException("Failed to create a certificate, output: " + output);
+            }
+            return output;
+        }
+                
+        public string ExportCertificateTo(string thumbPrint, string sslStoreFrom = @"Cert:\LocalMachine\My", string sslStoreTo = @"Cert:\LocalMachine\Root", string pfxPassword = null)
+        {
+            string toolsPath = Path.Combine(InitializeTestMachine.GetSolutionDirectory(), "tools");
+            string powershellScript = Path.Combine(toolsPath, "certificate.ps1") + 
+                " -Command Export-CertificateTo" + 
+                " -TargetThumbPrint " + thumbPrint + 
+                " -TargetSSLStore " + sslStoreFrom +
+                " -ExportToSSLStore " + sslStoreTo;
+
+            if (pfxPassword != null)
+            {
+                powershellScript += " -PfxPassword " + pfxPassword;
+            }
+
+            string output = TestUtility.RunPowershellScript(powershellScript);
+            if (output != string.Empty)
+            {
+                throw new System.ApplicationException("Failed to export a certificate to RootCA, output: " + output);
+            }
+            return output;
+        }
+
+        public string GetCertificatePublicKey(string thumbPrint, string sslStore = @"Cert:\LocalMachine\My")
+        {
+            string toolsPath = Path.Combine(InitializeTestMachine.GetSolutionDirectory(), "tools");
+            string powershellScript = Path.Combine(toolsPath, "certificate.ps1") +
+                " -Command Get-CertificatePublicKey" +
+                " -TargetThumbPrint " + thumbPrint +
+                " -TargetSSLStore " + sslStore;
+
+            string output = TestUtility.RunPowershellScript(powershellScript);
+            if (output.Length < 500)
+            {
+                throw new System.ApplicationException("Failed to get certificate public key, output: " + output);
+            }
+            return output;
+        }
+
+        public string DeleteCertificate(string thumbPrint, string sslStore= @"Cert:\LocalMachine\My")
+        {
+            string toolsPath = Path.Combine(InitializeTestMachine.GetSolutionDirectory(), "tools");
+            string powershellScript = Path.Combine(toolsPath, "certificate.ps1") + 
+                " -Command Delete-Certificate" + 
+                " -TargetThumbPrint " + thumbPrint + 
+                " -TargetSSLStore " + sslStore;
+
+            string output = TestUtility.RunPowershellScript(powershellScript);
+            if (output != string.Empty)
+            {
+                throw new System.ApplicationException("Failed to delete a certificate (thumbprint: " + thumbPrint + ", output: " + output);
+            }
+            return output;
+        }
+
+        public void SetSSLCertificate(int port, string hexIpAddress, string thumbPrint, string sslStore = @"Cert:\LocalMachine\My")
+        {
+            // Remove a certificate mapping if it exists
+            RemoveSSLCertificate(port, hexIpAddress);
+
+            // Configure certificate mapping with the newly created certificate
+            string toolsPath = Path.Combine(InitializeTestMachine.GetSolutionDirectory(), "tools");
+            string powershellScript = Path.Combine(toolsPath, "httpsys.ps1") + 
+                " -Command Add-SslBinding" + 
+                " -IpAddress " + hexIpAddress + 
+                " -Port " + port.ToString() + 
+                " –Thumbprint \"" + thumbPrint + "\"" + 
+                " -TargetSSLStore " + sslStore;
+
+            string output = TestUtility.RunPowershellScript(powershellScript);
+            if (output != string.Empty)
+            {
+                throw new System.ApplicationException("Failed to configure certificate, output: " + output);
+            }
+        }
+
+        public void RemoveSSLCertificate(int port, string hexIpAddress, string sslStore = @"Cert:\LocalMachine\My")
+        {
+            string toolsPath = Path.Combine(InitializeTestMachine.GetSolutionDirectory(), "tools");
+            string powershellScript = Path.Combine(toolsPath, "httpsys.ps1") + 
+                " -Command Get-SslBinding" + 
+                " -IpAddress " + hexIpAddress + 
+                " -Port " + port.ToString();
+
+            string output = TestUtility.RunPowershellScript(powershellScript);
+            if (output != string.Empty)
+            {
+                // Delete a certificate mapping if it exists
+                powershellScript = Path.Combine(toolsPath, "httpsys.ps1") + " -Command Delete-SslBinding -IpAddress " + hexIpAddress + " -Port " + port.ToString();
+                output = TestUtility.RunPowershellScript(powershellScript);
+                if (output != string.Empty)
+                {
+                    throw new System.ApplicationException("Failed to delete certificate, output: " + output);
+                }
+            }
+        }
+
+        public void AddBindingToSite(string siteName, string ipAddress, int port, string host, string protocol = "http")
         {
             string bindingInfo = "";
-            if (Ip == null)
-                Ip = "*";
-            bindingInfo += Ip;
+            if (ipAddress == null)
+                ipAddress = "*";
+            bindingInfo += ipAddress;
             bindingInfo += ":";
-            bindingInfo += Port;
+            bindingInfo += port;
             bindingInfo += ":";
             if (host != null)
                 bindingInfo += host;
@@ -944,7 +1169,7 @@ namespace AspNetCoreModule.Test.Framework
                 {
                     SiteCollection sites = serverManager.Sites;
                     Binding b = sites[siteName].Bindings.CreateElement();
-                    b.SetAttributeValue("protocol", "http");
+                    b.SetAttributeValue("protocol", protocol);
                     b.SetAttributeValue("bindingInformation", bindingInfo);
 
                     sites[siteName].Bindings.Add(b);
