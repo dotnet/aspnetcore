@@ -5,8 +5,6 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp1.1;net452</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp1.1</TargetFrameworks>
-    <!-- TODO remove when https://github.com/dotnet/sdk/issues/396 is resolved -->
-    <RuntimeIdentifier Condition=" '$(TargetFramework)' != 'netcoreapp1.1' ">win7-x64</RuntimeIdentifier>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
