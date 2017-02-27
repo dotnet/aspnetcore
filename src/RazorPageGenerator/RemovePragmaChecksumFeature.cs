@@ -1,10 +1,13 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace RazorPageGenerator
 {
-    class RemovePragmaChecksumFeature : RazorIRPassBase, IRazorIROptimizationPass
+    public class RemovePragmaChecksumFeature : RazorIRPassBase, IRazorIROptimizationPass
     {
         public override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,18 +12,33 @@ namespace RazorPageGenerator
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
             if (args == null || args.Length != 1)
             {
                 Console.WriteLine("Invalid argument(s).");
                 Console.WriteLine("Usage:   dotnet razorpagegenerator <root-namespace-of-views>");
                 Console.WriteLine("Example: dotnet razorpagegenerator Microsoft.AspNetCore.Diagnostics.RazorViews");
-                return;
+                return 1;
             }
 
             var rootNamespace = args[0];
             var targetProjectDirectory = Directory.GetCurrentDirectory();
+            var results = MainCore(rootNamespace, targetProjectDirectory);
+
+            foreach (var result in results)
+            {
+                File.WriteAllText(result.FilePath, result.GeneratedCode);
+            }
+
+            Console.WriteLine();
+            Console.WriteLine($"{results.Count} files successfully generated.");
+            Console.WriteLine();
+            return 0;
+        }
+
+        public static IList<RazorPageGeneratorResult> MainCore(string rootNamespace, string targetProjectDirectory)
+        {
             var razorEngine = RazorEngine.Create(builder =>
             {
                 builder
@@ -43,6 +59,8 @@ namespace RazorPageGenerator
             var templateEngine = new RazorTemplateEngine(razorEngine, razorProject);
 
             var fileCount = 0;
+
+            var results = new List<RazorPageGeneratorResult>();
             foreach (var viewDir in viewDirectories)
             {
                 Console.WriteLine();
@@ -59,18 +77,16 @@ namespace RazorPageGenerator
                 foreach (var item in cshtmlFiles)
                 {
                     Console.WriteLine("    Generating code file for view {0}...", item.Filename);
-                    GenerateCodeFile(templateEngine, item);
+                    results.Add(GenerateCodeFile(templateEngine, item));
                     Console.WriteLine("      Done!");
                     fileCount++;
                 }
             }
 
-            Console.WriteLine();
-            Console.WriteLine("{0} files successfully generated.", fileCount);
-            Console.WriteLine();
+            return results;
         }
 
-        private static void GenerateCodeFile(RazorTemplateEngine templateEngine, FileSystemRazorProjectItem projectItem)
+        private static RazorPageGeneratorResult GenerateCodeFile(RazorTemplateEngine templateEngine, FileSystemRazorProjectItem projectItem)
         {
             var projectItemWrapper = new FileSystemRazorProjectItemWrapper(projectItem);
             var cSharpDocument = templateEngine.GenerateCode(projectItemWrapper);
@@ -81,7 +97,11 @@ namespace RazorPageGenerator
             }
 
             var generatedCodeFilePath = Path.ChangeExtension(projectItem.PhysicalPath, ".Designer.cs");
-            File.WriteAllText(generatedCodeFilePath, cSharpDocument.GeneratedCode);
+            return new RazorPageGeneratorResult
+            {
+                FilePath = generatedCodeFilePath,
+                GeneratedCode = cSharpDocument.GeneratedCode,
+            };
         }
 
         private class FileSystemRazorProjectItemWrapper : RazorProjectItem

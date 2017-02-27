@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26208.0
+VisualStudioVersion = 15.0.26222.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3C0D6505-79B3-49D0-B4C3-176F0F1836ED}"
 EndProject
@@ -40,6 +40,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis.Razor.Test", "test\Microsoft.CodeAnalysis.Razor.Test\Microsoft.CodeAnalysis.Razor.Test.csproj", "{7A8A1664-37CE-4376-81CA-1862CF5F91D9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.LanguageServices.Razor", "src\Microsoft.VisualStudio.LanguageServices.Razor\Microsoft.VisualStudio.LanguageServices.Razor.csproj", "{E5D92DB7-5CBF-410A-9685-FF76F71EC96F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorPageGenerator.Test", "test\RazorPageGenerator.Test\RazorPageGenerator.Test.csproj", "{96EB1BD4-B8E0-4F52-A068-BBCACA7E3F63}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -151,6 +153,14 @@ Global
 		{E5D92DB7-5CBF-410A-9685-FF76F71EC96F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E5D92DB7-5CBF-410A-9685-FF76F71EC96F}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
 		{E5D92DB7-5CBF-410A-9685-FF76F71EC96F}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{96EB1BD4-B8E0-4F52-A068-BBCACA7E3F63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96EB1BD4-B8E0-4F52-A068-BBCACA7E3F63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96EB1BD4-B8E0-4F52-A068-BBCACA7E3F63}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
+		{96EB1BD4-B8E0-4F52-A068-BBCACA7E3F63}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
+		{96EB1BD4-B8E0-4F52-A068-BBCACA7E3F63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96EB1BD4-B8E0-4F52-A068-BBCACA7E3F63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96EB1BD4-B8E0-4F52-A068-BBCACA7E3F63}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
+		{96EB1BD4-B8E0-4F52-A068-BBCACA7E3F63}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -169,5 +179,6 @@ Global
 		{42403DAF-F0BC-4F3A-B7F2-46D7013345D8} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
 		{7A8A1664-37CE-4376-81CA-1862CF5F91D9} = {92463391-81BE-462B-AC3C-78C6C760741F}
 		{E5D92DB7-5CBF-410A-9685-FF76F71EC96F} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
+		{96EB1BD4-B8E0-4F52-A068-BBCACA7E3F63} = {92463391-81BE-462B-AC3C-78C6C760741F}
 	EndGlobalSection
 EndGlobal
