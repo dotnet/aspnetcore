@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Mvc.RazorPages.Internal;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.Extensions.Options;
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var provider = new PageActionDescriptorProvider(
                 razorProject.Object,
                 GetAccessor<MvcOptions>(),
-                GetAccessor<RazorPagesOptions>());
+                GetRazorPagesOptions());
             var context = new ActionDescriptorProviderContext();
 
             // Act
@@ -53,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var provider = new PageActionDescriptorProvider(
                 razorProject.Object,
                 GetAccessor<MvcOptions>(),
-                GetAccessor<RazorPagesOptions>());
+                GetRazorPagesOptions());
             var context = new ActionDescriptorProviderContext();
 
             // Act
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var provider = new PageActionDescriptorProvider(
                 razorProject.Object,
                 GetAccessor<MvcOptions>(),
-                GetAccessor<RazorPagesOptions>());
+                GetRazorPagesOptions());
             var context = new ActionDescriptorProviderContext();
 
             // Act
@@ -109,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var provider = new PageActionDescriptorProvider(
                 razorProject.Object,
                 GetAccessor<MvcOptions>(),
-                GetAccessor<RazorPagesOptions>());
+                GetRazorPagesOptions());
             var context = new ActionDescriptorProviderContext();
 
             // Act and Assert
@@ -133,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var provider = new PageActionDescriptorProvider(
                 razorProject.Object,
                 GetAccessor<MvcOptions>(),
-                GetAccessor<RazorPagesOptions>());
+                GetRazorPagesOptions());
             var context = new ActionDescriptorProviderContext();
 
             // Act
@@ -170,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var provider = new PageActionDescriptorProvider(
                 razorProject.Object,
                 GetAccessor<MvcOptions>(),
-                GetAccessor<RazorPagesOptions>());
+                GetRazorPagesOptions());
             var context = new ActionDescriptorProviderContext();
 
             // Act
@@ -208,7 +209,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var provider = new PageActionDescriptorProvider(
                 razorProject.Object,
                 GetAccessor(options),
-                GetAccessor<RazorPagesOptions>());
+                GetRazorPagesOptions());
             var context = new ActionDescriptorProviderContext();
 
             // Act
@@ -250,7 +251,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var provider = new PageActionDescriptorProvider(
                 razorProject.Object,
                 GetAccessor(options),
-                GetAccessor<RazorPagesOptions>());
+                GetRazorPagesOptions());
             var context = new ActionDescriptorProviderContext();
 
             // Act
@@ -291,14 +292,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var localFilter = Mock.Of<IFilterMetadata>();
             var options = new MvcOptions();
             options.Filters.Add(globalFilter);
-            var convention = new Mock<IPageModelConvention>();
+            var convention = new Mock<IPageApplicationModelConvention>();
             convention.Setup(c => c.Apply(It.IsAny<PageApplicationModel>()))
                 .Callback((PageApplicationModel model) =>
                 {
                     model.Filters.Add(localFilter);
                 });
-            var razorOptions = new RazorPagesOptions();
-            razorOptions.Conventions.Add(convention.Object);
+            var razorOptions = GetRazorPagesOptions();
+            razorOptions.Value.Conventions.Add(convention.Object);
 
             var razorProject = new Mock<RazorProject>();
             razorProject.Setup(p => p.EnumerateItems("/"))
@@ -309,7 +310,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var provider = new PageActionDescriptorProvider(
                 razorProject.Object,
                 GetAccessor(options),
-                GetAccessor(razorOptions));
+                razorOptions);
             var context = new ActionDescriptorProviderContext();
 
             // Act
@@ -347,6 +348,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var accessor = new Mock<IOptions<TOptions>>();
             accessor.SetupGet(a => a.Value).Returns(options ?? new TOptions());
             return accessor.Object;
+        }
+
+        private static IOptions<RazorPagesOptions> GetRazorPagesOptions()
+        {
+            return new OptionsManager<RazorPagesOptions>(new[] { new RazorPagesOptionsSetup() });
         }
 
         private static RazorProjectItem GetProjectItem(string basePath, string path, string content)

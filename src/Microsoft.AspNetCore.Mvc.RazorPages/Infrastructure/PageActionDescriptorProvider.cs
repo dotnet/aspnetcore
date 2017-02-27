@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.Extensions.Options;
 
@@ -84,9 +83,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 }
                 model.Selectors.Add(CreateSelectorModel(parentDirectoryPath, template));
             }
-
-            model.Filters.Add(new SaveTempDataPropertyFilter()); // Support for [TempData] on properties
-            model.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()); // Always require an antiforgery token on post
 
             for (var i = 0; i < _pagesOptions.Conventions.Count; i++)
             {

@@ -10,15 +10,28 @@ namespace RazorPagesWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().AddCookieTempDataProvider();
+            services
+                .AddMvc()
+                .AddCookieTempDataProvider()
+                .AddRazorPagesOptions(options =>
+                {
+                    options.AuthorizePage("/HelloWorldWithAuth", string.Empty);
+                });
         }
 
         public void Configure(IApplicationBuilder app)
         {
             app.UseCultureReplacer();
 
+            app.UseCookieAuthentication(new CookieAuthenticationOptions
+            {
+                LoginPath = "/Login",
+                AutomaticAuthenticate = true,
+                AutomaticChallenge = true
+            });
+
             app.UseStaticFiles();
-            
+
             app.UseMvc();
         }
     }

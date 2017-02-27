@@ -131,6 +131,20 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("Hi2", content.Trim());
         }
 
+        [Fact]
+        public async Task AuthorizePage_AddsAuthorizationForSpecificPages()
+        {
+            // Arrange
+            var url = "/HelloWorldWithAuth";
+            
+            // Act
+            var response = await Client.GetAsync(url);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/Login?ReturnUrl=%2FHelloWorldWithAuth", response.Headers.Location.PathAndQuery);
+        }
+
         private static string GetCookie(HttpResponseMessage response)
         {
             var setCookie = response.Headers.GetValues("Set-Cookie").ToArray();
