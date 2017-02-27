@@ -53,9 +53,7 @@ namespace Microsoft.Extensions.DependencyInjection
         internal static void AddServices(IServiceCollection services)
         {
             services.TryAddEnumerable(
-                ServiceDescriptor.Transient<
-                    IConfigureOptions<RazorPagesOptions>,
-                    RazorPagesOptionsSetup>());
+                ServiceDescriptor.Transient<IConfigureOptions<RazorPagesOptions>, RazorPagesOptionsSetup>());
 
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IActionDescriptorProvider, PageActionDescriptorProvider>());
@@ -78,7 +76,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IActionDescriptorChangeProvider, PageActionDescriptorChangeProvider>();
 
             services.TryAddSingleton<TempDataPropertyProvider>();
-
         }
     }
 }
