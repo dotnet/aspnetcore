@@ -2,6 +2,7 @@
   <Import Project="..\..\build\common.props" />
   <PropertyGroup>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains the Razor design-time infrastructure.</Description>
+    <VersionPrefix>1.0.0</VersionPrefix>
     <TargetFrameworks>net451;net46;netstandard1.3</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
