@@ -51,13 +51,13 @@ namespace Microsoft.AspNetCore.Sockets.Internal
                 RequestId = null;
 
                 // If the application task is faulted, propagate the error to the transport
-                if (ApplicationTask.IsFaulted)
+                if (ApplicationTask?.IsFaulted == true)
                 {
                     Connection.Transport.Output.TryComplete(ApplicationTask.Exception.InnerException);
                 }
 
                 // If the transport task is faulted, propagate the error to the application
-                if (TransportTask.IsFaulted)
+                if (TransportTask?.IsFaulted == true)
                 {
                     Application.Output.TryComplete(TransportTask.Exception.InnerException);
                 }
@@ -65,8 +65,8 @@ namespace Microsoft.AspNetCore.Sockets.Internal
                 Connection.Dispose();
                 Application.Dispose();
 
-                applicationTask = ApplicationTask;
-                transportTask = TransportTask;
+                applicationTask = ApplicationTask ?? applicationTask;
+                transportTask = TransportTask ?? transportTask;
             }
             finally
             {

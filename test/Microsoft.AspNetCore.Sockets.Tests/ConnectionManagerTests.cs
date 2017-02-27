@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.Extensions.Logging;
@@ -99,6 +98,20 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             connectionManager.CloseConnections();
 
             await state.DisposeAsync();
+        }
+
+        [Fact]
+        public async Task DisposeInactiveConnection()
+        {
+            var connectionManager = CreateConnectionManager();
+            var state = connectionManager.CreateConnection();;
+
+            Assert.NotNull(state.Connection);
+            Assert.NotNull(state.Connection.ConnectionId);
+            Assert.NotNull(state.Connection.Transport);
+
+            await state.DisposeAsync();
+            Assert.Equal(state.Status, ConnectionState.ConnectionStatus.Disposed);
         }
 
         private static ConnectionManager CreateConnectionManager()
