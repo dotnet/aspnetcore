@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
     /// <summary>
     /// Summary description for KestrelThread
     /// </summary>
-    public class KestrelThread: IScheduler
+    public class KestrelThread : IScheduler
     {
         public const long HeartbeatMilliseconds = 1000;
 

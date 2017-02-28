@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace SampleApp
@@ -67,6 +68,8 @@ namespace SampleApp
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .Build();
+
+            host.ServerFeatures.Get<InternalKestrelServerOptions>().ThreadPoolDispatching = false;
 
             host.Run();
         }

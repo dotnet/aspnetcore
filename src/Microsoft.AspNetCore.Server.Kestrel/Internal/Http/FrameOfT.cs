@@ -17,8 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
     {
         private readonly IHttpApplication<TContext> _application;
 
-        public Frame(IHttpApplication<TContext> application,
-                     ConnectionContext context)
+        public Frame(IHttpApplication<TContext> application, ConnectionContext context)
             : base(context)
         {
             _application = application;

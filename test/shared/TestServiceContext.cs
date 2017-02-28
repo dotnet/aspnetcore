@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
-using Microsoft.AspNetCore.Server.Kestrel.Adapter;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
@@ -22,8 +21,11 @@ namespace Microsoft.AspNetCore.Testing
             ThreadPool = new LoggingThreadPool(Log);
             DateHeaderValueManager = new DateHeaderValueManager(systemClock: new MockSystemClock());
             DateHeaderValue = DateHeaderValueManager.GetDateHeaderValues().String;
-            ServerOptions = new KestrelServerOptions { AddServerHeader = false };
-            ServerOptions.ShutdownTimeout = TimeSpan.FromSeconds(5);
+            ServerOptions = new KestrelServerOptions
+            {
+                AddServerHeader = false,
+                ShutdownTimeout = TimeSpan.FromSeconds(5)
+            };
         }
 
         public string DateHeaderValue { get; }

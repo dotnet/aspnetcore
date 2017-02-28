@@ -45,16 +45,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
 
             Options = options.Value ?? new KestrelServerOptions();
+            InternalOptions = new InternalKestrelServerOptions();
             _applicationLifetime = applicationLifetime;
             _logger = loggerFactory.CreateLogger(typeof(KestrelServer).GetTypeInfo().Namespace);
             Features = new FeatureCollection();
             _serverAddresses = new ServerAddressesFeature();
             Features.Set<IServerAddressesFeature>(_serverAddresses);
+            Features.Set(InternalOptions);
         }
 
         public IFeatureCollection Features { get; }
 
         public KestrelServerOptions Options { get; }
+
+        private InternalKestrelServerOptions InternalOptions { get; }
 
         public void Start<TContext>(IHttpApplication<TContext> application)
         {
@@ -76,6 +80,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
                 var dateHeaderValueManager = new DateHeaderValueManager();
                 var trace = new KestrelTrace(_logger);
+
+                IThreadPool threadPool;
+                if (InternalOptions.ThreadPoolDispatching)
+                {
+                    threadPool = new LoggingThreadPool(trace);
+                }
+                else
+                {
+                    threadPool = new InlineLoggingThreadPool(trace);
+                }
+
                 var engine = new KestrelEngine(new ServiceContext
                 {
                     FrameFactory = context =>
@@ -84,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     },
                     AppLifetime = _applicationLifetime,
                     Log = trace,
-                    ThreadPool = new LoggingThreadPool(trace),
+                    ThreadPool = threadPool,
                     DateHeaderValueManager = dateHeaderValueManager,
                     ServerOptions = Options
                 });

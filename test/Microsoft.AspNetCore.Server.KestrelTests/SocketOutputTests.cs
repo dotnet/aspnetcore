@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
-                var ltp = new SynchronousThreadPool();
+                var ltp = new InlineLoggingThreadPool(trace);
                 var socketOutput = new SocketOutput(kestrelThread, socket, new MockConnection(options), "0", trace, ltp);
 
                 // At least one run of this test should have a MaxResponseBufferSize < 1 MB.
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
-                var ltp = new SynchronousThreadPool();
+                var ltp = new InlineLoggingThreadPool(trace);
                 var options = new KestrelServerOptions { Limits = { MaxResponseBufferSize = null } };
                 var socketOutput = new SocketOutput(kestrelThread, socket, new MockConnection(options), "0", trace, ltp);
 
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
-                var ltp = new SynchronousThreadPool();
+                var ltp = new InlineLoggingThreadPool(trace);
                 var options = new KestrelServerOptions { Limits = { MaxResponseBufferSize = 0 } };
                 var socketOutput = new SocketOutput(kestrelThread, socket, new MockConnection(options), "0", trace, ltp);
 
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
-                var ltp = new SynchronousThreadPool();
+                var ltp = new InlineLoggingThreadPool(trace);
                 var mockConnection = new MockConnection(options);
                 var socketOutput = new SocketOutput(kestrelThread, socket, mockConnection, "0", trace, ltp);
 
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
-                var ltp = new SynchronousThreadPool();
+                var ltp = new InlineLoggingThreadPool(trace);
                 var mockConnection = new MockConnection(options);
                 var socketOutput = new SocketOutput(kestrelThread, socket, mockConnection, "0", trace, ltp);
 
@@ -381,7 +381,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
-                var ltp = new SynchronousThreadPool();
+                var ltp = new InlineLoggingThreadPool(trace);
 
                 using (var mockConnection = new MockConnection(options))
                 {
@@ -498,7 +498,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
-                var ltp = new SynchronousThreadPool();
+                var ltp = new InlineLoggingThreadPool(trace);
 
                 using (var mockConnection = new MockConnection(options))
                 {
@@ -591,7 +591,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
-                var ltp = new SynchronousThreadPool();
+                var ltp = new InlineLoggingThreadPool(trace);
                 var mockConnection = new MockConnection(options);
                 var socketOutput = new SocketOutput(kestrelThread, socket, mockConnection, "0", trace, ltp);
 
@@ -671,7 +671,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
-                var ltp = new SynchronousThreadPool();
+                var ltp = new InlineLoggingThreadPool(trace);
                 var socketOutput = new SocketOutput(kestrelThread, socket, new MockConnection(options), "0", trace, ltp);
 
                 // block 1
@@ -724,7 +724,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
-                var ltp = new SynchronousThreadPool();
+                var ltp = new InlineLoggingThreadPool(trace);
                 var mockConnection = new MockConnection(options);
                 var socketOutput = new SocketOutput(kestrelThread, socket, mockConnection, "0", trace, ltp);
 
@@ -796,7 +796,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
-                var ltp = new SynchronousThreadPool();
+                var ltp = new InlineLoggingThreadPool(trace);
                 var socketOutput = new SocketOutput(kestrelThread, socket, new MockConnection(new KestrelServerOptions()), "0", trace, ltp);
 
                 mockLibuv.KestrelThreadBlocker.Reset();
@@ -842,7 +842,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 var socket = new MockSocket(mockLibuv, kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
-                var ltp = new SynchronousThreadPool();
+                var ltp = new InlineLoggingThreadPool(trace);
                 var connection = new MockConnection(new KestrelServerOptions());
                 var socketOutput = new SocketOutput(kestrelThread, socket, connection, "0", trace, ltp);
 
