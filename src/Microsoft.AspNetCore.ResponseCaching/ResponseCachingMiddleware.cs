@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     // Note: int64 division truncates result and errors may be up to 1 second. This reduction in
                     // accuracy of age calculation is considered appropriate since it is small compared to clock
                     // skews and the "Age" header is an estimate of the real age of cached content.
-                    response.Headers[HeaderNames.Age] = HeaderUtilities.FormatInt64(context.CachedEntryAge.Value.Ticks / TimeSpan.TicksPerSecond);
+                    response.Headers[HeaderNames.Age] = HeaderUtilities.FormatNonNegativeInt64(context.CachedEntryAge.Value.Ticks / TimeSpan.TicksPerSecond);
 
                     // Copy the cached response body
                     var body = context.CachedResponse.Body;
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     // Add a content-length if required
                     if (!response.ContentLength.HasValue && StringValues.IsNullOrEmpty(response.Headers[HeaderNames.TransferEncoding]))
                     {
-                        context.CachedResponse.Headers[HeaderNames.ContentLength] = HeaderUtilities.FormatInt64(bufferStream.Length);
+                        context.CachedResponse.Headers[HeaderNames.ContentLength] = HeaderUtilities.FormatNonNegativeInt64(bufferStream.Length);
                     }
 
                     context.CachedResponse.Body = bufferStream;
