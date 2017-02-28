@@ -126,10 +126,49 @@ function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configurati
         } catch (ex) {
             throw new Error('HotModuleReplacement failed because of an error while loading \'webpack-hot-middleware\'. Error was: ' + ex.stack);
         }
+        app.use(workaroundIISExpressEventStreamFlushingIssue(hmrServerEndpoint));
         app.use(webpackHotMiddlewareModule(compiler, {
             path: hmrServerEndpoint
         }));
     }
+}
+
+function workaroundIISExpressEventStreamFlushingIssue(path: string): connect.NextHandleFunction {
+    // IIS Express makes HMR seem very slow, because when it's reverse-proxying an EventStream response
+    // from Kestrel, it doesn't pass through the lines to the browser immediately, even if you're calling
+    // response.Flush (or equivalent) in your ASP.NET Core code. For some reason, it waits until the following
+    // line is sent. By default, that wouldn't be until the next HMR heartbeat, which can be up to 5 seconds later.
+    // In effect, it looks as if your code is taking 5 seconds longer to compile than it really does.
+    //
+    // As a workaround, this connect middleware intercepts requests to the HMR endpoint, and modifies the response
+    // stream so that all EventStream 'data' lines are immediately followed with a further blank line. This is
+    // harmless in non-IIS-Express cases, because it's OK to have extra blank lines in an EventStream response.
+    // The implementation is simplistic - rather than using a true stream reader, we just patch the 'write'
+    // method. This relies on webpack's HMR code always writing complete EventStream messages with a single
+    // 'write' call. That works fine today, but if webpack's HMR code was changed, this workaround might have
+    // to be updated.
+    const eventStreamLineStart = /^data\:/;
+    return (req, res, next) => {
+        // We only want to interfere with requests to the HMR endpoint, so check this request matches
+        const urlMatchesPath = (req.url === path) || (req.url.split('?', 1)[0] === path);
+        if (urlMatchesPath) {
+            const origWrite = res.write;
+            res.write = function (chunk) {
+                const result = origWrite.apply(this, arguments);
+
+                // We only want to interfere with actual EventStream data lines, so check it is one
+                if (typeof (chunk) === 'string') {
+                    if (eventStreamLineStart.test(chunk) && chunk.charAt(chunk.length - 1) === '\n') {
+                        origWrite.call(this, '\n\n');
+                    }
+                }
+
+                return result;
+            }
+        }
+
+        return next();
+    };
 }
 
 function copyRecursiveToRealFsSync(from: typeof fs, rootDir: string, exclude: RegExp[]) {

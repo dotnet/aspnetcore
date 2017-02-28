@@ -39,3 +39,5 @@ npm-debug.log
 /templates/*/ClientApp/dist/
 /templates/*/yarn.lock
 .vscode/
+
+/templates/*/Properties/launchSettings.json

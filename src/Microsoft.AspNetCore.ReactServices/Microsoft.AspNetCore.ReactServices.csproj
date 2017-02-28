@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>Helpers for building React applications on ASP.NET Core.</Description>
+    <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
+    <VersionPrefix>1.1.0</VersionPrefix>
+    <VersionSuffix>beta2</VersionSuffix>
+    <PackageTags>aspnetcore;aspnetcoremvc;nodeservices</PackageTags>
+    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.SpaServices\Microsoft.AspNetCore.SpaServices.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="1.1.0" />
+  </ItemGroup>
+
+</Project>

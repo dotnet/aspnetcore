@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>Helpers for building single-page applications on ASP.NET MVC Core.</Description>
+    <TargetFrameworks>net451;netstandard1.6</TargetFrameworks>
+    <VersionPrefix>1.1.1</VersionPrefix>
+    <VersionSuffix>alpha</VersionSuffix>
+    <PackageTags>aspnetcore;aspnetcoremvc;nodeservices</PackageTags>
+    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Content\**\*" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.NodeServices\Microsoft.AspNetCore.NodeServices.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.0" />
+  </ItemGroup>
+
+  <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
+    <Exec Command="npm install" />
+    <Exec Command="node node_modules/webpack/bin/webpack.js" />
+  </Target>
+
+</Project>

@@ -70,7 +70,7 @@ const parsedArgs = parseArgs(process.argv);
 const listenAddress = (useWindowsNamedPipes ? '\\\\.\\pipe\\' : '/tmp/') + parsedArgs.listenAddress;
 server.listen(listenAddress);
 
-exitWhenParentExits(parseInt(parsedArgs.parentPid));
+exitWhenParentExits(parseInt(parsedArgs.parentPid), /* ignoreSigint */ true);
 
 interface RpcInvocation {
     moduleName: string;
