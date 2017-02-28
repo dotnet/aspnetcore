@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(item));
             }
 
-            Add(item?.ToString());
+            Add(item.ToString());
         }
 
         /// <summary>
