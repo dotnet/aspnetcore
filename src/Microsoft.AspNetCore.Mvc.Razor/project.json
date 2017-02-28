@@ -22,7 +22,7 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.CodeAnalysis.Razor": "1.2.0-*",
+    "Microsoft.CodeAnalysis.Razor": "1.0.0-*",
     "Microsoft.AspNetCore.Razor.Runtime": "1.2.0-*",
     "Microsoft.AspNetCore.Mvc.Razor.Host": {
       "target": "project"
