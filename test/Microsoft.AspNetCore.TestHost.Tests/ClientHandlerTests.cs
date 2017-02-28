@@ -50,6 +50,31 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
+        public Task ExpectedKeysAreInFeatures()
+        {
+            var handler = new ClientHandler(new PathString("/A/Path/"), new InspectingApplication(features =>
+            {
+                // TODO: Assert.True(context.RequestAborted.CanBeCanceled);
+                Assert.Equal("HTTP/1.1", features.Get<IHttpRequestFeature>().Protocol);
+                Assert.Equal("GET", features.Get<IHttpRequestFeature>().Method);
+                Assert.Equal("https", features.Get<IHttpRequestFeature>().Scheme);
+                Assert.Equal("/A/Path", features.Get<IHttpRequestFeature>().PathBase);
+                Assert.Equal("/and/file.txt", features.Get<IHttpRequestFeature>().Path);
+                Assert.Equal("?and=query", features.Get<IHttpRequestFeature>().QueryString);
+                Assert.NotNull(features.Get<IHttpRequestFeature>().Body);
+                Assert.NotNull(features.Get<IHttpRequestFeature>().Headers);
+                Assert.NotNull(features.Get<IHttpResponseFeature>().Headers);
+                Assert.NotNull(features.Get<IHttpResponseFeature>().Body);
+                Assert.Equal(200, features.Get<IHttpResponseFeature>().StatusCode);
+                Assert.Null(features.Get<IHttpResponseFeature>().ReasonPhrase);
+                Assert.Equal("example.com", features.Get<IHttpRequestFeature>().Headers["host"]);
+                Assert.NotNull(features.Get<IHttpRequestLifetimeFeature>());
+            }));
+            var httpClient = new HttpClient(handler);
+            return httpClient.GetAsync("https://example.com/A/Path/and/file.txt?and=query");
+        }
+
+        [Fact]
         public Task SingleSlashNotMovedToPathBase()
         {
             var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
@@ -271,6 +296,35 @@ namespace Microsoft.AspNetCore.TestHost
             public Task ProcessRequestAsync(Context context)
             {
                 return _application(context.HttpContext);
+            }
+        }
+
+        private class InspectingApplication : IHttpApplication<Context>
+        {
+            Action<IFeatureCollection> _inspector;
+
+            public InspectingApplication(Action<IFeatureCollection> inspector)
+            {
+                _inspector = inspector;
+            }
+
+            public Context CreateContext(IFeatureCollection contextFeatures)
+            {
+                _inspector(contextFeatures);
+                return new Context()
+                {
+                    HttpContext = new DefaultHttpContext(contextFeatures)
+                };
+            }
+
+            public void DisposeContext(Context context, Exception exception)
+            {
+
+            }
+
+            public Task ProcessRequestAsync(Context context)
+            {
+                return Task.FromResult(0);
             }
         }
 
