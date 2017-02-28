@@ -49,14 +49,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
 
                     typeName = typeName.Replace("<TModel>", "<" + modelType + ">");
 
-                    var member = new CSharpStatementIRNode()
+                    var injectNode = new InjectDirectiveIRNode()
                     {
+                        TypeName = typeName,
+                        MemberName = memberName,
                         Source = directive.Source,
-                        Content = $"[Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]{Environment.NewLine}public {typeName} {memberName} {{ get; private set; }}",
                         Parent = visitor.Class,
                     };
 
-                    visitor.Class.Children.Add(member);
+                    visitor.Class.Children.Add(injectNode);
                 }
             }
         }

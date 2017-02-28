@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Evolution;
@@ -36,11 +35,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             Assert.NotNull(@class);
             Assert.Equal(2, @class.Children.Count);
 
-            var statement = Assert.IsType<CSharpStatementIRNode>(@class.Children[1]);
-            Assert.Equal(
-                "[Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]" + Environment.NewLine +
-                "public PropertyType PropertyName { get; private set; }",
-                statement.Content);
+            var node = Assert.IsType<InjectDirectiveIRNode>(@class.Children[1]);
+            Assert.Equal("PropertyType", node.TypeName);
+            Assert.Equal("PropertyName", node.MemberName);
         }
 
         [Fact]
@@ -68,11 +65,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             Assert.NotNull(@class);
             Assert.Equal(2, @class.Children.Count);
 
-            var statement = Assert.IsType<CSharpStatementIRNode>(@class.Children[1]);
-            Assert.Equal(
-                "[Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]" + Environment.NewLine +
-                "public PropertyType2 PropertyName { get; private set; }",
-                statement.Content);
+            var node = Assert.IsType<InjectDirectiveIRNode>(@class.Children[1]);
+            Assert.Equal("PropertyType2", node.TypeName);
+            Assert.Equal("PropertyName", node.MemberName);
         }
 
         [Fact]
@@ -99,11 +94,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             Assert.NotNull(@class);
             Assert.Equal(2, @class.Children.Count);
 
-            var statement = Assert.IsType<CSharpStatementIRNode>(@class.Children[1]);
-            Assert.Equal(
-                "[Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]" + Environment.NewLine +
-                "public PropertyType<dynamic> PropertyName { get; private set; }",
-                statement.Content);
+            var node = Assert.IsType<InjectDirectiveIRNode>(@class.Children[1]);
+            Assert.Equal("PropertyType<dynamic>", node.TypeName);
+            Assert.Equal("PropertyName", node.MemberName);
         }
 
         [Fact]
@@ -131,11 +124,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             Assert.NotNull(@class);
             Assert.Equal(2, @class.Children.Count);
 
-            var statement = Assert.IsType<CSharpStatementIRNode>(@class.Children[1]);
-            Assert.Equal(
-                "[Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]" + Environment.NewLine +
-                "public PropertyType<ModelType> PropertyName { get; private set; }",
-                statement.Content);
+            var node = Assert.IsType<InjectDirectiveIRNode>(@class.Children[1]);
+            Assert.Equal("PropertyType<ModelType>", node.TypeName);
+            Assert.Equal("PropertyName", node.MemberName);
         }
 
         [Fact]
@@ -163,11 +154,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             Assert.NotNull(@class);
             Assert.Equal(2, @class.Children.Count);
 
-            var statement = Assert.IsType<CSharpStatementIRNode>(@class.Children[1]);
-            Assert.Equal(
-                "[Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]" + Environment.NewLine +
-                "public PropertyType<ModelType> PropertyName { get; private set; }",
-                statement.Content);
+            var node = Assert.IsType<InjectDirectiveIRNode>(@class.Children[1]);
+            Assert.Equal("PropertyType<ModelType>", node.TypeName);
+            Assert.Equal("PropertyName", node.MemberName);
         }
 
         private RazorCodeDocument CreateDocument(string content)
