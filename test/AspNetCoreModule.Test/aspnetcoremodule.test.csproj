@@ -22,7 +22,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" />
-    <PackageReference Include="Microsoft.Net.Http.Headers" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Net.Http.Headers" Version="1.1.0" />
     <PackageReference Include="System.Management.Automation.dll" Version="10.0.10586" />
     <PackageReference Include="xunit" Version="2.2.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />    
