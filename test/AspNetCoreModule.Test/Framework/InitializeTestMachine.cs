@@ -30,7 +30,7 @@ namespace AspNetCoreModule.Test.Framework
             if (Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess)
             {
                 TestUtility.LogInformation("Error!!! Skipping to run InitializeTestMachine::InitializeTestMachine() because the test process is started on syswow mode");
-                throw new NotSupportedException("Running this test progrom in syswow64 mode is not supported");                
+                return;
             }
             _referenceCount++;
 
