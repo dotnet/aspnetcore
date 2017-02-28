@@ -67,12 +67,11 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
-        public void CanDefaultAddressesIfNotConfigured()
+        public void NoDefaultAddressesIfNotConfigured()
         {
             var host = CreateBuilder().UseServer(this).Build();
             host.Start();
-            Assert.NotNull(host.Services.GetService<IHostingEnvironment>());
-            Assert.Equal("http://localhost:5000", host.ServerFeatures.Get<IServerAddressesFeature>().Addresses.First());
+            Assert.Equal(false, host.ServerFeatures.Get<IServerAddressesFeature>().Addresses.Any());
         }
 
         [Fact]

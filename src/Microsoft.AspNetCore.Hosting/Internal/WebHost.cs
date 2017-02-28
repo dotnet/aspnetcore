@@ -238,12 +238,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                             addresses.Add(value);
                         }
                     }
-
-                    if (addresses.Count == 0)
-                    {
-                        // Provide a default address if there aren't any configured.
-                        addresses.Add("http://localhost:5000");
-                    }
                 }
             }
         }
