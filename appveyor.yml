@@ -5,6 +5,7 @@ branches:
     - master
     - release
     - dev
+    - feature/dev-si
     - /^(.*\/)?ci-.*$/
 build_script:
   - build.cmd --quiet verify
