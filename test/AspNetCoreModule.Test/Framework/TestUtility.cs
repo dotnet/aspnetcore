@@ -705,7 +705,7 @@ namespace AspNetCoreModule.Test.Framework
 
             // create Powershell runspace
             Runspace runspace = RunspaceFactory.CreateRunspace();
-
+            
             // open it
             runspace.Open();
 

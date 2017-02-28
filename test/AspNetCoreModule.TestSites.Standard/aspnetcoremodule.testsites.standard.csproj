@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.0-msbuild3-final" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.WebSockets.Server" Version="0.1.0-rc2-final" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="1.0.1-*" />    
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.0.1-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.0.1-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.WebListener" Version="1.0.1-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="1.0.1-*" />
+    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="*" />
+    <PackageReference Include="Microsoft.AspNetCore.ResponseCaching" Version="*" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="1.0.1-*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.0.1-*" />
+  </ItemGroup>
+</Project>

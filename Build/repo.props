@@ -1,0 +1,6 @@
+<Project>
+  <ItemGroup>
+    <ExcludeFromTest Include="$(RepositoryRoot)test\AspNetCoreModule.TestSites.Standard\*.csproj" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\AspNetCoreModule.Test\*.csproj" Condition="'$(OS)' != 'Windows_NT'" />
+  </ItemGroup>
+</Project>

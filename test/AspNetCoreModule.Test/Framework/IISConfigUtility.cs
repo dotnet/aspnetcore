@@ -4,7 +4,6 @@
 using AspNetCoreModule.Test.HttpClientHelper;
 using Microsoft.Web.Administration;
 using System;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.ServiceProcess;
 using System.Threading;

@@ -1041,15 +1041,12 @@ namespace AspNetCoreModule.Test
 
                     // Create a new local administrator user
                     string userName = "tempuser" + TestUtility.RandomString(5);
-                    string password = "AncmTest123!";                    
-                    string temp = TestUtility.RunPowershellScript("( Get-LocalUser -Name " + userName + " 2> $null ).Name");
-                    if (temp == userName)
-                    {
-                        temp = TestUtility.RunPowershellScript("net localgroup administrators /Delete " + userName);
-                        temp = TestUtility.RunPowershellScript("net user " + userName + " /Delete");
-                    }
+                    string password = "AncmTest123!";
+                    string temp;
+                    temp = TestUtility.RunPowershellScript("net localgroup IIS_IUSRS /Delete " + userName);
+                    temp = TestUtility.RunPowershellScript("net user " + userName + " /Delete");
                     temp = TestUtility.RunPowershellScript("net user " + userName + " " + password + " /ADD");
-                    temp = TestUtility.RunPowershellScript("net localgroup administrators /Add " + userName);
+                    temp = TestUtility.RunPowershellScript("net localgroup IIS_IUSRS /Add " + userName);
 
                     // Get public key of the client certificate and Configure OnetToOneClientCertificateMapping the public key and disable anonymous authentication and set SSL flags for Client certificate authentication
                     string publicKey = iisConfig.GetCertificatePublicKey(thumbPrintForClientAuthentication, @"Cert:\CurrentUser\My");
@@ -1102,7 +1099,7 @@ namespace AspNetCoreModule.Test
                     Assert.True(result.Contains("403.7"));
 
                     // Clean up user
-                    temp = TestUtility.RunPowershellScript("net localgroup administrators /Delete " + userName);
+                    temp = TestUtility.RunPowershellScript("net localgroup IIS_IUSRS /Delete " + userName);
                     temp = TestUtility.RunPowershellScript("net user " + userName + " /Delete");
 
                     // Remove the SSL Certificate mapping
