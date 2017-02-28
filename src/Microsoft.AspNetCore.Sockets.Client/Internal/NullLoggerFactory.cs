@@ -4,9 +4,9 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.AspNetCore.Sockets.Client
+namespace Microsoft.AspNetCore.Sockets.Client.Internal
 {
-    internal class NullLoggerFactory : ILoggerFactory
+    public class NullLoggerFactory : ILoggerFactory
     {
         public static readonly ILoggerFactory Instance = new NullLoggerFactory();
 

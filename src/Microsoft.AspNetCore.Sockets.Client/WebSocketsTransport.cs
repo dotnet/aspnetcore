@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO.Pipelines;
+using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Sockets.Client
 {

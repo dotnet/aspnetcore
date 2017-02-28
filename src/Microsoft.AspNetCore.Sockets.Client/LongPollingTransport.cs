@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         public LongPollingTransport(HttpClient httpClient, ILoggerFactory loggerFactory)
         {
             _httpClient = httpClient;
-            _logger = loggerFactory.CreateLogger<LongPollingTransport>();
+            _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
         }
 
         public Task StartAsync(Uri url, IChannelConnection<Message> application)
