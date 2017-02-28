@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private static long ParseContentLength(string value)
         {
             long parsed;
-            if (!HeaderUtilities.TryParseInt64(value, out parsed))
+            if (!HeaderUtilities.TryParseNonNegativeInt64(value, out parsed))
             {
                 ThrowInvalidContentLengthException(value);
             }

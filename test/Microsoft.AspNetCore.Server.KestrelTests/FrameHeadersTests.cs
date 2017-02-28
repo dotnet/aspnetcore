@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             frameHeaders.ContentLength = long.MaxValue;
             Assert.True(headers.TryGetValue("Content-Length", out value));
-            Assert.Equal(HeaderUtilities.FormatInt64(long.MaxValue), value[0]);
+            Assert.Equal(HeaderUtilities.FormatNonNegativeInt64(long.MaxValue), value[0]);
             Assert.Equal(long.MaxValue, frameHeaders.ContentLength);
             Assert.True(frameHeaders.ContentLength.HasValue);
 
