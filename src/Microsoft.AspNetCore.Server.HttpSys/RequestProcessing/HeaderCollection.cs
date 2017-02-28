@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
                 if (rawValue.Count == 1 &&
                     !string.IsNullOrWhiteSpace(rawValue[0]) &&
-                    HeaderUtilities.TryParseInt64(new StringSegment(rawValue[0]).Trim(), out value))
+                    HeaderUtilities.TryParseNonNegativeInt64(new StringSegment(rawValue[0]).Trim(), out value))
                 {
                     _contentLengthText = rawValue;
                     _contentLength = value;
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     {
                         throw new ArgumentOutOfRangeException("value", value.Value, "Cannot be negative.");
                     }
-                    _contentLengthText = HeaderUtilities.FormatInt64(value.Value);
+                    _contentLengthText = HeaderUtilities.FormatNonNegativeInt64(value.Value);
                     this[HttpKnownHeaderNames.ContentLength] = _contentLengthText;
                     _contentLength = value;
                 }
