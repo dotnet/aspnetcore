@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 {
-    internal class TagHelperRenderingContext
+    public class TagHelperRenderingContext
     {
         private Dictionary<string, string> _renderedBoundAttributes;
         private HashSet<string> _verifiedPropertyDictionaries;

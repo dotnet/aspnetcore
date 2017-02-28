@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
     public abstract class ExtensionIRNode : RazorIRNode
     {
-        internal abstract void WriteNode(RuntimeTarget target, CSharpRenderingContext context);
+        public abstract void WriteNode(RuntimeTarget target, CSharpRenderingContext context);
 
         protected static void AcceptExtensionNode<TNode>(TNode node, RazorIRNodeVisitor visitor) 
             where TNode : ExtensionIRNode

@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
                 return AcceptExtensionNode<TestExtensionIRNode, TResult>(this, visitor);
             }
 
-            internal override void WriteNode(RuntimeTarget target, CSharpRenderingContext context)
+            public override void WriteNode(RuntimeTarget target, CSharpRenderingContext context)
             {
                 throw new NotImplementedException();
             }

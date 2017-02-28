@@ -8,19 +8,19 @@ using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 {
-    internal class CSharpRenderingContext
+    public class CSharpRenderingContext
     {
         private CSharpRenderingConventions _renderingConventions;
 
-        public ICollection<DirectiveDescriptor> Directives { get; set; }
+        internal ICollection<DirectiveDescriptor> Directives { get; set; }
 
-        public Func<string> IdGenerator { get; set; } = () => Guid.NewGuid().ToString("N");
+        internal Func<string> IdGenerator { get; set; } = () => Guid.NewGuid().ToString("N");
 
-        public List<LineMapping> LineMappings { get; } = new List<LineMapping>();
+        internal List<LineMapping> LineMappings { get; } = new List<LineMapping>();
 
         public CSharpCodeWriter Writer { get; set; }
 
-        public CSharpRenderingConventions RenderingConventions
+        internal CSharpRenderingConventions RenderingConventions
         {
             get
             {
@@ -37,14 +37,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             }
         }
 
-        public ErrorSink ErrorSink { get; } = new ErrorSink();
+        internal IList<RazorDiagnostic> Diagnostics { get; } = new List<RazorDiagnostic>();
 
-        public RazorSourceDocument SourceDocument { get; set; }
+        internal RazorSourceDocument SourceDocument { get; set; }
 
-        public RazorParserOptions Options { get; set; }
+        internal RazorParserOptions Options { get; set; }
 
-        public TagHelperRenderingContext TagHelperRenderingContext { get; set; }
+        internal TagHelperRenderingContext TagHelperRenderingContext { get; set; }
 
-        public Action<RazorIRNode> RenderChildren { get; set; }
+        internal Action<RazorIRNode> RenderChildren { get; set; }
     }
 }

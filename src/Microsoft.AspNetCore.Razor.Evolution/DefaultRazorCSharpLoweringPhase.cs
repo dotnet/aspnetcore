@@ -63,9 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             var diagnostics = new List<RazorDiagnostic>();
             diagnostics.AddRange(syntaxTree.Diagnostics);
-
-            // Temporary code while we're still using legacy diagnostics in the SyntaxTree.
-            diagnostics.AddRange(renderingContext.ErrorSink.Errors.Select(error => RazorDiagnostic.Create(error)));
+            diagnostics.AddRange(renderingContext.Diagnostics);
 
             var csharpDocument = new RazorCSharpDocument()
             {

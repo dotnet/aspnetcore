@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
             return AcceptExtensionNode<TemplateIRNode, TResult>(this, visitor);
         }
 
-        internal override void WriteNode(RuntimeTarget target, CSharpRenderingContext context)
+        public override void WriteNode(RuntimeTarget target, CSharpRenderingContext context)
         {
             var extension = target.GetExtension<ITemplateTargetExtension>();
             extension.WriteTemplate(context, this);

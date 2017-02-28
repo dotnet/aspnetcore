@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             IDisposable linePragmaScope = null;
             if (node.Source != null)
             {
-                linePragmaScope = new LinePragmaWriter(Context.Writer, node.Source.Value);
+                linePragmaScope = Context.Writer.BuildLinePragma(node.Source.Value);
                 var padding = BuildOffsetPadding(Context.RenderingConventions.StartWriteMethod.Length, node.Source.Value, Context);
                 Context.Writer.Write(padding);
             }
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
         {
             if (node.Source.HasValue)
             {
-                using (new LinePragmaWriter(Context.Writer, node.Source.Value))
+                using (Context.Writer.BuildLinePragma(node.Source.Value))
                 {
                     Context.Writer.WriteUsing(node.Content);
                 }
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             const string ValueWriterName = "__razor_attribute_value_writer";
 
             var expressionValue = node.Children.FirstOrDefault() as CSharpExpressionIRNode;
-            var linePragma = expressionValue != null ? new LinePragmaWriter(Context.Writer, node.Source.Value) : null;
+            var linePragma = expressionValue != null ? Context.Writer.BuildLinePragma(node.Source.Value) : null;
             var prefixLocation = node.Source.Value.AbsoluteIndex;
             var valueLocation = node.Source.Value.AbsoluteIndex + node.Prefix.Length;
             var valueLength = node.Source.Value.Length - node.Prefix.Length;
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
             if (node.Source != null)
             {
-                using (new LinePragmaWriter(Context.Writer, node.Source.Value))
+                using (Context.Writer.BuildLinePragma(node.Source.Value))
                 {
                     var padding = BuildOffsetPadding(0, node.Source.Value, Context);
                     Context.Writer
@@ -455,7 +455,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             }
             else
             {
-                using (new LinePragmaWriter(Context.Writer, node.Source.Value))
+                using (Context.Writer.BuildLinePragma(node.Source.Value))
                 {
                     Context.Writer.WriteStartAssignment(propertyValueAccessor);
 
@@ -673,18 +673,20 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             }
             else if (node is CSharpStatementIRNode)
             {
-                Context.ErrorSink.OnError(
-                    new SourceLocation(documentLocation.AbsoluteIndex, documentLocation.CharacterIndex, documentLocation.Length),
+                var error = new RazorError(
                     LegacyResources.TagHelpers_CodeBlocks_NotSupported_InAttributes,
+                    new SourceLocation(documentLocation.AbsoluteIndex, documentLocation.CharacterIndex, documentLocation.Length),
                     documentLocation.Length);
+                Context.Diagnostics.Add(RazorDiagnostic.Create(error));
             }
             else if (node is TemplateIRNode)
             {
                 var attributeValueNode = (SetTagHelperPropertyIRNode)node.Parent;
-                Context.ErrorSink.OnError(
-                    new SourceLocation(documentLocation.AbsoluteIndex, documentLocation.CharacterIndex, documentLocation.Length),
+                var error = new RazorError(
                     LegacyResources.FormatTagHelpers_InlineMarkupBlocks_NotSupported_InAttributes(attributeValueNode.Descriptor.TypeName),
+                    new SourceLocation(documentLocation.AbsoluteIndex, documentLocation.CharacterIndex, documentLocation.Length),
                     documentLocation.Length);
+                Context.Diagnostics.Add(RazorDiagnostic.Create(error));
             }
         }
     }
