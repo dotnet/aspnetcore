@@ -63,4 +63,4 @@ if (!(Test-Path $buildFolder)) {
     }
 }
 
-&"$buildFile" $args
+&"$buildFile" @args

@@ -1,7 +1,6 @@
 
 var VERSION='0.2.1'
 
-use-ci-loggers
 use-release-management
 use namespace='System'
 use namespace='System.IO'
@@ -12,7 +11,6 @@ use namespace='System.Linq'
 use namespace='System.Text'
 use namespace='System.Text.RegularExpressions'
 use namespace='System.Threading.Tasks'
-use import="BuildEnv"
 use import="EnvironmentParameters"
 use import="Files"
 use import="Json"
@@ -32,7 +30,6 @@ functions
         static string buildBranch = GetEnvironmentParameter("BUILD_BRANCH") ?? DefaultBuildBranch;
         static string coherencePath = GetEnvironmentParameter("COHERENCE_PATH");
         static string dropsShare = GetEnvironmentParameter("ASPNETCI_DROPS_SHARE", DefaultDropsShare);
-        static string kBuildVersion = GetEnvironmentParameter("DNX_BUILD_VERSION");
         static string ciVolatileShare = GetEnvironmentParameter("CI_VOLATILE_SHARE");
         static string koreBuildTargets = GetEnvironmentParameter("KOREBUILD_BUILD_TARGETS");
         static string nugetVersion = GetEnvironmentParameter("NUGET_VERSION");
@@ -52,18 +49,8 @@ functions
         static string gitHubUriPrefix = useHttps ? "https://github.com/aspnet/" : "git@github.com:aspnet/";
     }
 
-var buildTarget = "compile"
-
-@{
-    if (!string.IsNullOrEmpty(kBuildVersion))
-    {
-        VERSION += "-" + kBuildVersion;
-    }
-    else
-    {
-        VERSION += "-" + BuildNumber;
-    }
-}
+var buildTarget = "/t:Compile"
+var buildProperties = "/p:Configuration=Debug"
 
 #default .compile
 
@@ -71,6 +58,11 @@ var buildTarget = "compile"
   @{
     Quiet = true;
   }
+
+#--config-release
+ @{
+     buildProperties = "/p:Configuration=Release";
+ }
 
 #pull
 #compile .pull
@@ -145,12 +137,6 @@ var buildTarget = "compile"
     @{
         var threads = int.Parse(Environment.GetEnvironmentVariable("UNIVERSE_THREADS") ?? "4");
 
-        var blockLogger = Log as IBlockLogger;
-        if (blockLogger != null)
-        {
-            blockLogger.StartBlock("Cloning repos");
-        }
-
         Parallel.ForEach(repositories, new ParallelOptions { MaxDegreeOfParallelism = threads }, repo =>
         {
             var useBuildBranch = true;
@@ -182,11 +168,6 @@ var buildTarget = "compile"
                 GitCommand("", string.Format("clone --quiet --depth 1 --branch {0} git@github.com:aspnet/{1}.git", buildBranch, repo));
             }
         });
-
-        if (blockLogger != null)
-        {
-            blockLogger.EndBlock("Cloning repos");
-        }
     }
 
 #show-build-graph
@@ -219,10 +200,10 @@ var buildTarget = "compile"
             CopyFolder(".build", Path.Combine(universeArtifacts, ".build"), true);
         }
 
-        var blockLogger = Log as IBlockLogger;
         var commits = new ConcurrentDictionary<string, string>();
         var threads = int.Parse(Environment.GetEnvironmentVariable("UNIVERSE_THREADS") ?? "4");
-        buildTarget = koreBuildTargets ?? "--quiet compile nuget-verify nuget-install";
+        buildTarget = koreBuildTargets ?? "/t:Package /t:VerifyPackages /t:NuGetInstall";
+        buildTarget += " " + buildProperties;
 
         var batchedRepos = GetBuildGraph();
         Log.Info("Building repositories in batches: ");
@@ -259,11 +240,6 @@ var buildTarget = "compile"
             Parallel.ForEach(batch.ToArray(), new ParallelOptions { MaxDegreeOfParallelism = threads }, repo =>
             {
                 var blockName = string.Format("Building {0}", repo);
-
-                if (blockLogger != null)
-                {
-                    blockLogger.StartBlock(blockName);
-                }
 
                 if (!IsLinux)
                 {
@@ -308,13 +284,6 @@ var buildTarget = "compile"
                 {
                     Log.Error("Building '" + repo + "' failed: " + ex);
                     throw;
-                }
-                finally
-                {
-                    if (blockLogger != null)
-                    {
-                        blockLogger.EndBlock(blockName);
-                    }
                 }
             });
         }
@@ -370,10 +339,10 @@ var buildTarget = "compile"
     }
 
 #change-default-build-target-to-verify
-    - buildTarget = "verify";
+    - buildTarget = "/t:Verify";
 
 #change-default-build-target-for-coherence-build
-    - buildTarget = koreBuildTargets ?? "compile nuget-install";
+    - buildTarget = koreBuildTargets ?? "/t:Compile /t:NuGetInstall";
 
 #init
     @{
@@ -428,10 +397,6 @@ var buildTarget = "compile"
         foreach(var repo in repositories)
         {
             var blockName = string.Format("Building {0}", repo);
-            if (IsTeamCity)
-            {
-                Log.Info(string.Format("##teamcity[blockOpened name='{0}']", FormatForTeamCity(blockName)));
-            }
             try
             {
                 Log.Info(blockName);
@@ -485,13 +450,6 @@ var buildTarget = "compile"
                 Log.Warn(string.Format("Build {0} failed: {1}", repo, ex.Message));
                 failed[repo] = ex;
             }
-            finally
-            {
-                if (IsTeamCity)
-                {
-                    Log.Info(string.Format("##teamcity[blockClosed name='{0}']", FormatForTeamCity(blockName)));
-                }
-            }
         }
 
         foreach(var repo in repositories)
@@ -500,13 +458,6 @@ var buildTarget = "compile"
             if (failed.TryGetValue(repo, out ex))
             {
                 Log.Warn(string.Format("Build {0} failed: {1}", repo, ex.Message));
-                if (IsTeamCity)
-                {
-                    Log.Warn(string.Format("##teamcity[message text='{0}' errorDetails='{1}' status='ERROR']",
-                                           FormatForTeamCity(ex.Message),
-                                           FormatForTeamCity(ex.StackTrace)));
-                }
-
             }
             else if (skipped.Contains(repo))
             {
@@ -549,13 +500,6 @@ var buildTarget = "compile"
 
 #git-clean description='REMOVE ALL CHANGES to the working directory'
     @{
-        // Console.WriteLine("This runs `git clean -xfd` in all non-Universe repos.");
-        // Console.WriteLine("This should REMOVE ALL CHANGES to the working directory.");
-        // Console.Write("***** Are you sure? ***** (Y or anything else)? ");
-        // if (Console.ReadLine() != "Y")
-        // {
-        //     throw new Exception("git-clean cancelled");
-        // }
         foreach(var repo in repositories)
         {
             GitClean(repo);

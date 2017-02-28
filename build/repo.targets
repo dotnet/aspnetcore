@@ -1,0 +1,46 @@
+<Project>
+  <PropertyGroup>
+    <_SakeTargets Condition="'$(Configuration)' == 'Release'">--config-release</_SakeTargets>
+  </PropertyGroup>
+
+  <!-- workaround. Using Sake as the intermediate means this property doesn't flow into repo builds. -->
+  <Target Name="SetBuildNumber" Condition="'$(BuildNumber)' != ''">
+    <SetEnvironmentVariable Variable="BuildNumber" Value="$(BuildNumber)" />
+  </Target>
+
+  <Target Name="CIBuild" DependsOnTargets="SetBuildNumber">
+    <PropertyGroup>
+      <_SakeTargets>$(_SakeTargets):ci-build</_SakeTargets>
+    </PropertyGroup>
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+      Targets="Sake"
+      Properties="SakeTargets=$(_SakeTargets);RepositoryRoot=$(RepositoryRoot)" />
+  </Target>
+
+  <Target Name="CITest" DependsOnTargets="SetBuildNumber">
+  <PropertyGroup>
+      <_SakeTargets>$(_SakeTargets):ci-test</_SakeTargets>
+    </PropertyGroup>
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+      Targets="Sake"
+      Properties="SakeTargets=$(_SakeTargets);RepositoryRoot=$(RepositoryRoot)" />
+  </Target>
+
+  <Target Name="CIPull">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+      Targets="Sake"
+      Properties="SakeTargets=ci-pull;RepositoryRoot=$(RepositoryRoot)" />
+  </Target>
+
+  <Target Name="UpdateRepos">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+      Targets="Sake"
+      Properties="SakeTargets=update;RepositoryRoot=$(RepositoryRoot)" />
+  </Target>
+
+  <Target Name="CleanAll">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+      Targets="Sake"
+      Properties="SakeTargets=git-clean;RepositoryRoot=$(RepositoryRoot)" />
+  </Target>
+</Project>
