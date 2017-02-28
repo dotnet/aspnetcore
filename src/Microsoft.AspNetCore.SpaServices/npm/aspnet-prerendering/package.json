@@ -21,8 +21,7 @@
   },
   "devDependencies": {
     "@types/node": "^6.0.42",
-    "@types/whatwg-fetch": "0.0.31",
     "rimraf": "^2.5.4",
-    "typescript": "^2.0.0"
+    "typescript": "^2.2.1"
   }
 }
