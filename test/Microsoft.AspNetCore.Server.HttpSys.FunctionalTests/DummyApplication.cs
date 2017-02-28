@@ -6,12 +6,15 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal class DummyApplication : IHttpApplication<HttpContext>
     {
         private readonly RequestDelegate _requestDelegate;
+
+        public DummyApplication() : this(context => TaskCache.CompletedTask) { }
 
         public DummyApplication(RequestDelegate requestDelegate)
         {

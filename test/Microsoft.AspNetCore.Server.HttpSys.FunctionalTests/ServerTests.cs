@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             using (server)
             {
-                server.Start(new DummyApplication(httpContext => Task.FromResult(0)));
+                server.Start(new DummyApplication());
                 string response = await SendRequestAsync(address);
                 Assert.Equal(string.Empty, response);
             }

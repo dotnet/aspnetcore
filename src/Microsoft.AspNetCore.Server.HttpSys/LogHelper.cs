@@ -31,6 +31,30 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        internal static void LogWarning(ILogger logger, string data)
+        {
+            if (logger == null)
+            {
+                Debug.WriteLine(data);
+            }
+            else
+            {
+                logger.LogWarning(data);
+            }
+        }
+
+        internal static void LogDebug(ILogger logger, string data)
+        {
+            if (logger == null)
+            {
+                Debug.WriteLine(data);
+            }
+            else
+            {
+                logger.LogDebug(data);
+            }
+        }
+
         internal static void LogDebug(ILogger logger, string location, string data)
         {
             if (logger == null)

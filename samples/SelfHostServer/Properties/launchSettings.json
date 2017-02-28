@@ -3,9 +3,8 @@
     "SelfHostServer": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "http://localhost:8080/",
+      "launchUrl": "http://localhost:5000/",
       "environmentVariables": {
-        "ASPNETCORE_URLS": "http://localhost:8080/",
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }

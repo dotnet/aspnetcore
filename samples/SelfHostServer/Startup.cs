@@ -37,6 +37,7 @@ namespace SelfHostServer
                 .UseStartup<Startup>()
                 .UseHttpSys(options =>
                 {
+                    options.UrlPrefixes.Add("http://localhost:5000");
                     options.Authentication.Schemes = AuthenticationSchemes.None;
                     options.Authentication.AllowAnonymous = true;
                 })
