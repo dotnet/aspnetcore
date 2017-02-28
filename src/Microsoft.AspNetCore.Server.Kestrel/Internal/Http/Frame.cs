@@ -1129,6 +1129,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             }
                             else if (ch == BytePercentage)
                             {
+                                if (pathStart == -1)
+                                {
+                                    // Empty path is illegal
+                                    RejectRequestLine(start, end);
+                                }
+
                                 needDecode = true;
                             }
 
@@ -1268,7 +1274,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         {
             const int MaxRequestLineError = 32;
             RejectRequest(RequestRejectionReason.InvalidRequestLine,
-                           Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxRequestLineError) : string.Empty);
+                          Log.IsEnabled(LogLevel.Information) ? start.GetAsciiStringEscaped(end, MaxRequestLineError) : string.Empty);
         }
 
         private static bool IsValidTokenChar(char c)

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net;
@@ -27,10 +28,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         private readonly TestFrame<object> _frame;
         private readonly ServiceContext _serviceContext;
         private readonly ConnectionContext _connectionContext;
-        private PipeFactory _pipelineFactory;
-
-        ReadCursor consumed;
-        ReadCursor examined;
+        private readonly PipeFactory _pipelineFactory;
+        private ReadCursor _consumed;
+        private ReadCursor _examined;
 
         private class TestFrame<TContext> : Frame<TContext>
         {
@@ -88,13 +88,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes("Header:value\r\n\r\n"));
 
             var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
-            var success = _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders) _frame.RequestHeaders, out consumed, out examined);
-            _socketInput.Reader.Advance(consumed, examined);
+            var success = _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out _consumed, out _examined);
+            _socketInput.Reader.Advance(_consumed, _examined);
 
             Assert.True(success);
             Assert.Equal(1, _frame.RequestHeaders.Count);
             Assert.Equal("value", _frame.RequestHeaders["Header"]);
-            Assert.Equal(readableBuffer.End, consumed);
+            Assert.Equal(readableBuffer.End, _consumed);
         }
 
         [Theory]
@@ -113,13 +113,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes(rawHeaders));
 
             var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
-            var success = _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out consumed, out examined);
-            _socketInput.Reader.Advance(consumed, examined);
+            var success = _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out _consumed, out _examined);
+            _socketInput.Reader.Advance(_consumed, _examined);
 
             Assert.True(success);
             Assert.Equal(1, _frame.RequestHeaders.Count);
             Assert.Equal("value", _frame.RequestHeaders["Header"]);
-            Assert.Equal(readableBuffer.End, consumed);
+            Assert.Equal(readableBuffer.End, _consumed);
         }
 
         [Theory]
@@ -137,13 +137,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes(rawHeaders));
 
             var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
-            var success = _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out consumed, out examined);
-            _socketInput.Reader.Advance(consumed, examined);
+            var success = _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out _consumed, out _examined);
+            _socketInput.Reader.Advance(_consumed, _examined);
 
             Assert.True(success);
             Assert.Equal(1, _frame.RequestHeaders.Count);
             Assert.Equal("value", _frame.RequestHeaders["Header"]);
-            Assert.Equal(readableBuffer.End, consumed);
+            Assert.Equal(readableBuffer.End, _consumed);
         }
 
         [Theory]
@@ -160,32 +160,26 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes(rawHeaders));
 
             var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
-            var success = _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out consumed, out examined);
-            _socketInput.Reader.Advance(consumed, examined);
+            var success = _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out _consumed, out _examined);
+            _socketInput.Reader.Advance(_consumed, _examined);
 
             Assert.True(success);
             Assert.Equal(1, _frame.RequestHeaders.Count);
             Assert.Equal(expectedValue, _frame.RequestHeaders["Header"]);
-            Assert.Equal(readableBuffer.End, consumed);
+            Assert.Equal(readableBuffer.End, _consumed);
         }
 
         [Theory]
-        [InlineData("Header: line1\r\n line2\r\n\r\n")]
-        [InlineData("Header: line1\r\n\tline2\r\n\r\n")]
-        [InlineData("Header: line1\r\n  line2\r\n\r\n")]
-        [InlineData("Header: line1\r\n \tline2\r\n\r\n")]
-        [InlineData("Header: line1\r\n\t line2\r\n\r\n")]
-        [InlineData("Header: line1\r\n\t\tline2\r\n\r\n")]
-        [InlineData("Header: line1\r\n \t\t line2\r\n\r\n")]
-        [InlineData("Header: line1\r\n \t \t line2\r\n\r\n")]
-        public async Task TakeMessageHeadersThrowsOnHeaderValueWithLineFolding(string rawHeaders)
+        [MemberData(nameof(InvalidRequestHeaderData))]
+        public async Task TakeMessageHeadersThrowsOnInvalidRequestHeaders(string rawHeaders, string expectedExceptionMessage)
         {
             await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes(rawHeaders));
             var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
-            _socketInput.Reader.Advance(consumed, examined);
 
-            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out consumed, out examined));
-            Assert.Equal("Header value line folding not supported.", exception.Message);
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out _consumed, out _examined));
+            _socketInput.Reader.Advance(_consumed, _examined);
+
+            Assert.Equal(expectedExceptionMessage, exception.Message);
             Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
@@ -195,104 +189,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes("Header-1: value1\r\n"));
 
             var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
-            Assert.False(_frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out consumed, out examined));
-            _socketInput.Reader.Advance(consumed, examined);
+            Assert.False(_frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out _consumed, out _examined));
+            _socketInput.Reader.Advance(_consumed, _examined);
 
             await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes(" "));
 
             readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
-            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out consumed, out examined));
-            _socketInput.Reader.Advance(consumed, examined);
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out _consumed, out _examined));
+            _socketInput.Reader.Advance(_consumed, _examined);
 
             Assert.Equal("Header value line folding not supported.", exception.Message);
-            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
-        }
-
-        [Theory]
-        [InlineData("Header-1: value1\r\r\n")]
-        [InlineData("Header-1: val\rue1\r\n")]
-        [InlineData("Header-1: value1\rHeader-2: value2\r\n\r\n")]
-        [InlineData("Header-1: value1\r\nHeader-2: value2\r\r\n")]
-        [InlineData("Header-1: value1\r\nHeader-2: v\ralue2\r\n")]
-        public async Task TakeMessageHeadersThrowsOnHeaderValueContainingCR(string rawHeaders)
-        {
-            await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes(rawHeaders));
-            var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
-
-            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out consumed, out examined));
-            _socketInput.Reader.Advance(consumed, examined);
-
-            Assert.Equal("Header value must not contain CR characters.", exception.Message);
-            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
-        }
-
-        [Theory]
-        [InlineData("Header-1 value1\r\n\r\n")]
-        [InlineData("Header-1 value1\r\nHeader-2: value2\r\n\r\n")]
-        [InlineData("Header-1: value1\r\nHeader-2 value2\r\n\r\n")]
-        public async Task TakeMessageHeadersThrowsOnHeaderLineMissingColon(string rawHeaders)
-        {
-            await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes(rawHeaders));
-            var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
-
-            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out consumed, out examined));
-            _socketInput.Reader.Advance(consumed, examined);
-
-            Assert.Equal("No ':' character found in header line.", exception.Message);
-            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
-        }
-
-        [Theory]
-        [InlineData(" Header: value\r\n\r\n")]
-        [InlineData("\tHeader: value\r\n\r\n")]
-        [InlineData(" Header-1: value1\r\nHeader-2: value2\r\n\r\n")]
-        [InlineData("\tHeader-1: value1\r\nHeader-2: value2\r\n\r\n")]
-        public async Task TakeMessageHeadersThrowsOnHeaderLineStartingWithWhitespace(string rawHeaders)
-        {
-            await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes(rawHeaders));
-            var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
-
-            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out consumed, out examined));
-            _socketInput.Reader.Advance(consumed, examined);
-
-            Assert.Equal("Header line must not start with whitespace.", exception.Message);
-            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
-        }
-
-        [Theory]
-        [InlineData("Header : value\r\n\r\n")]
-        [InlineData("Header\t: value\r\n\r\n")]
-        [InlineData("Header 1: value1\r\nHeader-2: value2\r\n\r\n")]
-        [InlineData("Header 1 : value1\r\nHeader-2: value2\r\n\r\n")]
-        [InlineData("Header 1\t: value1\r\nHeader-2: value2\r\n\r\n")]
-        [InlineData("Header-1: value1\r\nHeader 2: value2\r\n\r\n")]
-        [InlineData("Header-1: value1\r\nHeader-2 : value2\r\n\r\n")]
-        [InlineData("Header-1: value1\r\nHeader-2\t: value2\r\n\r\n")]
-        public async Task TakeMessageHeadersThrowsOnWhitespaceInHeaderName(string rawHeaders)
-        {
-            await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes(rawHeaders));
-            var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
-
-            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out consumed, out examined));
-            _socketInput.Reader.Advance(consumed, examined);
-
-            Assert.Equal("Whitespace is not allowed in header name.", exception.Message);
-            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
-        }
-
-        [Theory]
-        [InlineData("Header-1: value1\r\nHeader-2: value2\r\n\r\r")]
-        [InlineData("Header-1: value1\r\nHeader-2: value2\r\n\r ")]
-        [InlineData("Header-1: value1\r\nHeader-2: value2\r\n\r \n")]
-        public async Task TakeMessageHeadersThrowsOnHeadersNotEndingInCRLFLine(string rawHeaders)
-        {
-            await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes(rawHeaders));
-            var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
-
-            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out consumed, out examined));
-            _socketInput.Reader.Advance(consumed, examined);
-
-            Assert.Equal("Headers corrupted, invalid header sequence.", exception.Message);
             Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
@@ -306,8 +212,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine}\r\n"));
             var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out consumed, out examined));
-            _socketInput.Reader.Advance(consumed, examined);
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out _consumed, out _examined));
+            _socketInput.Reader.Advance(_consumed, _examined);
 
             Assert.Equal("Request headers too long.", exception.Message);
             Assert.Equal(StatusCodes.Status431RequestHeaderFieldsTooLarge, exception.StatusCode);
@@ -322,8 +228,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes($"{headerLines}\r\n"));
             var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out consumed, out examined));
-            _socketInput.Reader.Advance(consumed, examined);
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out _consumed, out _examined));
+            _socketInput.Reader.Advance(_consumed, _examined);
 
             Assert.Equal("Request contains too many headers.", exception.Message);
             Assert.Equal(StatusCodes.Status431RequestHeaderFieldsTooLarge, exception.StatusCode);
@@ -341,12 +247,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes(rawHeaders));
             var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
 
-            var success = _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out consumed, out examined);
-            _socketInput.Reader.Advance(consumed, examined);
+            var success = _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out _consumed, out _examined);
+            _socketInput.Reader.Advance(_consumed, _examined);
 
             Assert.True(success);
             Assert.Equal(numHeaders, _frame.RequestHeaders.Count);
-            Assert.Equal(readableBuffer.End, consumed);
+            Assert.Equal(readableBuffer.End, _consumed);
         }
 
         [Fact]
@@ -375,8 +281,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine1}\r\n"));
             var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
 
-            var takeMessageHeaders = _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out consumed, out examined);
-            _socketInput.Reader.Advance(consumed, examined);
+            var takeMessageHeaders = _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out _consumed, out _examined);
+            _socketInput.Reader.Advance(_consumed, _examined);
 
             Assert.True(takeMessageHeaders);
             Assert.Equal(1, _frame.RequestHeaders.Count);
@@ -387,8 +293,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine2}\r\n"));
             readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
 
-            takeMessageHeaders = _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out consumed, out examined);
-            _socketInput.Reader.Advance(consumed, examined);
+            takeMessageHeaders = _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out _consumed, out _examined);
+            _socketInput.Reader.Advance(_consumed, _examined);
 
             Assert.True(takeMessageHeaders);
             Assert.Equal(1, _frame.RequestHeaders.Count);
@@ -478,6 +384,29 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.Same(originalDuplexStream, _frame.DuplexStream);
         }
 
+        [Theory]
+        [MemberData(nameof(ValidRequestLineData))]
+        public async Task TakeStartLineSetsFrameProperties(
+            string requestLine,
+            string expectedMethod,
+            string expectedPath,
+            string expectedQueryString,
+            string expectedHttpVersion)
+        {
+            var requestLineBytes = Encoding.ASCII.GetBytes(requestLine);
+            await _socketInput.Writer.WriteAsync(requestLineBytes);
+            var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
+
+            var returnValue = _frame.TakeStartLine(readableBuffer, out _consumed, out _examined);
+            _socketInput.Reader.Advance(_consumed, _examined);
+
+            Assert.True(returnValue);
+            Assert.Equal(expectedMethod, _frame.Method);
+            Assert.Equal(expectedPath, _frame.Path);
+            Assert.Equal(expectedQueryString, _frame.QueryString);
+            Assert.Equal(expectedHttpVersion, _frame.HttpVersion);
+        }
+
         [Fact]
         public async Task TakeStartLineCallsConsumingCompleteWithFurthestExamined()
         {
@@ -485,21 +414,21 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await _socketInput.Writer.WriteAsync(requestLineBytes);
             var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
 
-            _frame.TakeStartLine(readableBuffer, out consumed, out examined);
-            _socketInput.Reader.Advance(consumed, examined);
+            _frame.TakeStartLine(readableBuffer, out _consumed, out _examined);
+            _socketInput.Reader.Advance(_consumed, _examined);
 
-            Assert.Equal(readableBuffer.Start, consumed);
-            Assert.Equal(readableBuffer.End, examined);
+            Assert.Equal(readableBuffer.Start, _consumed);
+            Assert.Equal(readableBuffer.End, _examined);
 
             requestLineBytes = Encoding.ASCII.GetBytes("HTTP/1.1\r\n");
             await _socketInput.Writer.WriteAsync(requestLineBytes);
             readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
 
-            _frame.TakeStartLine(readableBuffer, out consumed, out examined);
-            _socketInput.Reader.Advance(consumed, examined);
+            _frame.TakeStartLine(readableBuffer, out _consumed, out _examined);
+            _socketInput.Reader.Advance(_consumed, _examined);
 
-            Assert.Equal(readableBuffer.End, consumed);
-            Assert.Equal(readableBuffer.End, examined);
+            Assert.Equal(readableBuffer.End, _consumed);
+            Assert.Equal(readableBuffer.End, _examined);
         }
 
         [Theory]
@@ -524,8 +453,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await _socketInput.Writer.WriteAsync(requestLineBytes);
 
             var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
-            var returnValue = _frame.TakeStartLine(readableBuffer, out consumed, out examined);
-            _socketInput.Reader.Advance(consumed, examined);
+            var returnValue = _frame.TakeStartLine(readableBuffer, out _consumed, out _examined);
+            _socketInput.Reader.Advance(_consumed, _examined);
 
             Assert.False(returnValue);
         }
@@ -538,8 +467,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes("G"));
 
-            _frame.TakeStartLine((await _socketInput.Reader.ReadAsync()).Buffer, out consumed, out examined);
-            _socketInput.Reader.Advance(consumed, examined);
+            _frame.TakeStartLine((await _socketInput.Reader.ReadAsync()).Buffer, out _consumed, out _examined);
+            _socketInput.Reader.Advance(_consumed, _examined);
 
             var expectedRequestHeadersTimeout = (long)_serviceContext.ServerOptions.Limits.RequestHeadersTimeout.TotalMilliseconds;
             connectionControl.Verify(cc => cc.ResetTimeout(expectedRequestHeadersTimeout, TimeoutAction.SendTimeoutResponse));
@@ -554,79 +483,58 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await _socketInput.Writer.WriteAsync(requestLineBytes);
 
             var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
-            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeStartLine(readableBuffer, out consumed, out examined));
-            _socketInput.Reader.Advance(consumed, examined);
+            var exception = Assert.Throws<BadHttpRequestException>(() =>_frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
+            _socketInput.Reader.Advance(_consumed, _examined);
 
             Assert.Equal("Request line too long.", exception.Message);
             Assert.Equal(StatusCodes.Status414UriTooLong, exception.StatusCode);
         }
 
         [Theory]
-        [InlineData("GET/HTTP/1.1\r\n", "Invalid request line: GET/HTTP/1.1<0x0D><0x0A>")]
-        [InlineData(" / HTTP/1.1\r\n", "Invalid request line:  / HTTP/1.1<0x0D><0x0A>")]
-        [InlineData("GET? / HTTP/1.1\r\n", "Invalid request line: GET? / HTTP/1.1<0x0D><0x0A>")]
-        [InlineData("GET /HTTP/1.1\r\n", "Invalid request line: GET /HTTP/1.1<0x0D><0x0A>")]
-        [InlineData("GET /a?b=cHTTP/1.1\r\n", "Invalid request line: GET /a?b=cHTTP/1.1<0x0D><0x0A>")]
-        [InlineData("GET /a%20bHTTP/1.1\r\n", "Invalid request line: GET /a%20bHTTP/1.1<0x0D><0x0A>")]
-        [InlineData("GET /a%20b?c=dHTTP/1.1\r\n", "Invalid request line: GET /a%20b?c=dHTTP/1.1<0x0D><0x0A>")]
-        [InlineData("GET  HTTP/1.1\r\n", "Invalid request line: GET  HTTP/1.1<0x0D><0x0A>")]
-        [InlineData("GET / HTTP/1.1\n", "Invalid request line: GET / HTTP/1.1<0x0A>")]
-        [InlineData("GET / \r\n", "Invalid request line: GET / <0x0D><0x0A>")]
-        [InlineData("GET ? HTTP/1.1\r\n", "Invalid request line: GET ? HTTP/1.1<0x0D><0x0A>")]
-        [InlineData("GET / HTTP/1.1\ra\n", "Invalid request line: GET / HTTP/1.1<0x0D>a<0x0A>")]
-        public async Task TakeStartLineThrowsWhenInvalid(string requestLine, string expectedExceptionMessage)
+        [MemberData(nameof(InvalidRequestLineData))]
+        public async Task TakeStartLineThrowsOnInvalidRequestLine(string requestLine, Type expectedExceptionType, string expectedExceptionMessage)
         {
             await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes(requestLine));
-
             var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeStartLine(readableBuffer, out consumed, out examined));
-            _socketInput.Reader.Advance(consumed, examined);
+            var exception = Assert.Throws(expectedExceptionType, () =>
+                _frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
+            _socketInput.Reader.Advance(_consumed, _examined);
 
             Assert.Equal(expectedExceptionMessage, exception.Message);
-            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
+
+            if (expectedExceptionType == typeof(BadHttpRequestException))
+            {
+                Assert.Equal(StatusCodes.Status400BadRequest, (exception as BadHttpRequestException).StatusCode);
+            }
         }
 
-        [Fact]
-        public async Task TakeStartLineThrowsOnUnsupportedHttpVersion()
+        [Theory]
+        [MemberData(nameof(UnrecognizedHttpVersionData))]
+        public async Task TakeStartLineThrowsOnUnrecognizedHttpVersion(string httpVersion)
         {
-            await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.2\r\n"));
+            await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes($"GET / {httpVersion}\r\n"));
 
             var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeStartLine(readableBuffer, out consumed, out examined));
-            _socketInput.Reader.Advance(consumed, examined);
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
+            _socketInput.Reader.Advance(_consumed, _examined);
 
-            Assert.Equal("Unrecognized HTTP version: HTTP/1.2", exception.Message);
-            Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, exception.StatusCode);
-        }
-
-        [Fact]
-        public async Task TakeStartLineThrowsOnUnsupportedHttpVersionLongerThanEightCharacters()
-        {
-            var requestLineBytes = Encoding.ASCII.GetBytes("GET / HTTP/1.1ab\r\n");
-            await _socketInput.Writer.WriteAsync(requestLineBytes);
-
-            var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
-
-            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeStartLine(readableBuffer, out consumed, out examined));
-            _socketInput.Reader.Advance(consumed, examined);
-
-            Assert.Equal("Unrecognized HTTP version: HTTP/1.1ab", exception.Message);
+            Assert.Equal($"Unrecognized HTTP version: {httpVersion}", exception.Message);
             Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, exception.StatusCode);
         }
 
         [Fact]
         public async Task TakeMessageHeadersCallsConsumingCompleteWithFurthestExamined()
         {
-            foreach (var rawHeader in new [] { "Header: " , "value\r\n" , "\r\n"})
+            foreach (var rawHeader in new[] { "Header: ", "value\r\n", "\r\n" })
             {
                 await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes(rawHeader));
 
                 var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
-                _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out consumed, out examined);
-                _socketInput.Reader.Advance(consumed, examined);
-                Assert.Equal(readableBuffer.End, examined);
+                _frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)_frame.RequestHeaders, out _consumed, out _examined);
+                _socketInput.Reader.Advance(_consumed, _examined);
+                Assert.Equal(readableBuffer.End, _examined);
             }
         }
 
@@ -831,5 +739,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await _frame.ProduceEndAsync();
             Assert.NotSame(original, _frame.RequestAborted.WaitHandle);
         }
+
+        public static IEnumerable<object> ValidRequestLineData => HttpParsingData.ValidRequestLineData;
+
+        public static IEnumerable<object> InvalidRequestLineData => HttpParsingData.InvalidRequestLineData;
+
+        public static TheoryData<string> UnrecognizedHttpVersionData => HttpParsingData.UnrecognizedHttpVersionData;
+
+        public static IEnumerable<object[]> InvalidRequestHeaderData => HttpParsingData.InvalidRequestHeaderData;
     }
 }
