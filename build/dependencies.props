@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <AspNetCoreVersion>1.1.0</AspNetCoreVersion>
+    <AspNetCoreMvcVersion>1.1.1</AspNetCoreMvcVersion>
+    <AspNetCoreToolsVersion>1.0.0-msbuild3-final</AspNetCoreToolsVersion>
+    <AutoMapperVersion>5.0.2</AutoMapperVersion>
+    <CoreFxVersion>4.3.0</CoreFxVersion>
+    <JsonNetVersion>9.0.1</JsonNetVersion>
+    <MicrosoftDataflowVersion>4.5.24</MicrosoftDataflowVersion>
+    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <ThreadingDataflowVersion>4.7.0</ThreadingDataflowVersion>
+  </PropertyGroup>
+</Project>

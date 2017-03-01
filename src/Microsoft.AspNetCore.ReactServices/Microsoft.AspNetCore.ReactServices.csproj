@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\build\common.props" />
+  <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
     <Description>Helpers for building React applications on ASP.NET Core.</Description>
@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="1.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
 </Project>

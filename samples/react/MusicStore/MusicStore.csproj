@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
+  <Import Project="..\..\..\build\dependencies.props" />
+
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
@@ -15,14 +17,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore" Version="1.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="1.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.1.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SQLite" Version="1.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="1.1.0" />
-    <PackageReference Include="AutoMapper" Version="5.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SQLite" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="AutoMapper" Version="$(AutoMapperVersion)" />
   </ItemGroup>
 
   <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
@@ -31,7 +33,7 @@
   </Target>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="1.0.0-msbuild3-final" />
+    <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="$(AspNetCoreToolsVersion)" />
   </ItemGroup>
 
 </Project>
