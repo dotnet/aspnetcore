@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         private readonly static ulong _httpConnectMethodLong = GetAsciiStringAsLong("CONNECT ");
         private readonly static ulong _httpDeleteMethodLong = GetAsciiStringAsLong("DELETE \0");
         private readonly static ulong _httpGetMethodLong = GetAsciiStringAsLong("GET \0\0\0\0");
+        private const uint _httpGetMethodInt = 542393671; // retun of GetAsciiStringAsInt("GET "); const results in better codegen
         private readonly static ulong _httpHeadMethodLong = GetAsciiStringAsLong("HEAD \0\0\0");
         private readonly static ulong _httpPatchMethodLong = GetAsciiStringAsLong("PATCH \0\0");
         private readonly static ulong _httpPostMethodLong = GetAsciiStringAsLong("POST \0\0\0");
@@ -26,8 +27,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         private readonly static ulong _httpOptionsMethodLong = GetAsciiStringAsLong("OPTIONS ");
         private readonly static ulong _httpTraceMethodLong = GetAsciiStringAsLong("TRACE \0\0");
 
-        private readonly static ulong _http10VersionLong = GetAsciiStringAsLong("HTTP/1.0");
-        private readonly static ulong _http11VersionLong = GetAsciiStringAsLong("HTTP/1.1");
+        private const ulong _http10VersionLong = 3471766442030158920; // GetAsciiStringAsLong("HTTP/1.0"); const results in better codegen
+        private const ulong _http11VersionLong = 3543824036068086856; // GetAsciiStringAsLong("HTTP/1.1"); const results in better codegen
 
         private readonly static ulong _mask8Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff });
         private readonly static ulong _mask7Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00 });
@@ -60,6 +61,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 return *(ulong*)ptr;
             }
         }
+
+        private unsafe static uint GetAsciiStringAsInt(string str)
+        {
+            Debug.Assert(str.Length == 4, "String must be exactly 4 (ASCII) characters long.");
+
+            var bytes = Encoding.ASCII.GetBytes(str);
+
+            fixed (byte* ptr = &bytes[0])
+            {
+                return *(uint*)ptr;
+            }
+        }
+
         private unsafe static ulong GetMaskAsLong(byte[] bytes)
         {
             Debug.Assert(bytes.Length == 8, "Mask must be exactly 8 bytes long.");
@@ -173,27 +187,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool GetKnownMethod(this Span<byte> span, out string knownMethod)
         {
-            knownMethod = null;
-            if (span.Length < sizeof(ulong))
+            if (span.TryRead<uint>(out var possiblyGet))
             {
-                return false;
-            }
-
-            ulong value = span.Read<ulong>();
-            if ((value & _mask4Chars) == _httpGetMethodLong)
-            {
-                knownMethod = HttpMethods.Get;
-                return true;
-            }
-            foreach (var x in _knownMethods)
-            {
-                if ((value & x.Item1) == x.Item2)
+                if (possiblyGet == _httpGetMethodInt)
                 {
-                    knownMethod = x.Item3;
+                    knownMethod = HttpMethods.Get;
                     return true;
                 }
             }
 
+            if (span.TryRead<ulong>(out var value))
+            {
+                foreach (var x in _knownMethods)
+                {
+                    if ((value & x.Item1) == x.Item2)
+                    {
+                        knownMethod = x.Item3;
+                        return true;
+                    }
+                }
+            }
+            
+            knownMethod = null;
             return false;
         }
 
@@ -244,32 +259,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool GetKnownVersion(this Span<byte> span, out string knownVersion)
         {
-            knownVersion = null;
-
-            if (span.Length < sizeof(ulong))
+            if (span.TryRead<ulong>(out var version))
             {
-                return false;
-            }
-
-            var value = span.Read<ulong>();
-            if (value == _http11VersionLong)
-            {
-                knownVersion = Http11Version;
-            }
-            else if (value == _http10VersionLong)
-            {
-                knownVersion = Http10Version;
-            }
-
-            if (knownVersion != null)
-            {
-                if (span[sizeof(ulong)] != (byte)'\r')
+                if (version == _http11VersionLong)
+                {
+                    knownVersion = Http11Version;
+                }
+                else if (version == _http10VersionLong)
+                {
+                    knownVersion = Http10Version;
+                }
+                else
                 {
                     knownVersion = null;
+                    return false;
+                }
+
+                if (span[sizeof(ulong)] == (byte)'\r')
+                {
+                    return true;
                 }
             }
 
-            return knownVersion != null;
+            knownVersion = null;
+            return false;
         }
     }
 }
