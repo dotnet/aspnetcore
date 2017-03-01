@@ -532,10 +532,10 @@
             <Using Namespace="Microsoft.Build.Utilities" />
             <Code Type="Fragment" Language="cs">
                 <![CDATA[
-            var LicenseUrl = "http://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm";
-            var IconUrl = "http://go.microsoft.com/fwlink/?LinkID=288859";
+            var LicenseUrl = "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm";
+            var IconUrl = "https://go.microsoft.com/fwlink/?LinkID=288859";
             var CopyrightText = "Copyright © Microsoft Corporation";
-            var ProjectUrl = "http://www.asp.net/";
+            var ProjectUrl = "https://www.asp.net/";
 
             try
             {
