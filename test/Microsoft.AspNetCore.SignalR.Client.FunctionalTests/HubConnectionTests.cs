@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             using (var httpClient = _testServer.CreateClient())
             {
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                var connection = new HubConnection(new Uri("http://test/hubs"), new JsonNetInvocationAdapter());
+                var connection = new HubConnection(new Uri("http://test/hubs"));
                 try
                 {
                     await connection.StartAsync(transport, httpClient);
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             using (var httpClient = _testServer.CreateClient())
             {
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                var connection = new HubConnection(new Uri("http://test/hubs"), new JsonNetInvocationAdapter());
+                var connection = new HubConnection(new Uri("http://test/hubs"));
                 try
                 {
                     await connection.StartAsync(transport, httpClient);
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             using (var httpClient = _testServer.CreateClient())
             {
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                var connection = new HubConnection(new Uri("http://test/hubs"), new JsonNetInvocationAdapter());
+                var connection = new HubConnection(new Uri("http://test/hubs"));
                 try
                 {
                     await connection.StartAsync(transport, httpClient);
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             using (var httpClient = _testServer.CreateClient())
             {
                 var transport = new LongPollingTransport(httpClient, loggerFactory);
-                var connection = new HubConnection(new Uri("http://test/hubs"), new JsonNetInvocationAdapter());
+                var connection = new HubConnection(new Uri("http://test/hubs"));
                 try
                 {
                     await connection.StartAsync(transport, httpClient);

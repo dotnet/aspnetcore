@@ -46,12 +46,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
             remove { _connection.Closed -= value; }
         }
 
-        public HubConnection(Uri url, IInvocationAdapter adapter)
-            : this(new Connection(url), adapter, null)
-        { }
-
         public HubConnection(Uri url)
             : this(new Connection(url), new JsonNetInvocationAdapter(), null)
+        { }
+
+        public HubConnection(Uri url, ILoggerFactory loggerFactory)
+            : this(new Connection(url), new JsonNetInvocationAdapter(), loggerFactory)
         { }
 
         public HubConnection(Uri url, IInvocationAdapter adapter, ILoggerFactory loggerFactory)
