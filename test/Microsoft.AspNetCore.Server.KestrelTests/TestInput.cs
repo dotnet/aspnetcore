@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 DateHeaderValueManager = new DateHeaderValueManager(),
                 ServerOptions = new KestrelServerOptions(),
-                HttpParser = new KestrelHttpParser(trace),
+                HttpParserFactory = frame => new KestrelHttpParser(trace),
             };
             var listenerContext = new ListenerContext(serviceContext)
             {
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             _memoryPool = new MemoryPool();
             _pipelineFactory = new PipeFactory();
-            FrameContext.Input = _pipelineFactory.Create();;
+            FrameContext.Input = _pipelineFactory.Create(); ;
         }
 
         public Frame FrameContext { get; set; }

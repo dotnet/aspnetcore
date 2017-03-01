@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     },
                     AppLifetime = _applicationLifetime,
                     Log = trace,
-                    HttpParser = new KestrelHttpParser(trace),
+                    HttpParserFactory = frame => new KestrelHttpParser(frame.ConnectionContext.ListenerContext.ServiceContext.Log),
                     ThreadPool = threadPool,
                     DateHeaderValueManager = dateHeaderValueManager,
                     ServerOptions = Options

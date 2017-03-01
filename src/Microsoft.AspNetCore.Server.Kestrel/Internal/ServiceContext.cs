@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
 
         public IThreadPool ThreadPool { get; set; }
 
-        public IHttpParser HttpParser { get; set; }
+        public Func<Frame, IHttpParser> HttpParserFactory { get; set; }
 
         public Func<ConnectionContext, Frame> FrameFactory { get; set; }
 

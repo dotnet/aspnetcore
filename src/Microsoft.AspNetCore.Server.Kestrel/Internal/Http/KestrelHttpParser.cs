@@ -525,6 +525,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 Log.IsEnabled(LogLevel.Information) ? span.GetAsciiStringEscaped(MaxRequestLineError) : string.Empty);
         }
 
+        public void Reset()
+        {
+            
+        }
+
         private enum HeaderState
         {
             Name,

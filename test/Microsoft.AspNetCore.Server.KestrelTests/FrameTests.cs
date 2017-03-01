@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 DateHeaderValueManager = new DateHeaderValueManager(),
                 ServerOptions = new KestrelServerOptions(),
-                HttpParser = new KestrelHttpParser(trace),
+                HttpParserFactory = frame => new KestrelHttpParser(trace),
                 Log = trace
             };
             var listenerContext = new ListenerContext(_serviceContext)
@@ -484,7 +484,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             await _socketInput.Writer.WriteAsync(requestLineBytes);
 
             var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
-            var exception = Assert.Throws<BadHttpRequestException>(() =>_frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
+            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
             _socketInput.Reader.Advance(_consumed, _examined);
 
             Assert.Equal("Request line too long.", exception.Message);

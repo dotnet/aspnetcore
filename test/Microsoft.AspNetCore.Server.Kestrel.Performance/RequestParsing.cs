@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 }
                 Pipe.Reader.Advance(consumed, examined);
             }
-            while(true);
+            while (true);
         }
 
         private void ThrowInvalidStartLine()
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void Setup()
         {
             var connectionContext = new MockConnection(new KestrelServerOptions());
-            connectionContext.ListenerContext.ServiceContext.HttpParser = (IHttpParser) Activator.CreateInstance(ParserType, connectionContext.ListenerContext.ServiceContext.Log);
+            connectionContext.ListenerContext.ServiceContext.HttpParserFactory = frame => (IHttpParser)Activator.CreateInstance(ParserType, frame.ConnectionContext.ListenerContext.ServiceContext.Log);
 
             Frame = new Frame<object>(application: null, context: connectionContext);
             PipelineFactory = new PipeFactory();

@@ -4,16 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO.Pipelines;
 using System.Net;
-using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using Xunit;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
@@ -27,7 +25,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var serviceContext = new ServiceContext
             {
                 DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = serverOptions
+                ServerOptions = serverOptions,
+                HttpParserFactory = f => new NoopHttpParser(),
             };
             var listenerContext = new ListenerContext(serviceContext)
             {
@@ -268,5 +267,28 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             "42,000",
             "42.000",
         };
+
+        private class NoopHttpParser : IHttpParser
+        {
+            public bool ParseHeaders<T>(T handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined, out int consumedBytes) where T : IHttpHeadersHandler
+            {
+                consumed = buffer.Start;
+                examined = buffer.End;
+                consumedBytes = 0;
+                return false;
+            }
+
+            public bool ParseRequestLine<T>(T handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined) where T : IHttpRequestLineHandler
+            {
+                consumed = buffer.Start;
+                examined = buffer.End;
+                return false;
+            }
+
+            public void Reset()
+            {
+                
+            }
+        }
     }
 }

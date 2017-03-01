@@ -10,5 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         bool ParseRequestLine<T>(T handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined) where T : IHttpRequestLineHandler;
 
         bool ParseHeaders<T>(T handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined, out int consumedBytes) where T : IHttpHeadersHandler;
+
+        void Reset();
     }
 }

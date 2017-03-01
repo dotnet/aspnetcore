@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             ServerOptions = context.ListenerContext.ServiceContext.ServerOptions;
 
             _pathBase = context.ListenerContext.ListenOptions.PathBase;
-            _parser = context.ListenerContext.ServiceContext.HttpParser;
+            _parser = context.ListenerContext.ServiceContext.HttpParserFactory(this);
 
             FrameControl = this;
             _keepAliveMilliseconds = (long)ServerOptions.Limits.KeepAliveTimeout.TotalMilliseconds;
@@ -379,6 +379,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             _requestHeadersParsed = 0;
 
             _responseBytesWritten = 0;
+
+            // When testing parser can be null
+            _parser.Reset();
         }
 
         /// <summary>
