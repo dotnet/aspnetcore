@@ -1,0 +1,12 @@
+<Project>
+  <Target Name="NpmRestore" AfterTargets="Restore" Condition="'$(PreflightRestore)' != 'true'">
+    <ItemGroup>
+      <NpmModules Include="$(RepositoryRoot)**\package.json"
+        Exclude="$(RepositoryRoot)**\node_modules\**\*" />
+    </ItemGroup>
+
+    <Message Text="Restoring NPM modules for: %0A - @(NpmModules -> '%(FullPath)','%0A - ')" Importance="high" />
+
+    <Exec Command="npm install" WorkingDirectory="%(NpmModules.RootDir)%(Directory)" />
+  </Target>
+</Project>

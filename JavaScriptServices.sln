@@ -56,50 +56,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReactReduxSpa", "templates\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApplicationBasic", "templates\WebApplicationBasic\WebApplicationBasic.csproj", "{86911E07-C733-4C18-B49F-9A007A651246}"
 EndProject
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "package-builder", "templates\package-builder\", "{1389D9BF-402E-4639-8573-8340EFB8FBD0}"
-	ProjectSection(WebsiteProperties) = preProject
-		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
-		Debug.AspNetCompiler.VirtualPath = "/localhost_57758"
-		Debug.AspNetCompiler.PhysicalPath = "templates\package-builder\"
-		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_57758\"
-		Debug.AspNetCompiler.Updateable = "true"
-		Debug.AspNetCompiler.ForceOverwrite = "true"
-		Debug.AspNetCompiler.FixedNames = "false"
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.VirtualPath = "/localhost_57758"
-		Release.AspNetCompiler.PhysicalPath = "templates\package-builder\"
-		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_57758\"
-		Release.AspNetCompiler.Updateable = "true"
-		Release.AspNetCompiler.ForceOverwrite = "true"
-		Release.AspNetCompiler.FixedNames = "false"
-		Release.AspNetCompiler.Debug = "False"
-		VWDPort = "57758"
-		SlnRelativePath = "templates\package-builder\"
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{BDE761D9-8E1C-4FB1-BB86-110393C59176}"
-EndProject
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "test", "test\", "{A01B46C2-53D8-499D-8CDE-68E3E7B52804}"
-	ProjectSection(WebsiteProperties) = preProject
-		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
-		Debug.AspNetCompiler.VirtualPath = "/localhost_54430"
-		Debug.AspNetCompiler.PhysicalPath = "test\"
-		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_54430\"
-		Debug.AspNetCompiler.Updateable = "true"
-		Debug.AspNetCompiler.ForceOverwrite = "true"
-		Debug.AspNetCompiler.FixedNames = "false"
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.VirtualPath = "/localhost_54430"
-		Release.AspNetCompiler.PhysicalPath = "test\"
-		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_54430\"
-		Release.AspNetCompiler.Updateable = "true"
-		Release.AspNetCompiler.ForceOverwrite = "true"
-		Release.AspNetCompiler.FixedNames = "false"
-		Release.AspNetCompiler.Debug = "False"
-		VWDPort = "54430"
-		SlnRelativePath = "test\"
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{E415FE14-13B0-469F-836D-95059E6BAA6E}"
 	ProjectSection(SolutionItems) = preProject
 		src\build\common.props = src\build\common.props
@@ -180,14 +136,6 @@ Global
 		{86911E07-C733-4C18-B49F-9A007A651246}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86911E07-C733-4C18-B49F-9A007A651246}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86911E07-C733-4C18-B49F-9A007A651246}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1389D9BF-402E-4639-8573-8340EFB8FBD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1389D9BF-402E-4639-8573-8340EFB8FBD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1389D9BF-402E-4639-8573-8340EFB8FBD0}.Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{1389D9BF-402E-4639-8573-8340EFB8FBD0}.Release|Any CPU.Build.0 = Debug|Any CPU
-		{A01B46C2-53D8-499D-8CDE-68E3E7B52804}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A01B46C2-53D8-499D-8CDE-68E3E7B52804}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A01B46C2-53D8-499D-8CDE-68E3E7B52804}.Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{A01B46C2-53D8-499D-8CDE-68E3E7B52804}.Release|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -213,8 +161,6 @@ Global
 		{868A630E-C61B-4807-B7A8-7EB53BE1C28A} = {1598B415-73F1-4B37-B3B4-0A10677ABB2D}
 		{9D4D15A1-A25B-44EC-AB63-F1CE9986712E} = {1598B415-73F1-4B37-B3B4-0A10677ABB2D}
 		{86911E07-C733-4C18-B49F-9A007A651246} = {1598B415-73F1-4B37-B3B4-0A10677ABB2D}
-		{1389D9BF-402E-4639-8573-8340EFB8FBD0} = {1598B415-73F1-4B37-B3B4-0A10677ABB2D}
-		{A01B46C2-53D8-499D-8CDE-68E3E7B52804} = {BDE761D9-8E1C-4FB1-BB86-110393C59176}
 		{E415FE14-13B0-469F-836D-95059E6BAA6E} = {27304DDE-AFB2-4F8B-B765-E3E2F11E886C}
 	EndGlobalSection
 EndGlobal
