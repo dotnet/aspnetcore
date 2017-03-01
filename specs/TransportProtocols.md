@@ -167,7 +167,7 @@ In JavaScript/Browser clients, this encoding requires XHR2 (or similar HTTP requ
 The body is encoded as follows. The `Content-Type` response header is set to `application/vnd.microsoft.aspnet.endpoint-messages.v1+binary`. Identifiers in square brackets `[]` indicate fields defined below, and parenthesis `()` indicate grouping. Other symbols indicate ASCII-encoded text in the stream
 
 ```
-B([Length][Type][Body])([Length][Type][Fin][Body])... continues until end of the response body ...
+B([Length][Type][Body])([Length][Type][Body])... continues until end of the response body ...
 ```
 
 * `[Length]` - A 64-bit integer in Network Byte Order (Big-endian) representing the length of the body in bytes
