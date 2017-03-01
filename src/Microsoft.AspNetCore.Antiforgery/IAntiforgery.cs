@@ -42,8 +42,8 @@ namespace Microsoft.AspNetCore.Antiforgery
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
         /// <returns>
-        /// A <see cref="Task{Boolean}"/> that, when completed, returns <c>true</c> if the is requst uses a safe HTTP
-        /// method or contains a value antiforgery token, otherwise returns <c>false</c>.
+        /// A <see cref="Task{Boolean}"/> that, when completed, returns <c>true</c> if the request uses a safe HTTP
+        /// method or contains a valid antiforgery token, otherwise returns <c>false</c>.
         /// </returns>
         Task<bool> IsRequestValidAsync(HttpContext httpContext);
 
