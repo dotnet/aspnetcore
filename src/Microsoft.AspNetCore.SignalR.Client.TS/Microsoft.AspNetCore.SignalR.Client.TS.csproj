@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SignalRClientDistFolder>$(MSBuildThisFileDirectory)..\..\dist\</SignalRClientDistFolder>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Inputs Include="*.ts;" />
+    <Outputs Include="@(Inputs -> '$(SignalRClientDistFolder)src\%(FileName).d.ts')" />
+    <Outputs Include="@(Inputs -> '$(SignalRClientDistFolder)src\%(FileName).js')" />
+    <Outputs Include="$(SignalRClientDistFolder)browser\signalr-client.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="tsconfig.json" />
+  </ItemGroup>
+
+  <!-- this target relies on npm packages being restored manually or when running full build -->
+  <Target Name="BuildTSClient" Inputs="@(Inputs)" Outputs="@(Outputs)" BeforeTargets="Build">
+    <Exec Command="npm run gulp -- --gulpfile $(MSBuildThisFileDirectory)gulpfile.js build-ts-client" />
+  </Target>
+
+  <Target Name="CleanTSClient" AfterTargets="Clean">
+    <RemoveDir Directories="$(SignalRClientDistFolder)" />
+  </Target>
+</Project>

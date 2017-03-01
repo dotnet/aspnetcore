@@ -1,8 +1,4 @@
 <Project>
-  <Target Name="CleanNpm" AfterTargets="Clean">
-    <RemoveDir Directories="$(RepositoryRoot)node_modules" />
-  </Target>
-
   <Target Name="RestoreNpm" AfterTargets="Restore">
     <Message Text="Restoring NPM modules" Importance="high" />
     <Exec Command="npm install" WorkingDirectory="$(RepositoryRoot)" />
