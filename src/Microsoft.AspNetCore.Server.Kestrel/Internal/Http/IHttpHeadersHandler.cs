@@ -1,12 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
-    public enum HttpVersion
+    public interface IHttpHeadersHandler
     {
-        Unknown = -1,
-        Http10 = 0,
-        Http11 = 1
+        void OnHeader(Span<byte> name, Span<byte> value);
     }
 }

@@ -4,6 +4,7 @@
 using System;
 using System.Text;
 using BenchmarkDotNet.Attributes;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
@@ -18,29 +19,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public int GetKnownMethod_GET()
         {
             int len = 0;
-            string method;
+            HttpMethod method;
             Span<byte> data = _method;
             for (int i = 0; i < loops; i++) {
-                data.GetKnownMethod(out method);
-                len += method.Length;
-                data.GetKnownMethod(out method);
-                len += method.Length;
-                data.GetKnownMethod(out method);
-                len += method.Length;
-                data.GetKnownMethod(out method);
-                len += method.Length;
-                data.GetKnownMethod(out method);
-                len += method.Length;
-                data.GetKnownMethod(out method);
-                len += method.Length;
-                data.GetKnownMethod(out method);
-                len += method.Length;
-                data.GetKnownMethod(out method);
-                len += method.Length;
-                data.GetKnownMethod(out method);
-                len += method.Length;
-                data.GetKnownMethod(out method);
-                len += method.Length;
+                data.GetKnownMethod(out method, out var length);
+                len += length;
+                data.GetKnownMethod(out method, out length);
+                len += length;
+                data.GetKnownMethod(out method, out length);
+                len += length;
+                data.GetKnownMethod(out method, out length);
+                len += length;
+                data.GetKnownMethod(out method, out length);
+                len += length;
+                data.GetKnownMethod(out method, out length);
+                len += length;
+                data.GetKnownMethod(out method, out length);
+                len += length;
+                data.GetKnownMethod(out method, out length);
+                len += length;
+                data.GetKnownMethod(out method, out length);
+                len += length;
+                data.GetKnownMethod(out method, out length);
+                len += length;
             }
             return len;
         }
@@ -49,29 +50,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public int GetKnownVersion_HTTP1_1()
         {
             int len = 0;
-            string version;
+            HttpVersion version;
             Span<byte> data = _version;
             for (int i = 0; i < loops; i++) {
-                data.GetKnownVersion(out version);
-                len += version.Length;
-                data.GetKnownVersion(out version);
-                len += version.Length;
-                data.GetKnownVersion(out version);
-                len += version.Length;
-                data.GetKnownVersion(out version);
-                len += version.Length;
-                data.GetKnownVersion(out version);
-                len += version.Length;
-                data.GetKnownVersion(out version);
-                len += version.Length;
-                data.GetKnownVersion(out version);
-                len += version.Length;
-                data.GetKnownVersion(out version);
-                len += version.Length;
-                data.GetKnownVersion(out version);
-                len += version.Length;
-                data.GetKnownVersion(out version);
-                len += version.Length;
+                data.GetKnownVersion(out version, out var length);
+                len += length;
+                data.GetKnownVersion(out version, out length);
+                len += length;
+                data.GetKnownVersion(out version, out length);
+                len += length;
+                data.GetKnownVersion(out version, out length);
+                len += length;
+                data.GetKnownVersion(out version, out length);
+                len += length;
+                data.GetKnownVersion(out version, out length);
+                len += length;
+                data.GetKnownVersion(out version, out length);
+                len += length;
+                data.GetKnownVersion(out version, out length);
+                len += length;
+                data.GetKnownVersion(out version, out length);
+                len += length;
+                data.GetKnownVersion(out version, out length);
+                len += length;
             }
             return len;
         }

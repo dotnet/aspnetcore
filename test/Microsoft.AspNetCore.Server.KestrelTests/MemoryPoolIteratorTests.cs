@@ -7,6 +7,8 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Xunit;
 using MemoryPool = Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure.MemoryPool;
@@ -166,109 +168,77 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Fact]
-        public void PeekArraySegment()
+        public async Task PeekArraySegment()
         {
-            // Arrange
-            var block = _pool.Lease();
-            var bytes = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 };
-            Buffer.BlockCopy(bytes, 0, block.Array, block.Start, bytes.Length);
-            block.End += bytes.Length;
-            var scan = block.GetIterator();
-            var originalIndex = scan.Index;
+            using (var pipeFactory = new PipeFactory())
+            {
+                // Arrange
+                var pipe = pipeFactory.Create();
+                var buffer = pipe.Writer.Alloc();
+                buffer.Append(ReadableBuffer.Create(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }));
+                await buffer.FlushAsync();
+                
+                // Act
+                var result = await pipe.Reader.PeekAsync();
 
-            // Act
-            var result = scan.PeekArraySegment();
+                // Assert
+                Assert.Equal(new byte[] {0, 1, 2, 3, 4, 5, 6, 7}, result);
 
-            // Assert
-            Assert.Equal(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, result);
-            Assert.Equal(originalIndex, scan.Index);
-
-            _pool.Return(block);
+                pipe.Writer.Complete();
+                pipe.Reader.Complete();
+            }
         }
 
         [Fact]
-        public void PeekArraySegmentOnDefaultIteratorReturnsDefaultArraySegment()
+        public async Task PeekArraySegmentAtEndOfDataReturnsDefaultArraySegment()
         {
-            // Assert.Equals doesn't work since xunit tries to access the underlying array.
-            Assert.True(default(ArraySegment<byte>).Equals(default(MemoryPoolIterator).PeekArraySegment()));
+            using (var pipeFactory = new PipeFactory())
+            {
+                // Arrange
+                var pipe = pipeFactory.Create();
+                pipe.Writer.Complete();
+
+                // Act
+                var result = await pipe.Reader.PeekAsync();
+
+                // Assert
+                // Assert.Equals doesn't work since xunit tries to access the underlying array.
+                Assert.True(default(ArraySegment<byte>).Equals(result));
+
+                pipe.Reader.Complete();
+            }
         }
 
         [Fact]
-        public void PeekArraySegmentAtEndOfDataReturnsDefaultArraySegment()
+        public async Task PeekArraySegmentAtBlockBoundary()
         {
-            // Arrange
-            var block = _pool.Lease();
-            var bytes = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 };
-            Buffer.BlockCopy(bytes, 0, block.Array, block.Start, bytes.Length);
-            block.End += bytes.Length;
-            block.Start = block.End;
+            using (var pipeFactory = new PipeFactory())
+            {
+                var pipe = pipeFactory.Create();
+                var buffer = pipe.Writer.Alloc();
+                buffer.Append(ReadableBuffer.Create(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }));
+                buffer.Append(ReadableBuffer.Create(new byte[] { 8, 9, 10, 11, 12, 13, 14, 15 }));
+                await buffer.FlushAsync();
 
-            var scan = block.GetIterator();
+                // Act
+                var result = await pipe.Reader.PeekAsync();
 
-            // Act
-            var result = scan.PeekArraySegment();
+                // Assert
+                Assert.Equal(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, result);
 
-            // Assert
-            // Assert.Equals doesn't work since xunit tries to access the underlying array.
-            Assert.True(default(ArraySegment<byte>).Equals(result));
+                // Act
+                // Advance past the data in the first block
+                var readResult = pipe.Reader.ReadAsync().GetAwaiter().GetResult();
+                pipe.Reader.Advance(readResult.Buffer.Move(readResult.Buffer.Start, 8));
+                result = await pipe.Reader.PeekAsync();
 
-            _pool.Return(block);
-        }
+                // Assert
+                Assert.Equal(new byte[] { 8, 9, 10, 11, 12, 13, 14, 15 }, result);
 
-        [Fact]
-        public void PeekArraySegmentAtBlockBoundary()
-        {
-            // Arrange
-            var firstBlock = _pool.Lease();
-            var lastBlock = _pool.Lease();
+                pipe.Writer.Complete();
+                pipe.Reader.Complete();
+            }
 
-            var firstBytes = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 };
-            var lastBytes = new byte[] { 8, 9, 10, 11, 12, 13, 14, 15 };
-
-            Buffer.BlockCopy(firstBytes, 0, firstBlock.Array, firstBlock.Start, firstBytes.Length);
-            firstBlock.End += lastBytes.Length;
-
-            firstBlock.Next = lastBlock;
-            Buffer.BlockCopy(lastBytes, 0, lastBlock.Array, lastBlock.Start, lastBytes.Length);
-            lastBlock.End += lastBytes.Length;
-
-            var scan = firstBlock.GetIterator();
-            var originalIndex = scan.Index;
-            var originalBlock = scan.Block;
-
-            // Act
-            var result = scan.PeekArraySegment();
-
-            // Assert
-            Assert.Equal(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, result);
-            Assert.Equal(originalBlock, scan.Block);
-            Assert.Equal(originalIndex, scan.Index);
-
-            // Act
-            // Advance past the data in the first block
-            scan.Skip(8);
-            result = scan.PeekArraySegment();
-
-            // Assert
-            Assert.Equal(new byte[] { 8, 9, 10, 11, 12, 13, 14, 15 }, result);
-            Assert.Equal(originalBlock, scan.Block);
-            Assert.Equal(originalIndex + 8, scan.Index);
-
-            // Act
-            // Add anther empty block between the first and last block
-            var middleBlock = _pool.Lease();
-            firstBlock.Next = middleBlock;
-            middleBlock.Next = lastBlock;
-            result = scan.PeekArraySegment();
-
-            // Assert
-            Assert.Equal(new byte[] { 8, 9, 10, 11, 12, 13, 14, 15 }, result);
-            Assert.Equal(originalBlock, scan.Block);
-            Assert.Equal(originalIndex + 8, scan.Index);
-
-            _pool.Return(firstBlock);
-            _pool.Return(middleBlock);
-            _pool.Return(lastBlock);
         }
 
         [Fact]
@@ -542,198 +512,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             _pool.Return(finalBlock);
         }
 
-        [Theory]
-        [InlineData("CONNECT / HTTP/1.1", true, "CONNECT")]
-        [InlineData("DELETE / HTTP/1.1", true, "DELETE")]
-        [InlineData("GET / HTTP/1.1", true, "GET")]
-        [InlineData("HEAD / HTTP/1.1", true, "HEAD")]
-        [InlineData("PATCH / HTTP/1.1", true, "PATCH")]
-        [InlineData("POST / HTTP/1.1", true, "POST")]
-        [InlineData("PUT / HTTP/1.1", true, "PUT")]
-        [InlineData("OPTIONS / HTTP/1.1", true, "OPTIONS")]
-        [InlineData("TRACE / HTTP/1.1", true, "TRACE")]
-        [InlineData("GET/ HTTP/1.1", false, null)]
-        [InlineData("get / HTTP/1.1", false, null)]
-        [InlineData("GOT / HTTP/1.1", false, null)]
-        [InlineData("ABC / HTTP/1.1", false, null)]
-        [InlineData("PO / HTTP/1.1", false, null)]
-        [InlineData("PO ST / HTTP/1.1", false, null)]
-        [InlineData("short ", false, null)]
-        public void GetsKnownMethod(string input, bool expectedResult, string expectedKnownString)
-        {
-            // Arrange
-            var block = ReadableBuffer.Create(Encoding.ASCII.GetBytes(input));
-
-            // Act
-            string knownString;
-            var result = block.GetKnownMethod(out knownString);
-            // Assert
-            Assert.Equal(expectedResult, result);
-            Assert.Equal(expectedKnownString, knownString);
-        }
-
-
-        [Theory]
-        [InlineData("CONNECT / HTTP/1.1", true, "CONNECT")]
-        [InlineData("DELETE / HTTP/1.1", true, "DELETE")]
-        [InlineData("GET / HTTP/1.1", true, "GET")]
-        [InlineData("HEAD / HTTP/1.1", true, "HEAD")]
-        [InlineData("PATCH / HTTP/1.1", true, "PATCH")]
-        [InlineData("POST / HTTP/1.1", true, "POST")]
-        [InlineData("PUT / HTTP/1.1", true, "PUT")]
-        [InlineData("OPTIONS / HTTP/1.1", true, "OPTIONS")]
-        [InlineData("TRACE / HTTP/1.1", true, "TRACE")]
-        [InlineData("GET/ HTTP/1.1", false, null)]
-        [InlineData("get / HTTP/1.1", false, null)]
-        [InlineData("GOT / HTTP/1.1", false, null)]
-        [InlineData("ABC / HTTP/1.1", false, null)]
-        [InlineData("PO / HTTP/1.1", false, null)]
-        [InlineData("PO ST / HTTP/1.1", false, null)]
-        [InlineData("short ", false, null)]
-        public void GetsKnownMethodOnBoundary(string input, bool expectedResult, string expectedKnownString)
-        {
-            // Test at boundary
-            var maxSplit = Math.Min(input.Length, 8);
-
-            for (var split = 0; split <= maxSplit; split++)
-            {
-                using (var pipelineFactory = new PipeFactory())
-                {
-                    // Arrange
-                    var pipe = pipelineFactory.Create();
-                    var buffer = pipe.Writer.Alloc();
-                    var block1Input = input.Substring(0, split);
-                    var block2Input = input.Substring(split);
-                    buffer.Append(ReadableBuffer.Create(Encoding.ASCII.GetBytes(block1Input)));
-                    buffer.Append(ReadableBuffer.Create(Encoding.ASCII.GetBytes(block2Input)));
-                    buffer.FlushAsync().GetAwaiter().GetResult();
-
-                    var readResult = pipe.Reader.ReadAsync().GetAwaiter().GetResult();
-
-                    // Act
-                    string boundaryKnownString;
-                    var boundaryResult = readResult.Buffer.GetKnownMethod(out boundaryKnownString);
-
-                    // Assert
-                    Assert.Equal(expectedResult, boundaryResult);
-                    Assert.Equal(expectedKnownString, boundaryKnownString);
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData("HTTP/1.0\r", true, MemoryPoolIteratorExtensions.Http10Version)]
-        [InlineData("HTTP/1.1\r", true, MemoryPoolIteratorExtensions.Http11Version)]
-        [InlineData("HTTP/3.0\r", false, null)]
-        [InlineData("http/1.0\r", false, null)]
-        [InlineData("http/1.1\r", false, null)]
-        [InlineData("short ", false, null)]
-        public void GetsKnownVersion(string input, bool expectedResult, string expectedKnownString)
-        {
-            // Arrange
-            var block = ReadableBuffer.Create(Encoding.ASCII.GetBytes(input));
-
-            // Act
-            string knownString;
-            var result = block.GetKnownVersion(out knownString);
-            // Assert
-            Assert.Equal(expectedResult, result);
-            Assert.Equal(expectedKnownString, knownString);
-        }
-
-        [Theory]
-        [InlineData("HTTP/1.0\r", true, MemoryPoolIteratorExtensions.Http10Version)]
-        [InlineData("HTTP/1.1\r", true, MemoryPoolIteratorExtensions.Http11Version)]
-        [InlineData("HTTP/3.0\r", false, null)]
-        [InlineData("http/1.0\r", false, null)]
-        [InlineData("http/1.1\r", false, null)]
-        [InlineData("short ", false, null)]
-        public void GetsKnownVersionOnBoundary(string input, bool expectedResult, string expectedKnownString)
-        {
-            // Test at boundary
-            var maxSplit = Math.Min(input.Length, 9);
-
-            for (var split = 0; split <= maxSplit; split++)
-            {
-                using (var pipelineFactory = new PipeFactory())
-                {
-                    // Arrange
-                    var pipe = pipelineFactory.Create();
-                    var buffer = pipe.Writer.Alloc();
-                    var block1Input = input.Substring(0, split);
-                    var block2Input = input.Substring(split);
-                    buffer.Append(ReadableBuffer.Create(Encoding.ASCII.GetBytes(block1Input)));
-                    buffer.Append(ReadableBuffer.Create(Encoding.ASCII.GetBytes(block2Input)));
-                    buffer.FlushAsync().GetAwaiter().GetResult();
-
-                    var readResult = pipe.Reader.ReadAsync().GetAwaiter().GetResult();
-
-                    // Act
-                    string boundaryKnownString;
-                    var boundaryResult = readResult.Buffer.GetKnownVersion(out boundaryKnownString);
-
-                    // Assert
-                    Assert.Equal(expectedResult, boundaryResult);
-                    Assert.Equal(expectedKnownString, boundaryKnownString);
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData("HTTP/1.0\r", "HTTP/1.0")]
-        [InlineData("HTTP/1.1\r", "HTTP/1.1")]
-        public void KnownVersionsAreInterned(string input, string expected)
-        {
-            TestKnownStringsInterning(input, expected, MemoryPoolIteratorExtensions.GetKnownVersion);
-        }
-
-        [Theory]
-        [InlineData("", "HTTP/1.1\r")]
-        [InlineData("H", "TTP/1.1\r")]
-        [InlineData("HT", "TP/1.1\r")]
-        [InlineData("HTT", "P/1.1\r")]
-        [InlineData("HTTP", "/1.1\r")]
-        [InlineData("HTTP/", "1.1\r")]
-        [InlineData("HTTP/1", ".1\r")]
-        [InlineData("HTTP/1.", "1\r")]
-        [InlineData("HTTP/1.1", "\r")]
-        [InlineData("HTTP/1.1\r", "")]
-        public void KnownVersionCanBeReadAtAnyBlockBoundary(string block1Input, string block2Input)
-        {
-            using (var pipelineFactory = new PipeFactory())
-            {
-                // Arrange
-                var pipe = pipelineFactory.Create();
-                var buffer = pipe.Writer.Alloc();
-                buffer.Append(ReadableBuffer.Create(Encoding.ASCII.GetBytes(block1Input)));
-                buffer.Append(ReadableBuffer.Create(Encoding.ASCII.GetBytes(block2Input)));
-                buffer.FlushAsync().GetAwaiter().GetResult();
-
-                var readResult = pipe.Reader.ReadAsync().GetAwaiter().GetResult();
-                // Act
-                string knownVersion;
-                var result = readResult.Buffer.GetKnownVersion(out knownVersion);
-
-                // Assert
-                Assert.True(result);
-                Assert.Equal("HTTP/1.1", knownVersion);
-            }
-        }
-
-        [Theory]
-        [InlineData("CONNECT / HTTP/1.1", "CONNECT")]
-        [InlineData("DELETE / HTTP/1.1", "DELETE")]
-        [InlineData("GET / HTTP/1.1", "GET")]
-        [InlineData("HEAD / HTTP/1.1", "HEAD")]
-        [InlineData("PATCH / HTTP/1.1", "PATCH")]
-        [InlineData("POST / HTTP/1.1", "POST")]
-        [InlineData("PUT / HTTP/1.1", "PUT")]
-        [InlineData("OPTIONS / HTTP/1.1", "OPTIONS")]
-        [InlineData("TRACE / HTTP/1.1", "TRACE")]
-        public void KnownMethodsAreInterned(string input, string expected)
-        {
-            TestKnownStringsInterning(input, expected, MemoryPoolIteratorExtensions.GetKnownMethod);
-        }
 
         [Theory]
         [MemberData(nameof(SeekByteLimitData))]
@@ -1200,10 +978,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             try
             {
                 // Arrange
-                var buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes(input));
+                var buffer = new Span<byte>(Encoding.ASCII.GetBytes(input));
 
                 // Act
-                var result = buffer.Start.GetAsciiStringEscaped(buffer.End, maxChars);
+                var result = buffer.GetAsciiStringEscaped(maxChars);
 
                 // Assert
                 Assert.Equal(expected, result);
@@ -1292,22 +1070,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     pool.Return(block);
                 }
             }
-        }
-
-        private delegate bool GetKnownString(ReadableBuffer iter, out string result);
-
-        private void TestKnownStringsInterning(string input, string expected, GetKnownString action)
-        {
-            // Act
-            string knownString1, knownString2;
-            var result1 = action(ReadableBuffer.Create(Encoding.ASCII.GetBytes(input)), out knownString1);
-            var result2 = action(ReadableBuffer.Create(Encoding.ASCII.GetBytes(input)), out knownString2);
-
-            // Assert
-            Assert.True(result1);
-            Assert.True(result2);
-            Assert.Equal(knownString1, expected);
-            Assert.Same(knownString1, knownString2);
         }
 
         public static IEnumerable<object[]> SeekByteLimitData

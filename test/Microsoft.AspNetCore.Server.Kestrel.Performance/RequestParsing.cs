@@ -58,6 +58,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private static readonly byte[] _unicodePipelinedRequests = Encoding.ASCII.GetBytes(string.Concat(Enumerable.Repeat(unicodeRequest, Pipelining)));
         private static readonly byte[] _unicodeRequest = Encoding.ASCII.GetBytes(unicodeRequest);
 
+        [Params(typeof(KestrelHttpParser))]
+        public Type ParserType { get; set; }
+
         [Benchmark(Baseline = true, OperationsPerInvoke = InnerLoopCount)]
         public void ParsePlaintext()
         {
@@ -176,6 +179,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void Setup()
         {
             var connectionContext = new MockConnection(new KestrelServerOptions());
+            connectionContext.ListenerContext.ServiceContext.HttpParser = (IHttpParser) Activator.CreateInstance(ParserType, connectionContext.ListenerContext.ServiceContext.Log);
+
             Frame = new Frame<object>(application: null, context: connectionContext);
             PipelineFactory = new PipeFactory();
             Pipe = PipelineFactory.Create();

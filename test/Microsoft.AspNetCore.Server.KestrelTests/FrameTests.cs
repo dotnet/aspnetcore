@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 DateHeaderValueManager = new DateHeaderValueManager(),
                 ServerOptions = new KestrelServerOptions(),
+                HttpParser = new KestrelHttpParser(trace),
                 Log = trace
             };
             var listenerContext = new ListenerContext(_serviceContext)

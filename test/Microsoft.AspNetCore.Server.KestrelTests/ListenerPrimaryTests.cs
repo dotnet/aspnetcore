@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 DateHeaderValueManager = serviceContextPrimary.DateHeaderValueManager,
                 ServerOptions = serviceContextPrimary.ServerOptions,
                 ThreadPool = serviceContextPrimary.ThreadPool,
+                HttpParser = new KestrelHttpParser(serviceContextPrimary.Log),
                 FrameFactory = context =>
                 {
                     return new Frame<DefaultHttpContext>(new TestApplication(c =>
@@ -121,6 +122,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 DateHeaderValueManager = serviceContextPrimary.DateHeaderValueManager,
                 ServerOptions = serviceContextPrimary.ServerOptions,
                 ThreadPool = serviceContextPrimary.ThreadPool,
+                HttpParser = new KestrelHttpParser(serviceContextPrimary.Log),
                 FrameFactory = context =>
                 {
                     return new Frame<DefaultHttpContext>(new TestApplication(c =>
@@ -243,6 +245,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 DateHeaderValueManager = serviceContextPrimary.DateHeaderValueManager,
                 ServerOptions = serviceContextPrimary.ServerOptions,
                 ThreadPool = serviceContextPrimary.ThreadPool,
+                HttpParser = new KestrelHttpParser(serviceContextPrimary.Log),
                 FrameFactory = context =>
                 {
                     return new Frame<DefaultHttpContext>(new TestApplication(c =>

@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using MemoryPool = Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure.MemoryPool;
@@ -25,11 +24,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public TestInput()
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
-            var ltp = new LoggingThreadPool(trace);
             var serviceContext = new ServiceContext
             {
                 DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions()
+                ServerOptions = new KestrelServerOptions(),
+                HttpParser = new KestrelHttpParser(trace),
             };
             var listenerContext = new ListenerContext(serviceContext)
             {
