@@ -57,7 +57,7 @@ namespace MusicStore
             if (_platform.UseInMemoryStore)
             {
                 services.AddDbContext<MusicStoreContext>(options =>
-                            options.UseInMemoryDatabase());
+                            options.UseInMemoryDatabase("Scratch"));
             }
             else
             {
