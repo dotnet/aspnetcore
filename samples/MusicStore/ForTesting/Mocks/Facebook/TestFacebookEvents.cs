@@ -17,11 +17,11 @@ namespace MusicStore.Mocks.Facebook
             if (context.Ticket.Principal != null)
             {
                 Helpers.ThrowIfConditionFailed(() => context.AccessToken == "ValidAccessToken", "");
-                Helpers.ThrowIfConditionFailed(() => FacebookHelper.GetEmail(context.User) == "AspnetvnextTest@test.com", "");
-                Helpers.ThrowIfConditionFailed(() => FacebookHelper.GetId(context.User) == "Id", "");
-                Helpers.ThrowIfConditionFailed(() => FacebookHelper.GetLink(context.User) == "https://www.facebook.com/myLink", "");
-                Helpers.ThrowIfConditionFailed(() => FacebookHelper.GetName(context.User) == "AspnetvnextTest AspnetvnextTest", "");
-                Helpers.ThrowIfConditionFailed(() => context.User.SelectToken("id").ToString() == FacebookHelper.GetId(context.User), "");
+                Helpers.ThrowIfConditionFailed(() => context.Identity.FindFirst(ClaimTypes.Email)?.Value == "AspnetvnextTest@test.com", "");
+                Helpers.ThrowIfConditionFailed(() => context.Identity.FindFirst(ClaimTypes.NameIdentifier)?.Value == "Id", "");
+                Helpers.ThrowIfConditionFailed(() => context.Identity.FindFirst("urn:facebook:link")?.Value == "https://www.facebook.com/myLink", "");
+                Helpers.ThrowIfConditionFailed(() => context.Identity.FindFirst(ClaimTypes.Name)?.Value == "AspnetvnextTest AspnetvnextTest", "");
+                Helpers.ThrowIfConditionFailed(() => context.User.SelectToken("id").ToString() == context.Identity.FindFirst(ClaimTypes.NameIdentifier)?.Value, "");
                 Helpers.ThrowIfConditionFailed(() => context.ExpiresIn.Value == TimeSpan.FromSeconds(100), "");
                 Helpers.ThrowIfConditionFailed(() => context.AccessToken == "ValidAccessToken", "");
                 context.Ticket.Principal.Identities.First().AddClaim(new Claim("ManageStore", "false"));
