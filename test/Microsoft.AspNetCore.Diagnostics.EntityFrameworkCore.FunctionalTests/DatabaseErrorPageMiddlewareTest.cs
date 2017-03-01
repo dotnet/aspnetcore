@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                         }
                         else
                         {
-                            optionsBuilder.UseInMemoryDatabase();
+                            optionsBuilder.UseInMemoryDatabase("Scratch");
                         }
                         services.AddSingleton<DbContextOptions>(optionsBuilder.Options);
                     });
@@ -445,7 +445,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                         }
                         else
                         {
-                            optionsBuilder.UseInMemoryDatabase();
+                            optionsBuilder.UseInMemoryDatabase("Scratch");
                         }
                         services.AddSingleton(optionsBuilder.Options);
                     });
