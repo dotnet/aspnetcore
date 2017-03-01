@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="BuildBundlerMinifier" Version="2.4.337" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore" Version="$(AspNetCoreVersion)" />
@@ -37,7 +38,6 @@
   </ItemGroup>
 
   <Target Name="BuildTSClient" BeforeTargets="BeforeBuild">
-    <Exec Command="dotnet bundle" />
     <PropertyGroup>
       <SignalRClientDistPath>..\..\dist\browser\signalr-client.js</SignalRClientDistPath>
       <SignalRClientTargetFolder>$(MSBuildProjectDirectory)/wwwroot/lib/signalr-client/</SignalRClientTargetFolder>
@@ -53,7 +53,6 @@
   </Target>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="BundlerMinifier.Core" Version="2.2.301" />
     <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="$(AspNetCoreVersion)" />
     <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="1.0.1-*" />
   </ItemGroup>
