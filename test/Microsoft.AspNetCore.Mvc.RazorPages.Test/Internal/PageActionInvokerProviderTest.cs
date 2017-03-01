@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -383,13 +384,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 },
                 (handler) =>
                 {
+                    Assert.Equal("OnGet", handler.Method.Name);
+                    Assert.Equal(typeof(TestSetPageModel), handler.Method.DeclaringType);
+                },
+                (handler) =>
+                {
                     Assert.Equal("OnPost", handler.Method.Name);
                     Assert.Equal(typeof(TestSetPageModel), handler.Method.DeclaringType);
                 });
         }
 
         [Fact]
-        public void PopulateHandlerMethodDescriptors_ProtectedMethodsNotFound()
+        public void PopulateHandlerMethodDescriptors_IgnoresNonPublicMethods()
         {
             // Arrange
             var descriptor = new PageActionDescriptor()
@@ -430,6 +436,113 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // Assert
             Assert.Empty(actionDescriptor.HandlerMethods);
+        }
+
+        [Fact]
+        public void PopulateHandlerMethodDescriptors_IgnoresStaticMethods()
+        {
+            // Arrange
+            var descriptor = new PageActionDescriptor()
+            {
+                RelativePath = "Path1",
+                FilterDescriptors = new FilterDescriptor[0],
+                ViewEnginePath = "/Views/Index.cshtml"
+            };
+
+            var modelTypeInfo = typeof(PageModelWithStaticHandler).GetTypeInfo();
+            var expected = modelTypeInfo.GetMethod(nameof(PageModelWithStaticHandler.OnGet), BindingFlags.Public | BindingFlags.Instance);
+            var actionDescriptor = new CompiledPageActionDescriptor(descriptor)
+            {
+                ModelTypeInfo = modelTypeInfo,
+                PageTypeInfo = typeof(object).GetTypeInfo(),
+            };
+
+            // Act
+            PageActionInvokerProvider.PopulateHandlerMethodDescriptors(modelTypeInfo, actionDescriptor);
+
+            // Assert
+            Assert.Collection(actionDescriptor.HandlerMethods,
+                handler => Assert.Same(expected, handler.Method));
+        }
+
+        [Fact]
+        public void PopulateHandlerMethodDescriptors_IgnoresAbstractMethods()
+        {
+            // Arrange
+            var descriptor = new PageActionDescriptor()
+            {
+                RelativePath = "Path1",
+                FilterDescriptors = new FilterDescriptor[0],
+                ViewEnginePath = "/Views/Index.cshtml"
+            };
+
+            var modelTypeInfo = typeof(PageModelWithAbstractMethod).GetTypeInfo();
+            var expected = modelTypeInfo.GetMethod(nameof(PageModelWithAbstractMethod.OnGet));
+            var actionDescriptor = new CompiledPageActionDescriptor(descriptor)
+            {
+                ModelTypeInfo = modelTypeInfo,
+                PageTypeInfo = typeof(object).GetTypeInfo(),
+            };
+
+            // Act
+            PageActionInvokerProvider.PopulateHandlerMethodDescriptors(modelTypeInfo, actionDescriptor);
+
+            // Assert
+            Assert.Collection(actionDescriptor.HandlerMethods,
+                handler => Assert.Same(expected, handler.Method));
+        }
+
+        [Fact]
+        public void PopulateHandlerMethodDescriptors_DiscoversMethodsWithFormActions()
+        {
+            // Arrange
+            var descriptor = new PageActionDescriptor()
+            {
+                RelativePath = "Path1",
+                FilterDescriptors = new FilterDescriptor[0],
+                ViewEnginePath = "/Views/Index.cshtml"
+            };
+
+            var modelTypeInfo = typeof(PageModelWithFormActions).GetTypeInfo();
+            var actionDescriptor = new CompiledPageActionDescriptor(descriptor)
+            {
+                ModelTypeInfo = modelTypeInfo,
+                PageTypeInfo = typeof(object).GetTypeInfo(),
+            };
+
+            // Act
+            PageActionInvokerProvider.PopulateHandlerMethodDescriptors(modelTypeInfo, actionDescriptor);
+
+            // Assert
+            Assert.Collection(actionDescriptor.HandlerMethods.OrderBy(h => h.Method.Name),
+                handler =>
+                {
+                    Assert.Same(modelTypeInfo.GetMethod(nameof(PageModelWithFormActions.OnGet)), handler.Method);
+                    Assert.Equal("GET", handler.HttpMethod);
+                    Assert.Equal(0, handler.FormAction.Length);
+                    Assert.NotNull(handler.Executor);
+                },
+                handler =>
+                {
+                    Assert.Same(modelTypeInfo.GetMethod(nameof(PageModelWithFormActions.OnPostAdd)), handler.Method);
+                    Assert.Equal("POST", handler.HttpMethod);
+                    Assert.Equal("Add", handler.FormAction.ToString());
+                    Assert.NotNull(handler.Executor);
+                },
+                handler =>
+                {
+                    Assert.Same(modelTypeInfo.GetMethod(nameof(PageModelWithFormActions.OnPostAddCustomer)), handler.Method);
+                    Assert.Equal("POST", handler.HttpMethod);
+                    Assert.Equal("AddCustomer", handler.FormAction.ToString());
+                    Assert.NotNull(handler.Executor);
+                },
+                handler =>
+                {
+                    Assert.Same(modelTypeInfo.GetMethod(nameof(PageModelWithFormActions.OnPostDeleteAsync)), handler.Method);
+                    Assert.Equal("POST", handler.HttpMethod);
+                    Assert.Equal("Delete", handler.FormAction.ToString());
+                    Assert.NotNull(handler.Executor);
+                });
         }
 
         [Fact]
@@ -630,6 +743,57 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         private class InheritsMethods : TestSetPageModel
         {
             public new void OnGet()
+            {
+
+            }
+        }
+
+        private class PageModelWithStaticHandler
+        {
+            public static void OnGet(string name)
+            {
+
+            }
+
+            public void OnGet()
+            {
+
+            }
+        }
+
+        private abstract class PageModelWithAbstractMethod
+        {
+            public abstract void OnPost(string name);
+
+            public void OnGet()
+            {
+
+            }
+        }
+
+        private class PageModelWithFormActions
+        {
+            public void OnGet()
+            {
+
+            }
+
+            public void OnPostAdd()
+            {
+
+            }
+
+            public void OnPostAddCustomer()
+            {
+
+            }
+
+            public void OnPostDeleteAsync()
+            {
+
+            }
+
+            protected void OnPostDelete()
             {
 
             }

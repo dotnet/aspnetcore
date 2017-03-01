@@ -107,6 +107,22 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
+        /// Multiple handlers matched. The following handlers matched route data and had all constraints satisfied:{0}{0}{1}
+        /// </summary>
+        internal static string AmbiguousHandler
+        {
+            get { return GetString("AmbiguousHandler"); }
+        }
+
+        /// <summary>
+        /// Multiple handlers matched. The following handlers matched route data and had all constraints satisfied:{0}{0}{1}
+        /// </summary>
+        internal static string FormatAmbiguousHandler(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AmbiguousHandler"), p0, p1);
+        }
+
+        /// <summary>
         /// Path must be an application relative path that starts with a forward slash '/'.
         /// </summary>
         internal static string PathMustBeAnAppRelativePath

@@ -3,140 +3,106 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     public class DefaultPageHandlerMethodSelector : IPageHandlerMethodSelector
     {
+        private const string FormAction = "formaction";
+
         public HandlerMethodDescriptor Select(PageContext context)
         {
-            var handlers = new List<HandlerMethodAndMetadata>(context.ActionDescriptor.HandlerMethods.Count);
-            for (var i = 0; i < context.ActionDescriptor.HandlerMethods.Count; i++)
+            var handlers = SelectHandlers(context);
+            if (handlers == null || handlers.Count == 0)
             {
-                handlers.Add(HandlerMethodAndMetadata.Create(context.ActionDescriptor.HandlerMethods[i]));
+                return null;
             }
 
-            for (var i = handlers.Count - 1; i >= 0; i--)
+            List<HandlerMethodDescriptor> ambiguousMatches = null;
+            HandlerMethodDescriptor bestMatch = null;
+            for (var score = 2; score >= 0; score--)
             {
-                var handler = handlers[i];
-
-                if (handler.HttpMethod != null &&
-                    !string.Equals(handler.HttpMethod, context.HttpContext.Request.Method, StringComparison.OrdinalIgnoreCase))
+                for (var i = 0; i < handlers.Count; i++)
                 {
-                    handlers.RemoveAt(i);
-                }
-            }
-
-            var formaction = Convert.ToString(context.RouteData.Values["formaction"]);
-
-            for (var i = handlers.Count - 1; i >= 0; i--)
-            {
-                var handler = handlers[i];
-
-                if (handler.Formaction != null &&
-                    !string.Equals(handler.Formaction, formaction, StringComparison.OrdinalIgnoreCase))
-                {
-                    handlers.RemoveAt(i);
-                }
-            }
-
-            var ambiguousMatches = (List<HandlerMethodDescriptor>)null;
-            var best = (HandlerMethodAndMetadata?)null;
-            for (var i = 2; i >= 0; i--)
-            {
-                for (var j = 0; j < handlers.Count; j++)
-                {
-                    var handler = handlers[j];
-                    if (handler.GetScore() == i)
+                    var handler = handlers[i];
+                    if (GetScore(handler) == score)
                     {
-                        if (best == null)
+                        if (bestMatch == null)
                         {
-                            best = handler;
+                            bestMatch = handler;
                             continue;
                         }
 
                         if (ambiguousMatches == null)
                         {
                             ambiguousMatches = new List<HandlerMethodDescriptor>();
-                            ambiguousMatches.Add(best.Value.Handler);
+                            ambiguousMatches.Add(bestMatch);
                         }
 
-                        ambiguousMatches.Add(handler.Handler);
+                        ambiguousMatches.Add(handler);
                     }
                 }
 
                 if (ambiguousMatches != null)
                 {
-                    throw new InvalidOperationException($"Selecting a handler is ambiguous! Matches: {string.Join(", ", ambiguousMatches)}");
+                    var ambiguousMethods = string.Join(", ", ambiguousMatches.Select(m => m.Method));
+                    throw new InvalidOperationException(Resources.FormatAmbiguousHandler(Environment.NewLine, ambiguousMethods));
                 }
 
-                if (best != null)
+                if (bestMatch != null)
                 {
-                    return best.Value.Handler;
+                    return bestMatch;
                 }
             }
 
             return null;
         }
 
-        // Bad prototype substring implementation :)
-        private struct HandlerMethodAndMetadata
+        private static List<HandlerMethodDescriptor> SelectHandlers(PageContext context)
         {
-            public static HandlerMethodAndMetadata Create(HandlerMethodDescriptor handler)
+            var handlers = context.ActionDescriptor.HandlerMethods;
+            List<HandlerMethodDescriptor> handlersToConsider = null;
+
+            var formAction = Convert.ToString(context.RouteData.Values[FormAction]);
+            for (var i = 0; i < handlers.Count; i++)
             {
-                var name = handler.Method.Name;
-
-                string httpMethod;
-                if (name.StartsWith("OnGet", StringComparison.Ordinal))
+                var handler = handlers[i];
+                if (handler.HttpMethod != null &&
+                    !string.Equals(handler.HttpMethod, context.HttpContext.Request.Method, StringComparison.OrdinalIgnoreCase))
                 {
-                    httpMethod = "GET";
+                    continue;
                 }
-                else if (name.StartsWith("OnPost", StringComparison.Ordinal))
+                else if (handler.FormAction.HasValue &&
+                    !handler.FormAction.Equals(formAction, StringComparison.OrdinalIgnoreCase))
                 {
-                    httpMethod = "POST";
-                }
-                else
-                {
-                    httpMethod = null;
+                    continue;
                 }
 
-                var formactionStart = httpMethod?.Length + 2 ?? 0;
-                var formactionLength = name.EndsWith("Async", StringComparison.Ordinal)
-                    ? name.Length - formactionStart - "Async".Length
-                    : name.Length - formactionStart;
+                if (handlersToConsider == null)
+                {
+                    handlersToConsider = new List<HandlerMethodDescriptor>();
+                }
 
-                var formaction = formactionLength == 0 ? null : name.Substring(formactionStart, formactionLength);
-
-                return new HandlerMethodAndMetadata(handler, httpMethod, formaction);
+                handlersToConsider.Add(handler);
             }
 
-            public HandlerMethodAndMetadata(HandlerMethodDescriptor handler, string httpMethod, string formaction)
+            return handlersToConsider;
+        }
+
+        private static int GetScore(HandlerMethodDescriptor descriptor)
+        {
+            if (descriptor.FormAction != null)
             {
-                Handler = handler;
-                HttpMethod = httpMethod;
-                Formaction = formaction;
+                return 2;
             }
-
-            public HandlerMethodDescriptor Handler { get; }
-
-            public string HttpMethod { get; }
-
-            public string Formaction { get; }
-
-            public int GetScore()
+            else if (descriptor.HttpMethod != null)
             {
-                if (Formaction != null)
-                {
-                    return 2;
-                }
-                else if (HttpMethod != null)
-                {
-                    return 1;
-                }
-                else
-                {
-                    return 0;
-                }
+                return 1;
+            }
+            else
+            {
+                return 0;
             }
         }
     }

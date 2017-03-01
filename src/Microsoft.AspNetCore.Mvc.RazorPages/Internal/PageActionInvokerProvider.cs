@@ -18,12 +18,12 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public class PageActionInvokerProvider : IActionInvokerProvider
     {
-        private static readonly string[] _handlerMethodNames = new string[] { "OnGet", "OnPost" };
         private const string PageStartFileName = "_PageStart.cshtml";
         private readonly IPageLoader _loader;
         private readonly IPageFactoryProvider _pageFactoryProvider;
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var pageStartItems = _razorProject.FindHierarchicalItems(descriptor.ViewEnginePath, PageStartFileName);
             foreach (var item in pageStartItems)
             {
-                if(item.Exists)
+                if (item.Exists)
                 {
                     var factoryResult = _razorPageFactoryProvider.CreateFactory(item.Path);
                     if (factoryResult.Success)
@@ -220,19 +220,89 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         // Internal for testing.
         internal static void PopulateHandlerMethodDescriptors(TypeInfo type, CompiledPageActionDescriptor actionDescriptor)
         {
-            for (var i = 0; i < _handlerMethodNames.Length; i++)
+            var methods = type.GetMethods();
+            for (var i = 0; i < methods.Length; i++)
             {
-                var methodName = _handlerMethodNames[i];
-                var method = type.GetMethod(methodName);
-                if (method != null && !method.IsGenericMethod)
+                var method = methods[i];
+                if (!IsValidHandler(method))
                 {
-                    actionDescriptor.HandlerMethods.Add(new HandlerMethodDescriptor()
-                    {
-                        Method = method,
-                        Executor = ExecutorFactory.CreateExecutor(actionDescriptor, method),
-                    });
+                    continue;
                 }
+
+                string httpMethod;
+                int formActionStart;
+
+                if (method.Name.StartsWith("OnGet", StringComparison.Ordinal))
+                {
+                    httpMethod = "GET";
+                    formActionStart = "OnGet".Length;
+                }
+                else if (method.Name.StartsWith("OnPost", StringComparison.Ordinal))
+                {
+                    httpMethod = "POST";
+                    formActionStart = "OnPost".Length;
+                }
+                else
+                {
+                    continue;
+                }
+
+                var formActionLength = method.Name.Length - formActionStart;
+                if (method.Name.EndsWith("Async", StringComparison.OrdinalIgnoreCase))
+                {
+                    formActionLength -= "Async".Length;
+                }
+
+                var formAction = new StringSegment(method.Name, formActionStart, formActionLength);
+
+                var handlerMethodDescriptor = new HandlerMethodDescriptor
+                {
+                    Method = method,
+                    Executor = ExecutorFactory.CreateExecutor(actionDescriptor, method),
+                    FormAction = formAction,
+                    HttpMethod = httpMethod,
+                };
+
+                actionDescriptor.HandlerMethods.Add(handlerMethodDescriptor);
             }
+        }
+
+        private static bool IsValidHandler(MethodInfo methodInfo)
+        {
+            // The SpecialName bit is set to flag members that are treated in a special way by some compilers
+            // (such as property accessors and operator overloading methods).
+            if (methodInfo.IsSpecialName)
+            {
+                return false;
+            }
+
+            // Overriden methods from Object class, e.g. Equals(Object), GetHashCode(), etc., are not valid.
+            if (methodInfo.GetBaseDefinition().DeclaringType == typeof(object))
+            {
+                return false;
+            }
+
+            if (methodInfo.IsStatic)
+            {
+                return false;
+            }
+
+            if (methodInfo.IsAbstract)
+            {
+                return false;
+            }
+
+            if (methodInfo.IsConstructor)
+            {
+                return false;
+            }
+
+            if (methodInfo.IsGenericMethod)
+            {
+                return false;
+            }
+
+            return methodInfo.IsPublic;
         }
 
         internal class InnerCache
