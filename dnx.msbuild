@@ -300,6 +300,11 @@
         <ItemGroup>
             <!-- List is sorted OrdinalIgnoreCase -->
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\MonsterContext`.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\DatabindingTestBase.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\TestModels\ConcurrencyModel\Driver.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\TestModels\ConcurrencyModel\Team.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.EntityFrameworkCore.Specification.Tests\TestModels\TestModels\Northwind\NorthwindData.Objects.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\RequestProcessing\HttpReasonPhrase.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\WebListener.cs">
                 <term>420</term>
