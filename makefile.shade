@@ -1,7 +1,0 @@
-use-standard-lifecycle
-k-standard-goals
-
-#run-nano-tests
-    @{
-        MSBuild("/t:TestNano");
-    }
