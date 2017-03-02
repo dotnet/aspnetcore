@@ -21,8 +21,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         static byte[] _methodOptions = Encoding.ASCII.GetBytes("OPTIONS ");
         static byte[] _methodTrace = Encoding.ASCII.GetBytes("TRACE \0\0");
 
-
-
         static byte[] _version = Encoding.UTF8.GetBytes("HTTP/1.1\r\n");
         const int loops = 1000;
 
@@ -95,7 +93,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             return GetKnownMethod(data);
         }
 
-
         private int GetKnownMethod(Span<byte> data)
         {
             int len = 0;
@@ -126,7 +123,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             }
             return len;
         }
-
 
         [Benchmark(OperationsPerInvoke = loops * 10)]
         public int GetKnownVersion_HTTP1_1()

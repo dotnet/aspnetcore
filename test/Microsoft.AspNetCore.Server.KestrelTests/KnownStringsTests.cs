@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         static byte[] _methodOptions = Encoding.ASCII.GetBytes("OPTIONS ");
         static byte[] _methodTrace = Encoding.ASCII.GetBytes("TRACE \0\0");
 
-
         const int MagicNumer = 0x0600000C;
         static byte[] _invalidMethod1 = BitConverter.GetBytes((ulong)MagicNumer);
         static byte[] _invalidMethod2 = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
@@ -38,42 +37,38 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         static byte[] _invalidMethod11 = Encoding.ASCII.GetBytes("OPTIONS_");
         static byte[] _invalidMethod12 = Encoding.ASCII.GetBytes("TRACE_\0\0");
 
-
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static object[] CreateTestDataEntry(byte[] methodData, HttpMethod expectedMethod, int expectedLength, bool expectedResult)
         {
             return new object[] { methodData, expectedMethod, expectedLength, expectedResult };
         }
 
-        private static readonly List<object[]> _testData
-            = new List<object[]>
-            {
-                CreateTestDataEntry(_methodGet, HttpMethod.Get, 3,true),
-                CreateTestDataEntry(_methodPut, HttpMethod.Put, 3,true),
-                CreateTestDataEntry(_methodPost, HttpMethod.Post, 4,true),
-                CreateTestDataEntry(_methodHead, HttpMethod.Head, 4,true),
-                CreateTestDataEntry(_methodTrace, HttpMethod.Trace, 5,true),
-                CreateTestDataEntry(_methodPatch, HttpMethod.Patch, 5,true),
-                CreateTestDataEntry(_methodDelete, HttpMethod.Delete, 6,true),
-                CreateTestDataEntry(_methodConnect, HttpMethod.Connect, 7,true),
-                CreateTestDataEntry(_methodOptions, HttpMethod.Options, 7,true),
-                CreateTestDataEntry(_invalidMethod1, HttpMethod.Custom, 0,false),
-                CreateTestDataEntry(_invalidMethod2, HttpMethod.Custom, 0,false),
-                CreateTestDataEntry(_invalidMethod3, HttpMethod.Custom, 0,false),
-                CreateTestDataEntry(_invalidMethod4, HttpMethod.Custom, 0,false),
-                CreateTestDataEntry(_invalidMethod5, HttpMethod.Custom, 0,false),
-                CreateTestDataEntry(_invalidMethod6, HttpMethod.Custom, 0,false),
-                CreateTestDataEntry(_invalidMethod7, HttpMethod.Custom, 0,false),
-                CreateTestDataEntry(_invalidMethod8, HttpMethod.Custom, 0,false),
-                CreateTestDataEntry(_invalidMethod9, HttpMethod.Custom, 0,false),
-                CreateTestDataEntry(_invalidMethod10, HttpMethod.Custom, 0,false),
-                CreateTestDataEntry(_invalidMethod11, HttpMethod.Custom, 0,false),
-                CreateTestDataEntry(_invalidMethod12, HttpMethod.Custom, 0,false),
-            };
+        private static readonly object[][] _testData = new object[][]
+        {
+            CreateTestDataEntry(_methodGet, HttpMethod.Get, 3, true),
+            CreateTestDataEntry(_methodPut, HttpMethod.Put, 3, true),
+            CreateTestDataEntry(_methodPost, HttpMethod.Post, 4, true),
+            CreateTestDataEntry(_methodHead, HttpMethod.Head, 4, true),
+            CreateTestDataEntry(_methodTrace, HttpMethod.Trace, 5, true),
+            CreateTestDataEntry(_methodPatch, HttpMethod.Patch, 5, true),
+            CreateTestDataEntry(_methodDelete, HttpMethod.Delete, 6, true),
+            CreateTestDataEntry(_methodConnect, HttpMethod.Connect, 7, true),
+            CreateTestDataEntry(_methodOptions, HttpMethod.Options, 7, true),
+            CreateTestDataEntry(_invalidMethod1, HttpMethod.Custom, 0, false),
+            CreateTestDataEntry(_invalidMethod2, HttpMethod.Custom, 0, false),
+            CreateTestDataEntry(_invalidMethod3, HttpMethod.Custom, 0, false),
+            CreateTestDataEntry(_invalidMethod4, HttpMethod.Custom, 0, false),
+            CreateTestDataEntry(_invalidMethod5, HttpMethod.Custom, 0, false),
+            CreateTestDataEntry(_invalidMethod6, HttpMethod.Custom, 0, false),
+            CreateTestDataEntry(_invalidMethod7, HttpMethod.Custom, 0, false),
+            CreateTestDataEntry(_invalidMethod8, HttpMethod.Custom, 0, false),
+            CreateTestDataEntry(_invalidMethod9, HttpMethod.Custom, 0, false),
+            CreateTestDataEntry(_invalidMethod10, HttpMethod.Custom, 0, false),
+            CreateTestDataEntry(_invalidMethod11, HttpMethod.Custom, 0, false),
+            CreateTestDataEntry(_invalidMethod12, HttpMethod.Custom, 0, false),
+        };
 
         public static IEnumerable<object[]> TestData => _testData;
-
 
         [Theory]
         [MemberData(nameof(TestData), MemberType = typeof(KnownStringsTests))]
