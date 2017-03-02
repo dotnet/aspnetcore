@@ -8,7 +8,7 @@ branches:
     - dev
     - /^(.*\/)?ci-.*$/
 build_script:
-  - build.cmd --quiet verify
+  - ps: .\build.ps1
 install:
   - set PATH=C:\Python27\scripts;%PATH%
   - pip install autobahntestsuite
