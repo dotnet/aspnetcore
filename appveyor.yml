@@ -7,7 +7,7 @@ branches:
     - dev
     - /^(.*\/)?ci-.*$/
 build_script:
-  - build.cmd --quiet verify
+  - ps: .\build.ps1
 clone_depth: 1
 test: off
 deploy: off
