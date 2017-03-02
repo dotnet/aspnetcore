@@ -72,36 +72,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             var versionStart = -1;
 
             HttpVersion httpVersion = HttpVersion.Unknown;
-            HttpMethod method = HttpMethod.Custom;
+            HttpMethod method;
             Span<byte> customMethod;
-            var state = StartLineState.KnownMethod;
+            int i = 0;
+            var length = span.Length;
+            var done = false;
 
-            int i;
             fixed (byte* data = &span.DangerousGetPinnableReference())
             {
-                var length = span.Length;
-                for (i = 0; i < length; i++)
+                switch (StartLineState.KnownMethod)
                 {
-                    var ch = data[i];
+                    case StartLineState.KnownMethod:
+                        if (span.GetKnownMethod(out method, out var methodLength))
+                        {
+                            // Update the index, current char, state and jump directly
+                            // to the next state
+                            i += methodLength + 1;
 
-                    switch (state)
-                    {
-                        case StartLineState.KnownMethod:
-                            if (span.GetKnownMethod(out method, out var methodLength))
-                            {
-                                // Update the index, current char, state and jump directly
-                                // to the next state
-                                i += methodLength + 1;
-                                ch = data[i];
-                                state = StartLineState.Path;
+                            goto case StartLineState.Path;
+                        }
+                        goto case StartLineState.UnknownMethod;
 
-                                goto case StartLineState.Path;
-                            }
+                    case StartLineState.UnknownMethod:
+                        for (; i < length; i++)
+                        {
+                            var ch = data[i];
 
-                            state = StartLineState.UnknownMethod;
-                            goto case StartLineState.UnknownMethod;
-
-                        case StartLineState.UnknownMethod:
                             if (ch == ByteSpace)
                             {
                                 customMethod = span.Slice(0, i);
@@ -110,16 +106,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                                 {
                                     RejectRequestLine(span);
                                 }
+                                // Consume space
+                                i++;
 
-                                state = StartLineState.Path;
+                                goto case StartLineState.Path;
                             }
-                            else if (!IsValidTokenChar((char)ch))
+
+                            if (!IsValidTokenChar((char)ch))
                             {
                                 RejectRequestLine(span);
                             }
+                        }
 
-                            break;
-                        case StartLineState.Path:
+                        break;
+                    case StartLineState.Path:
+                        for (; i < length; i++)
+                        {
+                            var ch = data[i];
                             if (ch == ByteSpace)
                             {
                                 pathEnd = i;
@@ -133,7 +136,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                                 // No query string found
                                 queryStart = queryEnd = i;
 
-                                state = StartLineState.KnownVersion;
+                                // Consume space
+                                i++;
+
+                                goto case StartLineState.KnownVersion;
                             }
                             else if (ch == ByteQuestionMark)
                             {
@@ -146,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                                 }
 
                                 queryStart = i;
-                                state = StartLineState.QueryString;
+                                goto case StartLineState.QueryString;
                             }
                             else if (ch == BytePercentage)
                             {
@@ -160,35 +166,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                             {
                                 pathStart = i;
                             }
-                            break;
-
-                        case StartLineState.QueryString:
+                        }
+                        break;
+                    case StartLineState.QueryString:
+                        for (; i < length; i++)
+                        {
+                            var ch = data[i];
                             if (ch == ByteSpace)
                             {
                                 queryEnd = i;
-                                state = StartLineState.KnownVersion;
 
+                                // Consume space
+                                i++;
+
+                                goto case StartLineState.KnownVersion;
                             }
-                            break;
-                        case StartLineState.KnownVersion:
-                            // REVIEW: We don't *need* to slice here but it makes the API
-                            // nicer, slicing should be free :)
-                            if (span.Slice(i).GetKnownVersion(out httpVersion, out var versionLenght))
-                            {
-                                // Update the index, current char, state and jump directly
-                                // to the next state
-                                i += versionLenght + 1;
-                                ch = data[i];
-                                state = StartLineState.NewLine;
+                        }
+                        break;
+                    case StartLineState.KnownVersion:
+                        // REVIEW: We don't *need* to slice here but it makes the API
+                        // nicer, slicing should be free :)
+                        if (span.Slice(i).GetKnownVersion(out httpVersion, out var versionLenght))
+                        {
+                            // Update the index, current char, state and jump directly
+                            // to the next state
+                            i += versionLenght + 1;
+                            goto case StartLineState.NewLine;
+                        }
 
-                                goto case StartLineState.NewLine;
-                            }
+                        versionStart = i;
 
-                            versionStart = i;
-                            state = StartLineState.UnknownVersion;
-                            goto case StartLineState.UnknownVersion;
+                        goto case StartLineState.UnknownVersion;
 
-                        case StartLineState.UnknownVersion:
+                    case StartLineState.UnknownVersion:
+                        for (; i < length; i++)
+                        {
+                            var ch = data[i];
                             if (ch == ByteCR)
                             {
                                 var versionSpan = span.Slice(versionStart, i - versionStart);
@@ -199,25 +212,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                                 }
                                 else
                                 {
-                                    RejectRequest(RequestRejectionReason.UnrecognizedHTTPVersion, versionSpan.GetAsciiStringEscaped(32));
+                                    RejectRequest(RequestRejectionReason.UnrecognizedHTTPVersion,
+                                        versionSpan.GetAsciiStringEscaped(32));
                                 }
                             }
-                            break;
-                        case StartLineState.NewLine:
-                            if (ch != ByteLF)
-                            {
-                                RejectRequestLine(span);
-                            }
+                        }
+                        break;
+                    case StartLineState.NewLine:
+                        if (data[i] != ByteLF)
+                        {
+                            RejectRequestLine(span);
+                        }
+                        i++;
 
-                            state = StartLineState.Complete;
-                            break;
-                        case StartLineState.Complete:
-                            break;
-                    }
+                        goto case StartLineState.Complete;
+                    case StartLineState.Complete:
+                        done = true;
+                        break;
                 }
             }
 
-            if (state != StartLineState.Complete)
+            if (!done)
             {
                 RejectRequestLine(span);
             }
@@ -311,7 +326,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     headerBuffer.CopyTo(span);
                 }
 
-                var state = HeaderState.Name;
                 var nameStart = 0;
                 var nameEnd = -1;
                 var valueStart = -1;
@@ -320,33 +334,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 var previouslyWhitespace = false;
                 var headerLineLength = span.Length;
 
+                int i = 0;
+                var length = span.Length;
+                bool done = false;
                 fixed (byte* data = &span.DangerousGetPinnableReference())
                 {
-                    for (var i = 0; i < headerLineLength; i++)
+                    switch (HeaderState.Name)
                     {
-                        var ch = data[i];
-
-                        switch (state)
-                        {
-                            case HeaderState.Name:
+                        case HeaderState.Name:
+                            for (; i < length; i++)
+                            {
+                                var ch = data[i];
                                 if (ch == ByteColon)
                                 {
                                     if (nameHasWhitespace)
                                     {
                                         RejectRequest(RequestRejectionReason.WhitespaceIsNotAllowedInHeaderName);
                                     }
-
-                                    state = HeaderState.Whitespace;
                                     nameEnd = i;
+
+                                    // Consume space
+                                    i++;
+
+                                    goto case HeaderState.Whitespace;
                                 }
 
                                 if (ch == ByteSpace || ch == ByteTab)
                                 {
                                     nameHasWhitespace = true;
                                 }
-                                break;
-                            case HeaderState.Whitespace:
+                            }
+                            RejectRequest(RequestRejectionReason.NoColonCharacterFoundInHeaderLine);
+
+                            break;
+                        case HeaderState.Whitespace:
+                            for (; i < length; i++)
                             {
+                                var ch = data[i];
                                 var whitespace = ch == ByteTab || ch == ByteSpace || ch == ByteCR;
 
                                 if (!whitespace)
@@ -354,18 +378,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                                     // Mark the first non whitespace char as the start of the
                                     // header value and change the state to expect to the header value
                                     valueStart = i;
-                                    state = HeaderState.ExpectValue;
+
+                                    goto case HeaderState.ExpectValue;
                                 }
                                 // If we see a CR then jump to the next state directly
                                 else if (ch == ByteCR)
                                 {
-                                    state = HeaderState.ExpectValue;
                                     goto case HeaderState.ExpectValue;
                                 }
                             }
-                                break;
-                            case HeaderState.ExpectValue:
+
+                            RejectRequest(RequestRejectionReason.MissingCRInHeaderLine);
+
+                            break;
+                        case HeaderState.ExpectValue:
+                            for (; i < length; i++)
                             {
+                                var ch = data[i];
                                 var whitespace = ch == ByteTab || ch == ByteSpace;
 
                                 if (whitespace)
@@ -392,7 +421,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                                         valueStart = valueEnd;
                                     }
 
-                                    state = HeaderState.ExpectNewLine;
+                                    // Consume space
+                                    i++;
+
+                                    goto case HeaderState.ExpectNewLine;
                                 }
                                 else
                                 {
@@ -402,32 +434,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                                 previouslyWhitespace = whitespace;
                             }
-                                break;
-                            case HeaderState.ExpectNewLine:
-                                if (ch != ByteLF)
-                                {
-                                    RejectRequest(RequestRejectionReason.HeaderValueMustNotContainCR);
-                                }
-
-                                state = HeaderState.Complete;
-                                break;
-                            default:
-                                break;
-                        }
+                            RejectRequest(RequestRejectionReason.MissingCRInHeaderLine);
+                            break;
+                        case HeaderState.ExpectNewLine:
+                            if (data[i] != ByteLF)
+                            {
+                                RejectRequest(RequestRejectionReason.HeaderValueMustNotContainCR);
+                            }
+                            goto case HeaderState.Complete;
+                        case HeaderState.Complete:
+                            done = true;
+                            break;
                     }
                 }
 
-                if (state == HeaderState.Name)
-                {
-                    RejectRequest(RequestRejectionReason.NoColonCharacterFoundInHeaderLine);
-                }
-
-                if (state == HeaderState.ExpectValue || state == HeaderState.Whitespace)
-                {
-                    RejectRequest(RequestRejectionReason.MissingCRInHeaderLine);
-                }
-
-                if (state != HeaderState.Complete)
+                if (!done)
                 {
                     return false;
                 }
@@ -527,7 +548,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public void Reset()
         {
-            
+
         }
 
         private enum HeaderState
