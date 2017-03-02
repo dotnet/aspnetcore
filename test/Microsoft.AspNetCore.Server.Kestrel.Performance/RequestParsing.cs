@@ -143,9 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
                 Frame.Reset();
 
-                ReadCursor consumed;
-                ReadCursor examined;
-                if (!Frame.TakeStartLine(readableBuffer, out consumed, out examined))
+                if (!Frame.TakeStartLine(readableBuffer, out var consumed, out var examined))
                 {
                     ThrowInvalidStartLine();
                 }
