@@ -35,20 +35,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         private readonly static ulong _mask5Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00 });
         private readonly static ulong _mask4Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00 });
 
-        private readonly static Tuple<ulong, ulong, HttpMethod, int>[] _knownMethods = new Tuple<ulong, ulong, HttpMethod, int>[8];
+        private readonly static Tuple<ulong, ulong, HttpMethod, int, bool>[] _knownMethods = new Tuple<ulong, ulong, HttpMethod, int, bool>[17];
 
         private readonly static string[] _methodNames = new string[9];
 
         static HttpUtilities()
         {
-            _knownMethods[0] = Tuple.Create(_mask4Chars, _httpPutMethodLong, HttpMethod.Put, 3);
-            _knownMethods[1] = Tuple.Create(_mask5Chars, _httpPostMethodLong, HttpMethod.Post, 4);
-            _knownMethods[2] = Tuple.Create(_mask5Chars, _httpHeadMethodLong, HttpMethod.Head, 4);
-            _knownMethods[3] = Tuple.Create(_mask6Chars, _httpTraceMethodLong, HttpMethod.Trace, 5);
-            _knownMethods[4] = Tuple.Create(_mask6Chars, _httpPatchMethodLong, HttpMethod.Patch, 5);
-            _knownMethods[5] = Tuple.Create(_mask7Chars, _httpDeleteMethodLong, HttpMethod.Delete, 6);
-            _knownMethods[6] = Tuple.Create(_mask8Chars, _httpConnectMethodLong, HttpMethod.Connect, 7);
-            _knownMethods[7] = Tuple.Create(_mask8Chars, _httpOptionsMethodLong, HttpMethod.Options, 7);
+            SetKnownMethod(_mask4Chars, _httpPutMethodLong, HttpMethod.Put, 3);
+            SetKnownMethod(_mask5Chars, _httpPostMethodLong, HttpMethod.Post, 4);
+            SetKnownMethod(_mask5Chars, _httpHeadMethodLong, HttpMethod.Head, 4);
+            SetKnownMethod(_mask6Chars, _httpTraceMethodLong, HttpMethod.Trace, 5);
+            SetKnownMethod(_mask6Chars, _httpPatchMethodLong, HttpMethod.Patch, 5);
+            SetKnownMethod(_mask7Chars, _httpDeleteMethodLong, HttpMethod.Delete, 6);
+            SetKnownMethod(_mask8Chars, _httpConnectMethodLong, HttpMethod.Connect, 7);
+            SetKnownMethod(_mask8Chars, _httpOptionsMethodLong, HttpMethod.Options, 7);
+            FillEmptyKnownMethods();
             _methodNames[(byte)HttpMethod.Get] = HttpMethods.Get;
             _methodNames[(byte)HttpMethod.Put] = HttpMethods.Put;
             _methodNames[(byte)HttpMethod.Delete] = HttpMethods.Delete;
@@ -58,6 +59,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             _methodNames[(byte)HttpMethod.Patch] = HttpMethods.Patch;
             _methodNames[(byte)HttpMethod.Connect] = HttpMethods.Connect;
             _methodNames[(byte)HttpMethod.Options] = HttpMethods.Options;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int GetKnownMethodIndex(ulong value)
+        {
+            var tmp = (int)value & 0x100604;
+
+            return ((tmp >> 2) | (tmp >> 8) | (tmp >> 17)) & 0x0F;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void SetKnownMethod(ulong mask, ulong knownMethodUlong, HttpMethod knownMethod, int length)
+        {
+            _knownMethods[GetKnownMethodIndex(knownMethodUlong)] = new Tuple<ulong, ulong, HttpMethod, int, bool>(mask, knownMethodUlong, knownMethod, length, true);
+        }
+
+        private static void FillEmptyKnownMethods()
+        {
+            var knownMethods = _knownMethods;
+            var length = knownMethods.Length;
+            for (int i = 0; i < length; i++)
+            {
+                if (knownMethods[i] == null)
+                {
+                    knownMethods[i] = new Tuple<ulong, ulong, HttpMethod, int, bool>(_mask8Chars, 0ul, HttpMethod.Custom, 0, false);
+                }
+            }
         }
 
         private unsafe static ulong GetAsciiStringAsLong(string str)
@@ -139,14 +167,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
             if (span.TryRead<ulong>(out var value))
             {
-                foreach (var x in _knownMethods)
+                var key = GetKnownMethodIndex(value);
+
+                var x = _knownMethods[key];
+
+                if (x != null && (value & x.Item1) == x.Item2)
                 {
-                    if ((value & x.Item1) == x.Item2)
-                    {
-                        method = x.Item3;
-                        length = x.Item4;
-                        return true;
-                    }
+                    method = x.Item3;
+                    length = x.Item4;
+                    return x.Item5;
                 }
             }
 

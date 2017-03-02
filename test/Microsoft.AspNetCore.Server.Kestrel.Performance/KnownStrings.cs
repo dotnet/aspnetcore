@@ -11,17 +11,98 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     public class KnownStrings
     {
-        static byte[] _method = Encoding.UTF8.GetBytes("GET ");
+        static byte[] _methodGet = Encoding.UTF8.GetBytes("GET ");
+        static byte[] _methodConnect = Encoding.UTF8.GetBytes("CONNECT ");
+        static byte[] _methodDelete = Encoding.UTF8.GetBytes("DELETE ");
+        static byte[] _methodHead = Encoding.UTF8.GetBytes("HEAD ");
+        static byte[] _methodPatch = Encoding.UTF8.GetBytes("PATCH ");
+        static byte[] _methodPost = Encoding.UTF8.GetBytes("POST ");
+        static byte[] _methodPut = Encoding.UTF8.GetBytes("PUT ");
+        static byte[] _methodOptions = Encoding.UTF8.GetBytes("OPTIONS ");
+        static byte[] _methodTrace = Encoding.UTF8.GetBytes("TRACE ");
+
+
+
         static byte[] _version = Encoding.UTF8.GetBytes("HTTP/1.1\r\n");
         const int loops = 1000;
 
         [Benchmark(OperationsPerInvoke = loops * 10)]
         public int GetKnownMethod_GET()
         {
+            Span<byte> data = _methodGet;
+
+            return GetKnownMethod(data);
+        }
+
+        [Benchmark(OperationsPerInvoke = loops * 10)]
+        public int GetKnownMethod_CONNECT()
+        {
+            Span<byte> data = _methodConnect;
+
+            return GetKnownMethod(data);
+        }
+
+        [Benchmark(OperationsPerInvoke = loops * 10)]
+        public int GetKnownMethod_DELETE()
+        {
+            Span<byte> data = _methodDelete;
+
+            return GetKnownMethod(data);
+        }
+        [Benchmark(OperationsPerInvoke = loops * 10)]
+        public int GetKnownMethod_HEAD()
+        {
+            Span<byte> data = _methodHead;
+
+            return GetKnownMethod(data);
+        }
+
+        [Benchmark(OperationsPerInvoke = loops * 10)]
+        public int GetKnownMethod_PATCH()
+        {
+            Span<byte> data = _methodPatch;
+
+            return GetKnownMethod(data);
+        }
+        [Benchmark(OperationsPerInvoke = loops * 10)]
+        public int GetKnownMethod_POST()
+        {
+            Span<byte> data = _methodPost;
+
+            return GetKnownMethod(data);
+        }
+        [Benchmark(OperationsPerInvoke = loops * 10)]
+        public int GetKnownMethod_PUT()
+        {
+            Span<byte> data = _methodPut;
+
+            return GetKnownMethod(data);
+        }
+
+        [Benchmark(OperationsPerInvoke = loops * 10)]
+        public int GetKnownMethod_OPTIONS()
+        {
+            Span<byte> data = _methodOptions;
+
+            return GetKnownMethod(data);
+        }
+
+        [Benchmark(OperationsPerInvoke = loops * 10)]
+        public int GetKnownMethod_TRACE()
+        {
+            Span<byte> data = _methodTrace;
+
+            return GetKnownMethod(data);
+        }
+
+
+        private int GetKnownMethod(Span<byte> data)
+        {
             int len = 0;
             HttpMethod method;
-            Span<byte> data = _method;
-            for (int i = 0; i < loops; i++) {
+
+            for (int i = 0; i < loops; i++)
+            {
                 data.GetKnownMethod(out method, out var length);
                 len += length;
                 data.GetKnownMethod(out method, out length);
@@ -46,13 +127,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             return len;
         }
 
+
         [Benchmark(OperationsPerInvoke = loops * 10)]
         public int GetKnownVersion_HTTP1_1()
         {
             int len = 0;
             HttpVersion version;
             Span<byte> data = _version;
-            for (int i = 0; i < loops; i++) {
+            for (int i = 0; i < loops; i++)
+            {
                 data.GetKnownVersion(out version, out var length);
                 len += length;
                 data.GetKnownVersion(out version, out length);
