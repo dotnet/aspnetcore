@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Engines;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Validators;
@@ -13,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public CoreConfig()
         {
             Add(JitOptimizationsValidator.FailOnError);
+            Add(MemoryDiagnoser.Default);
             Add(new RpsColumn());
 
             Add(Job.Default
