@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return false;
         }
 
-        internal ClaimsPrincipal GetUser()
+        internal WindowsPrincipal GetUser()
         {
             var requestInfo = NativeRequestV2->pRequestInfo;
             var infoCount = NativeRequestV2->RequestInfoCount;
@@ -228,7 +228,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         GetAuthTypeFromRequest(info->pInfo->AuthType).ToString()));
                 }
             }
-            return new ClaimsPrincipal(new ClaimsIdentity()); // Anonymous / !IsAuthenticated
+
+            return new WindowsPrincipal(WindowsIdentity.GetAnonymous()); // Anonymous / !IsAuthenticated
         }
 
         private static AuthenticationSchemes GetAuthTypeFromRequest(HttpApi.HTTP_REQUEST_AUTH_TYPE input)

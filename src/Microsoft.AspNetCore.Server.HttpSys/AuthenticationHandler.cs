@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Extensions.Internal;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public Task AuthenticateAsync(AuthenticateContext context)
         {
-            var identity = (ClaimsIdentity)_requestContext.User?.Identity;
+            var identity = _requestContext.User?.Identity;
 
             foreach (var authType in ListEnabledAuthSchemes())
             {
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     if (identity != null && identity.IsAuthenticated
                         && string.Equals(authScheme, identity.AuthenticationType, StringComparison.Ordinal))
                     {
-                        context.Authenticated(new ClaimsPrincipal(identity), properties: null, description: GetDescription(authScheme));
+                        context.Authenticated(_requestContext.User, properties: null, description: null);
                     }
                     else
                     {

@@ -7,6 +7,7 @@ using System.IO;
 using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -214,7 +215,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // HTTP.Sys allows you to upgrade anything to opaque unless content-length > 0 or chunked are specified.
         internal bool IsUpgradable => !HasEntityBody && ComNetOS.IsWin8orLater;
 
-        internal ClaimsPrincipal User { get; }
+        internal WindowsPrincipal User { get; }
 
         // Populates the client certificate.  The result may be null if there is no client cert.
         // TODO: Does it make sense for this to be invoked multiple times (e.g. renegotiate)? Client and server code appear to

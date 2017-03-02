@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Security.Authentication.ExtendedProtection;
 using System.Security.Claims;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public Response Response { get; }
 
-        public ClaimsPrincipal User => Request.User;
+        public WindowsPrincipal User => Request.User;
 
         public CancellationToken DisconnectToken
         {
