@@ -33,4 +33,4 @@ before_install:
 install:
   - sudo pip install autobahntestsuite "six>=1.9.0"
 script:
-  - ./build.sh --quiet verify
+  - ./build.sh
