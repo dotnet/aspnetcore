@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             SetKnownMethod(_mask7Chars, _httpDeleteMethodLong, HttpMethod.Delete, 6);
             SetKnownMethod(_mask8Chars, _httpConnectMethodLong, HttpMethod.Connect, 7);
             SetKnownMethod(_mask8Chars, _httpOptionsMethodLong, HttpMethod.Options, 7);
-            FillEmptyKnownMethods();
+            FillKnownMethodsGaps();
             _methodNames[(byte)HttpMethod.Get] = HttpMethods.Get;
             _methodNames[(byte)HttpMethod.Put] = HttpMethods.Put;
             _methodNames[(byte)HttpMethod.Delete] = HttpMethods.Delete;
@@ -64,9 +64,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetKnownMethodIndex(ulong value)
         {
-            var tmp = (int)value & 0x100604;
+            const int MagicNumer = 0x0600000C;
+            var tmp = (int)value & MagicNumer;
 
-            return ((tmp >> 2) | (tmp >> 8) | (tmp >> 17)) & 0x0F;
+            return ((tmp >> 2) | (tmp >> 23)) & 0x0F;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -75,15 +76,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             _knownMethods[GetKnownMethodIndex(knownMethodUlong)] = new Tuple<ulong, ulong, HttpMethod, int, bool>(mask, knownMethodUlong, knownMethod, length, true);
         }
 
-        private static void FillEmptyKnownMethods()
+
+        private static void FillKnownMethodsGaps()
         {
             var knownMethods = _knownMethods;
             var length = knownMethods.Length;
+            var invalidHttpMethod = new Tuple<ulong, ulong, HttpMethod, int, bool>(_mask8Chars, 0ul, HttpMethod.Custom, 0, false);
             for (int i = 0; i < length; i++)
             {
                 if (knownMethods[i] == null)
                 {
-                    knownMethods[i] = new Tuple<ulong, ulong, HttpMethod, int, bool>(_mask8Chars, 0ul, HttpMethod.Custom, 0, false);
+                    knownMethods[i] = invalidHttpMethod;
                 }
             }
         }

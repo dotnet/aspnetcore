@@ -11,15 +11,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     public class KnownStrings
     {
-        static byte[] _methodGet = Encoding.UTF8.GetBytes("GET ");
-        static byte[] _methodConnect = Encoding.UTF8.GetBytes("CONNECT ");
-        static byte[] _methodDelete = Encoding.UTF8.GetBytes("DELETE ");
-        static byte[] _methodHead = Encoding.UTF8.GetBytes("HEAD ");
-        static byte[] _methodPatch = Encoding.UTF8.GetBytes("PATCH ");
-        static byte[] _methodPost = Encoding.UTF8.GetBytes("POST ");
-        static byte[] _methodPut = Encoding.UTF8.GetBytes("PUT ");
-        static byte[] _methodOptions = Encoding.UTF8.GetBytes("OPTIONS ");
-        static byte[] _methodTrace = Encoding.UTF8.GetBytes("TRACE ");
+        static byte[] _methodConnect = Encoding.ASCII.GetBytes("CONNECT ");
+        static byte[] _methodDelete = Encoding.ASCII.GetBytes("DELETE \0");
+        static byte[] _methodGet = Encoding.ASCII.GetBytes("GET ");
+        static byte[] _methodHead = Encoding.ASCII.GetBytes("HEAD \0\0\0");
+        static byte[] _methodPatch = Encoding.ASCII.GetBytes("PATCH \0\0");
+        static byte[] _methodPost = Encoding.ASCII.GetBytes("POST \0\0\0");
+        static byte[] _methodPut = Encoding.ASCII.GetBytes("PUT \0\0\0\0");
+        static byte[] _methodOptions = Encoding.ASCII.GetBytes("OPTIONS ");
+        static byte[] _methodTrace = Encoding.ASCII.GetBytes("TRACE \0\0");
 
 
 
