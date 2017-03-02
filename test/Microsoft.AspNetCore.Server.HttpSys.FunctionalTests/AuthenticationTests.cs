@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Assert.Equal(1, resultList.Count());
                     var result = resultList.First();
                     Assert.Equal(authType.ToString(), result.AuthenticationScheme);
-                    Assert.Equal("Windows:" + authType.ToString(), result.DisplayName);
+                    Assert.Null(result.DisplayName);
                 }
 
                 return Task.FromResult(0);

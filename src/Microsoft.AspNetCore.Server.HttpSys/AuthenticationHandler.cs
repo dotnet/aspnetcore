@@ -117,7 +117,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return new Dictionary<string, object>()
             {
                 { "AuthenticationScheme", authenticationScheme },
-                { "DisplayName", "Windows:" + authenticationScheme },
             };
         }
 
