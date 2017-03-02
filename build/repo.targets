@@ -8,6 +8,15 @@
     <SetEnvironmentVariable Variable="BuildNumber" Value="$(BuildNumber)" />
   </Target>
 
+  <Target Name="VerifyAll">
+    <PropertyGroup>
+      <_SakeTargets>$(_SakeTargets):verify-all</_SakeTargets>
+    </PropertyGroup>
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+      Targets="Sake"
+      Properties="SakeTargets=$(_SakeTargets);RepositoryRoot=$(RepositoryRoot)" />
+  </Target>
+
   <Target Name="CIBuild" DependsOnTargets="SetBuildNumber">
     <PropertyGroup>
       <_SakeTargets>$(_SakeTargets):ci-build</_SakeTargets>
@@ -43,4 +52,5 @@
       Targets="Sake"
       Properties="SakeTargets=git-clean;RepositoryRoot=$(RepositoryRoot)" />
   </Target>
+
 </Project>
