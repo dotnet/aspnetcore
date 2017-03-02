@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger("WebSocketsTransport");
         }
 
-        public Task Running { get; private set; }
+        public Task Running { get; private set; } = Task.CompletedTask;
 
         public async Task StartAsync(Uri url, IChannelConnection<Message> application)
         {

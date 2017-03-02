@@ -106,6 +106,49 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
         }
 
         [Fact]
+        public async Task CanStopStartingConnection()
+        {
+            // Used to make sure StartAsync is not completed before DisposeAsync is called
+            var releaseNegotiateTcs = new TaskCompletionSource<object>();
+            // Used to make sure that DisposeAsync runs after we check the state in StartAsync
+            var allowDisposeTcs = new TaskCompletionSource<object>();
+            // Used to make sure that DisposeAsync continues only after StartAsync finished
+            var releaseDisposeTcs = new TaskCompletionSource<object>();
+
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    // allow DisposeAsync to continue once we know we are past the connection state check
+                    allowDisposeTcs.SetResult(null);
+                    await releaseNegotiateTcs.Task;
+                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(string.Empty) };
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            {
+                var transport = new Mock<ITransport>();
+                transport.Setup(t => t.StopAsync()).Returns(async () => { await releaseDisposeTcs.Task; });
+                var connection = new Connection(new Uri("http://fakeuri.org/"));
+
+                var startTask = connection.StartAsync(transport.Object, httpClient);
+                await allowDisposeTcs.Task;
+                var disposeTask = connection.DisposeAsync();
+                // allow StartAsync to continue once DisposeAsync has started
+                releaseNegotiateTcs.SetResult(null);
+
+                // unblock DisposeAsync only after StartAsync completed
+                await startTask.OrTimeout();
+                releaseDisposeTcs.SetResult(null);
+                await disposeTask.OrTimeout();
+
+                transport.Verify(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<IChannelConnection<Message>>()), Times.Never);
+            }
+        }
+
+        [Fact]
         public async Task SendReturnsFalseIfConnectionIsNotStarted()
         {
             var connection = new Connection(new Uri("http://fakeuri.org/"));
@@ -165,7 +208,6 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 {
                     await connection.DisposeAsync();
                 }
-
             }
         }
 

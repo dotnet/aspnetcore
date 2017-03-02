@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO.Pipelines;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,10 +16,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
     {
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
-        private int _connectionState = ConnectionState.Initial;
-        private IChannelConnection<Message> _transportChannel;
-        private ITransport _transport;
-        private Task _receiveLoopTask;
+        private volatile int _connectionState = ConnectionState.Initial;
+        private volatile IChannelConnection<Message> _transportChannel;
+        private volatile ITransport _transport;
+        private volatile Task _receiveLoopTask;
+        private volatile Task _startTask = Task.CompletedTask;
 
         private ReadableChannel<Message> Input => _transportChannel.Input;
         private WritableChannel<Message> Output => _transportChannel.Output;
@@ -47,11 +47,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
         public Task StartAsync(HttpClient httpClient) => StartAsync(transport: null, httpClient: httpClient);
         public Task StartAsync(ITransport transport) => StartAsync(transport: transport, httpClient: null);
 
-        // TODO HIGH: Fix a race when the connection is being stopped/disposed when start has not finished running
-        public async Task StartAsync(ITransport transport, HttpClient httpClient)
+        public Task StartAsync(ITransport transport, HttpClient httpClient)
         {
-            _transport = transport ?? new WebSocketsTransport(_loggerFactory);
+            _startTask = StartAsyncInternal(transport, httpClient);
+            return _startTask;
+        }
 
+        private async Task StartAsyncInternal(ITransport transport, HttpClient httpClient)
+        {
             if (Interlocked.CompareExchange(ref _connectionState, ConnectionState.Connecting, ConnectionState.Initial)
                 != ConnectionState.Initial)
             {
@@ -61,6 +64,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
             try
             {
                 var connectUrl = await GetConnectUrl(Url, httpClient, _logger);
+
+                // Connection is being stopped while start was in progress
+                if (_connectionState == ConnectionState.Disconnected)
+                {
+                    return;
+                }
+
+                _transport = transport ?? new WebSocketsTransport(_loggerFactory);
                 await StartTransport(connectUrl);
             }
             catch
@@ -69,16 +80,31 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 throw;
             }
 
-            // start receive loop
-            _receiveLoopTask = ReceiveAsync();
-
-            Interlocked.Exchange(ref _connectionState, ConnectionState.Connected);
-
-            // Do not "simplify" - events can be removed from a different thread
-            var connectedEventHandler = Connected;
-            if (connectedEventHandler != null)
+            // if the connection is not in the Connecting state here it means the user called DisposeAsync
+            if (Interlocked.CompareExchange(ref _connectionState, ConnectionState.Connected, ConnectionState.Connecting)
+                == ConnectionState.Connecting)
             {
-                connectedEventHandler();
+                // Do not "simplify" - events can be removed from a different thread
+                var connectedEventHandler = Connected;
+                if (connectedEventHandler != null)
+                {
+                    connectedEventHandler();
+                }
+
+                var ignore = Input.Completion.ContinueWith(t =>
+                {
+                    Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected);
+
+                    // Do not "simplify" - events can be removed from a different thread
+                    var closedEventHandler = Closed;
+                    if (closedEventHandler != null)
+                    {
+                        closedEventHandler(t.IsFaulted ? t.Exception.InnerException : null);
+                    }
+                });
+
+                // start receive loop
+                _receiveLoopTask = ReceiveAsync();
             }
         }
 
@@ -125,18 +151,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
             var applicationSide = new ChannelConnection<Message>(transportToApplication, applicationToTransport);
 
             _transportChannel = new ChannelConnection<Message>(applicationToTransport, transportToApplication);
-
-            var ignore = Input.Completion.ContinueWith(t =>
-            {
-                Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected);
-
-                // Do not "simplify" - events can be removed from a different thread
-                var closedEventHandler = Closed;
-                if (closedEventHandler != null)
-                {
-                    closedEventHandler(t.IsFaulted ? t.Exception.InnerException : null);
-                }
-            });
 
             // Start the transport, giving it one end of the pipeline
             try
@@ -213,6 +227,15 @@ namespace Microsoft.AspNetCore.Sockets.Client
         public async Task DisposeAsync()
         {
             Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected);
+            try
+            {
+                await _startTask;
+            }
+            catch
+            {
+                // We only await the start task to make sure that StartAsync completed. The
+                // _startTask is returned to the user and they should handle exceptions.
+            }
 
             if (_transportChannel != null)
             {

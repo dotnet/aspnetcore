@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private Task _poller;
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
 
-        public Task Running { get; private set; }
+        public Task Running { get; private set; } = Task.CompletedTask;
 
         public LongPollingTransport(HttpClient httpClient) 
             : this(httpClient, null)
