@@ -30,7 +30,7 @@ branches:
 before_install:
   - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install openssl; ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/; ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/; fi
 script:
-  - ./build.sh --quiet verify
+  - ./build.sh
 notifications:
   webhooks:
     secure: "dhjfYLtihxx3zDdj0TLMJjiN4YJ37Qu0L9ySx7ek+YsfOAqKPHUsI6JNDtChauQxUB2NoL/i80+47oHhMelPyXniu1xA0MWaHV8bddZHzNQs1N8vGjjPmtbC5DQ7jmy+p7Xa5+ZscZ9NWEvJRqBInNdqugDAstDEIWbC35bq8H9t+6tZYu1sJctp1zF/k/w4OjJUoI1ZNLuusYIB1E+G/irvVT2x4GOC2QY3wXM4lJ2ORcZE9NgUBLNx/Hy5Rst5i4zO/mrFkYM/wOY6bAM6/gjjanK+d1wQnD9HuZH1ZVQqJRH3lveurYq9ih4zxV8MbW3FdLL1cXswEZbUBeqHlxVE32KwWF18nFUwdmrNQebnYnrZ/VWsa4pl+bOFNy2nomI3ibJ4F4+RwqTPXXE13qCr0CsC5RKu5bVQTpi0t4CKlUMsVlevN2jJcmAA641bnETNTDwk5WdT7Mjf9Pnn+krLZ7im9li3Plc/d8ynR1oiRzwFdp3u/9m3Oc8K+zMsNO5IOxHul9WsWbIkh3sNecqKHPSyVHB4FgdUoQ65xpc0887YKorbuBTOnlZugP8M/FmowkcwLo5xDD7kchkxyq9X8dPjej+tzpTsNVJjrOg4LP+nKxmOa+qc1r62eF0GdnIjwU30y6NdfvBCXoQJE1y063/zyGPIxSfCRmVzq4A="
