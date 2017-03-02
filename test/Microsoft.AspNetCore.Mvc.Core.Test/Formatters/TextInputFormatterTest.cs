@@ -114,8 +114,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         [Theory]
         [InlineData("unicode-1-1-utf-8")]
         [InlineData("unicode-2-0-utf-8")]
-        [InlineData("unicode-1-1-utf-8")]
-        [InlineData("unicode-2-0-utf-8")]
         public void SelectCharacterEncoding_ReturnsUTF8Encoding_IfContentTypeIsAnAlias(string charset)
         {
             // Arrange
