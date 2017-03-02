@@ -76,7 +76,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             _knownMethods[GetKnownMethodIndex(knownMethodUlong)] = new Tuple<ulong, ulong, HttpMethod, int, bool>(mask, knownMethodUlong, knownMethod, length, true);
         }
 
-
         private static void FillKnownMethodsGaps()
         {
             var knownMethods = _knownMethods;

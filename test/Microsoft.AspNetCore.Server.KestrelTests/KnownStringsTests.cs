@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -25,15 +28,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         static byte[] _invalidMethod1 = BitConverter.GetBytes((ulong)MagicNumer);
         static byte[] _invalidMethod2 = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
         static byte[] _invalidMethod3 = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-        static byte[] _invalidMethod4 = Encoding.ASCII.GetBytes("CONNECT ");
-        static byte[] _invalidMethod5 = Encoding.ASCII.GetBytes("DELETE \0");
-        static byte[] _invalidMethod6 = Encoding.ASCII.GetBytes("GET ");
-        static byte[] _invalidMethod7 = Encoding.ASCII.GetBytes("HEAD \0\0\0");
-        static byte[] _invalidMethod8 = Encoding.ASCII.GetBytes("PATCH \0\0");
-        static byte[] _invalidMethod9 = Encoding.ASCII.GetBytes("POST \0\0\0");
-        static byte[] _invalidMethod10 = Encoding.ASCII.GetBytes("PUT \0\0\0\0");
-        static byte[] _invalidMethod11 = Encoding.ASCII.GetBytes("OPTIONS ");
-        static byte[] _invalidMethod12 = Encoding.ASCII.GetBytes("TRACE \0\0");
+        static byte[] _invalidMethod4 = Encoding.ASCII.GetBytes("CONNECT_");
+        static byte[] _invalidMethod5 = Encoding.ASCII.GetBytes("DELETE_\0");
+        static byte[] _invalidMethod6 = Encoding.ASCII.GetBytes("GET_");
+        static byte[] _invalidMethod7 = Encoding.ASCII.GetBytes("HEAD_\0\0\0");
+        static byte[] _invalidMethod8 = Encoding.ASCII.GetBytes("PATCH_\0\0");
+        static byte[] _invalidMethod9 = Encoding.ASCII.GetBytes("POST_\0\0\0");
+        static byte[] _invalidMethod10 = Encoding.ASCII.GetBytes("PUT_\0\0\0\0");
+        static byte[] _invalidMethod11 = Encoding.ASCII.GetBytes("OPTIONS_");
+        static byte[] _invalidMethod12 = Encoding.ASCII.GetBytes("TRACE_\0\0");
 
 
 
@@ -81,12 +84,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             HttpMethod method;
             int length;
 
-            bool result = data.GetKnownMethod(out method, out length);
+            var result = data.GetKnownMethod(out method, out length);
 
             Assert.Equal(expectedResult, result);
             Assert.Equal(expectedMethod, method);
             Assert.Equal(expectedLength, length);
-
         }
     }
 }
