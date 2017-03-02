@@ -254,8 +254,6 @@ var buildTarget = "compile"
             Environment.SetEnvironmentVariable("NUGET_PUBLISH_FEED", "https://dotnet.myget.org/F/aspnetcore-volatile-dev/api/v2/package");
         }
 
-        var universeToolsVersion = File.ReadAllText(Path.Combine(Directory.GetCurrentDirectory(), "ToolsVersion.txt")).Trim();
-
         foreach (var batch in batchedRepos)
         {
             Parallel.ForEach(batch.ToArray(), new ParallelOptions { MaxDegreeOfParallelism = threads }, repo =>
@@ -267,38 +265,13 @@ var buildTarget = "compile"
                     blockLogger.StartBlock(blockName);
                 }
 
-                // begin workaround
-                // as we transition to VS 2017, some repos will build with project.json and others with csproj
-                // the 'csproj' version of KoreBuild is the 'feature/msbuild' branch of that repo. project.json
-                // support is on 'dev'. This workaround avoids installing the version of KoreBuild used by
-                // individual repos unless it is already upgraded to the version currently used by Universe.
-                var repoToolsVersion = universeToolsVersion;
-                var buildPs1 = Path.Combine(repo, "build.ps1");
-                if (File.Exists(buildPs1))
+                if (!IsLinux)
                 {
-                    foreach (var line in File.ReadAllLines(buildPs1))
-                    {
-                        var match = Regex.Match(line, @".*https://github.com/aspnet/KoreBuild/archive/(.+)\.zip.*");
-                        if (match != null && match.Success)
-                        {
-                            repoToolsVersion = match.Groups[1].Value;
-                            break;
-                        }
-                    }
+                    Exec("cmd", "/C xcopy /S/Q/I/Y .build " + Path.Combine(repo, ".build"), "");
                 }
-                Log.Info(repo + " KoreBuild version = " + repoToolsVersion + ", Universe = " + universeToolsVersion);
-                // end workaround
-
-                if (repoToolsVersion == universeToolsVersion)
+                else
                 {
-                    if (!IsLinux)
-                    {
-                        Exec("cmd", "/C xcopy /S/Q/I/Y .build " + Path.Combine(repo, ".build"), "");
-                    }
-                    else
-                    {
-                        CopyFolder(".build", Path.Combine(repo, ".build"), true);
-                    }
+                    CopyFolder(".build", Path.Combine(repo, ".build"), true);
                 }
 
                 try

@@ -2,8 +2,7 @@
 repoFolder="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $repoFolder
 
-toolsVersion=$(cat $repoFolder/ToolsVersion.txt)
-koreBuildZip="https://github.com/aspnet/KoreBuild/archive/$toolsVersion.zip"
+koreBuildZip="https://github.com/aspnet/KoreBuild/archive/dev.zip"
 if [ ! -z $KOREBUILD_ZIP ]; then
     koreBuildZip=$KOREBUILD_ZIP
 fi
