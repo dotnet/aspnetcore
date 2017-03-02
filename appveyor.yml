@@ -28,7 +28,7 @@ artifacts:
   - path: templates\package-builder\dist\artifacts\*.nupkg
     name: Microsoft.AspNetCore.SpaTemplates
     type: NuGetPackage
-#  - build.cmd verify
+#  - ps: .\build.ps1
 clone_depth: 1
 test_script:
   # - dotnet restore ./src
