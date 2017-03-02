@@ -31,4 +31,4 @@ before_install:
 install:
   - export PATH="$PATH:$HOME/nginxinstall/sbin/"
 script:
-  - ./build.sh --quiet verify
+  - ./build.sh
