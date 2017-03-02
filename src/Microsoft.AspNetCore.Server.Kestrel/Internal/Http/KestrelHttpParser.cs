@@ -32,31 +32,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             examined = buffer.End;
 
             var start = buffer.Start;
-            ReadCursor end;
-            if (ReadCursorOperations.Seek(start, buffer.End, out end, ByteLF) == -1)
+            if (ReadCursorOperations.Seek(start, buffer.End, out var end, ByteLF) == -1)
             {
                 return false;
             }
-
-            const int stackAllocLimit = 512;
 
             // Move 1 byte past the \n
             end = buffer.Move(end, 1);
             var startLineBuffer = buffer.Slice(start, end);
 
             Span<byte> span;
-
             if (startLineBuffer.IsSingleSpan)
             {
                 // No copies, directly use the one and only span
                 span = startLineBuffer.First.Span;
-            }
-            else if (startLineBuffer.Length < stackAllocLimit)
-            {
-                // Multiple buffers and < stackAllocLimit, copy into a stack buffer
-                byte* stackBuffer = stackalloc byte[startLineBuffer.Length];
-                span = new Span<byte>(stackBuffer, startLineBuffer.Length);
-                startLineBuffer.CopyTo(span);
             }
             else
             {
@@ -242,7 +231,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             var query = span.Slice(queryStart, queryEnd - queryStart);
 
             handler.OnStartLine(method, httpVersion, targetBuffer, pathBuffer, query, customMethod);
-            consumed = buffer.Move(start, i);
+
+            consumed = end;
             examined = consumed;
             return true;
         }
@@ -297,8 +287,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                     return false;
                 }
 
-                const int stackAllocLimit = 512;
-
                 if (lineEnd != bufferEnd)
                 {
                     lineEnd = buffer.Move(lineEnd, 1);
@@ -311,13 +299,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 {
                     // No copies, directly use the one and only span
                     span = headerBuffer.First.Span;
-                }
-                else if (headerBuffer.Length < stackAllocLimit)
-                {
-                    // Multiple buffers and < stackAllocLimit, copy into a stack buffer
-                    byte* stackBuffer = stackalloc byte[headerBuffer.Length];
-                    span = new Span<byte>(stackBuffer, headerBuffer.Length);
-                    headerBuffer.CopyTo(span);
                 }
                 else
                 {
