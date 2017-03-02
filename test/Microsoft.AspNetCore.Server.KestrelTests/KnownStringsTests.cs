@@ -76,10 +76,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             var data = new Span<byte>(methodData);
 
-            HttpMethod method;
-            int length;
-
-            var result = data.GetKnownMethod(out method, out length);
+            var result = data.GetKnownMethod(out var method, out var length);
 
             Assert.Equal(expectedResult, result);
             Assert.Equal(expectedMethod, method);

@@ -64,8 +64,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetKnownMethodIndex(ulong value)
         {
-            const int MagicNumer = 0x0600000C;
-            var tmp = (int)value & MagicNumer;
+            const int magicNumer = 0x0600000C;
+            var tmp = (int)value & magicNumer;
 
             return ((tmp >> 2) | (tmp >> 23)) & 0x0F;
         }
