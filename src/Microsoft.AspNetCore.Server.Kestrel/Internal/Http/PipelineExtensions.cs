@@ -3,6 +3,7 @@
 
 using System;
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
@@ -77,6 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Span<byte> ToSpan(this ReadableBuffer buffer)
         {
             if (buffer.IsSingleSpan)

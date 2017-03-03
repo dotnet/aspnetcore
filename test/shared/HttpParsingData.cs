@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Testing
 
                 return new[]
                 {
-                    Tuple.Create(headersWithLineFolding,"Header value line folding not supported."),
+                    Tuple.Create(headersWithLineFolding,"Header line must not start with whitespace."),
                     Tuple.Create(headersWithCRInValue,"Header value must not contain CR characters."),
                     Tuple.Create(headersWithMissingColon,"No ':' character found in header line."),
                     Tuple.Create(headersStartingWithWhitespace, "Header line must not start with whitespace."),
