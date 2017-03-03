@@ -135,4 +135,7 @@
   <data name="UnsupportedHandlerMethodType" xml:space="preserve">
     <value>Unsupported handler method return type '{0}'.</value>
   </data>
+  <data name="PathMustBeAnAppRelativePath" xml:space="preserve">
+    <value>Path must be an application relative path that starts with a forward slash '/'.</value>
+  </data>
 </root>

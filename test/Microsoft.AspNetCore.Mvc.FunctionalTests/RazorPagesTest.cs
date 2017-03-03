@@ -35,6 +35,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task HelloWorld_CanGetContent()
         {
             // Arrange
+            // Note: If the route in this test case ever changes, the negative test case
+            // RazorPagesWithBasePathTest.PageOutsideBasePath_IsNotRouteable needs to be updated too.
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/HelloWorld");
 
             // Act

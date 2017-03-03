@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
@@ -29,20 +28,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         public override IEnumerable<RazorProjectItem> EnumerateItems(string path)
         {
-            if (path == null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            if (path.Length == 0 || path[0] != '/')
-            {
-                throw new ArgumentException(Resources.RazorProject_PathMustStartWithForwardSlash);
-            }
-
-            return EnumerateFiles(_provider.GetDirectoryContents(path), path, "");
+            EnsureValidPath(path);
+            return EnumerateFiles(_provider.GetDirectoryContents(path), path, prefix: string.Empty);
         }
-
-        public virtual IChangeToken Watch(string pattern) => _provider.Watch(pattern);
 
         private IEnumerable<RazorProjectItem> EnumerateFiles(IDirectoryContents directory, string basePath, string prefix)
         {
@@ -53,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     if (file.IsDirectory)
                     {
                         var relativePath = prefix + "/" + file.Name;
-                        var subDirectory = _provider.GetDirectoryContents(relativePath);
+                        var subDirectory = _provider.GetDirectoryContents(JoinPath(basePath, relativePath));
                         var children = EnumerateFiles(subDirectory, basePath, relativePath);
                         foreach (var child in children)
                         {
@@ -66,6 +54,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     }
                 }
             }
+        }
+
+        private static string JoinPath(string path1, string path2)
+        {
+            var hasTrailingSlash = path1.EndsWith("/", StringComparison.Ordinal);
+            var hasLeadingSlash = path2.StartsWith("/", StringComparison.Ordinal);
+            if (hasLeadingSlash && hasTrailingSlash)
+            {
+                return path1 + path2.Substring(1);
+            }
+            else if (hasLeadingSlash || hasTrailingSlash)
+            {
+                return path1 + path2;
+            }
+
+            return path1 + "/" + path2;
         }
     }
 }

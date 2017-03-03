@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Unsupported handler method type '{0}'.
+        /// Unsupported handler method return type '{0}'.
         /// </summary>
         internal static string UnsupportedHandlerMethodType
         {
@@ -99,11 +99,27 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Unsupported handler method type '{0}'.
+        /// Unsupported handler method return type '{0}'.
         /// </summary>
         internal static string FormatUnsupportedHandlerMethodType(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("UnsupportedHandlerMethodType"), p0);
+        }
+
+        /// <summary>
+        /// Path must be an application relative path that starts with a forward slash '/'.
+        /// </summary>
+        internal static string PathMustBeAnAppRelativePath
+        {
+            get { return GetString("PathMustBeAnAppRelativePath"); }
+        }
+
+        /// <summary>
+        /// Path must be an application relative path that starts with a forward slash '/'.
+        /// </summary>
+        internal static string FormatPathMustBeAnAppRelativePath()
+        {
+            return GetString("PathMustBeAnAppRelativePath");
         }
 
         private static string GetString(string name, params string[] formatterNames)

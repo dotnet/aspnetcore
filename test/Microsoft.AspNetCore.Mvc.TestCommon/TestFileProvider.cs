@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 
@@ -13,12 +14,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     {
         private readonly Dictionary<string, IFileInfo> _lookup =
             new Dictionary<string, IFileInfo>(StringComparer.Ordinal);
+        private readonly Dictionary<string, IDirectoryContents> _directoryContentsLookup =
+            new Dictionary<string, IDirectoryContents>();
+
         private readonly Dictionary<string, TestFileChangeToken> _fileTriggers =
             new Dictionary<string, TestFileChangeToken>(StringComparer.Ordinal);
 
         public virtual IDirectoryContents GetDirectoryContents(string subpath)
         {
-            throw new NotSupportedException();
+            if (_directoryContentsLookup.TryGetValue(subpath, out var value))
+            {
+                return value;
+            }
+
+            return new NotFoundDirectoryContents();
         }
 
         public TestFileInfo AddFile(string path, string contents)
@@ -34,6 +43,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             AddFile(path, fileInfo);
 
             return fileInfo;
+        }
+
+        public TestDirectoryContent AddDirectoryContent(string path, IEnumerable<IFileInfo> files)
+        {
+            var directoryContent = new TestDirectoryContent(files);
+            _directoryContentsLookup[path] = directoryContent;
+            return directoryContent;
         }
 
         public void AddFile(string path, IFileInfo contents)

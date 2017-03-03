@@ -95,6 +95,75 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             Assert.Equal("Test/Home", descriptor.AttributeRouteInfo.Template);
         }
 
+        [Fact]
+        public void GetDescriptors_GeneratesRouteTemplate()
+        {
+            // Arrange
+            var razorProject = new Mock<RazorProject>(MockBehavior.Strict);
+            razorProject.Setup(p => p.EnumerateItems("/"))
+                .Returns(new[]
+                {
+                    GetProjectItem("/", "/base-path/Test.cshtml", $"@page \"Home\" {Environment.NewLine}<h1>Hello world</h1>"),
+                    GetProjectItem("/", "/base-path/Index.cshtml", $"@page {Environment.NewLine}"),
+                    GetProjectItem("/", "/base-path/Admin/Index.cshtml", $"@page{Environment.NewLine}"),
+                    GetProjectItem("/", "/base-path/Admin/User.cshtml", $"@page{Environment.NewLine}"),
+                });
+            var options = GetRazorPagesOptions();
+
+            var provider = new PageActionDescriptorProvider(
+                razorProject.Object,
+                GetAccessor<MvcOptions>(),
+                options);
+            var context = new ActionDescriptorProviderContext();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.Collection(context.Results,
+                result => Assert.Equal("base-path/Test/Home", result.AttributeRouteInfo.Template),
+                result => Assert.Equal("base-path/Index", result.AttributeRouteInfo.Template),
+                result => Assert.Equal("base-path", result.AttributeRouteInfo.Template),
+                result => Assert.Equal("base-path/Admin/Index", result.AttributeRouteInfo.Template),
+                result => Assert.Equal("base-path/Admin", result.AttributeRouteInfo.Template),
+                result => Assert.Equal("base-path/Admin/User", result.AttributeRouteInfo.Template));
+        }
+
+        [Fact]
+        public void GetDescriptors_UsesBasePathOption_WhenGeneratingRouteTemplate()
+        {
+            // Arrange
+            var razorProject = new Mock<RazorProject>(MockBehavior.Strict);
+            razorProject.Setup(p => p.EnumerateItems("/base-path"))
+                .Returns(new[]
+                {
+                    GetProjectItem("/base-path", "/Test.cshtml", $"@page \"Home\" {Environment.NewLine}<h1>Hello world</h1>"),
+                    GetProjectItem("/base-path", "/Index.cshtml", $"@page {Environment.NewLine}"),
+                    GetProjectItem("/base-path", "/Admin/Index.cshtml", $"@page{Environment.NewLine}"),
+                    GetProjectItem("/base-path", "/Admin/User.cshtml", $"@page{Environment.NewLine}"),
+                });
+            var options = GetRazorPagesOptions();
+            options.Value.RootDirectory = "/base-path";
+            var provider = new PageActionDescriptorProvider(
+                razorProject.Object,
+                GetAccessor<MvcOptions>(),
+                options);
+            var context = new ActionDescriptorProviderContext();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.Collection(context.Results,
+                result => Assert.Equal("Test/Home", result.AttributeRouteInfo.Template),
+                result => Assert.Equal("Index", result.AttributeRouteInfo.Template),
+                result => Assert.Equal("", result.AttributeRouteInfo.Template),
+                result => Assert.Equal("Admin/Index", result.AttributeRouteInfo.Template),
+                result => Assert.Equal("Admin", result.AttributeRouteInfo.Template),
+                result => Assert.Equal("Admin/User", result.AttributeRouteInfo.Template));
+
+        }
+
         [Theory]
         [InlineData("/Path1")]
         [InlineData("~/Path1")]
@@ -231,7 +300,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Assert.IsType<AutoValidateAntiforgeryTokenAttribute>(filterDescriptor.Filter);
                 });
         }
-
 
         [Fact]
         public void GetDescriptors_AddsGlobalFilters()
