@@ -26,7 +26,10 @@ namespace LocalizationWebsite
             ILoggerFactory loggerFactory,
             IStringLocalizerFactory stringLocalizerFactory,
             IStringLocalizer<StartupResourcesInFolder> startupStringLocalizer,
-            IStringLocalizer<Customer> custromerStringLocalizer)
+            IStringLocalizer<Customer> custromerStringLocalizer,
+            // This localizer is used in tests to prevent a regression of https://github.com/aspnet/Localization/issues/293
+            // Namely that english was always being returned if it existed.
+            IStringLocalizer<StartupCustomCulturePreserved> customCultureLocalizer)
         {
             loggerFactory.AddConsole(minLevel: LogLevel.Warning);
 
@@ -53,6 +56,8 @@ namespace LocalizationWebsite
                 await context.Response.WriteAsync(stringLocalizer["Hello"]);
                 await context.Response.WriteAsync(" ");
                 await context.Response.WriteAsync(custromerStringLocalizer["Hello"]);
+                await context.Response.WriteAsync(" ");
+                await context.Response.WriteAsync(customCultureLocalizer["Hello"]);
             });
         }
     }
