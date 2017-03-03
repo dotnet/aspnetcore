@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     /// </summary>
     public abstract class Page : RazorPageBase, IRazorPage
     {
-        private IUrlHelper _urlHelper;
         private PageArgumentBinder _binder;
 
         /// <summary>
