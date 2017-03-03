@@ -262,13 +262,10 @@ var buildProperties = "/p:Configuration=Debug"
                             File.Copy(source, Path.Combine(universeBuild, Path.GetFileName(source)), overwrite: true);
                         }
 
-                        if (Environment.GetEnvironmentVariable("KOREBUILD_ADD_ASSEMBLY_INFO") == "1")
+                        var commitFile = Path.Combine(repoArtifacts, "commit");
+                        if (File.Exists(commitFile))
                         {
-                            var commitFile = Path.Combine(repoArtifacts, "commit");
-                            if (File.Exists(commitFile))
-                            {
-                                commits.TryAdd(repo, File.ReadAllLines(commitFile)[0]);
-                            }
+                            commits.TryAdd(repo, File.ReadAllLines(commitFile)[0]);
                         }
 
                         if (!string.IsNullOrEmpty(ciVolatileShare))
