@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,16 +19,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         public IRuntimeTargetExtension[] Extensions { get; }
 
-        internal override PageStructureCSharpRenderer CreateRenderer(CSharpRenderingContext context)
+        public override DocumentWriter CreateWriter(CSharpRenderingContext context)
         {
+            PageStructureCSharpRenderer renderer;
             if (_options.DesignTimeMode)
             {
-                return new DesignTimeCSharpRenderer(this, context);
+                renderer =  new DesignTimeCSharpRenderer(this, context);
             }
             else
             {
-                return new RuntimeCSharpRenderer(this, context);
+                renderer = new RuntimeCSharpRenderer(this, context);
             }
+
+            return new DefaultDocumentWriter(this, context, renderer);
         }
 
         public override TExtension GetExtension<TExtension>()

@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         }
 
-        internal abstract PageStructureCSharpRenderer CreateRenderer(CSharpRenderingContext context);
+        public abstract DocumentWriter CreateWriter(CSharpRenderingContext context);
 
         public abstract TExtension GetExtension<TExtension>() where TExtension : class, IRuntimeTargetExtension;
 

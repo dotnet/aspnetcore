@@ -56,10 +56,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 renderingContext.IdGenerator = () => idValue.ToString();
             }
 
-            var renderer = target.CreateRenderer(renderingContext);
-            renderingContext.RenderChildren = renderer.VisitDefault;
-
-            renderer.VisitDocument(irDocument);
+            var documentWriter = target.CreateWriter(renderingContext);
+            documentWriter.WriteDocument(irDocument);
 
             var diagnostics = new List<RazorDiagnostic>();
             diagnostics.AddRange(syntaxTree.Diagnostics);

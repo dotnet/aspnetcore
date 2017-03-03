@@ -28,35 +28,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
         }
 
         [Fact]
-        public void CreateRenderer_DesignTime_CreatesDesignTimeRenderer()
+        public void CreateWriter_CreatesDefaultDocumentWriter()
         {
             // Arrange
             var options = RazorParserOptions.CreateDefaultOptions();
-            options.DesignTimeMode = true;
 
             var target = new DefaultRuntimeTarget(options, Enumerable.Empty<IRuntimeTargetExtension>());
 
             // Act
-            var renderer = target.CreateRenderer(new CSharpRenderingContext());
+            var writer = target.CreateWriter(new CSharpRenderingContext());
 
             // Assert
-            Assert.IsType<DesignTimeCSharpRenderer>(renderer);
-        }
-
-        [Fact]
-        public void CreateRenderer_Runtime_CreatesRuntimeRenderer()
-        {
-            // Arrange
-            var options = RazorParserOptions.CreateDefaultOptions();
-            options.DesignTimeMode = false;
-
-            var target = new DefaultRuntimeTarget(options, Enumerable.Empty<IRuntimeTargetExtension>());
-
-            // Act
-            var renderer = target.CreateRenderer(new CSharpRenderingContext());
-
-            // Assert
-            Assert.IsType<RuntimeCSharpRenderer>(renderer);
+            Assert.IsType<DefaultDocumentWriter>(writer);
         }
 
         [Fact]
