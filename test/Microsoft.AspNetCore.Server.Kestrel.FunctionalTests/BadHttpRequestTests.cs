@@ -1,11 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
@@ -14,106 +18,102 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     {
         [Theory]
         [MemberData(nameof(InvalidRequestLineData))]
-        public async Task TestInvalidRequestLines(string request)
+        public Task TestInvalidRequestLines(string request, string expectedExceptionMessage)
         {
-            using (var server = new TestServer(context => TaskCache.CompletedTask))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.SendAll(request);
-                    await ReceiveBadRequestResponse(connection, "400 Bad Request", server.Context.DateHeaderValue);
-                }
-            }
+            return TestBadRequest(
+                request,
+                "400 Bad Request",
+                expectedExceptionMessage);
         }
 
         [Theory]
         [MemberData(nameof(UnrecognizedHttpVersionData))]
-        public async Task TestInvalidRequestLinesWithUnrecognizedVersion(string httpVersion)
+        public Task TestInvalidRequestLinesWithUnrecognizedVersion(string httpVersion)
         {
-            using (var server = new TestServer(context => TaskCache.CompletedTask))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.SendAll($"GET / {httpVersion}\r\n");
-                    await ReceiveBadRequestResponse(connection, "505 HTTP Version Not Supported", server.Context.DateHeaderValue);
-                }
-            }
+            return TestBadRequest(
+                $"GET / {httpVersion}\r\n",
+                "505 HTTP Version Not Supported",
+                $"Unrecognized HTTP version: {httpVersion}");
         }
 
         [Theory]
         [MemberData(nameof(InvalidRequestHeaderData))]
-        public async Task TestInvalidHeaders(string rawHeaders)
+        public Task TestInvalidHeaders(string rawHeaders, string expectedExceptionMessage)
         {
-            using (var server = new TestServer(context => TaskCache.CompletedTask))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.SendAll($"GET / HTTP/1.1\r\n{rawHeaders}");
-                    await ReceiveBadRequestResponse(connection, "400 Bad Request", server.Context.DateHeaderValue);
-                }
-            }
+            return TestBadRequest(
+                $"GET / HTTP/1.1\r\n{rawHeaders}",
+                "400 Bad Request",
+                expectedExceptionMessage);
         }
 
-        [Fact]
-        public async Task BadRequestWhenHeaderNameContainsNonASCIICharacters()
+        [Theory]
+        [InlineData("Hea\0der: value", "Invalid characters in header name.")]
+        [InlineData("Header: va\0lue", "Malformed request: invalid headers.")]
+        [InlineData("Head\x80r: value", "Invalid characters in header name.")]
+        [InlineData("Header: valu\x80", "Malformed request: invalid headers.")]
+        public Task BadRequestWhenHeaderNameContainsNonASCIIOrNullCharacters(string header, string expectedExceptionMessage)
         {
-            using (var server = new TestServer(context => { return Task.FromResult(0); }))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.SendAll(
-                        "GET / HTTP/1.1",
-                        "H\u00eb\u00e4d\u00ebr: value",
-                        "",
-                        "");
-                    await ReceiveBadRequestResponse(connection, "400 Bad Request", server.Context.DateHeaderValue);
-                }
-            }
+            return TestBadRequest(
+                $"GET / HTTP/1.1\r\n{header}\r\n\r\n",
+                "400 Bad Request",
+                expectedExceptionMessage);
         }
 
         [Theory]
         [InlineData("POST")]
         [InlineData("PUT")]
-        public async Task BadRequestIfMethodRequiresLengthButNoContentLengthOrTransferEncodingInRequest(string method)
+        public Task BadRequestIfMethodRequiresLengthButNoContentLengthOrTransferEncodingInRequest(string method)
         {
-            using (var server = new TestServer(context => { return Task.FromResult(0); }))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.Send($"{method} / HTTP/1.1\r\n\r\n");
-                    await ReceiveBadRequestResponse(connection, "411 Length Required", server.Context.DateHeaderValue);
-                }
-            }
+            return TestBadRequest(
+                $"{method} / HTTP/1.1\r\n\r\n",
+                "411 Length Required",
+                $"{method} request contains no Content-Length or Transfer-Encoding header");
         }
 
         [Theory]
         [InlineData("POST")]
         [InlineData("PUT")]
-        public async Task BadRequestIfMethodRequiresLengthButNoContentLengthInHttp10Request(string method)
+        public Task BadRequestIfMethodRequiresLengthButNoContentLengthInHttp10Request(string method)
         {
-            using (var server = new TestServer(context => { return Task.FromResult(0); }))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.Send($"{method} / HTTP/1.0\r\n\r\n");
-                    await ReceiveBadRequestResponse(connection, "400 Bad Request", server.Context.DateHeaderValue);
-                }
-            }
+            return TestBadRequest(
+                $"{method} / HTTP/1.0\r\n\r\n",
+                "400 Bad Request",
+                $"{method} request contains no Content-Length header");
         }
 
         [Theory]
         [InlineData("NaN")]
         [InlineData("-1")]
-        public async Task BadRequestIfContentLengthInvalid(string contentLength)
+        public Task BadRequestIfContentLengthInvalid(string contentLength)
         {
-            using (var server = new TestServer(context => { return Task.FromResult(0); }))
+            return TestBadRequest(
+                $"POST / HTTP/1.1\r\nContent-Length: {contentLength}\r\n\r\n",
+                "400 Bad Request",
+                $"Invalid content length: {contentLength}");
+        }
+
+        private async Task TestBadRequest(string request, string expectedResponseStatusCode, string expectedExceptionMessage)
+        {
+            BadHttpRequestException loggedException = null;
+            var mockKestrelTrace = new Mock<IKestrelTrace>();
+            mockKestrelTrace
+                .Setup(trace => trace.IsEnabled(LogLevel.Information))
+                .Returns(true);
+            mockKestrelTrace
+                .Setup(trace => trace.ConnectionBadRequest(It.IsAny<string>(), It.IsAny<BadHttpRequestException>()))
+                .Callback<string, BadHttpRequestException>((connectionId, exception) => loggedException = exception);
+
+            using (var server = new TestServer(context => TaskCache.CompletedTask, new TestServiceContext { Log = mockKestrelTrace.Object }))
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendAll($"GET / HTTP/1.1\r\nContent-Length: {contentLength}\r\n\r\n");
-                    await ReceiveBadRequestResponse(connection, "400 Bad Request", server.Context.DateHeaderValue);
+                    await connection.SendAll(request);
+                    await ReceiveBadRequestResponse(connection, expectedResponseStatusCode, server.Context.DateHeaderValue);
                 }
             }
+
+            mockKestrelTrace.Verify(trace => trace.ConnectionBadRequest(It.IsAny<string>(), It.IsAny<BadHttpRequestException>()));
+            Assert.Equal(expectedExceptionMessage, loggedException.Message);
         }
 
         private async Task ReceiveBadRequestResponse(TestConnection connection, string expectedResponseStatusCode, string expectedDateHeaderValue)
@@ -127,10 +127,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 "");
         }
 
-        public static IEnumerable<object> InvalidRequestLineData => HttpParsingData.InvalidRequestLineData.Select(data => new[] { data[0] });
+        public static IEnumerable<object> InvalidRequestLineData => HttpParsingData.InvalidRequestLineData
+            .Select(requestLine => new object[]
+            {
+                requestLine,
+                $"Invalid request line: {requestLine.Replace("\r", "<0x0D>").Replace("\n", "<0x0A>")}",
+            })
+            .Concat(HttpParsingData.EncodedNullCharInTargetRequestLines.Select(requestLine => new object[]
+            {
+                requestLine,
+                "Invalid request line."
+            }))
+            .Concat(HttpParsingData.NullCharInTargetRequestLines.Select(requestLine => new object[]
+            {
+                requestLine,
+                "Invalid request line."
+            }));
 
         public static TheoryData<string> UnrecognizedHttpVersionData => HttpParsingData.UnrecognizedHttpVersionData;
 
-        public static IEnumerable<object[]> InvalidRequestHeaderData => HttpParsingData.InvalidRequestHeaderData.Select(data => new[] { data[0] });
+        public static IEnumerable<object[]> InvalidRequestHeaderData => HttpParsingData.InvalidRequestHeaderData;
     }
 }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -759,7 +760,25 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         public static IEnumerable<object> ValidRequestLineData => HttpParsingData.ValidRequestLineData;
 
-        public static IEnumerable<object> InvalidRequestLineData => HttpParsingData.InvalidRequestLineData;
+        public static IEnumerable<object> InvalidRequestLineData => HttpParsingData.InvalidRequestLineData
+            .Select(requestLine => new object[]
+            {
+                requestLine,
+                typeof(BadHttpRequestException),
+                $"Invalid request line: {requestLine.Replace("\r", "<0x0D>").Replace("\n", "<0x0A>")}",
+            })
+            .Concat(HttpParsingData.EncodedNullCharInTargetRequestLines.Select(requestLine => new object[]
+            {
+                requestLine,
+                typeof(InvalidOperationException),
+                "The path contains null characters."
+            }))
+            .Concat(HttpParsingData.NullCharInTargetRequestLines.Select(requestLine => new object[]
+            {
+                requestLine,
+                typeof(InvalidOperationException),
+                new InvalidOperationException().Message
+            }));
 
         public static TheoryData<string> UnrecognizedHttpVersionData => HttpParsingData.UnrecognizedHttpVersionData;
 

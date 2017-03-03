@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Server.Kestrel;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Testing
@@ -71,150 +70,118 @@ namespace Microsoft.AspNetCore.Testing
             }
         }
 
-        // All these test cases must end in '\n', otherwise the server will spin forever
-        public static IEnumerable<object[]> InvalidRequestLineData
+        public static IEnumerable<string> InvalidRequestLineData => new[]
         {
-            get
-            {
-                var invalidRequestLines = new[]
-                {
-                    "G\r\n",
-                    "GE\r\n",
-                    "GET\r\n",
-                    "GET \r\n",
-                    "GET /\r\n",
-                    "GET / \r\n",
-                    "GET/HTTP/1.1\r\n",
-                    "GET /HTTP/1.1\r\n",
-                    " \r\n",
-                    "  \r\n",
-                    "/ HTTP/1.1\r\n",
-                    " / HTTP/1.1\r\n",
-                    "/ \r\n",
-                    "GET  \r\n",
-                    "GET  HTTP/1.0\r\n",
-                    "GET  HTTP/1.1\r\n",
-                    "GET / \n",
-                    "GET / HTTP/1.0\n",
-                    "GET / HTTP/1.1\n",
-                    "GET / HTTP/1.0\rA\n",
-                    "GET / HTTP/1.1\ra\n",
-                    "GET? / HTTP/1.1\r\n",
-                    "GET ? HTTP/1.1\r\n",
-                    "GET /a?b=cHTTP/1.1\r\n",
-                    "GET /a%20bHTTP/1.1\r\n",
-                    "GET /a%20b?c=dHTTP/1.1\r\n",
-                    "GET %2F HTTP/1.1\r\n",
-                    "GET %00 HTTP/1.1\r\n",
-                    "CUSTOM \r\n",
-                    "CUSTOM /\r\n",
-                    "CUSTOM / \r\n",
-                    "CUSTOM /HTTP/1.1\r\n",
-                    "CUSTOM  \r\n",
-                    "CUSTOM  HTTP/1.0\r\n",
-                    "CUSTOM  HTTP/1.1\r\n",
-                    "CUSTOM / \n",
-                    "CUSTOM / HTTP/1.0\n",
-                    "CUSTOM / HTTP/1.1\n",
-                    "CUSTOM / HTTP/1.0\rA\n",
-                    "CUSTOM / HTTP/1.1\ra\n",
-                    "CUSTOM ? HTTP/1.1\r\n",
-                    "CUSTOM /a?b=cHTTP/1.1\r\n",
-                    "CUSTOM /a%20bHTTP/1.1\r\n",
-                    "CUSTOM /a%20b?c=dHTTP/1.1\r\n",
-                    "CUSTOM %2F HTTP/1.1\r\n",
-                    "CUSTOM %00 HTTP/1.1\r\n",
-                    // Bad HTTP Methods (invalid according to RFC)
-                    "( / HTTP/1.0\r\n",
-                    ") / HTTP/1.0\r\n",
-                    "< / HTTP/1.0\r\n",
-                    "> / HTTP/1.0\r\n",
-                    "@ / HTTP/1.0\r\n",
-                    ", / HTTP/1.0\r\n",
-                    "; / HTTP/1.0\r\n",
-                    ": / HTTP/1.0\r\n",
-                    "\\ / HTTP/1.0\r\n",
-                    "\" / HTTP/1.0\r\n",
-                    "/ / HTTP/1.0\r\n",
-                    "[ / HTTP/1.0\r\n",
-                    "] / HTTP/1.0\r\n",
-                    "? / HTTP/1.0\r\n",
-                    "= / HTTP/1.0\r\n",
-                    "{ / HTTP/1.0\r\n",
-                    "} / HTTP/1.0\r\n",
-                    "get@ / HTTP/1.0\r\n",
-                    "post= / HTTP/1.0\r\n",
-                };
+            "G\r\n",
+            "GE\r\n",
+            "GET\r\n",
+            "GET \r\n",
+            "GET /\r\n",
+            "GET / \r\n",
+            "GET/HTTP/1.1\r\n",
+            "GET /HTTP/1.1\r\n",
+            " \r\n",
+            "  \r\n",
+            "/ HTTP/1.1\r\n",
+            " / HTTP/1.1\r\n",
+            "/ \r\n",
+            "GET  \r\n",
+            "GET  HTTP/1.0\r\n",
+            "GET  HTTP/1.1\r\n",
+            "GET / \n",
+            "GET / HTTP/1.0\n",
+            "GET / HTTP/1.1\n",
+            "GET / HTTP/1.0\rA\n",
+            "GET / HTTP/1.1\ra\n",
+            "GET? / HTTP/1.1\r\n",
+            "GET ? HTTP/1.1\r\n",
+            "GET /a?b=cHTTP/1.1\r\n",
+            "GET /a%20bHTTP/1.1\r\n",
+            "GET /a%20b?c=dHTTP/1.1\r\n",
+            "GET %2F HTTP/1.1\r\n",
+            "GET %00 HTTP/1.1\r\n",
+            "CUSTOM \r\n",
+            "CUSTOM /\r\n",
+            "CUSTOM / \r\n",
+            "CUSTOM /HTTP/1.1\r\n",
+            "CUSTOM  \r\n",
+            "CUSTOM  HTTP/1.0\r\n",
+            "CUSTOM  HTTP/1.1\r\n",
+            "CUSTOM / \n",
+            "CUSTOM / HTTP/1.0\n",
+            "CUSTOM / HTTP/1.1\n",
+            "CUSTOM / HTTP/1.0\rA\n",
+            "CUSTOM / HTTP/1.1\ra\n",
+            "CUSTOM ? HTTP/1.1\r\n",
+            "CUSTOM /a?b=cHTTP/1.1\r\n",
+            "CUSTOM /a%20bHTTP/1.1\r\n",
+            "CUSTOM /a%20b?c=dHTTP/1.1\r\n",
+            "CUSTOM %2F HTTP/1.1\r\n",
+            "CUSTOM %00 HTTP/1.1\r\n",
+            // Bad HTTP Methods (invalid according to RFC)
+            "( / HTTP/1.0\r\n",
+            ") / HTTP/1.0\r\n",
+            "< / HTTP/1.0\r\n",
+            "> / HTTP/1.0\r\n",
+            "@ / HTTP/1.0\r\n",
+            ", / HTTP/1.0\r\n",
+            "; / HTTP/1.0\r\n",
+            ": / HTTP/1.0\r\n",
+            "\\ / HTTP/1.0\r\n",
+            "\" / HTTP/1.0\r\n",
+            "/ / HTTP/1.0\r\n",
+            "[ / HTTP/1.0\r\n",
+            "] / HTTP/1.0\r\n",
+            "? / HTTP/1.0\r\n",
+            "= / HTTP/1.0\r\n",
+            "{ / HTTP/1.0\r\n",
+            "} / HTTP/1.0\r\n",
+            "get@ / HTTP/1.0\r\n",
+            "post= / HTTP/1.0\r\n",
+        };
 
-                var encodedNullCharInTargetRequestLines = new[]
-                {
-                    "GET /%00 HTTP/1.1\r\n",
-                    "GET /%00%00 HTTP/1.1\r\n",
-                    "GET /%E8%00%84 HTTP/1.1\r\n",
-                    "GET /%E8%85%00 HTTP/1.1\r\n",
-                    "GET /%F3%00%82%86 HTTP/1.1\r\n",
-                    "GET /%F3%85%00%82 HTTP/1.1\r\n",
-                    "GET /%F3%85%82%00 HTTP/1.1\r\n",
-                    "GET /%E8%85%00 HTTP/1.1\r\n",
-                    "GET /%E8%01%00 HTTP/1.1\r\n",
-                };
-
-                var nullCharInTargetRequestLines = new[]
-                {
-                    "GET \0 HTTP/1.1\r\n",
-                    "GET /\0 HTTP/1.1\r\n",
-                    "GET /\0\0 HTTP/1.1\r\n",
-                    "GET /%C8\0 HTTP/1.1\r\n",
-                };
-
-                return invalidRequestLines.Select(requestLine => new object[]
-                       {
-                           requestLine,
-                           typeof(BadHttpRequestException),
-                           $"Invalid request line: {requestLine.Replace("\r", "<0x0D>").Replace("\n", "<0x0A>")}"
-                       })
-                       .Concat(encodedNullCharInTargetRequestLines.Select(requestLine => new object[]
-                        {
-                            requestLine,
-                            typeof(InvalidOperationException),
-                            $"The path contains null characters."
-                        }))
-                       .Concat(nullCharInTargetRequestLines.Select(requestLine => new object[]
-                        {
-                            requestLine,
-                            typeof(InvalidOperationException),
-                            new InvalidOperationException().Message
-                        }));
-            }
-        }
-
-        public static TheoryData<string> UnrecognizedHttpVersionData
+        public static IEnumerable<string> EncodedNullCharInTargetRequestLines => new[]
         {
-            get
+            "GET /%00 HTTP/1.1\r\n",
+            "GET /%00%00 HTTP/1.1\r\n",
+            "GET /%E8%00%84 HTTP/1.1\r\n",
+            "GET /%E8%85%00 HTTP/1.1\r\n",
+            "GET /%F3%00%82%86 HTTP/1.1\r\n",
+            "GET /%F3%85%00%82 HTTP/1.1\r\n",
+            "GET /%F3%85%82%00 HTTP/1.1\r\n",
+            "GET /%E8%85%00 HTTP/1.1\r\n",
+            "GET /%E8%01%00 HTTP/1.1\r\n",
+        };
+
+        public static IEnumerable<string> NullCharInTargetRequestLines => new[]
             {
-                return new TheoryData<string>
-                {
-                    "H",
-                    "HT",
-                    "HTT",
-                    "HTTP",
-                    "HTTP/",
-                    "HTTP/1",
-                    "HTTP/1.",
-                    "http/1.0",
-                    "http/1.1",
-                    "HTTP/1.1 ",
-                    "HTTP/1.0a",
-                    "HTTP/1.0ab",
-                    "HTTP/1.1a",
-                    "HTTP/1.1ab",
-                    "HTTP/1.2",
-                    "HTTP/3.0",
-                    "hello",
-                    "8charact",
-                };
-            }
-        }
+                "GET \0 HTTP/1.1\r\n",
+                "GET /\0 HTTP/1.1\r\n",
+                "GET /\0\0 HTTP/1.1\r\n",
+                "GET /%C8\0 HTTP/1.1\r\n",
+            };
+
+        public static TheoryData<string> UnrecognizedHttpVersionData => new TheoryData<string>
+        {
+            "H",
+            "HT",
+            "HTT",
+            "HTTP",
+            "HTTP/",
+            "HTTP/1",
+            "HTTP/1.",
+            "http/1.0",
+            "http/1.1",
+            "HTTP/1.1 ",
+            "HTTP/1.0a",
+            "HTTP/1.0ab",
+            "HTTP/1.1a",
+            "HTTP/1.1ab",
+            "HTTP/1.2",
+            "HTTP/3.0",
+            "hello",
+            "8charact",
+        };
 
         public static IEnumerable<object[]> InvalidRequestHeaderData
         {
