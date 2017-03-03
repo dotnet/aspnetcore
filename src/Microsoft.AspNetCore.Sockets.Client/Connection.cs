@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private volatile ITransport _transport;
         private volatile Task _receiveLoopTask;
         private volatile Task _startTask = Task.CompletedTask;
+        private TaskQueue _eventQueue = new TaskQueue();
 
         private ReadableChannel<Message> Input => _transportChannel.Input;
         private WritableChannel<SendMessage> Output => _transportChannel.Output;
@@ -85,26 +86,36 @@ namespace Microsoft.AspNetCore.Sockets.Client
             if (Interlocked.CompareExchange(ref _connectionState, ConnectionState.Connected, ConnectionState.Connecting)
                 == ConnectionState.Connecting)
             {
-                // Do not "simplify" - events can be removed from a different thread
-                var connectedEventHandler = Connected;
-                if (connectedEventHandler != null)
+                var ignore = _eventQueue.Enqueue(() =>
                 {
-                    connectedEventHandler();
-                }
+                    // Do not "simplify" - events can be removed from a different thread
+                    var connectedEventHandler = Connected;
+                    if (connectedEventHandler != null)
+                    {
+                        connectedEventHandler();
+                    }
 
-                var ignore = Input.Completion.ContinueWith(t =>
+                    return Task.CompletedTask;
+                });
+
+                ignore = Input.Completion.ContinueWith(async t =>
                 {
                     Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected);
 
-                    // Do not "simplify" - events can be removed from a different thread
+                    await _eventQueue.Drain();
+
+                    // Do not "simplify" - event handlers can be removed from a different thread
                     var closedEventHandler = Closed;
                     if (closedEventHandler != null)
                     {
                         closedEventHandler(t.IsFaulted ? t.Exception.InnerException : null);
                     }
+
+                    return Task.CompletedTask;
                 });
 
-                // start receive loop
+                // start receive loop only after the Connected event was raised to
+                // avoid Received event being raised before the Connected event
                 _receiveLoopTask = ReceiveAsync();
             }
         }
@@ -169,18 +180,36 @@ namespace Microsoft.AspNetCore.Sockets.Client
         {
             try
             {
-                _logger.LogTrace("Beginning receive loop");
+                _logger.LogTrace("Beginning receive loop.");
 
                 while (await Input.WaitToReadAsync())
                 {
+                    if (_connectionState != ConnectionState.Connected)
+                    {
+                        _logger.LogDebug("Message received but connection is not connected. Skipping raising Received event.");
+                        // drain
+                        Input.TryRead(out Message ignore);
+                        continue;
+                    }
+
                     if (Input.TryRead(out Message message))
                     {
-                        // Do not "simplify" - events can be removed from a different thread
-                        var receivedEventHandler = Received;
-                        if (receivedEventHandler != null)
+                        _logger.LogDebug("Scheduling raising Received event.");
+                        var ignore = _eventQueue.Enqueue(() => 
                         {
-                            receivedEventHandler(message.Payload, message.Type);
-                        }
+                            // Do not "simplify" - event handlers can be removed from a different thread
+                            var receivedEventHandler = Received;
+                            if (receivedEventHandler != null)
+                            {
+                                receivedEventHandler(message.Payload, message.Type);
+                            }
+
+                            return Task.CompletedTask;
+                        });
+                    }
+                    else
+                    {
+                        _logger.LogDebug("Could not read message.");
                     }
                 }
 
@@ -232,6 +261,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public async Task DisposeAsync()
         {
+            _logger.LogInformation("Stopping client.");
+
             Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected);
             try
             {

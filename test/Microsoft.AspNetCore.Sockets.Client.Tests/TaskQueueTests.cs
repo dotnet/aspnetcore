@@ -40,13 +40,13 @@ namespace Microsoft.AspNetCore.Client.Tests
             int n = 0;
             queue.Enqueue(() =>
             {
-                n++;
+                n = 1;
                 return Task.CompletedTask;
             });
 
             Task task = queue.Enqueue(() =>
             {
-                return Task.Delay(100).ContinueWith(t => n++);
+                return Task.Delay(100).ContinueWith(t => n = 2);
             });
 
             task.Wait();

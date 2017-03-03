@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         [Fact]
         public async Task CanDisposeNotStartedHubConnection()
         {
-            await new HubConnection(new Uri("http://fakeuri.org"), Mock.Of<IInvocationAdapter>(), Mock.Of<ILoggerFactory>())
+            await new HubConnection(new Uri("http://fakeuri.org"), Mock.Of<IInvocationAdapter>(), new LoggerFactory())
                 .DisposeAsync();
         }
 
@@ -129,12 +129,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var hubConnection = new HubConnection(new Uri("http://fakeuri.org"), Mock.Of<IInvocationAdapter>(), new LoggerFactory());
                 try
                 {
-                    var connectedEventRaised = false;
-                    hubConnection.Connected += () => connectedEventRaised = true;
+                    var connectedEventRaisedTcs = new TaskCompletionSource<object>();
+                    hubConnection.Connected += () => connectedEventRaisedTcs.SetResult(null);
 
                     await hubConnection.StartAsync(longPollingTransport, httpClient);
 
-                    Assert.True(connectedEventRaised);
+                    await connectedEventRaisedTcs.Task.OrTimeout();
                 }
                 finally
                 {
