@@ -66,6 +66,66 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             return (CSharpCodeWriter)base.WriteLine();
         }
 
+        public CSharpCodeWriter WritePadding(int offset, SourceSpan? span, CSharpRenderingContext context)
+        {
+            if (span == null)
+            {
+                return this;
+            }
+
+            var basePadding = CalculatePadding();
+            var resolvedPadding = Math.Max(basePadding - offset, 0);
+
+            if (context.Options.IsIndentingWithTabs)
+            {
+                // Avoid writing directly to the StringBuilder here, that will throw off the manual indexing 
+                // done by the base class.
+                var tabs = resolvedPadding / context.Options.TabSize;
+                for (var i = 0; i < tabs; i++)
+                {
+                    Write("\t");
+                }
+
+                var spaces = resolvedPadding % context.Options.TabSize;
+                for (var i = 0; i < spaces; i++)
+                {
+                    Write(" ");
+                }
+            }
+            else
+            {
+                for (var i = 0; i < resolvedPadding; i++)
+                {
+                    Write(" ");
+                }
+            }
+
+            return this;
+
+            int CalculatePadding()
+            {
+                var spaceCount = 0;
+                for (var i = span.Value.AbsoluteIndex - 1; i >= 0; i--)
+                {
+                    var @char = context.SourceDocument[i];
+                    if (@char == '\n' || @char == '\r')
+                    {
+                        break;
+                    }
+                    else if (@char == '\t')
+                    {
+                        spaceCount += context.Options.TabSize;
+                    }
+                    else
+                    {
+                        spaceCount++;
+                    }
+                }
+
+                return spaceCount;
+            }
+        }
+
         public CSharpCodeWriter WriteVariableDeclaration(string type, string name, string value)
         {
             Write(type).Write(" ").Write(name);

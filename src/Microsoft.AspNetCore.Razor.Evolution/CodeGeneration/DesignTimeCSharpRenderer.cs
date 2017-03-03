@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         public override void VisitCSharpExpression(CSharpExpressionIRNode node)
         {
+            // We can't remove this yet, because it's still used recursively in a few places.
             if (node.Children.Count == 0)
             {
                 return;

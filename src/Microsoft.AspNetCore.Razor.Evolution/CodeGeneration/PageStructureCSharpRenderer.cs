@@ -17,100 +17,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             Target = target;
         }
 
-        public override void VisitNamespace(NamespaceDeclarationIRNode node)
-        {
-            Context.Writer
-                .Write("namespace ")
-                .WriteLine(node.Content);
-
-            using (Context.Writer.BuildScope())
-            {
-                Context.Writer.WriteLineHiddenDirective();
-                VisitDefault(node);
-            }
-        }
-
-        public override void VisitRazorMethodDeclaration(RazorMethodDeclarationIRNode node)
-        {
-            Context.Writer.WriteLine("#pragma warning disable 1998");
-
-            Context.Writer
-                .Write(node.AccessModifier)
-                .Write(" ");
-
-            if (node.Modifiers != null)
-            {
-                for (var i = 0; i < node.Modifiers.Count; i++)
-                {
-                    Context.Writer.Write(node.Modifiers[i]);
-
-                    if (i + 1 < node.Modifiers.Count)
-                    {
-                        Context.Writer.Write(" ");
-                    }
-                }
-            }
-
-            Context.Writer
-                .Write(" ")
-                .Write(node.ReturnType)
-                .Write(" ")
-                .Write(node.Name)
-                .WriteLine("()");
-
-            using (Context.Writer.BuildScope())
-            {
-                VisitDefault(node);
-            }
-
-            Context.Writer.WriteLine("#pragma warning restore 1998");
-        }
-
-        public override void VisitClass(ClassDeclarationIRNode node)
-        {
-            Context.Writer
-                .Write(node.AccessModifier)
-                .Write(" class ")
-                .Write(node.Name);
-
-            if (node.BaseType != null || node.Interfaces != null)
-            {
-                Context.Writer.Write(" : ");
-            }
-
-            if (node.BaseType != null)
-            {
-                Context.Writer.Write(node.BaseType);
-
-                if (node.Interfaces != null)
-                {
-                    Context.Writer.WriteParameterSeparator();
-                }
-            }
-
-            if (node.Interfaces != null)
-            {
-                for (var i = 0; i < node.Interfaces.Count; i++)
-                {
-                    Context.Writer.Write(node.Interfaces[i]);
-
-                    if (i + 1 < node.Interfaces.Count)
-                    {
-                        Context.Writer.WriteParameterSeparator();
-                    }
-                }
-            }
-
-            Context.Writer.WriteLine();
-
-            using (Context.Writer.BuildScope())
-            {
-                VisitDefault(node);
-            }
-        }
-
         public override void VisitExtension(ExtensionIRNode node)
         {
+            // This needs to stay here until the rest of the code in the renderers is rewritten because
+            // and extension can occur at any level.
             node.WriteNode(Target, Context);
         }
 

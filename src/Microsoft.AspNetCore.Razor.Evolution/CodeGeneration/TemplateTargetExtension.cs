@@ -22,10 +22,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
             var initialRenderingConventions = context.RenderingConventions;
             context.RenderingConventions = new CSharpRedirectRenderingConventions(TemplateWriterName, context.Writer);
-            using (context.Writer.BuildAsyncLambda(endLine: false, parameterNames: TemplateWriterName))
+
+            using (context.Push(new RedirectedBasicWriter(context.BasicWriter, TemplateWriterName)))
             {
-                context.RenderChildren(node);
+                using (context.Writer.BuildAsyncLambda(endLine: false, parameterNames: TemplateWriterName))
+                {
+                    context.RenderChildren(node);
+                }
             }
+
             context.RenderingConventions = initialRenderingConventions;
 
             context.Writer.WriteEndMethodInvocation(endLine: false);

@@ -63,6 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 
         public override void VisitCSharpExpression(CSharpExpressionIRNode node)
         {
+            // We can't remove this yet, because it's still used recursively in a few places.
             IDisposable linePragmaScope = null;
             if (node.Source != null)
             {
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 var padding = BuildOffsetPadding(Context.RenderingConventions.StartWriteMethod.Length, node.Source.Value, Context);
                 Context.Writer.Write(padding);
             }
-
+            
             Context.Writer.Write(Context.RenderingConventions.StartWriteMethod);
 
             for (var i = 0; i < node.Children.Count; i++)
