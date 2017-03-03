@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -18,6 +17,19 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         public HttpClient Client { get; }
+
+        [Fact]
+        public async Task NoPage_NotFound()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/NoPage");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
 
         [Fact]
         public async Task HelloWorld_CanGetContent()
@@ -84,15 +96,31 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task PageWithoutContent()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/PageWithoutContent/No/Content/Path");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("", content);
+        }
+
+        [Fact]
         public async Task TempData_SetTempDataInPage_CanReadValue()
         {
             // Arrange 1
             var url = "http://localhost/TempData/SetTempDataOnPageAndRedirect?message=Hi1";
             var request = new HttpRequestMessage(HttpMethod.Get, url);
-            
+
             // Act 1
             var response = await Client.SendAsync(request);
-            
+
             // Assert 1
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
 

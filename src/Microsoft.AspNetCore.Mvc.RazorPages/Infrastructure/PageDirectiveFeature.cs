@@ -9,25 +9,46 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     public static class PageDirectiveFeature
     {
-        public static bool TryGetRouteTemplate(RazorProjectItem projectItem, out string template)
+        public static bool TryGetPageDirective(RazorProjectItem projectItem, out string template)
         {
+            if (projectItem == null)
+            {
+                throw new ArgumentNullException(nameof(projectItem));
+            }
+
             const string PageDirective = "@page";
 
-            string content;
-            using (var streamReader = new StreamReader(projectItem.Read()))
+            var stream = projectItem.Read();
+
+            string content = null;
+            using (var streamReader = new StreamReader(stream))
             {
-                content = streamReader.ReadToEnd();
+                do
+                {
+                    content = streamReader.ReadLine();
+                } while (content != null && string.IsNullOrWhiteSpace(content));
+                content = content?.Trim();
             }
 
-            if (content.StartsWith(PageDirective, StringComparison.Ordinal))
+            if (content == null || !content.StartsWith(PageDirective, StringComparison.Ordinal))
             {
-                var newLineIndex = content.IndexOf(Environment.NewLine, PageDirective.Length);
-                template = content.Substring(PageDirective.Length, newLineIndex - PageDirective.Length).Trim();
-                return true;
+                template = null;
+                return false;
             }
 
-            template = null;
-            return false;
+            template = content.Substring(PageDirective.Length, content.Length - PageDirective.Length).TrimStart();
+
+            if (template.StartsWith("\"") && template.EndsWith("\""))
+            {
+                template = template.Substring(1, template.Length - 2);
+            }
+            // If it's not in quotes it's not our template
+            else
+            {
+                template = string.Empty;
+            }
+
+            return true;
         }
     }
 }

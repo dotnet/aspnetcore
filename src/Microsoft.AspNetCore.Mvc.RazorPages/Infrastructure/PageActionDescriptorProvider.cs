@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 }
 
                 string template;
-                if (!PageDirectiveFeature.TryGetRouteTemplate(item, out template))
+                if (!PageDirectiveFeature.TryGetPageDirective(item, out template))
                 {
                     // .cshtml pages without @page are not RazorPages.
                     continue;
