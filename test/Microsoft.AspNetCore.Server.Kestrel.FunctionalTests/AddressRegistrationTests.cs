@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
@@ -129,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [ConditionalFact(Skip = "Waiting on https://github.com/aspnet/Hosting/issues/917")]
+        [ConditionalFact]
         [PortSupportedCondition(5000)]
         public async Task DefaultsToPort5000()
         {
@@ -147,13 +148,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 host.Start();
 
-                var debugLog = testLogger.Messages.Single(log => log.LogLevel == LogLevel.Debug);
-                Assert.True(debugLog.Message.Contains("default"));
+                Assert.Equal(5000, host.GetPort());
+                Assert.Single(testLogger.Messages, log => log.LogLevel == LogLevel.Debug &&
+                    string.Equals($"No listening endpoints were configured. Binding to {Constants.DefaultIPEndPoint} by default.",
+                    log.Message, StringComparison.Ordinal));
 
-                foreach (var testUrl in new[] { "http://127.0.0.1:5000", "http://localhost:5000" })
+                foreach (var testUrl in new[] { "http://127.0.0.1:5000", /* "http://[::1]:5000" */})
                 {
-                    var response = await HttpClientSlim.GetStringAsync(testUrl);
-                    Assert.Equal(new Uri(testUrl).ToString(), response);
+                    Assert.Equal(new Uri(testUrl).ToString(), await HttpClientSlim.GetStringAsync(testUrl));
                 }
             }
         }
