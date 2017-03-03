@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -31,16 +30,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         /// </summary>
         public override async Task RequestProcessingAsync()
         {
-            var requestLineStatus = default(RequestLineStatus);
-
             try
             {
                 while (!_requestProcessingStopping)
                 {
-                    // If writer completes with an error Input.ReadAsyncDispatched would throw and
-                    // this would not be reset to empty. But it's required by ECONNRESET check lower in the method.
-                    requestLineStatus = RequestLineStatus.Empty;
-
                     ConnectionControl.SetTimeout(_keepAliveMilliseconds, TimeoutAction.CloseConnection);
 
                     while (!_requestProcessingStopping)
@@ -49,76 +42,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         var examined = result.Buffer.End;
                         var consumed = result.Buffer.End;
 
+                        InitializeHeaders();
+
                         try
                         {
-                            if (!result.Buffer.IsEmpty)
-                            {
-                                requestLineStatus = TakeStartLine(result.Buffer, out consumed, out examined)
-                                    ? RequestLineStatus.Done : RequestLineStatus.Incomplete;
-                            }
-                            else
-                            {
-                                requestLineStatus = RequestLineStatus.Empty;
-                            }
+                            ParseRequest(result.Buffer, out consumed, out examined);
                         }
                         catch (InvalidOperationException)
                         {
-                            throw BadHttpRequestException.GetException(RequestRejectionReason.InvalidRequestLine);
+                            switch (_requestProcessingStatus)
+                            {
+                                case RequestProcessingStatus.ParsingRequestLine:
+                                    throw BadHttpRequestException.GetException(RequestRejectionReason.InvalidRequestLine);
+                                case RequestProcessingStatus.ParsingHeaders:
+                                    throw BadHttpRequestException.GetException(RequestRejectionReason.MalformedRequestInvalidHeaders);
+                            }
+                            throw;
                         }
                         finally
                         {
                             Input.Reader.Advance(consumed, examined);
                         }
 
-                        if (requestLineStatus == RequestLineStatus.Done)
+                        if (_requestProcessingStatus == RequestProcessingStatus.AppStarted)
                         {
                             break;
                         }
 
                         if (result.IsCompleted)
                         {
-                            if (requestLineStatus == RequestLineStatus.Empty)
+                            switch (_requestProcessingStatus)
                             {
-                                return;
+                                case RequestProcessingStatus.RequestPending:
+                                    return;
+                                case RequestProcessingStatus.ParsingRequestLine:
+                                    throw BadHttpRequestException.GetException(RequestRejectionReason.InvalidRequestLine);
+                                case RequestProcessingStatus.ParsingHeaders:
+                                    throw BadHttpRequestException.GetException(RequestRejectionReason.MalformedRequestInvalidHeaders);
                             }
-
-                            RejectRequest(RequestRejectionReason.InvalidRequestLine, requestLineStatus.ToString());
-                        }
-                    }
-
-                    InitializeHeaders();
-
-                    while (!_requestProcessingStopping)
-                    {
-
-                        var result = await Input.Reader.ReadAsync();
-                        var examined = result.Buffer.End;
-                        var consumed = result.Buffer.End;
-
-                        bool headersDone;
-
-                        try
-                        {
-                            headersDone = TakeMessageHeaders(result.Buffer, FrameRequestHeaders, out consumed,
-                                out examined);
-                        }
-                        catch (InvalidOperationException)
-                        {
-                            throw BadHttpRequestException.GetException(RequestRejectionReason.MalformedRequestInvalidHeaders);
-                        }
-                        finally
-                        {
-                            Input.Reader.Advance(consumed, examined);
-                        }
-
-                        if (headersDone)
-                        {
-                            break;
-                        }
-
-                        if (result.IsCompleted)
-                        {
-                            RejectRequest(RequestRejectionReason.MalformedRequestInvalidHeaders);
                         }
                     }
 
@@ -231,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             catch (IOException ex) when (ex.InnerException is UvException)
             {
                 // Don't log ECONNRESET errors made between requests. Browsers like IE will reset connections regularly.
-                if (requestLineStatus != RequestLineStatus.Empty ||
+                if (_requestProcessingStatus != RequestProcessingStatus.RequestPending ||
                     ((UvException)ex.InnerException).StatusCode != Constants.ECONNRESET)
                 {
                     Log.RequestProcessingError(ConnectionId, ex);

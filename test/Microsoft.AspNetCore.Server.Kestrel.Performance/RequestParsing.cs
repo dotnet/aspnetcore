@@ -6,12 +6,8 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Text;
 using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
-using MemoryPool = Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure.MemoryPool;
-using RequestLineStatus = Microsoft.AspNetCore.Server.Kestrel.Internal.Http.Frame.RequestLineStatus;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -154,7 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
                 Frame.InitializeHeaders();
 
-                if (!Frame.TakeMessageHeaders(readableBuffer, (FrameRequestHeaders)Frame.RequestHeaders, out consumed, out examined))
+                if (!Frame.TakeMessageHeaders(readableBuffer, out consumed, out examined))
                 {
                     ThrowInvalidMessageHeaders();
                 }

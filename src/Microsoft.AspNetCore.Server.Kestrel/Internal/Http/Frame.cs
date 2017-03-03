@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         private CancellationTokenSource _abortedCts;
         private CancellationToken? _manuallySetRequestAbortToken;
 
-        private RequestProcessingStatus _requestProcessingStatus;
+        protected RequestProcessingStatus _requestProcessingStatus;
         protected bool _keepAlive;
         protected bool _upgrade;
         private bool _canHaveBody;
@@ -982,15 +982,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             Output.ProducingComplete(end);
         }
 
+        public void ParseRequest(ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
+        {
+            consumed = buffer.Start;
+            examined = buffer.End;
+
+            switch (_requestProcessingStatus)
+            {
+                case RequestProcessingStatus.RequestPending:
+                    if (buffer.IsEmpty)
+                    {
+                        break;
+                    }
+
+                    ConnectionControl.ResetTimeout(_requestHeadersTimeoutMilliseconds, TimeoutAction.SendTimeoutResponse);
+
+                    _requestProcessingStatus = RequestProcessingStatus.ParsingRequestLine;
+                    goto case RequestProcessingStatus.ParsingRequestLine;
+                case RequestProcessingStatus.ParsingRequestLine:
+                    if (TakeStartLine(buffer, out consumed, out examined))
+                    {
+                        buffer = buffer.Slice(consumed, buffer.End);
+
+                        _requestProcessingStatus = RequestProcessingStatus.ParsingHeaders;
+                        goto case RequestProcessingStatus.ParsingHeaders;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                case RequestProcessingStatus.ParsingHeaders:
+                    if (TakeMessageHeaders(buffer, out consumed, out examined))
+                    {
+                        _requestProcessingStatus = RequestProcessingStatus.AppStarted;
+                    }
+                    break;
+            }
+        }
+
         public bool TakeStartLine(ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
         {
-            if (_requestProcessingStatus == RequestProcessingStatus.RequestPending)
-            {
-                ConnectionControl.ResetTimeout(_requestHeadersTimeoutMilliseconds, TimeoutAction.SendTimeoutResponse);
-            }
-
-            _requestProcessingStatus = RequestProcessingStatus.RequestStarted;
-
             var overLength = false;
             if (buffer.Length >= ServerOptions.Limits.MaxRequestLineSize)
             {
@@ -1039,7 +1070,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             return true;
         }
 
-        public bool TakeMessageHeaders(ReadableBuffer buffer, FrameRequestHeaders requestHeaders, out ReadCursor consumed, out ReadCursor examined)
+        public bool TakeMessageHeaders(ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
         {
             // Make sure the buffer is limited
             bool overLength = false;
@@ -1085,7 +1116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             if (!appCompleted)
             {
                 // Back out of header creation surface exeception in user code
-                _requestProcessingStatus = RequestProcessingStatus.RequestStarted;
+                _requestProcessingStatus = RequestProcessingStatus.AppStarted;
                 throw ex;
             }
             else
@@ -1141,18 +1172,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public void RejectRequest(RequestRejectionReason reason)
         {
-            RejectRequest(BadHttpRequestException.GetException(reason));
+            throw BadHttpRequestException.GetException(reason);
         }
 
         public void RejectRequest(RequestRejectionReason reason, string value)
         {
-            RejectRequest(BadHttpRequestException.GetException(reason, value));
-        }
-
-        private void RejectRequest(BadHttpRequestException ex)
-        {
-            Log.ConnectionBadRequest(ConnectionId, ex);
-            throw ex;
+            throw BadHttpRequestException.GetException(reason, value);
         }
 
         public void SetBadRequestState(RequestRejectionReason reason)
@@ -1162,6 +1187,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
         public void SetBadRequestState(BadHttpRequestException ex)
         {
+            Log.ConnectionBadRequest(ConnectionId, ex);
+
             if (!HasResponseStarted)
             {
                 SetErrorResponseHeaders(ex.StatusCode);
@@ -1188,20 +1215,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
 
             Log.ApplicationError(ConnectionId, ex);
-        }
-
-        public enum RequestLineStatus
-        {
-            Empty,
-            Incomplete,
-            Done
-        }
-
-        private enum RequestProcessingStatus
-        {
-            RequestPending,
-            RequestStarted,
-            ResponseStarted
         }
 
         public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod)

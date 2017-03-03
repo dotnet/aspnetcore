@@ -40,6 +40,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 case RequestRejectionReason.HeaderValueLineFoldingNotSupported:
                     ex = new BadHttpRequestException("Header value line folding not supported.", StatusCodes.Status400BadRequest);
                     break;
+                case RequestRejectionReason.InvalidRequestLine:
+                    ex = new BadHttpRequestException("Invalid request line.", StatusCodes.Status400BadRequest);
+                    break;
                 case RequestRejectionReason.MalformedRequestInvalidHeaders:
                     ex = new BadHttpRequestException("Malformed request: invalid headers.", StatusCodes.Status400BadRequest);
                     break;
