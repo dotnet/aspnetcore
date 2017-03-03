@@ -17,8 +17,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private const int InnerLoopCount = 512;
         private const int Pipelining = 16;
 
-        private const string plaintextRequest = "GET /plaintext HTTP/1.1\r\nHost: www.example.com\r\n\r\n";
-
         private const string plaintextTechEmpower = "GET /plaintext HTTP/1.1\r\n" +
             "Host: localhost\r\n" +
             "Accept: text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7\r\n" +
@@ -50,8 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             "Pragma: no-cache\r\n" +
             "Cookie: prov=20629ccd-8b0f-e8ef-2935-cd26609fc0bc; __qca=P0-1591065732-1479167353442; _ga=GA1.2.1298898376.1479167354; _gat=1; sgt=id=9519gfde_3347_4762_8762_df51458c8ec2; acct=t=why-is-%e0%a5%a7%e0%a5%a8%e0%a5%a9-numeric&s=why-is-%e0%a5%a7%e0%a5%a8%e0%a5%a9-numeric\r\n\r\n";
 
-        private static readonly byte[] _plaintextPipelinedRequests = Encoding.ASCII.GetBytes(string.Concat(Enumerable.Repeat(plaintextRequest, Pipelining)));
-        private static readonly byte[] _plaintextRequest = Encoding.ASCII.GetBytes(plaintextRequest);
+        private static readonly byte[] _plaintextTechEmpowerPipelinedRequests = Encoding.ASCII.GetBytes(string.Concat(Enumerable.Repeat(plaintextTechEmpower, Pipelining)));
         private static readonly byte[] _plaintextTechEmpower = Encoding.ASCII.GetBytes(plaintextTechEmpower);
         
         private static readonly byte[] _liveaspnentPipelinedRequests = Encoding.ASCII.GetBytes(string.Concat(Enumerable.Repeat(liveaspnetRequest, Pipelining)));
@@ -64,16 +61,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public Type ParserType { get; set; }
 
         [Benchmark(Baseline = true, OperationsPerInvoke = InnerLoopCount)]
-        public void ParsePlaintext()
-        {
-            for (var i = 0; i < InnerLoopCount; i++)
-            {
-                InsertData(_plaintextRequest);
-                ParseData();
-            }
-        }
-
-        [Benchmark(OperationsPerInvoke = InnerLoopCount)]
         public void ParsePlaintextTechEmpower()
         {
             for (var i = 0; i < InnerLoopCount; i++) {
@@ -83,11 +70,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         }
 
         [Benchmark(OperationsPerInvoke = InnerLoopCount * Pipelining)]
-        public void ParsePipelinedPlaintext()
+        public void ParsePipelinedPlaintextTechEmpower()
         {
             for (var i = 0; i < InnerLoopCount; i++)
             {
-                InsertData(_plaintextPipelinedRequests);
+                InsertData(_plaintextTechEmpowerPipelinedRequests);
                 ParseData();
             }
         }
