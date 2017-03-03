@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <None Include="*.config" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="remoteDeploymentConfig.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
