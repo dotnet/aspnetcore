@@ -19,6 +19,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private const string plaintextRequest = "GET /plaintext HTTP/1.1\r\nHost: www.example.com\r\n\r\n";
 
+        private const string plaintextTechEmpower = "GET /plaintext HTTP/1.1\r\n" +
+            "Host: localhost\r\n" +
+            "Accept: text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7\r\n" +
+            "Connection: keep-alive\r\n\r\n";
+
         private const string liveaspnetRequest = "GET https://live.asp.net/ HTTP/1.1\r\n" +
             "Host: live.asp.net\r\n" +
             "Connection: keep-alive\r\n" +
@@ -47,7 +52,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private static readonly byte[] _plaintextPipelinedRequests = Encoding.ASCII.GetBytes(string.Concat(Enumerable.Repeat(plaintextRequest, Pipelining)));
         private static readonly byte[] _plaintextRequest = Encoding.ASCII.GetBytes(plaintextRequest);
-
+        private static readonly byte[] _plaintextTechEmpower = Encoding.ASCII.GetBytes(plaintextTechEmpower);
+        
         private static readonly byte[] _liveaspnentPipelinedRequests = Encoding.ASCII.GetBytes(string.Concat(Enumerable.Repeat(liveaspnetRequest, Pipelining)));
         private static readonly byte[] _liveaspnentRequest = Encoding.ASCII.GetBytes(liveaspnetRequest);
 
@@ -63,6 +69,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             for (var i = 0; i < InnerLoopCount; i++)
             {
                 InsertData(_plaintextRequest);
+                ParseData();
+            }
+        }
+
+        [Benchmark(OperationsPerInvoke = InnerLoopCount)]
+        public void ParsePlaintextTechEmpower()
+        {
+            for (var i = 0; i < InnerLoopCount; i++) {
+                InsertData(_plaintextTechEmpower);
                 ParseData();
             }
         }
