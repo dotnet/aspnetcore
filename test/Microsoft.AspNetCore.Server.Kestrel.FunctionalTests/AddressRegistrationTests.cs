@@ -371,8 +371,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 var dataset = new TheoryData<string, Func<IServerAddressesFeature, string[]>>();
 
                 // Default host and port
-                dataset.Add(null, _ => new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/" });
-                dataset.Add(string.Empty, _ => new[] { "http://127.0.0.1:5000/", "http://[::1]:5000/" });
+                dataset.Add(null, _ => new[] { "http://127.0.0.1:5000/", /*"http://[::1]:5000/"*/ });
+                dataset.Add(string.Empty, _ => new[] { "http://127.0.0.1:5000/", /*"http://[::1]:5000/"*/ });
 
                 // Static ports
                 var port = GetNextPort();
