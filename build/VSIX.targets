@@ -1,0 +1,66 @@
+<Project>
+  <PropertyGroup>
+    <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);GenerateVSIX</PackageDependsOn>
+    <NuGetCommandLineVersion>3.5.0</NuGetCommandLineVersion>
+    <VSIXName>Microsoft.VisualStudio.RazorExtension</VSIXName>
+    <VSIXProject>$(RepositoryRoot)tooling\$(VSIXName)\$(VSIXName).csproj</VSIXProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NuGet.CommandLine" Version="$(NuGetCommandLineVersion)" Condition="'$(OS)'=='Windows_NT'" />
+  </ItemGroup>
+
+  <Target
+    Name="GenerateVSIX"
+    DependsOnTargets="_LocateMSBuildExe;_BuildVSIX"
+    Condition="'$(OS)'=='Windows_NT'" />
+
+  <Target Name="_LocateMSBuildExe" Condition="Exists('$(MSBuildProgramFiles32)')">
+    <ItemGroup>
+      <MSBuild15ExePaths Include="$(MSBuildProgramFiles32)\Microsoft Visual Studio\2017*\**\MSBuild\15.0\Bin\MSBuild.exe" />
+    </ItemGroup>
+
+    <Warning
+      Text="Unable to locate MSBuild 15.0 under $(MSBuildProgramFiles32)\Microsoft Visual Studio"
+      Condition="'@(MSBuild15ExePaths)'==''"/>
+
+    <PropertyGroup Condition="'@(MSBuild15ExePaths)'!=''">
+      <MSBuildExePath>%(MSBuild15ExePaths.FullPath)</MSBuildExePath>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_RestoreProject">
+    <PropertyGroup>
+      <NuGetExe>$(NuGetPackageFolders)nuget.commandline\$(NuGetCommandLineVersion)\tools\nuget.exe</NuGetExe>
+    </PropertyGroup>
+    <Exec Command="$(NuGetExe) restore &quot;$(VSIXProject)&quot; -SolutionDir &quot;$(RepositoryRoot) &quot; -verbosity quiet" />
+  </Target>
+
+  <Target Name="_BuildVSIX" Condition="'$(MSBuildExePath)'!=''">
+    <PropertyGroup>
+      <VSIXLogFilePath>$(ArtifactsDir)msbuild\vsix.log</VSIXLogFilePath>
+      <VSIXResponseFilePath>$(ArtifactsDir)msbuild\vsix.rsp</VSIXResponseFilePath>
+      <VSIXOutputPath>$(BuildDir)$(VSIXName).vsix</VSIXOutputPath>
+    </PropertyGroup>
+
+    <CallTarget Targets="_RestoreProject" />
+    <ItemGroup>
+      <MSBuildArguments Include="
+        $(VSIXProject);
+        /v:M;
+        /fl;
+        /flp:LogFile=$(VSIXLogFilePath);
+        /p:DeployExtension=false;
+        /p:TargetVSIXContainer=$(VSIXOutputPath);
+        /p:Configuration=$(Configuration);" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      File="$(VSIXResponseFilePath)"
+      Lines="@(MSBuildArguments)"
+      Overwrite="true" />
+
+    <Exec Command="&quot;$(MSBuildExePath)&quot; @&quot;$(VSIXResponseFilePath)&quot;" />
+  </Target>
+
+</Project>

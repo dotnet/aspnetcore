@@ -1,8 +1,5 @@
 <Project>
-  <!--
-    TODO include VSIX build in default lifecycle builds
-    The .NET Core SDK doesn't currently support Microsoft.VsSDK.targets.
-  -->
+  <Import Project="VSIX.targets" />
   <ItemGroup>
     <Solutions Update="..\Razor.sln">
       <!-- the 'DebugNoVSIX' and 'ReleaseNoVSIX' configurations exclude the VSIX project, which doesn't build with Microsoft.NET.Sdk yet. -->
