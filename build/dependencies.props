@@ -3,5 +3,8 @@
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <LibUvVersion>1.9.1</LibUvVersion>
+    <!-- This if fixed because somebody https://www.nuget.org/packages/System.IO.Pipelines/0.1.0-e170304-1 --> 
+    <CoreFxLabsVersion>0.1.0-e170301-1</CoreFxLabsVersion>
+    <CoreFxLabsPipelinesVersion>0.1.0-e170228-1</CoreFxLabsPipelinesVersion>
   </PropertyGroup>
 </Project>
