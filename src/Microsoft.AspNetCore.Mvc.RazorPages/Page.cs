@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -18,10 +19,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         private PageArgumentBinder _binder;
 
         /// <summary>
-        /// The <see cref="PageContext"/>.
+        /// The <see cref="RazorPages.PageContext"/>.
         /// </summary>
         public PageContext PageContext { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="PageArgumentBinder"/>.
+        /// </summary>
         public PageArgumentBinder Binder
         {
             get
@@ -46,6 +50,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
+        /// Gets the <see cref="ModelStateDictionary"/>.
+        /// </summary>
+        public ModelStateDictionary ModelState => PageContext?.ModelState;
+
+        /// <summary>
         /// Gets the <see cref="ITempDataDictionary"/> from the <see cref="PageContext"/>.
         /// </summary>
         /// <remarks>Returns null if <see cref="PageContext"/> is null.</remarks>
@@ -57,6 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             throw new NotSupportedException();
         }
 
+        /// <inheritdoc />
         public override void BeginContext(int position, int length, bool isLiteral)
         {
             const string BeginContextEvent = "Microsoft.AspNetCore.Mvc.Razor.BeginInstrumentationContext";
@@ -76,6 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             }
         }
 
+        /// <inheritdoc />
         public override void EndContext()
         {
             const string EndContextEvent = "Microsoft.AspNetCore.Mvc.Razor.EndInstrumentationContext";
