@@ -94,6 +94,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             }
         }
 
+        public unsafe static string GetAsciiStringNonNullCharacters(this Span<byte> span)
+        {
+            if (span.IsEmpty)
+            {
+                return string.Empty;
+            }
+
+            var asciiString = new string('\0', span.Length);
+
+            fixed (char* output = asciiString)
+            fixed (byte* buffer = &span.DangerousGetPinnableReference())
+            {
+                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
+                // in the string
+                if (!AsciiUtilities.TryGetAsciiString(buffer, output, span.Length))
+                {
+                    throw new InvalidOperationException();
+                }
+            }
+            return asciiString;
+        }
+
         public static string GetAsciiStringEscaped(this Span<byte> span, int maxChars)
         {
             var sb = new StringBuilder();
