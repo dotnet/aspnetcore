@@ -6,20 +6,31 @@
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp1.1</TargetFrameworks>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">$(PackageTargetFallback);portable-net451+win8</PackageTargetFallback>
 
-    <!--
-      Generate an EXE to take advantage of Microsoft.NET.RuntimeIdentifierInference.targets special cases. This works
-      around #5873. Also avoids dotnet/sdk#926 when building with msbuild.exe e.g. in Visual Studio.
-    -->
-    <OutputType Condition=" '$(TargetFramework)' != 'netcoreapp1.1' ">EXE</OutputType>
-
     <DefineConstants Condition="'$(GenerateBaselines)'=='true'">$(DefineConstants);GENERATE_BASELINES</DefineConstants>
     <DefineConstants>$(DefineConstants);__RemoveThisBitTo__GENERATE_BASELINES</DefineConstants>
     <DefineConstants>$(DefineConstants);FUNCTIONAL_TESTS</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(TargetFramework)' != 'netcoreapp1.1' ">
+    <!-- Work around https://github.com/dotnet/sdk/issues/926. Align with bitness of the web site projects. -->
+    <PlatformTarget>x86</PlatformTarget>
+
+    <!--
+      Work around https://github.com/Microsoft/vstest/issues/428 aka https://github.com/aspnet/Mvc/issues/5873.
+      Create the appropriate binding redirects.
+    -->
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="..\Microsoft.AspNetCore.Mvc.Formatters.Xml.Test\XmlAssert.cs" />
     <EmbeddedResource Include="compiler\resources\**\*" />
+
+    <!--
+      Work around https://github.com/Microsoft/vstest/issues/196. Execute tests with assemblies in the bin folder, not
+      a temporary location. Unable to find the web site project folders otherwise.
+    -->
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
@@ -62,8 +73,8 @@
   </ItemGroup>
 
   <!--
-  Our functional tests utilize DependencyContext.Load which looks next to a dll for a deps.json. For each of our test
-  applications they need to have their corresponding deps.json placed next to their .dll in order to work.
+    Work around https://github.com/NuGet/Home/issues/4412. MVC uses DependencyContext.Load() which looks next to a .dll
+    for a .deps.json. Information isn't available elsewhere. Need the .deps.json file for all web site applications.
   -->
   <Target Name="CopyDepsFiles" AfterTargets="Build" Condition="'$(TargetFramework)'!=''">
     <ItemGroup>
