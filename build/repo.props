@@ -1,6 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <DisableDefaultItems>true</DisableDefaultItems>
-    <DisableDefaultTargets>true</DisableDefaultTargets>
-  </PropertyGroup>
-</Project>
