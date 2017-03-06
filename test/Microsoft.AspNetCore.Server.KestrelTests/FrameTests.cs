@@ -204,6 +204,22 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Fact]
+        public async Task TakeMessageHeadersConsumesBytesCorrectlyAtEnd()
+        {
+            await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes("Header-1: value1\r\n\r"));
+
+            var readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
+            Assert.False(_frame.TakeMessageHeaders(readableBuffer, out _consumed, out _examined));
+            _socketInput.Reader.Advance(_consumed, _examined);
+
+            await _socketInput.Writer.WriteAsync(Encoding.ASCII.GetBytes("\n"));
+
+            readableBuffer = (await _socketInput.Reader.ReadAsync()).Buffer;
+            Assert.True(_frame.TakeMessageHeaders(readableBuffer, out _consumed, out _examined));
+            _socketInput.Reader.Advance(_consumed, _examined);
+        }
+
+        [Fact]
         public async Task TakeMessageHeadersThrowsWhenHeadersExceedTotalSizeLimit()
         {
             const string headerLine = "Header: value\r\n";
