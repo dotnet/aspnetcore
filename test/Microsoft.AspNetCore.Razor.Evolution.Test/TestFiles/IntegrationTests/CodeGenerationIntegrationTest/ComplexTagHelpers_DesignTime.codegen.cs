@@ -53,7 +53,7 @@ System.Object __typeHelper = "*, TestAssembly";
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
-                                           __o = checkbox;
+                                        __o = checkbox;
 
 #line default
 #line hidden
@@ -74,7 +74,7 @@ System.Object __typeHelper = "*, TestAssembly";
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
-                            __o = true ? "checkbox" : "anything";
+                         __o = true ? "checkbox" : "anything";
 
 #line default
 #line hidden
@@ -113,7 +113,7 @@ System.Object __typeHelper = "*, TestAssembly";
 #line hidden
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
-                             __o = DateTime.Now;
+                          __o = DateTime.Now;
 
 #line default
 #line hidden
@@ -175,7 +175,7 @@ __TestNamespace_PTagHelper.Age = ("My age is this long.".Length);
 #line default
 #line hidden
 #line 34 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
-      __o = someMethod(item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
+   __o = someMethod(item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
     __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
     __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 34 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"

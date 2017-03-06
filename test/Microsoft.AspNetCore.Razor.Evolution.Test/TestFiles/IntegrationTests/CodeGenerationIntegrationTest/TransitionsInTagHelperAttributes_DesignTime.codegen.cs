@@ -33,7 +33,7 @@ __TestNamespace_PTagHelper.Age = 1337;
 #line hidden
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TransitionsInTagHelperAttributes.cshtml"
-         __o = @class;
+      __o = @class;
 
 #line default
 #line hidden
@@ -62,7 +62,7 @@ __TestNamespace_PTagHelper.Age = (@int);
 #line hidden
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TransitionsInTagHelperAttributes.cshtml"
-                __o = @class;
+             __o = @class;
 
 #line default
 #line hidden

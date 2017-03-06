@@ -33,7 +33,7 @@ System.Object NestedDelegates = null;
 #line hidden
             DefineSection("Section2", async (__razor_section_writer) => {
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
-                   __o = thing;
+                __o = thing;
 
 #line default
 #line hidden
@@ -48,7 +48,7 @@ System.Object NestedDelegates = null;
 #line hidden
             item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
-                                      __o = item;
+                                   __o = item;
 
 #line default
 #line hidden

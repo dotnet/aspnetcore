@@ -35,7 +35,7 @@ __TestNamespace_InputTagHelper.Value = MyEnum.MyValue;
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EnumTagHelpers.cshtml"
-            __o = MyEnum.MySecondValue;
+         __o = MyEnum.MySecondValue;
 
 #line default
 #line hidden

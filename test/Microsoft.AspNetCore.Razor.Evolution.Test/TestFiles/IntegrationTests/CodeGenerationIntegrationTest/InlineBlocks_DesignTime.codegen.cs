@@ -25,7 +25,7 @@ System.Object Link = null;
 #line default
 #line hidden
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InlineBlocks.cshtml"
-                               __o = link;
+                            __o = link;
 
 #line default
 #line hidden

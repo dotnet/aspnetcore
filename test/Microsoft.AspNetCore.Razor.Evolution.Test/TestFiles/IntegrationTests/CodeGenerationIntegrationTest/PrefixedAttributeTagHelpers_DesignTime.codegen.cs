@@ -92,7 +92,7 @@ __TestNamespace_InputTagHelper1.IntDictionaryProperty["salt"] = 37;
             __TestNamespace_InputTagHelper1.StringDictionaryProperty["paprika"] = "another string";
             __TestNamespace_InputTagHelper2.StringDictionaryProperty["paprika"] = __TestNamespace_InputTagHelper1.StringDictionaryProperty["paprika"];
 #line 21 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/PrefixedAttributeTagHelpers.cshtml"
-                                       __o = literate;
+                                    __o = literate;
 
 #line default
 #line hidden

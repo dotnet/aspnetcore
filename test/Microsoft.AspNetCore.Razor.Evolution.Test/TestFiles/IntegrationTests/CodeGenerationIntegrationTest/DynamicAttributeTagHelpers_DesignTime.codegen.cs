@@ -20,7 +20,7 @@ System.Object __typeHelper = "*, TestAssembly";
         {
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-                     __o = DateTime.Now;
+                  __o = DateTime.Now;
 
 #line default
 #line hidden
@@ -31,7 +31,7 @@ System.Object __typeHelper = "*, TestAssembly";
 #line default
 #line hidden
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-                           __o = string.Empty;
+                        __o = string.Empty;
 
 #line default
 #line hidden
@@ -41,7 +41,7 @@ System.Object __typeHelper = "*, TestAssembly";
 #line default
 #line hidden
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-                                                  __o = false;
+                                               __o = false;
 
 #line default
 #line hidden
@@ -52,19 +52,19 @@ System.Object __typeHelper = "*, TestAssembly";
 #line hidden
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-                   __o = DateTime.Now;
+                __o = DateTime.Now;
 
 #line default
 #line hidden
             __TestNamespace_InputTagHelper.Bound = string.Empty;
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-                                                         __o = DateTime.Now;
+                                                      __o = DateTime.Now;
 
 #line default
 #line hidden
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-            __o = long.MinValue;
+         __o = long.MinValue;
 
 #line default
 #line hidden
@@ -74,7 +74,7 @@ System.Object __typeHelper = "*, TestAssembly";
 #line default
 #line hidden
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-                                        __o = string.Empty;
+                                     __o = string.Empty;
 
 #line default
 #line hidden
@@ -84,7 +84,7 @@ System.Object __typeHelper = "*, TestAssembly";
 #line default
 #line hidden
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-                                                               __o = false;
+                                                            __o = false;
 
 #line default
 #line hidden
@@ -94,13 +94,13 @@ System.Object __typeHelper = "*, TestAssembly";
 #line default
 #line hidden
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-                                                                        __o = int.MaxValue;
+                                                                     __o = int.MaxValue;
 
 #line default
 #line hidden
             __TestNamespace_InputTagHelper.Bound = string.Empty;
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-              __o = long.MinValue;
+           __o = long.MinValue;
 
 #line default
 #line hidden
@@ -110,7 +110,7 @@ System.Object __typeHelper = "*, TestAssembly";
 #line default
 #line hidden
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-                                          __o = string.Empty;
+                                       __o = string.Empty;
 
 #line default
 #line hidden
@@ -120,7 +120,7 @@ System.Object __typeHelper = "*, TestAssembly";
 #line default
 #line hidden
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-                                                                 __o = false;
+                                                              __o = false;
 
 #line default
 #line hidden
@@ -130,23 +130,23 @@ System.Object __typeHelper = "*, TestAssembly";
 #line default
 #line hidden
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-                                                                          __o = int.MaxValue;
+                                                                       __o = int.MaxValue;
 
 #line default
 #line hidden
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-              __o = long.MinValue;
+           __o = long.MinValue;
 
 #line default
 #line hidden
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-                             __o = DateTime.Now;
+                          __o = DateTime.Now;
 
 #line default
 #line hidden
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-                                                             __o = int.MaxValue;
+                                                          __o = int.MaxValue;
 
 #line default
 #line hidden
@@ -157,7 +157,7 @@ System.Object __typeHelper = "*, TestAssembly";
 #line default
 #line hidden
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-                           __o = string.Empty;
+                        __o = string.Empty;
 
 #line default
 #line hidden
@@ -167,7 +167,7 @@ System.Object __typeHelper = "*, TestAssembly";
 #line default
 #line hidden
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml"
-                                                  __o = false;
+                                               __o = false;
 
 #line default
 #line hidden

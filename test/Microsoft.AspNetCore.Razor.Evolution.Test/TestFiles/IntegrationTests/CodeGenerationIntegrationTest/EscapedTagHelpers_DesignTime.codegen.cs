@@ -20,14 +20,14 @@ System.Object __typeHelper = "*, TestAssembly";
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EscapedTagHelpers.cshtml"
-                          __o = DateTime.Now;
+                       __o = DateTime.Now;
 
 #line default
 #line hidden
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EscapedTagHelpers.cshtml"
-                                                __o = DateTime.Now;
+                                             __o = DateTime.Now;
 
 #line default
 #line hidden

@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             _context.RenderChildren = visitor.RenderChildren;
             _context.RenderNode = visitor.Visit;
 
-            _context.BasicWriter = new DefaultBasicWriter();
+            _context.BasicWriter = _context.Options.DesignTimeMode ? (BasicWriter)new DesignTimeBasicWriter() : new RuntimeBasicWriter();
             _context.TagHelperWriter = new DefaultTagHelperWriter();
 
             visitor.VisitDocument(node);

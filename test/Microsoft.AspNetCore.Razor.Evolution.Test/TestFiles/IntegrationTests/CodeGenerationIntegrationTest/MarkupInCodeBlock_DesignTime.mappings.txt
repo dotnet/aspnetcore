@@ -9,14 +9,14 @@ Generated Location: (662:16,2 [46] )
 
 Source Location: (69:2,29 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MarkupInCodeBlock.cshtml)
 |i.ToString()|
-Generated Location: (866:23,32 [12] )
+Generated Location: (863:23,29 [12] )
 |i.ToString()|
 
 Source Location: (86:2,46 [9] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MarkupInCodeBlock.cshtml)
 |
     }
 |
-Generated Location: (1051:28,46 [9] )
+Generated Location: (1048:28,46 [9] )
 |
     }
 |

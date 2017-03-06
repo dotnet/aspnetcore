@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/FunctionsBlock.cshtml"
-                      __o = RandomInt();
+                   __o = RandomInt();
 
 #line default
 #line hidden

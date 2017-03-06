@@ -32,16 +32,16 @@ Generated Location: (1195:36,2 [24] )
 
 Source Location: (310:12,45 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml)
 |bar|
-Generated Location: (1390:41,48 [3] )
+Generated Location: (1387:41,45 [3] )
 |bar|
 
 Source Location: (323:14,2 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml)
 |a|
-Generated Location: (1523:46,6 [1] )
+Generated Location: (1520:46,6 [1] )
 |a|
 
 Source Location: (328:14,7 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml)
 |b|
-Generated Location: (1524:46,7 [1] )
+Generated Location: (1521:46,7 [1] )
 |b|
 

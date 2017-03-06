@@ -27,7 +27,7 @@ __TestNamespace_PTagHelper.Age = 1337;
 #line default
 #line hidden
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithWeirdlySpacedAttributes.cshtml"
-                __o = true;
+             __o = true;
 
 #line default
 #line hidden

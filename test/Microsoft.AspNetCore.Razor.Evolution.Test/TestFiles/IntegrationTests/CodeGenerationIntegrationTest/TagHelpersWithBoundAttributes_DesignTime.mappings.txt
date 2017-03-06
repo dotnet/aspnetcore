@@ -5,6 +5,6 @@ Generated Location: (431:10,30 [15] )
 
 Source Location: (57:2,18 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithBoundAttributes.cshtml)
 |Hello|
-Generated Location: (954:22,21 [5] )
+Generated Location: (951:22,18 [5] )
 |Hello|
 

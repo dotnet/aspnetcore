@@ -20,7 +20,7 @@ System.Object __typeHelper = "*, TestAssembly";
         {
             __InputTagHelper = CreateTagHelper<global::InputTagHelper>();
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithBoundAttributes.cshtml"
-               __o = Hello;
+            __o = Hello;
 
 #line default
 #line hidden

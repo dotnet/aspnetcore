@@ -24,7 +24,7 @@ System.Object __typeHelper = "cool:";
         {
             __InputTagHelper = CreateTagHelper<global::InputTagHelper>();
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithPrefix.cshtml"
-                    __o = Hello;
+                 __o = Hello;
 
 #line default
 #line hidden

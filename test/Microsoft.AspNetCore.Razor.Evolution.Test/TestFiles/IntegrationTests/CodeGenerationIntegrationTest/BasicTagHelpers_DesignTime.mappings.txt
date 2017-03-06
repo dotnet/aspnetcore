@@ -5,11 +5,11 @@ Generated Location: (416:10,29 [17] )
 
 Source Location: (220:5,38 [23] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicTagHelpers.cshtml)
 |ViewBag.DefaultInterval|
-Generated Location: (1382:26,41 [23] )
+Generated Location: (1379:26,38 [23] )
 |ViewBag.DefaultInterval|
 
 Source Location: (303:6,40 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicTagHelpers.cshtml)
 |true|
-Generated Location: (2080:37,42 [4] )
+Generated Location: (2077:37,42 [4] )
 |true|
 

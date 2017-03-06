@@ -27,7 +27,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             {
                 using (Context.Writer.BuildLinePragma(node.Source.Value))
                 {
-                    var padding = BuildOffsetPadding(RazorDesignTimeIRPass.DesignTimeVariable.Length, node.Source.Value, Context);
+                    var offset = RazorDesignTimeIRPass.DesignTimeVariable.Length + " = ".Length;
+                    var padding = BuildOffsetPadding(offset, node.Source.Value, Context);
 
                     Context.Writer
                         .Write(padding)

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line default
 #line hidden
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml"
-                      __o = i;
+                   __o = i;
 
 #line default
 #line hidden
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line default
 #line hidden
 #line 24 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml"
-                            __o = j;
+                         __o = j;
 
 #line default
 #line hidden
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line default
 #line hidden
 #line 30 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml"
-                                __o = ex.Message;
+                             __o = ex.Message;
 
 #line default
 #line hidden
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line default
 #line hidden
 #line 33 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml"
-          __o = i;
+       __o = i;
 
 #line default
 #line hidden

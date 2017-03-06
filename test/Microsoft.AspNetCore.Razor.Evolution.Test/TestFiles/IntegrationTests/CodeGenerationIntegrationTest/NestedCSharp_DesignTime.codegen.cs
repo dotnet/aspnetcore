@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line default
 #line hidden
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedCSharp.cshtml"
-          __o = result.SomeValue;
+       __o = result.SomeValue;
 
 #line default
 #line hidden

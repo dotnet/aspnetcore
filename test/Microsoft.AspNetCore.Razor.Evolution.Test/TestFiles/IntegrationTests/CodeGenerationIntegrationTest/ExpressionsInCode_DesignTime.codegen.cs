@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line default
 #line hidden
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExpressionsInCode.cshtml"
-  __o = foo;
+__o = foo;
 
 #line default
 #line hidden
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line default
 #line hidden
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExpressionsInCode.cshtml"
-   __o = bar.Replace("F", "B");
+__o = bar.Replace("F", "B");
 
 #line default
 #line hidden

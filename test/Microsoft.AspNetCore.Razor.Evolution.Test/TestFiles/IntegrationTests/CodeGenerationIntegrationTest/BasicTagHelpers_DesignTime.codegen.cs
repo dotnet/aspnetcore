@@ -24,7 +24,7 @@ System.Object __typeHelper = "*, TestAssembly";
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicTagHelpers.cshtml"
-                                   __o = ViewBag.DefaultInterval;
+                                __o = ViewBag.DefaultInterval;
 
 #line default
 #line hidden

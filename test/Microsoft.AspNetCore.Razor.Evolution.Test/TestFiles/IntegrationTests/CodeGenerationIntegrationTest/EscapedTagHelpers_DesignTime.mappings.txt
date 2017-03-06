@@ -5,16 +5,16 @@ Generated Location: (419:10,30 [15] )
 
 Source Location: (106:3,29 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EscapedTagHelpers.cshtml)
 |DateTime.Now|
-Generated Location: (989:22,32 [12] )
+Generated Location: (986:22,29 [12] )
 |DateTime.Now|
 
 Source Location: (204:5,51 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EscapedTagHelpers.cshtml)
 |DateTime.Now|
-Generated Location: (1390:29,54 [12] )
+Generated Location: (1384:29,51 [12] )
 |DateTime.Now|
 
 Source Location: (227:5,74 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EscapedTagHelpers.cshtml)
 |true|
-Generated Location: (1757:36,74 [4] )
+Generated Location: (1751:36,74 [4] )
 |true|
 

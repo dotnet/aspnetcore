@@ -14,13 +14,13 @@ Generated Location: (857:22,31 [22] )
 
 Source Location: (69:2,29 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CodeBlockWithTextElement.cshtml)
 |a+b|
-Generated Location: (1053:28,41 [3] )
+Generated Location: (1050:28,38 [3] )
 |a+b|
 
 Source Location: (80:2,40 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CodeBlockWithTextElement.cshtml)
 |
 |
-Generated Location: (1239:33,49 [2] )
+Generated Location: (1236:33,49 [2] )
 |
 |
 

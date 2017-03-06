@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ExplicitExpression.cshtml"
-       __o = 1+1;
+    __o = 1+1;
 
 #line default
 #line hidden

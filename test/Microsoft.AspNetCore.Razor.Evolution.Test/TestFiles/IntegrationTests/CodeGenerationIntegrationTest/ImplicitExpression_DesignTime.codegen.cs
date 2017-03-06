@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line default
 #line hidden
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ImplicitExpression.cshtml"
-                   __o = i;
+                __o = i;
 
 #line default
 #line hidden

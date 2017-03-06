@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line default
 #line hidden
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CodeBlockWithTextElement.cshtml"
-                                   __o = a+b;
+                                __o = a+b;
 
 #line default
 #line hidden

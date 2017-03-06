@@ -24,7 +24,7 @@ System.Object Footer = null;
 #line default
 #line hidden
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DesignTime.cshtml"
-                   __o = i;
+                __o = i;
 
 #line default
 #line hidden
@@ -42,7 +42,7 @@ __o = Foo(Bar.Baz);
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DesignTime.cshtml"
 __o = Foo(item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DesignTime.cshtml"
-           __o = baz;
+        __o = baz;
 
 #line default
 #line hidden
@@ -53,7 +53,7 @@ __o = Foo(item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_
 #line hidden
             DefineSection("Footer", async (__razor_section_writer) => {
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DesignTime.cshtml"
-  __o = bar;
+__o = bar;
 
 #line default
 #line hidden

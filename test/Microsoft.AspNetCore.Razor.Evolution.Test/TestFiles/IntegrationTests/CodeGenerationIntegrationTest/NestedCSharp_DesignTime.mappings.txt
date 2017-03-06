@@ -16,20 +16,20 @@ Generated Location: (784:22,5 [53] )
 
 Source Location: (82:4,13 [16] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedCSharp.cshtml)
 |result.SomeValue|
-Generated Location: (974:29,16 [16] )
+Generated Location: (971:29,13 [16] )
 |result.SomeValue|
 
 Source Location: (115:5,14 [7] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedCSharp.cshtml)
 |
     }|
-Generated Location: (1126:34,14 [7] )
+Generated Location: (1123:34,14 [7] )
 |
     }|
 
 Source Location: (122:6,5 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedCSharp.cshtml)
 |
 |
-Generated Location: (1259:40,5 [2] )
+Generated Location: (1256:40,5 [2] )
 |
 |
 

@@ -12,18 +12,18 @@ Generated Location: (1071:23,13 [46] )
 
 Source Location: (339:7,50 [23] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml)
 |ViewBag.DefaultInterval|
-Generated Location: (1512:31,53 [23] )
+Generated Location: (1509:31,50 [23] )
 |ViewBag.DefaultInterval|
 
 Source Location: (389:7,100 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml)
 |true|
-Generated Location: (1918:38,100 [4] )
+Generated Location: (1915:38,100 [4] )
 |true|
 
 Source Location: (422:8,25 [15] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedScriptTagTagHelpers.cshtml)
 |
             }|
-Generated Location: (2082:43,25 [15] )
+Generated Location: (2079:43,25 [15] )
 |
             }|
 

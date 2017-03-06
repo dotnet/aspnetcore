@@ -14,12 +14,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml"
-                                    __o = await Foo();
+                                 __o = await Foo();
 
 #line default
 #line hidden
 #line 11 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml"
-                                   __o = await Foo();
+                                __o = await Foo();
 
 #line default
 #line hidden
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line default
 #line hidden
 #line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml"
-                                                __o = await Foo();
+                                             __o = await Foo();
 
 #line default
 #line hidden
@@ -44,22 +44,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line default
 #line hidden
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml"
-                                              __o = await;
+                                           __o = await;
 
 #line default
 #line hidden
 #line 19 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml"
-                                       __o = await Foo(1, 2);
+                                    __o = await Foo(1, 2);
 
 #line default
 #line hidden
 #line 20 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml"
-                                                __o = await Foo.Bar(1, 2);
+                                             __o = await Foo.Bar(1, 2);
 
 #line default
 #line hidden
 #line 21 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml"
-                                      __o = await Foo("bob", true);
+                                   __o = await Foo("bob", true);
 
 #line default
 #line hidden
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line default
 #line hidden
 #line 24 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml"
-                                                   __o = await Foo(boolValue: false);
+                                                __o = await Foo(boolValue: false);
 
 #line default
 #line hidden
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line default
 #line hidden
 #line 25 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Await.cshtml"
-                                                 __o = await ("wrrronggg");
+                                              __o = await ("wrrronggg");
 
 #line default
 #line hidden

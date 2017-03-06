@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line hidden
             item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
-                                                __o = item;
+                                             __o = item;
 
 #line default
 #line hidden
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line default
 #line hidden
 #line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
-  __o = foo("");
+__o = foo("");
 
 #line default
 #line hidden
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
 __o = Repeat(10, item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
 #line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
-                      __o = item;
+                   __o = item;
 
 #line default
 #line hidden
@@ -59,7 +59,7 @@ __o = Repeat(10, item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(_
 __o = Repeat(10,
     item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
 #line 22 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
-                  __o = item;
+               __o = item;
 
 #line default
 #line hidden
@@ -72,7 +72,7 @@ __o = Repeat(10,
 __o = Repeat(10,
     item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
 #line 28 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
-                   __o = item;
+                __o = item;
 
 #line default
 #line hidden
@@ -85,7 +85,7 @@ __o = Repeat(10,
 __o = Repeat(10,
     item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
 #line 34 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
-                    __o = item;
+                 __o = item;
 
 #line default
 #line hidden
@@ -95,9 +95,9 @@ __o = Repeat(10,
 #line default
 #line hidden
 #line 40 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
-  __o = Repeat(10, item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
+__o = Repeat(10, item => new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_template_writer) => {
 #line 41 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
-            __o = item;
+         __o = item;
 
 #line default
 #line hidden

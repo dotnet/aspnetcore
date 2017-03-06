@@ -39,12 +39,12 @@ using static global::System.Text.Encoding;
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
-                          __o = typeof(Path).FullName;
+                       __o = typeof(Path).FullName;
 
 #line default
 #line hidden
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Usings.cshtml"
-                                __o = typeof(Foo).FullName;
+                             __o = typeof(Foo).FullName;
 
 #line default
 #line hidden

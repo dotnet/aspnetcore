@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line default
 #line hidden
 #line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml"
-                                          __o = bar;
+                                       __o = bar;
 
 #line default
 #line hidden

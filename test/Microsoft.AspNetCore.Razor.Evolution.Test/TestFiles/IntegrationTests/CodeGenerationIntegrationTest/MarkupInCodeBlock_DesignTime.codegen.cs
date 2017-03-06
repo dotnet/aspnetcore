@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests.TestFiles
 #line default
 #line hidden
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MarkupInCodeBlock.cshtml"
-                          __o = i.ToString();
+                       __o = i.ToString();
 
 #line default
 #line hidden
