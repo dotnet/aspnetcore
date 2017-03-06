@@ -14,7 +14,8 @@ namespace TagHelpersWebSite
 
             var resultString = DanString
                 .Replace("#", colorReplacement)
-                .Replace(Environment.NewLine, "<br>");
+                .Replace(Environment.NewLine, "<br>")
+                .Replace("\n", "<br>");
 
             return View<string>(resultString);
         }

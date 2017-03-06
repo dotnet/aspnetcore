@@ -111,7 +111,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Host
             Assert.Equal(3, @class.Children.Count);
 
             var vcthClass = Assert.IsType<CSharpStatementIRNode>(@class.Children[2]);
-            Assert.Equal(@"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
+            Assert.Equal(
+                @"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
 public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
 {
     private readonly global::Microsoft.AspNetCore.Mvc.IViewComponentHelper _helper = null;
@@ -130,7 +131,9 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
         output.Content.SetHtmlContent(content);
     }
 }
-", vcthClass.Content);
+",
+                vcthClass.Content,
+                ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -192,7 +195,8 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
             Assert.Equal(3, @class.Children.Count);
 
             var vcthClass = Assert.IsType<CSharpStatementIRNode>(@class.Children[2]);
-            Assert.Equal(@"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
+            Assert.Equal(
+                @"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
 public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
 {
     private readonly global::Microsoft.AspNetCore.Mvc.IViewComponentHelper _helper = null;
@@ -212,7 +216,9 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
         output.Content.SetHtmlContent(content);
     }
 }
-", vcthClass.Content);
+",
+                vcthClass.Content,
+                ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -286,7 +292,8 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
             Assert.Equal(3, @class.Children.Count);
 
             var vcthClass = Assert.IsType<CSharpStatementIRNode>(@class.Children[2]);
-            Assert.Equal(@"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
+            Assert.Equal(
+                @"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
 public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
 {
     private readonly global::Microsoft.AspNetCore.Mvc.IViewComponentHelper _helper = null;
@@ -305,7 +312,9 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
         output.Content.SetHtmlContent(content);
     }
 }
-", vcthClass.Content);
+",
+                vcthClass.Content,
+                ignoreLineEndingDifferences: true);
         }
 
         private RazorCodeDocument CreateDocument(string content)
