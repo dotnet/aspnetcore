@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Xunit;
 
@@ -372,15 +373,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private static IModelBinder CreateIntBinder()
         {
-            return new StubModelBinder(mbc =>
+            return new StubModelBinder(context =>
             {
-                var value = mbc.ValueProvider.GetValue(mbc.ModelName);
+                var value = context.ValueProvider.GetValue(context.ModelName);
                 if (value == ValueProviderResult.None)
                 {
                     return ModelBindingResult.Failed();
                 }
 
-                var model = value.ConvertTo(mbc.ModelType);
+                object valueToConvert = null;
+                if (value.Values.Count == 1)
+                {
+                    valueToConvert = value.Values[0];
+                }
+                else if (value.Values.Count > 1)
+                {
+                    valueToConvert = value.Values.ToArray();
+                }
+
+                var model = ModelBindingHelper.ConvertTo(valueToConvert, context.ModelType, value.Culture);
                 if (model == null)
                 {
                     return ModelBindingResult.Failed();
