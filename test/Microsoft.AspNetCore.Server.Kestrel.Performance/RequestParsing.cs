@@ -121,8 +121,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private void InsertData(byte[] bytes)
         {
+            var buffer = Pipe.Writer.Alloc(2048);
+            buffer.Write(bytes);
             // There should not be any backpressure and task completes immediately
-            Pipe.Writer.WriteAsync(bytes).GetAwaiter().GetResult();
+            buffer.FlushAsync().GetAwaiter().GetResult();
         }
 
         private void ParseData()
