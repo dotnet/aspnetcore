@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     /// place it on an action method.
     ///
     /// <see cref="IActionModelConvention"/> customizations run after
-    /// <see cref="IActionModelConvention"/> customizations and before
+    /// <see cref="IControllerModelConvention"/> customizations and before
     /// <see cref="IParameterModelConvention"/> customizations.
     /// </remarks>
     public interface IActionModelConvention
