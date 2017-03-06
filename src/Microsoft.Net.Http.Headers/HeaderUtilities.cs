@@ -13,7 +13,7 @@ namespace Microsoft.Net.Http.Headers
     public static class HeaderUtilities
     {
         private static readonly int _int64MaxStringLength = 19;
-        private static readonly int _qualityValueMaxCharCount = 10;      // Little bit more permissive than RFC7231 5.3.1
+        private static readonly int _qualityValueMaxCharCount = 10; // Little bit more permissive than RFC7231 5.3.1
         private const string QualityName = "q";
         internal const string BytesUnit = "bytes";
 
@@ -503,7 +503,7 @@ namespace Microsoft.Net.Http.Headers
 
             var ch = input[current];
 
-            if (ch >= '0' && ch <= '1')     // Only values between 0 and 1 are accepted, according to RFC
+            if (ch >= '0' && ch <= '1') // Only values between 0 and 1 are accepted, according to RFC
             {
                 intPart = ch - '0';
                 current++;
@@ -560,8 +560,10 @@ namespace Microsoft.Net.Http.Headers
                 quality = intPart;
             }
 
-            if (quality < 0 || quality > 1)
+            if (quality > 1)
             {
+                // reset quality
+                quality = 0;
                 return false;
             }
 
