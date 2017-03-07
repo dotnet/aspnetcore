@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.IO.Pipelines;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -389,126 +390,124 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private unsafe int IndexOfNameEnd(byte* pBuffer, int index, int length)
+        private static unsafe int FindEndOfName(byte* headerLine, int length)
         {
-            var pCurrent = pBuffer + index;
-            var pEnd = pBuffer + index + length;
-            var result = -1;
+            var index = 0;
             var sawWhitespace = false;
-
-            while (pCurrent < pEnd)
+            for (; index < length; index++)
             {
-                var ch = *pCurrent;
+                var ch = headerLine[index];
                 if (ch == ByteColon)
                 {
-                    if (sawWhitespace)
-                    {
-                        RejectRequest(RequestRejectionReason.WhitespaceIsNotAllowedInHeaderName);
-                    }
-
-                    result = index;
                     break;
                 }
-
-                if (ch == ByteTab || ch == ByteSpace)
+                if (ch == ByteTab || ch == ByteSpace || ch == ByteCR)
                 {
                     sawWhitespace = true;
                 }
-
-                index++;
-                pCurrent++;
             }
-            return result;
-        }
 
-        private unsafe void TakeSingleHeader<T>(byte* pHeader, int headerLineLength, T handler) where T : IHttpHeadersHandler
-        {
-            var nameEnd = -1;
-            var valueStart = -1;
-            var valueEnd = -1;
-            var index = 0;
-            var pCurrent = pHeader + index;
-            var pEnd = pHeader + headerLineLength;
-
-            nameEnd = IndexOfNameEnd(pHeader, index, headerLineLength);
-
-            if (nameEnd == -1)
+            if (index == length)
             {
                 RejectRequest(RequestRejectionReason.NoColonCharacterFoundInHeaderLine);
             }
-
-            // Skip colon
-            index += nameEnd + 1;
-            pCurrent += index;
-            valueStart = index;
-            var pValueStart = pCurrent;
-
-            while (pCurrent < pEnd)
+            if (sawWhitespace)
             {
-                var ch = *pCurrent;
-                if (ch != ByteTab && ch != ByteSpace && ch != ByteCR)
-                {
-                    valueStart = index;
-                    pValueStart = pCurrent;
-                    break;
-                }
-                else if (ch == ByteCR)
-                {
-                    break;
-                }
-                pCurrent++;
-                index++;
+                RejectRequest(RequestRejectionReason.WhitespaceIsNotAllowedInHeaderName);
             }
+            return index;
+        }
 
-            var endIndex = headerLineLength - 1;
-            pEnd--;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private unsafe void TakeSingleHeader<T>(byte* headerLine, int length, T handler) where T : IHttpHeadersHandler
+        {
+            // Skip CR, LF from end position
+            var valueEnd = length - 3;
+            var nameEnd = FindEndOfName(headerLine, length);
 
-            if (*pEnd != ByteLF)
+            if (headerLine[valueEnd + 2] != ByteLF)
             {
                 RejectRequest(RequestRejectionReason.HeaderValueMustNotContainCR);
             }
-
-            endIndex--;
-            pEnd--;
-
-            if (*pEnd != ByteCR)
+            if (headerLine[valueEnd + 1] != ByteCR)
             {
                 RejectRequest(RequestRejectionReason.MissingCRInHeaderLine);
             }
 
-            endIndex--;
-            pEnd--;
-
-            while (pEnd >= pValueStart)
+            // Skip colon from value start
+            var valueStart = nameEnd + 1;
+            // Ignore start whitespace
+            for(; valueStart < valueEnd; valueStart++)
             {
-                var ch = *pEnd;
-                if (ch != ByteTab && ch != ByteSpace && ch != ByteCR && valueEnd == -1)
+                var ch = headerLine[valueStart];
+                if (ch != ByteTab && ch != ByteSpace && ch != ByteCR)
                 {
-                    valueEnd = endIndex;
+                    break;
                 }
                 else if (ch == ByteCR)
                 {
                     RejectRequest(RequestRejectionReason.HeaderValueMustNotContainCR);
                 }
-
-                pEnd--;
-                endIndex--;
             }
 
-            if (valueEnd == -1)
+
+            // Check for CR in value
+            var i = valueStart + 1;
+            if (Contains(headerLine + i, valueEnd - i, ByteCR))
             {
-                valueEnd = valueStart;
+                RejectRequest(RequestRejectionReason.HeaderValueMustNotContainCR);
             }
-            else
+
+            // Ignore end whitespace
+            for (; valueEnd > valueStart; valueEnd--)
             {
-                valueEnd++;
+                var ch = headerLine[valueEnd];
+                if (ch != ByteTab && ch != ByteSpace)
+                {
+                    break;
+                }
             }
 
-
-            var nameBuffer = new Span<byte>(pHeader, nameEnd);
-            var valueBuffer = new Span<byte>(pHeader + valueStart, valueEnd - valueStart);
+            var nameBuffer = new Span<byte>(headerLine, nameEnd);
+            var valueBuffer = new Span<byte>(headerLine + valueStart, valueEnd - valueStart + 1);
 
             handler.OnHeader(nameBuffer, valueBuffer);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe bool Contains(byte* searchSpace, int length, byte value)
+        {
+            var i = 0;
+            if (Vector.IsHardwareAccelerated)
+            {
+                // Check Vector lengths
+                if (length - Vector<byte>.Count >= i)
+                {
+                    var vValue = GetVector(value);
+                    do
+                    {
+                        if (!Vector<byte>.Zero.Equals(Vector.Equals(vValue, Unsafe.Read<Vector<byte>>(searchSpace + i))))
+                        {
+                            goto found;
+                        }
+
+                        i += Vector<byte>.Count;
+                    } while (length - Vector<byte>.Count >= i);
+                }
+            }
+
+            // Check remaining for CR
+            for (; i <= length; i++)
+            {
+                var ch = searchSpace[i];
+                if (ch == value)
+                {
+                    goto found;
+                }
+            }
+            return false;
+        found:
+            return true;
         }
 
         private static bool IsValidTokenChar(char c)
@@ -536,26 +535,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 c == '~';
         }
 
-        public void RejectRequest(RequestRejectionReason reason)
+        public static void RejectRequest(RequestRejectionReason reason)
         {
             throw BadHttpRequestException.GetException(reason);
         }
 
-        public void RejectRequest(RequestRejectionReason reason, string value)
+        public static void RejectRequest(RequestRejectionReason reason, string value)
         {
             throw BadHttpRequestException.GetException(reason, value);
         }
 
         private void RejectRequestLine(Span<byte> span)
         {
+            throw GetRejectRequestLineException(span);
+        }
+
+        private BadHttpRequestException GetRejectRequestLineException(Span<byte> span)
+        {
             const int MaxRequestLineError = 32;
-            RejectRequest(RequestRejectionReason.InvalidRequestLine,
+            return BadHttpRequestException.GetException(RequestRejectionReason.InvalidRequestLine,
                 Log.IsEnabled(LogLevel.Information) ? span.GetAsciiStringEscaped(MaxRequestLineError) : string.Empty);
         }
 
         public void Reset()
         {
 
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector<byte> GetVector(byte vectorByte)
+        {
+            // Vector<byte> .ctor doesn't become an intrinsic due to detection issue
+            // However this does cause it to become an intrinsic (with additional multiply and reg->reg copy)
+            // https://github.com/dotnet/coreclr/issues/7459#issuecomment-253965670
+            return Vector.AsVectorByte(new Vector<uint>(vectorByte * 0x01010101u));
         }
 
         private enum HeaderState
