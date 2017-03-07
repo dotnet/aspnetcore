@@ -6,8 +6,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
     {
         public static MemoryPoolIterator Add(this MemoryPoolIterator iterator, int count)
         {
-            int actual;
-            return iterator.CopyTo(new byte[count], 0, count,  out actual);
+            for (int i = 0; i < count; i++)
+            {
+                iterator.Take();
+            }
+            return iterator;
         } 
     }
 }
