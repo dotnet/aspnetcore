@@ -94,5 +94,20 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 () => RazorSourceDocument.ReadFrom(content, "file.cshtml", Encoding.UTF8));
             Assert.Equal(expectedMessage, exception.Message);
         }
+
+        [Fact]
+        public void ReadFrom_LargeContent()
+        {
+            // Arrange
+            var content = TestRazorSourceDocument.CreateStreamContent(new string('a', 100000));
+
+            // Act
+            var document = RazorSourceDocument.ReadFrom(content, "file.cshtml");
+
+            // Assert
+            Assert.IsType<LargeTextRazorSourceDocument>(document);
+            Assert.Equal("file.cshtml", document.Filename);
+            Assert.Same(Encoding.UTF8, document.Encoding);
+        }
     }
 }
