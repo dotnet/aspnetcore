@@ -174,12 +174,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 <span val=""@Hello World""></span>");
             var tagHelpers = new[]
             {
-                new TagHelperDescriptor
-                {
-                    TagName = "span",
-                    TypeName = "SpanTagHelper",
-                    AssemblyName = "TestAssembly",
-                }
+                CreateTagHelperDescriptor(
+                    tagName: "span",
+                    typeName: "SpanTagHelper",
+                    assemblyName: "TestAssembly")
             };
 
             // Act
@@ -221,12 +219,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 <cool:span val=""@Hello World""></cool:span>");
             var tagHelpers = new[]
             {
-                new TagHelperDescriptor
-                {
-                    TagName = "span",
-                    TypeName = "SpanTagHelper",
-                    AssemblyName = "TestAssembly",
-                }
+                CreateTagHelperDescriptor(
+                    tagName: "span",
+                    typeName: "SpanTagHelper",
+                    assemblyName: "TestAssembly")
             };
 
             // Act
@@ -273,12 +269,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 }");
             var tagHelpers = new[]
             {
-                new TagHelperDescriptor
-                {
-                    TagName = "span",
-                    TypeName = "SpanTagHelper",
-                    AssemblyName = "TestAssembly",
-                }
+                CreateTagHelperDescriptor(
+                    tagName: "span",
+                    typeName: "SpanTagHelper",
+                    assemblyName: "TestAssembly")
             };
 
             // Act
@@ -299,7 +293,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     n,
                     c1 => DirectiveToken(DirectiveTokenKind.Member, "test", c1),
                     c1 => Html(Environment.NewLine, c1),
-                    c1 => 
+                    c1 =>
                     {
                         var tagHelperNode = Assert.IsType<TagHelperIRNode>(c1);
                         Children(
@@ -324,24 +318,23 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             // Arrange
             var codeDocument = TestRazorCodeDocument.Create(@"@addTagHelper *, TestAssembly
 <input bound='foo' />");
-            var descriptor = new TagHelperDescriptor
+            var tagHelpers = new[]
             {
-                TagName = "input",
-                TypeName = "InputTagHelper",
-                AssemblyName = "TestAssembly",
-                Attributes = new[] 
-                {
-                    new TagHelperAttributeDescriptor
+                CreateTagHelperDescriptor(
+                    tagName: "input",
+                    typeName: "InputTagHelper",
+                    assemblyName: "TestAssembly",
+                    attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
                     {
-                        Name = "bound",
-                        PropertyName = "FooProp",
-                        TypeName = "System.String"
-                    }
-                }
+                        builder => builder
+                            .Name("bound")
+                            .PropertyName("FooProp")
+                            .TypeName("System.String"),
+                    })
             };
 
             // Act
-            var irDocument = Lower(codeDocument, tagHelpers: new[] { descriptor });
+            var irDocument = Lower(codeDocument, tagHelpers: tagHelpers);
 
             // Assert
             Children(
@@ -483,6 +476,29 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             Assert.NotNull(irDocument);
 
             return irDocument;
+        }
+
+        private static TagHelperDescriptor CreateTagHelperDescriptor(
+            string tagName,
+            string typeName,
+            string assemblyName,
+            IEnumerable<Action<ITagHelperBoundAttributeDescriptorBuilder>> attributes = null)
+        {
+            var builder = ITagHelperDescriptorBuilder.Create(typeName, assemblyName);
+
+            if (attributes != null)
+            {
+                foreach (var attributeBuilder in attributes)
+                {
+                    builder.BindAttribute(attributeBuilder);
+                }
+            }
+
+            builder.TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName(tagName));
+
+            var descriptor = builder.Build();
+
+            return descriptor;
         }
     }
 }

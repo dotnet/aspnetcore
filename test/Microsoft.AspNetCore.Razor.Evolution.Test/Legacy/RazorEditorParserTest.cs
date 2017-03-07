@@ -86,11 +86,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             // Arrange
             var descriptors = new[]
             {
-                new TagHelperDescriptor
-                {
-                    TagName = "p",
-                    TypeName = "PTagHelper"
-                },
+                ITagHelperDescriptorBuilder.Create("PTagHelper", "TestAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("p"))
+                    .Build()
             };
             
             var parser = new RazorEditorParser(CreateTemplateEngine(@"C:\This\Is\A\Test\Path"), @"C:\This\Is\A\Test\Path");
@@ -233,27 +231,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             // Arrange
             var descriptors = new[]
             {
-                new TagHelperDescriptor
-                {
-                    TagName = "p",
-                    TypeName = "PTagHelper",
-                    AssemblyName = "Test",
-                    Attributes = new[]
-                    {
-                        new TagHelperAttributeDescriptor
-                        {
-                            Name = "obj-attr",
-                            TypeName = typeof(object).FullName,
-                            PropertyName = "ObjectAttribute",
-                        },
-                        new TagHelperAttributeDescriptor
-                        {
-                            Name = "str-attr",
-                            TypeName = typeof(string).FullName,
-                            PropertyName = "StringAttribute",
-                        },
-                    }
-                },
+                ITagHelperDescriptorBuilder.Create("PTagHelper", "Test")
+                    .TagMatchingRule(rule => rule.RequireTagName("p"))
+                    .BindAttribute(attribute => attribute
+                        .Name("obj-attr")
+                        .TypeName(typeof(object).FullName)
+                        .PropertyName("ObjectAttribute"))
+                    .BindAttribute(attribute => attribute
+                        .Name("str-attr")
+                        .TypeName(typeof(string).FullName)
+                        .PropertyName("StringAttribute"))
+                    .Build()
             };
 
             var parser = new RazorEditorParser(CreateTemplateEngine(@"C:\This\Is\A\Test\Path", descriptors), @"C:\This\Is\A\Test\Path");

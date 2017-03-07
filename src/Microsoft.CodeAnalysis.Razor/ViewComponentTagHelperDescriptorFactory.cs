@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
@@ -36,66 +35,69 @@ namespace Microsoft.CodeAnalysis.Razor
             var shortName = GetShortName(type);
             var tagName = $"vc:{DefaultTagHelperDescriptorFactory.ToHtmlCase(shortName)}";
             var typeName = $"__Generated__{shortName}ViewComponentTagHelper";
-
-            var descriptor = new TagHelperDescriptor
+            var descriptorBuilder = ITagHelperDescriptorBuilder.Create(typeName, assemblyName);
+            var methodParameters = GetInvokeMethodParameters(type);
+            descriptorBuilder.TagMatchingRule(ruleBuilder =>
             {
-                TagName = tagName,
-                TypeName = typeName,
-                AssemblyName = assemblyName
-            };
+                ruleBuilder.RequireTagName(tagName);
+                AddRequiredAttributes(methodParameters, ruleBuilder);
+            });
 
-            SetAttributeDescriptors(type, descriptor);
+            AddBoundAttributes(methodParameters, descriptorBuilder);
 
-            descriptor.PropertyBag.Add(ViewComponentTypes.ViewComponentNameKey, shortName);
+            descriptorBuilder.AddMetadata(ViewComponentTypes.ViewComponentNameKey, shortName);
 
+            var descriptor = descriptorBuilder.Build();
             return descriptor;
         }
 
-        private void SetAttributeDescriptors(INamedTypeSymbol type, TagHelperDescriptor descriptor)
+        private void AddRequiredAttributes(ImmutableArray<IParameterSymbol> methodParameters, TagMatchingRuleBuilder builder)
         {
-            var methodParameters = GetInvokeMethodParameters(type);
-            var attributeDescriptors = new List<TagHelperAttributeDescriptor>();
-            var indexerDescriptors = new List<TagHelperAttributeDescriptor>();
-            var requiredAttributeDescriptors = new List<TagHelperRequiredAttributeDescriptor>();
+            foreach (var parameter in methodParameters)
+            {
+                if (GetIndexerValueTypeName(parameter) == null)
+                {
+                    // Set required attributes only for non-indexer attributes. Indexer attributes can't be required attributes
+                    // because there are two ways of setting values for the attribute.
+                    builder.RequireAttribute(attributeBuilder =>
+                    {
+                        var lowerKebabName = DefaultTagHelperDescriptorFactory.ToHtmlCase(parameter.Name);
+                        attributeBuilder.Name(lowerKebabName);
+                    });
+                }
+            }
+        }
 
+        private void AddBoundAttributes(ImmutableArray<IParameterSymbol> methodParameters, ITagHelperDescriptorBuilder builder)
+        {
             foreach (var parameter in methodParameters)
             {
                 var lowerKebabName = DefaultTagHelperDescriptorFactory.ToHtmlCase(parameter.Name);
                 var typeName = parameter.Type.ToDisplayString(FullNameTypeDisplayFormat);
-                var attributeDescriptor = new TagHelperAttributeDescriptor
+                builder.BindAttribute(attributeBuilder =>
                 {
-                    Name = lowerKebabName,
-                    PropertyName = parameter.Name,
-                    TypeName = typeName
-                };
+                    attributeBuilder
+                        .Name(lowerKebabName)
+                        .PropertyName(parameter.Name)
+                        .TypeName(typeName);
 
-                attributeDescriptor.IsEnum = parameter.Type.TypeKind == TypeKind.Enum;
-                attributeDescriptor.IsIndexer = false;
-
-                attributeDescriptors.Add(attributeDescriptor);
-
-                var indexerDescriptor = GetIndexerAttributeDescriptor(parameter, lowerKebabName);
-                if (indexerDescriptor != null)
-                {
-                    indexerDescriptors.Add(indexerDescriptor);
-                }
-                else
-                {
-                    // Set required attributes only for non-indexer attributes. Indexer attributes can't be required attributes
-                    // because there are two ways of setting values for the attribute.
-                    requiredAttributeDescriptors.Add(new TagHelperRequiredAttributeDescriptor
+                    if (parameter.Type.TypeKind == TypeKind.Enum)
                     {
-                        Name = lowerKebabName
-                    });
-                }
+                        attributeBuilder.AsEnum();
+                    }
+                    else
+                    {
+                        var dictionaryValueType = GetIndexerValueTypeName(parameter);
+                        if (dictionaryValueType != null)
+                        {
+                            attributeBuilder.AsDictionary(lowerKebabName + "-", dictionaryValueType);
+                        }
+                    }
+                });
             }
-
-            attributeDescriptors.AddRange(indexerDescriptors);
-            descriptor.Attributes = attributeDescriptors;
-            descriptor.RequiredAttributes = requiredAttributeDescriptors;
         }
 
-        private TagHelperAttributeDescriptor GetIndexerAttributeDescriptor(IParameterSymbol parameter, string name)
+        private string GetIndexerValueTypeName(IParameterSymbol parameter)
         {
             INamedTypeSymbol dictionaryType;
             if ((parameter.Type as INamedTypeSymbol)?.ConstructedFrom == _iDictionarySymbol)
@@ -117,16 +119,9 @@ namespace Microsoft.CodeAnalysis.Razor
             }
 
             var type = dictionaryType.TypeArguments[1];
-            var descriptor = new TagHelperAttributeDescriptor
-            {
-                Name = name + "-",
-                PropertyName = parameter.Name,
-                TypeName = type.ToDisplayString(FullNameTypeDisplayFormat),
-                IsEnum = type.TypeKind == TypeKind.Enum,
-                IsIndexer = true
-            };
+            var typeName = type.ToDisplayString(FullNameTypeDisplayFormat);
 
-            return descriptor;
+            return typeName;
         }
 
         private ImmutableArray<IParameterSymbol> GetInvokeMethodParameters(INamedTypeSymbol componentType)

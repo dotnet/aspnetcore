@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             "wbr"
         };
 
+        private readonly string _tagHelperPrefix;
         private readonly List<KeyValuePair<string, string>> _htmlAttributeTracker;
         private readonly StringBuilder _attributeValueBuilder;
         private readonly TagHelperDescriptorProvider _provider;
@@ -45,8 +46,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         private BlockBuilder _currentBlock;
         private string _currentParentTagName;
 
-        public TagHelperParseTreeRewriter(TagHelperDescriptorProvider provider)
+        public TagHelperParseTreeRewriter(string tagHelperPrefix, TagHelperDescriptorProvider provider)
         {
+            _tagHelperPrefix = tagHelperPrefix;
             _provider = provider;
             _trackerStack = new Stack<TagBlockTracker>();
             _blockStack = new Stack<BlockBuilder>();
@@ -172,7 +174,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 return false;
             }
 
-            var descriptors = Enumerable.Empty<TagHelperDescriptor>();
+            TagHelperBinding tagHelperBinding;
 
             if (!IsPotentialTagHelper(tagName, tagBlock))
             {
@@ -187,10 +189,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 // We're now in a start tag block, we first need to see if the tag block is a tag helper.
                 var providedAttributes = GetAttributeNameValuePairs(tagBlock);
 
-                descriptors = _provider.GetDescriptors(tagName, providedAttributes, _currentParentTagName);
+                tagHelperBinding = _provider.GetTagHelperBinding(tagName, providedAttributes, _currentParentTagName);
 
                 // If there aren't any TagHelperDescriptors registered then we aren't a TagHelper
-                if (!descriptors.Any())
+                if (tagHelperBinding == null)
                 {
                     // If the current tag matches the current TagHelper scope it means the parent TagHelper matched
                     // all the required attributes but the current one did not; therefore, we need to increment the
@@ -206,7 +208,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 }
 
                 ValidateParentAllowsTagHelper(tagName, tagBlock, errorSink);
-                ValidateDescriptors(descriptors, tagName, tagBlock, errorSink);
+                ValidateBinding(tagHelperBinding, tagName, tagBlock, errorSink);
 
                 // We're in a start TagHelper block.
                 var validTagStructure = ValidateTagSyntax(tagName, tagBlock, errorSink);
@@ -215,7 +217,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     tagName,
                     validTagStructure,
                     tagBlock,
-                    descriptors,
+                    tagHelperBinding,
                     errorSink);
 
                 // Track the original start tag so the editor knows where each piece of the TagHelperBlock lies
@@ -252,32 +254,38 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 }
                 else
                 {
-                    descriptors = _provider.GetDescriptors(
+                    tagHelperBinding = _provider.GetTagHelperBinding(
                         tagName,
                         attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                         parentTagName: _currentParentTagName);
 
                     // If there are not TagHelperDescriptors associated with the end tag block that also have no
                     // required attributes then it means we can't be a TagHelper, bail out.
-                    if (!descriptors.Any())
+                    if (tagHelperBinding == null)
                     {
                         return false;
                     }
 
-                    var invalidDescriptor = descriptors.FirstOrDefault(
-                        descriptor => descriptor.TagStructure == TagStructure.WithoutEndTag);
-                    if (invalidDescriptor != null)
+                    foreach (var descriptor in tagHelperBinding.Descriptors)
                     {
-                        // End tag TagHelper that states it shouldn't have an end tag.
-                        errorSink.OnError(
-                            SourceLocationTracker.Advance(tagBlock.Start, "</"),
-                            LegacyResources.FormatTagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag(
-                                tagName,
-                                invalidDescriptor.TypeName,
-                                invalidDescriptor.TagStructure),
-                            tagName.Length);
+                        var boundRules = tagHelperBinding.GetBoundRules(descriptor);
+                        var invalidRule = boundRules.FirstOrDefault(rule => rule.TagStructure == TagStructure.WithoutEndTag);
 
-                        return false;
+                        if (invalidRule != null)
+                        {
+                            var typeName = descriptor.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
+
+                            // End tag TagHelper that states it shouldn't have an end tag.
+                            errorSink.OnError(
+                                SourceLocationTracker.Advance(tagBlock.Start, "</"),
+                                LegacyResources.FormatTagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag(
+                                    tagName,
+                                    typeName,
+                                    invalidRule.TagStructure),
+                                tagName.Length);
+
+                            return false;
+                        }
                     }
 
                     // Current tag helper scope does not match the end tag. Attempt to recover the tag
@@ -463,7 +471,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 return false;
             }
 
-            return _currentTagHelperTracker.AllowedChildren != null;
+            return _currentTagHelperTracker.AllowedChildren != null && _currentTagHelperTracker.AllowedChildren.Count > 0;
         }
 
         private void ValidateParentAllowsContent(Span child, ErrorSink errorSink)
@@ -536,8 +544,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             errorSink.OnError(errorStart, errorMessage, tagName.Length);
         }
 
-        private static void ValidateDescriptors(
-            IEnumerable<TagHelperDescriptor> descriptors,
+        private static void ValidateBinding(
+            TagHelperBinding bindingResult,
             string tagName,
             Block tagBlock,
             ErrorSink errorSink)
@@ -545,24 +553,32 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             // Ensure that all descriptors associated with this tag have appropriate TagStructures. Cannot have
             // multiple descriptors that expect different TagStructures (other than TagStructure.Unspecified).
             TagHelperDescriptor baseDescriptor = null;
-            foreach (var descriptor in descriptors)
+            TagStructure? baseStructure = null;
+            foreach (var descriptor in bindingResult.Descriptors)
             {
-                if (descriptor.TagStructure != TagStructure.Unspecified)
+                var boundRules = bindingResult.GetBoundRules(descriptor);
+                foreach (var rule in boundRules)
                 {
-                    // Can't have a set of TagHelpers that expect different structures.
-                    if (baseDescriptor != null && baseDescriptor.TagStructure != descriptor.TagStructure)
+                    if (rule.TagStructure != TagStructure.Unspecified)
                     {
-                        errorSink.OnError(
-                            tagBlock.Start,
-                            LegacyResources.FormatTagHelperParseTreeRewriter_InconsistentTagStructure(
-                                baseDescriptor.TypeName,
-                                descriptor.TypeName,
-                                tagName,
-                                nameof(TagHelperDescriptor.TagStructure)),
-                            tagBlock.Length);
-                    }
+                        // Can't have a set of TagHelpers that expect different structures.
+                        if (baseStructure.HasValue && baseStructure != rule.TagStructure)
+                        {
+                            var baseDescriptorTypeName = baseDescriptor.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
+                            var descriptorTypeName = descriptor.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
+                            errorSink.OnError(
+                                tagBlock.Start,
+                                LegacyResources.FormatTagHelperParseTreeRewriter_InconsistentTagStructure(
+                                    baseDescriptorTypeName,
+                                    descriptorTypeName,
+                                    tagName,
+                                    nameof(TagMatchingRule.TagStructure)),
+                                tagBlock.Length);
+                        }
 
-                    baseDescriptor = descriptor;
+                        baseDescriptor = descriptor;
+                        baseStructure = rule.TagStructure;
+                    }
                 }
             }
         }
@@ -680,7 +696,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         private void TrackTagHelperBlock(TagHelperBlockBuilder builder)
         {
-            _currentTagHelperTracker = new TagHelperBlockTracker(builder);
+            _currentTagHelperTracker = new TagHelperBlockTracker(_tagHelperPrefix, builder);
             PushTrackerStack(_currentTagHelperTracker);
 
             TrackBlock(builder);
@@ -830,19 +846,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         private class TagHelperBlockTracker : TagBlockTracker
         {
-            private IEnumerable<string> _prefixedAllowedChildren;
+            private IReadOnlyList<string> _prefixedAllowedChildren;
+            private readonly string _tagHelperPrefix;
 
-            public TagHelperBlockTracker(TagHelperBlockBuilder builder)
+            public TagHelperBlockTracker(string tagHelperPrefix, TagHelperBlockBuilder builder)
                 : base(builder.TagName, isTagHelper: true, depth: 0)
             {
+                _tagHelperPrefix = tagHelperPrefix;
                 Builder = builder;
 
-                if (Builder.Descriptors.Any(descriptor => descriptor.AllowedChildren != null))
+                if (Builder.BindingResult.Descriptors.Any(descriptor => descriptor.AllowedChildTags != null))
                 {
-                    AllowedChildren = Builder.Descriptors
-                        .Where(descriptor => descriptor.AllowedChildren != null)
-                        .SelectMany(descriptor => descriptor.AllowedChildren)
-                        .Distinct(StringComparer.OrdinalIgnoreCase);
+                    AllowedChildren = Builder.BindingResult.Descriptors
+                        .Where(descriptor => descriptor.AllowedChildTags != null)
+                        .SelectMany(descriptor => descriptor.AllowedChildTags)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList();
                 }
             }
 
@@ -850,18 +869,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             public uint OpenMatchingTags { get; set; }
 
-            public IEnumerable<string> AllowedChildren { get; }
+            public IReadOnlyList<string> AllowedChildren { get; }
 
-            public IEnumerable<string> PrefixedAllowedChildren
+            public IReadOnlyList<string> PrefixedAllowedChildren
             {
                 get
                 {
                     if (AllowedChildren != null && _prefixedAllowedChildren == null)
                     {
-                        Debug.Assert(Builder.Descriptors.Count() >= 1);
+                        Debug.Assert(Builder.BindingResult.Descriptors.Count() >= 1);
 
-                        var prefix = Builder.Descriptors.First().Prefix;
-                        _prefixedAllowedChildren = AllowedChildren.Select(allowedChild => prefix + allowedChild);
+                        _prefixedAllowedChildren = AllowedChildren.Select(allowedChild => _tagHelperPrefix + allowedChild).ToList();
                     }
 
                     return _prefixedAllowedChildren;

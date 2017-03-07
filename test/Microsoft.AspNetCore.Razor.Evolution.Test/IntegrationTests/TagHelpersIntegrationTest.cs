@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
@@ -13,12 +15,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             // Arrange
             var descriptors = new[]
             {
-                new TagHelperDescriptor
-                {
-                    TagName = "input",
-                    TypeName = "InputTagHelper",
-                    AssemblyName = "TestAssembly",
-                }
+                CreateTagHelperDescriptor(
+                    tagName: "input",
+                    typeName: "InputTagHelper",
+                    assemblyName: "TestAssembly")
             };
 
             var engine = RazorEngine.Create(builder => builder.AddTagHelpers(descriptors));
@@ -37,18 +37,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             // Arrange
             var descriptors = new[]
             {
-                new TagHelperDescriptor
-                {
-                    TagName = "input",
-                    TypeName = "InputTagHelper",
-                    AssemblyName = "TestAssembly",
-                    Attributes = new[] { new TagHelperAttributeDescriptor
+                CreateTagHelperDescriptor(
+                    tagName: "input",
+                    typeName: "InputTagHelper",
+                    assemblyName: "TestAssembly",
+                    attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
                     {
-                        Name = "bound",
-                        PropertyName = "FooProp",
-                        TypeName = "System.String"
-                    } }
-                }
+                        builder => builder
+                            .Name("bound")
+                            .PropertyName("FooProp")
+                            .TypeName("System.String"),
+                    })
             };
 
             var engine = RazorEngine.Create(builder => builder.AddTagHelpers(descriptors));
@@ -67,30 +66,25 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             // Arrange
             var descriptors = new[]
             {
-                new TagHelperDescriptor
-                {
-                    TagName = "p",
-                    TypeName = "PTagHelper",
-                    AssemblyName = "TestAssembly",
-                },
-                new TagHelperDescriptor
-                {
-                    TagName = "form",
-                    TypeName = "FormTagHelper",
-                    AssemblyName = "TestAssembly",
-                },
-                new TagHelperDescriptor
-                {
-                    TagName = "input",
-                    TypeName = "InputTagHelper",
-                    AssemblyName = "TestAssembly",
-                    Attributes = new[] { new TagHelperAttributeDescriptor
+                CreateTagHelperDescriptor(
+                    tagName: "p",
+                    typeName: "PTagHelper",
+                    assemblyName: "TestAssembly"),
+                CreateTagHelperDescriptor(
+                    tagName: "form",
+                    typeName: "FormTagHelper",
+                    assemblyName: "TestAssembly"),
+                CreateTagHelperDescriptor(
+                    tagName: "input",
+                    typeName: "InputTagHelper",
+                    assemblyName: "TestAssembly",
+                    attributes: new Action<ITagHelperBoundAttributeDescriptorBuilder>[]
                     {
-                        Name = "value",
-                        PropertyName = "FooProp",
-                        TypeName = "System.String"
-                    } }
-                }
+                        builder => builder
+                            .Name("value")
+                            .PropertyName("FooProp")
+                            .TypeName("System.String"),
+                    })
             };
 
             var engine = RazorEngine.Create(builder => builder.AddTagHelpers(descriptors));
@@ -101,6 +95,29 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
 
             // Assert
             AssertIRMatchesBaseline(document.GetIRDocument());
+        }
+
+        private static TagHelperDescriptor CreateTagHelperDescriptor(
+            string tagName,
+            string typeName,
+            string assemblyName,
+            IEnumerable<Action<ITagHelperBoundAttributeDescriptorBuilder>> attributes = null)
+        {
+            var builder = ITagHelperDescriptorBuilder.Create(typeName, assemblyName);
+
+            if (attributes != null)
+            {
+                foreach (var attributeBuilder in attributes)
+                {
+                    builder.BindAttribute(attributeBuilder);
+                }
+            }
+
+            builder.TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName(tagName));
+
+            var descriptor = builder.Build();
+
+            return descriptor;
         }
     }
 }

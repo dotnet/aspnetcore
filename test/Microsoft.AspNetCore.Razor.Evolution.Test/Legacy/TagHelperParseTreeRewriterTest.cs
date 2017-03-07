@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var errorSink = new ErrorSink();
             var parseResult = ParseDocument(documentContent);
             var document = parseResult.Root;
-            var parseTreeRewriter = new TagHelperParseTreeRewriter(provider: null);
+            var parseTreeRewriter = new TagHelperParseTreeRewriter(null, provider: null);
 
             // Assert - Guard
             var rootBlock = Assert.IsType<Block>(document);
@@ -108,8 +108,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
                                 new MarkupTagHelperBlock("strong")),
-                            blockFactory.MarkupTagBlock("<strong>")),
-                        new[] { errorFormatUnclosed(4, "strong") }
+                            new MarkupTagHelperBlock("strong")),
+                        new[] { errorFormatUnclosed(4, "strong"), errorFormatUnclosed(16, "strong") }
                     },
                     {
                         "<<p><<strong></</strong</strong></p>",
@@ -160,35 +160,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             // Arrange
             var descriptors = new TagHelperDescriptor[]
             {
-                new TagHelperDescriptor
-                {
-                    TagName = "strong",
-                    TypeName = "StrongTagHelper",
-                    AssemblyName = "SomeAssembly",
-                    RequiredParent = "p",
-                },
-                new TagHelperDescriptor
-                {
-                    TagName = "strong",
-                    TypeName = "StrongTagHelper",
-                    AssemblyName = "SomeAssembly",
-                    RequiredParent = "div",
-                },
-                new TagHelperDescriptor
-                {
-                    TagName = "*",
-                    TypeName = "CatchALlTagHelper",
-                    AssemblyName = "SomeAssembly",
-                    RequiredParent = "p",
-                },
-                new TagHelperDescriptor
-                {
-                    TagName = "p",
-                    TypeName = "PTagHelper",
-                    AssemblyName = "SomeAssembly"
-                }
+                ITagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("strong"))
+                    .TagMatchingRule(rule => rule.RequireTagName("div"))
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("CatchALlTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("*"))
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("p"))
+                    .Build(),
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
@@ -275,35 +258,27 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             // Arrange
             var descriptors = new TagHelperDescriptor[]
             {
-                new TagHelperDescriptor
-                {
-                    TagName = "input",
-                    TypeName = "InputTagHelper",
-                    AssemblyName = "SomeAssembly",
-                    TagStructure = TagStructure.WithoutEndTag,
-                },
-                new TagHelperDescriptor
-                {
-                    TagName = "strong",
-                    TypeName = "StrongTagHelper",
-                    AssemblyName = "SomeAssembly",
-                    RequiredParent = "p",
-                },
-                new TagHelperDescriptor
-                {
-                    TagName = "strong",
-                    TypeName = "StrongTagHelper",
-                    AssemblyName = "SomeAssembly",
-                    RequiredParent = "input",
-                },
-                new TagHelperDescriptor
-                {
-                    TagName = "p",
-                    TypeName = "PTagHelper",
-                    AssemblyName = "SomeAssembly"
-                }
+                ITagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => 
+                        rule
+                        .RequireTagName("input")
+                        .RequireTagStructure(TagStructure.WithoutEndTag))
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("strong")
+                        .RequireParentTag("p"))
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("strong")
+                        .RequireParentTag("input"))
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("p"))
+                    .Build(),
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
@@ -365,28 +340,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             // Arrange
             var descriptors = new TagHelperDescriptor[]
             {
-                new TagHelperDescriptor
-                {
-                    TagName = "strong",
-                    TypeName = "StrongTagHelper",
-                    AssemblyName = "SomeAssembly",
-                    RequiredParent = "p",
-                },
-                new TagHelperDescriptor
-                {
-                    TagName = "strong",
-                    TypeName = "StrongTagHelper",
-                    AssemblyName = "SomeAssembly",
-                    RequiredParent = "div",
-                },
-                new TagHelperDescriptor
-                {
-                    TagName = "p",
-                    TypeName = "PTagHelper",
-                    AssemblyName = "SomeAssembly"
-                }
+                ITagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("strong")
+                        .RequireParentTag("p"))
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("strong")
+                        .RequireParentTag("div"))
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("p"))
+                    .Build(),
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
@@ -401,31 +369,24 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 new MarkupTagHelperBlock("th:p",
                     new MarkupTagHelperBlock("th:strong")));
             var descriptors = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "p",
-                        TypeName = "PTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        AllowedChildren = new[] { "strong" },
-                        Prefix = "th:"
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "strong",
-                        TypeName = "StrongTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        Prefix = "th:"
-                    }
-                };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            {
+                ITagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("p"))
+                    .AllowChildTag("strong")
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("strong"))
+                    .Build(),
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider("th:", descriptors);
 
             // Act & Assert
             EvaluateData(
                 descriptorProvider,
                 documentContent,
                 expectedOutput,
-                expectedErrors: Enumerable.Empty<RazorError>());
+                expectedErrors: Enumerable.Empty<RazorError>(),
+                tagHelperPrefix: "th:");
         }
 
         public static TheoryData InvalidHtmlScriptBlockData
@@ -720,16 +681,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     blockFactory.MarkupTagBlock("</strong>"),
                     factory.Markup(Environment.NewLine)));
             var descriptors = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "p",
-                        TypeName = "PTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        AllowedChildren = new[] { "br" },
-                    }
-                };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            {
+                ITagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("p"))
+                    .AllowChildTag("br")
+                    .Build()
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors);
@@ -760,17 +718,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     blockFactory.MarkupTagBlock("<strong>"),
                     blockFactory.MarkupTagBlock("</strong>")));
             var descriptors = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "strong",
-                        TypeName = "StrongTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "required" } },
-                        AllowedChildren = new[] { "br" }
-                    }
-                };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            {
+                ITagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => 
+                        rule
+                        .RequireTagName("strong")
+                        .RequireAttribute(attribute => attribute.Name("required")))
+                    .AllowChildTag("br")
+                    .Build()
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors);
@@ -788,35 +745,26 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         factory.Markup("Hello World")),
                     new MarkupTagHelperBlock("br", TagMode.StartTagOnly)));
             var descriptors = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "p",
-                        TypeName = "PTagHelper1",
-                        AssemblyName = "SomeAssembly",
-                        AllowedChildren = new[] { "strong", "br" }
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "p",
-                        TypeName = "PTagHelper2",
-                        AssemblyName = "SomeAssembly"
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "strong",
-                        TypeName = "StrongTagHelper",
-                        AssemblyName = "SomeAssembly"
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "br",
-                        TypeName = "BRTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        TagStructure = TagStructure.WithoutEndTag
-                    }
-                };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            {
+                ITagHelperDescriptorBuilder.Create("PTagHelper1", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("p"))
+                    .AllowChildTag("strong")
+                    .AllowChildTag("br")
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("PTagHelper2", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("p"))
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("strong"))
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("BRTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => 
+                        rule
+                        .RequireTagName("br")
+                        .RequireTagStructure(TagStructure.WithoutEndTag))
+                    .Build(),
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
@@ -834,36 +782,26 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         factory.Markup("Hello World")),
                     new MarkupTagHelperBlock("br", TagMode.StartTagOnly)));
             var descriptors = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "p",
-                        TypeName = "PTagHelper1",
-                        AssemblyName = "SomeAssembly",
-                        AllowedChildren = new[] { "strong" }
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "p",
-                        TypeName = "PTagHelper2",
-                        AssemblyName = "SomeAssembly",
-                        AllowedChildren = new[] { "br" }
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "strong",
-                        TypeName = "StrongTagHelper",
-                        AssemblyName = "SomeAssembly"
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "br",
-                        TypeName = "BRTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        TagStructure = TagStructure.WithoutEndTag
-                    }
-                };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            {
+                ITagHelperDescriptorBuilder.Create("PTagHelper1", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("p"))
+                    .AllowChildTag("strong")
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("PTagHelper2", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("p"))
+                    .AllowChildTag("br")
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("strong"))
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("BRTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("br")
+                        .RequireTagStructure(TagStructure.WithoutEndTag))
+                    .Build(),
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
@@ -1083,31 +1021,28 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             object expectedErrors)
         {
             // Arrange
+            var pTagHelperBuilder = ITagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                .TagMatchingRule(rule => rule.RequireTagName("p"));
+            var strongTagHelperBuilder = ITagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+                .TagMatchingRule(rule => rule.RequireTagName("strong"));
+
+            foreach (var childTag in allowedChildren)
+            {
+                pTagHelperBuilder.AllowChildTag(childTag);
+                strongTagHelperBuilder.AllowChildTag(childTag);
+            }
             var descriptors = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "p",
-                        TypeName = "PTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        AllowedChildren = allowedChildren
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "strong",
-                        TypeName = "StrongTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        AllowedChildren = allowedChildren
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "br",
-                        TypeName = "BRTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        TagStructure = TagStructure.WithoutEndTag
-                    }
-                };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            {
+                pTagHelperBuilder.Build(),
+                strongTagHelperBuilder.Build(),
+                ITagHelperDescriptorBuilder.Create("BRTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("br")
+                        .RequireTagStructure(TagStructure.WithoutEndTag))
+                    .Build(),
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
@@ -1119,25 +1054,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             // Arrange
             var documentContent = "<p></</p>";
             var descriptors = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "p",
-                        TypeName = "PTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        AllowedChildren = new[] { "custom" },
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "*",
-                        TypeName = "CatchAllTagHelper",
-                        AssemblyName = "SomeAssembly",
-                    }
-                };
+            {
+                ITagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("p"))
+                    .AllowChildTag("custom")
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("CatchAllTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("*"))
+                    .Build(),
+            };
             var expectedOutput = new MarkupBlock(
                 new MarkupTagHelperBlock("p",
                     BlockFactory.MarkupTagBlock("</")));
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
             var expectedErrors = new[]
             {
                 new RazorError(
@@ -1158,27 +1087,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             // Arrange
             var documentContent = "<th:p></</th:p>";
             var descriptors = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "p",
-                        TypeName = "PTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        AllowedChildren = new[] { "custom" },
-                        Prefix = "th:",
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "*",
-                        TypeName = "CatchAllTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        Prefix = "th:",
-                    }
-                };
+            {
+                ITagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("p"))
+                    .AllowChildTag("custom")
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("CatchAllTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("*"))
+                    .Build(),
+            };
             var expectedOutput = new MarkupBlock(
                 new MarkupTagHelperBlock("th:p",
                     BlockFactory.MarkupTagBlock("</")));
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            var descriptorProvider = new TagHelperDescriptorProvider("th:", descriptors);
             var expectedErrors = new[]
             {
                 new RazorError(
@@ -1190,7 +1111,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             };
 
             // Act & Assert
-            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors);
+            EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors, "th:");
         }
 
         [Fact]
@@ -1200,16 +1121,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var documentContent = "<input>";
             var expectedOutput = new MarkupBlock(new MarkupTagHelperBlock("input", TagMode.StartTagOnly));
             var descriptors = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "input",
-                        TypeName = "InputTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        TagStructure = TagStructure.WithoutEndTag
-                    }
-                };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            {
+                ITagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => 
+                        rule
+                        .RequireTagName("input")
+                        .RequireTagStructure(TagStructure.WithoutEndTag))
+                    .Build()
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
@@ -1233,16 +1153,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var documentContent = "</input>";
             var expectedOutput = new MarkupBlock(blockFactory.MarkupTagBlock("</input>"));
             var descriptors = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "input",
-                        TypeName = "InputTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        TagStructure = TagStructure.WithoutEndTag
-                    }
-                };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            {
+                ITagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("input")
+                        .RequireTagStructure(TagStructure.WithoutEndTag))
+                    .Build()
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new[] { expectedError });
@@ -1259,7 +1178,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     "InputTagHelper1",
                     "InputTagHelper2",
                     "input",
-                    nameof(TagHelperDescriptor.TagStructure)),
+                    nameof(TagMatchingRule.TagStructure)),
                 absoluteIndex: 0,
                 lineIndex: 0,
                 columnIndex: 0,
@@ -1267,23 +1186,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             var documentContent = "<input>";
             var expectedOutput = new MarkupBlock(new MarkupTagHelperBlock("input", TagMode.StartTagOnly));
             var descriptors = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "input",
-                        TypeName = "InputTagHelper1",
-                        AssemblyName = "SomeAssembly",
-                        TagStructure = TagStructure.WithoutEndTag
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "input",
-                        TypeName = "InputTagHelper2",
-                        AssemblyName = "SomeAssembly",
-                        TagStructure = TagStructure.NormalOrSelfClosing
-                    }
-                };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            {
+                ITagHelperDescriptorBuilder.Create("InputTagHelper1", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("input")
+                        .RequireTagStructure(TagStructure.WithoutEndTag))
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("InputTagHelper2", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("input")
+                        .RequireTagStructure(TagStructure.NormalOrSelfClosing))
+                    .Build()
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, expectedOutput, expectedErrors: new[] { expectedError });
@@ -1692,34 +1609,28 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             // Arrange
             var descriptors = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "p",
-                        TypeName = "pTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "class" } }
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "div",
-                        TypeName = "divTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        RequiredAttributes = new[]
-                        {
-                            new TagHelperRequiredAttributeDescriptor { Name = "class" },
-                            new TagHelperRequiredAttributeDescriptor { Name = "style" }
-                        }
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "*",
-                        TypeName = "catchAllTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "catchAll" } }
-                    }
-                };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            {
+                ITagHelperDescriptorBuilder.Create("pTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => 
+                        rule
+                        .RequireTagName("p")
+                        .RequireAttribute(attribute => attribute.Name("class")))
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("divTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("div")
+                        .RequireAttribute(attribute => attribute.Name("class"))
+                        .RequireAttribute(attribute => attribute.Name("style")))
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("catchAllTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("*")
+                        .RequireAttribute(attribute => attribute.Name("catchAll")))
+                    .Build()
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
@@ -1959,23 +1870,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             // Arrange
             var descriptors = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "p",
-                        TypeName = "pTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "class" } }
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "*",
-                        TypeName = "catchAllTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "catchAll" } }
-                    }
-                };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            {
+                ITagHelperDescriptorBuilder.Create("pTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("p")
+                        .RequireAttribute(attribute => attribute.Name("class")))
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("catchAllTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("*")
+                        .RequireAttribute(attribute => attribute.Name("catchAll")))
+                    .Build(),
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
@@ -2183,16 +2092,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             // Arrange
             var descriptors = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "p",
-                        TypeName = "pTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "class" } }
-                    }
-                };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            {
+                ITagHelperDescriptorBuilder.Create("pTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("p")
+                        .RequireAttribute(attribute => attribute.Name("class")))
+                    .Build(),
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
@@ -2206,81 +2114,39 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 var blockFactory = new BlockFactory(factory);
                 var availableDescriptorsColon = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor
-                    {
-                        Prefix = "th:",
-                        TagName = "myth",
-                        TypeName = "mythTagHelper",
-                        AssemblyName = "SomeAssembly"
-                    },
-                    new TagHelperDescriptor
-                    {
-                        Prefix = "th:",
-                        TagName = "myth2",
-                        TypeName = "mythTagHelper2",
-                        AssemblyName = "SomeAssembly",
-                        Attributes = new []
-                        {
-                            new TagHelperAttributeDescriptor
-                            {
-                                Name = "bound",
-                                PropertyName = "Bound",
-                                TypeName = typeof(bool).FullName
-                            }
-                        }
-                    }
-                };
-                var availableDescriptorsText = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        Prefix = "PREFIX",
-                        TagName = "myth",
-                        TypeName = "mythTagHelper",
-                        AssemblyName = "SomeAssembly"
-                    },
-                    new TagHelperDescriptor
-                    {
-                        Prefix = "PREFIX",
-                        TagName = "myth2",
-                        TypeName = "mythTagHelper2",
-                        AssemblyName = "SomeAssembly",
-                        Attributes = new []
-                        {
-                            new TagHelperAttributeDescriptor
-                            {
-                                Name = "bound",
-                                PropertyName = "Bound",
-                                TypeName = typeof(bool).FullName
-                            },
-                        }
-                    }
+                    ITagHelperDescriptorBuilder.Create("mythTagHelper", "SomeAssembly")
+                        .TagMatchingRule(rule => rule.RequireTagName("myth"))
+                        .Build(),
+                    ITagHelperDescriptorBuilder.Create("mythTagHelper2", "SomeAssembly")
+                        .TagMatchingRule(rule => rule.RequireTagName("myth2"))
+                        .BindAttribute(attribute =>
+                            attribute
+                            .Name("bound")
+                            .PropertyName("Bound")
+                            .TypeName(typeof(bool).FullName))
+                        .Build()
                 };
                 var availableDescriptorsCatchAll = new TagHelperDescriptor[]
                 {
-                    new TagHelperDescriptor
-                    {
-                        Prefix = "myth",
-                        TagName = "*",
-                        TypeName = "mythTagHelper",
-                        AssemblyName = "SomeAssembly"
-                    }
+                    ITagHelperDescriptorBuilder.Create("mythTagHelper", "SomeAssembly")
+                        .TagMatchingRule(rule => rule.RequireTagName("*"))
+                        .Build(),
                 };
 
                 // documentContent, expectedOutput, availableDescriptors
                 return new TheoryData<string, MarkupBlock, IEnumerable<TagHelperDescriptor>>
                 {
                     {
-                        "<myth />",
-                        new MarkupBlock(blockFactory.MarkupTagBlock("<myth />")),
+                        "<th: />",
+                        new MarkupBlock(blockFactory.MarkupTagBlock("<th: />")),
                         availableDescriptorsCatchAll
                     },
                     {
-                        "<myth>words and spaces</myth>",
+                        "<th:>words and spaces</th:>",
                         new MarkupBlock(
-                            blockFactory.MarkupTagBlock("<myth>"),
+                            blockFactory.MarkupTagBlock("<th:>"),
                             factory.Markup("words and spaces"),
-                            blockFactory.MarkupTagBlock("</myth>")),
+                            blockFactory.MarkupTagBlock("</th:>")),
                         availableDescriptorsCatchAll
                     },
                     {
@@ -2290,22 +2156,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         availableDescriptorsColon
                     },
                     {
-                        "<PREFIXmyth />",
-                        new MarkupBlock(
-                            new MarkupTagHelperBlock("PREFIXmyth", tagMode: TagMode.SelfClosing)),
-                        availableDescriptorsText
-                    },
-                    {
                         "<th:myth></th:myth>",
                         new MarkupBlock(
                             new MarkupTagHelperBlock("th:myth")),
                         availableDescriptorsColon
-                    },
-                    {
-                        "<PREFIXmyth></PREFIXmyth>",
-                        new MarkupBlock(
-                            new MarkupTagHelperBlock("PREFIXmyth")),
-                        availableDescriptorsText
                     },
                     {
                         "<th:myth><th:my2th></th:my2th></th:myth>",
@@ -2317,25 +2171,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         availableDescriptorsColon
                     },
                     {
-                        "<PREFIXmyth><PREFIXmy2th></PREFIXmy2th></PREFIXmyth>",
-                        new MarkupBlock(
-                            new MarkupTagHelperBlock(
-                                "PREFIXmyth",
-                                blockFactory.MarkupTagBlock("<PREFIXmy2th>"),
-                                blockFactory.MarkupTagBlock("</PREFIXmy2th>"))),
-                        availableDescriptorsText
-                    },
-                    {
                         "<!th:myth />",
                         new MarkupBlock(
                             blockFactory.EscapedMarkupTagBlock("<", "th:myth />")),
                         availableDescriptorsColon
-                    },
-                    {
-                        "<!PREFIXmyth />",
-                        new MarkupBlock(
-                            blockFactory.EscapedMarkupTagBlock("<", "PREFIXmyth />")),
-                        availableDescriptorsText
                     },
                     {
                         "<!th:myth></!th:myth>",
@@ -2343,13 +2182,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                             blockFactory.EscapedMarkupTagBlock("<", "th:myth>"),
                             blockFactory.EscapedMarkupTagBlock("</", "th:myth>")),
                         availableDescriptorsColon
-                    },
-                    {
-                        "<!PREFIXmyth></!PREFIXmyth>",
-                        new MarkupBlock(
-                            blockFactory.EscapedMarkupTagBlock("<", "PREFIXmyth>"),
-                            blockFactory.EscapedMarkupTagBlock("</", "PREFIXmyth>")),
-                        availableDescriptorsText
                     },
                     {
                         "<th:myth class=\"btn\" />",
@@ -2364,18 +2196,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         availableDescriptorsColon
                     },
                     {
-                        "<PREFIXmyth class=\"btn\" />",
-                        new MarkupBlock(
-                            new MarkupTagHelperBlock(
-                                "PREFIXmyth",
-                                tagMode: TagMode.SelfClosing,
-                                attributes: new List<TagHelperAttributeNode>
-                                {
-                                    new TagHelperAttributeNode("class", factory.Markup("btn"))
-                                })),
-                        availableDescriptorsText
-                    },
-                    {
                         "<th:myth2 class=\"btn\" />",
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
@@ -2388,18 +2208,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         availableDescriptorsColon
                     },
                     {
-                        "<PREFIXmyth2 class=\"btn\" />",
-                        new MarkupBlock(
-                            new MarkupTagHelperBlock(
-                                "PREFIXmyth2",
-                                tagMode: TagMode.SelfClosing,
-                                attributes: new List<TagHelperAttributeNode>
-                                {
-                                    new TagHelperAttributeNode("class", factory.Markup("btn"))
-                                })),
-                        availableDescriptorsText
-                    },
-                    {
                         "<th:myth class=\"btn\">words and spaces</th:myth>",
                         new MarkupBlock(
                             new MarkupTagHelperBlock(
@@ -2410,18 +2218,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                                 },
                                 children: factory.Markup("words and spaces"))),
                         availableDescriptorsColon
-                    },
-                    {
-                        "<PREFIXmyth class=\"btn\">words and spaces</PREFIXmyth>",
-                        new MarkupBlock(
-                            new MarkupTagHelperBlock(
-                                "PREFIXmyth",
-                                attributes: new List<TagHelperAttributeNode>
-                                {
-                                    new TagHelperAttributeNode("class", factory.Markup("btn"))
-                                },
-                                children: factory.Markup("words and spaces"))),
-                        availableDescriptorsText
                     },
                     {
                         "<th:myth2 bound=\"@DateTime.Now\" />",
@@ -2445,58 +2241,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                                 })),
                         availableDescriptorsColon
                     },
-                    {
-                        "<PREFIXmyth2 bound=\"@DateTime.Now\" />",
-                        new MarkupBlock(
-                            new MarkupTagHelperBlock(
-                                "PREFIXmyth2",
-                                tagMode: TagMode.SelfClosing,
-                                attributes: new List<TagHelperAttributeNode>
-                                {
-                                    {
-                                        new TagHelperAttributeNode(
-                                            "bound",
-                                            new MarkupBlock(
-                                                new MarkupBlock(
-                                                    new ExpressionBlock(
-                                                        factory.CodeTransition(),
-                                                        factory.Code("DateTime.Now")
-                                                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                                                            .Accepts(AcceptedCharacters.AnyExceptNewline)))))
-                                    }
-                                })),
-                        availableDescriptorsText
-                    },
-                    {
-                        "<PREFIXmyth2 bound=\"@@@DateTime.Now\" />",
-                        new MarkupBlock(
-                            new MarkupTagHelperBlock(
-                                "PREFIXmyth2",
-                                tagMode: TagMode.SelfClosing,
-                                attributes: new List<TagHelperAttributeNode>
-                                {
-                                    {
-                                        new TagHelperAttributeNode(
-                                            "bound",
-                                            new MarkupBlock(
-                                                new MarkupBlock(
-                                                    factory.CodeMarkup("@"),
-                                                    factory
-                                                        .CodeMarkup("@")
-                                                        .With(SpanChunkGenerator.Null)),
-                                                new MarkupBlock(
-                                                    factory
-                                                        .EmptyHtml()
-                                                        .As(SpanKind.Code)
-                                                        .AsCodeMarkup(),
-                                                    new ExpressionBlock(
-                                                        factory.CSharpCodeMarkup("@"),
-                                                        factory.CSharpCodeMarkup("DateTime.Now")
-                                                            .With(new ExpressionChunkGenerator())))))
-                                    }
-                                })),
-                        availableDescriptorsText
-                    },
                 };
             }
         }
@@ -2509,14 +2253,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             object availableDescriptors)
         {
             // Arrange
-            var descriptorProvider = new TagHelperDescriptorProvider((IEnumerable<TagHelperDescriptor>)availableDescriptors);
+            var descriptorProvider = new TagHelperDescriptorProvider("th:", (IEnumerable<TagHelperDescriptor>)availableDescriptors);
 
             // Act & Assert
             EvaluateData(
                 descriptorProvider,
                 documentContent,
                 (MarkupBlock)expectedOutput,
-                expectedErrors: Enumerable.Empty<RazorError>());
+                expectedErrors: Enumerable.Empty<RazorError>(),
+                tagHelperPrefix: "th:");
         }
 
         public static TheoryData OptOut_WithAttributeTextTagData

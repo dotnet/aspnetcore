@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             : base(original)
         {
             TagName = original.TagName;
-            Descriptors = original.Descriptors;
+            BindingResult = original.Binding;
             Attributes = new List<TagHelperAttributeNode>(original.Attributes);
         }
 
@@ -31,22 +31,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         /// <param name="tagMode">HTML syntax of the element in the Razor source.</param>
         /// <param name="start">Starting location of the <see cref="TagHelperBlock"/>.</param>
         /// <param name="attributes">Attributes of the <see cref="TagHelperBlock"/>.</param>
-        /// <param name="descriptors">The <see cref="TagHelperDescriptor"/>s associated with the current HTML
-        /// tag.</param>
+        /// <param name="bindingResult"></param>
         public TagHelperBlockBuilder(
             string tagName,
             TagMode tagMode,
             SourceLocation start,
             IList<TagHelperAttributeNode> attributes,
-            IEnumerable<TagHelperDescriptor> descriptors)
+            TagHelperBinding bindingResult)
         {
             TagName = tagName;
             TagMode = tagMode;
             Start = start;
-            Descriptors = descriptors;
+            BindingResult = bindingResult;
             Attributes = new List<TagHelperAttributeNode>(attributes);
             Type = BlockType.Tag;
-            ChunkGenerator = new TagHelperChunkGenerator(descriptors);
+            ChunkGenerator = new TagHelperChunkGenerator();
         }
 
         // Internal for testing
@@ -60,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             TagMode = tagMode;
             Attributes = attributes;
             Type = BlockType.Tag;
-            ChunkGenerator = new TagHelperChunkGenerator(tagHelperDescriptors: null);
+            ChunkGenerator = new TagHelperChunkGenerator();
 
             // Children is IList, no AddRange
             foreach (var child in children)
@@ -89,7 +88,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         /// <summary>
         /// <see cref="TagHelperDescriptor"/>s for the HTML element.
         /// </summary>
-        public IEnumerable<TagHelperDescriptor> Descriptors { get; }
+        public TagHelperBinding BindingResult { get; }
 
         /// <summary>
         /// The HTML attributes.

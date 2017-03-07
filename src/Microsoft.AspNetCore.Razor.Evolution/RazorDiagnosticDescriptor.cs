@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
-    [DebuggerDisplay("{Error} {Id}: {GetMessageFormat()}")]
+    [DebuggerDisplay("Error {Id}: {GetMessageFormat()}")]
     public sealed class RazorDiagnosticDescriptor : IEquatable<RazorDiagnosticDescriptor>
     {
         private readonly Func<string> _messageFormat;

@@ -17,28 +17,24 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             string tagName,
             bool validStructure,
             Block tag,
-            IEnumerable<TagHelperDescriptor> descriptors,
+            TagHelperBinding bindingResult,
             ErrorSink errorSink)
         {
             // There will always be at least one child for the '<'.
             var start = tag.Children.First().Start;
-            var attributes = GetTagAttributes(tagName, validStructure, tag, descriptors, errorSink);
-            var tagMode = GetTagMode(tagName, tag, descriptors, errorSink);
+            var attributes = GetTagAttributes(tagName, validStructure, tag, bindingResult, errorSink);
+            var tagMode = GetTagMode(tagName, tag, bindingResult, errorSink);
 
-            return new TagHelperBlockBuilder(tagName, tagMode, start, attributes, descriptors);
+            return new TagHelperBlockBuilder(tagName, tagMode, start, attributes, bindingResult);
         }
 
         private static IList<TagHelperAttributeNode> GetTagAttributes(
             string tagName,
             bool validStructure,
             Block tagBlock,
-            IEnumerable<TagHelperDescriptor> descriptors,
+            TagHelperBinding bindingResult,
             ErrorSink errorSink)
         {
-            // Ignore all but one descriptor per type since this method uses the TagHelperDescriptors only to get the
-            // contained TagHelperAttributeDescriptor's.
-            descriptors = descriptors.Distinct(TypeBasedTagHelperDescriptorComparer.Default);
-
             var attributes = new List<TagHelperAttributeNode>();
 
             // We skip the first child "<tagname" and take everything up to the ending portion of the tag ">" or "/>".
@@ -52,11 +48,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 TryParseResult result;
                 if (child.IsBlock)
                 {
-                    result = TryParseBlock(tagName, (Block)child, descriptors, errorSink);
+                    result = TryParseBlock(tagName, (Block)child, bindingResult.Descriptors, errorSink);
                 }
                 else
                 {
-                    result = TryParseSpan((Span)child, descriptors, errorSink);
+                    result = TryParseSpan((Span)child, bindingResult.Descriptors, errorSink);
                 }
 
                 // Only want to track the attribute if we succeeded in parsing its corresponding Block/Span.
@@ -77,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                             LegacyResources.FormatRewriterError_EmptyTagHelperBoundAttribute(
                                 result.AttributeName,
                                 tagName,
-                                GetPropertyType(result.AttributeName, descriptors)),
+                                GetPropertyType(result.AttributeName, bindingResult.Descriptors)),
                             result.AttributeName.Length);
                     }
 
@@ -118,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         private static TagMode GetTagMode(
             string tagName,
             Block beginTagBlock,
-            IEnumerable<TagHelperDescriptor> descriptors,
+            TagHelperBinding bindingResult,
             ErrorSink errorSink)
         {
             var childSpan = beginTagBlock.FindLastDescendentSpan();
@@ -129,12 +125,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                 return TagMode.SelfClosing;
             }
 
-            var baseDescriptor = descriptors.FirstOrDefault(
-                descriptor => descriptor.TagStructure != TagStructure.Unspecified);
-            var resolvedTagStructure = baseDescriptor?.TagStructure ?? TagStructure.Unspecified;
-            if (resolvedTagStructure == TagStructure.WithoutEndTag)
+            foreach (var descriptor in bindingResult.Descriptors)
             {
-                return TagMode.StartTagOnly;
+                var boundRules = bindingResult.GetBoundRules(descriptor);
+                var nonDefaultRule = boundRules.FirstOrDefault(rule => rule.TagStructure != TagStructure.Unspecified);
+
+                if (nonDefaultRule?.TagStructure == TagStructure.WithoutEndTag)
+                {
+                    return TagMode.StartTagOnly;
+                }
             }
 
             return TagMode.StartTagAndEndTag;
@@ -656,8 +655,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         private static string GetPropertyType(string name, IEnumerable<TagHelperDescriptor> descriptors)
         {
             var firstBoundAttribute = FindFirstBoundAttribute(name, descriptors);
+            var isBoundToIndexer = firstBoundAttribute.IsIndexerNameMatch(name);
 
-            return firstBoundAttribute?.TypeName;
+            if (isBoundToIndexer)
+            {
+                return firstBoundAttribute?.IndexerTypeName;
+            }
+            else
+            {
+                return firstBoundAttribute?.TypeName;
+            }
         }
 
         // Create a TryParseResult for given name, filling in binding details.
@@ -665,10 +672,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             var firstBoundAttribute = FindFirstBoundAttribute(name, descriptors);
             var isBoundAttribute = firstBoundAttribute != null;
-            var isBoundNonStringAttribute = isBoundAttribute && !firstBoundAttribute.IsStringProperty;
+            var isBoundNonStringAttribute = isBoundAttribute &&
+                !(firstBoundAttribute.IsStringProperty ||
+                    (firstBoundAttribute.IsIndexerNameMatch(name) && firstBoundAttribute.IsIndexerStringProperty));
             var isMissingDictionaryKey = isBoundAttribute &&
-                firstBoundAttribute.IsIndexer &&
-                name.Length == firstBoundAttribute.Name.Length;
+                firstBoundAttribute.IndexerNamePrefix != null &&
+                name.Length == firstBoundAttribute.IndexerNamePrefix.Length;
 
             return new TryParseResult
             {
@@ -680,15 +689,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         }
 
         // Finds first TagHelperAttributeDescriptor matching given name.
-        private static TagHelperAttributeDescriptor FindFirstBoundAttribute(
+        private static BoundAttributeDescriptor FindFirstBoundAttribute(
             string name,
             IEnumerable<TagHelperDescriptor> descriptors)
         {
-            // Non-indexers (exact HTML attribute name matches) have higher precedence than indexers (prefix matches).
-            // Attributes already sorted to ensure this precedence.
             var firstBoundAttribute = descriptors
-                .SelectMany(descriptor => descriptor.Attributes)
-                .FirstOrDefault(attributeDescriptor => attributeDescriptor.IsNameMatch(name));
+                .SelectMany(descriptor => descriptor.BoundAttributes)
+                .FirstOrDefault(attributeDescriptor => attributeDescriptor.CanMatchName(name));
 
             return firstBoundAttribute;
         }

@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     visitor.VisitBlock(import.Root);
                 }
             }
-            
+
             visitor.VisitBlock(syntaxTree.Root);
 
             var errorList = new List<RazorDiagnostic>();
@@ -52,6 +52,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var directives = visitor.Directives;
             descriptors = ProcessDirectives(directives, descriptors, errorSink);
 
+            var tagHelperPrefix = ProcessTagHelperPrefix(directives, codeDocument, errorSink);
             var root = syntaxTree.Root;
 
             if (descriptors.Count == 0)
@@ -64,18 +65,49 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             }
             else
             { 
-                var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
-                var rewriter = new TagHelperParseTreeRewriter(descriptorProvider);
+                var descriptorProvider = new TagHelperDescriptorProvider(tagHelperPrefix, descriptors);
+                var rewriter = new TagHelperParseTreeRewriter(tagHelperPrefix, descriptorProvider);
                 root = rewriter.Rewrite(root, errorSink);
             }
 
             // Temporary code while we're still using legacy diagnostics in the SyntaxTree.
             errorList.AddRange(errorSink.Errors.Select(error => RazorDiagnostic.Create(error)));
 
+            errorList.AddRange(descriptors.SelectMany(d => d.GetAllDiagnostics()));
+
             var diagnostics = CombineErrors(syntaxTree.Diagnostics, errorList);
 
             var newSyntaxTree = RazorSyntaxTree.Create(root, syntaxTree.Source, diagnostics, syntaxTree.Options);
             return newSyntaxTree;
+        }
+
+        // Internal for testing
+        internal string ProcessTagHelperPrefix(List<TagHelperDirectiveDescriptor> directives, RazorCodeDocument codeDocument, ErrorSink errorSink)
+        {
+            // We only support a single prefix directive.
+            TagHelperDirectiveDescriptor prefixDirective = null;
+            for (var i = 0; i < directives.Count; i++)
+            {
+                if (directives[i].DirectiveType == TagHelperDirectiveType.TagHelperPrefix)
+                {
+                    // We only expect to see a single one of these per file, but that's enforced at another level.
+                    prefixDirective = directives[i];
+                }
+            }
+
+            var prefix = prefixDirective?.DirectiveText;
+            if (prefix != null && !IsValidTagHelperPrefix(prefix, prefixDirective.Location, errorSink))
+            {
+                prefix = null;
+            }
+
+            if (!string.IsNullOrEmpty(prefix))
+            {
+                codeDocument.SetTagHelperPrefix(prefixDirective.DirectiveText);
+                return prefixDirective.DirectiveText;
+            }
+
+            return null;
         }
 
         internal IReadOnlyList<TagHelperDescriptor> ProcessDirectives(
@@ -84,9 +116,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             ErrorSink errorSink)
         {
             var matches = new HashSet<TagHelperDescriptor>(TagHelperDescriptorComparer.Default);
-
-            // We only support a single prefix directive.
-            TagHelperDirectiveDescriptor prefixDirective = null;
 
             for (var i = 0; i < directives.Count; i++)
             {
@@ -157,23 +186,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         }
 
                         break;
-
-                    case TagHelperDirectiveType.TagHelperPrefix:
-
-                        // We only expect to see a single one of these per file, but that's enforced at another level.
-                        prefixDirective = directive;
-
-                        break;
                 }
             }
 
-            var prefix = prefixDirective?.DirectiveText;
-            if (prefix != null && !IsValidTagHelperPrefix(prefix, prefixDirective.Location, errorSink))
-            {
-                prefix = null;
-            }
-
-            return PrefixDescriptors(prefix, matches);
+            return matches.ToArray();
         }
 
         private bool AssemblyContainsTagHelpers(string assemblyName, IReadOnlyList<TagHelperDescriptor> tagHelpers)
@@ -254,27 +270,20 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             return true;
         }
 
-        private static IReadOnlyList<TagHelperDescriptor> PrefixDescriptors(
-            string prefix,
-            IEnumerable<TagHelperDescriptor> descriptors)
-        {
-            if (!string.IsNullOrEmpty(prefix))
-            {
-                return descriptors.Select(descriptor => new TagHelperDescriptor(descriptor)
-                {
-                    Prefix = prefix
-                }).ToList();
-            }
-
-            return descriptors.ToList();
-        }
-
         private static bool MatchesDirective(TagHelperDescriptor descriptor, ParsedDirective lookupInfo)
         {
             if (!string.Equals(descriptor.AssemblyName, lookupInfo.AssemblyName, StringComparison.Ordinal))
             {
                 return false;
             }
+
+            if (descriptor.Kind != ITagHelperDescriptorBuilder.DescriptorKind)
+            {
+                // We only understand TagHelperDescriptors generated from ITagHelpers.
+                return false;
+            }
+
+            var descriptorTypeName = descriptor.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
 
             if (lookupInfo.TypePattern.EndsWith("*", StringComparison.Ordinal))
             {
@@ -286,10 +295,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                 var lookupTypeName = lookupInfo.TypePattern.Substring(0, lookupInfo.TypePattern.Length - 1);
 
-                return descriptor.TypeName.StartsWith(lookupTypeName, StringComparison.Ordinal);
+                return descriptorTypeName.StartsWith(lookupTypeName, StringComparison.Ordinal);
             }
 
-            return string.Equals(descriptor.TypeName, lookupInfo.TypePattern, StringComparison.Ordinal);
+            return string.Equals(descriptorTypeName, lookupInfo.TypePattern, StringComparison.Ordinal);
         }
 
         private static int GetErrorLength(string directiveText)

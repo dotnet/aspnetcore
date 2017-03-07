@@ -1,12 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using Microsoft.AspNetCore.Razor.Evolution;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
@@ -41,27 +37,25 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
             foreach (var tagName in tagNames)
             {
-                descriptors.Add(
-                    new TagHelperDescriptor
-                    {
-                        TagName = tagName,
-                        TypeName = tagName + "taghelper",
-                        AssemblyName = "SomeAssembly"
-                    });
+                var descriptor = ITagHelperDescriptorBuilder.Create(tagName + "taghelper", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName(tagName))
+                    .Build();
+                descriptors.Add(descriptor);
             }
 
-            return new TagHelperDescriptorProvider(descriptors);
+            return new TagHelperDescriptorProvider(null, descriptors);
         }
 
         internal void EvaluateData(
             TagHelperDescriptorProvider provider,
             string documentContent,
             MarkupBlock expectedOutput,
-            IEnumerable<RazorError> expectedErrors)
+            IEnumerable<RazorError> expectedErrors,
+            string tagHelperPrefix = null)
         {
             var syntaxTree = ParseDocument(documentContent);
             var errorSink = new ErrorSink();
-            var parseTreeRewriter = new TagHelperParseTreeRewriter(provider);
+            var parseTreeRewriter = new TagHelperParseTreeRewriter(tagHelperPrefix, provider);
             var actualTree = parseTreeRewriter.Rewrite(syntaxTree.Root, errorSink);
 
             var allErrors = syntaxTree.Diagnostics.Concat(errorSink.Errors.Select(error => RazorDiagnostic.Create(error)));

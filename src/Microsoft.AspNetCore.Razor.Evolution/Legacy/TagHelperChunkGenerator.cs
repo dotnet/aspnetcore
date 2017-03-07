@@ -1,25 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-
 namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 {
     internal class TagHelperChunkGenerator : ParentChunkGenerator
     {
-        private IEnumerable<TagHelperDescriptor> _tagHelperDescriptors;
-
-        /// <summary>
-        /// Instantiates a new <see cref="TagHelperChunkGenerator"/>.
-        /// </summary>
-        /// <param name="tagHelperDescriptors">
-        /// <see cref="TagHelperDescriptor"/>s associated with the current HTML tag.
-        /// </param>
-        public TagHelperChunkGenerator(IEnumerable<TagHelperDescriptor> tagHelperDescriptors)
-        {
-            _tagHelperDescriptors = tagHelperDescriptors;
-        }
-
         public override void GenerateStartParentChunk(Block target, ChunkGeneratorContext context)
         {
             //var tagHelperBlock = target as TagHelperBlock;

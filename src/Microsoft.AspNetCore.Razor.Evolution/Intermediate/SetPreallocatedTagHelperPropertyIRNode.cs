@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 {
@@ -21,7 +22,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Intermediate
 
         public string PropertyName { get; set; }
 
-        public TagHelperAttributeDescriptor Descriptor { get; set; }
+        public BoundAttributeDescriptor Descriptor { get; set; }
+
+        public TagHelperBinding Binding { get; set; }
+
+        public bool IsIndexerNameMatch { get; set; }
 
         public override void Accept(RazorIRNodeVisitor visitor)
         {

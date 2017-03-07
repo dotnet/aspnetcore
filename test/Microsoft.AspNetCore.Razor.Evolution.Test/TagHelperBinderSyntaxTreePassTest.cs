@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Razor.Evolution.Legacy;
 using Xunit;
 using System.Linq;
 using Moq;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Razor.Evolution
 {
@@ -20,16 +21,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 builder.AddTagHelpers(new[]
                 {
-                    new TagHelperDescriptor
-                    {
-                        AssemblyName = "TestAssembly",
-                        TagName = "form",
-                    },
-                    new TagHelperDescriptor
-                    {
-                        AssemblyName = "TestAssembly",
-                        TagName = "input",
-                    }
+                    CreateTagHelperDescriptor(
+                        tagName: "form",
+                        typeName: null,
+                        assemblyName: "TestAssembly"),
+                    CreateTagHelperDescriptor(
+                        tagName: "input",
+                        typeName: null,
+                        assemblyName: "TestAssembly"),
                 });
             });
 
@@ -59,39 +58,25 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         public void Execute_DirectiveWithoutQuotes_RewritesTagHelpers_TagHelperMatchesElementTwice()
         {
             // Arrange
+            var descriptor = CreateTagHelperDescriptor(
+                tagName: "form",
+                typeName: "TestFormTagHelper",
+                assemblyName: "TestAssembly",
+                ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                {
+                    ruleBuilder => ruleBuilder
+                        .RequireAttribute(attribute => attribute
+                            .Name("a")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)),
+                    ruleBuilder => ruleBuilder
+                        .RequireAttribute(attribute => attribute
+                            .Name("b")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)),
+                });
+
             var engine = RazorEngine.Create(builder =>
             {
-                builder.AddTagHelpers(new[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        AssemblyName = "TestAssembly",
-                        TagName = "form",
-                        TypeName = "TestFormTagHelper",
-                        RequiredAttributes = new List<TagHelperRequiredAttributeDescriptor>()
-                        {
-                             new TagHelperRequiredAttributeDescriptor()
-                             {
-                                 Name = "a",
-                                 NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch
-                             }
-                        },
-                    },
-                    new TagHelperDescriptor
-                    {
-                        AssemblyName = "TestAssembly",
-                        TagName = "form",
-                        TypeName = "TestFormTagHelper",
-                        RequiredAttributes = new List<TagHelperRequiredAttributeDescriptor>()
-                        {
-                             new TagHelperRequiredAttributeDescriptor()
-                             {
-                                 Name = "b",
-                                 NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch
-                             }
-                        },
-                    }
-                });
+                builder.AddTagHelpers(new[] { descriptor });
             });
 
             var pass = new TagHelperBinderSyntaxTreePass()
@@ -117,46 +102,32 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             var formTagHelper = Assert.IsType<TagHelperBlock>(rewrittenTree.Root.Children[2]);
             Assert.Equal("form", formTagHelper.TagName);
-            Assert.Single(formTagHelper.Descriptors);
+            Assert.Equal(2, formTagHelper.Binding.GetBoundRules(descriptor).Count());
         }
 
         [Fact]
         public void Execute_DirectiveWithQuotes_RewritesTagHelpers_TagHelperMatchesElementTwice()
         {
             // Arrange
+            var descriptor = CreateTagHelperDescriptor(
+                tagName: "form",
+                typeName: "TestFormTagHelper",
+                assemblyName: "TestAssembly",
+                ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                {
+                    ruleBuilder => ruleBuilder
+                        .RequireAttribute(attribute => attribute
+                            .Name("a")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)),
+                    ruleBuilder => ruleBuilder
+                        .RequireAttribute(attribute => attribute
+                            .Name("b")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)),
+                });
+
             var engine = RazorEngine.Create(builder =>
             {
-                builder.AddTagHelpers(new[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        AssemblyName = "TestAssembly",
-                        TagName = "form",
-                        TypeName = "TestFormTagHelper",
-                        RequiredAttributes = new List<TagHelperRequiredAttributeDescriptor>()
-                        {
-                             new TagHelperRequiredAttributeDescriptor()
-                             {
-                                 Name = "a",
-                                 NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch
-                             }
-                        },
-                    },
-                    new TagHelperDescriptor
-                    {
-                        AssemblyName = "TestAssembly",
-                        TagName = "form",
-                        TypeName = "TestFormTagHelper",
-                        RequiredAttributes = new List<TagHelperRequiredAttributeDescriptor>()
-                        {
-                             new TagHelperRequiredAttributeDescriptor()
-                             {
-                                 Name = "b",
-                                 NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch
-                             }
-                        },
-                    }
-                });
+                builder.AddTagHelpers(new[] { descriptor });
             });
 
             var pass = new TagHelperBinderSyntaxTreePass()
@@ -182,7 +153,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             var formTagHelper = Assert.IsType<TagHelperBlock>(rewrittenTree.Root.Children[2]);
             Assert.Equal("form", formTagHelper.TagName);
-            Assert.Single(formTagHelper.Descriptors);
+            Assert.Equal(2, formTagHelper.Binding.GetBoundRules(descriptor).Count());
         }
 
         [Fact]
@@ -298,7 +269,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             var resolverError = RazorDiagnostic.Create(new RazorError("Test error", new SourceLocation(19, 1, 17), length: 12));
             var engine = RazorEngine.Create(builder =>
             {
-                var resolver = new ErrorLoggingTagHelperDescriptorResolver(resolverError);
+                var resolver = new ErrorLoggingTagHelperDescriptorResolver(resolverError, tagName: "test");
                 builder.Features.Add(Mock.Of<ITagHelperFeature>(f => f.Resolver == resolver));
             });
 
@@ -328,6 +299,36 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         }
 
         [Fact]
+        public void Execute_CombinesDiagnosticsFromTagHelperDescriptor()
+        {
+            // Arrange
+            var resolverError = RazorDiagnostic.Create(new RazorError("Test error", new SourceLocation(19, 1, 17), length: 12));
+            var engine = RazorEngine.Create(builder =>
+            {
+                var resolver = new ErrorLoggingTagHelperDescriptorResolver(resolverError, tagName: null);
+                builder.Features.Add(Mock.Of<ITagHelperFeature>(f => f.Resolver == resolver));
+            });
+
+            var descriptorError = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedTagNameNullOrWhitespace();
+
+            var pass = new TagHelperBinderSyntaxTreePass()
+            {
+                Engine = engine,
+            };
+
+            var sourceDocument = CreateTestSourceDocument();
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var originalTree = RazorSyntaxTree.Parse(sourceDocument);
+
+            // Act
+            var outputTree = pass.Execute(codeDocument, originalTree);
+
+            // Assert
+            Assert.Empty(originalTree.Diagnostics);
+            Assert.Equal(new[] { resolverError, descriptorError }, outputTree.Diagnostics);
+        }
+
+        [Fact]
         public void Execute_CombinesErrorsOnRewritingErrors()
         {
             // Arrange
@@ -335,16 +336,14 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 builder.AddTagHelpers(new[]
                 {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "form",
-                        AssemblyName= "TestAssembly",
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "input",
-                        AssemblyName= "TestAssembly",
-                    }
+                    CreateTagHelperDescriptor(
+                        tagName: "form",
+                        typeName: null,
+                        assemblyName: "TestAssembly"),
+                    CreateTagHelperDescriptor(
+                        tagName: "input",
+                        typeName: null,
+                        assemblyName: "TestAssembly"),
                 });
             });
 
@@ -634,12 +633,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             get
             {
-                return new TagHelperDescriptor
-                {
-                    TagName = "valid_plain",
-                    TypeName = "Microsoft.AspNetCore.Razor.TagHelpers.ValidPlainTagHelper",
-                    AssemblyName = AssemblyA,
-                };
+                return CreateTagHelperDescriptor(
+                    tagName: "valid_plain",
+                    typeName: "Microsoft.AspNetCore.Razor.TagHelpers.ValidPlainTagHelper",
+                    assemblyName: AssemblyA);
             }
         }
 
@@ -647,21 +644,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         {
             get
             {
-                return new TagHelperDescriptor
-                {
-                    TagName = "valid_inherited",
-                    TypeName = "Microsoft.AspNetCore.Razor.TagHelpers.ValidInheritedTagHelper",
-                    AssemblyName = AssemblyA
-                };
+                return CreateTagHelperDescriptor(
+                    tagName: "valid_inherited",
+                    typeName: "Microsoft.AspNetCore.Razor.TagHelpers.ValidInheritedTagHelper",
+                    assemblyName: AssemblyA);
             }
         }
-
-        private static TagHelperDescriptor[] AllTagHelpers => new[]
-        {
-            Valid_PlainTagHelperDescriptor,
-            Valid_InheritedTagHelperDescriptor,
-            String_TagHelperDescriptor
-        };
 
         private static TagHelperDescriptor String_TagHelperDescriptor
         {
@@ -669,26 +657,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 // We're treating 'string' as a TagHelper so we can test TagHelpers in multiple assemblies without
                 // building a separate assembly with a single TagHelper.
-                return new TagHelperDescriptor
-                {
-                    TagName = "string",
-                    TypeName = "System.String",
-                    AssemblyName = AssemblyB,
-                };
+                return CreateTagHelperDescriptor(
+                    tagName: "string",
+                    typeName: "System.String",
+                    assemblyName: AssemblyB);
             }
         }
 
-        public static TheoryData ProcessDirectives_TagHelperPrefixData
+        public static TheoryData ProcessTagHelperPrefixData
         {
             get
             {
-                return new TheoryData<
-                    IEnumerable<TagHelperDescriptor>, // tagHelpers
-                    IEnumerable<TagHelperDirectiveDescriptor>, // directiveDescriptors
-                    IEnumerable<TagHelperDescriptor>> // expectedDescriptors
+                // directiveDescriptors, expected prefix
+                return new TheoryData<IEnumerable<TagHelperDirectiveDescriptor>, string>
                 {
                     {
-                        AllTagHelpers,
                         new []
                         {
                             CreateTagHelperDirectiveDescriptor("", TagHelperDirectiveType.TagHelperPrefix),
@@ -696,10 +679,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                                 "Microsoft.AspNetCore.Razor.TagHelpers.ValidPlain*, " + AssemblyA,
                                 TagHelperDirectiveType.AddTagHelper),
                         },
-                        new [] { Valid_PlainTagHelperDescriptor }
+                        null
                     },
                     {
-                        AllTagHelpers,
                         new []
                         {
                             CreateTagHelperDirectiveDescriptor("th:", TagHelperDirectiveType.TagHelperPrefix),
@@ -707,23 +689,17 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                                 "Microsoft.AspNetCore.Razor.TagHelpers.ValidPlain*, " + AssemblyA,
                                 TagHelperDirectiveType.AddTagHelper),
                         },
-                        new [] { CreatePrefixedValidPlainDescriptor("th:") }
+                        "th:"
                     },
                     {
-                        AllTagHelpers,
                         new []
                         {
                             CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
                             CreateTagHelperDirectiveDescriptor("th:", TagHelperDirectiveType.TagHelperPrefix)
                         },
-                        new []
-                        {
-                            CreatePrefixedValidPlainDescriptor("th:"),
-                            CreatePrefixedValidInheritedDescriptor("th:")
-                        }
+                        "th:"
                     },
                     {
-                        AllTagHelpers,
                         new []
                         {
                             CreateTagHelperDirectiveDescriptor("th-", TagHelperDirectiveType.TagHelperPrefix),
@@ -734,14 +710,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                                 "Microsoft.AspNetCore.Razor.TagHelpers.ValidInherited*, " + AssemblyA,
                                 TagHelperDirectiveType.AddTagHelper)
                         },
-                        new []
-                        {
-                            CreatePrefixedValidPlainDescriptor("th-"),
-                            CreatePrefixedValidInheritedDescriptor("th-")
-                        }
+                        "th-"
                     },
                     {
-                        AllTagHelpers,
                         new []
                         {
                             CreateTagHelperDirectiveDescriptor("", TagHelperDirectiveType.TagHelperPrefix),
@@ -752,10 +723,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                                 "Microsoft.AspNetCore.Razor.TagHelpers.ValidInherited*, " + AssemblyA,
                                 TagHelperDirectiveType.AddTagHelper)
                         },
-                        new [] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor }
+                        null
                     },
                     {
-                        AllTagHelpers,
                         new []
                         {
                             CreateTagHelperDirectiveDescriptor("th", TagHelperDirectiveType.TagHelperPrefix),
@@ -766,15 +736,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                                 "*, " + AssemblyB,
                                 TagHelperDirectiveType.AddTagHelper),
                         },
-                        new []
-                        {
-                            CreatePrefixedValidPlainDescriptor("th"),
-                            CreatePrefixedValidInheritedDescriptor("th"),
-                            CreatePrefixedStringDescriptor("th")
-                        }
+                        "th"
                     },
                     {
-                        AllTagHelpers,
                         new []
                         {
                             CreateTagHelperDirectiveDescriptor(
@@ -785,44 +749,30 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                                 "*, " + AssemblyB,
                                 TagHelperDirectiveType.AddTagHelper),
                         },
-                        new []
-                        {
-                            CreatePrefixedValidPlainDescriptor("th:-"),
-                            CreatePrefixedValidInheritedDescriptor("th:-"),
-                            CreatePrefixedStringDescriptor("th:-")
-                        }
+                        "th:-"
                     },
                 };
             }
         }
 
         [Theory]
-        [MemberData(nameof(ProcessDirectives_TagHelperPrefixData))]
-        public void ProcessDirectives_AppliesDirectives_WithTagHelperPrefix(
-            object tagHelpers,
+        [MemberData(nameof(ProcessTagHelperPrefixData))]
+        public void ProcessTagHelperPrefix_ParsesPrefixFromDirectives_SetsOnCodeDocument(
             object directiveDescriptors,
-            object expectedDescriptors)
+            string expectedPrefix)
         {
             // Arrange
             var errorSink = new ErrorSink();
             var pass = new TagHelperBinderSyntaxTreePass();
-
-            var expected = (IEnumerable<TagHelperDescriptor>)expectedDescriptors;
+            var document = RazorCodeDocument.Create(new DefaultRazorSourceDocument("Test content", encoding: Encoding.UTF8, fileName: "TestFile"));
 
             // Act
-            var results = pass.ProcessDirectives(
-                ((IEnumerable<TagHelperDirectiveDescriptor>)directiveDescriptors).ToArray(),
-                ((IEnumerable<TagHelperDescriptor>)tagHelpers).ToArray(),
-                errorSink);
+            var prefix = pass.ProcessTagHelperPrefix(((IEnumerable<TagHelperDirectiveDescriptor>)directiveDescriptors).ToList(), document, errorSink);
 
             // Assert
             Assert.Empty(errorSink.Errors);
-            Assert.Equal(expected.Count(), results.Count());
-
-            foreach (var expectedDescriptor in expected)
-            {
-                Assert.Contains(expectedDescriptor, results, TagHelperDescriptorComparer.Default);
-            }
+            Assert.Equal(expectedPrefix, prefix);
+            Assert.Equal(expectedPrefix, document.GetTagHelperPrefix());
         }
 
         public static TheoryData ProcessDirectivesData
@@ -874,7 +824,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         new []
                         {
                             CreateTagHelperDirectiveDescriptor(
-                                Valid_PlainTagHelperDescriptor.TypeName + ", " + AssemblyA,
+                                Valid_PlainTagHelperDescriptor.Name + ", " + AssemblyA,
                                 TagHelperDirectiveType.AddTagHelper),
                             CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper)
                         },
@@ -886,7 +836,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         {
                             CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
                             CreateTagHelperDirectiveDescriptor(
-                                Valid_PlainTagHelperDescriptor.TypeName + ", " + AssemblyA,
+                                Valid_PlainTagHelperDescriptor.Name + ", " + AssemblyA,
                                 TagHelperDirectiveType.RemoveTagHelper)
                         },
                         new [] { Valid_InheritedTagHelperDescriptor }
@@ -897,7 +847,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         {
                             CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
                             CreateTagHelperDirectiveDescriptor(
-                                Valid_PlainTagHelperDescriptor.TypeName + ", " + AssemblyA,
+                                Valid_PlainTagHelperDescriptor.Name + ", " + AssemblyA,
                                 TagHelperDirectiveType.RemoveTagHelper),
                             CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper)
                         },
@@ -967,7 +917,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         new []
                         {
                             CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("System." + String_TagHelperDescriptor.TypeName + ", " + AssemblyB, TagHelperDirectiveType.AddTagHelper)
+                            CreateTagHelperDirectiveDescriptor("System." + String_TagHelperDescriptor.Name + ", " + AssemblyB, TagHelperDirectiveType.AddTagHelper)
                         },
                         new [] { Valid_PlainTagHelperDescriptor }
                     },
@@ -992,7 +942,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                             CreateTagHelperDirectiveDescriptor(
                                 "?Microsoft*, " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
                             CreateTagHelperDirectiveDescriptor(
-                                "System." + String_TagHelperDescriptor.TypeName + ", " + AssemblyB, TagHelperDirectiveType.RemoveTagHelper)
+                                "System." + String_TagHelperDescriptor.Name + ", " + AssemblyB, TagHelperDirectiveType.RemoveTagHelper)
                         },
                         new []
                         {
@@ -1012,7 +962,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                             CreateTagHelperDirectiveDescriptor(
                                 "TagHelper*, " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
                             CreateTagHelperDirectiveDescriptor(
-                                "System." + String_TagHelperDescriptor.TypeName + ", " + AssemblyB, TagHelperDirectiveType.RemoveTagHelper)
+                                "System." + String_TagHelperDescriptor.Name + ", " + AssemblyB, TagHelperDirectiveType.RemoveTagHelper)
                         },
                         new []
                         {
@@ -1081,8 +1031,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         new []
                         {
                             CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor(Valid_PlainTagHelperDescriptor.TypeName + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
-                            CreateTagHelperDirectiveDescriptor(Valid_InheritedTagHelperDescriptor.TypeName + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
+                            CreateTagHelperDirectiveDescriptor(Valid_PlainTagHelperDescriptor.Name + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
+                            CreateTagHelperDirectiveDescriptor(Valid_InheritedTagHelperDescriptor.Name + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
                         }
                     },
                     {
@@ -1111,9 +1061,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         {
                             CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
                             CreateTagHelperDirectiveDescriptor("*, " + AssemblyB, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor(Valid_PlainTagHelperDescriptor.TypeName + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
-                            CreateTagHelperDirectiveDescriptor(Valid_InheritedTagHelperDescriptor.TypeName + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
-                            CreateTagHelperDirectiveDescriptor(String_TagHelperDescriptor.TypeName + ", " + AssemblyB, TagHelperDirectiveType.RemoveTagHelper)
+                            CreateTagHelperDirectiveDescriptor(Valid_PlainTagHelperDescriptor.Name + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
+                            CreateTagHelperDirectiveDescriptor(Valid_InheritedTagHelperDescriptor.Name + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
+                            CreateTagHelperDirectiveDescriptor(String_TagHelperDescriptor.Name + ", " + AssemblyB, TagHelperDirectiveType.RemoveTagHelper)
                         }
                     },
                     {
@@ -1121,7 +1071,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         new []
                         {
                             CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
-                            CreateTagHelperDirectiveDescriptor(Valid_PlainTagHelperDescriptor.TypeName + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
+                            CreateTagHelperDirectiveDescriptor(Valid_PlainTagHelperDescriptor.Name + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
                         }
                     },
                     {
@@ -1143,8 +1093,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                         new []
                         {
                             CreateTagHelperDirectiveDescriptor("Mic*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor(Valid_PlainTagHelperDescriptor.TypeName + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
-                            CreateTagHelperDirectiveDescriptor(Valid_InheritedTagHelperDescriptor.TypeName + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper)
+                            CreateTagHelperDirectiveDescriptor(Valid_PlainTagHelperDescriptor.Name + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
+                            CreateTagHelperDirectiveDescriptor(Valid_InheritedTagHelperDescriptor.Name + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper)
                         }
                     },
                     {
@@ -1220,7 +1170,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             get
             {
                 var assemblyName = Valid_PlainTagHelperDescriptor.AssemblyName;
-                var typeName = Valid_PlainTagHelperDescriptor.TypeName;
+                var typeName = Valid_PlainTagHelperDescriptor.Name;
                 return new TheoryData<string>
                 {
                     $"{typeName},{assemblyName}",
@@ -1246,12 +1196,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             var directives = new[]
             {
-                new TagHelperDirectiveDescriptor()
-                {
-                    DirectiveText = directiveText,
-                    DirectiveType = TagHelperDirectiveType.AddTagHelper,
-                }
-            };
+                        new TagHelperDirectiveDescriptor()
+                        {
+                            DirectiveText = directiveText,
+                            DirectiveType = TagHelperDirectiveType.AddTagHelper,
+                        }
+                    };
 
             // Act
             var results = pass.ProcessDirectives(
@@ -1311,26 +1261,29 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
         private static TagHelperDescriptor CreatePrefixedValidPlainDescriptor(string prefix)
         {
-            return new TagHelperDescriptor(Valid_PlainTagHelperDescriptor)
-            {
-                Prefix = prefix,
-            };
+            return Valid_PlainTagHelperDescriptor;
+            //return new TagHelperDescriptor(Valid_PlainTagHelperDescriptor)
+            //{
+            //    Prefix = prefix,
+            //};
         }
 
         private static TagHelperDescriptor CreatePrefixedValidInheritedDescriptor(string prefix)
         {
-            return new TagHelperDescriptor(Valid_InheritedTagHelperDescriptor)
-            {
-                Prefix = prefix,
-            };
+            return Valid_InheritedTagHelperDescriptor;
+            //return new TagHelperDescriptor(Valid_InheritedTagHelperDescriptor)
+            //{
+            //    Prefix = prefix,
+            //};
         }
 
         private static TagHelperDescriptor CreatePrefixedStringDescriptor(string prefix)
         {
-            return new TagHelperDescriptor(String_TagHelperDescriptor)
-            {
-                Prefix = prefix,
-            };
+            return String_TagHelperDescriptor;
+            //return new TagHelperDescriptor(String_TagHelperDescriptor)
+            //{
+            //    Prefix = prefix,
+            //};
         }
 
         private static TagHelperDirectiveDescriptor CreateTagHelperDirectiveDescriptor(
@@ -1357,20 +1310,62 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             return sourceDocument;
         }
 
+        private static TagHelperDescriptor CreateTagHelperDescriptor(
+            string tagName,
+            string typeName,
+            string assemblyName,
+            IEnumerable<Action<ITagHelperBoundAttributeDescriptorBuilder>> attributes = null,
+            IEnumerable<Action<TagMatchingRuleBuilder>> ruleBuilders = null)
+        {
+            var builder = ITagHelperDescriptorBuilder.Create(typeName, assemblyName);
+
+            if (attributes != null)
+            {
+                foreach (var attributeBuilder in attributes)
+                {
+                    builder.BindAttribute(attributeBuilder);
+                }
+            }
+
+            if (ruleBuilders != null)
+            {
+                foreach (var ruleBuilder in ruleBuilders)
+                {
+                    builder.TagMatchingRule(innerRuleBuilder => {
+                        innerRuleBuilder.RequireTagName(tagName);
+                        ruleBuilder(innerRuleBuilder);
+                    });
+                }
+            }
+            else
+            {
+                builder.TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName(tagName));
+            }
+
+            var descriptor = builder.Build();
+
+            return descriptor;
+        }
+
         private class ErrorLoggingTagHelperDescriptorResolver : ITagHelperDescriptorResolver
         {
             private readonly RazorDiagnostic _error;
+            private readonly string _tagName;
 
-            public ErrorLoggingTagHelperDescriptorResolver(RazorDiagnostic error)
+            public ErrorLoggingTagHelperDescriptorResolver(RazorDiagnostic error, string tagName = null)
             {
                 _error = error;
+                _tagName = tagName;
             }
 
             public IEnumerable<TagHelperDescriptor> Resolve(IList<RazorDiagnostic> errors)
             {
                 errors.Add(_error);
 
-                return new[] { new TagHelperDescriptor() { AssemblyName = "TestAssembly" } };
+                return new[] { CreateTagHelperDescriptor(
+                    tagName: _tagName,
+                    typeName: null,
+                    assemblyName: "TestAssembly") };
             }
         }
     }

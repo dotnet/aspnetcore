@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers
         public TagMode TagMode { get; }
 
         /// <summary>
-        /// <see cref="TagHelperDescriptor"/>s for the HTML element.
+        /// <see cref="TagHelperDescriptor"/> bindings for the HTML element.
         /// </summary>
         public IEnumerable<TagHelperDescriptor> Descriptors { get; }
 

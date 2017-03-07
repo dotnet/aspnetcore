@@ -37,6 +37,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.11.0" Version="11.0.61030" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30110" />
     <PackageReference Include="Microsoft.VisualStudio.Text.Data" Version="15.0.26201" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(JsonNetVersion)" />
     <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.Razor.Workspaces\Microsoft.CodeAnalysis.Razor.Workspaces.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Evolution\Microsoft.AspNetCore.Razor.Evolution.csproj" />
   </ItemGroup>

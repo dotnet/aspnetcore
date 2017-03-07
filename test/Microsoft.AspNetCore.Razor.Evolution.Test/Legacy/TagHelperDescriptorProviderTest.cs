@@ -14,27 +14,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             get
             {
-                var strongPParent = new TagHelperDescriptor
-                {
-                    TagName = "strong",
-                    TypeName = "StrongTagHelper",
-                    AssemblyName = "SomeAssembly",
-                    RequiredParent = "p",
-                };
-                var strongDivParent = new TagHelperDescriptor
-                {
-                    TagName = "strong",
-                    TypeName = "StrongTagHelper",
-                    AssemblyName = "SomeAssembly",
-                    RequiredParent = "div",
-                };
-                var catchAllPParent = new TagHelperDescriptor
-                {
-                    TagName = "*",
-                    TypeName = "CatchAllTagHelper",
-                    AssemblyName = "SomeAssembly",
-                    RequiredParent = "p",
-                };
+                var strongPDivParent = ITagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("strong")
+                        .RequireParentTag("p"))
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("strong")
+                        .RequireParentTag("div"))
+                    .Build();
+                var catchAllPParent = ITagHelperDescriptorBuilder.Create("CatchAllTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("*")
+                        .RequireParentTag("p"))
+                    .Build();
 
                 return new TheoryData<
                     string, // tagName
@@ -45,25 +40,25 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                     {
                         "strong",
                         "p",
-                        new[] { strongPParent, strongDivParent },
-                        new[] { strongPParent }
+                        new[] { strongPDivParent },
+                        new[] { strongPDivParent }
                     },
                     {
                         "strong",
                         "div",
-                        new[] { strongPParent, strongDivParent, catchAllPParent },
-                        new[] { strongDivParent }
+                        new[] { strongPDivParent, catchAllPParent },
+                        new[] { strongPDivParent }
                     },
                     {
                         "strong",
                         "p",
-                        new[] { strongPParent, strongDivParent, catchAllPParent },
-                        new[] { strongPParent, catchAllPParent }
+                        new[] { strongPDivParent, catchAllPParent },
+                        new[] { strongPDivParent, catchAllPParent }
                     },
                     {
                         "custom",
                         "p",
-                        new[] { strongPParent, strongDivParent, catchAllPParent },
+                        new[] { strongPDivParent, catchAllPParent },
                         new[] { catchAllPParent }
                     },
                 };
@@ -72,93 +67,73 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         [Theory]
         [MemberData(nameof(RequiredParentData))]
-        public void GetDescriptors_ReturnsDescriptorsParentTags(
+        public void GetTagHelperBinding_ReturnsBindingResultWithDescriptorsParentTags(
             string tagName,
             string parentTagName,
             object availableDescriptors,
             object expectedDescriptors)
         {
             // Arrange
-            var provider = new TagHelperDescriptorProvider((IEnumerable<TagHelperDescriptor>)availableDescriptors);
+            var provider = new TagHelperDescriptorProvider(null, (IEnumerable<TagHelperDescriptor>)availableDescriptors);
 
             // Act
-            var resolvedDescriptors = provider.GetDescriptors(
+            var bindingResult = provider.GetTagHelperBinding(
                 tagName,
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: parentTagName);
 
             // Assert
-            Assert.Equal((IEnumerable<TagHelperDescriptor>)expectedDescriptors, resolvedDescriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
+            Assert.Equal((IEnumerable<TagHelperDescriptor>)expectedDescriptors, bindingResult.Descriptors, TagHelperDescriptorComparer.CaseSensitive);
         }
 
         public static TheoryData RequiredAttributeData
         {
             get
             {
-                var divDescriptor = new TagHelperDescriptor
-                {
-                    TagName = "div",
-                    TypeName = "DivTagHelper",
-                    AssemblyName = "SomeAssembly",
-                    RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "style" } }
-                };
-                var inputDescriptor = new TagHelperDescriptor
-                {
-                    TagName = "input",
-                    TypeName = "InputTagHelper",
-                    AssemblyName = "SomeAssembly",
-                    RequiredAttributes = new[]
-                    {
-                        new TagHelperRequiredAttributeDescriptor { Name = "class" },
-                        new TagHelperRequiredAttributeDescriptor { Name = "style" }
-                    }
-                };
-                var inputWildcardPrefixDescriptor = new TagHelperDescriptor
-                {
-                    TagName = "input",
-                    TypeName = "InputWildCardAttribute",
-                    AssemblyName = "SomeAssembly",
-                    RequiredAttributes = new[]
-                    {
-                        new TagHelperRequiredAttributeDescriptor
-                        {
-                            Name = "nodashprefix",
-                            NameComparison = TagHelperRequiredAttributeNameComparison.PrefixMatch,
-                        }
-                    }
-                };
-                var catchAllDescriptor = new TagHelperDescriptor
-                {
-                    TagName = TagHelperDescriptorProvider.ElementCatchAllTarget,
-                    TypeName = "CatchAllTagHelper",
-                    AssemblyName = "SomeAssembly",
-                    RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "class" } }
-                };
-                var catchAllDescriptor2 = new TagHelperDescriptor
-                {
-                    TagName = TagHelperDescriptorProvider.ElementCatchAllTarget,
-                    TypeName = "CatchAllTagHelper2",
-                    AssemblyName = "SomeAssembly",
-                    RequiredAttributes = new[]
-                    {
-                        new TagHelperRequiredAttributeDescriptor { Name = "custom" },
-                        new TagHelperRequiredAttributeDescriptor { Name = "class" }
-                    }
-                };
-                var catchAllWildcardPrefixDescriptor = new TagHelperDescriptor
-                {
-                    TagName = TagHelperDescriptorProvider.ElementCatchAllTarget,
-                    TypeName = "CatchAllWildCardAttribute",
-                    AssemblyName = "SomeAssembly",
-                    RequiredAttributes = new[]
-                    {
-                        new TagHelperRequiredAttributeDescriptor
-                        {
-                            Name = "prefix-",
-                            NameComparison = TagHelperRequiredAttributeNameComparison.PrefixMatch,
-                        }
-                    }
-                };
+                var divDescriptor = ITagHelperDescriptorBuilder.Create("DivTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("div")
+                        .RequireAttribute(attribute => attribute.Name("style")))
+                    .Build();
+                var inputDescriptor = ITagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("input")
+                        .RequireAttribute(attribute => attribute.Name("class"))
+                        .RequireAttribute(attribute => attribute.Name("style")))
+                    .Build();
+                var inputWildcardPrefixDescriptor = ITagHelperDescriptorBuilder.Create("InputWildCardAttribute", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("input")
+                        .RequireAttribute(attribute => 
+                            attribute
+                            .Name("nodashprefix")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch)))
+                    .Build();
+                var catchAllDescriptor = ITagHelperDescriptorBuilder.Create("CatchAllTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName(TagHelperDescriptorProvider.ElementCatchAllTarget)
+                        .RequireAttribute(attribute => attribute.Name("class")))
+                    .Build();
+                var catchAllDescriptor2 = ITagHelperDescriptorBuilder.Create("CatchAllTagHelper2", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName(TagHelperDescriptorProvider.ElementCatchAllTarget)
+                        .RequireAttribute(attribute => attribute.Name("custom"))
+                        .RequireAttribute(attribute => attribute.Name("class")))
+                    .Build();
+                var catchAllWildcardPrefixDescriptor = ITagHelperDescriptorBuilder.Create("CatchAllWildCardAttribute", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName(TagHelperDescriptorProvider.ElementCatchAllTarget)
+                        .RequireAttribute(attribute => 
+                            attribute
+                            .Name("prefix-")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch)))
+                    .Build();
                 var defaultAvailableDescriptors =
                     new[] { divDescriptor, inputDescriptor, catchAllDescriptor, catchAllDescriptor2 };
                 var defaultWildcardDescriptors =
@@ -176,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         "div",
                         new[] { kvp("custom") },
                         defaultAvailableDescriptors,
-                        Enumerable.Empty<TagHelperDescriptor>()
+                        null
                     },
                     { "div", new[] { kvp("style") }, defaultAvailableDescriptors, new[] { divDescriptor } },
                     { "div", new[] { kvp("class") }, defaultAvailableDescriptors, new[] { catchAllDescriptor } },
@@ -214,19 +189,19 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         "input",
                         new[] { kvp("prefixABCnodashprefix") },
                         defaultWildcardDescriptors,
-                        Enumerable.Empty<TagHelperDescriptor>()
+                        null
                     },
                     {
                         "input",
                         new[] { kvp("prefix-") },
                         defaultWildcardDescriptors,
-                        Enumerable.Empty<TagHelperDescriptor>()
+                        null
                     },
                     {
                         "input",
                         new[] { kvp("nodashprefix") },
                         defaultWildcardDescriptors,
-                        Enumerable.Empty<TagHelperDescriptor>()
+                        null
                     },
                     {
                         "input",
@@ -258,292 +233,222 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         [Theory]
         [MemberData(nameof(RequiredAttributeData))]
-        public void GetDescriptors_ReturnsDescriptorsWithRequiredAttributes(
+        public void GetTagHelperBinding_ReturnsBindingResultDescriptorsWithRequiredAttributes(
             string tagName,
             IEnumerable<KeyValuePair<string, string>> providedAttributes,
             object availableDescriptors,
             object expectedDescriptors)
         {
             // Arrange
-            var provider = new TagHelperDescriptorProvider((IEnumerable<TagHelperDescriptor>)availableDescriptors);
+            var provider = new TagHelperDescriptorProvider(null, (IEnumerable<TagHelperDescriptor>)availableDescriptors);
 
             // Act
-            var resolvedDescriptors = provider.GetDescriptors(tagName, providedAttributes, parentTagName: "p").ToArray();
+            var bindingResult = provider.GetTagHelperBinding(tagName, providedAttributes, parentTagName: "p");
 
             // Assert
-            Assert.Equal((IEnumerable<TagHelperDescriptor>)expectedDescriptors, resolvedDescriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
+            Assert.Equal((IEnumerable<TagHelperDescriptor>)expectedDescriptors, bindingResult?.Descriptors, TagHelperDescriptorComparer.CaseSensitive);
         }
 
         [Fact]
-        public void GetDescriptors_ReturnsEmptyDescriptorsWithPrefixAsTagName()
+        public void GetTagHelperBinding_ReturnsNullBindingResultPrefixAsTagName()
         {
             // Arrange
-            var catchAllDescriptor = CreatePrefixedDescriptor(
-                "th",
-                TagHelperDescriptorProvider.ElementCatchAllTarget,
-                "foo1");
+            var catchAllDescriptor = ITagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
+                .TagMatchingRule(rule => rule.RequireTagName(TagHelperDescriptorProvider.ElementCatchAllTarget))
+                .Build();
             var descriptors = new[] { catchAllDescriptor };
-            var provider = new TagHelperDescriptorProvider(descriptors);
+            var provider = new TagHelperDescriptorProvider("th", descriptors);
 
             // Act
-            var resolvedDescriptors = provider.GetDescriptors(
+            var bindingResult = provider.GetTagHelperBinding(
                 tagName: "th",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
-            Assert.Empty(resolvedDescriptors);
+            Assert.Null(bindingResult);
         }
 
         [Fact]
-        public void GetDescriptors_DeduplicatesTagHelpersByTypeName()
+        public void GetTagHelperBinding_ReturnsBindingResultCatchAllDescriptorsForPrefixedTags()
         {
             // Arrange
-            var descriptors = new[]
-            {
-                    new TagHelperDescriptor
-                    {
-                        AssemblyName = "TestAssembly",
-                        TagName = "form",
-                        TypeName = "TestFormTagHelper",
-                        RequiredAttributes = new List<TagHelperRequiredAttributeDescriptor>()
-                        {
-                             new TagHelperRequiredAttributeDescriptor()
-                             {
-                                 Name = "a",
-                                 NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch
-                             }
-                        },
-                    },
-                    new TagHelperDescriptor
-                    {
-                        AssemblyName = "TestAssembly",
-                        TagName = "form",
-                        TypeName = "TestFormTagHelper",
-                        RequiredAttributes = new List<TagHelperRequiredAttributeDescriptor>()
-                        {
-                             new TagHelperRequiredAttributeDescriptor()
-                             {
-                                 Name = "b",
-                                 NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch
-                             }
-                        },
-                    },
-            };
-            var provider = new TagHelperDescriptorProvider(descriptors);
-
-            // Act
-            var resolvedDescriptors = provider.GetDescriptors(
-                tagName: "form",
-                attributes: new List<KeyValuePair<string, string>>()
-                {
-                    new KeyValuePair<string, string>("a", "hi" ),
-                    new KeyValuePair<string, string>("b", "there"),
-                },
-                parentTagName: "p");
-
-            // Assert
-            Assert.Same(descriptors[0], Assert.Single(resolvedDescriptors));
-        }
-
-        [Fact]
-        public void GetDescriptors_OnlyUnderstandsSinglePrefix()
-        {
-            // Arrange
-            var divDescriptor = CreatePrefixedDescriptor("th:", "div", "foo1");
-            var spanDescriptor = CreatePrefixedDescriptor("th2:", "span", "foo2");
-            var descriptors = new[] { divDescriptor, spanDescriptor };
-            var provider = new TagHelperDescriptorProvider(descriptors);
-
-            // Act
-            var retrievedDescriptorsDiv = provider.GetDescriptors(
-                tagName: "th:div",
-                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
-                parentTagName: "p");
-            var retrievedDescriptorsSpan = provider.GetDescriptors(
-                tagName: "th2:span",
-                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
-                parentTagName: "p");
-
-            // Assert
-            var descriptor = Assert.Single(retrievedDescriptorsDiv);
-            Assert.Same(divDescriptor, descriptor);
-            Assert.Empty(retrievedDescriptorsSpan);
-        }
-
-        [Fact]
-        public void GetDescriptors_ReturnsCatchAllDescriptorsForPrefixedTags()
-        {
-            // Arrange
-            var catchAllDescriptor = CreatePrefixedDescriptor("th:", TagHelperDescriptorProvider.ElementCatchAllTarget, "foo1");
+            var catchAllDescriptor = ITagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
+                .TagMatchingRule(rule => rule.RequireTagName(TagHelperDescriptorProvider.ElementCatchAllTarget))
+                .Build();
             var descriptors = new[] { catchAllDescriptor };
-            var provider = new TagHelperDescriptorProvider(descriptors);
+            var provider = new TagHelperDescriptorProvider("th:", descriptors);
 
             // Act
-            var retrievedDescriptorsDiv = provider.GetDescriptors(
+            var bindingResultDiv = provider.GetTagHelperBinding(
                 tagName: "th:div",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
-            var retrievedDescriptorsSpan = provider.GetDescriptors(
+            var bindingResultSpan = provider.GetTagHelperBinding(
                 tagName: "th:span",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
-            var descriptor = Assert.Single(retrievedDescriptorsDiv);
+            var descriptor = Assert.Single(bindingResultDiv.Descriptors);
             Assert.Same(catchAllDescriptor, descriptor);
-            descriptor = Assert.Single(retrievedDescriptorsSpan);
+            descriptor = Assert.Single(bindingResultSpan.Descriptors);
             Assert.Same(catchAllDescriptor, descriptor);
         }
 
         [Fact]
-        public void GetDescriptors_ReturnsDescriptorsForPrefixedTags()
+        public void GetTagHelperBinding_ReturnsBindingResultDescriptorsForPrefixedTags()
         {
             // Arrange
-            var divDescriptor = CreatePrefixedDescriptor("th:", "div", "foo1");
+            var divDescriptor = ITagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
+                .TagMatchingRule(rule => rule.RequireTagName("div"))
+                .Build();
             var descriptors = new[] { divDescriptor };
-            var provider = new TagHelperDescriptorProvider(descriptors);
+            var provider = new TagHelperDescriptorProvider("th:", descriptors);
 
             // Act
-            var retrievedDescriptors = provider.GetDescriptors(
+            var bindingResult = provider.GetTagHelperBinding(
                 tagName: "th:div",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
-            var descriptor = Assert.Single(retrievedDescriptors);
+            var descriptor = Assert.Single(bindingResult.Descriptors);
             Assert.Same(divDescriptor, descriptor);
         }
 
         [Theory]
         [InlineData("*")]
         [InlineData("div")]
-        public void GetDescriptors_ReturnsNothingForUnprefixedTags(string tagName)
+        public void GetTagHelperBinding_ReturnsNullForUnprefixedTags(string tagName)
         {
             // Arrange
-            var divDescriptor = CreatePrefixedDescriptor("th:", tagName, "foo1");
+            var divDescriptor = ITagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
+                .TagMatchingRule(rule => rule.RequireTagName(tagName))
+                .Build();
             var descriptors = new[] { divDescriptor };
-            var provider = new TagHelperDescriptorProvider(descriptors);
+            var provider = new TagHelperDescriptorProvider("th:", descriptors);
 
             // Act
-            var retrievedDescriptorsDiv = provider.GetDescriptors(
+            var bindingResult = provider.GetTagHelperBinding(
                 tagName: "div",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
-            Assert.Empty(retrievedDescriptorsDiv);
+            Assert.Null(bindingResult);
         }
 
         [Fact]
         public void GetDescriptors_ReturnsNothingForUnregisteredTags()
         {
             // Arrange
-            var divDescriptor = new TagHelperDescriptor
-            {
-                TagName = "div",
-                TypeName = "foo1",
-                AssemblyName = "SomeAssembly",
-            };
-            var spanDescriptor = new TagHelperDescriptor
-            {
-                TagName = "span",
-                TypeName = "foo2",
-                AssemblyName = "SomeAssembly",
-            };
+            var divDescriptor = ITagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
+                .TagMatchingRule(rule => rule.RequireTagName("div"))
+                .Build();
+            var spanDescriptor = ITagHelperDescriptorBuilder.Create("foo2", "SomeAssembly")
+                .TagMatchingRule(rule => rule.RequireTagName("span"))
+                .Build();
             var descriptors = new TagHelperDescriptor[] { divDescriptor, spanDescriptor };
-            var provider = new TagHelperDescriptorProvider(descriptors);
+            var provider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act
-            var retrievedDescriptors = provider.GetDescriptors(
+            var tagHelperBinding = provider.GetTagHelperBinding(
                 tagName: "foo",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
-            Assert.Empty(retrievedDescriptors);
+            Assert.Null(tagHelperBinding);
         }
 
         [Fact]
         public void GetDescriptors_ReturnsCatchAllsWithEveryTagName()
         {
             // Arrange
-            var divDescriptor = new TagHelperDescriptor
-            {
-                TagName = "div",
-                TypeName = "foo1",
-                AssemblyName = "SomeAssembly",
-            };
-            var spanDescriptor = new TagHelperDescriptor
-            {
-                TagName = "span",
-                TypeName = "foo2",
-                AssemblyName = "SomeAssembly",
-            };
-            var catchAllDescriptor = new TagHelperDescriptor
-            {
-                TagName = TagHelperDescriptorProvider.ElementCatchAllTarget,
-                TypeName = "foo3",
-                AssemblyName = "SomeAssembly",
-            };
+            var divDescriptor = ITagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
+                .TagMatchingRule(rule => rule.RequireTagName("div"))
+                .Build();
+            var spanDescriptor = ITagHelperDescriptorBuilder.Create("foo2", "SomeAssembly")
+                .TagMatchingRule(rule => rule.RequireTagName("span"))
+                .Build();
+            var catchAllDescriptor = ITagHelperDescriptorBuilder.Create("foo3", "SomeAssembly")
+                .TagMatchingRule(rule => rule.RequireTagName(TagHelperDescriptorProvider.ElementCatchAllTarget))
+                .Build();
             var descriptors = new TagHelperDescriptor[] { divDescriptor, spanDescriptor, catchAllDescriptor };
-            var provider = new TagHelperDescriptorProvider(descriptors);
+            var provider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act
-            var divDescriptors = provider.GetDescriptors(
+            var divBinding = provider.GetTagHelperBinding(
                 tagName: "div",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
-            var spanDescriptors = provider.GetDescriptors(
+            var spanBinding = provider.GetTagHelperBinding(
                 tagName: "span",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
             // For divs
-            Assert.Equal(2, divDescriptors.Count());
-            Assert.Contains(divDescriptor, divDescriptors);
-            Assert.Contains(catchAllDescriptor, divDescriptors);
+            Assert.Equal(2, divBinding.Descriptors.Count());
+            Assert.Contains(divDescriptor, divBinding.Descriptors);
+            Assert.Contains(catchAllDescriptor, divBinding.Descriptors);
 
             // For spans
-            Assert.Equal(2, spanDescriptors.Count());
-            Assert.Contains(spanDescriptor, spanDescriptors);
-            Assert.Contains(catchAllDescriptor, spanDescriptors);
+            Assert.Equal(2, spanBinding.Descriptors.Count());
+            Assert.Contains(spanDescriptor, spanBinding.Descriptors);
+            Assert.Contains(catchAllDescriptor, spanBinding.Descriptors);
         }
 
         [Fact]
         public void GetDescriptors_DuplicateDescriptorsAreNotPartOfTagHelperDescriptorPool()
         {
             // Arrange
-            var divDescriptor = new TagHelperDescriptor
-            {
-                TagName = "div",
-                TypeName = "foo1",
-                AssemblyName = "SomeAssembly",
-            };
+            var divDescriptor = ITagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
+                .TagMatchingRule(rule => rule.RequireTagName("div"))
+                .Build(); 
             var descriptors = new TagHelperDescriptor[] { divDescriptor, divDescriptor };
-            var provider = new TagHelperDescriptorProvider(descriptors);
+            var provider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act
-            var retrievedDescriptors = provider.GetDescriptors(
+            var bindingResult = provider.GetTagHelperBinding(
                 tagName: "div",
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
-            var descriptor = Assert.Single(retrievedDescriptors);
+            var descriptor = Assert.Single(bindingResult.Descriptors);
             Assert.Same(divDescriptor, descriptor);
         }
 
-        private static TagHelperDescriptor CreatePrefixedDescriptor(string prefix, string tagName, string typeName)
+        [Fact]
+        public void GetTagHelperBinding_DescriptorWithMultipleRules_CorrectlySelectsMatchingRules()
         {
-            return new TagHelperDescriptor
-            {
-                Prefix = prefix,
-                TagName = tagName,
-                TypeName = typeName,
-                AssemblyName = "SomeAssembly"
-            };
+            // Arrange
+            var multiRuleDescriptor = ITagHelperDescriptorBuilder.Create("foo", "SomeAssembly")
+                .TagMatchingRule(rule => rule
+                    .RequireTagName(TagHelperDescriptorProvider.ElementCatchAllTarget)
+                    .RequireParentTag("body"))
+                .TagMatchingRule(rule => rule
+                    .RequireTagName("div"))
+                .TagMatchingRule(rule => rule
+                    .RequireTagName("span"))
+                .Build();
+            var descriptors = new TagHelperDescriptor[] { multiRuleDescriptor };
+            var provider = new TagHelperDescriptorProvider(null, descriptors);
+
+            // Act
+            var binding = provider.GetTagHelperBinding(
+                tagName: "div",
+                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
+                parentTagName: "p");
+
+            // Assert
+            var boundDescriptor = Assert.Single(binding.Descriptors);
+            Assert.Same(multiRuleDescriptor, boundDescriptor);
+            var boundRules = binding.GetBoundRules(boundDescriptor);
+            var boundRule = Assert.Single(boundRules);
+            Assert.Equal("div", boundRule.TagName);
         }
     }
 }

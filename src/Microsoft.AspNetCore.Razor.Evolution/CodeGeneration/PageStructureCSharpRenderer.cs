@@ -83,15 +83,16 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
         protected static string GetTagHelperVariableName(string tagHelperTypeName) => "__" + tagHelperTypeName.Replace('.', '_');
 
         protected static string GetTagHelperPropertyAccessor(
+            bool isIndexerNameMatch,
             string tagHelperVariableName,
             string attributeName,
-            TagHelperAttributeDescriptor descriptor)
+            BoundAttributeDescriptor descriptor)
         {
-            var propertyAccessor = $"{tagHelperVariableName}.{descriptor.PropertyName}";
+            var propertyAccessor = $"{tagHelperVariableName}.{descriptor.Metadata[ITagHelperBoundAttributeDescriptorBuilder.PropertyNameKey]}";
 
-            if (descriptor.IsIndexer)
+            if (isIndexerNameMatch)
             {
-                var dictionaryKey = attributeName.Substring(descriptor.Name.Length);
+                var dictionaryKey = attributeName.Substring(descriptor.IndexerNamePrefix.Length);
                 propertyAccessor += $"[\"{dictionaryKey}\"]";
             }
 

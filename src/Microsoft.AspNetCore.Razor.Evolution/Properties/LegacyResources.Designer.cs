@@ -15,512 +15,448 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         /// </summary>
         internal static string Argument_Cannot_Be_Null_Or_Empty
         {
-            get { return GetString("Argument_Cannot_Be_Null_Or_Empty"); }
+            get => GetString("Argument_Cannot_Be_Null_Or_Empty");
         }
 
         /// <summary>
         /// Value cannot be null or an empty string.
         /// </summary>
         internal static string FormatArgument_Cannot_Be_Null_Or_Empty()
-        {
-            return GetString("Argument_Cannot_Be_Null_Or_Empty");
-        }
+            => GetString("Argument_Cannot_Be_Null_Or_Empty");
 
         /// <summary>
         /// Value must be between {0} and {1}.
         /// </summary>
         internal static string Argument_Must_Be_Between
         {
-            get { return GetString("Argument_Must_Be_Between"); }
+            get => GetString("Argument_Must_Be_Between");
         }
 
         /// <summary>
         /// Value must be between {0} and {1}.
         /// </summary>
         internal static string FormatArgument_Must_Be_Between(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Argument_Must_Be_Between"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("Argument_Must_Be_Between"), p0, p1);
 
         /// <summary>
         /// Value must be a value from the "{0}" enumeration.
         /// </summary>
         internal static string Argument_Must_Be_Enum_Member
         {
-            get { return GetString("Argument_Must_Be_Enum_Member"); }
+            get => GetString("Argument_Must_Be_Enum_Member");
         }
 
         /// <summary>
         /// Value must be a value from the "{0}" enumeration.
         /// </summary>
         internal static string FormatArgument_Must_Be_Enum_Member(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Argument_Must_Be_Enum_Member"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("Argument_Must_Be_Enum_Member"), p0);
 
         /// <summary>
         /// Value must be greater than {0}.
         /// </summary>
         internal static string Argument_Must_Be_GreaterThan
         {
-            get { return GetString("Argument_Must_Be_GreaterThan"); }
+            get => GetString("Argument_Must_Be_GreaterThan");
         }
 
         /// <summary>
         /// Value must be greater than {0}.
         /// </summary>
         internal static string FormatArgument_Must_Be_GreaterThan(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Argument_Must_Be_GreaterThan"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("Argument_Must_Be_GreaterThan"), p0);
 
         /// <summary>
         /// Value must be greater than or equal to {0}.
         /// </summary>
         internal static string Argument_Must_Be_GreaterThanOrEqualTo
         {
-            get { return GetString("Argument_Must_Be_GreaterThanOrEqualTo"); }
+            get => GetString("Argument_Must_Be_GreaterThanOrEqualTo");
         }
 
         /// <summary>
         /// Value must be greater than or equal to {0}.
         /// </summary>
         internal static string FormatArgument_Must_Be_GreaterThanOrEqualTo(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Argument_Must_Be_GreaterThanOrEqualTo"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("Argument_Must_Be_GreaterThanOrEqualTo"), p0);
 
         /// <summary>
         /// Value must be less than {0}.
         /// </summary>
         internal static string Argument_Must_Be_LessThan
         {
-            get { return GetString("Argument_Must_Be_LessThan"); }
+            get => GetString("Argument_Must_Be_LessThan");
         }
 
         /// <summary>
         /// Value must be less than {0}.
         /// </summary>
         internal static string FormatArgument_Must_Be_LessThan(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Argument_Must_Be_LessThan"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("Argument_Must_Be_LessThan"), p0);
 
         /// <summary>
         /// Value must be less than or equal to {0}.
         /// </summary>
         internal static string Argument_Must_Be_LessThanOrEqualTo
         {
-            get { return GetString("Argument_Must_Be_LessThanOrEqualTo"); }
+            get => GetString("Argument_Must_Be_LessThanOrEqualTo");
         }
 
         /// <summary>
         /// Value must be less than or equal to {0}.
         /// </summary>
         internal static string FormatArgument_Must_Be_LessThanOrEqualTo(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Argument_Must_Be_LessThanOrEqualTo"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("Argument_Must_Be_LessThanOrEqualTo"), p0);
 
         /// <summary>
         /// Value cannot be an empty string. It must either be null or a non-empty string.
         /// </summary>
         internal static string Argument_Must_Be_Null_Or_Non_Empty
         {
-            get { return GetString("Argument_Must_Be_Null_Or_Non_Empty"); }
+            get => GetString("Argument_Must_Be_Null_Or_Non_Empty");
         }
 
         /// <summary>
         /// Value cannot be an empty string. It must either be null or a non-empty string.
         /// </summary>
         internal static string FormatArgument_Must_Be_Null_Or_Non_Empty()
-        {
-            return GetString("Argument_Must_Be_Null_Or_Non_Empty");
-        }
+            => GetString("Argument_Must_Be_Null_Or_Non_Empty");
 
         /// <summary>
         /// code
         /// </summary>
         internal static string BlockName_Code
         {
-            get { return GetString("BlockName_Code"); }
+            get => GetString("BlockName_Code");
         }
 
         /// <summary>
         /// code
         /// </summary>
         internal static string FormatBlockName_Code()
-        {
-            return GetString("BlockName_Code");
-        }
+            => GetString("BlockName_Code");
 
         /// <summary>
         /// explicit expression
         /// </summary>
         internal static string BlockName_ExplicitExpression
         {
-            get { return GetString("BlockName_ExplicitExpression"); }
+            get => GetString("BlockName_ExplicitExpression");
         }
 
         /// <summary>
         /// explicit expression
         /// </summary>
         internal static string FormatBlockName_ExplicitExpression()
-        {
-            return GetString("BlockName_ExplicitExpression");
-        }
+            => GetString("BlockName_ExplicitExpression");
 
         /// <summary>
         /// Block cannot be built because a Type has not been specified in the BlockBuilder
         /// </summary>
         internal static string Block_Type_Not_Specified
         {
-            get { return GetString("Block_Type_Not_Specified"); }
+            get => GetString("Block_Type_Not_Specified");
         }
 
         /// <summary>
         /// Block cannot be built because a Type has not been specified in the BlockBuilder
         /// </summary>
         internal static string FormatBlock_Type_Not_Specified()
-        {
-            return GetString("Block_Type_Not_Specified");
-        }
+            => GetString("Block_Type_Not_Specified");
 
         /// <summary>
         /// &lt;&lt;character literal&gt;&gt;
         /// </summary>
         internal static string CSharpSymbol_CharacterLiteral
         {
-            get { return GetString("CSharpSymbol_CharacterLiteral"); }
+            get => GetString("CSharpSymbol_CharacterLiteral");
         }
 
         /// <summary>
         /// &lt;&lt;character literal&gt;&gt;
         /// </summary>
         internal static string FormatCSharpSymbol_CharacterLiteral()
-        {
-            return GetString("CSharpSymbol_CharacterLiteral");
-        }
+            => GetString("CSharpSymbol_CharacterLiteral");
 
         /// <summary>
         /// &lt;&lt;comment&gt;&gt;
         /// </summary>
         internal static string CSharpSymbol_Comment
         {
-            get { return GetString("CSharpSymbol_Comment"); }
+            get => GetString("CSharpSymbol_Comment");
         }
 
         /// <summary>
         /// &lt;&lt;comment&gt;&gt;
         /// </summary>
         internal static string FormatCSharpSymbol_Comment()
-        {
-            return GetString("CSharpSymbol_Comment");
-        }
+            => GetString("CSharpSymbol_Comment");
 
         /// <summary>
         /// &lt;&lt;identifier&gt;&gt;
         /// </summary>
         internal static string CSharpSymbol_Identifier
         {
-            get { return GetString("CSharpSymbol_Identifier"); }
+            get => GetString("CSharpSymbol_Identifier");
         }
 
         /// <summary>
         /// &lt;&lt;identifier&gt;&gt;
         /// </summary>
         internal static string FormatCSharpSymbol_Identifier()
-        {
-            return GetString("CSharpSymbol_Identifier");
-        }
+            => GetString("CSharpSymbol_Identifier");
 
         /// <summary>
         /// &lt;&lt;integer literal&gt;&gt;
         /// </summary>
         internal static string CSharpSymbol_IntegerLiteral
         {
-            get { return GetString("CSharpSymbol_IntegerLiteral"); }
+            get => GetString("CSharpSymbol_IntegerLiteral");
         }
 
         /// <summary>
         /// &lt;&lt;integer literal&gt;&gt;
         /// </summary>
         internal static string FormatCSharpSymbol_IntegerLiteral()
-        {
-            return GetString("CSharpSymbol_IntegerLiteral");
-        }
+            => GetString("CSharpSymbol_IntegerLiteral");
 
         /// <summary>
         /// &lt;&lt;keyword&gt;&gt;
         /// </summary>
         internal static string CSharpSymbol_Keyword
         {
-            get { return GetString("CSharpSymbol_Keyword"); }
+            get => GetString("CSharpSymbol_Keyword");
         }
 
         /// <summary>
         /// &lt;&lt;keyword&gt;&gt;
         /// </summary>
         internal static string FormatCSharpSymbol_Keyword()
-        {
-            return GetString("CSharpSymbol_Keyword");
-        }
+            => GetString("CSharpSymbol_Keyword");
 
         /// <summary>
         /// &lt;&lt;newline sequence&gt;&gt;
         /// </summary>
         internal static string CSharpSymbol_Newline
         {
-            get { return GetString("CSharpSymbol_Newline"); }
+            get => GetString("CSharpSymbol_Newline");
         }
 
         /// <summary>
         /// &lt;&lt;newline sequence&gt;&gt;
         /// </summary>
         internal static string FormatCSharpSymbol_Newline()
-        {
-            return GetString("CSharpSymbol_Newline");
-        }
+            => GetString("CSharpSymbol_Newline");
 
         /// <summary>
         /// &lt;&lt;real literal&gt;&gt;
         /// </summary>
         internal static string CSharpSymbol_RealLiteral
         {
-            get { return GetString("CSharpSymbol_RealLiteral"); }
+            get => GetString("CSharpSymbol_RealLiteral");
         }
 
         /// <summary>
         /// &lt;&lt;real literal&gt;&gt;
         /// </summary>
         internal static string FormatCSharpSymbol_RealLiteral()
-        {
-            return GetString("CSharpSymbol_RealLiteral");
-        }
+            => GetString("CSharpSymbol_RealLiteral");
 
         /// <summary>
         /// &lt;&lt;string literal&gt;&gt;
         /// </summary>
         internal static string CSharpSymbol_StringLiteral
         {
-            get { return GetString("CSharpSymbol_StringLiteral"); }
+            get => GetString("CSharpSymbol_StringLiteral");
         }
 
         /// <summary>
         /// &lt;&lt;string literal&gt;&gt;
         /// </summary>
         internal static string FormatCSharpSymbol_StringLiteral()
-        {
-            return GetString("CSharpSymbol_StringLiteral");
-        }
+            => GetString("CSharpSymbol_StringLiteral");
 
         /// <summary>
         /// &lt;&lt;white space&gt;&gt;
         /// </summary>
         internal static string CSharpSymbol_Whitespace
         {
-            get { return GetString("CSharpSymbol_Whitespace"); }
+            get => GetString("CSharpSymbol_Whitespace");
         }
 
         /// <summary>
         /// &lt;&lt;white space&gt;&gt;
         /// </summary>
         internal static string FormatCSharpSymbol_Whitespace()
-        {
-            return GetString("CSharpSymbol_Whitespace");
-        }
+            => GetString("CSharpSymbol_Whitespace");
 
         /// <summary>
         /// The '{0}' directive expects an identifier.
         /// </summary>
         internal static string DirectiveExpectsIdentifier
         {
-            get { return GetString("DirectiveExpectsIdentifier"); }
+            get => GetString("DirectiveExpectsIdentifier");
         }
 
         /// <summary>
         /// The '{0}' directive expects an identifier.
         /// </summary>
         internal static string FormatDirectiveExpectsIdentifier(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("DirectiveExpectsIdentifier"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("DirectiveExpectsIdentifier"), p0);
 
         /// <summary>
         /// The '{0}' directive expects a type name.
         /// </summary>
         internal static string DirectiveExpectsTypeName
         {
-            get { return GetString("DirectiveExpectsTypeName"); }
+            get => GetString("DirectiveExpectsTypeName");
         }
 
         /// <summary>
         /// The '{0}' directive expects a type name.
         /// </summary>
         internal static string FormatDirectiveExpectsTypeName(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("DirectiveExpectsTypeName"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("DirectiveExpectsTypeName"), p0);
 
         /// <summary>
         /// "EndBlock" was called without a matching call to "StartBlock".
         /// </summary>
         internal static string EndBlock_Called_Without_Matching_StartBlock
         {
-            get { return GetString("EndBlock_Called_Without_Matching_StartBlock"); }
+            get => GetString("EndBlock_Called_Without_Matching_StartBlock");
         }
 
         /// <summary>
         /// "EndBlock" was called without a matching call to "StartBlock".
         /// </summary>
         internal static string FormatEndBlock_Called_Without_Matching_StartBlock()
-        {
-            return GetString("EndBlock_Called_Without_Matching_StartBlock");
-        }
+            => GetString("EndBlock_Called_Without_Matching_StartBlock");
 
         /// <summary>
         /// "{0}" character
         /// </summary>
         internal static string ErrorComponent_Character
         {
-            get { return GetString("ErrorComponent_Character"); }
+            get => GetString("ErrorComponent_Character");
         }
 
         /// <summary>
         /// "{0}" character
         /// </summary>
         internal static string FormatErrorComponent_Character(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ErrorComponent_Character"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ErrorComponent_Character"), p0);
 
         /// <summary>
         /// end of file
         /// </summary>
         internal static string ErrorComponent_EndOfFile
         {
-            get { return GetString("ErrorComponent_EndOfFile"); }
+            get => GetString("ErrorComponent_EndOfFile");
         }
 
         /// <summary>
         /// end of file
         /// </summary>
         internal static string FormatErrorComponent_EndOfFile()
-        {
-            return GetString("ErrorComponent_EndOfFile");
-        }
+            => GetString("ErrorComponent_EndOfFile");
 
         /// <summary>
         /// line break
         /// </summary>
         internal static string ErrorComponent_Newline
         {
-            get { return GetString("ErrorComponent_Newline"); }
+            get => GetString("ErrorComponent_Newline");
         }
 
         /// <summary>
         /// line break
         /// </summary>
         internal static string FormatErrorComponent_Newline()
-        {
-            return GetString("ErrorComponent_Newline");
-        }
+            => GetString("ErrorComponent_Newline");
 
         /// <summary>
         /// space or line break
         /// </summary>
         internal static string ErrorComponent_Whitespace
         {
-            get { return GetString("ErrorComponent_Whitespace"); }
+            get => GetString("ErrorComponent_Whitespace");
         }
 
         /// <summary>
         /// space or line break
         /// </summary>
         internal static string FormatErrorComponent_Whitespace()
-        {
-            return GetString("ErrorComponent_Whitespace");
-        }
+            => GetString("ErrorComponent_Whitespace");
 
         /// <summary>
         /// &lt;&lt;newline sequence&gt;&gt;
         /// </summary>
         internal static string HtmlSymbol_NewLine
         {
-            get { return GetString("HtmlSymbol_NewLine"); }
+            get => GetString("HtmlSymbol_NewLine");
         }
 
         /// <summary>
         /// &lt;&lt;newline sequence&gt;&gt;
         /// </summary>
         internal static string FormatHtmlSymbol_NewLine()
-        {
-            return GetString("HtmlSymbol_NewLine");
-        }
+            => GetString("HtmlSymbol_NewLine");
 
         /// <summary>
         /// &lt;&lt;razor comment&gt;&gt;
         /// </summary>
         internal static string HtmlSymbol_RazorComment
         {
-            get { return GetString("HtmlSymbol_RazorComment"); }
+            get => GetString("HtmlSymbol_RazorComment");
         }
 
         /// <summary>
         /// &lt;&lt;razor comment&gt;&gt;
         /// </summary>
         internal static string FormatHtmlSymbol_RazorComment()
-        {
-            return GetString("HtmlSymbol_RazorComment");
-        }
+            => GetString("HtmlSymbol_RazorComment");
 
         /// <summary>
         /// &lt;&lt;text&gt;&gt;
         /// </summary>
         internal static string HtmlSymbol_Text
         {
-            get { return GetString("HtmlSymbol_Text"); }
+            get => GetString("HtmlSymbol_Text");
         }
 
         /// <summary>
         /// &lt;&lt;text&gt;&gt;
         /// </summary>
         internal static string FormatHtmlSymbol_Text()
-        {
-            return GetString("HtmlSymbol_Text");
-        }
+            => GetString("HtmlSymbol_Text");
 
         /// <summary>
         /// &lt;&lt;white space&gt;&gt;
         /// </summary>
         internal static string HtmlSymbol_WhiteSpace
         {
-            get { return GetString("HtmlSymbol_WhiteSpace"); }
+            get => GetString("HtmlSymbol_WhiteSpace");
         }
 
         /// <summary>
         /// &lt;&lt;white space&gt;&gt;
         /// </summary>
         internal static string FormatHtmlSymbol_WhiteSpace()
-        {
-            return GetString("HtmlSymbol_WhiteSpace");
-        }
+            => GetString("HtmlSymbol_WhiteSpace");
 
         /// <summary>
         /// Cannot use built-in RazorComment handler, language characteristics does not define the CommentStart, CommentStar and CommentBody known symbol types or parser does not override TokenizerBackedParser.OutputSpanBeforeRazorComment
         /// </summary>
         internal static string Language_Does_Not_Support_RazorComment
         {
-            get { return GetString("Language_Does_Not_Support_RazorComment"); }
+            get => GetString("Language_Does_Not_Support_RazorComment");
         }
 
         /// <summary>
         /// Cannot use built-in RazorComment handler, language characteristics does not define the CommentStart, CommentStar and CommentBody known symbol types or parser does not override TokenizerBackedParser.OutputSpanBeforeRazorComment
         /// </summary>
         internal static string FormatLanguage_Does_Not_Support_RazorComment()
-        {
-            return GetString("Language_Does_Not_Support_RazorComment");
-        }
+            => GetString("Language_Does_Not_Support_RazorComment");
 
         /// <summary>
         /// The "@" character must be followed by a ":", "(", or a C# identifier.  If you intended to switch to markup, use an HTML start tag, for example:
@@ -531,7 +467,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         /// </summary>
         internal static string ParseError_AtInCode_Must_Be_Followed_By_Colon_Paren_Or_Identifier_Start
         {
-            get { return GetString("ParseError_AtInCode_Must_Be_Followed_By_Colon_Paren_Or_Identifier_Start"); }
+            get => GetString("ParseError_AtInCode_Must_Be_Followed_By_Colon_Paren_Or_Identifier_Start");
         }
 
         /// <summary>
@@ -542,185 +478,161 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         /// }
         /// </summary>
         internal static string FormatParseError_AtInCode_Must_Be_Followed_By_Colon_Paren_Or_Identifier_Start()
-        {
-            return GetString("ParseError_AtInCode_Must_Be_Followed_By_Colon_Paren_Or_Identifier_Start");
-        }
+            => GetString("ParseError_AtInCode_Must_Be_Followed_By_Colon_Paren_Or_Identifier_Start");
 
         /// <summary>
         /// End of file was reached before the end of the block comment.  All comments started with "/*" sequence must be terminated with a matching "*/" sequence.
         /// </summary>
         internal static string ParseError_BlockComment_Not_Terminated
         {
-            get { return GetString("ParseError_BlockComment_Not_Terminated"); }
+            get => GetString("ParseError_BlockComment_Not_Terminated");
         }
 
         /// <summary>
         /// End of file was reached before the end of the block comment.  All comments started with "/*" sequence must be terminated with a matching "*/" sequence.
         /// </summary>
         internal static string FormatParseError_BlockComment_Not_Terminated()
-        {
-            return GetString("ParseError_BlockComment_Not_Terminated");
-        }
+            => GetString("ParseError_BlockComment_Not_Terminated");
 
         /// <summary>
         /// Directive '{0}' must have a value.
         /// </summary>
         internal static string ParseError_DirectiveMustHaveValue
         {
-            get { return GetString("ParseError_DirectiveMustHaveValue"); }
+            get => GetString("ParseError_DirectiveMustHaveValue");
         }
 
         /// <summary>
         /// Directive '{0}' must have a value.
         /// </summary>
         internal static string FormatParseError_DirectiveMustHaveValue(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_DirectiveMustHaveValue"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ParseError_DirectiveMustHaveValue"), p0);
 
         /// <summary>
         /// An opening "{0}" is missing the corresponding closing "{1}".
         /// </summary>
         internal static string ParseError_Expected_CloseBracket_Before_EOF
         {
-            get { return GetString("ParseError_Expected_CloseBracket_Before_EOF"); }
+            get => GetString("ParseError_Expected_CloseBracket_Before_EOF");
         }
 
         /// <summary>
         /// An opening "{0}" is missing the corresponding closing "{1}".
         /// </summary>
         internal static string FormatParseError_Expected_CloseBracket_Before_EOF(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_Expected_CloseBracket_Before_EOF"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ParseError_Expected_CloseBracket_Before_EOF"), p0, p1);
 
         /// <summary>
         /// The {0} block is missing a closing "{1}" character.  Make sure you have a matching "{1}" character for all the "{2}" characters within this block, and that none of the "{1}" characters are being interpreted as markup.
         /// </summary>
         internal static string ParseError_Expected_EndOfBlock_Before_EOF
         {
-            get { return GetString("ParseError_Expected_EndOfBlock_Before_EOF"); }
+            get => GetString("ParseError_Expected_EndOfBlock_Before_EOF");
         }
 
         /// <summary>
         /// The {0} block is missing a closing "{1}" character.  Make sure you have a matching "{1}" character for all the "{2}" characters within this block, and that none of the "{1}" characters are being interpreted as markup.
         /// </summary>
         internal static string FormatParseError_Expected_EndOfBlock_Before_EOF(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_Expected_EndOfBlock_Before_EOF"), p0, p1, p2);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ParseError_Expected_EndOfBlock_Before_EOF"), p0, p1, p2);
 
         /// <summary>
         /// Expected "{0}".
         /// </summary>
         internal static string ParseError_Expected_X
         {
-            get { return GetString("ParseError_Expected_X"); }
+            get => GetString("ParseError_Expected_X");
         }
 
         /// <summary>
         /// Expected "{0}".
         /// </summary>
         internal static string FormatParseError_Expected_X(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_Expected_X"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ParseError_Expected_X"), p0);
 
         /// <summary>
         /// The {0} directive is not supported.
         /// </summary>
         internal static string ParseError_HelperDirectiveNotAvailable
         {
-            get { return GetString("ParseError_HelperDirectiveNotAvailable"); }
+            get => GetString("ParseError_HelperDirectiveNotAvailable");
         }
 
         /// <summary>
         /// The {0} directive is not supported.
         /// </summary>
         internal static string FormatParseError_HelperDirectiveNotAvailable(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_HelperDirectiveNotAvailable"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ParseError_HelperDirectiveNotAvailable"), p0);
 
         /// <summary>
         /// Optional quote around the directive '{0}' is missing the corresponding opening or closing quote.
         /// </summary>
         internal static string ParseError_IncompleteQuotesAroundDirective
         {
-            get { return GetString("ParseError_IncompleteQuotesAroundDirective"); }
+            get => GetString("ParseError_IncompleteQuotesAroundDirective");
         }
 
         /// <summary>
         /// Optional quote around the directive '{0}' is missing the corresponding opening or closing quote.
         /// </summary>
         internal static string FormatParseError_IncompleteQuotesAroundDirective(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_IncompleteQuotesAroundDirective"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ParseError_IncompleteQuotesAroundDirective"), p0);
 
         /// <summary>
         /// The 'inherits' keyword must be followed by a type name on the same line.
         /// </summary>
         internal static string ParseError_InheritsKeyword_Must_Be_Followed_By_TypeName
         {
-            get { return GetString("ParseError_InheritsKeyword_Must_Be_Followed_By_TypeName"); }
+            get => GetString("ParseError_InheritsKeyword_Must_Be_Followed_By_TypeName");
         }
 
         /// <summary>
         /// The 'inherits' keyword must be followed by a type name on the same line.
         /// </summary>
         internal static string FormatParseError_InheritsKeyword_Must_Be_Followed_By_TypeName()
-        {
-            return GetString("ParseError_InheritsKeyword_Must_Be_Followed_By_TypeName");
-        }
+            => GetString("ParseError_InheritsKeyword_Must_Be_Followed_By_TypeName");
 
         /// <summary>
         /// Inline markup blocks (@&lt;p&gt;Content&lt;/p&gt;) cannot be nested.  Only one level of inline markup is allowed.
         /// </summary>
         internal static string ParseError_InlineMarkup_Blocks_Cannot_Be_Nested
         {
-            get { return GetString("ParseError_InlineMarkup_Blocks_Cannot_Be_Nested"); }
+            get => GetString("ParseError_InlineMarkup_Blocks_Cannot_Be_Nested");
         }
 
         /// <summary>
         /// Inline markup blocks (@&lt;p&gt;Content&lt;/p&gt;) cannot be nested.  Only one level of inline markup is allowed.
         /// </summary>
         internal static string FormatParseError_InlineMarkup_Blocks_Cannot_Be_Nested()
-        {
-            return GetString("ParseError_InlineMarkup_Blocks_Cannot_Be_Nested");
-        }
+            => GetString("ParseError_InlineMarkup_Blocks_Cannot_Be_Nested");
 
         /// <summary>
         /// Markup in a code block must start with a tag and all start tags must be matched with end tags.  Do not use unclosed tags like "&lt;br&gt;".  Instead use self-closing tags like "&lt;br/&gt;".
         /// </summary>
         internal static string ParseError_MarkupBlock_Must_Start_With_Tag
         {
-            get { return GetString("ParseError_MarkupBlock_Must_Start_With_Tag"); }
+            get => GetString("ParseError_MarkupBlock_Must_Start_With_Tag");
         }
 
         /// <summary>
         /// Markup in a code block must start with a tag and all start tags must be matched with end tags.  Do not use unclosed tags like "&lt;br&gt;".  Instead use self-closing tags like "&lt;br/&gt;".
         /// </summary>
         internal static string FormatParseError_MarkupBlock_Must_Start_With_Tag()
-        {
-            return GetString("ParseError_MarkupBlock_Must_Start_With_Tag");
-        }
+            => GetString("ParseError_MarkupBlock_Must_Start_With_Tag");
 
         /// <summary>
         /// The "{0}" element was not closed.  All elements must be either self-closing or have a matching end tag.
         /// </summary>
         internal static string ParseError_MissingEndTag
         {
-            get { return GetString("ParseError_MissingEndTag"); }
+            get => GetString("ParseError_MissingEndTag");
         }
 
         /// <summary>
         /// The "{0}" element was not closed.  All elements must be either self-closing or have a matching end tag.
         /// </summary>
         internal static string FormatParseError_MissingEndTag(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_MissingEndTag"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ParseError_MissingEndTag"), p0);
 
         /// <summary>
         /// Sections cannot be empty.  The "@section" keyword must be followed by a block of markup surrounded by "{}".  For example:
@@ -731,7 +643,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         /// </summary>
         internal static string ParseError_MissingOpenBraceAfterSection
         {
-            get { return GetString("ParseError_MissingOpenBraceAfterSection"); }
+            get => GetString("ParseError_MissingOpenBraceAfterSection");
         }
 
         /// <summary>
@@ -742,9 +654,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         /// }
         /// </summary>
         internal static string FormatParseError_MissingOpenBraceAfterSection()
-        {
-            return GetString("ParseError_MissingOpenBraceAfterSection");
-        }
+            => GetString("ParseError_MissingOpenBraceAfterSection");
 
         /// <summary>
         /// Namespace imports and type aliases cannot be placed within code blocks.  They must immediately follow an "@" character in markup.  It is recommended that you put them at the top of the page, as in the following example:
@@ -756,7 +666,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         /// </summary>
         internal static string ParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock
         {
-            get { return GetString("ParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock"); }
+            get => GetString("ParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock");
         }
 
         /// <summary>
@@ -768,73 +678,63 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         /// }
         /// </summary>
         internal static string FormatParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock()
-        {
-            return GetString("ParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock");
-        }
+            => GetString("ParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock");
 
         /// <summary>
         /// Outer tag is missing a name. The first character of a markup block must be an HTML tag with a valid name.
         /// </summary>
         internal static string ParseError_OuterTagMissingName
         {
-            get { return GetString("ParseError_OuterTagMissingName"); }
+            get => GetString("ParseError_OuterTagMissingName");
         }
 
         /// <summary>
         /// Outer tag is missing a name. The first character of a markup block must be an HTML tag with a valid name.
         /// </summary>
         internal static string FormatParseError_OuterTagMissingName()
-        {
-            return GetString("ParseError_OuterTagMissingName");
-        }
+            => GetString("ParseError_OuterTagMissingName");
 
         /// <summary>
         /// End of file was reached before the end of the block comment.  All comments that start with the "@*" sequence must be terminated with a matching "*@" sequence.
         /// </summary>
         internal static string ParseError_RazorComment_Not_Terminated
         {
-            get { return GetString("ParseError_RazorComment_Not_Terminated"); }
+            get => GetString("ParseError_RazorComment_Not_Terminated");
         }
 
         /// <summary>
         /// End of file was reached before the end of the block comment.  All comments that start with the "@*" sequence must be terminated with a matching "*@" sequence.
         /// </summary>
         internal static string FormatParseError_RazorComment_Not_Terminated()
-        {
-            return GetString("ParseError_RazorComment_Not_Terminated");
-        }
+            => GetString("ParseError_RazorComment_Not_Terminated");
 
         /// <summary>
         /// "{0}" is a reserved word and cannot be used in implicit expressions.  An explicit expression ("@()") must be used.
         /// </summary>
         internal static string ParseError_ReservedWord
         {
-            get { return GetString("ParseError_ReservedWord"); }
+            get => GetString("ParseError_ReservedWord");
         }
 
         /// <summary>
         /// "{0}" is a reserved word and cannot be used in implicit expressions.  An explicit expression ("@()") must be used.
         /// </summary>
         internal static string FormatParseError_ReservedWord(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_ReservedWord"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ParseError_ReservedWord"), p0);
 
         /// <summary>
         /// Section blocks ("{0}") cannot be nested.  Only one level of section blocks are allowed.
         /// </summary>
         internal static string ParseError_Sections_Cannot_Be_Nested
         {
-            get { return GetString("ParseError_Sections_Cannot_Be_Nested"); }
+            get => GetString("ParseError_Sections_Cannot_Be_Nested");
         }
 
         /// <summary>
         /// Section blocks ("{0}") cannot be nested.  Only one level of section blocks are allowed.
         /// </summary>
         internal static string FormatParseError_Sections_Cannot_Be_Nested(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_Sections_Cannot_Be_Nested"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ParseError_Sections_Cannot_Be_Nested"), p0);
 
         /// <summary>
         /// Expected a "{0}" but found a "{1}".  Block statements must be enclosed in "{{" and "}}".  You cannot use single-statement control-flow statements in CSHTML pages. For example, the following is not allowed:
@@ -850,7 +750,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         /// </summary>
         internal static string ParseError_SingleLine_ControlFlowStatements_Not_Allowed
         {
-            get { return GetString("ParseError_SingleLine_ControlFlowStatements_Not_Allowed"); }
+            get => GetString("ParseError_SingleLine_ControlFlowStatements_Not_Allowed");
         }
 
         /// <summary>
@@ -866,473 +766,413 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         /// }}
         /// </summary>
         internal static string FormatParseError_SingleLine_ControlFlowStatements_Not_Allowed(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_SingleLine_ControlFlowStatements_Not_Allowed"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ParseError_SingleLine_ControlFlowStatements_Not_Allowed"), p0, p1);
 
         /// <summary>
         /// "&lt;text&gt;" and "&lt;/text&gt;" tags cannot contain attributes.
         /// </summary>
         internal static string ParseError_TextTagCannotContainAttributes
         {
-            get { return GetString("ParseError_TextTagCannotContainAttributes"); }
+            get => GetString("ParseError_TextTagCannotContainAttributes");
         }
 
         /// <summary>
         /// "&lt;text&gt;" and "&lt;/text&gt;" tags cannot contain attributes.
         /// </summary>
         internal static string FormatParseError_TextTagCannotContainAttributes()
-        {
-            return GetString("ParseError_TextTagCannotContainAttributes");
-        }
+            => GetString("ParseError_TextTagCannotContainAttributes");
 
         /// <summary>
         /// Encountered end tag "{0}" with no matching start tag.  Are your start/end tags properly balanced?
         /// </summary>
         internal static string ParseError_UnexpectedEndTag
         {
-            get { return GetString("ParseError_UnexpectedEndTag"); }
+            get => GetString("ParseError_UnexpectedEndTag");
         }
 
         /// <summary>
         /// Encountered end tag "{0}" with no matching start tag.  Are your start/end tags properly balanced?
         /// </summary>
         internal static string FormatParseError_UnexpectedEndTag(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_UnexpectedEndTag"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ParseError_UnexpectedEndTag"), p0);
 
         /// <summary>
         /// Unexpected {0} after section keyword.  Section names must start with an "_" or alphabetic character, and the remaining characters must be either "_" or alphanumeric.
         /// </summary>
         internal static string ParseError_Unexpected_Character_At_Section_Name_Start
         {
-            get { return GetString("ParseError_Unexpected_Character_At_Section_Name_Start"); }
+            get => GetString("ParseError_Unexpected_Character_At_Section_Name_Start");
         }
 
         /// <summary>
         /// Unexpected {0} after section keyword.  Section names must start with an "_" or alphabetic character, and the remaining characters must be either "_" or alphanumeric.
         /// </summary>
         internal static string FormatParseError_Unexpected_Character_At_Section_Name_Start(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_Unexpected_Character_At_Section_Name_Start"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ParseError_Unexpected_Character_At_Section_Name_Start"), p0);
 
         /// <summary>
         /// "{0}" is not valid at the start of a code block.  Only identifiers, keywords, comments, "(" and "{{" are valid.
         /// </summary>
         internal static string ParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS
         {
-            get { return GetString("ParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS"); }
+            get => GetString("ParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS");
         }
 
         /// <summary>
         /// "{0}" is not valid at the start of a code block.  Only identifiers, keywords, comments, "(" and "{{" are valid.
         /// </summary>
         internal static string FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS"), p0);
 
         /// <summary>
         /// End-of-file was found after the "@" character.  "@" must be followed by a valid code block.  If you want to output an "@", escape it using the sequence: "@@"
         /// </summary>
         internal static string ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock
         {
-            get { return GetString("ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock"); }
+            get => GetString("ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock");
         }
 
         /// <summary>
         /// End-of-file was found after the "@" character.  "@" must be followed by a valid code block.  If you want to output an "@", escape it using the sequence: "@@"
         /// </summary>
         internal static string FormatParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock()
-        {
-            return GetString("ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock");
-        }
+            => GetString("ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock");
 
         /// <summary>
         /// End-of-file was found after the "@" character.  "@" must be followed by a valid code block.  If you want to output an "@", escape it using the sequence: "@@"
         /// </summary>
         internal static string ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock1
         {
-            get { return GetString("ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock1"); }
+            get => GetString("ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock1");
         }
 
         /// <summary>
         /// End-of-file was found after the "@" character.  "@" must be followed by a valid code block.  If you want to output an "@", escape it using the sequence: "@@"
         /// </summary>
         internal static string FormatParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock1()
-        {
-            return GetString("ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock1");
-        }
+            => GetString("ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock1");
 
         /// <summary>
         /// Unexpected "{" after "@" character. Once inside the body of a code block (@if {}, @{}, etc.) you do not need to use "@{" to switch to code.
         /// </summary>
         internal static string ParseError_Unexpected_Nested_CodeBlock
         {
-            get { return GetString("ParseError_Unexpected_Nested_CodeBlock"); }
+            get => GetString("ParseError_Unexpected_Nested_CodeBlock");
         }
 
         /// <summary>
         /// Unexpected "{" after "@" character. Once inside the body of a code block (@if {}, @{}, etc.) you do not need to use "@{" to switch to code.
         /// </summary>
         internal static string FormatParseError_Unexpected_Nested_CodeBlock()
-        {
-            return GetString("ParseError_Unexpected_Nested_CodeBlock");
-        }
+            => GetString("ParseError_Unexpected_Nested_CodeBlock");
 
         /// <summary>
         /// A space or line break was encountered after the "@" character.  Only valid identifiers, keywords, comments, "(" and "{" are valid at the start of a code block and they must occur immediately following "@" with no space in between.
         /// </summary>
         internal static string ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS
         {
-            get { return GetString("ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS"); }
+            get => GetString("ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS");
         }
 
         /// <summary>
         /// A space or line break was encountered after the "@" character.  Only valid identifiers, keywords, comments, "(" and "{" are valid at the start of a code block and they must occur immediately following "@" with no space in between.
         /// </summary>
         internal static string FormatParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS()
-        {
-            return GetString("ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS");
-        }
+            => GetString("ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS");
 
         /// <summary>
         /// End of file or an unexpected character was reached before the "{0}" tag could be parsed.  Elements inside markup blocks must be complete. They must either be self-closing ("&lt;br /&gt;") or have matching end tags ("&lt;p&gt;Hello&lt;/p&gt;").  If you intended to display a "&lt;" character, use the "&amp;lt;" HTML entity.
         /// </summary>
         internal static string ParseError_UnfinishedTag
         {
-            get { return GetString("ParseError_UnfinishedTag"); }
+            get => GetString("ParseError_UnfinishedTag");
         }
 
         /// <summary>
         /// End of file or an unexpected character was reached before the "{0}" tag could be parsed.  Elements inside markup blocks must be complete. They must either be self-closing ("&lt;br /&gt;") or have matching end tags ("&lt;p&gt;Hello&lt;/p&gt;").  If you intended to display a "&lt;" character, use the "&amp;lt;" HTML entity.
         /// </summary>
         internal static string FormatParseError_UnfinishedTag(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_UnfinishedTag"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ParseError_UnfinishedTag"), p0);
 
         /// <summary>
         /// Unterminated string literal.  Strings that start with a quotation mark (") must be terminated before the end of the line.  However, strings that start with @ and a quotation mark (@") can span multiple lines.
         /// </summary>
         internal static string ParseError_Unterminated_String_Literal
         {
-            get { return GetString("ParseError_Unterminated_String_Literal"); }
+            get => GetString("ParseError_Unterminated_String_Literal");
         }
 
         /// <summary>
         /// Unterminated string literal.  Strings that start with a quotation mark (") must be terminated before the end of the line.  However, strings that start with @ and a quotation mark (@") can span multiple lines.
         /// </summary>
         internal static string FormatParseError_Unterminated_String_Literal()
-        {
-            return GetString("ParseError_Unterminated_String_Literal");
-        }
+            => GetString("ParseError_Unterminated_String_Literal");
 
         /// <summary>
         /// Cannot complete the tree, StartBlock must be called at least once.
         /// </summary>
         internal static string ParserContext_CannotCompleteTree_NoRootBlock
         {
-            get { return GetString("ParserContext_CannotCompleteTree_NoRootBlock"); }
+            get => GetString("ParserContext_CannotCompleteTree_NoRootBlock");
         }
 
         /// <summary>
         /// Cannot complete the tree, StartBlock must be called at least once.
         /// </summary>
         internal static string FormatParserContext_CannotCompleteTree_NoRootBlock()
-        {
-            return GetString("ParserContext_CannotCompleteTree_NoRootBlock");
-        }
+            => GetString("ParserContext_CannotCompleteTree_NoRootBlock");
 
         /// <summary>
         /// Cannot complete the tree, there are still open blocks.
         /// </summary>
         internal static string ParserContext_CannotCompleteTree_OutstandingBlocks
         {
-            get { return GetString("ParserContext_CannotCompleteTree_OutstandingBlocks"); }
+            get => GetString("ParserContext_CannotCompleteTree_OutstandingBlocks");
         }
 
         /// <summary>
         /// Cannot complete the tree, there are still open blocks.
         /// </summary>
         internal static string FormatParserContext_CannotCompleteTree_OutstandingBlocks()
-        {
-            return GetString("ParserContext_CannotCompleteTree_OutstandingBlocks");
-        }
+            => GetString("ParserContext_CannotCompleteTree_OutstandingBlocks");
 
         /// <summary>
         /// Cannot finish span, there is no current block. Call StartBlock at least once before finishing a span
         /// </summary>
         internal static string ParserContext_NoCurrentBlock
         {
-            get { return GetString("ParserContext_NoCurrentBlock"); }
+            get => GetString("ParserContext_NoCurrentBlock");
         }
 
         /// <summary>
         /// Cannot finish span, there is no current block. Call StartBlock at least once before finishing a span
         /// </summary>
         internal static string FormatParserContext_NoCurrentBlock()
-        {
-            return GetString("ParserContext_NoCurrentBlock");
-        }
+            => GetString("ParserContext_NoCurrentBlock");
 
         /// <summary>
         /// Cannot complete action, the parser has finished. Only CompleteParse can be called to extract the final parser results after the parser has finished
         /// </summary>
         internal static string ParserContext_ParseComplete
         {
-            get { return GetString("ParserContext_ParseComplete"); }
+            get => GetString("ParserContext_ParseComplete");
         }
 
         /// <summary>
         /// Cannot complete action, the parser has finished. Only CompleteParse can be called to extract the final parser results after the parser has finished
         /// </summary>
         internal static string FormatParserContext_ParseComplete()
-        {
-            return GetString("ParserContext_ParseComplete");
-        }
+            => GetString("ParserContext_ParseComplete");
 
         /// <summary>
         /// Parser was started with a null Context property.  The Context property must be set BEFORE calling any methods on the parser.
         /// </summary>
         internal static string Parser_Context_Not_Set
         {
-            get { return GetString("Parser_Context_Not_Set"); }
+            get => GetString("Parser_Context_Not_Set");
         }
 
         /// <summary>
         /// Parser was started with a null Context property.  The Context property must be set BEFORE calling any methods on the parser.
         /// </summary>
         internal static string FormatParser_Context_Not_Set()
-        {
-            return GetString("Parser_Context_Not_Set");
-        }
+            => GetString("Parser_Context_Not_Set");
 
         /// <summary>
         /// Attribute '{0}' on tag helper element '{1}' requires a value. Tag helper bound attributes of type '{2}' cannot be empty or contain only whitespace.
         /// </summary>
         internal static string RewriterError_EmptyTagHelperBoundAttribute
         {
-            get { return GetString("RewriterError_EmptyTagHelperBoundAttribute"); }
+            get => GetString("RewriterError_EmptyTagHelperBoundAttribute");
         }
 
         /// <summary>
         /// Attribute '{0}' on tag helper element '{1}' requires a value. Tag helper bound attributes of type '{2}' cannot be empty or contain only whitespace.
         /// </summary>
         internal static string FormatRewriterError_EmptyTagHelperBoundAttribute(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("RewriterError_EmptyTagHelperBoundAttribute"), p0, p1, p2);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("RewriterError_EmptyTagHelperBoundAttribute"), p0, p1, p2);
 
         /// <summary>
         /// @section Header { ... }
         /// </summary>
         internal static string SectionExample_CS
         {
-            get { return GetString("SectionExample_CS"); }
+            get => GetString("SectionExample_CS");
         }
 
         /// <summary>
         /// @section Header { ... }
         /// </summary>
         internal static string FormatSectionExample_CS()
-        {
-            return GetString("SectionExample_CS");
-        }
+            => GetString("SectionExample_CS");
 
         /// <summary>
         /// Cannot perform '{1}' operations on '{0}' instances with different file paths.
         /// </summary>
         internal static string SourceLocationFilePathDoesNotMatch
         {
-            get { return GetString("SourceLocationFilePathDoesNotMatch"); }
+            get => GetString("SourceLocationFilePathDoesNotMatch");
         }
 
         /// <summary>
         /// Cannot perform '{1}' operations on '{0}' instances with different file paths.
         /// </summary>
         internal static string FormatSourceLocationFilePathDoesNotMatch(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("SourceLocationFilePathDoesNotMatch"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("SourceLocationFilePathDoesNotMatch"), p0, p1);
 
         /// <summary>
         /// &lt;&lt;unknown&gt;&gt;
         /// </summary>
         internal static string Symbol_Unknown
         {
-            get { return GetString("Symbol_Unknown"); }
+            get => GetString("Symbol_Unknown");
         }
 
         /// <summary>
         /// &lt;&lt;unknown&gt;&gt;
         /// </summary>
         internal static string FormatSymbol_Unknown()
-        {
-            return GetString("Symbol_Unknown");
-        }
+            => GetString("Symbol_Unknown");
 
         /// <summary>
         /// The tag helper attribute '{0}' in element '{1}' is missing a key. The syntax is '&lt;{1} {0}{{ key }}="value"&gt;'.
         /// </summary>
         internal static string TagHelperBlockRewriter_IndexerAttributeNameMustIncludeKey
         {
-            get { return GetString("TagHelperBlockRewriter_IndexerAttributeNameMustIncludeKey"); }
+            get => GetString("TagHelperBlockRewriter_IndexerAttributeNameMustIncludeKey");
         }
 
         /// <summary>
         /// The tag helper attribute '{0}' in element '{1}' is missing a key. The syntax is '&lt;{1} {0}{{ key }}="value"&gt;'.
         /// </summary>
         internal static string FormatTagHelperBlockRewriter_IndexerAttributeNameMustIncludeKey(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperBlockRewriter_IndexerAttributeNameMustIncludeKey"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelperBlockRewriter_IndexerAttributeNameMustIncludeKey"), p0, p1);
 
         /// <summary>
         /// TagHelper attributes must be well-formed.
         /// </summary>
         internal static string TagHelperBlockRewriter_TagHelperAttributeListMustBeWellFormed
         {
-            get { return GetString("TagHelperBlockRewriter_TagHelperAttributeListMustBeWellFormed"); }
+            get => GetString("TagHelperBlockRewriter_TagHelperAttributeListMustBeWellFormed");
         }
 
         /// <summary>
         /// TagHelper attributes must be well-formed.
         /// </summary>
         internal static string FormatTagHelperBlockRewriter_TagHelperAttributeListMustBeWellFormed()
-        {
-            return GetString("TagHelperBlockRewriter_TagHelperAttributeListMustBeWellFormed");
-        }
+            => GetString("TagHelperBlockRewriter_TagHelperAttributeListMustBeWellFormed");
 
         /// <summary>
         /// The parent &lt;{0}&gt; tag helper does not allow non-tag content. Only child tag helper(s) targeting tag name(s) '{1}' are allowed.
         /// </summary>
         internal static string TagHelperParseTreeRewriter_CannotHaveNonTagContent
         {
-            get { return GetString("TagHelperParseTreeRewriter_CannotHaveNonTagContent"); }
+            get => GetString("TagHelperParseTreeRewriter_CannotHaveNonTagContent");
         }
 
         /// <summary>
         /// The parent &lt;{0}&gt; tag helper does not allow non-tag content. Only child tag helper(s) targeting tag name(s) '{1}' are allowed.
         /// </summary>
         internal static string FormatTagHelperParseTreeRewriter_CannotHaveNonTagContent(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperParseTreeRewriter_CannotHaveNonTagContent"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelperParseTreeRewriter_CannotHaveNonTagContent"), p0, p1);
 
         /// <summary>
         /// Found an end tag (&lt;/{0}&gt;) for tag helper '{1}' with tag structure that disallows an end tag ('{2}').
         /// </summary>
         internal static string TagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag
         {
-            get { return GetString("TagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag"); }
+            get => GetString("TagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag");
         }
 
         /// <summary>
         /// Found an end tag (&lt;/{0}&gt;) for tag helper '{1}' with tag structure that disallows an end tag ('{2}').
         /// </summary>
         internal static string FormatTagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag"), p0, p1, p2);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag"), p0, p1, p2);
 
         /// <summary>
         /// Tag helpers '{0}' and '{1}' targeting element '{2}' must not expect different {3} values.
         /// </summary>
         internal static string TagHelperParseTreeRewriter_InconsistentTagStructure
         {
-            get { return GetString("TagHelperParseTreeRewriter_InconsistentTagStructure"); }
+            get => GetString("TagHelperParseTreeRewriter_InconsistentTagStructure");
         }
 
         /// <summary>
         /// Tag helpers '{0}' and '{1}' targeting element '{2}' must not expect different {3} values.
         /// </summary>
         internal static string FormatTagHelperParseTreeRewriter_InconsistentTagStructure(object p0, object p1, object p2, object p3)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperParseTreeRewriter_InconsistentTagStructure"), p0, p1, p2, p3);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelperParseTreeRewriter_InconsistentTagStructure"), p0, p1, p2, p3);
 
         /// <summary>
         /// The &lt;{0}&gt; tag is not allowed by parent &lt;{1}&gt; tag helper. Only child tags with name(s) '{2}' are allowed.
         /// </summary>
         internal static string TagHelperParseTreeRewriter_InvalidNestedTag
         {
-            get { return GetString("TagHelperParseTreeRewriter_InvalidNestedTag"); }
+            get => GetString("TagHelperParseTreeRewriter_InvalidNestedTag");
         }
 
         /// <summary>
         /// The &lt;{0}&gt; tag is not allowed by parent &lt;{1}&gt; tag helper. Only child tags with name(s) '{2}' are allowed.
         /// </summary>
         internal static string FormatTagHelperParseTreeRewriter_InvalidNestedTag(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperParseTreeRewriter_InvalidNestedTag"), p0, p1, p2);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelperParseTreeRewriter_InvalidNestedTag"), p0, p1, p2);
 
         /// <summary>
         /// Found a malformed '{0}' tag helper. Tag helpers must have a start and end tag or be self closing.
         /// </summary>
         internal static string TagHelpersParseTreeRewriter_FoundMalformedTagHelper
         {
-            get { return GetString("TagHelpersParseTreeRewriter_FoundMalformedTagHelper"); }
+            get => GetString("TagHelpersParseTreeRewriter_FoundMalformedTagHelper");
         }
 
         /// <summary>
         /// Found a malformed '{0}' tag helper. Tag helpers must have a start and end tag or be self closing.
         /// </summary>
         internal static string FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpersParseTreeRewriter_FoundMalformedTagHelper"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelpersParseTreeRewriter_FoundMalformedTagHelper"), p0);
 
         /// <summary>
         /// Missing close angle for tag helper '{0}'.
         /// </summary>
         internal static string TagHelpersParseTreeRewriter_MissingCloseAngle
         {
-            get { return GetString("TagHelpersParseTreeRewriter_MissingCloseAngle"); }
+            get => GetString("TagHelpersParseTreeRewriter_MissingCloseAngle");
         }
 
         /// <summary>
         /// Missing close angle for tag helper '{0}'.
         /// </summary>
         internal static string FormatTagHelpersParseTreeRewriter_MissingCloseAngle(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpersParseTreeRewriter_MissingCloseAngle"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelpersParseTreeRewriter_MissingCloseAngle"), p0);
 
         /// <summary>
         /// Tag Helper '{0}'s attributes must have names.
         /// </summary>
         internal static string TagHelpers_AttributesMustHaveAName
         {
-            get { return GetString("TagHelpers_AttributesMustHaveAName"); }
+            get => GetString("TagHelpers_AttributesMustHaveAName");
         }
 
         /// <summary>
         /// Tag Helper '{0}'s attributes must have names.
         /// </summary>
         internal static string FormatTagHelpers_AttributesMustHaveAName(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_AttributesMustHaveAName"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_AttributesMustHaveAName"), p0);
 
         /// <summary>
         /// The tag helper '{0}' must not have C# in the element's attribute declaration area.
         /// </summary>
         internal static string TagHelpers_CannotHaveCSharpInTagDeclaration
         {
-            get { return GetString("TagHelpers_CannotHaveCSharpInTagDeclaration"); }
+            get => GetString("TagHelpers_CannotHaveCSharpInTagDeclaration");
         }
 
         /// <summary>
         /// The tag helper '{0}' must not have C# in the element's attribute declaration area.
         /// </summary>
         internal static string FormatTagHelpers_CannotHaveCSharpInTagDeclaration(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_CannotHaveCSharpInTagDeclaration"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_CannotHaveCSharpInTagDeclaration"), p0);
 
         /// <summary>
         /// Code blocks (e.g. @{{var variable = 23;}}) must not appear in non-string tag helper attribute values.
@@ -1340,7 +1180,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         /// </summary>
         internal static string TagHelpers_CodeBlocks_NotSupported_InAttributes
         {
-            get { return GetString("TagHelpers_CodeBlocks_NotSupported_InAttributes"); }
+            get => GetString("TagHelpers_CodeBlocks_NotSupported_InAttributes");
         }
 
         /// <summary>
@@ -1348,9 +1188,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         ///  Already in an expression (code) context. If necessary an explicit expression (e.g. @(@readonly)) may be used.
         /// </summary>
         internal static string FormatTagHelpers_CodeBlocks_NotSupported_InAttributes()
-        {
-            return GetString("TagHelpers_CodeBlocks_NotSupported_InAttributes");
-        }
+            => GetString("TagHelpers_CodeBlocks_NotSupported_InAttributes");
 
         /// <summary>
         /// Inline markup blocks (e.g. @&lt;p&gt;content&lt;/p&gt;) must not appear in non-string tag helper attribute values.
@@ -1358,7 +1196,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         /// </summary>
         internal static string TagHelpers_InlineMarkupBlocks_NotSupported_InAttributes
         {
-            get { return GetString("TagHelpers_InlineMarkupBlocks_NotSupported_InAttributes"); }
+            get => GetString("TagHelpers_InlineMarkupBlocks_NotSupported_InAttributes");
         }
 
         /// <summary>
@@ -1366,57 +1204,49 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         ///  Expected a '{0}' attribute value, not a string.
         /// </summary>
         internal static string FormatTagHelpers_InlineMarkupBlocks_NotSupported_InAttributes(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_InlineMarkupBlocks_NotSupported_InAttributes"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelpers_InlineMarkupBlocks_NotSupported_InAttributes"), p0);
 
         /// <summary>
         /// In order to put a symbol back, it must have been the symbol which ended at the current position. The specified symbol ends at {0}, but the current position is {1}
         /// </summary>
         internal static string TokenizerView_CannotPutBack
         {
-            get { return GetString("TokenizerView_CannotPutBack"); }
+            get => GetString("TokenizerView_CannotPutBack");
         }
 
         /// <summary>
         /// In order to put a symbol back, it must have been the symbol which ended at the current position. The specified symbol ends at {0}, but the current position is {1}
         /// </summary>
         internal static string FormatTokenizerView_CannotPutBack(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TokenizerView_CannotPutBack"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("TokenizerView_CannotPutBack"), p0, p1);
 
         /// <summary>
         /// Unexpected literal following the '{0}' directive. Expected '{1}'.
         /// </summary>
         internal static string UnexpectedDirectiveLiteral
         {
-            get { return GetString("UnexpectedDirectiveLiteral"); }
+            get => GetString("UnexpectedDirectiveLiteral");
         }
 
         /// <summary>
         /// Unexpected literal following the '{0}' directive. Expected '{1}'.
         /// </summary>
         internal static string FormatUnexpectedDirectiveLiteral(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("UnexpectedDirectiveLiteral"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("UnexpectedDirectiveLiteral"), p0, p1);
 
         /// <summary>
         /// Unexpected end of file following the '{0}' directive. Expected '{1}'.
         /// </summary>
         internal static string UnexpectedEOFAfterDirective
         {
-            get { return GetString("UnexpectedEOFAfterDirective"); }
+            get => GetString("UnexpectedEOFAfterDirective");
         }
 
         /// <summary>
         /// Unexpected end of file following the '{0}' directive. Expected '{1}'.
         /// </summary>
         internal static string FormatUnexpectedEOFAfterDirective(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("UnexpectedEOFAfterDirective"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("UnexpectedEOFAfterDirective"), p0, p1);
 
         private static string GetString(string name, params string[] formatterNames)
         {

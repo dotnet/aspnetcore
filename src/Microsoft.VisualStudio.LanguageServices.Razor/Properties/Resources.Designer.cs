@@ -11,20 +11,32 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             = new ResourceManager("Microsoft.VisualStudio.LanguageServices.Razor.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Deserialization of {0} type '{1}' is not supported.
+        /// </summary>
+        internal static string RazorDiagnosticJsonConverter_UnsupportedRazorDiagnosticType
+        {
+            get => GetString("RazorDiagnosticJsonConverter_UnsupportedRazorDiagnosticType");
+        }
+
+        /// <summary>
+        /// Deserialization of {0} type '{1}' is not supported.
+        /// </summary>
+        internal static string FormatRazorDiagnosticJsonConverter_UnsupportedRazorDiagnosticType(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("RazorDiagnosticJsonConverter_UnsupportedRazorDiagnosticType"), p0, p1);
+
+        /// <summary>
         /// An unexpected exception occurred when invoking '{0}.{1}' on the Razor language service.
         /// </summary>
         internal static string UnexpectedException
         {
-            get { return GetString("UnexpectedException"); }
+            get => GetString("UnexpectedException");
         }
 
         /// <summary>
         /// An unexpected exception occurred when invoking '{0}.{1}' on the Razor language service.
         /// </summary>
         internal static string FormatUnexpectedException(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("UnexpectedException"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("UnexpectedException"), p0, p1);
 
         private static string GetString(string name, params string[] formatterNames)
         {

@@ -15,80 +15,70 @@ namespace Microsoft.CodeAnalysis.Razor
         /// </summary>
         internal static string ViewComponent_AmbiguousMethods
         {
-            get { return GetString("ViewComponent_AmbiguousMethods"); }
+            get => GetString("ViewComponent_AmbiguousMethods");
         }
 
         /// <summary>
         /// View component '{0}' must have exactly one public method named '{1}' or '{2}'.
         /// </summary>
         internal static string FormatViewComponent_AmbiguousMethods(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_AmbiguousMethods"), p0, p1, p2);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_AmbiguousMethods"), p0, p1, p2);
 
         /// <summary>
         /// Method '{0}' of view component '{1}' should be declared to return {2}&amp;lt;T&amp;gt;.
         /// </summary>
         internal static string ViewComponent_AsyncMethod_ShouldReturnTask
         {
-            get { return GetString("ViewComponent_AsyncMethod_ShouldReturnTask"); }
+            get => GetString("ViewComponent_AsyncMethod_ShouldReturnTask");
         }
 
         /// <summary>
         /// Method '{0}' of view component '{1}' should be declared to return {2}&amp;lt;T&amp;gt;.
         /// </summary>
         internal static string FormatViewComponent_AsyncMethod_ShouldReturnTask(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_AsyncMethod_ShouldReturnTask"), p0, p1, p2);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_AsyncMethod_ShouldReturnTask"), p0, p1, p2);
 
         /// <summary>
         /// Could not find an '{0}' or '{1}' method for the view component '{2}'.
         /// </summary>
         internal static string ViewComponent_CannotFindMethod
         {
-            get { return GetString("ViewComponent_CannotFindMethod"); }
+            get => GetString("ViewComponent_CannotFindMethod");
         }
 
         /// <summary>
         /// Could not find an '{0}' or '{1}' method for the view component '{2}'.
         /// </summary>
         internal static string FormatViewComponent_CannotFindMethod(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_CannotFindMethod"), p0, p1, p2);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_CannotFindMethod"), p0, p1, p2);
 
         /// <summary>
         /// Method '{0}' of view component '{1}' cannot return a {2}.
         /// </summary>
         internal static string ViewComponent_SyncMethod_CannotReturnTask
         {
-            get { return GetString("ViewComponent_SyncMethod_CannotReturnTask"); }
+            get => GetString("ViewComponent_SyncMethod_CannotReturnTask");
         }
 
         /// <summary>
         /// Method '{0}' of view component '{1}' cannot return a {2}.
         /// </summary>
         internal static string FormatViewComponent_SyncMethod_CannotReturnTask(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_SyncMethod_CannotReturnTask"), p0, p1, p2);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_SyncMethod_CannotReturnTask"), p0, p1, p2);
 
         /// <summary>
         /// Method '{0}' of view component '{1}' should be declared to return a value.
         /// </summary>
         internal static string ViewComponent_SyncMethod_ShouldReturnValue
         {
-            get { return GetString("ViewComponent_SyncMethod_ShouldReturnValue"); }
+            get => GetString("ViewComponent_SyncMethod_ShouldReturnValue");
         }
 
         /// <summary>
         /// Method '{0}' of view component '{1}' should be declared to return a value.
         /// </summary>
         internal static string FormatViewComponent_SyncMethod_ShouldReturnValue(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_SyncMethod_ShouldReturnValue"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_SyncMethod_ShouldReturnValue"), p0, p1);
 
         private static string GetString(string name, params string[] formatterNames)
         {

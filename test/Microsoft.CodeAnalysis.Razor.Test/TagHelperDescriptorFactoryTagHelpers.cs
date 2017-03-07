@@ -424,7 +424,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces.Test
     [HtmlTargetElement("a")]
     [HtmlTargetElement("p")]
     [OutputElementHint("div")]
-    public class MulitpleDescriptorTagHelperWithOutputElementHint : TagHelper
+    public class MultipleDescriptorTagHelperWithOutputElementHint : TagHelper
     {
     }
 

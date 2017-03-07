@@ -117,41 +117,14 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
-    <value>{0} cannot be null or an empty string.</value>
-  </data>
-  <data name="HtmlTargetElementAttribute_InvalidName" xml:space="preserve">
-    <value>Tag helpers cannot target {0} name '{1}' because it contains a '{2}' character.</value>
-  </data>
-  <data name="HtmlTargetElementAttribute_NameCannotBeNullOrWhitespace" xml:space="preserve">
-    <value>{0} name cannot be null or whitespace.</value>
-  </data>
-  <data name="TagHelperDescriptorFactory_Attribute" xml:space="preserve">
-    <value>Attribute</value>
-  </data>
   <data name="TagHelperDescriptorFactory_CouldNotFindMatchingEndBrace" xml:space="preserve">
     <value>Could not find matching ']' for required attribute '{0}'.</value>
   </data>
-  <data name="TagHelperDescriptorFactory_InvalidAttributeNameAttribute" xml:space="preserve">
-    <value>Invalid tag helper bound property '{0}.{1}'. An '{2}' must not be associated with a property with no public setter unless its type implements '{3}'.</value>
+  <data name="TagHelperDescriptorFactory_InvalidAttributePrefixNotNull" xml:space="preserve">
+    <value>Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must be null unless property type implements '{4}'.</value>
   </data>
   <data name="TagHelperDescriptorFactory_InvalidAttributeNameNotNullOrEmpty" xml:space="preserve">
     <value>Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must be null or empty if property has no public setter.</value>
-  </data>
-  <data name="TagHelperDescriptorFactory_InvalidAttributeNameNullOrEmpty" xml:space="preserve">
-    <value>Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with a null or empty name.</value>
-  </data>
-  <data name="TagHelperDescriptorFactory_InvalidAttributeNameOrPrefixCharacter" xml:space="preserve">
-    <value>Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with {2} '{3}' because {2} contains a '{4}' character.</value>
-  </data>
-  <data name="TagHelperDescriptorFactory_InvalidAttributeNameOrPrefixStart" xml:space="preserve">
-    <value>Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with {2} '{3}' because {2} starts with '{4}'.</value>
-  </data>
-  <data name="TagHelperDescriptorFactory_InvalidAttributeNameOrPrefixWhitespace" xml:space="preserve">
-    <value>Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with a whitespace {2}.</value>
-  </data>
-  <data name="TagHelperDescriptorFactory_InvalidAttributePrefixNotNull" xml:space="preserve">
-    <value>Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must be null unless property type implements '{4}'.</value>
   </data>
   <data name="TagHelperDescriptorFactory_InvalidAttributePrefixNull" xml:space="preserve">
     <value>Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must not be null if property has no public setter and its type implements '{4}'.</value>
@@ -165,25 +138,7 @@
   <data name="TagHelperDescriptorFactory_InvalidRequiredAttributeOperator" xml:space="preserve">
     <value>Invalid character '{0}' in required attribute '{1}'. Expected supported CSS operator or ']'.</value>
   </data>
-  <data name="TagHelperDescriptorFactory_InvalidRestrictChildrenAttributeName" xml:space="preserve">
-    <value>Invalid '{0}' tag name '{1}' for tag helper '{2}'. Tag helpers cannot restrict child elements that contain a '{3}' character.</value>
-  </data>
-  <data name="TagHelperDescriptorFactory_InvalidRestrictChildrenAttributeNameNullWhitespace" xml:space="preserve">
-    <value>Invalid '{0}' tag name for tag helper '{1}'. Name cannot be null or whitespace.</value>
-  </data>
-  <data name="TagHelperDescriptorFactory_Name" xml:space="preserve">
-    <value>name</value>
-  </data>
-  <data name="TagHelperDescriptorFactory_ParentTag" xml:space="preserve">
-    <value>Parent Tag</value>
-  </data>
   <data name="TagHelperDescriptorFactory_PartialRequiredAttributeOperator" xml:space="preserve">
     <value>Required attribute '{0}' has a partial CSS operator. '{1}' must be followed by an equals.</value>
-  </data>
-  <data name="TagHelperDescriptorFactory_Prefix" xml:space="preserve">
-    <value>prefix</value>
-  </data>
-  <data name="TagHelperDescriptorFactory_Tag" xml:space="preserve">
-    <value>Tag</value>
   </data>
 </root>

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             : base(source.Type, source.Children, source.ChunkGenerator)
         {
             TagName = source.TagName;
-            Descriptors = source.Descriptors;
+            Binding = source.BindingResult;
             Attributes = new List<TagHelperAttributeNode>(source.Attributes);
             _start = source.Start;
             TagMode = source.TagMode;
@@ -61,9 +61,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         public TagMode TagMode { get; }
 
         /// <summary>
-        /// <see cref="TagHelperDescriptor"/>s for the HTML element.
+        /// <see cref="TagHelperDescriptor"/> bindings for the HTML element.
         /// </summary>
-        public IEnumerable<TagHelperDescriptor> Descriptors { get; }
+        public TagHelperBinding Binding { get; }
 
         /// <summary>
         /// The HTML attributes.

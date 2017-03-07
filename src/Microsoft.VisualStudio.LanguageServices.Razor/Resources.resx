@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="RazorDiagnosticJsonConverter_UnsupportedRazorDiagnosticType" xml:space="preserve">
+    <value>Deserialization of {0} type '{1}' is not supported.</value>
+  </data>
   <data name="UnexpectedException" xml:space="preserve">
     <value>An unexpected exception occurred when invoking '{0}.{1}' on the Razor language service.</value>
   </data>

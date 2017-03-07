@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             {
                 var phase = engine.Phases[i];
                 phase.Execute(codeDocument);
-                
+
                 if (phase is IRazorDocumentClassifierPhase)
                 {
                     break;

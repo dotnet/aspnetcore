@@ -32,8 +32,11 @@ namespace Microsoft.CodeAnalysis.Razor
 
             foreach (var type in types)
             {
-                var descriptors = factory.CreateDescriptors(type, errors);
-                results.AddRange(descriptors);
+                var descriptor = factory.CreateDescriptor(type);
+                if (descriptor != null)
+                {
+                    results.Add(descriptor);
+                }
             }
         }
 
@@ -52,7 +55,10 @@ namespace Microsoft.CodeAnalysis.Razor
                 {
                     var descriptor = factory.CreateDescriptor(type);
 
-                    results.Add(descriptor);
+                    if (descriptor != null)
+                    {
+                        results.Add(descriptor);
+                    }
                 }
                 catch (Exception ex)
                 {

@@ -37,9 +37,14 @@ namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
         /// </remarks>
         public virtual bool Equals(TagHelperDescriptor descriptorX, TagHelperDescriptor descriptorY)
         {
-            if (descriptorX == descriptorY)
+            if (object.ReferenceEquals(descriptorX, descriptorY))
             {
                 return true;
+            }
+
+            if (descriptorX == null ^ descriptorY == null)
+            {
+                return false;
             }
 
             return descriptorX != null &&

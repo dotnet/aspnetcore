@@ -9,6 +9,28 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 {
     public static class RazorCodeDocumentExtensions
     {
+        private static object TagHelperPrefixKey = new object();
+
+        public static string GetTagHelperPrefix(this RazorCodeDocument document)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            return document.Items[TagHelperPrefixKey] as string;
+        }
+
+        public static void SetTagHelperPrefix(this RazorCodeDocument document, string tagHelperPrefix)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            document.Items[TagHelperPrefixKey] = tagHelperPrefix;
+        }
+
         public static RazorSyntaxTree GetSyntaxTree(this RazorCodeDocument document)
         {
             if (document == null)

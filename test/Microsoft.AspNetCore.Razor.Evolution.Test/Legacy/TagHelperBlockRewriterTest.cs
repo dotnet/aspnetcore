@@ -111,54 +111,44 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
             // Arrange
             var descriptors = new[]
             {
-                new TagHelperDescriptor
-                {
-                    TagName = "*",
-                    TypeName = "CatchAllTagHelper",
-                    AssemblyName = "SomeAssembly",
-                    Attributes = new[]
-                    {
-                        new TagHelperAttributeDescriptor
-                        {
-                            Name = "[item]",
-                            PropertyName = "ListItems",
-                            TypeName = typeof(List<string>).FullName
-                        },
-                        new TagHelperAttributeDescriptor
-                        {
-                            Name = "[(item)]",
-                            PropertyName = "ArrayItems",
-                            TypeName = typeof(string[]).FullName
-                        },
-                        new TagHelperAttributeDescriptor
-                        {
-                            Name = "(click)",
-                            PropertyName = "Event1",
-                            TypeName = typeof(Action).FullName
-                        },
-                        new TagHelperAttributeDescriptor
-                        {
-                            Name = "(^click)",
-                            PropertyName = "Event2",
-                            TypeName = typeof(Action).FullName
-                        },
-                        new TagHelperAttributeDescriptor
-                        {
-                            Name = "*something",
-                            PropertyName = "StringProperty1",
-                            TypeName = typeof(string).FullName
-                        },
-                        new TagHelperAttributeDescriptor
-                        {
-                            Name = "#local",
-                            PropertyName = "StringProperty2",
-                            TypeName = typeof(string).FullName
-                        },
-                    },
-                    RequiredAttributes = new[] { new TagHelperRequiredAttributeDescriptor { Name = "bound" } },
-                },
+                ITagHelperDescriptorBuilder.Create("CatchAllTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => 
+                        rule
+                        .RequireTagName("*")
+                        .RequireAttribute(attribute => attribute.Name("bound")))
+                    .BindAttribute(attribute => 
+                        attribute
+                        .Name("[item]")
+                        .PropertyName("ListItems")
+                        .TypeName(typeof(List<string>).Namespace + "List<System.String>"))
+                    .BindAttribute(attribute =>
+                        attribute
+                        .Name("[(item)]")
+                        .PropertyName("ArrayItems")
+                        .TypeName(typeof(string[]).Namespace + "System.String[]"))
+                    .BindAttribute(attribute =>
+                        attribute
+                        .Name("(click)")
+                        .PropertyName("Event1")
+                        .TypeName(typeof(Action).FullName))
+                    .BindAttribute(attribute =>
+                        attribute
+                        .Name("(^click)")
+                        .PropertyName("Event2")
+                        .TypeName(typeof(Action).FullName))
+                    .BindAttribute(attribute =>
+                        attribute
+                        .Name("*something")
+                        .PropertyName("StringProperty1")
+                        .TypeName(typeof(string).FullName))
+                    .BindAttribute(attribute =>
+                        attribute
+                        .Name("#local")
+                        .PropertyName("StringProperty2")
+                        .TypeName(typeof(string).FullName))
+                    .Build()
             };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
@@ -225,16 +215,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             // Arrange
             var descriptors = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "input",
-                        TypeName = "InputTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        TagStructure = TagStructure.WithoutEndTag,
-                    }
-                };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            {
+                ITagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => 
+                        rule
+                        .RequireTagName("input")
+                        .RequireTagStructure(TagStructure.WithoutEndTag))
+                    .Build()
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
@@ -317,31 +306,29 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         [MemberData(nameof(TagStructureCompatibilityData))]
         public void Rewrite_AllowsCompatibleTagStructures(
             string documentContent,
-            int structure1,
-            int structure2,
+            TagStructure structure1,
+            TagStructure structure2,
             object expectedOutput)
         {
             // Arrange
             var factory = new SpanFactory();
             var blockFactory = new BlockFactory(factory);
             var descriptors = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "input",
-                        TypeName = "InputTagHelper1",
-                        AssemblyName = "SomeAssembly",
-                        TagStructure = (TagStructure)structure1
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "input",
-                        TypeName = "InputTagHelper2",
-                        AssemblyName = "SomeAssembly",
-                        TagStructure = (TagStructure)structure2
-                    }
-                };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            {
+                ITagHelperDescriptorBuilder.Create("InputTagHelper1", "SomeAssembly")
+                    .TagMatchingRule(rule => 
+                        rule
+                        .RequireTagName("input")
+                        .RequireTagStructure(structure1))
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("InputTagHelper2", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("input")
+                        .RequireTagStructure(structure2))
+                    .Build()
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
@@ -1199,43 +1186,33 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
 
         [Theory]
         [MemberData(nameof(CodeTagHelperAttributesData))]
-        public void TagHelperParseTreeRewriter_CreatesMarkupCodeSpansForNonStringTagHelperAttributes(
+        public void Rewrite_CreatesMarkupCodeSpansForNonStringTagHelperAttributes(
             string documentContent,
             object expectedOutput)
         {
             // Arrange
             var descriptors = new TagHelperDescriptor[]
             {
-                new TagHelperDescriptor
-                {
-                    TagName = "person",
-                    TypeName = "PersonTagHelper",
-                    AssemblyName = "personAssembly",
-                    Attributes = new[]
-                    {
-                        new TagHelperAttributeDescriptor
-                        {
-                            Name = "age",
-                            PropertyName = "Age",
-                            TypeName = typeof(int).FullName
-                        },
-                        new TagHelperAttributeDescriptor
-                        {
-                            Name = "birthday",
-                            PropertyName = "BirthDay",
-                            TypeName = typeof(DateTime).FullName
-                        },
-                        new TagHelperAttributeDescriptor
-                        {
-                            Name = "name",
-                            PropertyName = "Name",
-                            TypeName = typeof(string).FullName,
-                            IsStringProperty = true
-                        }
-                    }
-                }
+                ITagHelperDescriptorBuilder.Create("PersonTagHelper", "personAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("person"))
+                    .BindAttribute(attribute =>
+                        attribute
+                        .Name("age")
+                        .PropertyName("Age")
+                        .TypeName(typeof(int).FullName))
+                    .BindAttribute(attribute =>
+                        attribute
+                        .Name("birthday")
+                        .PropertyName("BirthDay")
+                        .TypeName(typeof(DateTime).FullName))
+                    .BindAttribute(attribute =>
+                        attribute
+                        .Name("name")
+                        .PropertyName("Name")
+                        .TypeName(typeof(string).FullName))
+                    .Build()
             };
-            var providerContext = new TagHelperDescriptorProvider(descriptors);
+            var providerContext = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(providerContext,
@@ -2253,31 +2230,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             // Arrange
             var descriptors = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "myth",
-                        TypeName = "mythTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        Attributes = new[]
-                        {
-                            new TagHelperAttributeDescriptor
-                            {
-                                Name = "bound",
-                                PropertyName = "Bound",
-                                TypeName = typeof(bool).FullName
-                            },
-                            new TagHelperAttributeDescriptor
-                            {
-                                Name = "name",
-                                PropertyName = "Name",
-                                TypeName = typeof(string).FullName,
-                                IsStringProperty = true
-                            }
-                        }
-                    }
-                };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            {
+                ITagHelperDescriptorBuilder.Create("mythTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("myth"))
+                    .BindAttribute(attribute => 
+                        attribute
+                        .Name("bound")
+                        .PropertyName("Bound")
+                        .TypeName(typeof(bool).FullName))
+                    .BindAttribute(attribute =>
+                        attribute
+                        .Name("name")
+                        .PropertyName("Name")
+                        .TypeName(typeof(string).FullName))
+                    .Build()
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
@@ -3002,7 +2970,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         new[]
                         {
                             new RazorError(
-                                string.Format(errorFormat, "int-dictionary", "input", typeof(IDictionary<string, int>).FullName),
+                                string.Format(errorFormat, "int-dictionary", "input", typeof(IDictionary<string, int>).Namespace + ".IDictionary<System.String, System.Int32>"),
                                 absoluteIndex: 7,
                                 lineIndex: 0,
                                 columnIndex: 7,
@@ -3022,7 +2990,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
                         new[]
                         {
                             new RazorError(
-                                string.Format(errorFormat, "string-dictionary", "input", typeof(IDictionary<string, string>).FullName),
+                                string.Format(errorFormat, "string-dictionary", "input", typeof(IDictionary<string, string>).Namespace + ".IDictionary<System.String, System.String>"),
                                 absoluteIndex: 7,
                                 lineIndex: 0,
                                 columnIndex: 7,
@@ -3911,126 +3879,63 @@ namespace Microsoft.AspNetCore.Razor.Evolution.Legacy
         {
             // Arrange
             var descriptors = new TagHelperDescriptor[]
-                {
-                    new TagHelperDescriptor
-                    {
-                        TagName = "input",
-                        TypeName = "InputTagHelper1",
-                        AssemblyName = "SomeAssembly",
-                        Attributes = new[]
-                        {
-                            new TagHelperAttributeDescriptor
-                            {
-                                Name = "bound-required-string",
-                                PropertyName = "BoundRequiredString",
-                                TypeName = typeof(string).FullName,
-                                IsStringProperty = true
-                            }
-                        },
-                        RequiredAttributes = new[]
-                        {
-                            new TagHelperRequiredAttributeDescriptor { Name = "unbound-required" }
-                        }
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "input",
-                        TypeName = "InputTagHelper1",
-                        AssemblyName = "SomeAssembly",
-                        Attributes = new[]
-                        {
-                            new TagHelperAttributeDescriptor
-                            {
-                                Name = "bound-required-string",
-                                PropertyName = "BoundRequiredString",
-                                TypeName = typeof(string).FullName,
-                                IsStringProperty = true
-                            }
-                        },
-                        RequiredAttributes = new[]
-                        {
-                            new TagHelperRequiredAttributeDescriptor { Name = "bound-required-string" }
-                        }
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "input",
-                        TypeName = "InputTagHelper2",
-                        AssemblyName = "SomeAssembly",
-                        Attributes = new[]
-                        {
-                            new TagHelperAttributeDescriptor
-                            {
-                                Name = "bound-required-int",
-                                PropertyName = "BoundRequiredInt",
-                                TypeName = typeof(int).FullName
-                            }
-                        },
-                        RequiredAttributes = new[]
-                        {
-                            new TagHelperRequiredAttributeDescriptor { Name = "bound-required-int" }
-                        }
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "input",
-                        TypeName = "InputTagHelper3",
-                        AssemblyName = "SomeAssembly",
-                        Attributes = new[]
-                        {
-                            new TagHelperAttributeDescriptor
-                            {
-                                Name = "int-dictionary",
-                                PropertyName ="DictionaryOfIntProperty",
-                                TypeName = typeof(IDictionary<string, int>).FullName
-                            },
-                            new TagHelperAttributeDescriptor
-                            {
-                                Name = "string-dictionary",
-                                PropertyName = "DictionaryOfStringProperty",
-                                TypeName = typeof(IDictionary<string, string>).FullName
-                            },
-                            new TagHelperAttributeDescriptor
-                            {
-                                Name = "int-prefix-",
-                                PropertyName = "DictionaryOfIntProperty",
-                                TypeName = typeof(int).FullName,
-                                IsIndexer = true
-                            },
-                            new TagHelperAttributeDescriptor
-                            {
-                                Name = "string-prefix-",
-                                PropertyName = "DictionaryOfStringProperty",
-                                TypeName = typeof(string).FullName,
-                                IsIndexer = true,
-                                IsStringProperty = true
-                            }
-                        }
-                    },
-                    new TagHelperDescriptor
-                    {
-                        TagName = "p",
-                        TypeName = "PTagHelper",
-                        AssemblyName = "SomeAssembly",
-                        Attributes = new[]
-                        {
-                            new TagHelperAttributeDescriptor
-                            {
-                                Name = "bound-string",
-                                PropertyName = "BoundRequiredString",
-                                TypeName = typeof(string).FullName,
-                                IsStringProperty = true
-                            },
-                            new TagHelperAttributeDescriptor
-                            {
-                                Name = "bound-int",
-                                PropertyName = "BoundRequiredString",
-                                TypeName = typeof(int).FullName
-                            }
-                        }
-                    }
-                };
-            var descriptorProvider = new TagHelperDescriptorProvider(descriptors);
+            {
+                ITagHelperDescriptorBuilder.Create("InputTagHelper1", "SomeAssembly")
+                    .TagMatchingRule(rule => 
+                        rule
+                        .RequireTagName("input")
+                        .RequireAttribute(attribute => attribute.Name("unbound-required")))
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("input")
+                        .RequireAttribute(attribute => attribute.Name("bound-required-string")))
+                    .BindAttribute(attribute =>
+                        attribute
+                        .Name("bound-required-string")
+                        .PropertyName("BoundRequiredString")
+                        .TypeName(typeof(string).FullName))
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("InputTagHelper2", "SomeAssembly")
+                    .TagMatchingRule(rule =>
+                        rule
+                        .RequireTagName("input")
+                        .RequireAttribute(attribute => attribute.Name("bound-required-int")))
+                    .BindAttribute(attribute =>
+                        attribute
+                        .Name("bound-required-int")
+                        .PropertyName("BoundRequiredInt")
+                        .TypeName(typeof(int).FullName))
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("InputTagHelper3", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("input"))
+                    .BindAttribute(attribute =>
+                        attribute
+                        .Name("int-dictionary")
+                        .PropertyName("DictionaryOfIntProperty")
+                        .TypeName(typeof(IDictionary<string, int>).Namespace + ".IDictionary<System.String, System.Int32>")
+                        .AsDictionary("int-prefix-", typeof(int).FullName))
+                    .BindAttribute(attribute =>
+                        attribute
+                        .Name("string-dictionary")
+                        .PropertyName("DictionaryOfStringProperty")
+                        .TypeName(typeof(IDictionary<string, string>).Namespace + ".IDictionary<System.String, System.String>")
+                        .AsDictionary("string-prefix-", typeof(string).FullName))
+                    .Build(),
+                ITagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                    .TagMatchingRule(rule => rule.RequireTagName("p"))
+                    .BindAttribute(attribute =>
+                        attribute
+                        .Name("bound-string")
+                        .PropertyName("BoundRequiredString")
+                        .TypeName(typeof(string).FullName))
+                    .BindAttribute(attribute =>
+                        attribute
+                        .Name("bound-int")
+                        .PropertyName("BoundRequiredString")
+                        .TypeName(typeof(int).FullName))
+                    .Build(),
+            };
+            var descriptorProvider = new TagHelperDescriptorProvider(null, descriptors);
 
             // Act & Assert
             EvaluateData(descriptorProvider, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);

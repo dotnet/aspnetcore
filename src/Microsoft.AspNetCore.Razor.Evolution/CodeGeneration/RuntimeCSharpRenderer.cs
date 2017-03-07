@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
         public override void VisitSetPreallocatedTagHelperProperty(SetPreallocatedTagHelperPropertyIRNode node)
         {
             var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
-            var propertyValueAccessor = GetTagHelperPropertyAccessor(tagHelperVariableName, node.AttributeName, node.Descriptor);
+            var propertyValueAccessor = GetTagHelperPropertyAccessor(node.IsIndexerNameMatch, tagHelperVariableName, node.AttributeName, node.Descriptor);
             var attributeValueAccessor = $"{node.VariableName}.Value" /* ORIGINAL: TagHelperAttributeValuePropertyName */;
             Context.Writer
                 .WriteStartAssignment(propertyValueAccessor)
@@ -391,17 +391,18 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
         {
             var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
             var tagHelperRenderingContext = Context.TagHelperRenderingContext;
+            var propertyName = node.Descriptor.Metadata[ITagHelperBoundAttributeDescriptorBuilder.PropertyNameKey];
 
             // Ensure that the property we're trying to set has initialized its dictionary bound properties.
-            if (node.Descriptor.IsIndexer &&
-                tagHelperRenderingContext.VerifiedPropertyDictionaries.Add(node.Descriptor.PropertyName))
+            if (node.IsIndexerNameMatch &&
+                tagHelperRenderingContext.VerifiedPropertyDictionaries.Add(propertyName))
             {
                 // Throw a reasonable Exception at runtime if the dictionary property is null.
                 Context.Writer
                     .Write("if (")
                     .Write(tagHelperVariableName)
                     .Write(".")
-                    .Write(node.Descriptor.PropertyName)
+                    .Write(propertyName)
                     .WriteLine(" == null)");
                 using (Context.Writer.BuildScope())
                 {
@@ -415,13 +416,13 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                         .WriteParameterSeparator()
                         .WriteStringLiteral(node.TagHelperTypeName)
                         .WriteParameterSeparator()
-                        .WriteStringLiteral(node.Descriptor.PropertyName)
+                        .WriteStringLiteral(propertyName)
                         .WriteEndMethodInvocation(endLine: false)   // End of method call
                         .WriteEndMethodInvocation();   // End of new expression / throw statement
                 }
             }
 
-            var propertyValueAccessor = GetTagHelperPropertyAccessor(tagHelperVariableName, node.AttributeName, node.Descriptor);
+            var propertyValueAccessor = GetTagHelperPropertyAccessor(node.IsIndexerNameMatch, tagHelperVariableName, node.AttributeName, node.Descriptor);
 
             string previousValueAccessor;
             if (tagHelperRenderingContext.RenderedBoundAttributes.TryGetValue(node.AttributeName, out previousValueAccessor))
@@ -438,7 +439,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 tagHelperRenderingContext.RenderedBoundAttributes[node.AttributeName] = propertyValueAccessor;
             }
 
-            if (node.Descriptor.IsStringProperty)
+            if (node.Descriptor.IsStringProperty || (node.IsIndexerNameMatch && node.Descriptor.IsIndexerStringProperty))
             {
                 Context.Writer.WriteMethodInvocation("BeginWriteTagHelperAttribute" /* ORIGINAL: BeginWriteTagHelperAttributeMethodName */);
 
@@ -683,8 +684,11 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
             else if (node is TemplateIRNode)
             {
                 var attributeValueNode = (SetTagHelperPropertyIRNode)node.Parent;
+                var expectedTypeName = attributeValueNode.IsIndexerNameMatch ? 
+                    attributeValueNode.Descriptor.IndexerTypeName : 
+                    attributeValueNode.Descriptor.TypeName;
                 var error = new RazorError(
-                    LegacyResources.FormatTagHelpers_InlineMarkupBlocks_NotSupported_InAttributes(attributeValueNode.Descriptor.TypeName),
+                    LegacyResources.FormatTagHelpers_InlineMarkupBlocks_NotSupported_InAttributes(expectedTypeName),
                     new SourceLocation(documentLocation.AbsoluteIndex, documentLocation.CharacterIndex, documentLocation.Length),
                     documentLocation.Length);
                 Context.Diagnostics.Add(RazorDiagnostic.Create(error));

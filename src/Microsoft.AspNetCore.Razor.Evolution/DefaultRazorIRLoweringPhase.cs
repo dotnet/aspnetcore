@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             ThrowForMissingDependency(syntaxTree);
 
             var builder = RazorIRBuilder.Document();
-
             var document = (DocumentIRNode)builder.Current;
+
             document.Options = syntaxTree.Options;
 
             var namespaces = new HashSet<string>();
@@ -56,7 +56,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 }
             }
 
-            var visitor = new MainSourceVisitor(document, builder, namespaces)
+            var tagHelperPrefix = codeDocument.GetTagHelperPrefix();
+            var visitor = new MainSourceVisitor(document, builder, namespaces, tagHelperPrefix)
             {
                 FileName = syntaxTree.Source.FileName,
             };
@@ -220,10 +221,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution
         private class MainSourceVisitor : LoweringVisitor
         {
             private DeclareTagHelperFieldsIRNode _tagHelperFields;
+            private readonly string _tagHelperPrefix;
 
-            public MainSourceVisitor(DocumentIRNode document, RazorIRBuilder builder, HashSet<string> namespaces)
+            public MainSourceVisitor(DocumentIRNode document, RazorIRBuilder builder, HashSet<string> namespaces, string tagHelperPrefix)
                 : base(document, builder, namespaces)
             {
+                _tagHelperPrefix = tagHelperPrefix;
             }
 
             public override void VisitDirectiveToken(DirectiveTokenChunkGenerator chunkGenerator, Span span)
@@ -467,9 +470,9 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 });
 
                 var tagName = tagHelperBlock.TagName;
-                if (tagHelperBlock.Descriptors.First().Prefix != null)
+                if (_tagHelperPrefix != null)
                 {
-                    tagName = tagName.Substring(tagHelperBlock.Descriptors.First().Prefix.Length);
+                    tagName = tagName.Substring(_tagHelperPrefix.Length);
                 }
 
                 _builder.Push(new InitializeTagHelperStructureIRNode()
@@ -482,8 +485,8 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                 _builder.Pop(); // Pop InitializeTagHelperStructureIRNode
 
-                AddTagHelperCreation(tagHelperBlock.Descriptors);
-                AddTagHelperAttributes(tagHelperBlock.Attributes, tagHelperBlock.Descriptors);
+                AddTagHelperCreation(tagHelperBlock.Binding);
+                AddTagHelperAttributes(tagHelperBlock.Attributes, tagHelperBlock.Binding);
                 AddExecuteTagHelpers();
 
                 _builder.Pop(); // Pop TagHelperIRNode
@@ -497,19 +500,22 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                     _document.Children.Add(_tagHelperFields);
                 }
 
-                foreach (var descriptor in block.Descriptors)
+                foreach (var descriptor in block.Binding.Descriptors)
                 {
-                    _tagHelperFields.UsedTagHelperTypeNames.Add(descriptor.TypeName);
+                    var typeName = descriptor.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
+                    _tagHelperFields.UsedTagHelperTypeNames.Add(typeName);
                 }
             }
 
-            private void AddTagHelperCreation(IEnumerable<TagHelperDescriptor> descriptors)
+            private void AddTagHelperCreation(TagHelperBinding tagHelperBinding)
             {
+                var descriptors = tagHelperBinding.Descriptors;
                 foreach (var descriptor in descriptors)
                 {
+                    var typeName = descriptor.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
                     var createTagHelper = new CreateTagHelperIRNode()
                     {
-                        TagHelperTypeName = descriptor.TypeName,
+                        TagHelperTypeName = typeName,
                         Descriptor = descriptor
                     };
 
@@ -517,14 +523,15 @@ namespace Microsoft.AspNetCore.Razor.Evolution
                 }
             }
 
-            private void AddTagHelperAttributes(IList<TagHelperAttributeNode> attributes, IEnumerable<TagHelperDescriptor> descriptors)
+            private void AddTagHelperAttributes(IList<TagHelperAttributeNode> attributes, TagHelperBinding tagHelperBinding)
             {
+                var descriptors = tagHelperBinding.Descriptors;
                 var renderedBoundAttributeNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 foreach (var attribute in attributes)
                 {
                     var attributeValueNode = attribute.Value;
                     var associatedDescriptors = descriptors.Where(descriptor =>
-                        descriptor.Attributes.Any(attributeDescriptor => attributeDescriptor.IsNameMatch(attribute.Name)));
+                        descriptor.BoundAttributes.Any(attributeDescriptor => attributeDescriptor.CanMatchName(attribute.Name)));
 
                     if (associatedDescriptors.Any() && renderedBoundAttributeNames.Add(attribute.Name))
                     {
@@ -537,16 +544,21 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
                         foreach (var associatedDescriptor in associatedDescriptors)
                         {
-                            var associatedAttributeDescriptor = associatedDescriptor.Attributes.First(
-                                attributeDescriptor => attributeDescriptor.IsNameMatch(attribute.Name));
+                            var associatedAttributeDescriptor = associatedDescriptor.BoundAttributes.First(
+                                attributeDescriptor => attributeDescriptor.CanMatchName(attribute.Name));
+                            var tagHelperTypeName = associatedDescriptor.Metadata[ITagHelperDescriptorBuilder.TypeNameKey];
+                            var attributePropertyName = associatedAttributeDescriptor.Metadata[ITagHelperBoundAttributeDescriptorBuilder.PropertyNameKey];
+
                             var setTagHelperProperty = new SetTagHelperPropertyIRNode()
                             {
-                                PropertyName = associatedAttributeDescriptor.PropertyName,
+                                PropertyName = attributePropertyName,
                                 AttributeName = attribute.Name,
-                                TagHelperTypeName = associatedDescriptor.TypeName,
+                                TagHelperTypeName = tagHelperTypeName,
                                 Descriptor = associatedAttributeDescriptor,
+                                Binding = tagHelperBinding,
                                 ValueStyle = attribute.ValueStyle,
-                                Source = BuildSourceSpanFromNode(attributeValueNode)
+                                Source = BuildSourceSpanFromNode(attributeValueNode),
+                                IsIndexerNameMatch = associatedAttributeDescriptor.IsIndexerNameMatch(attribute.Name),
                             };
 
                             _builder.Push(setTagHelperProperty);

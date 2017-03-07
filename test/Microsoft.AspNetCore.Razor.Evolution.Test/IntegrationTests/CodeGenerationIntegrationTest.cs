@@ -666,7 +666,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         public void BasicTagHelpers_Prefixed_Runtime()
         {
             // Arrange, Act & Assert
-            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.PrefixedPAndInputTagHelperDescriptors);
+            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors, tagHelperPrefix: "THS");
         }
 
         [Fact]
@@ -688,13 +688,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         {
             // Arrange, Act & Assert
             RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
-        }
-
-        [Fact]
-        public void DuplicateTargetTagHelper_Runtime()
-        {
-            // Arrange, Act & Assert
-            RunRuntimeTagHelpersTest(TestTagHelperDescriptors.DuplicateTargetTagHelperDescriptors);
         }
 
         [Fact]
@@ -1480,7 +1473,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         public void BasicTagHelpers_Prefixed_DesignTime()
         {
             // Arrange, Act & Assert
-            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.PrefixedPAndInputTagHelperDescriptors);
+            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors, tagHelperPrefix: "THS");
         }
 
         [Fact]
@@ -1488,13 +1481,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
         {
             // Arrange, Act & Assert
             RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DefaultPAndInputTagHelperDescriptors);
-        }
-
-        [Fact]
-        public void DuplicateTargetTagHelper_DesignTime()
-        {
-            // Arrange, Act & Assert
-            RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.DuplicateTargetTagHelperDescriptors);
         }
 
         [Fact]
@@ -1616,7 +1602,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             return codeDocument;
         }
 
-        private void RunRuntimeTagHelpersTest(IEnumerable<TagHelperDescriptor> descriptors)
+        private void RunRuntimeTagHelpersTest(IEnumerable<TagHelperDescriptor> descriptors, string tagHelperPrefix = null)
         {
             // Arrange
             var engine = RazorEngine.Create(
@@ -1626,6 +1612,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     builder.AddTagHelpers(descriptors);
                 });
             var document = CreateCodeDocument();
+            if (tagHelperPrefix != null)
+            {
+                document.SetTagHelperPrefix(tagHelperPrefix);
+            }
 
             // Act
             engine.Process(document);
@@ -1635,7 +1625,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
         }
 
-        private void RunDesignTimeTagHelpersTest(IEnumerable<TagHelperDescriptor> descriptors)
+        private void RunDesignTimeTagHelpersTest(IEnumerable<TagHelperDescriptor> descriptors, string tagHelperPrefix = null)
         {
             // Arrange
             var engine = RazorEngine.CreateDesignTime(
@@ -1645,6 +1635,10 @@ namespace Microsoft.AspNetCore.Razor.Evolution.IntegrationTests
                     builder.AddTagHelpers(descriptors);
                 });
             var document = CreateCodeDocument();
+            if (tagHelperPrefix != null)
+            {
+                document.SetTagHelperPrefix(tagHelperPrefix);
+            }
 
             // Act
             engine.Process(document);

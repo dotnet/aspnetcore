@@ -21,9 +21,10 @@ namespace Microsoft.CodeAnalysis.Razor
         public override TagHelperResolutionResult GetTagHelpers(Compilation compilation, IEnumerable<string> assemblyNameFilters)
         {
             var descriptors = new List<TagHelperDescriptor>();
-            var errors = new ErrorSink();
 
-            VisitTagHelpers(compilation, assemblyNameFilters, descriptors, errors);
+            VisitTagHelpers(compilation, assemblyNameFilters, descriptors);
+
+            var errors = new ErrorSink();
             VisitViewComponents(compilation, assemblyNameFilters, descriptors, errors);
 
             var diagnostics = new List<RazorDiagnostic>();
@@ -37,7 +38,7 @@ namespace Microsoft.CodeAnalysis.Razor
             return resolutionResult;
         }
 
-        private void VisitTagHelpers(Compilation compilation, IEnumerable<string> assemblyNameFilters, List<TagHelperDescriptor> results, ErrorSink errors)
+        private void VisitTagHelpers(Compilation compilation, IEnumerable<string> assemblyNameFilters, List<TagHelperDescriptor> results)
         {
             var types = new List<INamedTypeSymbol>();
             var visitor = TagHelperTypeVisitor.Create(compilation, types);
@@ -50,8 +51,12 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 if (assemblyNameFilters.Contains(type.ContainingAssembly.Identity.Name))
                 {
-                    var descriptors = factory.CreateDescriptors(type, errors);
-                    results.AddRange(descriptors);
+                    var descriptor = factory.CreateDescriptor(type);
+
+                    if (descriptor != null)
+                    {
+                        results.Add(descriptor);
+                    }
                 }
             }
         }

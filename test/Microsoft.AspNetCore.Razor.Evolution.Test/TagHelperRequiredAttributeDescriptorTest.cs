@@ -9,144 +9,127 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             get
             {
                 // requiredAttributeDescriptor, attributeName, attributeValue, expectedResult
-                return new TheoryData<TagHelperRequiredAttributeDescriptor, string, string, bool>
+                return new TheoryData<RequiredAttributeDescriptor, string, string, bool>
                 {
                     {
-                        new TagHelperRequiredAttributeDescriptor
-                        {
-                            Name = "key"
-                        },
+                        RequiredAttributeDescriptorBuilder.Create().Name("key").Build(),
                         "KeY",
                         "value",
                         true
                     },
                     {
-                        new TagHelperRequiredAttributeDescriptor
-                        {
-                            Name = "key"
-                        },
+                        RequiredAttributeDescriptorBuilder.Create().Name("key").Build(),
                         "keys",
                         "value",
                         false
                     },
                     {
-                        new TagHelperRequiredAttributeDescriptor
-                        {
-                            Name = "route-",
-                            NameComparison = TagHelperRequiredAttributeNameComparison.PrefixMatch,
-                        },
+                        RequiredAttributeDescriptorBuilder.Create()
+                            .Name("route-")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch)
+                            .Build(),
                         "ROUTE-area",
                         "manage",
                         true
                     },
                     {
-                        new TagHelperRequiredAttributeDescriptor
-                        {
-                            Name = "route-",
-                            NameComparison = TagHelperRequiredAttributeNameComparison.PrefixMatch,
-                        },
+                        RequiredAttributeDescriptorBuilder.Create()
+                            .Name("route-")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch)
+                            .Build(),
                         "routearea",
                         "manage",
                         false
                     },
                     {
-                        new TagHelperRequiredAttributeDescriptor
-                        {
-                            Name = "route-",
-                            NameComparison = TagHelperRequiredAttributeNameComparison.PrefixMatch,
-                        },
+                        RequiredAttributeDescriptorBuilder.Create()
+                            .Name("route-")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch)
+                            .Build(),
                         "route-",
                         "manage",
                         false
                     },
                     {
-                        new TagHelperRequiredAttributeDescriptor
-                        {
-                            Name = "key",
-                            NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch,
-                        },
+                        RequiredAttributeDescriptorBuilder.Create()
+                            .Name("key")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
+                            .Build(),
                         "KeY",
                         "value",
                         true
                     },
                     {
-                        new TagHelperRequiredAttributeDescriptor
-                        {
-                            Name = "key",
-                            NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch,
-                        },
+                        RequiredAttributeDescriptorBuilder.Create()
+                            .Name("key")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
+                            .Build(),
                         "keys",
                         "value",
                         false
                     },
                     {
-                        new TagHelperRequiredAttributeDescriptor
-                        {
-                            Name = "key",
-                            NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch,
-                            Value = "value",
-                            ValueComparison = TagHelperRequiredAttributeValueComparison.FullMatch,
-                        },
+                        RequiredAttributeDescriptorBuilder.Create()
+                            .Name("key")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
+                            .Value("value")
+                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.FullMatch)
+                            .Build(),
                         "key",
                         "value",
                         true
                     },
                     {
-                        new TagHelperRequiredAttributeDescriptor
-                        {
-                            Name = "key",
-                            NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch,
-                            Value = "value",
-                            ValueComparison = TagHelperRequiredAttributeValueComparison.FullMatch,
-                        },
+                        RequiredAttributeDescriptorBuilder.Create()
+                            .Name("key")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
+                            .Value("value")
+                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.FullMatch)
+                            .Build(),
                         "key",
                         "Value",
                         false
                     },
                     {
-                        new TagHelperRequiredAttributeDescriptor
-                        {
-                            Name = "class",
-                            NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch,
-                            Value = "btn",
-                            ValueComparison = TagHelperRequiredAttributeValueComparison.PrefixMatch,
-                        },
+                        RequiredAttributeDescriptorBuilder.Create()
+                            .Name("class")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
+                            .Value("btn")
+                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.PrefixMatch)
+                            .Build(),
                         "class",
                         "btn btn-success",
                         true
                     },
                     {
-                        new TagHelperRequiredAttributeDescriptor
-                        {
-                            Name = "class",
-                            NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch,
-                            Value = "btn",
-                            ValueComparison = TagHelperRequiredAttributeValueComparison.PrefixMatch,
-                        },
+                        RequiredAttributeDescriptorBuilder.Create()
+                            .Name("class")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
+                            .Value("btn")
+                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.PrefixMatch)
+                            .Build(),
                         "class",
                         "BTN btn-success",
                         false
                     },
                     {
-                        new TagHelperRequiredAttributeDescriptor
-                        {
-                            Name = "href",
-                            NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch,
-                            Value = "#navigate",
-                            ValueComparison = TagHelperRequiredAttributeValueComparison.SuffixMatch,
-                        },
+                        RequiredAttributeDescriptorBuilder.Create()
+                            .Name("href")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
+                            .Value("#navigate")
+                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.SuffixMatch)
+                            .Build(),
                         "href",
                         "/home/index#navigate",
                         true
                     },
                     {
-                        new TagHelperRequiredAttributeDescriptor
-                        {
-                            Name = "href",
-                            NameComparison = TagHelperRequiredAttributeNameComparison.FullMatch,
-                            Value = "#navigate",
-                            ValueComparison = TagHelperRequiredAttributeValueComparison.SuffixMatch,
-                        },
+                        RequiredAttributeDescriptorBuilder.Create()
+                            .Name("href")
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
+                            .Value("#navigate")
+                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.SuffixMatch)
+                            .Build(),
                         "href",
                         "/home/index#NAVigate",
                         false
@@ -164,7 +147,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution
             bool expectedResult)
         {
             // Act
-            var result = ((TagHelperRequiredAttributeDescriptor)requiredAttributeDescriptor).IsMatch(attributeName, attributeValue);
+            var result = ((RequiredAttributeDescriptor)requiredAttributeDescriptor).IsMatch(attributeName, attributeValue);
 
             // Assert
             Assert.Equal(expectedResult, result);
