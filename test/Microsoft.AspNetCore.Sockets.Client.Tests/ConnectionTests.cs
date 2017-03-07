@@ -364,7 +364,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                     var content = string.Empty;
                     if (request.RequestUri.AbsolutePath.EndsWith("/poll"))
                     {
-                        content = "42";
+                        content = "T2:T:42;";
                     }
                     return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(content) };
                 });

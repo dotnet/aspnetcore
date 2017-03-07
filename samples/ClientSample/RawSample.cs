@@ -2,13 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Sockets;
 
 namespace ClientSample
 {
@@ -16,6 +18,14 @@ namespace ClientSample
     {
         public static async Task MainAsync(string[] args)
         {
+            if(args.Contains("--debug"))
+            {
+                Console.WriteLine($"Ready for debugger to attach. Process ID: {Process.GetCurrentProcess().Id}");
+                Console.Write("Press ENTER to Continue");
+                Console.ReadLine();
+                args = args.Except(new[] { "--debug" }).ToArray();
+            }
+
             var baseUrl = "http://localhost:5000/chat";
             if (args.Length > 0)
             {

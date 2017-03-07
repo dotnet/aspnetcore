@@ -1,5 +1,6 @@
 import { DataReceived, ErrorHandler } from "./Common"
 import { IHttpClient } from "./HttpClient"
+import * as Formatters from "./Formatters";
 
 export interface ITransport {
     connect(url: string, queryString: string): Promise<void>;
@@ -73,7 +74,7 @@ export class ServerSentEventsTransport implements ITransport {
     private queryString: string;
     private httpClient: IHttpClient;
 
-    constructor(httpClient :IHttpClient) {
+    constructor(httpClient: IHttpClient) {
         this.httpClient = httpClient;
     }
 
@@ -92,7 +93,19 @@ export class ServerSentEventsTransport implements ITransport {
             try {
                 eventSource.onmessage = (e: MessageEvent) => {
                     if (this.onDataReceived) {
-                        this.onDataReceived(e.data);
+                        // Parse the message
+                        let message;
+                        try {
+                            message = Formatters.ServerSentEventsFormat.parse(e.data);
+                        } catch (error) {
+                            if (this.onError) {
+                                this.onError(error);
+                            }
+                            return;
+                        }
+
+                        // TODO: pass the whole message object along
+                        this.onDataReceived(message.content);
                     }
                 };
 
@@ -138,7 +151,7 @@ export class LongPollingTransport implements ITransport {
     private pollXhr: XMLHttpRequest;
     private shouldPoll: boolean;
 
-    constructor(httpClient :IHttpClient) {
+    constructor(httpClient: IHttpClient) {
         this.httpClient = httpClient;
     }
 
@@ -160,7 +173,21 @@ export class LongPollingTransport implements ITransport {
         pollXhr.onload = () => {
             if (pollXhr.status == 200) {
                 if (this.onDataReceived) {
-                    this.onDataReceived(pollXhr.response);
+                    // Parse the messages
+                    let messages;
+                    try {
+                        messages = Formatters.TextMessageFormat.parse(pollXhr.response);
+                    } catch (error) {
+                        if (this.onError) {
+                            this.onError(error);
+                        }
+                        return;
+                    }
+
+                    messages.forEach((message) => {
+                        // TODO: pass the whole message object along
+                        this.onDataReceived(message.content)
+                    });
                 }
                 this.poll(url);
             }

@@ -88,9 +88,10 @@ namespace Microsoft.AspNetCore.Sockets.Formatters.Tests
         public void WriteInvalidMessages()
         {
             var message = new Message(new byte[0], MessageType.Binary, endOfMessage: false);
-            var ex = Assert.Throws<InvalidOperationException>(() =>
+            var ex = Assert.Throws<ArgumentException>(() =>
                 MessageFormatter.TryFormatMessage(message, Span<byte>.Empty, MessageFormat.Binary, out var written));
-            Assert.Equal("Cannot format message where endOfMessage is false using this format", ex.Message);
+            Assert.Equal($"Cannot format message where endOfMessage is false using this format{Environment.NewLine}Parameter name: message", ex.Message);
+            Assert.Equal("message", ex.ParamName);
         }
 
         [Theory]

@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Sockets.Formatters;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Sockets.Transports
@@ -27,43 +29,43 @@ namespace Microsoft.AspNetCore.Sockets.Transports
             context.Response.ContentType = "text/event-stream";
             context.Response.Headers["Cache-Control"] = "no-cache";
             context.Response.Headers["Content-Encoding"] = "identity";
+
             await context.Response.Body.FlushAsync();
+
+            var pipe = context.Response.Body.AsPipelineWriter();
 
             try
             {
                 while (await _application.WaitToReadAsync(token))
                 {
+                    var buffer = pipe.Alloc();
                     while (_application.TryRead(out var message))
                     {
-                        await Send(context, message);
+                        if (!ServerSentEventsMessageFormatter.TryFormatMessage(message, buffer.Memory.Span, out var written))
+                        {
+                            // We need to expand the buffer
+                            // REVIEW: I'm not sure I fully understand the "right" pattern here...
+                            buffer.Ensure(LongPollingTransport.MaxBufferSize);
+
+                            // Try one more time
+                            if (!ServerSentEventsMessageFormatter.TryFormatMessage(message, buffer.Memory.Span, out written))
+                            {
+                                // Message too large
+                                throw new InvalidOperationException($"Message is too large to write. Maximum allowed message size is: {LongPollingTransport.MaxBufferSize}");
+                            }
+                        }
+                        buffer.Advance(written);
+                        buffer.Commit();
+                        buffer = pipe.Alloc();
                     }
+
+                    await buffer.FlushAsync();
                 }
             }
             catch (OperationCanceledException)
             {
                 // Closed connection
             }
-        }
-
-        private async Task Send(HttpContext context, Message message)
-        {
-            // TODO: Pooled buffers
-            // 8 = 6(data: ) + 2 (\n\n)
-            _logger.LogDebug("Sending {0} byte message to Server-Sent Events client", message.Payload.Length);
-            var buffer = new byte[8 + message.Payload.Length];
-            var at = 0;
-            buffer[at++] = (byte)'d';
-            buffer[at++] = (byte)'a';
-            buffer[at++] = (byte)'t';
-            buffer[at++] = (byte)'a';
-            buffer[at++] = (byte)':';
-            buffer[at++] = (byte)' ';
-            message.Payload.CopyTo(new Span<byte>(buffer, at, message.Payload.Length));
-            at += message.Payload.Length;
-            buffer[at++] = (byte)'\n';
-            buffer[at++] = (byte)'\n';
-            await context.Response.Body.WriteAsync(buffer, 0, at);
-            await context.Response.Body.FlushAsync();
         }
     }
 }

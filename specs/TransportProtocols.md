@@ -124,7 +124,7 @@ If the `connectionId` parameter is missing, a `400 Bad Request` response is retu
 
 ### Text-based encoding (`supportsBinary` = `false` or not present)
 
-The body will be formatted as below and encoded in UTF-8. The `Content-Type` response header is set to `application/vnd.microsoft.aspnet.endpoint-messages.v1+text`. Identifiers in square brackets `[]` indicate fields defined below, and parenthesis `()` indicate grouping.
+The body will be formatted as below and encoded in UTF-8. The `Content-Type` response header is set to `application/vnd.microsoft.aspnetcore.endpoint-messages.v1+text`. Identifiers in square brackets `[]` indicate fields defined below, and parenthesis `()` indicate grouping.
 
 ```
 T([Length]:[Type]:[Body];)([Length]:[Type]:[Body];)... continues until end of the response body ...
@@ -164,7 +164,7 @@ This transport will buffer incomplete frames sent by the server until the full m
 
 In JavaScript/Browser clients, this encoding requires XHR2 (or similar HTTP request functionality which allows binary data) and TypedArray support.
 
-The body is encoded as follows. The `Content-Type` response header is set to `application/vnd.microsoft.aspnet.endpoint-messages.v1+binary`. Identifiers in square brackets `[]` indicate fields defined below, and parenthesis `()` indicate grouping. Other symbols indicate ASCII-encoded text in the stream
+The body is encoded as follows. The `Content-Type` response header is set to `application/vnd.microsoft.aspnetcore.endpoint-messages.v1+binary`. Identifiers in square brackets `[]` indicate fields defined below, and parenthesis `()` indicate grouping. Other symbols indicate ASCII-encoded text in the stream
 
 ```
 B([Length][Type][Body])([Length][Type][Fin][Body])... continues until end of the response body ...

@@ -30,8 +30,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             Assert.Equal("no-cache", context.Response.Headers["Cache-Control"]);
         }
 
-        [Fact]
-        public async Task SSEAddsAppropriateFraming()
+        [Theory]
+        [InlineData("Hello World", "data: T\r\ndata: Hello World\r\n\r\n")]
+        [InlineData("Hello\nWorld", "data: T\r\ndata: Hello\r\ndata: World\r\n\r\n")]
+        [InlineData("Hello\r\nWorld", "data: T\r\ndata: Hello\r\ndata: World\r\n\r\n")]
+        public async Task SSEAddsAppropriateFraming(string message, string expected)
         {
             var channel = Channel.CreateUnbounded<Message>();
             var context = new DefaultHttpContext();
@@ -40,7 +43,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             context.Response.Body = ms;
 
             await channel.Out.WriteAsync(new Message(
-                Encoding.UTF8.GetBytes("Hello World"),
+                Encoding.UTF8.GetBytes(message),
                 MessageType.Text,
                 endOfMessage: true));
 
@@ -48,7 +51,6 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             await sse.ProcessRequestAsync(context, context.RequestAborted);
 
-            var expected = "data: Hello World\n\n";
             Assert.Equal(expected, Encoding.UTF8.GetString(ms.ToArray()));
         }
     }
