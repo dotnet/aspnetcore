@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
 {
     internal class RuntimeCSharpRenderer : PageStructureCSharpRenderer
     {
-        public RuntimeCSharpRenderer(RuntimeTarget target, CSharpRenderingContext context) 
+        public RuntimeCSharpRenderer(RuntimeTarget target, CSharpRenderingContext context)
             : base(target, context)
         {
         }
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
                 var padding = BuildOffsetPadding(Context.RenderingConventions.StartWriteMethod.Length, node.Source.Value, Context);
                 Context.Writer.Write(padding);
             }
-            
+
             Context.Writer.Write(Context.RenderingConventions.StartWriteMethod);
 
             for (var i = 0; i < node.Children.Count; i++)

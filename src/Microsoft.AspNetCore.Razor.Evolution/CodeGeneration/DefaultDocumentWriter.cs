@@ -10,7 +10,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
     {
         private readonly CSharpRenderingContext _context;
         private readonly RuntimeTarget _target;
-
         private readonly PageStructureCSharpRenderer _renderer;
 
         public DefaultDocumentWriter(RuntimeTarget target, CSharpRenderingContext context, PageStructureCSharpRenderer renderer)
@@ -57,7 +56,6 @@ namespace Microsoft.AspNetCore.Razor.Evolution.CodeGeneration
         {
             private readonly CSharpRenderingContext _context;
             private readonly RuntimeTarget _target;
-
             private readonly PageStructureCSharpRenderer _renderer;
 
             public Visitor(RuntimeTarget target, CSharpRenderingContext context, PageStructureCSharpRenderer renderer)
