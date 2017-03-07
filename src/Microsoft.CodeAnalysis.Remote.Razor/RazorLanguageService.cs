@@ -15,8 +15,8 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
 {
     internal class RazorLanguageService : ServiceHubServiceBase
     {
-        public RazorLanguageService(Stream stream, IServiceProvider serviceProvider)
-            : base(stream, serviceProvider)
+        public RazorLanguageService(IServiceProvider serviceProvider, Stream stream)
+            : base(serviceProvider, stream)
         {
         }
 
