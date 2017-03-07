@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
@@ -127,25 +125,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 "");
         }
 
-        public static IEnumerable<object> InvalidRequestLineData => HttpParsingData.InvalidRequestLineData
-            .Select(requestLine => new object[]
+        public static TheoryData<string, string> InvalidRequestLineData
+        {
+            get
             {
-                requestLine,
-                $"Invalid request line: {requestLine.Replace("\r", "<0x0D>").Replace("\n", "<0x0A>")}",
-            })
-            .Concat(HttpParsingData.EncodedNullCharInTargetRequestLines.Select(requestLine => new object[]
-            {
-                requestLine,
-                "Invalid request line."
-            }))
-            .Concat(HttpParsingData.NullCharInTargetRequestLines.Select(requestLine => new object[]
-            {
-                requestLine,
-                "Invalid request line."
-            }));
+                var data = new TheoryData<string, string>();
+
+                foreach (var requestLine in HttpParsingData.RequestLineInvalidData)
+                {
+                    data.Add(requestLine, $"Invalid request line: {requestLine.Replace("\r", "<0x0D>").Replace("\n", "<0x0A>")}");
+                }
+
+                foreach (var requestLine in HttpParsingData.RequestLineWithEncodedNullCharInTargetData)
+                {
+                    data.Add(requestLine, "Invalid request line.");
+                }
+
+                foreach (var requestLine in HttpParsingData.RequestLineWithNullCharInTargetData)
+                {
+                    data.Add(requestLine, "Invalid request line.");
+                }
+
+                return data;
+            }
+        }
 
         public static TheoryData<string> UnrecognizedHttpVersionData => HttpParsingData.UnrecognizedHttpVersionData;
 
-        public static IEnumerable<object[]> InvalidRequestHeaderData => HttpParsingData.InvalidRequestHeaderData;
+        public static IEnumerable<object[]> InvalidRequestHeaderData => HttpParsingData.RequestHeaderInvalidData;
     }
 }

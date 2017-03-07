@@ -459,7 +459,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
 
             // Ignore end whitespace
-            for (; valueEnd > valueStart; valueEnd--)
+            for (; valueEnd >= valueStart; valueEnd--)
             {
                 var ch = headerLine[valueEnd];
                 if (ch != ByteTab && ch != ByteSpace)

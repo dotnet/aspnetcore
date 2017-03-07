@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Testing
 {
     public class HttpParsingData
     {
-        public static IEnumerable<string[]> ValidRequestLineData
+        public static IEnumerable<string[]> RequestLineValidData
         {
             get
             {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Testing
                     "GET",
                     "CUSTOM",
                 };
-                var targets = new[]
+                var paths = new[]
                 {
                     Tuple.Create("/", "/"),
                     Tuple.Create("/abc", "/abc"),
@@ -56,21 +56,42 @@ namespace Microsoft.AspNetCore.Testing
                 };
 
                 return from method in methods
-                       from target in targets
+                       from path in paths
                        from queryString in queryStrings
                        from httpVersion in httpVersions
                        select new[]
                        {
-                           $"{method} {target.Item1}{queryString} {httpVersion}\r\n",
+                           $"{method} {path.Item1}{queryString} {httpVersion}\r\n",
                            method,
-                           $"{target.Item2}",
+                           $"{path.Item1}{queryString}",
+                           $"{path.Item1}",
+                           $"{path.Item2}",
                            queryString,
                            httpVersion
                        };
             }
         }
 
-        public static IEnumerable<string> InvalidRequestLineData => new[]
+        public static IEnumerable<string> RequestLineIncompleteData => new[]
+        {
+            "G",
+            "GE",
+            "GET",
+            "GET ",
+            "GET /",
+            "GET / ",
+            "GET / H",
+            "GET / HT",
+            "GET / HTT",
+            "GET / HTTP",
+            "GET / HTTP/",
+            "GET / HTTP/1",
+            "GET / HTTP/1.",
+            "GET / HTTP/1.1",
+            "GET / HTTP/1.1\r",
+        };
+
+        public static IEnumerable<string> RequestLineInvalidData => new[]
         {
             "G\r\n",
             "GE\r\n",
@@ -140,7 +161,7 @@ namespace Microsoft.AspNetCore.Testing
             "post= / HTTP/1.0\r\n",
         };
 
-        public static IEnumerable<string> EncodedNullCharInTargetRequestLines => new[]
+        public static IEnumerable<string> RequestLineWithEncodedNullCharInTargetData => new[]
         {
             "GET /%00 HTTP/1.1\r\n",
             "GET /%00%00 HTTP/1.1\r\n",
@@ -149,17 +170,16 @@ namespace Microsoft.AspNetCore.Testing
             "GET /%F3%00%82%86 HTTP/1.1\r\n",
             "GET /%F3%85%00%82 HTTP/1.1\r\n",
             "GET /%F3%85%82%00 HTTP/1.1\r\n",
-            "GET /%E8%85%00 HTTP/1.1\r\n",
             "GET /%E8%01%00 HTTP/1.1\r\n",
         };
 
-        public static IEnumerable<string> NullCharInTargetRequestLines => new[]
-            {
-                "GET \0 HTTP/1.1\r\n",
-                "GET /\0 HTTP/1.1\r\n",
-                "GET /\0\0 HTTP/1.1\r\n",
-                "GET /%C8\0 HTTP/1.1\r\n",
-            };
+        public static IEnumerable<string> RequestLineWithNullCharInTargetData => new[]
+        {
+            "GET \0 HTTP/1.1\r\n",
+            "GET /\0 HTTP/1.1\r\n",
+            "GET /\0\0 HTTP/1.1\r\n",
+            "GET /%C8\0 HTTP/1.1\r\n",
+        };
 
         public static TheoryData<string> UnrecognizedHttpVersionData => new TheoryData<string>
         {
@@ -183,7 +203,7 @@ namespace Microsoft.AspNetCore.Testing
             "8charact",
         };
 
-        public static IEnumerable<object[]> InvalidRequestHeaderData
+        public static IEnumerable<object[]> RequestHeaderInvalidData
         {
             get
             {
@@ -228,6 +248,7 @@ namespace Microsoft.AspNetCore.Testing
                     "Header-1 value1\r\n\r\n",
                     "Header-1 value1\r\nHeader-2: value2\r\n\r\n",
                     "Header-1: value1\r\nHeader-2 value2\r\n\r\n",
+                    "\n"
                 };
 
                 // Starting with whitespace
@@ -273,11 +294,11 @@ namespace Microsoft.AspNetCore.Testing
 
                 return new[]
                 {
-                    Tuple.Create(headersWithLineFolding,"Whitespace is not allowed in header name."),
-                    Tuple.Create(headersWithCRInValue,"Header value must not contain CR characters."),
-                    Tuple.Create(headersWithMissingColon,"No ':' character found in header line."),
+                    Tuple.Create(headersWithLineFolding, "Whitespace is not allowed in header name."),
+                    Tuple.Create(headersWithCRInValue, "Header value must not contain CR characters."),
+                    Tuple.Create(headersWithMissingColon, "No ':' character found in header line."),
                     Tuple.Create(headersStartingWithWhitespace, "Whitespace is not allowed in header name."),
-                    Tuple.Create(headersWithWithspaceInName,"Whitespace is not allowed in header name."),
+                    Tuple.Create(headersWithWithspaceInName, "Whitespace is not allowed in header name."),
                     Tuple.Create(headersNotEndingInCrLfLine, "Headers corrupted, invalid header sequence.")
                 }
                 .SelectMany(t => t.Item1.Select(headers => new[] { headers, t.Item2 }));
