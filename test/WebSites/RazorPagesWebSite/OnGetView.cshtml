@@ -1,0 +1,12 @@
+﻿@page
+
+@functions {
+    public IActionResult OnGet()
+    {
+        Message = "From OnGet";
+
+        return View();
+    }
+    public string Message { get; set; } = "Default";
+}
+The message: @Message
