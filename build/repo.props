@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+    <ExcludeFromTest Include="$(RepositoryRoot)\test\Microsoft.VisualStudio.LanguageServices.Razor.Test\Microsoft.VisualStudio.LanguageServices.Razor.Test.csproj" Condition="'$(OS)'!='Windows_NT'" />
+  </ItemGroup>
+</Project>
