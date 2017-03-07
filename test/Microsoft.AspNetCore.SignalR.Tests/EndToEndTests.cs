@@ -54,8 +54,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [Fact]
-        public async Task ConnectionCanSendAndReceiveMessages()
+        public static IEnumerable<object[]> Transports
+        {
+            get
+            {
+                yield return new object[] { new WebSocketsTransport() };
+                yield return new object[] { new LongPollingTransport(new HttpClient()) };
+            }
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
+        [MemberData(nameof(Transports))]
+        public async Task ConnectionCanSendAndReceiveMessages(ITransport transport)
         {
             const string message = "Major Key";
             var baseUrl = _serverFixture.BaseUrl;
@@ -63,7 +74,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var httpClient = new HttpClient())
             {
-                var transport = new LongPollingTransport(httpClient, loggerFactory);
                 var connection = new ClientConnection(new Uri(baseUrl + "/echo"), loggerFactory);
                 try
                 {
@@ -113,10 +123,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var baseUrl = _serverFixture.BaseUrl;
             var loggerFactory = new LoggerFactory();
 
-            var transport = new WebSocketsTransport();
-            var connection = new ClientConnection(new Uri(baseUrl + "/echo/ws"), loggerFactory);
+            var connection = new ClientConnection(new Uri(baseUrl + "/echo"), loggerFactory);
             try
             {
+                var transport = new WebSocketsTransport();
                 var receiveTcs = new TaskCompletionSource<byte[]>();
                 connection.Received += (data, messageType) => receiveTcs.SetResult(data);
 
