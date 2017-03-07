@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(readableBuffer, out _consumed, out _examined));
             _socketInput.Reader.Advance(_consumed, _examined);
 
-            Assert.Equal("Header line must not start with whitespace.", exception.Message);
+            Assert.Equal("Whitespace is not allowed in header name.", exception.Message);
             Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
