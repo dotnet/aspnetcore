@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Returns a flag indicting whether the supplied character is a digit.
+        /// Returns a flag indicating whether the supplied character is a digit.
         /// </summary>
         /// <param name="c">The character to check if it is a digit.</param>
         /// <returns>True if the character is a digit, otherwise false.</returns>
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Returns a flag indicting whether the supplied character is a lower case ASCII letter.
+        /// Returns a flag indicating whether the supplied character is a lower case ASCII letter.
         /// </summary>
         /// <param name="c">The character to check if it is a lower case ASCII letter.</param>
         /// <returns>True if the character is a lower case ASCII letter, otherwise false.</returns>
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Returns a flag indicting whether the supplied character is an upper case ASCII letter.
+        /// Returns a flag indicating whether the supplied character is an upper case ASCII letter.
         /// </summary>
         /// <param name="c">The character to check if it is an upper case ASCII letter.</param>
         /// <returns>True if the character is an upper case ASCII letter, otherwise false.</returns>
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Returns a flag indicting whether the supplied character is an ASCII letter or digit.
+        /// Returns a flag indicating whether the supplied character is an ASCII letter or digit.
         /// </summary>
         /// <param name="c">The character to check if it is an ASCII letter or digit.</param>
         /// <returns>True if the character is an ASCII letter or digit, otherwise false.</returns>
