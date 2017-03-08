@@ -67,6 +67,7 @@ using System;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 {{
     public static partial class HttpUtilities
@@ -75,8 +76,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 {0}
 
 {1}
-
-        private readonly static Tuple<ulong, ulong, HttpMethod, int, bool>[] _knownMethods = new Tuple<ulong, ulong, HttpMethod, int, bool>[{2}];
+        private readonly static Tuple<ulong, ulong, HttpMethod, int, bool>[] _knownMethods =
+            new Tuple<ulong, ulong, HttpMethod, int, bool>[{2}];
 
         private readonly static string[] _methodNames = new string[{3}];
 
@@ -105,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 var methodInfo = methodsInfo[index];
 
                 var httpMethodFieldName = GetHttpMethodFieldName(methodInfo);
-                result.AppendFormat("\t\tprivate readonly static ulong {0} = GetAsciiStringAsLong(\"{1}\");", httpMethodFieldName, methodInfo.MethodAsciiString.Replace("\0", "\\0"));
+                result.AppendFormat("        private readonly static ulong {0} = GetAsciiStringAsLong(\"{1}\");", httpMethodFieldName, methodInfo.MethodAsciiString.Replace("\0", "\\0"));
 
                 if (index < methodsInfo.Count - 1)
                 {
@@ -132,8 +133,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 var hexMaskString = HttpUtilitiesGeneratorHelpers.GeHexString(maskArray, "0x", ", ");
                 var maskFieldName = GetMaskFieldName(maskBytesLength);
 
-                result.AppendFormat("\t\tprivate readonly static ulong {0} = GetMaskAsLong(new byte[] {{ {1} }});", maskFieldName, hexMaskString);
-
+                result.AppendFormat("        private readonly static ulong {0} = GetMaskAsLong(new byte[]\r\n            {{{1}}});", maskFieldName, hexMaskString);
+                result.AppendLine();
                 if (index < distinctLengths.Count - 1)
                 {
                     result.AppendLine();
@@ -157,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
                 var maskFieldName = GetMaskFieldName(methodInfo.MaskLength);
                 var httpMethodFieldName = GetHttpMethodFieldName(methodInfo);
 
-                result.AppendFormat("\t\t\tSetKnownMethod({0}, {1}, {2}.{3}, {4});", maskFieldName, httpMethodFieldName, typeof(HttpMethod).Name, methodInfo.HttpMethod, methodInfo.MaskLength - 1);
+                result.AppendFormat("            SetKnownMethod({0}, {1}, {2}.{3}, {4});", maskFieldName, httpMethodFieldName, typeof(HttpMethod).Name, methodInfo.HttpMethod, methodInfo.MaskLength - 1);
 
                 if (index < methodsInfo.Count - 1)
                 {
@@ -180,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             {
                 var methodInfo = methodsInfo[index];
 
-                result.AppendFormat("\t\t\t_methodNames[(byte){0}.{1}] = {2}.{3};", typeof(HttpMethod).Name, methodInfo.HttpMethod, typeof(HttpMethods).Name, methodInfo.HttpMethod);
+                result.AppendFormat("            _methodNames[(byte){0}.{1}] = {2}.{3};", typeof(HttpMethod).Name, methodInfo.HttpMethod, typeof(HttpMethods).Name, methodInfo.HttpMethod);
 
                 if (index < methodsInfo.Count - 1)
                 {
@@ -218,7 +219,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 
                 string returnString = string.Format("return ({0}) & {1};", tmpReturn, HttpUtilitiesGeneratorHelpers.MaskToHexString(mask2));
 
-                bodyString = string.Format("const int magicNumer = {0};\r\n\t\t\tvar tmp = (int)value & magicNumer;\r\n\t\t\t{1}", HttpUtilitiesGeneratorHelpers.MaskToHexString(mask), returnString);
+                bodyString = string.Format("            const int magicNumer = {0};\r\n            var tmp = (int)value & magicNumer;\r\n            {1}", HttpUtilitiesGeneratorHelpers.MaskToHexString(mask), returnString);
 
             }
             else

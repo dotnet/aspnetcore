@@ -15,27 +15,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             const string frameHeadersGeneratedPath = "../../../../../src/Microsoft.AspNetCore.Server.Kestrel/Internal/Http/FrameHeaders.Generated.cs";
             const string frameGeneratedPath = "../../../../../src/Microsoft.AspNetCore.Server.Kestrel/Internal/Http/Frame.Generated.cs";
-
+            const string httpUtilitiesGeneratedPath = "../../../../../src/Microsoft.AspNetCore.Server.Kestrel/Internal/Infrastructure/HttpUtilities.Generated.cs";
             var testFrameHeadersGeneratedPath = Path.GetTempFileName();
             var testFrameGeneratedPath = Path.GetTempFileName();
-
+            var testHttpUtilitiesGeneratedPath = Path.GetTempFileName();
             try
             {
                 var currentFrameHeadersGenerated = File.ReadAllText(frameHeadersGeneratedPath);
                 var currentFrameGenerated = File.ReadAllText(frameGeneratedPath);
+                var currentHttpUtilitiesGenerated = File.ReadAllText(httpUtilitiesGeneratedPath);
 
-                CodeGenerator.Program.Run(testFrameHeadersGeneratedPath, testFrameGeneratedPath);
+                CodeGenerator.Program.Run(testFrameHeadersGeneratedPath, testFrameGeneratedPath, testHttpUtilitiesGeneratedPath);
 
                 var testFrameHeadersGenerated = File.ReadAllText(testFrameHeadersGeneratedPath);
                 var testFrameGenerated = File.ReadAllText(testFrameGeneratedPath);
+                var testHttpUtilitiesGenerated = File.ReadAllText(testHttpUtilitiesGeneratedPath);
 
                 Assert.Equal(currentFrameHeadersGenerated, testFrameHeadersGenerated, ignoreLineEndingDifferences: true);
                 Assert.Equal(currentFrameGenerated, testFrameGenerated, ignoreLineEndingDifferences: true);
+                Assert.Equal(currentHttpUtilitiesGenerated, testHttpUtilitiesGenerated, ignoreLineEndingDifferences: true);
+
             }
             finally
             {
                 File.Delete(testFrameHeadersGeneratedPath);
                 File.Delete(testFrameGeneratedPath);
+                File.Delete(testHttpUtilitiesGeneratedPath);
             }
         }
     }

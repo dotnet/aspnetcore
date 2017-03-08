@@ -5,6 +5,7 @@ using System;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
+
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
 {
     public static partial class HttpUtilities
@@ -19,13 +20,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         private readonly static ulong _httpOptionsMethodLong = GetAsciiStringAsLong("OPTIONS ");
         private readonly static ulong _httpTraceMethodLong = GetAsciiStringAsLong("TRACE \0\0");
 
-        private readonly static ulong _mask8Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff });
-        private readonly static ulong _mask7Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00 });
-        private readonly static ulong _mask6Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00 });
-        private readonly static ulong _mask5Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00 });
-        private readonly static ulong _mask4Chars = GetMaskAsLong(new byte[] { 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00 });
+        private readonly static ulong _mask8Chars = GetMaskAsLong(new byte[]
+            {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff});
 
-        private readonly static Tuple<ulong, ulong, HttpMethod, int, bool>[] _knownMethods = new Tuple<ulong, ulong, HttpMethod, int, bool>[17];
+        private readonly static ulong _mask7Chars = GetMaskAsLong(new byte[]
+            {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00});
+
+        private readonly static ulong _mask6Chars = GetMaskAsLong(new byte[]
+            {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00});
+
+        private readonly static ulong _mask5Chars = GetMaskAsLong(new byte[]
+            {0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00});
+
+        private readonly static ulong _mask4Chars = GetMaskAsLong(new byte[]
+            {0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00});
+
+        private readonly static Tuple<ulong, ulong, HttpMethod, int, bool>[] _knownMethods =
+            new Tuple<ulong, ulong, HttpMethod, int, bool>[17];
 
         private readonly static string[] _methodNames = new string[9];
 
