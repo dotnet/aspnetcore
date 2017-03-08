@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
-using System.IO.Pipelines.Text.Primitives;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -1232,7 +1231,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
                 // URI was encoded, unescape and then parse as utf8
                 int pathLength = UrlEncoder.Decode(path, path);
-                requestUrlPath = new Utf8String(path.Slice(0, pathLength)).ToString();
+                requestUrlPath = GetUtf8String(path.Slice(0, pathLength));
             }
             else
             {
@@ -1280,6 +1279,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 PathBase = string.Empty;
                 QueryString = string.Empty;
             }
+        }
+
+        private unsafe static string GetUtf8String(Span<byte> path)
+        {
+            // .NET 451 doesn't have pointer overloads for Encoding.GetString so we
+            // copy to an array
+#if NET451
+            return Encoding.UTF8.GetString(path.ToArray());
+#else
+            fixed (byte* pointer = &path.DangerousGetPinnableReference())
+            {
+                return Encoding.UTF8.GetString(pointer, path.Length);
+            }
+#endif
         }
 
         public void OnHeader(Span<byte> name, Span<byte> value)
