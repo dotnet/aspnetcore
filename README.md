@@ -3,7 +3,7 @@ HttpSysServer
 
 | AppVeyor | Travis |
 | ---- | ----
-| [![AppVeyor](https://ci.appveyor.com/api/projects/status/413hlt87c3p24on8/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/WebListener/branch/dev) | [![Travis](https://travis-ci.org/aspnet/HttpSysServer.svg?branch=dev)](https://travis-ci.org/aspnet/HttpSysServer) |
+| [![AppVeyor](https://ci.appveyor.com/api/projects/status/47fv9qoe862xlr25/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/HttpSysServer/branch/dev) | [![Travis](https://travis-ci.org/aspnet/HttpSysServer.svg?branch=dev)](https://travis-ci.org/aspnet/HttpSysServer) |
 
 This repo contains a web server for ASP.NET Core based on the Windows [Http Server API](https://msdn.microsoft.com/en-us/library/windows/desktop/aa364510.aspx).
 
