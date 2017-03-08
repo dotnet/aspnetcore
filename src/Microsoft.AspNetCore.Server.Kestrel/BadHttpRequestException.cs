@@ -25,9 +25,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 case RequestRejectionReason.HeadersCorruptedInvalidHeaderSequence:
                     ex = new BadHttpRequestException("Headers corrupted, invalid header sequence.", StatusCodes.Status400BadRequest);
                     break;
-                case RequestRejectionReason.HeaderLineMustNotStartWithWhitespace:
-                    ex = new BadHttpRequestException("Header line must not start with whitespace.", StatusCodes.Status400BadRequest);
-                    break;
                 case RequestRejectionReason.NoColonCharacterFoundInHeaderLine:
                     ex = new BadHttpRequestException("No ':' character found in header line.", StatusCodes.Status400BadRequest);
                     break;
@@ -39,6 +36,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     break;
                 case RequestRejectionReason.HeaderValueLineFoldingNotSupported:
                     ex = new BadHttpRequestException("Header value line folding not supported.", StatusCodes.Status400BadRequest);
+                    break;
+                case RequestRejectionReason.InvalidRequestLine:
+                    ex = new BadHttpRequestException("Invalid request line.", StatusCodes.Status400BadRequest);
                     break;
                 case RequestRejectionReason.MalformedRequestInvalidHeaders:
                     ex = new BadHttpRequestException("Malformed request: invalid headers.", StatusCodes.Status400BadRequest);

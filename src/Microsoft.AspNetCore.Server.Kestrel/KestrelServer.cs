@@ -142,8 +142,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 }
                 else if (!hasListenOptions && !hasServerAddresses)
                 {
-                    _logger.LogDebug($"No listening endpoints were configured. Binding to {Constants.DefaultIPEndPoint} by default.");
-                    listenOptions.Add(new ListenOptions(Constants.DefaultIPEndPoint));
+                    _logger.LogDebug($"No listening endpoints were configured. Binding to {Constants.DefaultServerAddress} by default.");
+
+                    // "localhost" for both IPv4 and IPv6 can't be represented as an IPEndPoint.
+                    StartLocalhost(engine, ServerAddress.FromUrl(Constants.DefaultServerAddress));
+
+                    // If StartLocalhost doesn't throw, there is at least one listener.
+                    // The port cannot change for "localhost".
+                    _serverAddresses.Addresses.Add(Constants.DefaultServerAddress);
+
+                    return;
                 }
                 else if (!hasListenOptions)
                 {

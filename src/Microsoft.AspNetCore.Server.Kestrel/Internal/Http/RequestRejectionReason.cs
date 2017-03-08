@@ -7,7 +7,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
     {
         UnrecognizedHTTPVersion,
         HeadersCorruptedInvalidHeaderSequence,
-        HeaderLineMustNotStartWithWhitespace,
         NoColonCharacterFoundInHeaderLine,
         WhitespaceIsNotAllowedInHeaderName,
         HeaderValueMustNotContainCR,

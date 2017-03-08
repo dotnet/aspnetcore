@@ -3,5 +3,7 @@
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
     <LibUvVersion>1.9.1</LibUvVersion>
+    <CoreFxLabsVersion>0.1.0-*</CoreFxLabsVersion>
+    <CoreFxLabsPipelinesVersion>0.1.0-*</CoreFxLabsPipelinesVersion>
   </PropertyGroup>
 </Project>

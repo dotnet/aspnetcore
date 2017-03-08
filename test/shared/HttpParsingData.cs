@@ -4,14 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Server.Kestrel;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Testing
 {
     public class HttpParsingData
     {
-        public static IEnumerable<string[]> ValidRequestLineData
+        public static IEnumerable<string[]> RequestLineValidData
         {
             get
             {
@@ -20,7 +19,7 @@ namespace Microsoft.AspNetCore.Testing
                     "GET",
                     "CUSTOM",
                 };
-                var targets = new[]
+                var paths = new[]
                 {
                     Tuple.Create("/", "/"),
                     Tuple.Create("/abc", "/abc"),
@@ -57,166 +56,154 @@ namespace Microsoft.AspNetCore.Testing
                 };
 
                 return from method in methods
-                       from target in targets
+                       from path in paths
                        from queryString in queryStrings
                        from httpVersion in httpVersions
                        select new[]
                        {
-                           $"{method} {target.Item1}{queryString} {httpVersion}\r\n",
+                           $"{method} {path.Item1}{queryString} {httpVersion}\r\n",
                            method,
-                           $"{target.Item2}",
+                           $"{path.Item1}{queryString}",
+                           $"{path.Item1}",
+                           $"{path.Item2}",
                            queryString,
                            httpVersion
                        };
             }
         }
 
-        // All these test cases must end in '\n', otherwise the server will spin forever
-        public static IEnumerable<object[]> InvalidRequestLineData
+        public static IEnumerable<string> RequestLineIncompleteData => new[]
         {
-            get
-            {
-                var invalidRequestLines = new[]
-                {
-                    "G\r\n",
-                    "GE\r\n",
-                    "GET\r\n",
-                    "GET \r\n",
-                    "GET /\r\n",
-                    "GET / \r\n",
-                    "GET/HTTP/1.1\r\n",
-                    "GET /HTTP/1.1\r\n",
-                    " \r\n",
-                    "  \r\n",
-                    "/ HTTP/1.1\r\n",
-                    " / HTTP/1.1\r\n",
-                    "/ \r\n",
-                    "GET  \r\n",
-                    "GET  HTTP/1.0\r\n",
-                    "GET  HTTP/1.1\r\n",
-                    "GET / \n",
-                    "GET / HTTP/1.0\n",
-                    "GET / HTTP/1.1\n",
-                    "GET / HTTP/1.0\rA\n",
-                    "GET / HTTP/1.1\ra\n",
-                    "GET? / HTTP/1.1\r\n",
-                    "GET ? HTTP/1.1\r\n",
-                    "GET /a?b=cHTTP/1.1\r\n",
-                    "GET /a%20bHTTP/1.1\r\n",
-                    "GET /a%20b?c=dHTTP/1.1\r\n",
-                    "GET %2F HTTP/1.1\r\n",
-                    "GET %00 HTTP/1.1\r\n",
-                    "CUSTOM \r\n",
-                    "CUSTOM /\r\n",
-                    "CUSTOM / \r\n",
-                    "CUSTOM /HTTP/1.1\r\n",
-                    "CUSTOM  \r\n",
-                    "CUSTOM  HTTP/1.0\r\n",
-                    "CUSTOM  HTTP/1.1\r\n",
-                    "CUSTOM / \n",
-                    "CUSTOM / HTTP/1.0\n",
-                    "CUSTOM / HTTP/1.1\n",
-                    "CUSTOM / HTTP/1.0\rA\n",
-                    "CUSTOM / HTTP/1.1\ra\n",
-                    "CUSTOM ? HTTP/1.1\r\n",
-                    "CUSTOM /a?b=cHTTP/1.1\r\n",
-                    "CUSTOM /a%20bHTTP/1.1\r\n",
-                    "CUSTOM /a%20b?c=dHTTP/1.1\r\n",
-                    "CUSTOM %2F HTTP/1.1\r\n",
-                    "CUSTOM %00 HTTP/1.1\r\n",
-                    // Bad HTTP Methods (invalid according to RFC)
-                    "( / HTTP/1.0\r\n",
-                    ") / HTTP/1.0\r\n",
-                    "< / HTTP/1.0\r\n",
-                    "> / HTTP/1.0\r\n",
-                    "@ / HTTP/1.0\r\n",
-                    ", / HTTP/1.0\r\n",
-                    "; / HTTP/1.0\r\n",
-                    ": / HTTP/1.0\r\n",
-                    "\\ / HTTP/1.0\r\n",
-                    "\" / HTTP/1.0\r\n",
-                    "/ / HTTP/1.0\r\n",
-                    "[ / HTTP/1.0\r\n",
-                    "] / HTTP/1.0\r\n",
-                    "? / HTTP/1.0\r\n",
-                    "= / HTTP/1.0\r\n",
-                    "{ / HTTP/1.0\r\n",
-                    "} / HTTP/1.0\r\n",
-                    "get@ / HTTP/1.0\r\n",
-                    "post= / HTTP/1.0\r\n",
-                };
+            "G",
+            "GE",
+            "GET",
+            "GET ",
+            "GET /",
+            "GET / ",
+            "GET / H",
+            "GET / HT",
+            "GET / HTT",
+            "GET / HTTP",
+            "GET / HTTP/",
+            "GET / HTTP/1",
+            "GET / HTTP/1.",
+            "GET / HTTP/1.1",
+            "GET / HTTP/1.1\r",
+        };
 
-                var encodedNullCharInTargetRequestLines = new[]
-                {
-                    "GET /%00 HTTP/1.1\r\n",
-                    "GET /%00%00 HTTP/1.1\r\n",
-                    "GET /%E8%00%84 HTTP/1.1\r\n",
-                    "GET /%E8%85%00 HTTP/1.1\r\n",
-                    "GET /%F3%00%82%86 HTTP/1.1\r\n",
-                    "GET /%F3%85%00%82 HTTP/1.1\r\n",
-                    "GET /%F3%85%82%00 HTTP/1.1\r\n",
-                    "GET /%E8%85%00 HTTP/1.1\r\n",
-                    "GET /%E8%01%00 HTTP/1.1\r\n",
-                };
-
-                var nullCharInTargetRequestLines = new[]
-                {
-                    "GET \0 HTTP/1.1\r\n",
-                    "GET /\0 HTTP/1.1\r\n",
-                    "GET /\0\0 HTTP/1.1\r\n",
-                    "GET /%C8\0 HTTP/1.1\r\n",
-                };
-
-                return invalidRequestLines.Select(requestLine => new object[]
-                       {
-                           requestLine,
-                           typeof(BadHttpRequestException),
-                           $"Invalid request line: {requestLine.Replace("\r", "<0x0D>").Replace("\n", "<0x0A>")}"
-                       })
-                       .Concat(encodedNullCharInTargetRequestLines.Select(requestLine => new object[]
-                        {
-                            requestLine,
-                            typeof(InvalidOperationException),
-                            $"The path contains null characters."
-                        }))
-                       .Concat(nullCharInTargetRequestLines.Select(requestLine => new object[]
-                        {
-                            requestLine,
-                            typeof(InvalidOperationException),
-                            new InvalidOperationException().Message
-                        }));
-            }
-        }
-
-        public static TheoryData<string> UnrecognizedHttpVersionData
+        public static IEnumerable<string> RequestLineInvalidData => new[]
         {
-            get
-            {
-                return new TheoryData<string>
-                {
-                    "H",
-                    "HT",
-                    "HTT",
-                    "HTTP",
-                    "HTTP/",
-                    "HTTP/1",
-                    "HTTP/1.",
-                    "http/1.0",
-                    "http/1.1",
-                    "HTTP/1.1 ",
-                    "HTTP/1.0a",
-                    "HTTP/1.0ab",
-                    "HTTP/1.1a",
-                    "HTTP/1.1ab",
-                    "HTTP/1.2",
-                    "HTTP/3.0",
-                    "hello",
-                    "8charact",
-                };
-            }
-        }
+            "G\r\n",
+            "GE\r\n",
+            "GET\r\n",
+            "GET \r\n",
+            "GET /\r\n",
+            "GET / \r\n",
+            "GET/HTTP/1.1\r\n",
+            "GET /HTTP/1.1\r\n",
+            " \r\n",
+            "  \r\n",
+            "/ HTTP/1.1\r\n",
+            " / HTTP/1.1\r\n",
+            "/ \r\n",
+            "GET  \r\n",
+            "GET  HTTP/1.0\r\n",
+            "GET  HTTP/1.1\r\n",
+            "GET / \n",
+            "GET / HTTP/1.0\n",
+            "GET / HTTP/1.1\n",
+            "GET / HTTP/1.0\rA\n",
+            "GET / HTTP/1.1\ra\n",
+            "GET? / HTTP/1.1\r\n",
+            "GET ? HTTP/1.1\r\n",
+            "GET /a?b=cHTTP/1.1\r\n",
+            "GET /a%20bHTTP/1.1\r\n",
+            "GET /a%20b?c=dHTTP/1.1\r\n",
+            "GET %2F HTTP/1.1\r\n",
+            "GET %00 HTTP/1.1\r\n",
+            "CUSTOM \r\n",
+            "CUSTOM /\r\n",
+            "CUSTOM / \r\n",
+            "CUSTOM /HTTP/1.1\r\n",
+            "CUSTOM  \r\n",
+            "CUSTOM  HTTP/1.0\r\n",
+            "CUSTOM  HTTP/1.1\r\n",
+            "CUSTOM / \n",
+            "CUSTOM / HTTP/1.0\n",
+            "CUSTOM / HTTP/1.1\n",
+            "CUSTOM / HTTP/1.0\rA\n",
+            "CUSTOM / HTTP/1.1\ra\n",
+            "CUSTOM ? HTTP/1.1\r\n",
+            "CUSTOM /a?b=cHTTP/1.1\r\n",
+            "CUSTOM /a%20bHTTP/1.1\r\n",
+            "CUSTOM /a%20b?c=dHTTP/1.1\r\n",
+            "CUSTOM %2F HTTP/1.1\r\n",
+            "CUSTOM %00 HTTP/1.1\r\n",
+            // Bad HTTP Methods (invalid according to RFC)
+            "( / HTTP/1.0\r\n",
+            ") / HTTP/1.0\r\n",
+            "< / HTTP/1.0\r\n",
+            "> / HTTP/1.0\r\n",
+            "@ / HTTP/1.0\r\n",
+            ", / HTTP/1.0\r\n",
+            "; / HTTP/1.0\r\n",
+            ": / HTTP/1.0\r\n",
+            "\\ / HTTP/1.0\r\n",
+            "\" / HTTP/1.0\r\n",
+            "/ / HTTP/1.0\r\n",
+            "[ / HTTP/1.0\r\n",
+            "] / HTTP/1.0\r\n",
+            "? / HTTP/1.0\r\n",
+            "= / HTTP/1.0\r\n",
+            "{ / HTTP/1.0\r\n",
+            "} / HTTP/1.0\r\n",
+            "get@ / HTTP/1.0\r\n",
+            "post= / HTTP/1.0\r\n",
+        };
 
-        public static IEnumerable<object[]> InvalidRequestHeaderData
+        public static IEnumerable<string> RequestLineWithEncodedNullCharInTargetData => new[]
+        {
+            "GET /%00 HTTP/1.1\r\n",
+            "GET /%00%00 HTTP/1.1\r\n",
+            "GET /%E8%00%84 HTTP/1.1\r\n",
+            "GET /%E8%85%00 HTTP/1.1\r\n",
+            "GET /%F3%00%82%86 HTTP/1.1\r\n",
+            "GET /%F3%85%00%82 HTTP/1.1\r\n",
+            "GET /%F3%85%82%00 HTTP/1.1\r\n",
+            "GET /%E8%01%00 HTTP/1.1\r\n",
+        };
+
+        public static IEnumerable<string> RequestLineWithNullCharInTargetData => new[]
+        {
+            "GET \0 HTTP/1.1\r\n",
+            "GET /\0 HTTP/1.1\r\n",
+            "GET /\0\0 HTTP/1.1\r\n",
+            "GET /%C8\0 HTTP/1.1\r\n",
+        };
+
+        public static TheoryData<string> UnrecognizedHttpVersionData => new TheoryData<string>
+        {
+            "H",
+            "HT",
+            "HTT",
+            "HTTP",
+            "HTTP/",
+            "HTTP/1",
+            "HTTP/1.",
+            "http/1.0",
+            "http/1.1",
+            "HTTP/1.1 ",
+            "HTTP/1.0a",
+            "HTTP/1.0ab",
+            "HTTP/1.1a",
+            "HTTP/1.1ab",
+            "HTTP/1.2",
+            "HTTP/3.0",
+            "hello",
+            "8charact",
+        };
+
+        public static IEnumerable<object[]> RequestHeaderInvalidData
         {
             get
             {
@@ -245,6 +232,14 @@ namespace Microsoft.AspNetCore.Testing
                     "Header-1: value1\rHeader-2: value2\r\n\r\n",
                     "Header-1: value1\r\nHeader-2: value2\r\r\n",
                     "Header-1: value1\r\nHeader-2: v\ralue2\r\n",
+                    "Header-1: Value__\rVector16________Vector32\r\n",
+                    "Header-1: Value___Vector16\r________Vector32\r\n",
+                    "Header-1: Value___Vector16_______\rVector32\r\n",
+                    "Header-1: Value___Vector16________Vector32\r\r\n",
+                    "Header-1: Value___Vector16________Vector32_\r\r\n",
+                    "Header-1: Value___Vector16________Vector32Value___Vector16_______\rVector32\r\n",
+                    "Header-1: Value___Vector16________Vector32Value___Vector16________Vector32\r\r\n",
+                    "Header-1: Value___Vector16________Vector32Value___Vector16________Vector32_\r\r\n",
                 };
 
                 // Missing colon
@@ -253,6 +248,7 @@ namespace Microsoft.AspNetCore.Testing
                     "Header-1 value1\r\n\r\n",
                     "Header-1 value1\r\nHeader-2: value2\r\n\r\n",
                     "Header-1: value1\r\nHeader-2 value2\r\n\r\n",
+                    "\n"
                 };
 
                 // Starting with whitespace
@@ -269,9 +265,20 @@ namespace Microsoft.AspNetCore.Testing
                 {
                     "Header : value\r\n\r\n",
                     "Header\t: value\r\n\r\n",
+                    "Header\r: value\r\n\r\n",
+                    "Header_\rVector16: value\r\n\r\n",
+                    "Header__Vector16\r: value\r\n\r\n",
+                    "Header__Vector16_\r: value\r\n\r\n",
+                    "Header_\rVector16________Vector32: value\r\n\r\n",
+                    "Header__Vector16________Vector32\r: value\r\n\r\n",
+                    "Header__Vector16________Vector32_\r: value\r\n\r\n",
+                    "Header__Vector16________Vector32Header_\rVector16________Vector32: value\r\n\r\n",
+                    "Header__Vector16________Vector32Header__Vector16________Vector32\r: value\r\n\r\n",
+                    "Header__Vector16________Vector32Header__Vector16________Vector32_\r: value\r\n\r\n",
                     "Header 1: value1\r\nHeader-2: value2\r\n\r\n",
                     "Header 1 : value1\r\nHeader-2: value2\r\n\r\n",
                     "Header 1\t: value1\r\nHeader-2: value2\r\n\r\n",
+                    "Header 1\r: value1\r\nHeader-2: value2\r\n\r\n",
                     "Header-1: value1\r\nHeader 2: value2\r\n\r\n",
                     "Header-1: value1\r\nHeader-2 : value2\r\n\r\n",
                     "Header-1: value1\r\nHeader-2\t: value2\r\n\r\n",
@@ -287,11 +294,11 @@ namespace Microsoft.AspNetCore.Testing
 
                 return new[]
                 {
-                    Tuple.Create(headersWithLineFolding,"Header value line folding not supported."),
-                    Tuple.Create(headersWithCRInValue,"Header value must not contain CR characters."),
-                    Tuple.Create(headersWithMissingColon,"No ':' character found in header line."),
-                    Tuple.Create(headersStartingWithWhitespace, "Header line must not start with whitespace."),
-                    Tuple.Create(headersWithWithspaceInName,"Whitespace is not allowed in header name."),
+                    Tuple.Create(headersWithLineFolding, "Whitespace is not allowed in header name."),
+                    Tuple.Create(headersWithCRInValue, "Header value must not contain CR characters."),
+                    Tuple.Create(headersWithMissingColon, "No ':' character found in header line."),
+                    Tuple.Create(headersStartingWithWhitespace, "Whitespace is not allowed in header name."),
+                    Tuple.Create(headersWithWithspaceInName, "Whitespace is not allowed in header name."),
                     Tuple.Create(headersNotEndingInCrLfLine, "Headers corrupted, invalid header sequence.")
                 }
                 .SelectMany(t => t.Item1.Select(headers => new[] { headers, t.Item2 }));

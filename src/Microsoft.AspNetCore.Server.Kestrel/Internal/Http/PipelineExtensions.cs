@@ -3,9 +3,8 @@
 
 using System;
 using System.IO.Pipelines;
-using System.Threading;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 {
@@ -47,8 +46,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             {
                 var result = await readingTask;
 
-                await AwaitableThreadPool.Yield();
-
                 try
                 {
                     if (!result.Buffer.IsEmpty)
@@ -70,13 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
         }
 
-        private static async Task<ReadResult> ReadAsyncDispatchedAwaited(ReadableBufferAwaitable awaitable)
-        {
-            var result = await awaitable;
-            await AwaitableThreadPool.Yield();
-            return result;
-        }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Span<byte> ToSpan(this ReadableBuffer buffer)
         {
             if (buffer.IsSingleSpan)
@@ -84,15 +75,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 return buffer.First.Span;
             }
             return buffer.ToArray();
-        }
-
-        public static ArraySegment<byte> ToArraySegment(this ReadableBuffer buffer)
-        {
-            if (buffer.IsSingleSpan)
-            {
-                return buffer.First.GetArray();
-            }
-            return new ArraySegment<byte>(buffer.ToArray());
         }
 
         public static ArraySegment<byte> GetArray(this Memory<byte> memory)

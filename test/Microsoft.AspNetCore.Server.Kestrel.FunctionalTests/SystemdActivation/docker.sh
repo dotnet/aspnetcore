@@ -2,13 +2,8 @@
 
 set -e
 
-# Ensure that dotnet is added to the PATH.
-# build.sh should always be run before this script to create the .build/ directory and restore packages.
 scriptDir=$(dirname "${BASH_SOURCE[0]}")
-repoDir=$(cd $scriptDir/../../.. && pwd)
-source ./.build/KoreBuild.sh -r $repoDir --quiet
-
-dotnet publish -f netcoreapp1.1 ./samples/SampleApp/
+~/.dotnet/dotnet publish -f netcoreapp1.1 ./samples/SampleApp/
 cp -R ./samples/SampleApp/bin/Debug/netcoreapp1.1/publish/ $scriptDir
 cp -R ~/.dotnet/ $scriptDir
 

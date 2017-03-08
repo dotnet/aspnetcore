@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         /// <summary>
         /// The IPEndPoint Kestrel will bind to if nothing else is specified.
         /// </summary>
-        public static readonly IPEndPoint DefaultIPEndPoint = new IPEndPoint(IPAddress.Loopback, 5000);
+        public static readonly string DefaultServerAddress = "http://localhost:5000";
 
         /// <summary>
         /// Prefix of host name used to specify Unix sockets in the configuration.
