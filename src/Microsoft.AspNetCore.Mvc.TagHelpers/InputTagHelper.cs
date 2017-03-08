@@ -254,15 +254,30 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
         private void GenerateCheckBox(ModelExplorer modelExplorer, TagHelperOutput output)
         {
-            if (typeof(bool) != modelExplorer.ModelType)
+            if (modelExplorer.ModelType == typeof(string))
+            {
+                if (modelExplorer.Model != null)
+                {
+                    bool potentialBool;
+                    if (!bool.TryParse(modelExplorer.Model.ToString(), out potentialBool))
+                    {
+                        throw new InvalidOperationException(Resources.FormatInputTagHelper_InvalidStringResult(
+                            ForAttributeName,
+                            modelExplorer.Model.ToString(),
+                            typeof(bool).FullName));
+                    }
+                }
+            }
+            else if (modelExplorer.ModelType != typeof(bool))
             {
                 throw new InvalidOperationException(Resources.FormatInputTagHelper_InvalidExpressionResult(
-                    "<input>",
-                    ForAttributeName,
-                    modelExplorer.ModelType.FullName,
-                    typeof(bool).FullName,
-                    "type",
-                    "checkbox"));
+                       "<input>",
+                       ForAttributeName,
+                       modelExplorer.ModelType.FullName,
+                       typeof(bool).FullName,
+                       typeof(string).FullName,
+                       "type",
+                       "checkbox"));
             }
 
             // Prepare to move attributes from current element to <input type="checkbox"/> generated just below.

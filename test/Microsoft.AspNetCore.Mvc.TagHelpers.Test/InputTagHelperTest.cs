@@ -113,6 +113,142 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Null(output.TagName); // Cleared
         }
 
+        [Theory]
+        [InlineData("bad")]
+        [InlineData("notbool")]
+        public void CheckBoxHandlesNonParsableStringsAsBoolsCorrectly(
+            string possibleBool)
+        {
+            // Arrange
+            const string content = "original content";
+            const string tagName = "input";
+            const string forAttributeName = "asp-for";
+
+            var expected = Resources.FormatInputTagHelper_InvalidStringResult(
+                forAttributeName,
+                possibleBool,
+                typeof(bool).FullName);
+
+            var attributes = new TagHelperAttributeList
+            {
+                { "class", "form-control" },
+            };
+
+            var context = new TagHelperContext(
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                tagName,
+                attributes,
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(result: null))
+            {
+                TagMode = TagMode.SelfClosing,
+            };
+            output.Content.AppendHtml(content);
+            var htmlGenerator = new TestableHtmlGenerator(new EmptyModelMetadataProvider());
+            var tagHelper = GetTagHelper(htmlGenerator, model: possibleBool, propertyName: nameof(Model.IsACar));
+
+            // Act and Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => tagHelper.Process(context, output));
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Theory]
+        [InlineData(10)]
+        [InlineData(1337)]
+        public void CheckBoxHandlesInvalidDataTypesCorrectly(
+            int possibleBool)
+        {
+            // Arrange
+            const string content = "original content";
+            const string tagName = "input";
+            const string forAttributeName = "asp-for";
+
+            var expected = Resources.FormatInputTagHelper_InvalidExpressionResult(
+                "<input>",
+                forAttributeName,
+                possibleBool.GetType().FullName,
+                typeof(bool).FullName,
+                typeof(string).FullName,
+                "type",
+                "checkbox");
+
+            var attributes = new TagHelperAttributeList
+            {
+                { "class", "form-control" },
+            };
+
+            var context = new TagHelperContext(
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                tagName,
+                attributes,
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(result: null))
+            {
+                TagMode = TagMode.SelfClosing,
+            };
+            output.Content.AppendHtml(content);
+            var htmlGenerator = new TestableHtmlGenerator(new EmptyModelMetadataProvider());
+            var tagHelper = GetTagHelper(htmlGenerator, model: possibleBool, propertyName: nameof(Model.IsACar));
+
+            // Act and Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => tagHelper.Process(context, output));
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Theory]
+        [InlineData("trUE")]
+        [InlineData("FAlse")]
+        public void CheckBoxHandlesParsableStringsAsBoolsCorrectly(
+            string possibleBool)
+        {
+            // Arrange
+            const string content = "original content";
+            const string tagName = "input";
+            const string isCheckedAttr = " checked=\"HtmlEncode[[checked]]\"";
+            var isChecked = (bool.Parse(possibleBool) ? isCheckedAttr : string.Empty);
+            var expectedContent = $"{content}<input{isChecked} class=\"HtmlEncode[[form-control]]\" " +
+                "id=\"HtmlEncode[[IsACar]]\" name=\"HtmlEncode[[IsACar]]\" type=\"HtmlEncode[[checkbox]]\" " +
+                "value=\"HtmlEncode[[true]]\" /><input name=\"HtmlEncode[[IsACar]]\" type=\"HtmlEncode[[hidden]]\" " +
+                "value=\"HtmlEncode[[false]]\" />";
+
+
+            var attributes = new TagHelperAttributeList
+            {
+                { "class", "form-control" },
+            };
+
+            var context = new TagHelperContext(
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                tagName,
+                attributes,
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(result: null))
+            {
+                TagMode = TagMode.SelfClosing,
+            };
+            output.Content.AppendHtml(content);
+            var htmlGenerator = new TestableHtmlGenerator(new EmptyModelMetadataProvider());
+            var tagHelper = GetTagHelper(htmlGenerator, model: possibleBool, propertyName: nameof(Model.IsACar));
+
+            // Act
+            tagHelper.Process(context, output);
+            
+            // Assert
+            Assert.Empty(output.Attributes);
+            Assert.Equal(expectedContent, HtmlContentUtilities.HtmlContentToString(output.Content));
+            Assert.Equal(TagMode.SelfClosing, output.TagMode);
+            Assert.Null(output.TagName);
+        }
+
         // Top-level container (List<Model> or Model instance), immediate container type (Model or NestModel),
         // model accessor, expression path / id, expected value.
         public static TheoryData<object, Type, object, NameAndId, string> TestDataSet

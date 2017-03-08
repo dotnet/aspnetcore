@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Unexpected '{1}' expression result type '{2}' for {0}. '{1}' must be of type '{3}' if '{4}' is '{5}'.
+        /// Unexpected '{1}' expression result type '{2}' for {0}. '{1}' must be of type '{3}' or '{4}' that can be parsed as a '{3}' if '{5}' is '{6}'.
         /// </summary>
         internal static string InputTagHelper_InvalidExpressionResult
         {
@@ -67,11 +67,27 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Unexpected '{1}' expression result type '{2}' for {0}. '{1}' must be of type '{3}' if '{4}' is '{5}'.
+        /// Unexpected '{1}' expression result type '{2}' for {0}. '{1}' must be of type '{3}' or '{4}' that can be parsed as a '{3}' if '{5}' is '{6}'.
         /// </summary>
-        internal static string FormatInputTagHelper_InvalidExpressionResult(object p0, object p1, object p2, object p3, object p4, object p5)
+        internal static string FormatInputTagHelper_InvalidExpressionResult(object p0, object p1, object p2, object p3, object p4, object p5, object p6)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("InputTagHelper_InvalidExpressionResult"), p0, p1, p2, p3, p4, p5);
+            return string.Format(CultureInfo.CurrentCulture, GetString("InputTagHelper_InvalidExpressionResult"), p0, p1, p2, p3, p4, p5, p6);
+        }
+
+        /// <summary>
+        /// Unexpected expression result value '{1}' for {0}. '{1}' cannot be parsed as a '{2}'.
+        /// </summary>
+        internal static string InputTagHelper_InvalidStringResult
+        {
+            get { return GetString("InputTagHelper_InvalidStringResult"); }
+        }
+
+        /// <summary>
+        /// Unexpected expression result value '{1}' for {0}. '{1}' cannot be parsed as a '{2}'.
+        /// </summary>
+        internal static string FormatInputTagHelper_InvalidStringResult(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("InputTagHelper_InvalidStringResult"), p0, p1, p2);
         }
 
         /// <summary>
