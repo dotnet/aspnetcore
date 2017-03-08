@@ -64,6 +64,7 @@ namespace PinVersions
                         .Concat(specProject.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Select(dependency => new { Dependency = dependency, tfm.FrameworkName })))
                         .Where(d => d.Dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package));
 
+                    Console.WriteLine($"Pinning package versions for {specProject.FilePath}.");
                     var packageReferencesItemGroup = new XElement("ItemGroup");
                     foreach (var dependency in allDependencies)
                     {
@@ -80,6 +81,7 @@ namespace PinVersions
                             continue;
                         }
 
+                        Console.WriteLine($"Pinning reference {reference.Name}({reference.LibraryRange.VersionRange} to {exactVersion}.");
                         var metadata = new List<XAttribute>
                         {
                             new XAttribute("Update", reference.Name),
@@ -125,7 +127,7 @@ namespace PinVersions
                 switch (matchingVersions.Count)
                 {
                     case 0:
-                        return null;
+                        continue;
                     case 1:
                         return matchingVersions[0];
                     default:

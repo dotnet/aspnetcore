@@ -5,7 +5,7 @@
     <_BuildGraphFile>$(BuildDir)BuildGraph.proj</_BuildGraphFile>
     <_CloneRepositoryRoot>$(RepositoryRoot).r\</_CloneRepositoryRoot>
     <_DependencyBuildDirectory>$(RepositoryRoot).deps\build\</_DependencyBuildDirectory>
-    <_DependencyPackagesDirectory>$(_DependencyBuildDirectory)></_DependencyPackagesDirectory>
+    <_DependencyPackagesDirectory>$(_DependencyBuildDirectory)</_DependencyPackagesDirectory>
     <_RepositoryListFileName>Repositories.props</_RepositoryListFileName>
     <_DependencyRepositoryList>$(_DependencyBuildDirectory)$(_RepositoryListFileName)</_DependencyRepositoryList>
     <_RestoreGraphSpecsDirectory>$(RepositoryRoot)obj\package-specs\</_RestoreGraphSpecsDirectory>
