@@ -203,106 +203,79 @@ namespace Microsoft.AspNetCore.Testing
             "8charact",
         };
 
-        public static IEnumerable<object[]> RequestHeaderInvalidData
+        public static IEnumerable<object[]> RequestHeaderInvalidData => new[]
         {
-            get
-            {
-                // Line folding
-                var headersWithLineFolding = new[]
-                {
-                    "Header: line1\r\n line2\r\n\r\n",
-                    "Header: line1\r\n\tline2\r\n\r\n",
-                    "Header: line1\r\n  line2\r\n\r\n",
-                    "Header: line1\r\n \tline2\r\n\r\n",
-                    "Header: line1\r\n\t line2\r\n\r\n",
-                    "Header: line1\r\n\t\tline2\r\n\r\n",
-                    "Header: line1\r\n \t\t line2\r\n\r\n",
-                    "Header: line1\r\n \t \t line2\r\n\r\n",
-                    "Header-1: multi\r\n line\r\nHeader-2: value2\r\n\r\n",
-                    "Header-1: value1\r\nHeader-2: multi\r\n line\r\n\r\n",
-                    "Header-1: value1\r\n Header-2: value2\r\n\r\n",
-                    "Header-1: value1\r\n\tHeader-2: value2\r\n\r\n",
-                };
+            // Missing CR
+            new[] { "Header: value\n\r\n", @"Invalid request header: 'Header: value\x0A'" },
+            new[] { "Header-1: value1\nHeader-2: value2\r\n\r\n", @"Invalid request header: 'Header-1: value1\x0A'" },
+            new[] { "Header-1: value1\r\nHeader-2: value2\n\r\n", @"Invalid request header: 'Header-2: value2\x0A'" },
 
-                // CR in value
-                var headersWithCRInValue = new[]
-                {
-                    "Header-1: value1\r\r\n",
-                    "Header-1: val\rue1\r\n",
-                    "Header-1: value1\rHeader-2: value2\r\n\r\n",
-                    "Header-1: value1\r\nHeader-2: value2\r\r\n",
-                    "Header-1: value1\r\nHeader-2: v\ralue2\r\n",
-                    "Header-1: Value__\rVector16________Vector32\r\n",
-                    "Header-1: Value___Vector16\r________Vector32\r\n",
-                    "Header-1: Value___Vector16_______\rVector32\r\n",
-                    "Header-1: Value___Vector16________Vector32\r\r\n",
-                    "Header-1: Value___Vector16________Vector32_\r\r\n",
-                    "Header-1: Value___Vector16________Vector32Value___Vector16_______\rVector32\r\n",
-                    "Header-1: Value___Vector16________Vector32Value___Vector16________Vector32\r\r\n",
-                    "Header-1: Value___Vector16________Vector32Value___Vector16________Vector32_\r\r\n",
-                };
+            // Line folding
+            new[] { "Header: line1\r\n line2\r\n\r\n", @"Invalid request header: ' line2\x0D\x0A'" },
+            new[] { "Header: line1\r\n\tline2\r\n\r\n", @"Invalid request header: '\x09line2\x0D\x0A'" },
+            new[] { "Header: line1\r\n  line2\r\n\r\n", @"Invalid request header: '  line2\x0D\x0A'" },
+            new[] { "Header: line1\r\n \tline2\r\n\r\n", @"Invalid request header: ' \x09line2\x0D\x0A'" },
+            new[] { "Header: line1\r\n\t line2\r\n\r\n", @"Invalid request header: '\x09 line2\x0D\x0A'" },
+            new[] { "Header: line1\r\n\t\tline2\r\n\r\n", @"Invalid request header: '\x09\x09line2\x0D\x0A'" },
+            new[] { "Header: line1\r\n \t\t line2\r\n\r\n", @"Invalid request header: ' \x09\x09 line2\x0D\x0A'" },
+            new[] { "Header: line1\r\n \t \t line2\r\n\r\n", @"Invalid request header: ' \x09 \x09 line2\x0D\x0A'" },
+            new[] { "Header-1: multi\r\n line\r\nHeader-2: value2\r\n\r\n", @"Invalid request header: ' line\x0D\x0A'" },
+            new[] { "Header-1: value1\r\nHeader-2: multi\r\n line\r\n\r\n", @"Invalid request header: ' line\x0D\x0A'" },
+            new[] { "Header-1: value1\r\n Header-2: value2\r\n\r\n", @"Invalid request header: ' Header-2: value2\x0D\x0A'" },
+            new[] { "Header-1: value1\r\n\tHeader-2: value2\r\n\r\n", @"Invalid request header: '\x09Header-2: value2\x0D\x0A'" },
 
-                // Missing colon
-                var headersWithMissingColon = new[]
-                {
-                    "Header-1 value1\r\n\r\n",
-                    "Header-1 value1\r\nHeader-2: value2\r\n\r\n",
-                    "Header-1: value1\r\nHeader-2 value2\r\n\r\n",
-                    "\n"
-                };
+            // CR in value
+            new[] { "Header-1: value1\r\r\n", @"Invalid request header: 'Header-1: value1\x0D\x0D\x0A'" },
+            new[] { "Header-1: val\rue1\r\n", @"Invalid request header: 'Header-1: val\x0Due1\x0D\x0A'" },
+            new[] { "Header-1: value1\rHeader-2: value2\r\n\r\n", @"Invalid request header: 'Header-1: value1\x0DHeader-2: value2\x0D\x0A'" },
+            new[] { "Header-1: value1\r\nHeader-2: value2\r\r\n", @"Invalid request header: 'Header-2: value2\x0D\x0D\x0A'" },
+            new[] { "Header-1: value1\r\nHeader-2: v\ralue2\r\n", @"Invalid request header: 'Header-2: v\x0Dalue2\x0D\x0A'" },
+            new[] { "Header-1: Value__\rVector16________Vector32\r\n", @"Invalid request header: 'Header-1: Value__\x0DVector16________Vector32\x0D\x0A'" },
+            new[] { "Header-1: Value___Vector16\r________Vector32\r\n", @"Invalid request header: 'Header-1: Value___Vector16\x0D________Vector32\x0D\x0A'" },
+            new[] { "Header-1: Value___Vector16_______\rVector32\r\n", @"Invalid request header: 'Header-1: Value___Vector16_______\x0DVector32\x0D\x0A'" },
+            new[] { "Header-1: Value___Vector16________Vector32\r\r\n", @"Invalid request header: 'Header-1: Value___Vector16________Vector32\x0D\x0D\x0A'" },
+            new[] { "Header-1: Value___Vector16________Vector32_\r\r\n", @"Invalid request header: 'Header-1: Value___Vector16________Vector32_\x0D\x0D\x0A'" },
+            new[] { "Header-1: Value___Vector16________Vector32Value___Vector16_______\rVector32\r\n", @"Invalid request header: 'Header-1: Value___Vector16________Vector32Value___Vector16_______\x0DVector32\x0D\x0A'" },
+            new[] { "Header-1: Value___Vector16________Vector32Value___Vector16________Vector32\r\r\n", @"Invalid request header: 'Header-1: Value___Vector16________Vector32Value___Vector16________Vector32\x0D\x0D\x0A'" },
+            new[] { "Header-1: Value___Vector16________Vector32Value___Vector16________Vector32_\r\r\n", @"Invalid request header: 'Header-1: Value___Vector16________Vector32Value___Vector16________Vector32_\x0D\x0D\x0A'" },
 
-                // Starting with whitespace
-                var headersStartingWithWhitespace = new[]
-                {
-                    " Header: value\r\n\r\n",
-                    "\tHeader: value\r\n\r\n",
-                    " Header-1: value1\r\nHeader-2: value2\r\n\r\n",
-                    "\tHeader-1: value1\r\nHeader-2: value2\r\n\r\n",
-                };
+            // Missing colon
+            new[] { "Header-1 value1\r\n\r\n", @"Invalid request header: 'Header-1 value1\x0D\x0A'" },
+            new[] { "Header-1 value1\r\nHeader-2: value2\r\n\r\n", @"Invalid request header: 'Header-1 value1\x0D\x0A'" },
+            new[] { "Header-1: value1\r\nHeader-2 value2\r\n\r\n", @"Invalid request header: 'Header-2 value2\x0D\x0A'" },
+            new[] { "\n", @"Invalid request header: '\x0A'" },
 
-                // Whitespace in header name
-                var headersWithWithspaceInName = new[]
-                {
-                    "Header : value\r\n\r\n",
-                    "Header\t: value\r\n\r\n",
-                    "Header\r: value\r\n\r\n",
-                    "Header_\rVector16: value\r\n\r\n",
-                    "Header__Vector16\r: value\r\n\r\n",
-                    "Header__Vector16_\r: value\r\n\r\n",
-                    "Header_\rVector16________Vector32: value\r\n\r\n",
-                    "Header__Vector16________Vector32\r: value\r\n\r\n",
-                    "Header__Vector16________Vector32_\r: value\r\n\r\n",
-                    "Header__Vector16________Vector32Header_\rVector16________Vector32: value\r\n\r\n",
-                    "Header__Vector16________Vector32Header__Vector16________Vector32\r: value\r\n\r\n",
-                    "Header__Vector16________Vector32Header__Vector16________Vector32_\r: value\r\n\r\n",
-                    "Header 1: value1\r\nHeader-2: value2\r\n\r\n",
-                    "Header 1 : value1\r\nHeader-2: value2\r\n\r\n",
-                    "Header 1\t: value1\r\nHeader-2: value2\r\n\r\n",
-                    "Header 1\r: value1\r\nHeader-2: value2\r\n\r\n",
-                    "Header-1: value1\r\nHeader 2: value2\r\n\r\n",
-                    "Header-1: value1\r\nHeader-2 : value2\r\n\r\n",
-                    "Header-1: value1\r\nHeader-2\t: value2\r\n\r\n",
-                };
+            // Starting with whitespace
+            new[] { " Header: value\r\n\r\n", @"Invalid request header: ' Header: value\x0D\x0A'" },
+            new[] { "\tHeader: value\r\n\r\n", @"Invalid request header: '\x09Header: value\x0D\x0A'" },
+            new[] { " Header-1: value1\r\nHeader-2: value2\r\n\r\n", @"Invalid request header: ' Header-1: value1\x0D\x0A'" },
+            new[] { "\tHeader-1: value1\r\nHeader-2: value2\r\n\r\n", @"Invalid request header: '\x09Header-1: value1\x0D\x0A'" },
 
-                // Headers not ending in CRLF line
-                var headersNotEndingInCrLfLine = new[]
-                {
-                    "Header-1: value1\r\nHeader-2: value2\r\n\r\r",
-                    "Header-1: value1\r\nHeader-2: value2\r\n\r ",
-                    "Header-1: value1\r\nHeader-2: value2\r\n\r \n",
-                };
+            // Whitespace in header name
+            new[] { "Header : value\r\n\r\n", @"Invalid request header: 'Header : value\x0D\x0A'" },
+            new[] { "Header\t: value\r\n\r\n", @"Invalid request header: 'Header\x09: value\x0D\x0A'" },
+            new[] { "Header\r: value\r\n\r\n", @"Invalid request header: 'Header\x0D: value\x0D\x0A'" },
+            new[] { "Header_\rVector16: value\r\n\r\n", @"Invalid request header: 'Header_\x0DVector16: value\x0D\x0A'" },
+            new[] { "Header__Vector16\r: value\r\n\r\n", @"Invalid request header: 'Header__Vector16\x0D: value\x0D\x0A'" },
+            new[] { "Header__Vector16_\r: value\r\n\r\n", @"Invalid request header: 'Header__Vector16_\x0D: value\x0D\x0A'" },
+            new[] { "Header_\rVector16________Vector32: value\r\n\r\n", @"Invalid request header: 'Header_\x0DVector16________Vector32: value\x0D\x0A'" },
+            new[] { "Header__Vector16________Vector32\r: value\r\n\r\n", @"Invalid request header: 'Header__Vector16________Vector32\x0D: value\x0D\x0A'" },
+            new[] { "Header__Vector16________Vector32_\r: value\r\n\r\n", @"Invalid request header: 'Header__Vector16________Vector32_\x0D: value\x0D\x0A'" },
+            new[] { "Header__Vector16________Vector32Header_\rVector16________Vector32: value\r\n\r\n", @"Invalid request header: 'Header__Vector16________Vector32Header_\x0DVector16________Vector32: value\x0D\x0A'" },
+            new[] { "Header__Vector16________Vector32Header__Vector16________Vector32\r: value\r\n\r\n", @"Invalid request header: 'Header__Vector16________Vector32Header__Vector16________Vector32\x0D: value\x0D\x0A'" },
+            new[] { "Header__Vector16________Vector32Header__Vector16________Vector32_\r: value\r\n\r\n", @"Invalid request header: 'Header__Vector16________Vector32Header__Vector16________Vector32_\x0D: value\x0D\x0A'" },
+            new[] { "Header 1: value1\r\nHeader-2: value2\r\n\r\n", @"Invalid request header: 'Header 1: value1\x0D\x0A'" },
+            new[] { "Header 1 : value1\r\nHeader-2: value2\r\n\r\n", @"Invalid request header: 'Header 1 : value1\x0D\x0A'" },
+            new[] { "Header 1\t: value1\r\nHeader-2: value2\r\n\r\n", @"Invalid request header: 'Header 1\x09: value1\x0D\x0A'" },
+            new[] { "Header 1\r: value1\r\nHeader-2: value2\r\n\r\n", @"Invalid request header: 'Header 1\x0D: value1\x0D\x0A'" },
+            new[] { "Header-1: value1\r\nHeader 2: value2\r\n\r\n", @"Invalid request header: 'Header 2: value2\x0D\x0A'" },
+            new[] { "Header-1: value1\r\nHeader-2 : value2\r\n\r\n", @"Invalid request header: 'Header-2 : value2\x0D\x0A'" },
+            new[] { "Header-1: value1\r\nHeader-2\t: value2\r\n\r\n", @"Invalid request header: 'Header-2\x09: value2\x0D\x0A'" },
 
-                return new[]
-                {
-                    Tuple.Create(headersWithLineFolding, "Whitespace is not allowed in header name."),
-                    Tuple.Create(headersWithCRInValue, "Header value must not contain CR characters."),
-                    Tuple.Create(headersWithMissingColon, "No ':' character found in header line."),
-                    Tuple.Create(headersStartingWithWhitespace, "Whitespace is not allowed in header name."),
-                    Tuple.Create(headersWithWithspaceInName, "Whitespace is not allowed in header name."),
-                    Tuple.Create(headersNotEndingInCrLfLine, "Headers corrupted, invalid header sequence.")
-                }
-                .SelectMany(t => t.Item1.Select(headers => new[] { headers, t.Item2 }));
-            }
-        }
+            // Headers not ending in CRLF line
+            new[] { "Header-1: value1\r\nHeader-2: value2\r\n\r\r", @"Invalid request headers: missing final CRLF in header fields." },
+            new[] { "Header-1: value1\r\nHeader-2: value2\r\n\r ", @"Invalid request headers: missing final CRLF in header fields."  },
+            new[] { "Header-1: value1\r\nHeader-2: value2\r\n\r \n", @"Invalid request headers: missing final CRLF in header fields." },
+        };
     }
 }

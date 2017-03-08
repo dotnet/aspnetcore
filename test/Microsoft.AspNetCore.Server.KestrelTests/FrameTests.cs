@@ -82,25 +82,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Fact]
-        public async Task TakeMessageHeadersThrowsOnHeaderValueWithLineFolding_CharacterNotAvailableOnFirstAttempt()
-        {
-            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes("Header-1: value1\r\n"));
-
-            var readableBuffer = (await _input.Reader.ReadAsync()).Buffer;
-            Assert.False(_frame.TakeMessageHeaders(readableBuffer, out _consumed, out _examined));
-            _input.Reader.Advance(_consumed, _examined);
-
-            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes(" "));
-
-            readableBuffer = (await _input.Reader.ReadAsync()).Buffer;
-            var exception = Assert.Throws<BadHttpRequestException>(() => _frame.TakeMessageHeaders(readableBuffer, out _consumed, out _examined));
-            _input.Reader.Advance(_consumed, _examined);
-
-            Assert.Equal("Whitespace is not allowed in header name.", exception.Message);
-            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
-        }
-
-        [Fact]
         public async Task TakeMessageHeadersThrowsWhenHeadersExceedTotalSizeLimit()
         {
             const string headerLine = "Header: value\r\n";

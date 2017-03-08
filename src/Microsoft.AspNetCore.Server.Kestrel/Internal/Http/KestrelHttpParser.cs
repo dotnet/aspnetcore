@@ -316,11 +316,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                                 }
 
                                 // Headers don't end in CRLF line.
-                                RejectRequest(RequestRejectionReason.HeadersCorruptedInvalidHeaderSequence);
-                            }
-                            else if(ch1 == ByteSpace || ch1 == ByteTab)
-                            {
-                                RejectRequest(RequestRejectionReason.WhitespaceIsNotAllowedInHeaderName);
+                                RejectRequest(RequestRejectionReason.InvalidRequestHeadersNoCRLF);
                             }
 
                             // We moved the reader so look ahead 2 bytes so reset both the reader
@@ -390,7 +386,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe int FindEndOfName(byte* headerLine, int length)
+        private unsafe int FindEndOfName(byte* headerLine, int length)
         {
             var index = 0;
             var sawWhitespace = false;
@@ -407,14 +403,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
             }
 
-            if (index == length)
+            if (index == length || sawWhitespace)
             {
-                RejectRequest(RequestRejectionReason.NoColonCharacterFoundInHeaderLine);
+                RejectRequestHeader(headerLine, length);
             }
-            if (sawWhitespace)
-            {
-                RejectRequest(RequestRejectionReason.WhitespaceIsNotAllowedInHeaderName);
-            }
+
             return index;
         }
 
@@ -427,11 +420,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             if (headerLine[valueEnd + 2] != ByteLF)
             {
-                RejectRequest(RequestRejectionReason.HeaderValueMustNotContainCR);
+                RejectRequestHeader(headerLine, length);
             }
             if (headerLine[valueEnd + 1] != ByteCR)
             {
-                RejectRequest(RequestRejectionReason.MissingCRInHeaderLine);
+                RejectRequestHeader(headerLine, length);
             }
 
             // Skip colon from value start
@@ -446,16 +439,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
                 else if (ch == ByteCR)
                 {
-                    RejectRequest(RequestRejectionReason.HeaderValueMustNotContainCR);
+                    RejectRequestHeader(headerLine, length);
                 }
             }
-
 
             // Check for CR in value
             var i = valueStart + 1;
             if (Contains(headerLine + i, valueEnd - i, ByteCR))
             {
-                RejectRequest(RequestRejectionReason.HeaderValueMustNotContainCR);
+                RejectRequestHeader(headerLine, length);
             }
 
             // Ignore end whitespace
@@ -557,9 +549,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 Log.IsEnabled(LogLevel.Information) ? span.GetAsciiStringEscaped(MaxRequestLineError) : string.Empty);
         }
 
+        private unsafe void RejectRequestHeader(byte* headerLine, int length)
+        {
+            RejectRequestHeader(new Span<byte>(headerLine, length));
+        }
+
+        private void RejectRequestHeader(Span<byte> span)
+        {
+            throw GetRejectRequestHeaderException(span);
+        }
+
+        private BadHttpRequestException GetRejectRequestHeaderException(Span<byte> span)
+        {
+            const int MaxRequestHeaderError = 128;
+            return BadHttpRequestException.GetException(RequestRejectionReason.InvalidRequestHeader,
+                Log.IsEnabled(LogLevel.Information) ? span.GetAsciiStringEscaped(MaxRequestHeaderError) : string.Empty);
+        }
+
         public void Reset()
         {
-
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
