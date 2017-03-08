@@ -20,16 +20,22 @@ namespace CodeGenerator
                 Console.Error.WriteLine("Missing path to Frame.Generated.cs");
                 return 1;
             }
+            else if (args.Length < 3)
+            {
+                Console.Error.WriteLine("Missing path to HttpUtilities.Generated.cs");
+                return 1;
+            }
 
-            Run(args[0], args[1]);
+            Run(args[0], args[1], args[2]);
 
             return 0;
         }
 
-        public static void Run(string knownHeadersPath, string frameFeaturesCollectionPath)
+        public static void Run(string knownHeadersPath, string frameFeaturesCollectionPath, string httpUtilitiesPath)
         {
             var knownHeadersContent = KnownHeaders.GeneratedFile();
             var frameFeatureCollectionContent = FrameFeatureCollection.GeneratedFile();
+            var httpUtilitiesContent = HttpUtilities.HttpUtilities.GeneratedFile();
 
             var existingKnownHeaders = File.Exists(knownHeadersPath) ? File.ReadAllText(knownHeadersPath) : "";
             if (!string.Equals(knownHeadersContent, existingKnownHeaders))
@@ -41,6 +47,12 @@ namespace CodeGenerator
             if (!string.Equals(frameFeatureCollectionContent, existingFrameFeatureCollection))
             {
                 File.WriteAllText(frameFeaturesCollectionPath, frameFeatureCollectionContent);
+            }
+
+            var existingHttpUtilities = File.Exists(httpUtilitiesPath) ? File.ReadAllText(httpUtilitiesPath) : "";
+            if (!string.Equals(httpUtilitiesContent, existingHttpUtilities))
+            {
+                File.WriteAllText(httpUtilitiesPath, httpUtilitiesContent);
             }
         }
     }
