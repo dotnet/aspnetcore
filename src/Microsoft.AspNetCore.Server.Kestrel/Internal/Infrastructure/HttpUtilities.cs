@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             for (i = 0; i < Math.Min(span.Length, maxChars); ++i)
             {
                 var ch = span[i];
-                sb.Append(ch < 0x20 || ch >= 0x7F ? $"<0x{ch:X2}>" : ((char)ch).ToString());
+                sb.Append(ch < 0x20 || ch >= 0x7F ? $"\\x{ch:X2}" : ((char)ch).ToString());
             }
 
             if (span.Length > maxChars)

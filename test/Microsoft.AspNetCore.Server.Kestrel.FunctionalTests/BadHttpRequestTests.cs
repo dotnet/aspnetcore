@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 foreach (var requestLine in HttpParsingData.RequestLineInvalidData)
                 {
-                    data.Add(requestLine, $"Invalid request line: {requestLine.Replace("\r", "<0x0D>").Replace("\n", "<0x0A>")}");
+                    data.Add(requestLine, $"Invalid request line: {requestLine.Replace("\r", "\\x0D").Replace("\n", "\\x0A")}");
                 }
 
                 foreach (var requestLine in HttpParsingData.RequestLineWithEncodedNullCharInTargetData)
