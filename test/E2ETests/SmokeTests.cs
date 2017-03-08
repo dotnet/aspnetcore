@@ -195,7 +195,7 @@ namespace E2ETests
 
                 if (applicationType == ApplicationType.Standalone)
                 {
-                    deploymentParameters.AdditionalPublishParameters = "/p:RuntimeIdentifier=" + RuntimeEnvironment.GetRuntimeIdentifier();
+                    deploymentParameters.AdditionalPublishParameters = " -r " + RuntimeEnvironment.GetRuntimeIdentifier();
                 }
 
                 // Override the connection strings using environment based configuration

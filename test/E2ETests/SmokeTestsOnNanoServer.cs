@@ -13,6 +13,8 @@ using Xunit.Abstractions;
 
 namespace E2ETests
 {
+    // These tests publish(on the machine where these tests on run) the MusicStore app to a local folder first
+    // and then copy the published output to the target NanoServer and launch them.
     public class SmokeTestsOnNanoServerUsingStandaloneRuntime : IDisposable
     {
         private readonly SmokeTestsOnNanoServer _smokeTestsOnNanoServer;
@@ -263,6 +265,15 @@ namespace E2ETests
                     ApplicationBaseUriHint = applicationBaseUrl,
                     ApplicationType = applicationType
                 };
+
+                if (applicationType == ApplicationType.Standalone)
+                {
+                    // Unable to use the RuntimeEnvironment.GetRuntimeIdentifier API here as NanoServer which is
+                    // part of Windows Server 2016 has a RID of 'win10-x64' where as the CI servers currently
+                    // run on Windows Server 2012 or less, which have different RIDs.
+                    deploymentParameters.AdditionalPublishParameters = "-r win10-x64";
+                }
+
                 deploymentParameters.EnvironmentVariables.Add(
                     new KeyValuePair<string, string>("ASPNETCORE_ENVIRONMENT", "SocialTesting"));
 
