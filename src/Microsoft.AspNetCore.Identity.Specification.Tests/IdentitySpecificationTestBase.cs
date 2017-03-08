@@ -457,7 +457,6 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsFailure(await manager.CreateAsync(user), _errorDescriber.InvalidEmail(email));
         }
 
-#if NET452
         /// <summary>
         /// Test.
         /// </summary>
@@ -476,7 +475,6 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.Options.User.RequireUniqueEmail = true;
             IdentityResultAssert.IsFailure(await manager.CreateAsync(user), _errorDescriber.InvalidEmail(email));
         }
-#endif
 
         /// <summary>
         /// Test.

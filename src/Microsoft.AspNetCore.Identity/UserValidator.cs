@@ -3,12 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
-#if NET451
-using System.Net.Mail;
-#endif
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Identity
@@ -91,17 +87,11 @@ namespace Microsoft.AspNetCore.Identity
                 errors.Add(Describer.InvalidEmail(email));
                 return;
             }
-#if NET451
-            try
-            {
-                var m = new MailAddress(email);
-            }
-            catch (FormatException)
+            if (!new EmailAddressAttribute().IsValid(email))
             {
                 errors.Add(Describer.InvalidEmail(email));
                 return;
             }
-#endif
             var owner = await manager.FindByEmailAsync(email);
             if (owner != null && 
                 !string.Equals(await manager.GetUserIdAsync(owner), await manager.GetUserIdAsync(user)))

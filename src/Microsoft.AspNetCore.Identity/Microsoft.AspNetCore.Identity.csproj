@@ -11,5 +11,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="1.2.0-*" />
     <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="$(CoreFxVersion)" />
   </ItemGroup>
 </Project>
