@@ -112,113 +112,144 @@ namespace Microsoft.AspNetCore.Testing
             "GET / HTTP/1.1\r",
         };
 
-        public static IEnumerable<string> RequestLineInvalidData => new[]
+        public static IEnumerable<string> RequestLineInvalidData
         {
-            "G\r\n",
-            "GE\r\n",
-            "GET\r\n",
-            "GET \r\n",
-            "GET /\r\n",
-            "GET / \r\n",
-            "GET/HTTP/1.1\r\n",
-            "GET /HTTP/1.1\r\n",
-            " \r\n",
-            "  \r\n",
-            "/ HTTP/1.1\r\n",
-            " / HTTP/1.1\r\n",
-            "/ \r\n",
-            "GET  \r\n",
-            "GET  HTTP/1.0\r\n",
-            "GET  HTTP/1.1\r\n",
-            "GET / \n",
-            "GET / HTTP/1.0\n",
-            "GET / HTTP/1.1\n",
-            "GET / HTTP/1.0\rA\n",
-            "GET / HTTP/1.1\ra\n",
-            "GET? / HTTP/1.1\r\n",
-            "GET ? HTTP/1.1\r\n",
-            "GET /a?b=cHTTP/1.1\r\n",
-            "GET /a%20bHTTP/1.1\r\n",
-            "GET /a%20b?c=dHTTP/1.1\r\n",
-            "GET %2F HTTP/1.1\r\n",
-            "GET %00 HTTP/1.1\r\n",
-            "CUSTOM \r\n",
-            "CUSTOM /\r\n",
-            "CUSTOM / \r\n",
-            "CUSTOM /HTTP/1.1\r\n",
-            "CUSTOM  \r\n",
-            "CUSTOM  HTTP/1.0\r\n",
-            "CUSTOM  HTTP/1.1\r\n",
-            "CUSTOM / \n",
-            "CUSTOM / HTTP/1.0\n",
-            "CUSTOM / HTTP/1.1\n",
-            "CUSTOM / HTTP/1.0\rA\n",
-            "CUSTOM / HTTP/1.1\ra\n",
-            "CUSTOM ? HTTP/1.1\r\n",
-            "CUSTOM /a?b=cHTTP/1.1\r\n",
-            "CUSTOM /a%20bHTTP/1.1\r\n",
-            "CUSTOM /a%20b?c=dHTTP/1.1\r\n",
-            "CUSTOM %2F HTTP/1.1\r\n",
-            "CUSTOM %00 HTTP/1.1\r\n",
+            get
+            {
+                return new[]
+                {
+                    "G\r\n",
+                    "GE\r\n",
+                    "GET\r\n",
+                    "GET \r\n",
+                    "GET /\r\n",
+                    "GET / \r\n",
+                    "GET/HTTP/1.1\r\n",
+                    "GET /HTTP/1.1\r\n",
+                    " \r\n",
+                    "  \r\n",
+                    "/ HTTP/1.1\r\n",
+                    " / HTTP/1.1\r\n",
+                    "/ \r\n",
+                    "GET  \r\n",
+                    "GET  HTTP/1.0\r\n",
+                    "GET  HTTP/1.1\r\n",
+                    "GET / \n",
+                    "GET / HTTP/1.0\n",
+                    "GET / HTTP/1.1\n",
+                    "GET / HTTP/1.0\rA\n",
+                    "GET / HTTP/1.1\ra\n",
+                    "GET? / HTTP/1.1\r\n",
+                    "GET ? HTTP/1.1\r\n",
+                    "GET /a?b=cHTTP/1.1\r\n",
+                    "GET /a%20bHTTP/1.1\r\n",
+                    "GET /a%20b?c=dHTTP/1.1\r\n",
+                    "GET %2F HTTP/1.1\r\n",
+                    "GET %00 HTTP/1.1\r\n",
+                    "CUSTOM \r\n",
+                    "CUSTOM /\r\n",
+                    "CUSTOM / \r\n",
+                    "CUSTOM /HTTP/1.1\r\n",
+                    "CUSTOM  \r\n",
+                    "CUSTOM  HTTP/1.0\r\n",
+                    "CUSTOM  HTTP/1.1\r\n",
+                    "CUSTOM / \n",
+                    "CUSTOM / HTTP/1.0\n",
+                    "CUSTOM / HTTP/1.1\n",
+                    "CUSTOM / HTTP/1.0\rA\n",
+                    "CUSTOM / HTTP/1.1\ra\n",
+                    "CUSTOM ? HTTP/1.1\r\n",
+                    "CUSTOM /a?b=cHTTP/1.1\r\n",
+                    "CUSTOM /a%20bHTTP/1.1\r\n",
+                    "CUSTOM /a%20b?c=dHTTP/1.1\r\n",
+                    "CUSTOM %2F HTTP/1.1\r\n",
+                    "CUSTOM %00 HTTP/1.1\r\n",
+                }.Concat(MethodWithNonTokenCharData.Select(method => $"{method} / HTTP/1.0\r\n"));
+            }
+        }
+
+        // Bad HTTP Methods (invalid according to RFC)
+        public static IEnumerable<string> MethodWithNonTokenCharData
+        {
+            get
+            {
+                return new[]
+                {
+                    "(",
+                    ")",
+                    "<",
+                    ">",
+                    "@",
+                    ",",
+                    ";",
+                    ":",
+                    "\\",
+                    "\"",
+                    "/",
+                    "[",
+                    "]",
+                    "?",
+                    "=",
+                    "{",
+                    "}",
+                    "get@",
+                    "post=",
+                }.Concat(MethodWithNullCharData);
+            }
+        }
+
+        public static IEnumerable<string> MethodWithNullCharData => new[]
+        {
             // Bad HTTP Methods (invalid according to RFC)
-            "( / HTTP/1.0\r\n",
-            ") / HTTP/1.0\r\n",
-            "< / HTTP/1.0\r\n",
-            "> / HTTP/1.0\r\n",
-            "@ / HTTP/1.0\r\n",
-            ", / HTTP/1.0\r\n",
-            "; / HTTP/1.0\r\n",
-            ": / HTTP/1.0\r\n",
-            "\\ / HTTP/1.0\r\n",
-            "\" / HTTP/1.0\r\n",
-            "/ / HTTP/1.0\r\n",
-            "[ / HTTP/1.0\r\n",
-            "] / HTTP/1.0\r\n",
-            "? / HTTP/1.0\r\n",
-            "= / HTTP/1.0\r\n",
-            "{ / HTTP/1.0\r\n",
-            "} / HTTP/1.0\r\n",
-            "get@ / HTTP/1.0\r\n",
-            "post= / HTTP/1.0\r\n",
+            "\0",
+            "\0GET",
+            "G\0T",
+            "GET\0",
         };
 
-        public static IEnumerable<string> RequestLineWithEncodedNullCharInTargetData => new[]
+        public static IEnumerable<string> TargetWithEncodedNullCharData => new[]
         {
-            "GET /%00 HTTP/1.1\r\n",
-            "GET /%00%00 HTTP/1.1\r\n",
-            "GET /%E8%00%84 HTTP/1.1\r\n",
-            "GET /%E8%85%00 HTTP/1.1\r\n",
-            "GET /%F3%00%82%86 HTTP/1.1\r\n",
-            "GET /%F3%85%00%82 HTTP/1.1\r\n",
-            "GET /%F3%85%82%00 HTTP/1.1\r\n",
-            "GET /%E8%01%00 HTTP/1.1\r\n",
+            "/%00",
+            "/%00%00",
+            "/%E8%00%84",
+            "/%E8%85%00",
+            "/%F3%00%82%86",
+            "/%F3%85%00%82",
+            "/%F3%85%82%00",
         };
 
-        public static TheoryData<string> RequestLineWithInvalidRequestTarget => new TheoryData<string>
+        public static TheoryData<string, string> TargetInvalidData
         {
-            // Invalid absolute-form requests
-            "GET http:// HTTP/1.1\r\n",
-            "GET http:/ HTTP/1.1\r\n",
-            "GET https:/ HTTP/1.1\r\n",
-            "GET http:/// HTTP/1.1\r\n",
-            "GET https:// HTTP/1.1\r\n",
-            "GET http://// HTTP/1.1\r\n",
-            "GET http://:80 HTTP/1.1\r\n",
-            "GET http://:80/abc HTTP/1.1\r\n",
-            "GET http://user@ HTTP/1.1\r\n",
-            "GET http://user@/abc HTTP/1.1\r\n",
-            "GET http://abc%20xyz/abc HTTP/1.1\r\n",
-            "GET http://%20/abc?query=%0A HTTP/1.1\r\n",
-            // Valid absolute-form but with unsupported schemes
-            "GET otherscheme://host/ HTTP/1.1\r\n",
-            "GET ws://host/ HTTP/1.1\r\n",
-            "GET wss://host/ HTTP/1.1\r\n",
-            // Must only have one asterisk
-            "OPTIONS ** HTTP/1.1\r\n",
-            // Relative form
-            "GET ../../ HTTP/1.1\r\n",
-            "GET ..\\. HTTP/1.1\r\n",
-        };
+            get
+            {
+                var data = new TheoryData<string, string>();
+
+                // Invalid absolute-form
+                data.Add("GET", "http://");
+                data.Add("GET", "http:/");
+                data.Add("GET", "https:/");
+                data.Add("GET", "http:///");
+                data.Add("GET", "https://");
+                data.Add("GET", "http:////");
+                data.Add("GET", "http://:80");
+                data.Add("GET", "http://:80/abc");
+                data.Add("GET", "http://user@");
+                data.Add("GET", "http://user@/abc");
+                data.Add("GET", "http://abc%20xyz/abc");
+                data.Add("GET", "http://%20/abc?query=%0A");
+                // Valid absolute-form but with unsupported schemes
+                data.Add("GET", "otherscheme://host/");
+                data.Add("GET", "ws://host/");
+                data.Add("GET", "wss://host/");
+                // Must only have one asterisk
+                data.Add("OPTIONS", "**");
+                // Relative form
+                data.Add("GET", "../../");
+                data.Add("GET", "..\\.");
+
+                return data;
+            }
+        }
 
         public static TheoryData<string, HttpMethod> MethodNotAllowedRequestLine
         {
@@ -234,36 +265,44 @@ namespace Microsoft.AspNetCore.Testing
                     "TRACE",
                     "PATCH",
                     "CONNECT",
-                    //"OPTIONS",
+                    "OPTIONS",
                     "CUSTOM",
                 };
 
-                var theoryData = new TheoryData<string, HttpMethod>();
-                foreach (var line in methods
-                    .Select(m => Tuple.Create($"{m} * HTTP/1.1\r\n", HttpMethod.Options))
-                    .Concat(new[]
-                    {
-                        // CONNECT required for authority-form targets
-                        Tuple.Create("GET http:80 HTTP/1.1\r\n", HttpMethod.Connect),
-                        Tuple.Create("GET http: HTTP/1.1\r\n", HttpMethod.Connect),
-                        Tuple.Create("GET https: HTTP/1.1\r\n", HttpMethod.Connect),
-                        Tuple.Create("GET . HTTP/1.1\r\n", HttpMethod.Connect),
-                    }))
+                var data = new TheoryData<string, HttpMethod>();
+
+                foreach (var method in methods.Except(new[] { "OPTIONS" }))
                 {
-                    theoryData.Add(line.Item1, line.Item2);
+                    data.Add($"{method} * HTTP/1.1\r\n", HttpMethod.Options);
                 }
 
-                return theoryData;
+                foreach (var method in methods.Except(new[] { "CONNECT" }))
+                {
+                    data.Add($"{method} www.example.com:80 HTTP/1.1\r\n", HttpMethod.Connect);
+                }
+
+                return data;
             }
         }
 
-        public static IEnumerable<string> RequestLineWithNullCharInTargetData => new[]
+        public static IEnumerable<string> TargetWithNullCharData
         {
-            // TODO re-enable after we get both #1469 and #1470 merged
-            // "GET \0 HTTP/1.1\r\n",
-            "GET /\0 HTTP/1.1\r\n",
-            "GET /\0\0 HTTP/1.1\r\n",
-            "GET /%C8\0 HTTP/1.1\r\n",
+            get
+            {
+                return new[]
+                {
+                    "\0",
+                    "/\0",
+                    "/\0\0",
+                    "/%C8\0",
+                }.Concat(QueryStringWithNullCharData);
+            }
+        }
+
+        public static IEnumerable<string> QueryStringWithNullCharData => new[]
+        {
+            "/?\0=a",
+            "/?a=\0",
         };
 
         public static TheoryData<string> UnrecognizedHttpVersionData => new TheoryData<string>

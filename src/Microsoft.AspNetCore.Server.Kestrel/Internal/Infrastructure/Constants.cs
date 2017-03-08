@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
     {
         public const int ListenBacklog = 128;
 
+        public const int MaxExceptionDetailSize = 128;
+
         public const int EOF = -4095;
         public static readonly int? ECONNRESET = GetECONNRESET();
         public static readonly int? EADDRINUSE = GetEADDRINUSE();

@@ -126,8 +126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         {
             var sb = new StringBuilder();
 
-            int i;
-            for (i = 0; i < Math.Min(span.Length, maxChars); ++i)
+            for (var i = 0; i < Math.Min(span.Length, maxChars); i++)
             {
                 var ch = span[i];
                 sb.Append(ch < 0x20 || ch >= 0x7F ? $"\\x{ch:X2}" : ((char)ch).ToString());
@@ -137,6 +136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
             {
                 sb.Append("...");
             }
+
             return sb.ToString();
         }
 

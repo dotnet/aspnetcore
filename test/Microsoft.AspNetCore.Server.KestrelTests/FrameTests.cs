@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -302,37 +303,39 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Theory]
-        [MemberData(nameof(RequestLineWithEncodedNullCharInTargetData))]
-        public async Task TakeStartLineThrowsOnEncodedNullCharInTarget(string requestLine)
+        [MemberData(nameof(TargetWithEncodedNullCharData))]
+        public async Task TakeStartLineThrowsOnEncodedNullCharInTarget(string target)
         {
-            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes(requestLine));
+            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes($"GET {target} HTTP/1.1\r\n"));
             var readableBuffer = (await _input.Reader.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<InvalidOperationException>(() =>
+            var exception = Assert.Throws<BadHttpRequestException>(() =>
                 _frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
             _input.Reader.Advance(_consumed, _examined);
 
-            Assert.Equal("The path contains null characters.", exception.Message);
+            Assert.Equal($"Invalid request target: '{target}'", exception.Message);
         }
 
         [Theory]
-        [MemberData(nameof(RequestLineWithNullCharInTargetData))]
-        public async Task TakeStartLineThrowsOnNullCharInTarget(string requestLine)
+        [MemberData(nameof(TargetWithNullCharData))]
+        public async Task TakeStartLineThrowsOnNullCharInTarget(string target)
         {
-            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes(requestLine));
+            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes($"GET {target} HTTP/1.1\r\n"));
             var readableBuffer = (await _input.Reader.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<InvalidOperationException>(() =>
+            var exception = Assert.Throws<BadHttpRequestException>(() =>
                 _frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
             _input.Reader.Advance(_consumed, _examined);
 
-            Assert.Equal(new InvalidOperationException().Message, exception.Message);
+            Assert.Equal($"Invalid request target: '{target.EscapeNonPrintable()}'", exception.Message);
         }
 
         [Theory]
-        [MemberData(nameof(RequestLineWithInvalidRequestTargetData))]
-        public async Task TakeStartLineThrowsWhenRequestTargetIsInvalid(string requestLine)
+        [MemberData(nameof(MethodWithNullCharData))]
+        public async Task TakeStartLineThrowsOnNullCharInMethod(string method)
         {
+            var requestLine = $"{method} / HTTP/1.1\r\n";
+
             await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes(requestLine));
             var readableBuffer = (await _input.Reader.ReadAsync()).Buffer;
 
@@ -340,9 +343,40 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 _frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
             _input.Reader.Advance(_consumed, _examined);
 
-            Assert.Equal($"Invalid request line: '{Escape(requestLine)}'", exception.Message);
+            Assert.Equal($"Invalid request line: '{requestLine.EscapeNonPrintable()}'", exception.Message);
         }
 
+        [Theory]
+        [MemberData(nameof(QueryStringWithNullCharData))]
+        public async Task TakeStartLineThrowsOnNullCharInQueryString(string queryString)
+        {
+            var target = $"/{queryString}";
+
+            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes($"GET {target} HTTP/1.1\r\n"));
+            var readableBuffer = (await _input.Reader.ReadAsync()).Buffer;
+
+            var exception = Assert.Throws<BadHttpRequestException>(() =>
+                _frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
+            _input.Reader.Advance(_consumed, _examined);
+
+            Assert.Equal($"Invalid request target: '{target.EscapeNonPrintable()}'", exception.Message);
+        }
+
+        [Theory]
+        [MemberData(nameof(TargetInvalidData))]
+        public async Task TakeStartLineThrowsWhenRequestTargetIsInvalid(string method, string target)
+        {
+            var requestLine = $"{method} {target} HTTP/1.1\r\n";
+
+            await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes(requestLine));
+            var readableBuffer = (await _input.Reader.ReadAsync()).Buffer;
+
+            var exception = Assert.Throws<BadHttpRequestException>(() =>
+                _frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
+            _input.Reader.Advance(_consumed, _examined);
+
+            Assert.Equal($"Invalid request target: '{target.EscapeNonPrintable()}'", exception.Message);
+        }
 
         [Theory]
         [MemberData(nameof(MethodNotAllowedTargetData))]
@@ -531,51 +565,98 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.NotSame(original, _frame.RequestAborted.WaitHandle);
         }
 
+        [Fact]
+        public async Task ExceptionDetailNotIncludedWhenLogLevelInformationNotEnabled()
+        {
+            var previousLog = _serviceContext.Log;
+
+            try
+            {
+                var mockTrace = new Mock<IKestrelTrace>();
+                mockTrace
+                    .Setup(trace => trace.IsEnabled(LogLevel.Information))
+                    .Returns(false);
+
+                _serviceContext.Log = mockTrace.Object;
+
+                await _input.Writer.WriteAsync(Encoding.ASCII.GetBytes($"GET /%00 HTTP/1.1\r\n"));
+                var readableBuffer = (await _input.Reader.ReadAsync()).Buffer;
+
+                var exception = Assert.Throws<BadHttpRequestException>(() =>
+                    _frame.TakeStartLine(readableBuffer, out _consumed, out _examined));
+                _input.Reader.Advance(_consumed, _examined);
+
+                Assert.Equal("Invalid request target: ''", exception.Message);
+                Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
+            }
+            finally
+            {
+                _serviceContext.Log = previousLog;
+            }
+        }
+
         public static IEnumerable<object> ValidRequestLineData => HttpParsingData.RequestLineValidData;
 
-        public static TheoryData<string> RequestLineWithEncodedNullCharInTargetData
+        public static TheoryData<string> TargetWithEncodedNullCharData
         {
             get
             {
                 var data = new TheoryData<string>();
 
-                foreach (var requestLine in HttpParsingData.RequestLineWithEncodedNullCharInTargetData)
+                foreach (var target in HttpParsingData.TargetWithEncodedNullCharData)
                 {
-                    data.Add(requestLine);
+                    data.Add(target);
                 }
 
                 return data;
             }
         }
 
-        private string Escape(string requestLine)
-        {
-            var ellipsis = requestLine.Length > 32
-                ? "..."
-                : string.Empty;
-            return requestLine
-                .Substring(0, Math.Min(32, requestLine.Length))
-                .Replace("\r", @"\x0D")
-                .Replace("\n", @"\x0A")
-                .Replace("\0", @"\x00")
-                + ellipsis;
-        }
-
-        public static TheoryData<string> RequestLineWithInvalidRequestTargetData 
-            => HttpParsingData.RequestLineWithInvalidRequestTarget;
+        public static TheoryData<string, string> TargetInvalidData 
+            => HttpParsingData.TargetInvalidData;
 
         public static TheoryData<string, HttpMethod> MethodNotAllowedTargetData
             => HttpParsingData.MethodNotAllowedRequestLine;
 
-        public static TheoryData<string> RequestLineWithNullCharInTargetData
+        public static TheoryData<string> TargetWithNullCharData
         {
             get
             {
                 var data = new TheoryData<string>();
 
-                foreach (var requestLine in HttpParsingData.RequestLineWithNullCharInTargetData)
+                foreach (var target in HttpParsingData.TargetWithNullCharData)
                 {
-                    data.Add(requestLine);
+                    data.Add(target);
+                }
+
+                return data;
+            }
+        }
+
+        public static TheoryData<string> MethodWithNullCharData
+        {
+            get
+            {
+                var data = new TheoryData<string>();
+
+                foreach (var target in HttpParsingData.MethodWithNullCharData)
+                {
+                    data.Add(target);
+                }
+
+                return data;
+            }
+        }
+
+        public static TheoryData<string> QueryStringWithNullCharData
+        {
+            get
+            {
+                var data = new TheoryData<string>();
+
+                foreach (var target in HttpParsingData.QueryStringWithNullCharData)
+                {
+                    data.Add(target);
                 }
 
                 return data;

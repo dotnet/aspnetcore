@@ -117,14 +117,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             if (pathStart == -1)
             {
-                // End of path not found
+                // Start of path not found
                 RejectRequestLine(data, length);
             }
 
             var pathBuffer = new Span<byte>(data + pathStart, offset - pathStart);
 
-            var queryStart = offset;
             // Query string
+            var queryStart = offset;
             if (ch == ByteQuestionMark)
             {
                 // We have a query string
@@ -138,6 +138,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 }
             }
 
+            // End of query string not found
+            if (offset == length)
+            {
+                RejectRequestLine(data, length);
+            }
+
             var targetBuffer = new Span<byte>(data + pathStart, offset - pathStart);
             var query = new Span<byte>(data + queryStart, offset - queryStart);
 
@@ -148,10 +154,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             var httpVersion = HttpUtilities.GetKnownVersion(data + offset, length - offset);
             if (httpVersion == HttpVersion.Unknown)
             {
-                RejectUnknownVersion(data, length, offset);
+                if (data[offset] == ByteCR || data[length - 2] != ByteCR)
+                {
+                    // If missing delimiter or CR before LF, reject and log entire line
+                    RejectRequestLine(data, length);
+                }
+                else
+                {
+                    // else inform HTTP version is unsupported.
+                    RejectUnknownVersion(data + offset, length - offset - 2);
+                }
             }
 
-            //  After version 8 bytes and cr 1 byte, expect lf
+            // After version's 8 bytes and CR, expect LF
             if (data[offset + 8 + 1] != ByteLF)
             {
                 RejectRequestLine(data, length);
@@ -159,7 +174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             var line = new Span<byte>(data, length);
 
-            handler.OnStartLine(method, httpVersion, targetBuffer, pathBuffer, query, customMethod, line, pathEncoded);
+            handler.OnStartLine(method, httpVersion, targetBuffer, pathBuffer, query, customMethod, pathEncoded);
         }
 
         public unsafe bool ParseHeaders<T>(T handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined, out int consumedBytes) where T : IHttpHeadersHandler
@@ -482,73 +497,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 c == '~';
         }
 
-        public static void RejectRequest(RequestRejectionReason reason)
-        {
-            throw BadHttpRequestException.GetException(reason);
-        }
+        private void RejectRequest(RequestRejectionReason reason)
+            => throw BadHttpRequestException.GetException(reason);
 
-        private unsafe void RejectUnknownVersion(byte* data, int length, int versionStart)
-        {
-            throw GetRejectUnknownVersion(data, length, versionStart);
-        }
-
-        private unsafe void RejectRequestLine(byte* data, int length)
-        {
-            throw GetRejectRequestLineException(new Span<byte>(data, length));
-        }
-
-        private void RejectRequestLine(Span<byte> span)
-        {
-            throw GetRejectRequestLineException(span);
-        }
-
-        private BadHttpRequestException GetRejectRequestLineException(Span<byte> span)
-        {
-            const int MaxRequestLineError = 32;
-            return BadHttpRequestException.GetException(RequestRejectionReason.InvalidRequestLine,
-                Log.IsEnabled(LogLevel.Information) ? span.GetAsciiStringEscaped(MaxRequestLineError) : string.Empty);
-        }
-
-        private unsafe BadHttpRequestException GetRejectUnknownVersion(byte* data, int length, int versionStart)
-        {
-            var span = new Span<byte>(data, length);
-            length -= versionStart;
-            for (var i = 0; i < length; i++)
-            {
-                var ch = span[i + versionStart];
-                if (ch == ByteCR)
-                {
-                    if (i == 0)
-                    {
-                        return GetRejectRequestLineException(span);
-                    }
-                    else
-                    {
-                        return BadHttpRequestException.GetException(RequestRejectionReason.UnrecognizedHTTPVersion,
-                            span.Slice(versionStart, i).GetAsciiStringEscaped(32));
-                    }
-                }
-            }
-
-            return GetRejectRequestLineException(span);
-        }
+        private unsafe void RejectRequestLine(byte* requestLine, int length)
+            => throw GetInvalidRequestException(RequestRejectionReason.InvalidRequestLine, requestLine, length);
 
         private unsafe void RejectRequestHeader(byte* headerLine, int length)
-        {
-            RejectRequestHeader(new Span<byte>(headerLine, length));
-        }
+            => throw GetInvalidRequestException(RequestRejectionReason.InvalidRequestHeader, headerLine, length);
 
-        private void RejectRequestHeader(Span<byte> span)
-        {
-            throw GetRejectRequestHeaderException(span);
-        }
+        private unsafe void RejectUnknownVersion(byte* version, int length)
+            => throw GetInvalidRequestException(RequestRejectionReason.UnrecognizedHTTPVersion, version, length);
 
-        private BadHttpRequestException GetRejectRequestHeaderException(Span<byte> span)
-        {
-            const int MaxRequestHeaderError = 128;
-            return BadHttpRequestException.GetException(RequestRejectionReason.InvalidRequestHeader,
-                Log.IsEnabled(LogLevel.Information) ? span.GetAsciiStringEscaped(MaxRequestHeaderError) : string.Empty);
-        }
+        private unsafe BadHttpRequestException GetInvalidRequestException(RequestRejectionReason reason, byte* detail, int length)
+            => BadHttpRequestException.GetException(
+                reason,
+                Log.IsEnabled(LogLevel.Information)
+                    ? new Span<byte>(detail, length).GetAsciiStringEscaped(Constants.MaxExceptionDetailSize)
+                    : string.Empty);
 
         public void Reset()
         {

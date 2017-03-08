@@ -126,7 +126,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                     new Span<byte>(_target),
                     Span<byte>.Empty,
                     Span<byte>.Empty,
-                    new Span<byte>(_startLine),
                     false);
 
                 consumed = buffer.Start;

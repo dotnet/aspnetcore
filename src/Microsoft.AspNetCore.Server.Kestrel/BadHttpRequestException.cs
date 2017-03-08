@@ -87,31 +87,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             return ex;
         }
 
-        internal static BadHttpRequestException GetException(RequestRejectionReason reason, string value)
+        internal static BadHttpRequestException GetException(RequestRejectionReason reason, string detail)
         {
             BadHttpRequestException ex;
             switch (reason)
             {
                 case RequestRejectionReason.InvalidRequestLine:
-                    ex = new BadHttpRequestException($"Invalid request line: '{value}'", StatusCodes.Status400BadRequest);
+                    ex = new BadHttpRequestException($"Invalid request line: '{detail}'", StatusCodes.Status400BadRequest);
+                    break;
+                case RequestRejectionReason.InvalidRequestTarget:
+                    ex = new BadHttpRequestException($"Invalid request target: '{detail}'", StatusCodes.Status400BadRequest);
                     break;
                 case RequestRejectionReason.InvalidRequestHeader:
-                    ex = new BadHttpRequestException($"Invalid request header: '{value}'", StatusCodes.Status400BadRequest);
+                    ex = new BadHttpRequestException($"Invalid request header: '{detail}'", StatusCodes.Status400BadRequest);
                     break;
                 case RequestRejectionReason.InvalidContentLength:
-                    ex = new BadHttpRequestException($"Invalid content length: {value}", StatusCodes.Status400BadRequest);
+                    ex = new BadHttpRequestException($"Invalid content length: {detail}", StatusCodes.Status400BadRequest);
                     break;
                 case RequestRejectionReason.UnrecognizedHTTPVersion:
-                    ex = new BadHttpRequestException($"Unrecognized HTTP version: {value}", StatusCodes.Status505HttpVersionNotsupported);
+                    ex = new BadHttpRequestException($"Unrecognized HTTP version: '{detail}'", StatusCodes.Status505HttpVersionNotsupported);
                     break;
                 case RequestRejectionReason.FinalTransferCodingNotChunked:
-                    ex = new BadHttpRequestException($"Final transfer coding is not \"chunked\": \"{value}\"", StatusCodes.Status400BadRequest);
+                    ex = new BadHttpRequestException($"Final transfer coding is not \"chunked\": \"{detail}\"", StatusCodes.Status400BadRequest);
                     break;
                 case RequestRejectionReason.LengthRequired:
-                    ex = new BadHttpRequestException($"{value} request contains no Content-Length or Transfer-Encoding header", StatusCodes.Status411LengthRequired);
+                    ex = new BadHttpRequestException($"{detail} request contains no Content-Length or Transfer-Encoding header", StatusCodes.Status411LengthRequired);
                     break;
                 case RequestRejectionReason.LengthRequiredHttp10:
-                    ex = new BadHttpRequestException($"{value} request contains no Content-Length header", StatusCodes.Status400BadRequest);
+                    ex = new BadHttpRequestException($"{detail} request contains no Content-Length header", StatusCodes.Status400BadRequest);
                     break;
                 default:
                     ex = new BadHttpRequestException("Bad request.", StatusCodes.Status400BadRequest);

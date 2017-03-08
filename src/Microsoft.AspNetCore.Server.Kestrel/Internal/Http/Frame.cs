@@ -1184,23 +1184,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
         }
 
         public void RejectRequest(RequestRejectionReason reason)
-        {
-            throw BadHttpRequestException.GetException(reason);
-        }
+            => throw BadHttpRequestException.GetException(reason);
 
-        public void RejectRequest(RequestRejectionReason reason, string value)
-        {
-            throw BadHttpRequestException.GetException(reason, value);
-        }
+        public void RejectRequest(RequestRejectionReason reason, string detail)
+            => throw BadHttpRequestException.GetException(reason, detail);
 
-        private void RejectRequestLine(Span<byte> requestLine)
-        {
-            Debug.Assert(Log.IsEnabled(LogLevel.Information) == true, "Use RejectRequest instead to improve inlining when log is disabled");
+        private void RejectRequestTarget(Span<byte> target)
+            => throw GetInvalidRequestTargetException(target);
 
-            const int MaxRequestLineError = 32;
-            var line = requestLine.GetAsciiStringEscaped(MaxRequestLineError);
-            throw BadHttpRequestException.GetException(RequestRejectionReason.InvalidRequestLine, line);
-        }
+        private BadHttpRequestException GetInvalidRequestTargetException(Span<byte> target)
+            => BadHttpRequestException.GetException(
+                RequestRejectionReason.InvalidRequestTarget,
+                Log.IsEnabled(LogLevel.Information)
+                    ? target.GetAsciiStringEscaped(Constants.MaxExceptionDetailSize)
+                    : string.Empty);
 
         public void SetBadRequestState(RequestRejectionReason reason)
         {
@@ -1239,7 +1236,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             Log.ApplicationError(ConnectionId, ex);
         }
 
-        public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, Span<byte> line, bool pathEncoded)
+        public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
         {
             Debug.Assert(target.Length != 0, "Request target must be non-zero length");
 
@@ -1257,15 +1254,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             }
             else if (target.GetKnownHttpScheme(out var scheme))
             {
-                OnAbsoluteFormTarget(target, query, line);
+                OnAbsoluteFormTarget(target, query);
             }
             else
             {
                 // Assume anything else is considered authority form.
                 // FYI: this should be an edge case. This should only happen when
-                // a client mistakenly things this server is a proxy server.
-
-                OnAuthorityFormTarget(method, target, line);
+                // a client mistakenly thinks this server is a proxy server.
+                OnAuthorityFormTarget(method, target);
             }
 
             Method = method != HttpMethod.Custom
@@ -1287,32 +1283,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
             // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
             // then encoded/escaped to ASCII  https://www.ietf.org/rfc/rfc3987.txt "Mapping of IRIs to URIs"
-            string requestUrlPath;
-            string rawTarget;
-            if (pathEncoded)
-            {
-                // Read raw target before mutating memory.
-                rawTarget = target.GetAsciiStringNonNullCharacters();
+            string requestUrlPath = null;
+            string rawTarget = null;
 
-                // URI was encoded, unescape and then parse as utf8
-                int pathLength = UrlEncoder.Decode(path, path);
-                requestUrlPath = GetUtf8String(path.Slice(0, pathLength));
-            }
-            else
+            try
             {
-                // URI wasn't encoded, parse as ASCII
-                requestUrlPath = path.GetAsciiStringNonNullCharacters();
-
-                if (query.Length == 0)
+                if (pathEncoded)
                 {
-                    // No need to allocate an extra string if the path didn't need
-                    // decoding and there's no query string following it.
-                    rawTarget = requestUrlPath;
+                    // Read raw target before mutating memory.
+                    rawTarget = target.GetAsciiStringNonNullCharacters();
+
+                    // URI was encoded, unescape and then parse as utf8
+                    int pathLength = UrlEncoder.Decode(path, path);
+                    requestUrlPath = GetUtf8String(path.Slice(0, pathLength));
                 }
                 else
                 {
-                    rawTarget = target.GetAsciiStringNonNullCharacters();
+                    // URI wasn't encoded, parse as ASCII
+                    requestUrlPath = path.GetAsciiStringNonNullCharacters();
+
+                    if (query.Length == 0)
+                    {
+                        // No need to allocate an extra string if the path didn't need
+                        // decoding and there's no query string following it.
+                        rawTarget = requestUrlPath;
+                    }
+                    else
+                    {
+                        rawTarget = target.GetAsciiStringNonNullCharacters();
+                    }
                 }
+            }
+            catch (InvalidOperationException)
+            {
+                RejectRequestTarget(target);
             }
 
             QueryString = query.GetAsciiStringNonNullCharacters();
@@ -1320,7 +1324,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             SetNormalizedPath(requestUrlPath);
         }
 
-        private void OnAuthorityFormTarget(HttpMethod method, Span<byte> target, Span<byte> line)
+        private void OnAuthorityFormTarget(HttpMethod method, Span<byte> target)
         {
             // TODO Validate that target is a correct host[:port] string.
             // Reject as 400 if not. This is just a quick scan for invalid characters
@@ -1330,12 +1334,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                 var ch = target[i];
                 if (!UriUtilities.IsValidAuthorityCharacter(ch))
                 {
-                    if (Log.IsEnabled(LogLevel.Information))
-                    {
-                        RejectRequestLine(line);
-                    }
-
-                    throw BadHttpRequestException.GetException(RequestRejectionReason.InvalidRequestLine);
+                    RejectRequestTarget(target);
                 }
             }
 
@@ -1348,14 +1347,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             // When making a CONNECT request to establish a tunnel through one or
             // more proxies, a client MUST send only the target URI's authority
-            // component(excluding any userinfo and its "@" delimiter) as the
-            // request - target.For example,
+            // component (excluding any userinfo and its "@" delimiter) as the
+            // request-target.For example,
             //
             //  CONNECT www.example.com:80 HTTP/1.1
             //
             // Allowed characters in the 'host + port' section of authority.
             // See https://tools.ietf.org/html/rfc3986#section-3.2
-
             RawTarget = target.GetAsciiStringNonNullCharacters();
             Path = string.Empty;
             PathBase = string.Empty;
@@ -1377,7 +1375,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
             QueryString = string.Empty;
         }
 
-        private void OnAbsoluteFormTarget(Span<byte> target, Span<byte> query, Span<byte> line)
+        private void OnAbsoluteFormTarget(Span<byte> target, Span<byte> query)
         {
             // absolute-form
             // https://tools.ietf.org/html/rfc7230#section-5.3.2
@@ -1396,12 +1394,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
 
             if (!Uri.TryCreate(RawTarget, UriKind.Absolute, out var uri))
             {
-                if (Log.IsEnabled(LogLevel.Information))
-                {
-                    RejectRequestLine(line);
-                }
-
-                throw BadHttpRequestException.GetException(RequestRejectionReason.InvalidRequestLine);
+                RejectRequestTarget(target);
             }
 
             SetNormalizedPath(uri.LocalPath);

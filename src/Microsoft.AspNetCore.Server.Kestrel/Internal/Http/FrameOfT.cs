@@ -50,12 +50,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Http
                         }
                         catch (InvalidOperationException)
                         {
-                            switch (_requestProcessingStatus)
+                            if (_requestProcessingStatus == RequestProcessingStatus.ParsingHeaders)
                             {
-                                case RequestProcessingStatus.ParsingRequestLine:
-                                    throw BadHttpRequestException.GetException(RequestRejectionReason.InvalidRequestLine);
-                                case RequestProcessingStatus.ParsingHeaders:
-                                    throw BadHttpRequestException.GetException(RequestRejectionReason.MalformedRequestInvalidHeaders);
+                                throw BadHttpRequestException.GetException(RequestRejectionReason.MalformedRequestInvalidHeaders);
                             }
                             throw;
                         }

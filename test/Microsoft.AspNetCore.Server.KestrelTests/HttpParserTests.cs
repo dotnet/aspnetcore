@@ -19,9 +19,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class HttpParserTests
     {
-        // Returns true when all headers parsed
-        // Return false otherwise
-
         [Theory]
         [MemberData(nameof(RequestLineValidData))]
         public void ParsesRequestLine(
@@ -50,9 +47,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     It.IsAny<Span<byte>>(),
                     It.IsAny<Span<byte>>(),
                     It.IsAny<Span<byte>>(),
-                    It.IsAny<Span<byte>>(),
                     It.IsAny<bool>()))
-                .Callback<HttpMethod, HttpVersion, Span<byte>, Span<byte>, Span<byte>, Span<byte>, Span<byte>, bool>((method, version, target, path, query, customMethod, line, pathEncoded) =>
+                .Callback<HttpMethod, HttpVersion, Span<byte>, Span<byte>, Span<byte>, Span<byte>, bool>((method, version, target, path, query, customMethod, pathEncoded) =>
                 {
                     parsedMethod = method != HttpMethod.Custom ? HttpUtilities.MethodToString(method) : customMethod.GetAsciiStringNonNullCharacters();
                     parsedVersion = HttpUtilities.VersionToString(version);
@@ -111,7 +107,28 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var exception = Assert.Throws<BadHttpRequestException>(() =>
                 parser.ParseRequestLine(Mock.Of<IHttpRequestLineHandler>(), buffer, out var consumed, out var examined));
 
-            Assert.Equal($"Invalid request line: '{requestLine.Replace("\r", "\\x0D").Replace("\n", "\\x0A")}'", exception.Message);
+            Assert.Equal($"Invalid request line: '{requestLine.EscapeNonPrintable()}'", exception.Message);
+            Assert.Equal(StatusCodes.Status400BadRequest, (exception as BadHttpRequestException).StatusCode);
+        }
+
+        [Theory]
+        [MemberData(nameof(MethodWithNonTokenCharData))]
+        public void ParseRequestLineThrowsOnNonTokenCharsInCustomMethod(string method)
+        {
+            var requestLine = $"{method} / HTTP/1.1\r\n";
+
+            var mockTrace = new Mock<IKestrelTrace>();
+            mockTrace
+                .Setup(trace => trace.IsEnabled(LogLevel.Information))
+                .Returns(true);
+
+            var parser = CreateParser(mockTrace.Object);
+            var buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes(requestLine));
+
+            var exception = Assert.Throws<BadHttpRequestException>(() =>
+                parser.ParseRequestLine(Mock.Of<IHttpRequestLineHandler>(), buffer, out var consumed, out var examined));
+
+            Assert.Equal($"Invalid request line: '{method.EscapeNonPrintable()} / HTTP/1.1\\x0D\\x0A'", exception.Message);
             Assert.Equal(StatusCodes.Status400BadRequest, (exception as BadHttpRequestException).StatusCode);
         }
 
@@ -132,7 +149,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var exception = Assert.Throws<BadHttpRequestException>(() =>
                 parser.ParseRequestLine(Mock.Of<IHttpRequestLineHandler>(), buffer, out var consumed, out var examined));
 
-            Assert.Equal($"Unrecognized HTTP version: {httpVersion}", exception.Message);
+            Assert.Equal($"Unrecognized HTTP version: '{httpVersion}'", exception.Message);
             Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, (exception as BadHttpRequestException).StatusCode);
         }
 
@@ -324,6 +341,44 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
+        [Fact]
+        public void ExceptionDetailNotIncludedWhenLogLevelInformationNotEnabled()
+        {
+            var mockTrace = new Mock<IKestrelTrace>();
+            mockTrace
+                .Setup(trace => trace.IsEnabled(LogLevel.Information))
+                .Returns(false);
+
+            var parser = CreateParser(mockTrace.Object);
+
+            // Invalid request line
+            var buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes("GET % HTTP/1.1\r\n"));
+
+            var exception = Assert.Throws<BadHttpRequestException>(() =>
+                parser.ParseRequestLine(Mock.Of<IHttpRequestLineHandler>(), buffer, out var consumed, out var examined));
+
+            Assert.Equal("Invalid request line: ''", exception.Message);
+            Assert.Equal(StatusCodes.Status400BadRequest, (exception as BadHttpRequestException).StatusCode);
+
+            // Unrecognized HTTP version
+            buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes("GET / HTTP/1.2\r\n"));
+
+            exception = Assert.Throws<BadHttpRequestException>(() =>
+                parser.ParseRequestLine(Mock.Of<IHttpRequestLineHandler>(), buffer, out var consumed, out var examined));
+
+            Assert.Equal("Unrecognized HTTP version: ''", exception.Message);
+            Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, (exception as BadHttpRequestException).StatusCode);
+
+            // Invalid request header
+            buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes("Header: value\n\r\n"));
+
+            exception = Assert.Throws<BadHttpRequestException>(() =>
+                parser.ParseHeaders(Mock.Of<IHttpHeadersHandler>(), buffer, out var consumed, out var examined, out var consumedBytes));
+
+            Assert.Equal("Invalid request header: ''", exception.Message);
+            Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
+        }
+
         private void VerifyHeader(
             string headerName,
             string rawHeaderValue,
@@ -383,6 +438,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         public static IEnumerable<object[]> RequestLineIncompleteData => HttpParsingData.RequestLineIncompleteData.Select(requestLine => new[] { requestLine });
 
         public static IEnumerable<object[]> RequestLineInvalidData => HttpParsingData.RequestLineInvalidData.Select(requestLine => new[] { requestLine });
+
+        public static IEnumerable<object[]> MethodWithNonTokenCharData => HttpParsingData.MethodWithNonTokenCharData.Select(method => new[] { method });
 
         public static TheoryData<string> UnrecognizedHttpVersionData => HttpParsingData.UnrecognizedHttpVersionData;
 
