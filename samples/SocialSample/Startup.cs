@@ -238,9 +238,9 @@ namespace SocialSample
             app.UseOAuthAuthentication(githubOptions);
 
             // Choose an authentication type
-            app.Map("/login", signoutApp =>
+            app.Map("/login", signinApp =>
             {
-                signoutApp.Run(async context =>
+                signinApp.Run(async context =>
                 {
                     var authType = context.Request.Query["authscheme"];
                     if (!string.IsNullOrEmpty(authType))
