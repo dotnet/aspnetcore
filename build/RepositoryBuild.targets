@@ -65,7 +65,7 @@
        DestinationFolder="$(UniverseBuildDir)" />
 
     <Exec
-      Command="$(DotNetPath) nuget push &quot;%(RepositoryArtifacts.Identity)&quot; -s $(NuGetFeed) -k $(APIKEY)"
+      Command="$(DotNetPath) nuget push &quot;%(RepositoryArtifacts.Identity)&quot; -s $(NuGetPublishVolatileFeed) -k $(APIKEY)"
       Condition="'$(PublishPackages)'=='true' AND '%(RepositoryArtifacts.Extension)'=='.nupkg'" />
 
     <Message Text="============ Done building $(RepositoryToBuild) ============" Importance="High" />

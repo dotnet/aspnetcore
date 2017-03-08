@@ -121,21 +121,20 @@
         _RepositoryBuildTargets=$(_RepositoryBuildTargets);
         _RestoreGraphSpecsDirectory=$(_RestoreGraphSpecsDirectory)
       </_BuildRepositoryProperties>
+
+      <_BuildRepositoryProperties Condition="'$(PublishPackages)'=='true'">
+        $(_BuildRepositoryProperties);
+        APIKey=$(APIKey)
+        DotNetPath=$(DotNetPath);
+        NuGetPublishVolatileFeed=$(NuGetPublishVolatileFeed);
+        PublishPackages=$(PublishPackages)
+      </_BuildRepositoryProperties>
     </PropertyGroup>
 
     <MSBuild
       Projects="$(MSBuildThisFileDirectory)RepositoryBuild.targets"
       Targets="BuildRepositories"
       Properties="$(_BuildRepositoryProperties)" />
-
-    <MSBuild
-      Projects="$(MSBuildThisFileDirectory)PublishPackages.targets"
-      Condition="'$(PublishPackages)'=='true'"
-      Properties="
-        PackagesDirectory=$(ArtifactsDir);
-        DotNetPath=$(DotNetPath);
-        NuGetFeed=$(NuGetPublishFeed);
-        APIKey=$(APIKey)" />
   </Target>
 
   <Target Name="_GenerateRestoreGraphSpecs" DependsOnTargets="_FindDotNetPath">
