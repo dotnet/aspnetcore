@@ -7,21 +7,22 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class TempDataInCookiesTest : TempDataTestBase, IClassFixture<MvcTestFixture<BasicWebSite.StartupWithCookieTempDataProvider>>
+    public class TempDataInCookiesTest : TempDataTestBase, IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
     {
-        public TempDataInCookiesTest(MvcTestFixture<BasicWebSite.StartupWithCookieTempDataProvider> fixture)
+        public TempDataInCookiesTest(MvcTestFixture<BasicWebSite.Startup> fixture)
         {
             Client = fixture.Client;
         }
 
         protected override HttpClient Client { get; }
+
 
         [Theory]
         [InlineData(ChunkingCookieManager.DefaultChunkSize)]
@@ -39,8 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert 1
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            IEnumerable<string> setCookieValues;
-            Assert.True(response.Headers.TryGetValues(HeaderNames.SetCookie, out setCookieValues));
+            Assert.True(response.Headers.TryGetValues(HeaderNames.SetCookie, out IEnumerable<string> setCookieValues));
             setCookieValues = setCookieValues.Where(cookie => cookie.Contains(CookieTempDataProvider.CookieName));
             Assert.NotEmpty(setCookieValues);
             // Verify that all the cookies from CookieTempDataProvider are within the maximum size
@@ -99,8 +99,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert 1
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            IEnumerable<string> setCookieValues;
-            Assert.True(response.Headers.TryGetValues(HeaderNames.SetCookie, out setCookieValues));
+            Assert.True(response.Headers.TryGetValues(HeaderNames.SetCookie, out IEnumerable<string> setCookieValues));
             var setCookieHeader = setCookieValues
                 .Select(setCookieValue => SetCookieHeaderValue.Parse(setCookieValue))
                 .FirstOrDefault(setCookieHeaderValue => setCookieHeaderValue.Name == CookieTempDataProvider.CookieName);
@@ -153,8 +152,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            IEnumerable<string> setCookieValues;
-            Assert.True(response.Headers.TryGetValues(HeaderNames.SetCookie, out setCookieValues));
+            Assert.True(response.Headers.TryGetValues(HeaderNames.SetCookie, out IEnumerable<string> setCookieValues));
             var setCookieHeader = setCookieValues
                 .Select(setCookieValue => SetCookieHeaderValue.Parse(setCookieValue))
                 .FirstOrDefault(setCookieHeaderValue => setCookieHeaderValue.Name == CookieTempDataProvider.CookieName);

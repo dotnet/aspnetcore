@@ -67,6 +67,28 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Registers <see cref="SessionStateTempDataProvider"/> as the default <see cref="ITempDataProvider"/>
+        /// in the <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcBuilder"/>.</param>
+        /// <returns>The <see cref="IMvcBuilder"/>.</returns>
+        public static IMvcBuilder AddSessionStateTempDataProvider(this IMvcBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            // Ensure the TempData basics are registered.
+            MvcViewFeaturesMvcCoreBuilderExtensions.AddViewServices(builder.Services);
+
+            var descriptor = ServiceDescriptor.Singleton(typeof(ITempDataProvider), typeof(SessionStateTempDataProvider));
+            builder.Services.Replace(descriptor);
+
+            return builder;
+        }
+
+        /// <summary>
         /// Registers <see cref="CookieTempDataProvider"/> as the default <see cref="ITempDataProvider"/> in the
         /// <see cref="IServiceCollection"/>.
         /// </summary>

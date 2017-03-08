@@ -24,9 +24,6 @@ namespace BasicWebSite
             services.AddSingleton<IActionDescriptorProvider, ActionDescriptorCreationCounter>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<RequestIdService>();
-            services.AddMemoryCache();
-            services.AddDistributedMemoryCache();
-            services.AddSession();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -37,8 +34,6 @@ namespace BasicWebSite
 
             // Initializes the RequestId service for each request
             app.UseMiddleware<RequestIdMiddleware>();
-
-            app.UseSession();
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>
@@ -55,4 +50,3 @@ namespace BasicWebSite
         }
     }
 }
-

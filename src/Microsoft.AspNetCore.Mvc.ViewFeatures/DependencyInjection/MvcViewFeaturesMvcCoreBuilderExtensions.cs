@@ -198,7 +198,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Temp Data
             //
             // This does caching so it should stay singleton
-            services.TryAddSingleton<ITempDataProvider, SessionStateTempDataProvider>();
+            services.TryAddSingleton<ITempDataProvider, CookieTempDataProvider>();
 
             //
             // Antiforgery

@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Assert
             var descriptor = Assert.Single(services, item => item.ServiceType == typeof(ITempDataProvider));
-            Assert.Equal(typeof(SessionStateTempDataProvider), descriptor.ImplementationType);
+            Assert.Equal(typeof(CookieTempDataProvider), descriptor.ImplementationType);
         }
 
         [Fact]
