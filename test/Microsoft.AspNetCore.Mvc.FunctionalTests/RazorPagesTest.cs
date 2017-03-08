@@ -32,6 +32,24 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("Path: /PathSet.cshtml", content.Trim());
         }
 
+        // Tests that RazorPage includes InvalidTagHelperIndexerAssignment which is called when the page has an indexer
+        // Issue https://github.com/aspnet/Mvc/issues/5920
+        [Fact]
+        public async Task TagHelper_InvalidIndexerDoesNotFail()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/TagHelpers");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+                // Assert
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("<a href=\"/Show?id=2\">Post title</a>", content.Trim());
+        }
+
         [Fact]
         public async Task NoPage_NotFound()
         {
