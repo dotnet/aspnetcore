@@ -4,13 +4,14 @@
 
     <_BuildGraphFile>$(BuildDir)BuildGraph.proj</_BuildGraphFile>
     <_CloneRepositoryRoot>$(RepositoryRoot).r\</_CloneRepositoryRoot>
-    <_DependencyPackagesDirectory>$(RepositoryRoot).deps\build\</_DependencyPackagesDirectory>
-    <_CommitsFile>$(RepositoryRoot).deps\build\RepositoryCommits.proj</_CommitsFile>
+    <_DependencyBuildDirectory>$(RepositoryRoot).deps\build\</_DependencyBuildDirectory>
+    <_DependencyPackagesDirectory>$(_DependencyBuildDirectory)></_DependencyPackagesDirectory>
+    <_RepositoryListFileName>Repositories.props</_RepositoryListFileName>
+    <_DependencyRepositoryList>$(_DependencyBuildDirectory)$(_RepositoryListFileName)</_DependencyRepositoryList>
     <_RestoreGraphSpecsDirectory>$(RepositoryRoot)obj\package-specs\</_RestoreGraphSpecsDirectory>
 
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'=='' AND '$(CompileOnly)'=='true'">Package;VerifyPackages</_RepositoryBuildTargets>
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'==''">Verify</_RepositoryBuildTargets>
-    <_RepositoriesWithCommitsFile>$(RepositoryRoot).deps\build\Repositories.props</_RepositoriesWithCommitsFile>
 
     <PrepareDependsOn>$(PrepareDependsOn);CleanUniverseArtifacts</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanUniverseArtifacts</CleanDependsOn>
@@ -18,14 +19,11 @@
   </PropertyGroup>
 
   <Import
-    Project="$(_RepositoriesWithCommitsFile)"
-    Condition="Exists('$(_RepositoriesWithCommitsFile)')" />
+    Project="$(_DependencyRepositoryList)"
+    Condition="Exists('$(_DependencyRepositoryList)')" />
   <Import
-    Project="Repositories.props"
-    Condition="!Exists('$(_RepositoriesWithCommitsFile)')" />
-  <Import
-    Project="$(_CommitsFile)"
-    Condition="Exists('$(_CommitsFile)')" />
+    Project="$(_RepositoryListFileName)"
+    Condition="!Exists('$(_DependencyRepositoryList)')" />
 
   <Target Name="CleanUniverseArtifacts">
     <RemoveDir Directories="$(RepositoryRoot)obj" Condition="Exists('$(RepositoryRoot)obj')" />
@@ -125,7 +123,6 @@
       <_BuildRepositoryProperties Condition="'$(PublishPackages)'=='true'">
         $(_BuildRepositoryProperties);
         APIKey=$(APIKey)
-        DotNetPath=$(DotNetPath);
         NuGetPublishVolatileFeed=$(NuGetPublishVolatileFeed);
         PublishPackages=$(PublishPackages)
       </_BuildRepositoryProperties>
@@ -177,10 +174,10 @@
 
   <Target Name="_CreateRepositoriesListWithCommits" DependsOnTargets="_GetRepositoryCommits">
     <PropertyGroup>
-      <RepositoryFileWithCommit>$(BuildDir)Repositories.props</RepositoryFileWithCommit>
+      <RepositoryFileWithCommit>$(BuildDir)$(_RepositoryListFileName)</RepositoryFileWithCommit>
     </PropertyGroup>
     <Copy
-      SourceFiles="$(MSBuildThisFileDirectory)Repositories.props"
+      SourceFiles="$(MSBuildThisFileDirectory)$(_RepositoryListFileName)"
       DestinationFiles="$(RepositoryFileWithCommit)" />
 
     <XmlPoke2
