@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Razor.Evolution.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Evolution.Intermediate;
 using Microsoft.AspNetCore.Razor.Evolution.Legacy;
@@ -61,6 +60,12 @@ namespace Microsoft.AspNetCore.Razor.Evolution
 
             var diagnostics = new List<RazorDiagnostic>();
             diagnostics.AddRange(syntaxTree.Diagnostics);
+
+            var importSyntaxTrees = codeDocument.GetImportSyntaxTrees();
+            for (var i = 0; i < importSyntaxTrees?.Count; i++)
+            {
+                diagnostics.AddRange(importSyntaxTrees[i].Diagnostics);
+            }
             diagnostics.AddRange(renderingContext.Diagnostics);
 
             var csharpDocument = new RazorCSharpDocument()
