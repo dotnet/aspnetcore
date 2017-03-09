@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 return client.GetAsync(result.ApplicationBaseUri);
-            }, logger, CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, result.HostShutdownToken).Token, retryCount: 5);
+            }, logger, CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, result.HostShutdownToken).Token);
             resp.EnsureSuccessStatusCode();
 
             cancellationToken.ThrowIfCancellationRequested();
