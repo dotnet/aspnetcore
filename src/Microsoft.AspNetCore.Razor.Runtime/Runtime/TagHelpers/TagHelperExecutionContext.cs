@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             _tagHelpers = new List<ITagHelper>();
             _allAttributes = new TagHelperAttributeList();
 
-            Context = new TagHelperContext(_allAttributes, items, uniqueId);
+            Context = new TagHelperContext(tagName, _allAttributes, items, uniqueId);
             Output = new TagHelperOutput(tagName, new TagHelperAttributeList(), GetChildContentAsync)
             {
                 TagMode = tagMode
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             _perEncoderChildContent?.Clear();
             _childContent = null;
 
-            Context.Reinitialize(Items, uniqueId);
+            Context.Reinitialize(tagName, Items, uniqueId);
             Output.Reinitialize(tagName, tagMode);
         }
 

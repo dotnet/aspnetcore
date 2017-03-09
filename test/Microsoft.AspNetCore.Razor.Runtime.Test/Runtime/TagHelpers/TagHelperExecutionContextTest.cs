@@ -138,6 +138,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             // Assert
             var context = executionContext.Context;
             var attribute = Assert.Single(context.AllAttributes);
+            Assert.Equal(tagName, context.TagName);
             Assert.Equal(attribute.Name, "Another attribute");
             Assert.Equal(updatedUniqueId, context.UniqueId);
             Assert.Same(updatedItems, context.Items);

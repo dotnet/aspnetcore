@@ -16,6 +16,28 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// <summary>
         /// Instantiates a new <see cref="TagHelperContext"/>.
         /// </summary>
+        /// <param name="tagName">The parsed HTML tag name of the element.</param>
+        /// <param name="allAttributes">Every attribute associated with the current HTML element.</param>
+        /// <param name="items">Collection of items used to communicate with other <see cref="ITagHelper"/>s.</param>
+        /// <param name="uniqueId">The unique identifier for the source element this <see cref="TagHelperContext" />
+        /// applies to.</param>
+        public TagHelperContext(
+            string tagName,
+            TagHelperAttributeList allAttributes,
+            IDictionary<object, object> items,
+            string uniqueId) : this(allAttributes, items, uniqueId)
+        {
+            if (tagName == null)
+            {
+                throw new ArgumentNullException(nameof(tagName));
+            }
+
+            TagName = tagName;
+        }
+
+        /// <summary>
+        /// Instantiates a new <see cref="TagHelperContext"/>.
+        /// </summary>
         /// <param name="allAttributes">Every attribute associated with the current HTML element.</param>
         /// <param name="items">Collection of items used to communicate with other <see cref="ITagHelper"/>s.</param>
         /// <param name="uniqueId">The unique identifier for the source element this <see cref="TagHelperContext" />
@@ -46,6 +68,11 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         }
 
         /// <summary>
+        /// The parsed HTML tag name of the element.
+        /// </summary>
+        public string TagName { get; private set; }
+
+        /// <summary>
         /// Every attribute associated with the current HTML element.
         /// </summary>
         public ReadOnlyTagHelperAttributeList AllAttributes => _allAttributes;
@@ -63,6 +90,18 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// An identifier unique to the HTML element this context is for.
         /// </summary>
         public string UniqueId { get; private set; }
+
+        /// <summary>
+        /// Clears the <see cref="TagHelperContext"/> and updates its state with the provided values.
+        /// </summary>
+        /// <param name="tagName">The HTML tag name to use.</param>
+        /// <param name="items">The <see cref="IDictionary{Object, Object}"/> to use.</param>
+        /// <param name="uniqueId">The unique id to use.</param>
+        public void Reinitialize(string tagName, IDictionary<object, object> items, string uniqueId)
+        {
+            TagName = tagName;
+            Reinitialize(items, uniqueId);
+        }
 
         /// <summary>
         /// Clears the <see cref="TagHelperContext"/> and updates its state with the provided values.
