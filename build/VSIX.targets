@@ -38,8 +38,9 @@
 
   <Target Name="_BuildVSIX" Condition="'$(MSBuildExePath)'!=''">
     <PropertyGroup>
-      <VSIXLogFilePath>$(ArtifactsDir)msbuild\vsix.log</VSIXLogFilePath>
-      <VSIXResponseFilePath>$(ArtifactsDir)msbuild\vsix.rsp</VSIXResponseFilePath>
+      <MSBuildArtifactsDir>$(ArtifactsDir)msbuild\</MSBuildArtifactsDir>
+      <VSIXLogFilePath>$(MSBuildArtifactsDir)vsix.log</VSIXLogFilePath>
+      <VSIXResponseFilePath>$(MSBuildArtifactsDir)vsix.rsp</VSIXResponseFilePath>
       <VSIXOutputPath>$(BuildDir)$(VSIXName).vsix</VSIXOutputPath>
     </PropertyGroup>
 
@@ -54,6 +55,8 @@
         /p:TargetVSIXContainer=$(VSIXOutputPath);
         /p:Configuration=$(Configuration);" />
     </ItemGroup>
+
+    <MakeDir Directory="$(MSBuildArtifactsDir)" Condition="!Exists('$(MSBuildArtifactsDir)')" />
 
     <WriteLinesToFile
       File="$(VSIXResponseFilePath)"
