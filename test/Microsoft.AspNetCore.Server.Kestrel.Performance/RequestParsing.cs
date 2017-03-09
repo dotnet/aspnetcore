@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             }
         }
 
-        [Benchmark(Baseline = true, OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
+        [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
         public void PlaintextAbsoluteUri()
         {
             for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
