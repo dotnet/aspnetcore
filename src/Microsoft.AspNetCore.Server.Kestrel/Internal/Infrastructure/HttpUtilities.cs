@@ -147,34 +147,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         /// </remarks>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool GetKnownMethod(this Span<byte> span, out HttpMethod method, out int length)
+        public static unsafe bool GetKnownMethod(this Span<byte> span, out HttpMethod method, out int length)
         {
-            if (span.TryRead<uint>(out var possiblyGet))
+            fixed (byte* data = &span.DangerousGetPinnableReference())
             {
-                if (possiblyGet == _httpGetMethodInt)
-                {
-                    length = 3;
-                    method = HttpMethod.Get;
-                    return true;
-                }
+                method = GetKnownMethod(data, span.Length, out length);
+                return method != HttpMethod.Custom;
             }
+        }
 
-            if (span.TryRead<ulong>(out var value))
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal unsafe static HttpMethod GetKnownMethod(byte* data, int length, out int methodLength)
+        {
+            methodLength = 0;
+            if (length < sizeof(uint))
             {
+                return HttpMethod.Custom;
+            }
+            else if (*(uint*)data == _httpGetMethodInt)
+            {
+                methodLength = 3;
+                return HttpMethod.Get;
+            }
+            else if (length < sizeof(ulong))
+            {
+                return HttpMethod.Custom;
+            }
+            else
+            {
+                var value = *(ulong*)data;
                 foreach (var x in _knownMethods)
                 {
                     if ((value & x.Item1) == x.Item2)
                     {
-                        method = x.Item3;
-                        length = x.Item4;
-                        return true;
+                        methodLength = x.Item4;
+                        return x.Item3;
                     }
                 }
             }
 
-            method = HttpMethod.Custom;
-            length = 0;
-            return false;
+            return HttpMethod.Custom;
         }
 
         /// <summary>
@@ -189,36 +201,56 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal.Infrastructure
         /// </remarks>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool GetKnownVersion(this Span<byte> span, out HttpVersion knownVersion, out byte length)
+        public static unsafe bool GetKnownVersion(this Span<byte> span, out HttpVersion knownVersion, out byte length)
         {
-            if (span.TryRead<ulong>(out var version))
+            fixed (byte* data = &span.DangerousGetPinnableReference())
             {
-                if (version == _http11VersionLong)
+                knownVersion = GetKnownVersion(data, span.Length);
+                if (knownVersion != HttpVersion.Unknown)
                 {
                     length = sizeof(ulong);
-                    knownVersion = HttpVersion.Http11;
-                }
-                else if (version == _http10VersionLong)
-                {
-                    length = sizeof(ulong);
-                    knownVersion = HttpVersion.Http10;
-                }
-                else
-                {
-                    length = 0;
-                    knownVersion = HttpVersion.Unknown;
-                    return false;
-                }
-
-                if (span[sizeof(ulong)] == (byte)'\r')
-                {
                     return true;
                 }
+
+                length = 0;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Checks 9 bytes from <paramref name="location"/>  correspond to a known HTTP version.
+        /// </summary>
+        /// <remarks>
+        /// A "known HTTP version" Is is either HTTP/1.0 or HTTP/1.1.
+        /// Since those fit in 8 bytes, they can be optimally looked up by reading those bytes as a long. Once
+        /// in that format, it can be checked against the known versions.
+        /// The Known versions will be checked with the required '\r'.
+        /// To optimize performance the HTTP/1.1 will be checked first.
+        /// </remarks>
+        /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal unsafe static HttpVersion GetKnownVersion(byte* location, int length)
+        {
+            HttpVersion knownVersion;
+            var version = *(ulong*)location;
+            if (length < sizeof(ulong) + 1 || location[sizeof(ulong)] != (byte)'\r')
+            {
+                knownVersion = HttpVersion.Unknown;
+            }
+            else if (version == _http11VersionLong)
+            {
+                knownVersion = HttpVersion.Http11;
+            }
+            else if (version == _http10VersionLong)
+            {
+                knownVersion = HttpVersion.Http10;
+            }
+            else
+            {
+                knownVersion = HttpVersion.Unknown;
             }
 
-            knownVersion = HttpVersion.Unknown;
-            length = 0;
-            return false;
+            return knownVersion;
         }
 
         public static string VersionToString(HttpVersion httpVersion)

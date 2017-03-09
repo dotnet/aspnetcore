@@ -49,14 +49,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     It.IsAny<Span<byte>>(),
                     It.IsAny<Span<byte>>(),
                     It.IsAny<Span<byte>>(),
-                    It.IsAny<Span<byte>>()))
-                .Callback<HttpMethod, HttpVersion, Span<byte>, Span<byte>, Span<byte>, Span<byte>>((method, version, target, path, query, customMethod) =>
+                    It.IsAny<Span<byte>>(),
+                    It.IsAny<bool>()))
+                .Callback<HttpMethod, HttpVersion, Span<byte>, Span<byte>, Span<byte>, Span<byte>, bool>((method, version, target, path, query, customMethod, pathEncoded) =>
                 {
                     parsedMethod = method != HttpMethod.Custom ? HttpUtilities.MethodToString(method) : customMethod.GetAsciiStringNonNullCharacters();
                     parsedVersion = HttpUtilities.VersionToString(version);
                     parsedRawTarget = target.GetAsciiStringNonNullCharacters();
                     parsedRawPath = path.GetAsciiStringNonNullCharacters();
                     parsedQuery = query.GetAsciiStringNonNullCharacters();
+                    pathEncoded = false;
                 });
 
             Assert.True(parser.ParseRequestLine(requestLineHandler.Object, buffer, out var consumed, out var examined));

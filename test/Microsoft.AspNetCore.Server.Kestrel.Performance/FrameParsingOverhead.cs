@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             public bool ParseRequestLine<T>(T handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined) where T : IHttpRequestLineHandler
             {
-                handler.OnStartLine(HttpMethod.Get, HttpVersion.Http11, new Span<byte>(_target), new Span<byte>(_target), Span<byte>.Empty, Span<byte>.Empty);
+                handler.OnStartLine(HttpMethod.Get, HttpVersion.Http11, new Span<byte>(_target), new Span<byte>(_target), Span<byte>.Empty, Span<byte>.Empty, false);
 
                 consumed = buffer.Start;
                 examined = buffer.End;
