@@ -42,6 +42,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             }
         }
 
+        [Benchmark(Baseline = true, OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
+        public void PlaintextAbsoluteUri()
+        {
+            for (var i = 0; i < RequestParsingData.InnerLoopCount; i++)
+            {
+                InsertData(RequestParsingData.PlaintextAbsoluteUriRequest);
+                ParseData();
+            }
+        }
+
         [Benchmark(OperationsPerInvoke = RequestParsingData.InnerLoopCount * RequestParsingData.Pipelining)]
         public void PipelinedPlaintextTechEmpower()
         {

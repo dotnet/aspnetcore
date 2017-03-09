@@ -21,8 +21,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             "Connection: keep-alive\r\n" +
             "\r\n";
 
+        // edge-casey - client's don't normally send this
+        private const string _plaintextAbsoluteUriRequest =
+            "GET http://localhost/plaintext HTTP/1.1\r\n" +
+            "Host: localhost\r\n" +
+            "Accept: text/plain,text/html;q=0.9,application/xhtml+xml;q=0.9,application/xml;q=0.8,*/*;q=0.7\r\n" +
+            "Connection: keep-alive\r\n" +
+            "\r\n";
+
         private const string _liveaspnetRequest =
-            "GET https://live.asp.net/ HTTP/1.1\r\n" +
+            "GET / HTTP/1.1\r\n" +
             "Host: live.asp.net\r\n" +
             "Connection: keep-alive\r\n" +
             "Upgrade-Insecure-Requests: 1\r\n" +
@@ -35,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             "\r\n";
 
         private const string _unicodeRequest =
-            "GET http://stackoverflow.com/questions/40148683/why-is-%e0%a5%a7%e0%a5%a8%e0%a5%a9-numeric HTTP/1.1\r\n" +
+            "GET /questions/40148683/why-is-%e0%a5%a7%e0%a5%a8%e0%a5%a9-numeric HTTP/1.1\r\n" +
             "Accept: text/html, application/xhtml+xml, image/jxr, */*\r\n" +
             "Accept-Language: en-US,en-GB;q=0.7,en;q=0.3\r\n" +
             "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.14965\r\n" +
@@ -52,6 +60,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public static readonly byte[] PlaintextTechEmpowerPipelinedRequests = Encoding.ASCII.GetBytes(string.Concat(Enumerable.Repeat(_plaintextTechEmpowerRequest, Pipelining)));
         public static readonly byte[] PlaintextTechEmpowerRequest = Encoding.ASCII.GetBytes(_plaintextTechEmpowerRequest);
+
+        public static readonly byte[] PlaintextAbsoluteUriRequest = Encoding.ASCII.GetBytes(_plaintextAbsoluteUriRequest);
 
         public static readonly byte[] LiveaspnetPipelinedRequests = Encoding.ASCII.GetBytes(string.Concat(Enumerable.Repeat(_liveaspnetRequest, Pipelining)));
         public static readonly byte[] LiveaspnetRequest = Encoding.ASCII.GetBytes(_liveaspnetRequest);
