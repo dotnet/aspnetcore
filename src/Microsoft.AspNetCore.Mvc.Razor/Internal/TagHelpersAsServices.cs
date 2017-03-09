@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
-using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -34,7 +33,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             }
 
             services.Replace(ServiceDescriptor.Transient<ITagHelperActivator, ServiceBasedTagHelperActivator>());
-            services.Replace(ServiceDescriptor.Transient<ITagHelperTypeResolver, FeatureTagHelperTypeResolver>());
         }
     }
 }

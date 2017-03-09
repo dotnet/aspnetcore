@@ -212,7 +212,6 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Collection(manager.FeatureProviders,
                 feature => Assert.IsType<ControllerFeatureProvider>(feature),
                 feature => Assert.IsType<ViewComponentFeatureProvider>(feature),
-                feature => Assert.IsType<TagHelperFeatureProvider>(feature),
                 feature => Assert.IsType<MetadataReferenceFeatureProvider>(feature),
                 feature => Assert.IsType<ViewsFeatureProvider>(feature));
         }

@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc.Razor.Host;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 using Microsoft.AspNetCore.Razor.Evolution;
 using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -64,11 +63,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static void AddRazorViewEngineFeatureProviders(IMvcCoreBuilder builder)
         {
-            if (!builder.PartManager.FeatureProviders.OfType<TagHelperFeatureProvider>().Any())
-            {
-                builder.PartManager.FeatureProviders.Add(new TagHelperFeatureProvider());
-            }
-
             if (!builder.PartManager.FeatureProviders.OfType<MetadataReferenceFeatureProvider>().Any())
             {
                 builder.PartManager.FeatureProviders.Add(new MetadataReferenceFeatureProvider());
@@ -157,12 +151,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 DefaultRazorViewEngineFileProviderAccessor>();
 
             services.TryAddSingleton<IRazorViewEngine, RazorViewEngine>();
-
-            services.TryAddSingleton<ITagHelperTypeResolver, TagHelperTypeResolver>();
-            services.TryAddSingleton<ITagHelperDescriptorFactory>(s => new TagHelperDescriptorFactory(designTime: false));
-            services.TryAddSingleton<TagHelperDescriptorResolver>();
-            services.TryAddSingleton<ViewComponentTagHelperDescriptorResolver>();
-            services.TryAddSingleton<ITagHelperDescriptorResolver, CompositeTagHelperDescriptorResolver>();
 
             // Caches compilation artifacts across the lifetime of the application.
             services.TryAddSingleton<ICompilerCacheProvider, DefaultCompilerCacheProvider>();
