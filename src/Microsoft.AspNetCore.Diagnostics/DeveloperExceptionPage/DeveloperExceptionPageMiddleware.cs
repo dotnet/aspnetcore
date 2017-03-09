@@ -126,20 +126,48 @@ namespace Microsoft.AspNetCore.Diagnostics
                 Options = _options,
             };
 
+            var errorPage = new CompilationErrorPage
+            {
+                Model = model
+            };
+
+            if (compilationException.CompilationFailures == null)
+            {
+                return errorPage.ExecuteAsync(context);
+            }
+
             foreach (var compilationFailure in compilationException.CompilationFailures)
             {
+                if (compilationFailure == null)
+                {
+                    continue;
+                }
+
                 var stackFrames = new List<StackFrameSourceCodeInfo>();
                 var exceptionDetails = new ExceptionDetails
                 {
                     StackFrames = stackFrames,
                     ErrorMessage = compilationFailure.FailureSummary,
                 };
-                var fileContent = compilationFailure
-                    .SourceFileContent
-                    .Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+                model.ErrorDetails.Add(exceptionDetails);
+                model.CompiledContent.Add(compilationFailure.CompiledContent);
+
+                if (compilationFailure.Messages == null)
+                {
+                    continue;
+                }
+
+                var sourceLines = compilationFailure
+                        .SourceFileContent?
+                        .Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
                 foreach (var item in compilationFailure.Messages)
                 {
+                    if (item == null)
+                    {
+                        continue;
+                    }
+
                     var frame = new StackFrameSourceCodeInfo
                     {
                         File = compilationFailure.SourceFilePath,
@@ -147,20 +175,16 @@ namespace Microsoft.AspNetCore.Diagnostics
                         Function = string.Empty
                     };
 
-                    _exceptionDetailsProvider.ReadFrameContent(frame, fileContent, item.StartLine, item.EndLine);
+                    if (sourceLines != null)
+                    {
+                        _exceptionDetailsProvider.ReadFrameContent(frame, sourceLines, item.StartLine, item.EndLine);
+                    }
+
                     frame.ErrorDetails = item.Message;
 
                     stackFrames.Add(frame);
                 }
-
-                model.ErrorDetails.Add(exceptionDetails);
-                model.CompiledContent.Add(compilationFailure.CompiledContent);
             }
-
-            var errorPage = new CompilationErrorPage
-            {
-                Model = model
-            };
 
             return errorPage.ExecuteAsync(context);
         }
