@@ -14,8 +14,7 @@ env:
   global:
     - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     - DOTNET_CLI_TELEMETRY_OPTOUT: 1
-mono:
-  - 4.0.5
+mono: none
 os:
   - linux
   - osx
