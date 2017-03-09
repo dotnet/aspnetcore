@@ -15,8 +15,7 @@ env:
     - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     - DOTNET_CLI_TELEMETRY_OPTOUT: 1
     - SIGNALR_TESTS_VERBOSE: 1
-mono:
-  - 4.0.5
+mono: none
 python:
   - "2.7"
 os:
