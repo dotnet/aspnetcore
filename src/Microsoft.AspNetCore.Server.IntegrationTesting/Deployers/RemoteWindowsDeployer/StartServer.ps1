@@ -55,6 +55,10 @@ elseif (($serverType -eq "Kestrel") -or ($serverType -eq "WebListener"))
         [Environment]::SetEnvironmentVariable("PATH", "$dotnetRuntimePath")
     }
 
+    # Change the current working directory to the deployed folder to make applications work 
+    # when they use API like Directory.GetCurrentDirectory()
+    cd -Path $deployedFolderPath
+
     $command = $executablePath + " " + $executableParameters + " --server.urls " + $applicationBaseUrl
     if ($serverType -eq "Kestrel")
     {
