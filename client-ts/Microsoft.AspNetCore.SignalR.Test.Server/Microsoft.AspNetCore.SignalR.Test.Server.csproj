@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR\Microsoft.AspNetCore.SignalR.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Client.TS\Microsoft.AspNetCore.SignalR.Client.TS.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.SignalR.Client.TS\Microsoft.AspNetCore.SignalR.Client.TS.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(AspNetCoreVersion)" />
@@ -19,12 +19,12 @@
   <!-- these targets relies on npm packages being restored when building the TS client -->
   <Target Name="CopyRequiredArtifacts" BeforeTargets="AfterBuild">
       <ItemGroup>
-        <JasmineFiles Include="$(MSBuildProjectDirectory)../../node_modules/jasmine-core/lib/jasmine-core/*.js" />
-        <JasmineFiles Include="$(MSBuildProjectDirectory)../../node_modules/jasmine-core/lib/jasmine-core/*.css" />
+        <JasmineFiles Include="$(MSBuildProjectDirectory)../node_modules/jasmine-core/lib/jasmine-core/*.js" />
+        <JasmineFiles Include="$(MSBuildProjectDirectory)../node_modules/jasmine-core/lib/jasmine-core/*.css" />
       </ItemGroup>
       <Copy SourceFiles="@(JasmineFiles)" DestinationFolder="$(MSBuildProjectDirectory)/wwwroot/lib/jasmine" />
 
-      <Copy SourceFiles="$(MSBuildThisFileDirectory)..\..\dist\browser\signalr-client.js"
+      <Copy SourceFiles="$(MSBuildThisFileDirectory)..\dist\browser\signalr-client.js"
           DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr-client"/>
   </Target>
 

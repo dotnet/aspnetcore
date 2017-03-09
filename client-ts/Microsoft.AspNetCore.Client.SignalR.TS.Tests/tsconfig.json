@@ -9,8 +9,7 @@
         "removeComments": false,
         "noImplicitAny": true,
         "suppressImplicitAnyIndexErrors": true,
-        "outDir": "../../dist/src",
-        "declaration": true
+        "outDir": "../dist/test"
     },
     "include": [
         "./**/*",

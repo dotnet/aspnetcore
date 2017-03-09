@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <SignalRClientDistFolder>$(MSBuildThisFileDirectory)..\..\dist\</SignalRClientDistFolder>
+    <SignalRClientDistFolder>$(MSBuildThisFileDirectory)..\dist\</SignalRClientDistFolder>
   </PropertyGroup>
 
   <ItemGroup>

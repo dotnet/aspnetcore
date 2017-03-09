@@ -1,5 +1,5 @@
-import { TextMessageFormat, ServerSentEventsFormat } from "../../src/Microsoft.AspNetCore.SignalR.Client.TS/Formatters"
-import { Message, MessageType } from "../../src/Microsoft.AspNetCore.SignalR.Client.TS/Message";
+import { TextMessageFormat, ServerSentEventsFormat } from "../Microsoft.AspNetCore.SignalR.Client.TS/Formatters"
+import { Message, MessageType } from "../Microsoft.AspNetCore.SignalR.Client.TS/Message";
 
 describe("Text Message Formatter", () => {
     it("should return empty array on empty input", () => {

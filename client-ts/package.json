@@ -9,8 +9,8 @@
   },
   "scripts": {
     "gulp": "gulp",
-    "pretest": "tsc -p test/Microsoft.AspNetCore.Client.SignalR.TS.Tests",
-    "test": "jasmine JASMINE_CONFIG_PATH=test/Microsoft.AspNetCore.Client.SignalR.TS.Tests/jasmine.json"
+    "pretest": "tsc -p Microsoft.AspNetCore.Client.SignalR.TS.Tests",
+    "test": "jasmine JASMINE_CONFIG_PATH=Microsoft.AspNetCore.Client.SignalR.TS.Tests/jasmine.json"
   },
   "repository": {
     "type": "git",

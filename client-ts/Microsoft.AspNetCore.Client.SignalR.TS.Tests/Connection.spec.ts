@@ -1,6 +1,6 @@
-import {IHttpClient} from "../../src/Microsoft.AspNetCore.SignalR.Client.TS/HttpClient"
-import { Connection } from "../../src/Microsoft.AspNetCore.SignalR.Client.TS/Connection"
-import { ISignalROptions } from "../../src/Microsoft.AspNetCore.SignalR.Client.TS/ISignalROptions"
+import { IHttpClient } from "../Microsoft.AspNetCore.SignalR.Client.TS/HttpClient"
+import { Connection } from "../Microsoft.AspNetCore.SignalR.Client.TS/Connection"
+import { ISignalROptions } from "../Microsoft.AspNetCore.SignalR.Client.TS/ISignalROptions"
 
 describe("Connection", () => {
     it("starting connection fails if getting id fails", async (done) => {

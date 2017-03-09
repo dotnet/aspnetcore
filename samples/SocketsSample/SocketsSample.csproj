@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Redis\Microsoft.AspNetCore.SignalR.Redis.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Client.TS\Microsoft.AspNetCore.SignalR.Client.TS.csproj" />
+    <ProjectReference Include="..\..\client-ts\Microsoft.AspNetCore.SignalR.Client.TS\Microsoft.AspNetCore.SignalR.Client.TS.csproj" />
 
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     <PackageReference Include="Microsoft.AspNetCore" Version="$(AspNetCoreVersion)" />
@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <Target Name="CopyTSClient" BeforeTargets="AfterBuild">
-    <Copy SourceFiles="$(MSBuildThisFileDirectory)..\..\dist\browser\signalr-client.js"
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)..\..\client-ts\dist\browser\signalr-client.js"
           DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr-client" />
   </Target>
 
