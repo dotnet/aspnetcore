@@ -56,7 +56,7 @@
         /p:Configuration=$(Configuration);" />
     </ItemGroup>
 
-    <MakeDir Directory="$(MSBuildArtifactsDir)" Condition="!Exists('$(MSBuildArtifactsDir)')" />
+    <MakeDir Directories="$(MSBuildArtifactsDir)" Condition="!Exists('$(MSBuildArtifactsDir)')" />
 
     <WriteLinesToFile
       File="$(VSIXResponseFilePath)"
