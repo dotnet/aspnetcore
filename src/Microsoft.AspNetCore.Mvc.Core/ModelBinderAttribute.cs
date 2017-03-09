@@ -28,6 +28,26 @@ namespace Microsoft.AspNetCore.Mvc
     {
         private BindingSource _bindingSource;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ModelBinderAttribute"/>.
+        /// </summary>
+        public ModelBinderAttribute()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="ModelBinderAttribute"/>.
+        /// </summary>
+        /// <param name="binderType">A <see cref="Type"/> which implements <see cref="IModelBinder"/>.</param>
+        public ModelBinderAttribute(Type binderType)
+        {
+            if (binderType == null)
+            {
+                throw new ArgumentNullException(nameof(binderType));
+            }
+            BinderType = binderType;
+        }
+
         /// <inheritdoc />
         public Type BinderType { get; set; }
 
