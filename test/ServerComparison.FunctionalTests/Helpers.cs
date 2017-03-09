@@ -20,8 +20,7 @@ namespace ServerComparison.FunctionalTests
                 var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "ServerTests.sln"));
                 if (solutionFileInfo.Exists)
                 {
-                    var projectName = applicationType == ApplicationType.Standalone ? "ServerComparison.TestSites.Standalone" : "ServerComparison.TestSites";
-                    return Path.GetFullPath(Path.Combine(directoryInfo.FullName, "test", projectName));
+                    return Path.GetFullPath(Path.Combine(directoryInfo.FullName, "test", "ServerComparison.TestSites"));
                 }
 
                 directoryInfo = directoryInfo.Parent;
@@ -33,14 +32,16 @@ namespace ServerComparison.FunctionalTests
 
         public static string GetConfigContent(ServerType serverType, string iisConfig, string nginxConfig)
         {
+            var applicationBasePath = PlatformServices.Default.Application.ApplicationBasePath;
+
             string content = null;
             if (serverType == ServerType.IISExpress)
             {
-                content = File.ReadAllText(iisConfig);
+                content = File.ReadAllText(Path.Combine(applicationBasePath, iisConfig));
             }
             else if (serverType == ServerType.Nginx)
             {
-                content = File.ReadAllText(nginxConfig);
+                content = File.ReadAllText(Path.Combine(applicationBasePath, nginxConfig));
             }
 
             return content;

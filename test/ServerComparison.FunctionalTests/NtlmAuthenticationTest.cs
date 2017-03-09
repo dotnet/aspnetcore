@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Sdk;
@@ -25,7 +26,7 @@ namespace ServerComparison.FunctionalTests
         // [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5051/", ApplicationType.Portable)]
         // [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5052/", ApplicationType.Portable)]
         [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5052/", ApplicationType.Portable)]
-        //[InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5053/", ApplicationType.Standalone, Skip = "https://github.com/aspnet/ServerTests/issues/53")]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5053/", ApplicationType.Standalone)]
         public async Task NtlmAuthentication(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ApplicationType applicationType)
         {
             var logger = new LoggerFactory()
@@ -40,9 +41,14 @@ namespace ServerComparison.FunctionalTests
                     EnvironmentName = "NtlmAuthentication", // Will pick the Start class named 'StartupNtlmAuthentication'
                     ServerConfigTemplateContent = Helpers.GetConfigContent(serverType, "NtlmAuthentication.config", nginxConfig: null),
                     SiteName = "NtlmAuthenticationTestSite", // This is configured in the NtlmAuthentication.config
-                    ApplicationType = applicationType,
-                    TargetFramework = "net452",
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net452" : "netcoreapp1.1",
+                    ApplicationType = applicationType
                 };
+
+                if(applicationType == ApplicationType.Standalone)
+                {
+                    deploymentParameters.AdditionalPublishParameters = " -r " + RuntimeEnvironment.GetRuntimeIdentifier();
+                }
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
                 {
