@@ -31,7 +31,7 @@
 
   <Target Name="_RestoreProject">
     <PropertyGroup>
-      <NuGetExe>$(NuGetPackageFolders)nuget.commandline\$(NuGetCommandLineVersion)\tools\nuget.exe</NuGetExe>
+      <NuGetExe>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageFolders)'))nuget.commandline\$(NuGetCommandLineVersion)\tools\nuget.exe</NuGetExe>
     </PropertyGroup>
     <Exec Command="$(NuGetExe) restore &quot;$(VSIXProject)&quot; -SolutionDir &quot;$(RepositoryRoot) &quot; -verbosity quiet" />
   </Target>
