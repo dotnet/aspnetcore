@@ -27,7 +27,8 @@ const templates: { [key: string]: { dir: string, dotNetNewId: string, displayNam
     'aurelia': { dir: '../../templates/AureliaSpa/', dotNetNewId: 'Aurelia', displayName: 'Aurelia' },
     'knockout': { dir: '../../templates/KnockoutSpa/', dotNetNewId: 'Knockout', displayName: 'Knockout.js' },
     'react-redux': { dir: '../../templates/ReactReduxSpa/', dotNetNewId: 'ReactRedux', displayName: 'React.js and Redux' },
-    'react': { dir: '../../templates/ReactSpa/', dotNetNewId: 'React', displayName: 'React.js' }
+    'react': { dir: '../../templates/ReactSpa/', dotNetNewId: 'React', displayName: 'React.js' },
+    'vue': { dir: '../../templates/VueSpa/', dotNetNewId: 'Vue', displayName: 'Vue.js' }
 };
 
 
